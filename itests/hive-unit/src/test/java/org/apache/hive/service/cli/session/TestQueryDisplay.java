@@ -25,7 +25,6 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.service.cli.OperationHandle;
 import org.apache.hive.service.cli.SessionHandle;
 import org.apache.hive.service.rpc.thrift.TProtocolVersion;
-import org.apache.hive.service.server.HiveServer2;
 import org.apache.hive.tmpl.QueryProfileTmpl;
 import org.junit.Assert;
 import org.junit.Before;
@@ -57,10 +56,10 @@ public class TestQueryDisplay {
    */
   @Test
   public void testQueryDisplay() throws Exception {
-    HiveSession session = sessionManager.createSession(
-      new SessionHandle(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V8),
-      TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V8,
-      "testuser", "", "", new HashMap<String, String>(), false, "");
+    HiveSession session = sessionManager
+        .createSession(new SessionHandle(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V8),
+            TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V8, "testuser", "", "",
+            new HashMap<String, String>(), false, "");
 
     SessionState.start(conf);
     OperationHandle opHandle1 = session.executeStatement("show databases", null);
@@ -74,23 +73,23 @@ public class TestQueryDisplay {
     Assert.assertEquals(liveSqlOperations.size(), 2);
     Assert.assertEquals(historicSqlOperations.size(), 0);
     verifyDDL(liveSqlOperations.get(0), "show databases", opHandle1.getHandleIdentifier().toString(), false);
-    verifyDDL(liveSqlOperations.get(1),"show tables", opHandle2.getHandleIdentifier().toString(), false);
+    verifyDDL(liveSqlOperations.get(1), "show tables", opHandle2.getHandleIdentifier().toString(), false);
 
     session.closeOperation(opHandle1);
     liveSqlOperations = sessionManager.getOperationManager().getLiveQueryInfos();
     historicSqlOperations = sessionManager.getOperationManager().getHistoricalQueryInfos();
     Assert.assertEquals(liveSqlOperations.size(), 1);
     Assert.assertEquals(historicSqlOperations.size(), 1);
-    verifyDDL(historicSqlOperations.get(0),"show databases", opHandle1.getHandleIdentifier().toString(), true);
-    verifyDDL(liveSqlOperations.get(0),"show tables", opHandle2.getHandleIdentifier().toString(), false);
+    verifyDDL(historicSqlOperations.get(0), "show databases", opHandle1.getHandleIdentifier().toString(), true);
+    verifyDDL(liveSqlOperations.get(0), "show tables", opHandle2.getHandleIdentifier().toString(), false);
 
     session.closeOperation(opHandle2);
     liveSqlOperations = sessionManager.getOperationManager().getLiveQueryInfos();
     historicSqlOperations = sessionManager.getOperationManager().getHistoricalQueryInfos();
     Assert.assertEquals(liveSqlOperations.size(), 0);
     Assert.assertEquals(historicSqlOperations.size(), 2);
-    verifyDDL(historicSqlOperations.get(1),"show databases", opHandle1.getHandleIdentifier().toString(), true);
-    verifyDDL(historicSqlOperations.get(0),"show tables", opHandle2.getHandleIdentifier().toString(), true);
+    verifyDDL(historicSqlOperations.get(1), "show databases", opHandle1.getHandleIdentifier().toString(), true);
+    verifyDDL(historicSqlOperations.get(0), "show tables", opHandle2.getHandleIdentifier().toString(), true);
 
     session.close();
   }
@@ -100,10 +99,10 @@ public class TestQueryDisplay {
    */
   @Test
   public void testWebUI() throws Exception {
-    HiveSession session = sessionManager.createSession(
-      new SessionHandle(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V8),
-      TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V8,
-      "testuser", "", "", new HashMap<String, String>(), false, "");
+    HiveSession session = sessionManager
+        .createSession(new SessionHandle(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V8),
+            TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V8, "testuser", "", "",
+            new HashMap<String, String>(), false, "");
 
     SessionState.start(conf);
     OperationHandle opHandle1 = session.executeStatement("show databases", null);
@@ -122,6 +121,35 @@ public class TestQueryDisplay {
     session.close();
   }
 
+  /**
+   * Test for the HiveConf option HIVE_SERVER2_WEBUI_EXPLAIN_OUTPUT.
+   */
+  @Test
+  public void checkWebuiExplainOutput() throws Exception {
+
+    //check cases when HIVE_SERVER2_WEBUI_EXPLAIN_OUTPUT is set and not set
+    boolean[] webuiExplainConfValues = new boolean[]{true, false};
+
+    for (boolean confValue : webuiExplainConfValues) {
+      conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_EXPLAIN_OUTPUT, confValue);
+      HiveSession session = sessionManager
+          .createSession(new SessionHandle(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V8),
+              TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V8, "testuser", "", "",
+              new HashMap<String, String>(), false, "");
+      SessionState.start(conf);
+
+      OperationHandle opHandle = session.executeStatement("show tables", null);
+      session.closeOperation(opHandle);
+      //STAGE PLANS is something which will be shown as part of EXPLAIN query
+      verifyDDLHtml("STAGE PLANS", opHandle.getHandleIdentifier().toString(), confValue);
+      //Check that the following message is not shown when this option is set
+      verifyDDLHtml(
+          "Set configuration hive.server2.webui.explain.output to true to view future query plans",
+          opHandle.getHandleIdentifier().toString(), !confValue);
+      session.close();
+    }
+  }
+
   private void verifyDDL(QueryInfo queryInfo, String stmt, String handle, boolean finished) {
 
     Assert.assertEquals(queryInfo.getUserName(), "testuser");
@@ -130,8 +158,9 @@ public class TestQueryDisplay {
     Assert.assertTrue(queryInfo.getBeginTime() > 0 && queryInfo.getBeginTime() <= System.currentTimeMillis());
 
     if (finished) {
-      Assert.assertTrue(queryInfo.getEndTime() > 0 && queryInfo.getEndTime() >= queryInfo.getBeginTime()
-        && queryInfo.getEndTime() <= System.currentTimeMillis());
+      Assert.assertTrue(
+          queryInfo.getEndTime() > 0 && queryInfo.getEndTime() >= queryInfo.getBeginTime()
+              && queryInfo.getEndTime() <= System.currentTimeMillis());
       Assert.assertTrue(queryInfo.getRuntime() > 0);
     } else {
       Assert.assertNull(queryInfo.getEndTime());
@@ -158,8 +187,8 @@ public class TestQueryDisplay {
     Assert.assertEquals(tInfo1.getTaskId(), "Stage-0");
     Assert.assertEquals(tInfo1.getTaskType(), StageType.DDL);
     Assert.assertTrue(tInfo1.getBeginTime() > 0 && tInfo1.getBeginTime() <= System.currentTimeMillis());
-    Assert.assertTrue(tInfo1.getEndTime() > 0 && tInfo1.getEndTime() >= tInfo1.getBeginTime() &&
-      tInfo1.getEndTime() <= System.currentTimeMillis());
+    Assert.assertTrue(tInfo1.getEndTime() > 0 && tInfo1.getEndTime() >= tInfo1.getBeginTime()
+        && tInfo1.getEndTime() <= System.currentTimeMillis());
     Assert.assertEquals(tInfo1.getStatus(), "Success, ReturnVal 0");
   }
 
@@ -168,14 +197,17 @@ public class TestQueryDisplay {
    * assert each element, to make it easier to add UI improvements.
    */
   private void verifyDDLHtml(String stmt, String opHandle) throws Exception {
+    verifyDDLHtml(stmt, opHandle, true);
+  }
+
+  private void verifyDDLHtml(String stmt, String opHandle, boolean assertCondition) throws Exception {
     StringWriter sw = new StringWriter();
-    QueryInfo queryInfo = sessionManager.getOperationManager().getQueryInfo(
-      opHandle);
+    QueryInfo queryInfo = sessionManager.getOperationManager().getQueryInfo(opHandle);
     HiveConf hiveConf = sessionManager.getOperationManager().getHiveConf();
     new QueryProfileTmpl().render(sw, queryInfo, hiveConf);
     String html = sw.toString();
+    Assert.assertEquals(assertCondition, html.contains(stmt));
 
-    Assert.assertTrue(html.contains(stmt));
     Assert.assertTrue(html.contains("testuser"));
   }
 
