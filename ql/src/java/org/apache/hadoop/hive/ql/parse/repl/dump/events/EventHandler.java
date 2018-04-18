@@ -39,14 +39,18 @@ public interface EventHandler {
     final Hive db;
     final HiveConf hiveConf;
     final ReplicationSpec replicationSpec;
+    final String dbName;
+    final String tableName;
 
     public Context(Path eventRoot, Path cmRoot, Hive db, HiveConf hiveConf,
-        ReplicationSpec replicationSpec) {
+        ReplicationSpec replicationSpec, String dbName, String tableName) {
       this.eventRoot = eventRoot;
       this.cmRoot = cmRoot;
       this.db = db;
       this.hiveConf = hiveConf;
       this.replicationSpec = replicationSpec;
+      this.dbName = dbName;
+      this.tableName = tableName;
     }
 
     DumpMetaData createDmd(EventHandler eventHandler) {

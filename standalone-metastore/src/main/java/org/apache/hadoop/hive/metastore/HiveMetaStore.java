@@ -81,6 +81,7 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.events.AddForeignKeyEvent;
+import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.StatsUpdateMode;
@@ -7164,6 +7165,26 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     @Override
     public void commit_txn(CommitTxnRequest rqst) throws TException {
+      // in replication flow, the write notification log table will be updated here.
+      if (rqst.isSetWriteEventInfos()) {
+        long targetTxnId = getTxnHandler().getTargetTxnId(rqst.getReplPolicy(), rqst.getTxnid());
+        if (targetTxnId < 0) {
+          //looks like a retry
+          return;
+        }
+        for (WriteEventInfo writeEventInfo : rqst.getWriteEventInfos()) {
+          InsertEventRequestData insertData = new InsertEventRequestData();
+          insertData.setReplace(true);
+          insertData.setFilesAdded(Collections.singletonList(writeEventInfo.getFiles()));
+
+          WriteNotificationLogRequest wnRqst = new WriteNotificationLogRequest(targetTxnId,
+                  writeEventInfo.getWriteId(), writeEventInfo.getDatabase(), writeEventInfo.getTable(), insertData);
+          if (writeEventInfo.getPartition() != null) {
+            wnRqst.setPartitionVals(Warehouse.getPartValuesFromPartName(writeEventInfo.getPartition()));
+          }
+          add_write_notification_log(wnRqst);
+        }
+      }
       getTxnHandler().commitTxn(rqst);
       if (listeners != null && !listeners.isEmpty()) {
         MetaStoreListenerNotifier.notifyEvent(listeners, EventType.COMMIT_TXN,
@@ -7191,6 +7212,26 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                         rqst.getTableName(), this));
       }
       return response;
+    }
+
+    @Override
+    public WriteNotificationLogResponse add_write_notification_log(WriteNotificationLogRequest rqst)
+            throws MetaException, NoSuchObjectException {
+      Partition ptnObj = null;
+      String partition = null;
+      GetTableRequest req = new GetTableRequest(rqst.getDb(), rqst.getTable());
+      req.setCapabilities(new ClientCapabilities(Lists.newArrayList(ClientCapability.TEST_CAPABILITY)));
+      Table tableObj = get_table_req(req).getTable();
+      if (tableObj.isSetPartitionKeys() && !tableObj.getPartitionKeys().isEmpty()) {
+        ptnObj = get_partition(rqst.getDb(), rqst.getTable(), rqst.getPartitionVals());
+        partition = Warehouse.makePartName(tableObj.getPartitionKeys(), rqst.getPartitionVals());
+      }
+      AcidWriteEvent event = new AcidWriteEvent(partition, tableObj, ptnObj, rqst);
+      getTxnHandler().addWriteNotificationLog(event);
+      if (listeners != null && !listeners.isEmpty()) {
+        MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ACID_WRITE, event);
+      }
+      return new WriteNotificationLogResponse();
     }
 
     @Override

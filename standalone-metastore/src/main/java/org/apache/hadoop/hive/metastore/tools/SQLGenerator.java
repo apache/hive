@@ -175,4 +175,11 @@ public final class SQLGenerator {
     return dbProduct;
   }
 
+  public String addEscapeCharacters(String s) {
+    if (dbProduct !=  DatabaseProduct.DERBY) {
+      return s.replaceAll("\\\\", "\\\\\\\\");
+    }
+    return s;
+  }
+
 }

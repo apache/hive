@@ -159,6 +159,7 @@ import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlanStatus;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
+import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.datasource.DataSourceProvider;
@@ -206,6 +207,7 @@ import org.apache.hadoop.hive.metastore.model.MWMPool;
 import org.apache.hadoop.hive.metastore.model.MWMResourcePlan;
 import org.apache.hadoop.hive.metastore.model.MWMResourcePlan.Status;
 import org.apache.hadoop.hive.metastore.model.MWMTrigger;
+import org.apache.hadoop.hive.metastore.model.MWriteNotificationLog;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.FilterBuilder;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
@@ -9609,6 +9611,63 @@ public class ObjectStore implements RawStore, Configurable {
     } finally {
       rollbackAndCleanup(commited, query);
     }
+  }
+
+  @Override
+  public void cleanWriteNotificationEvents(int olderThan) {
+    boolean commited = false;
+    Query query = null;
+    try {
+      openTransaction();
+      long tmp = System.currentTimeMillis() / 1000 - olderThan;
+      int tooOld = (tmp > Integer.MAX_VALUE) ? 0 : (int) tmp;
+      query = pm.newQuery(MWriteNotificationLog.class, "eventTime < tooOld");
+      query.declareParameters("java.lang.Integer tooOld");
+      Collection<MWriteNotificationLog> toBeRemoved = (Collection) query.execute(tooOld);
+      if (CollectionUtils.isNotEmpty(toBeRemoved)) {
+        pm.deletePersistentAll(toBeRemoved);
+      }
+      commited = commitTransaction();
+    } finally {
+      rollbackAndCleanup(commited, query);
+    }
+  }
+
+  @Override
+  public List<WriteEventInfo> getAllWriteEventInfo(long txnId, String dbName, String tableName) throws MetaException {
+    List<WriteEventInfo> writeEventInfoList = null;
+    boolean commited = false;
+    Query query = null;
+    try {
+      openTransaction();
+      List<String> parameterVals = new ArrayList<>();
+      StringBuilder filterBuilder = new StringBuilder(" txnId == " + Long.toString(txnId));
+      if (dbName != null) {
+        appendSimpleCondition(filterBuilder, "database", new String[]{dbName}, parameterVals);
+      }
+      if (tableName != null) {
+        appendSimpleCondition(filterBuilder, "table", new String[]{tableName}, parameterVals);
+      }
+      query = pm.newQuery(MWriteNotificationLog.class, filterBuilder.toString());
+      List<MWriteNotificationLog> mplans = (List<MWriteNotificationLog>)query.executeWithArray
+              (parameterVals.toArray(new String[parameterVals.size()]));
+      pm.retrieveAll(mplans);
+      commited = commitTransaction();
+      if (mplans != null && mplans.size() > 0) {
+        writeEventInfoList = Lists.newArrayList();
+        for (MWriteNotificationLog mplan : mplans) {
+          WriteEventInfo writeEventInfo = new WriteEventInfo(mplan.getWriteId(), mplan.getDatabase(),
+                  mplan.getTable(), mplan.getPartition());
+          writeEventInfo.setFiles(mplan.getFiles());
+          writeEventInfo.setPartitionObj(mplan.getPartObject());
+          writeEventInfo.setTableObj(mplan.getTableObject());
+          writeEventInfoList.add(writeEventInfo);
+        }
+      }
+    } finally {
+      rollbackAndCleanup(commited, query);
+    }
+    return writeEventInfoList;
   }
 
   private void prepareQuotes() throws SQLException {

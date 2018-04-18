@@ -53,6 +53,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import javax.annotation.Nullable;
+import java.util.Collections;
+import com.google.common.collect.Lists;
 
 /**
  * TestReplicationScenariosAcidTables - test replication for ACID tables
@@ -66,8 +68,13 @@ public class TestReplicationScenariosAcidTables {
 
   protected static final Logger LOG = LoggerFactory.getLogger(TestReplicationScenarios.class);
   private static WarehouseInstance primary, replica, replicaNonAcid;
-  private String primaryDbName, replicatedDbName;
   private static HiveConf conf;
+  private String primaryDbName, replicatedDbName, primaryDbNameExtra;
+  private enum OperationType {
+    REPL_TEST_ACID_INSERT, REPL_TEST_ACID_INSERT_SELECT, REPL_TEST_ACID_CTAS,
+    REPL_TEST_ACID_INSERT_OVERWRITE, REPL_TEST_ACID_INSERT_IMPORT, REPL_TEST_ACID_INSERT_LOADLOCAL,
+    REPL_TEST_ACID_INSERT_UNION
+  }
 
   @BeforeClass
   public static void classLevelSetup() throws Exception {
@@ -83,6 +90,11 @@ public class TestReplicationScenariosAcidTables {
         put("hive.repl.dump.include.acid.tables", "true");
         put("hive.metastore.client.capability.check", "false");
         put("hive.repl.bootstrap.dump.open.txn.timeout", "1s");
+        put("hive.exec.dynamic.partition.mode", "nonstrict");
+        put("hive.strict.checks.bucketing", "false");
+        put("hive.mapred.mode", "nonstrict");
+        put("hive.metastore.disallow.incompatible.col.type.changes", "false");
+        put("metastore.client.capability.check", "false");
     }};
     primary = new WarehouseInstance(LOG, miniDFSCluster, overridesForHiveConf);
     replica = new WarehouseInstance(LOG, miniDFSCluster, overridesForHiveConf);
@@ -108,6 +120,9 @@ public class TestReplicationScenariosAcidTables {
     primaryDbName = testName.getMethodName() + "_" + +System.currentTimeMillis();
     replicatedDbName = "replicated_" + primaryDbName;
     primary.run("create database " + primaryDbName + " WITH DBPROPERTIES ( '" +
+            SOURCE_OF_REPLICATION + "' = '1,2,3')");
+    primaryDbNameExtra = primaryDbName+"_extra";
+    primary.run("create database " + primaryDbNameExtra + " WITH DBPROPERTIES ( '" +
             SOURCE_OF_REPLICATION + "' = '1,2,3')");
   }
 
@@ -481,5 +496,451 @@ public class TestReplicationScenariosAcidTables {
 
     primary.run("DROP TABLE " + dbName + ".normal");
     primary.run("drop database " + dbName);
+  }
+
+  @Test
+  public void testInsert() throws Throwable {
+    String tableName = testName.getMethodName();
+    String tableNameMM = testName.getMethodName() + "_MM";
+    WarehouseInstance.Tuple incrementalDump;
+    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, null);
+    replica.load(replicatedDbName, bootStrapDump.dumpLocation)
+            .run("REPL STATUS " + replicatedDbName)
+            .verifyResult(bootStrapDump.lastReplicationId);
+    insertRecords(tableName, null, false, OperationType.REPL_TEST_ACID_INSERT);
+    incrementalDump = verifyLoad(tableName, null, bootStrapDump.lastReplicationId);
+    insertRecords(tableNameMM, null, true, OperationType.REPL_TEST_ACID_INSERT);
+    incrementalDump = verifyLoad(tableNameMM, null, incrementalDump.lastReplicationId);
+  }
+
+  @Test
+  public void testDelete() throws Throwable {
+    String tableName = testName.getMethodName();
+    WarehouseInstance.Tuple incrementalDump;
+
+    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, null);
+    replica.load(replicatedDbName, bootStrapDump.dumpLocation)
+            .run("REPL STATUS " + replicatedDbName)
+            .verifyResult(bootStrapDump.lastReplicationId);
+
+    insertRecords(tableName, null, false, OperationType.REPL_TEST_ACID_INSERT);
+    deleteRecords(tableName);
+    incrementalDump = verifyIncrementalLoad(Collections.singletonList("select count(*) from " + tableName),
+            Collections.singletonList(new String[] {"0"}), bootStrapDump.lastReplicationId);
+  }
+
+  @Test
+  public void testUpdate() throws Throwable {
+    String tableName = testName.getMethodName();
+    WarehouseInstance.Tuple incrementalDump;
+
+    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, null);
+    replica.load(replicatedDbName, bootStrapDump.dumpLocation)
+            .run("REPL STATUS " + replicatedDbName)
+            .verifyResult(bootStrapDump.lastReplicationId);
+
+    insertRecords(tableName, null, false, OperationType.REPL_TEST_ACID_INSERT);
+    updateRecords(tableName);
+    incrementalDump = verifyIncrementalLoad(Collections.singletonList("select value from " + tableName),
+            Collections.singletonList(new String[] {"1", "100" , "100"}),
+            bootStrapDump.lastReplicationId);
+  }
+
+  @Test
+  public void testTruncate() throws Throwable {
+    String tableName = testName.getMethodName();
+    String tableNameMM = testName.getMethodName() + "_MM";
+    WarehouseInstance.Tuple incrementalDump;
+
+    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, null);
+    replica.load(replicatedDbName, bootStrapDump.dumpLocation)
+            .run("REPL STATUS " + replicatedDbName)
+            .verifyResult(bootStrapDump.lastReplicationId);
+
+    insertRecords(tableName, null, false, OperationType.REPL_TEST_ACID_INSERT);
+    truncateTable(tableName);
+    incrementalDump = verifyIncrementalLoad(Collections.singletonList("select count(*) from " + tableName),
+            Collections.singletonList(new String[] {"0"}), bootStrapDump.lastReplicationId);
+
+    insertRecords(tableNameMM, null, true, OperationType.REPL_TEST_ACID_INSERT);
+    truncateTable(tableNameMM);
+    incrementalDump = verifyIncrementalLoad(Collections.singletonList("select count(*) from " + tableNameMM),
+            Collections.singletonList(new String[] {"0"}), bootStrapDump.lastReplicationId);
+  }
+
+  @Test
+  public void testInsertIntoFromSelect() throws Throwable {
+    String tableName = testName.getMethodName();
+    String tableNameMM = testName.getMethodName() + "_MM";
+    String tableNameSelect = testName.getMethodName() + "_Select";
+    String tableNameSelectMM = testName.getMethodName() + "_SelectMM";
+    WarehouseInstance.Tuple incrementalDump;
+
+    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, null);
+    replica.load(replicatedDbName, bootStrapDump.dumpLocation)
+            .run("REPL STATUS " + replicatedDbName)
+            .verifyResult(bootStrapDump.lastReplicationId);
+
+    insertRecords(tableName, null, false, OperationType.REPL_TEST_ACID_INSERT);
+    insertRecords(tableName, tableNameSelect, false, OperationType.REPL_TEST_ACID_INSERT_SELECT);
+    incrementalDump = verifyLoad(tableName, tableNameSelect, bootStrapDump.lastReplicationId);
+
+    insertRecords(tableNameMM, null, true, OperationType.REPL_TEST_ACID_INSERT);
+    insertRecords(tableNameMM, tableNameSelectMM, true, OperationType.REPL_TEST_ACID_INSERT_SELECT);
+    incrementalDump = verifyLoad(tableNameMM, tableNameSelectMM, incrementalDump.lastReplicationId);
+  }
+
+  @Test
+  public void testMerge() throws Throwable {
+    String tableName = testName.getMethodName();
+    String tableNameMM = testName.getMethodName() + "_MM";
+    String tableNameMerge = testName.getMethodName() + "_Merge";
+    String tableNameMergeMM = testName.getMethodName() + "_MergeMM";
+    WarehouseInstance.Tuple incrementalDump;
+
+    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, null);
+    replica.load(replicatedDbName, bootStrapDump.dumpLocation)
+            .run("REPL STATUS " + replicatedDbName)
+            .verifyResult(bootStrapDump.lastReplicationId);
+
+    insertForMerge(tableName, tableNameMerge, false);
+    incrementalDump = verifyIncrementalLoad(Lists.newArrayList("select last_update_user from " + tableName,
+                                             "select key from " + tableNameMerge,
+                                             "select ID from " + tableNameMerge),
+                          Lists.newArrayList(new String[] {"creation","creation","creation","creation","creation",
+                                          "creation","creation","merge_update","merge_insert","merge_insert"},
+                                  new String[] {"1","2","3","4","5","6"}, new String[] {"1", "4", "7", "8", "8", "11"}),
+                          bootStrapDump.lastReplicationId);
+  }
+
+  @Test
+  public void testCreateAsSelect() throws Throwable {
+    String tableName = testName.getMethodName();
+    String tableNameMM = testName.getMethodName() + "_MM";
+    String tableNameCTAS = testName.getMethodName() + "_CTAS";
+    String tableNameCTASMM = testName.getMethodName() + "_CTASMM";
+    WarehouseInstance.Tuple incrementalDump;
+
+    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, null);
+    replica.load(replicatedDbName, bootStrapDump.dumpLocation)
+            .run("REPL STATUS " + replicatedDbName)
+            .verifyResult(bootStrapDump.lastReplicationId);
+
+    insertRecords(tableName, null, false, OperationType.REPL_TEST_ACID_INSERT);
+    insertRecords(tableName, tableNameCTAS, false, OperationType.REPL_TEST_ACID_CTAS);
+    incrementalDump = verifyLoad(tableName, tableNameCTAS, bootStrapDump.lastReplicationId);
+
+    insertRecords(tableNameMM, null, true, OperationType.REPL_TEST_ACID_INSERT);
+    insertRecords(tableNameMM, tableNameCTASMM, true, OperationType.REPL_TEST_ACID_CTAS);
+    incrementalDump = verifyLoad(tableNameMM, tableNameCTASMM, incrementalDump.lastReplicationId);
+  }
+
+  @Test
+  public void testImport() throws Throwable {
+    String tableName = testName.getMethodName();
+    String tableNameMM = testName.getMethodName() + "_MM";
+    String tableNameImport = testName.getMethodName() + "_Import";
+    String tableNameImportMM = testName.getMethodName() + "_ImportMM";
+    WarehouseInstance.Tuple incrementalDump;
+
+    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, null);
+    replica.load(replicatedDbName, bootStrapDump.dumpLocation)
+            .run("REPL STATUS " + replicatedDbName)
+            .verifyResult(bootStrapDump.lastReplicationId);
+
+    insertRecords(tableName, null, false, OperationType.REPL_TEST_ACID_INSERT);
+    insertRecords(tableName, tableNameImport, false, OperationType.REPL_TEST_ACID_INSERT_IMPORT);
+    incrementalDump = verifyLoad(tableName, tableNameImport, bootStrapDump.lastReplicationId);
+
+    /*insertRecords(tableNameMM, null, true, OperationType.REPL_TEST_ACID_INSERT);
+    insertRecords(tableNameMM, tableNameImportMM, true, OperationType.REPL_TEST_ACID_INSERT_IMPORT);
+    incrementalDump = verifyLoad(tableNameMM, tableNameImportMM, incrementalDump.lastReplicationId);*/
+  }
+
+  @Test
+  public void testInsertOverwrite() throws Throwable {
+    String tableName = testName.getMethodName();
+    String tableNameOW = testName.getMethodName() +"_OW";
+    String tableNameMM = testName.getMethodName() + "_MM";
+    String tableNameOWMM = testName.getMethodName() +"_OWMM";
+    WarehouseInstance.Tuple incrementalDump;
+    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, null);
+    replica.load(replicatedDbName, bootStrapDump.dumpLocation)
+            .run("REPL STATUS " + replicatedDbName)
+            .verifyResult(bootStrapDump.lastReplicationId);
+
+    insertRecords(tableName, null, false, OperationType.REPL_TEST_ACID_INSERT);
+    insertRecords(tableName, tableNameOW, false, OperationType.REPL_TEST_ACID_INSERT_OVERWRITE);
+    incrementalDump = verifyLoad(tableName, tableNameOW, bootStrapDump.lastReplicationId);
+
+    insertRecords(tableNameMM, null, true, OperationType.REPL_TEST_ACID_INSERT);
+    insertRecords(tableNameMM, tableNameOWMM, true, OperationType.REPL_TEST_ACID_INSERT_OVERWRITE);
+    incrementalDump = verifyLoad(tableNameMM, tableNameOWMM, incrementalDump.lastReplicationId);
+  }
+
+  public void testLoodLocal() throws Throwable {
+    String tableName = testName.getMethodName();
+    String tableNameLL = testName.getMethodName() +"_LL";
+    String tableNameMM = testName.getMethodName() + "_MM";
+    String tableNameLLMM = testName.getMethodName() +"_LLMM";
+
+    WarehouseInstance.Tuple incrementalDump;
+    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, null);
+    replica.load(replicatedDbName, bootStrapDump.dumpLocation)
+            .run("REPL STATUS " + replicatedDbName)
+            .verifyResult(bootStrapDump.lastReplicationId);
+
+    insertRecords(tableName, null, false, OperationType.REPL_TEST_ACID_INSERT);
+    insertRecords(tableName, tableNameLL, false, OperationType.REPL_TEST_ACID_INSERT_LOADLOCAL);
+    incrementalDump = verifyLoad(tableName, tableNameLL, bootStrapDump.lastReplicationId);
+
+    insertRecords(tableNameMM, null, true, OperationType.REPL_TEST_ACID_INSERT);
+    insertRecords(tableNameMM, tableNameLLMM, true, OperationType.REPL_TEST_ACID_INSERT_LOADLOCAL);
+    incrementalDump = verifyLoad(tableNameMM, tableNameLLMM, incrementalDump.lastReplicationId);
+  }
+
+  public void testInsertUnion() throws Throwable {
+    String tableName = testName.getMethodName();
+    String tableNameUnion = testName.getMethodName() +"_UNION";
+    String tableNameMM = testName.getMethodName() + "_MM";
+    String tableNameUnionMM = testName.getMethodName() +"_UNIONMM";
+
+    WarehouseInstance.Tuple incrementalDump;
+    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, null);
+    replica.load(replicatedDbName, bootStrapDump.dumpLocation)
+            .run("REPL STATUS " + replicatedDbName)
+            .verifyResult(bootStrapDump.lastReplicationId);
+
+    insertRecords(tableName, null, false, OperationType.REPL_TEST_ACID_INSERT);
+    insertRecords(tableName, tableNameUnion, false, OperationType.REPL_TEST_ACID_INSERT_UNION);
+    incrementalDump = verifyLoad(tableName, tableNameUnion, bootStrapDump.lastReplicationId);
+
+    insertRecords(tableNameMM, null, true, OperationType.REPL_TEST_ACID_INSERT);
+    insertRecords(tableNameMM, tableNameUnionMM, true, OperationType.REPL_TEST_ACID_INSERT_UNION);
+    incrementalDump = verifyLoad(tableNameMM, tableNameUnionMM, incrementalDump.lastReplicationId);
+  }
+
+  /*@Test
+  public void testImportOverWrite() throws Throwable {
+    String tableName = testName.getMethodName();
+    String path = "hdfs:///tmp/" + primaryDbName + "/";
+    String exportPath = "'" + path + tableName + "/'";
+    String importPath = "'" + path + tableName + "/data'";
+
+    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, null);
+    replica.load(replicatedDbName, bootStrapDump.dumpLocation)
+            .run("REPL STATUS " + replicatedDbName)
+            .verifyResult(bootStrapDump.lastReplicationId);
+
+    primary.run("use " + primaryDbName)
+            .run("create table " + tableName + " (i int) CLUSTERED BY (i) into 5 buckets STORED AS ORC TBLPROPERTIES" +
+                     "('transactional'='true')")
+            .run("insert into table " + tableName + " values (1),(2)")
+            .run("export table " + tableName + " to " + exportPath)
+            .run("create table " + tableName + "_t2 like " + tableName)
+            .run("load data inpath " + importPath + " overwrite into table " + tableName + "_t2")
+            .run("select * from " + tableName + "_t2")
+            .verifyResults(new String[] { "1", "2" });
+
+    verifyIncrementalLoad(Collections.singletonList("select * from " + tableName + "_t2"),
+            Collections.singletonList(new String[] { "1", "2" }), bootStrapDump.lastReplicationId);
+  }
+
+  @Test
+  public void testImportMetadataOnly() throws Throwable {
+    String tableName = testName.getMethodName();
+    String importTblname = tableName + "_import";
+    String path = "hdfs:///tmp/" + primaryDbName + "/";
+    String exportMDPath = "'" + path + tableName + "_1/'";
+    String exportDataPath = "'" + path + tableName + "_2/'";
+
+    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, null);
+    replica.load(replicatedDbName, bootStrapDump.dumpLocation)
+            .run("REPL STATUS " + replicatedDbName)
+            .verifyResult(bootStrapDump.lastReplicationId);
+
+    primary.run("use " + primaryDbName)
+            .run("create table " + tableName + " (i int) CLUSTERED BY (i) into 5 buckets STORED AS ORC TBLPROPERTIES" +
+                    "('transactional'='true')")
+            .run("insert into table " + tableName + " values (1),(2)")
+            .run("export table " + tableName + " to " + exportMDPath + " for metadata replication('1')")
+            .run("export table " + tableName + " to " + exportDataPath + " for replication('2')")
+            .run("import table " + importTblname + " from " + exportMDPath)
+            .run("import table " + importTblname + " from " + exportDataPath)
+            .run("select * from " + importTblname)
+            .verifyResults(new String[] { "1", "2" });
+
+    verifyIncrementalLoad(Collections.singletonList("select * from " + importTblname),
+            Collections.singletonList(new String[] { "1", "2" }), bootStrapDump.lastReplicationId);
+  }*/
+
+  private WarehouseInstance.Tuple verifyIncrementalLoad(List<String> selectStmtList,
+                                                  List<String[]> expectedValues, String lastReplId) throws Throwable {
+    WarehouseInstance.Tuple incrementalDump = primary.dump(primaryDbName, lastReplId);
+    replica.loadWithoutExplain(replicatedDbName, incrementalDump.dumpLocation)
+            .run("REPL STATUS " + replicatedDbName).verifyResult(incrementalDump.lastReplicationId);
+    for (int idx = 0; idx > selectStmtList.size(); idx++) {
+      replica.run("use " + replicatedDbName).run(selectStmtList.get(idx)).verifyResults(expectedValues.get(idx));
+    }
+    return incrementalDump;
+  }
+
+  private void deleteRecords(String tableName) throws Throwable {
+    primary.run("use " + primaryDbName)
+            .run("delete from " + tableName)
+            .run("select count(*) from " + tableName)
+            .verifyResult("0");
+  }
+
+  private void updateRecords(String tableName) throws Throwable {
+    primary.run("use " + primaryDbName)
+            .run("update " + tableName + " set value = 100 where key >= 2")
+            .run("select value from " + tableName)
+            .verifyResults(new String[] {"1", "100", "100", "100", "100"});
+  }
+
+  private void truncateTable(String tableName) throws Throwable {
+    primary.run("use " + primaryDbName)
+            .run("truncate table " + tableName)
+            .run("select count(*) from " + tableName)
+            .verifyResult("0");
+  }
+
+  private WarehouseInstance.Tuple verifyLoad(String tableName, String tableNameOp, String lastReplId) throws Throwable {
+    String[] resultArray = new String[]{"1", "2", "3", "4", "5"};
+    if (tableNameOp == null) {
+      return verifyIncrementalLoad(Collections.singletonList("select key from " + tableName),
+              Collections.singletonList(resultArray), lastReplId);
+    }
+    return verifyIncrementalLoad(Lists.newArrayList("select key from " + tableName, "select key from " + tableNameOp),
+            Lists.newArrayList(resultArray, resultArray),
+            lastReplId);
+  }
+
+  private void insertIntoDB(String dbName, String tableName, String tableProperty, String[] resultArray)
+          throws Throwable {
+    primary.run("use " + dbName);
+    primary.run("CREATE TABLE " + tableName + " (key int, value int) PARTITIONED BY (load_date date) " +
+            "CLUSTERED BY(key) INTO 3 BUCKETS STORED AS ORC TBLPROPERTIES ( " + tableProperty + ")")
+            .run("SHOW TABLES LIKE '" + tableName + "'")
+            .verifyResult(tableName)
+            .run("INSERT INTO " + tableName + " partition (load_date='2016-03-01') VALUES (1, 1)")
+            .run("INSERT INTO " + tableName + " partition (load_date='2016-03-01') VALUES (2, 2)")
+            .run("INSERT INTO " + tableName + " partition (load_date='2016-03-02') VALUES (3, 3)")
+            .run("ALTER TABLE " + tableName + " ADD PARTITION (load_date='2016-03-03')")
+            .run("INSERT INTO " + tableName + " partition (load_date='2016-03-03') VALUES (4, 4)")
+            .run("INSERT INTO " + tableName + " partition (load_date='2016-03-02') VALUES (5, 5)")
+            .run("select key from " + tableName)
+            .verifyResults(resultArray)
+            .run("CREATE TABLE " + tableName + "_nopart (key int, value int) " +
+            "CLUSTERED BY(key) INTO 3 BUCKETS STORED AS ORC TBLPROPERTIES ( " + tableProperty + ")")
+            .run("SHOW TABLES LIKE '" + tableName + "_nopart'")
+            .run("INSERT INTO " + tableName + "_nopart (key, value) select key, value from " + tableName)
+            .run("select key from " + tableName + "_nopart")
+            .verifyResults(resultArray);
+  }
+
+  private void insertRecords(String tableName, String tableNameOp, boolean isMMTable,
+                             OperationType opType) throws Throwable {
+    String[] resultArray = new String[]{"1", "2", "3", "4", "5"};
+    String tableProperty = "'transactional'='true'";
+    if (isMMTable) {
+      tableProperty = setMMtableProperty(tableProperty);
+    }
+    primary.run("use " + primaryDbName);
+
+    switch (opType) {
+      case REPL_TEST_ACID_INSERT:
+        insertIntoDB(primaryDbName, tableName, tableProperty, resultArray);
+        insertIntoDB(primaryDbNameExtra, tableName, tableProperty, resultArray);
+        return;
+      case REPL_TEST_ACID_INSERT_OVERWRITE:
+        primary.run("CREATE TABLE " + tableNameOp + " (key int, value int) PARTITIONED BY (load_date date) " +
+              "CLUSTERED BY(key) INTO 3 BUCKETS STORED AS ORC TBLPROPERTIES ( "+ tableProperty + " )")
+        .run("INSERT INTO " + tableNameOp + " partition (load_date='2016-03-01') VALUES (2, 2)")
+        .run("INSERT INTO " + tableNameOp + " partition (load_date='2016-03-01') VALUES (10, 12)")
+        .run("select key from " + tableNameOp)
+        .verifyResults(new String[]{"2", "10"})
+        .run("insert overwrite table " + tableNameOp + " partition (load_date) select * from " + tableName);
+        break;
+      case REPL_TEST_ACID_INSERT_SELECT:
+        primary.run("CREATE TABLE " + tableNameOp + " (key int, value int) PARTITIONED BY (load_date date) " +
+            "CLUSTERED BY(key) INTO 3 BUCKETS STORED AS ORC TBLPROPERTIES ( "+ tableProperty + " )")
+        .run("insert into " + tableNameOp + " partition (load_date) select * from " + tableName);
+        break;
+      case REPL_TEST_ACID_INSERT_IMPORT:
+        String path = "hdfs:///tmp/" + primaryDbName + "/";
+        String exportPath = "'" + path + tableName + "/'";
+        primary.run("export table " + tableName + " to " + exportPath)
+        .run("import table " + tableNameOp + " from " + exportPath);
+        break;
+      case REPL_TEST_ACID_CTAS:
+        primary.run("create table " + tableNameOp + " as select * from " + tableName);
+        break;
+      case REPL_TEST_ACID_INSERT_LOADLOCAL:
+        primary.run("CREATE TABLE " + tableNameOp + " (key int, value int) PARTITIONED BY (load_date date) " +
+              "CLUSTERED BY(key) INTO 3 BUCKETS STORED AS ORC TBLPROPERTIES ( " + tableProperty + ")")
+        .run("SHOW TABLES LIKE '" + tableNameOp + "'")
+        .verifyResult(tableNameOp)
+        .run("INSERT OVERWRITE LOCAL DIRECTORY '/tmp/' SELECT a.* FROM" + tableName + " a")
+        .run("LOAD DATA LOCAL INPATH '/tmp/' OVERWRITE INTO TABLE " + tableNameOp +
+                " PARTITION (load_date='2008-08-15')");
+      case REPL_TEST_ACID_INSERT_UNION:
+        primary.run("CREATE TABLE " + tableNameOp + " (key int, value int) PARTITIONED BY (load_date date) " +
+                "CLUSTERED BY(key) INTO 3 BUCKETS STORED AS ORC TBLPROPERTIES ( " + tableProperty + ")")
+                .run("SHOW TABLES LIKE '" + tableNameOp + "'")
+                .verifyResult(tableNameOp)
+                .run("insert overwrite table " + tableNameOp + " partition (load_date) select * from " + tableName +
+                    " union all select * from " + tableName);
+        resultArray = new String[]{"1", "2", "3", "4", "5", "1", "2", "3", "4", "5"};
+        break;
+      default:
+        return;
+    }
+    primary.run("select key from " + tableNameOp).verifyResults(resultArray);
+  }
+
+  private String setMMtableProperty(String tableProperty) throws Throwable  {
+    return tableProperty.concat(", 'transactional_properties' = 'insert_only'");
+  }
+
+  private void insertForMerge(String tableName, String tableNameMerge, boolean isMMTable) throws Throwable  {
+    String tableProperty = "'transactional'='true'";
+    if (isMMTable) {
+      tableProperty = setMMtableProperty(tableProperty);
+    }
+    primary.run("use " + primaryDbName)
+        .run("CREATE TABLE " + tableName + "( ID int, TranValue string, last_update_user string) PARTITIONED BY " +
+                "(tran_date string) CLUSTERED BY (ID) into 5 buckets STORED AS ORC TBLPROPERTIES " +
+                " ( "+ tableProperty + " )")
+        .run("SHOW TABLES LIKE '" + tableName + "'")
+        .verifyResult(tableName)
+        .run("CREATE TABLE " + tableNameMerge + " ( ID int, TranValue string, tran_date string) STORED AS ORC ")
+        .run("SHOW TABLES LIKE '" + tableNameMerge + "'")
+        .verifyResult(tableNameMerge)
+        .run("INSERT INTO " + tableName + " PARTITION (tran_date) VALUES (1, 'value_01', 'creation', '20170410')," +
+                " (2, 'value_02', 'creation', '20170410'), (3, 'value_03', 'creation', '20170410'), " +
+                " (4, 'value_04', 'creation', '20170410'), (5, 'value_05', 'creation', '20170413'), " +
+                " (6, 'value_06', 'creation', '20170413'), (7, 'value_07', 'creation', '20170413'),  " +
+                " (8, 'value_08', 'creation', '20170413'), (9, 'value_09', 'creation', '20170413'), " +
+                " (10, 'value_10','creation', '20170413')")
+        .run("select ID from " + tableName)
+        .verifyResults(new String[] {"1", "2" , "3", "4", "5", "6", "7", "8", "9", "10"})
+        .run("INSERT INTO " + tableNameMerge + " VALUES (1, 'value_01', '20170410'), " +
+                " (4, NULL, '20170410'), (7, 'value_77777', '20170413'), " +
+                " (8, NULL, '20170413'), (8, 'value_08', '20170415'), " +
+                "(11, 'value_11', '20170415')")
+        .run("select ID from " + tableNameMerge)
+        .verifyResults(new String[] {"1", "4", "7", "8", "8", "11"})
+        .run("MERGE INTO " + tableName + " AS T USING " + tableNameMerge + " AS S ON T.ID = S.ID and" +
+                " T.tran_date = S.tran_date WHEN MATCHED AND (T.TranValue != S.TranValue AND S.TranValue " +
+                " IS NOT NULL) THEN UPDATE SET TranValue = S.TranValue, last_update_user = " +
+                " 'merge_update' WHEN MATCHED AND S.TranValue IS NULL THEN DELETE WHEN NOT MATCHED " +
+                " THEN INSERT VALUES (S.ID, S.TranValue,'merge_insert', S.tran_date)")
+        .run("select last_update_user from " + tableName)
+        .verifyResults(new String[] {"creation","creation","creation","creation","creation",
+                "creation","creation","merge_update","merge_insert","merge_insert"});
+>>>>>>> HIVE-19267 : Create/Replicate ACID Write event
+>>>>>>> HIVE-19267 : Create/Replicate ACID Write event
   }
 }

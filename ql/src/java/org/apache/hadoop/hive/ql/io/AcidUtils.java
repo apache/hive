@@ -1907,6 +1907,20 @@ public class AcidUtils {
     return null;
   }
 
+  //Get the first level acid directory (if any) from a given path
+  public static String getFirstLevelAcidDir(Path dataPath) {
+    Path parent  = dataPath;
+    String firstLevelAcidDir;
+    while (parent != null) {
+      firstLevelAcidDir = getAcidSubDir(parent);
+      if (firstLevelAcidDir != null) {
+        return firstLevelAcidDir;
+      }
+      parent = parent.getParent();
+    }
+    return null;
+  }
+
   public static boolean isAcidEnabled(HiveConf hiveConf) {
     String txnMgr = hiveConf.getVar(HiveConf.ConfVars.HIVE_TXN_MANAGER);
     boolean concurrency =  hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY);

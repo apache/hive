@@ -438,4 +438,20 @@ public final class HiveUtils {
       return dbName.toLowerCase() + "." + tableName.toLowerCase();
     }
   }
+
+  public static String getDumpPath(String dbName, String tableName) {
+    assert (dbName != null);
+    if ((tableName != null) && (!tableName.isEmpty())) {
+      return dbName + "." + tableName;
+    }
+    return dbName;
+  }
+
+  public static String joinWithCommaSeparator(Iterable<?> strings) {
+    return StringUtils.join(",", strings);
+  }
+
+  public static String[] getListFromCommaSeparated(String commaSeparatedString) {
+    return commaSeparatedString.split("\\s*,\\s*");
+  }
 }
