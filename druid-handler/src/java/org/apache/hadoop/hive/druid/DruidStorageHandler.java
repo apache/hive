@@ -81,7 +81,6 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider;
@@ -95,7 +94,6 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.util.ShutdownHookManager;
-
 import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.joda.time.DateTime;
@@ -110,6 +108,7 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -190,7 +189,7 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
   }
 
   @Override
-  public HiveAuthorizationProvider getAuthorizationProvider() throws HiveException {
+  public HiveAuthorizationProvider getAuthorizationProvider() {
     return new DefaultHiveAuthorizationProvider();
   }
 
@@ -255,7 +254,7 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
   }
 
   @Override
-  public void rollbackCreateTable(Table table) throws MetaException {
+  public void rollbackCreateTable(Table table) {
     if (MetaStoreUtils.isExternalTable(table)) {
       return;
     }
@@ -287,7 +286,7 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
     if(isKafkaStreamingTable(table)){
       updateKafkaIngestion(table);
     }
-    loadDruidSegments(table, true);
+    this.commitInsertTable(table, true);
   }
 
   private void updateKafkaIngestion(Table table){
@@ -521,44 +520,30 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
     }
   }
 
-
-  protected void loadDruidSegments(Table table, boolean overwrite) throws MetaException {
-
+  /**
+   * Creates metadata moves then commit the Segment's metadata to Druid metadata store in one TxN
+   *
+   * @param table Hive table
+   * @param overwrite true if it is an insert overwrite table
+   *
+   * @throws MetaException if errors occurs.
+   */
+  protected List<DataSegment> loadAndCommitDruidSegments(Table table, boolean overwrite,  List<DataSegment> segmentsToLoad)
+      throws IOException, CallbackFailedException {
     final String dataSourceName = table.getParameters().get(Constants.DRUID_DATA_SOURCE);
-    final Path segmentDescriptorDir = getSegmentDescriptorDir();
-    try {
-      if (!segmentDescriptorDir.getFileSystem(getConf()).exists(segmentDescriptorDir)) {
-        LOG.info(
-            "Directory {} does not exist, ignore this if it is create statement or inserts of 0 rows,"
-                + " no Druid segments to move, cleaning working directory {}",
-            segmentDescriptorDir.getName(), getStagingWorkingDir().getName()
-        );
-        cleanWorkingDir();
-        return;
-      }
-    } catch (IOException e) {
-      LOG.error("Failed to load segments descriptor from directory {}", segmentDescriptorDir.toString());
-      cleanWorkingDir();
-      Throwables.propagate(e);
-    }
+    final String segmentDirectory =
+        table.getParameters().get(Constants.DRUID_SEGMENT_DIRECTORY) != null
+            ? table.getParameters().get(Constants.DRUID_SEGMENT_DIRECTORY)
+            : HiveConf.getVar(getConf(), HiveConf.ConfVars.DRUID_SEGMENT_DIRECTORY);
 
-    try {
-      // at this point we have Druid segments from reducers but we need to atomically
-      // rename and commit to metadata
-      // Moving Druid segments and committing to druid metadata as one transaction.
-      List<DataSegment> segmentList = DruidStorageHandlerUtils.getCreatedSegments(segmentDescriptorDir, getConf());
       final HdfsDataSegmentPusherConfig hdfsSegmentPusherConfig = new HdfsDataSegmentPusherConfig();
       List<DataSegment> publishedDataSegmentList;
-      final String segmentDirectory =
-          table.getParameters().get(Constants.DRUID_SEGMENT_DIRECTORY) != null
-              ? table.getParameters().get(Constants.DRUID_SEGMENT_DIRECTORY)
-              : HiveConf.getVar(getConf(), HiveConf.ConfVars.DRUID_SEGMENT_DIRECTORY);
+
       LOG.info(String.format(
           "Moving [%s] Druid segments from staging directory [%s] to Deep storage [%s]",
-          segmentList.size(),
-          getStagingWorkingDir(),
+          segmentsToLoad.size(),
+          getStagingWorkingDir().toString(),
           segmentDirectory
-
       ));
       hdfsSegmentPusherConfig.setStorageDirectory(segmentDirectory);
       DataSegmentPusher dataSegmentPusher = new HdfsDataSegmentPusher(hdfsSegmentPusherConfig,
@@ -569,21 +554,12 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
               getConnector(),
               getDruidMetadataStorageTablesConfig(),
               dataSourceName,
-              segmentList,
+              segmentsToLoad,
               overwrite,
               getConf(),
               dataSegmentPusher
       );
-      checkLoadStatus(publishedDataSegmentList);
-    } catch (CallbackFailedException | IOException e) {
-      LOG.error("Failed to move segments from staging directory");
-      if (e instanceof CallbackFailedException) {
-        Throwables.propagate(e.getCause());
-      }
-      Throwables.propagate(e);
-    } finally {
-      cleanWorkingDir();
-    }
+      return publishedDataSegmentList;
   }
 
   /**
@@ -715,17 +691,17 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
   }
 
   @Override
-  public void preDropTable(Table table) throws MetaException {
+  public void preDropTable(Table table) {
     // Nothing to do
   }
 
   @Override
-  public void rollbackDropTable(Table table) throws MetaException {
+  public void rollbackDropTable(Table table) {
     // Nothing to do
   }
 
   @Override
-  public void commitDropTable(Table table, boolean deleteData) throws MetaException {
+  public void commitDropTable(Table table, boolean deleteData) {
     if (MetaStoreUtils.isExternalTable(table)) {
       return;
     }
@@ -773,16 +749,54 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
     if (MetaStoreUtils.isExternalTable(table)) {
       throw new MetaException("Cannot insert data into external table backed by Druid");
     }
-    this.loadDruidSegments(table, overwrite);
+    try {
+      // Check if there segments to load
+      final Path segmentDescriptorDir = getSegmentDescriptorDir();
+      final List<DataSegment> segmentsToLoad = fetchSegmentsMetadata(segmentDescriptorDir);
+      final String dataSourceName = table.getParameters().get(Constants.DRUID_DATA_SOURCE);
+      //No segments to load still need to honer overwrite
+      if (segmentsToLoad.isEmpty() && overwrite) {
+        //disable datasource
+        //Case it is an insert overwrite we have to disable the existing Druid DataSource
+        DruidStorageHandlerUtils
+            .disableDataSource(getConnector(), getDruidMetadataStorageTablesConfig(),
+                dataSourceName
+            );
+        return;
+      } else if (!segmentsToLoad.isEmpty()) {
+        // at this point we have Druid segments from reducers but we need to atomically
+        // rename and commit to metadata
+        // Moving Druid segments and committing to druid metadata as one transaction.
+        checkLoadStatus(loadAndCommitDruidSegments(table, overwrite, segmentsToLoad));
+      }
+    } catch (IOException e) {
+      throw new MetaException(e.getMessage());
+    } catch (CallbackFailedException c) {
+      throw new MetaException(c.getCause().getMessage());
+    } finally {
+      cleanWorkingDir();
+    }
+  }
+
+  private List<DataSegment> fetchSegmentsMetadata(Path segmentDescriptorDir) throws IOException {
+    if (!segmentDescriptorDir.getFileSystem(getConf()).exists(segmentDescriptorDir)) {
+      LOG.info(
+          "Directory {} does not exist, ignore this if it is create statement or inserts of 0 rows,"
+              + " no Druid segments to move, cleaning working directory {}",
+          segmentDescriptorDir.toString(), getStagingWorkingDir().toString()
+      );
+      return Collections.EMPTY_LIST;
+    }
+    return DruidStorageHandlerUtils.getCreatedSegments(segmentDescriptorDir, getConf());
   }
 
   @Override
-  public void preInsertTable(Table table, boolean overwrite) throws MetaException {
+  public void preInsertTable(Table table, boolean overwrite) {
 
   }
 
   @Override
-  public void rollbackInsertTable(Table table, boolean overwrite) throws MetaException {
+  public void rollbackInsertTable(Table table, boolean overwrite) {
     // do nothing
   }
 
@@ -871,7 +885,7 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
             .getVar(getConf(), HiveConf.ConfVars.DRUID_METADATA_DB_URI);
 
 
-    final Supplier<MetadataStorageConnectorConfig> storageConnectorConfigSupplier = Suppliers.<MetadataStorageConnectorConfig>ofInstance(
+    final Supplier<MetadataStorageConnectorConfig> storageConnectorConfigSupplier = Suppliers.ofInstance(
             new MetadataStorageConnectorConfig() {
               @Override
               public String getConnectURI() {

@@ -47,6 +47,7 @@ import com.google.common.collect.Lists;
 
 import org.joda.time.DateTimeZone;
 import org.joda.time.Interval;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -113,7 +114,7 @@ public class TestDruidStorageHandler {
     Mockito.when(tableMock.getDbName()).thenReturn(DB_NAME);
     Mockito.when(tableMock.getTableName()).thenReturn(TABLE_NAME);
     config = new Configuration();
-    config.set(String.valueOf(HiveConf.ConfVars.HIVEQUERYID), UUID.randomUUID().toString());
+    config.set(String.valueOf(HiveConf.ConfVars.HIVEQUERYID), "hive-" + UUID.randomUUID().toString());
     config.set(String.valueOf(HiveConf.ConfVars.DRUID_WORKING_DIR), tableWorkingPath);
     config.set(String.valueOf(HiveConf.ConfVars.DRUID_SEGMENT_DIRECTORY),
             new Path(tableWorkingPath, "finalSegmentDir").toString());
@@ -123,6 +124,11 @@ public class TestDruidStorageHandler {
             derbyConnectorRule.metadataTablesConfigSupplier().get()
     );
     druidStorageHandler.setConf(config);
+  }
+
+  @After
+  public void tearDown() {
+    temporaryFolder.delete();
   }
 
   Table tableMock = Mockito.mock(Table.class);
@@ -672,7 +678,7 @@ public class TestDruidStorageHandler {
             FileUtils.readFileToString(new File(expectedFinalHadoopPath.toUri())));
   }
 
-  @Test(expected = IllegalStateException.class)
+  @Test(expected = MetaException.class)
   public void testCommitInsertIntoWithConflictingIntervalSegment()
           throws MetaException, IOException {
     DerbyConnectorTestUtility connector = derbyConnectorRule.getConnector();
@@ -714,7 +720,7 @@ public class TestDruidStorageHandler {
     druidStorageHandler.commitInsertTable(tableMock, false);
   }
 
-  @Test(expected = IllegalStateException.class)
+  @Test(expected = MetaException.class)
   public void testCommitInsertIntoWithNonExtendableSegment() throws MetaException, IOException {
     DerbyConnectorTestUtility connector = derbyConnectorRule.getConnector();
     MetadataStorageTablesConfig metadataStorageTablesConfig = derbyConnectorRule
