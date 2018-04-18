@@ -204,13 +204,13 @@ org.apache.hadoop.hive.conf.HiveConf;
     <div class="panel panel-default">
       <div class="panel-heading">Explain plan</div>
       <div class="panel-body">
-        <%if hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_LOG_EXPLAIN_OUTPUT) %>
+        <%if hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_EXPLAIN_OUTPUT) %>
           <pre>
           <% queryInfo.getQueryDisplay() == null ? "Unknown" : queryInfo.getQueryDisplay().getExplainPlan() %>
           </pre>
         <%else>
           <pre>
-          Set configuration hive.log.explain.output to true to view future query plans
+          Set configuration hive.server2.webui.explain.output to true to view future query plans
           </pre>
         </%if>
       </div>
