@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
 import org.apache.hadoop.hive.ql.exec.repl.ReplStateLogWork;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.ReplLoadWork;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
@@ -47,9 +48,7 @@ import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.DependencyCollectionWork;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
-import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
-import org.apache.hadoop.hive.ql.metadata.Hive;
 
 import java.io.FileNotFoundException;
 import java.io.Serializable;
@@ -244,16 +243,19 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private boolean shouldReplayEvent(FileStatus dir, DumpType dumpType) throws SemanticException {
-    // This functions filters out all the events which are already replayed. This can be done only
-    // for transaction related events as for other kind of events we can not gurantee that the last
-    // repl id stored in the database/table is valid.
-    if ((dumpType != DumpType.EVENT_ABORT_TXN) &&
-            (dumpType != DumpType.EVENT_OPEN_TXN) &&
-            (dumpType != DumpType.EVENT_COMMIT_TXN)) {
-      return true;
+  private boolean isEventNotReplayed(Map<String, String> params, FileStatus dir, DumpType dumpType) {
+    if (params != null && (params.containsKey(ReplicationSpec.KEY.CURR_STATE_ID.toString()))) {
+      String replLastId = params.get(ReplicationSpec.KEY.CURR_STATE_ID.toString());
+      if (Long.parseLong(replLastId) >= Long.parseLong(dir.getPath().getName())) {
+        LOG.debug("Event " + dumpType + " with replId " + Long.parseLong(dir.getPath().getName())
+                + " is already replayed. LastReplId - " +  Long.parseLong(replLastId));
+        return false;
+      }
     }
+    return true;
+  }
 
+  private boolean shouldReplayEvent(FileStatus dir, DumpType dumpType) throws SemanticException {
     // if database itself is null then we can not filter out anything.
     if (dbNameOrPattern == null || dbNameOrPattern.isEmpty()) {
       return true;
@@ -261,41 +263,23 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       Database database;
       try {
         database = Hive.get().getDatabase(dbNameOrPattern);
+        return isEventNotReplayed(database.getParameters(), dir, dumpType);
       } catch (HiveException e) {
-        LOG.error("failed to get the database " + dbNameOrPattern);
-        throw new SemanticException(e);
-      }
-      String replLastId;
-      Map<String, String> params = database.getParameters();
-      if (params != null && (params.containsKey(ReplicationSpec.KEY.CURR_STATE_ID.toString()))) {
-        replLastId = params.get(ReplicationSpec.KEY.CURR_STATE_ID.toString());
-        if (Long.parseLong(replLastId) >= Long.parseLong(dir.getPath().getName())) {
-          LOG.debug("Event " + dumpType + " with replId " + Long.parseLong(dir.getPath().getName())
-                  + " is already replayed. LastReplId - " +  Long.parseLong(replLastId));
-          return false;
-        }
+        //may be the db is getting created in this load
+        LOG.debug("failed to get the database " + dbNameOrPattern);
+        return true;
       }
     } else {
       Table tbl;
       try {
         tbl = Hive.get().getTable(dbNameOrPattern, tblNameOrPattern);
+        return isEventNotReplayed(tbl.getParameters(), dir, dumpType);
       } catch (HiveException e) {
-        LOG.error("failed to get the table " + dbNameOrPattern + "." + tblNameOrPattern);
-        throw new SemanticException(e);
-      }
-      if (tbl != null) {
-        Map<String, String> params = tbl.getParameters();
-        if (params != null && (params.containsKey(ReplicationSpec.KEY.CURR_STATE_ID.toString()))) {
-          String replLastId = params.get(ReplicationSpec.KEY.CURR_STATE_ID.toString());
-          if (Long.parseLong(replLastId) >= Long.parseLong(dir.getPath().getName())) {
-            LOG.debug("Event " + dumpType + " with replId " + Long.parseLong(dir.getPath().getName())
-                    + " is already replayed. LastReplId - " +  Long.parseLong(replLastId));
-            return false;
-          }
-        }
+        // may be the table is getting created in this load
+        LOG.debug("failed to get the table " + dbNameOrPattern + "." + tblNameOrPattern);
+        return true;
       }
     }
-    return true;
   }
 
   /*
@@ -386,7 +370,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       if ((!evDump) && (tblNameOrPattern != null) && !(tblNameOrPattern.isEmpty())) {
         ReplLoadWork replLoadWork =
             new ReplLoadWork(conf, loadPath.toString(), dbNameOrPattern, tblNameOrPattern,
-                queryState.getLineageState(), SessionState.get().getTxnMgr().getCurrentTxnId());
+                queryState.getLineageState(), getTxnMgr().getCurrentTxnId());
         rootTasks.add(TaskFactory.get(replLoadWork, conf));
         return;
       }
@@ -417,7 +401,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         }
 
         ReplLoadWork replLoadWork = new ReplLoadWork(conf, loadPath.toString(), dbNameOrPattern,
-            queryState.getLineageState(), SessionState.get().getTxnMgr().getCurrentTxnId());
+            queryState.getLineageState(), getTxnMgr().getCurrentTxnId());
         rootTasks.add(TaskFactory.get(replLoadWork, conf));
         //
         //        for (FileStatus dir : dirsInLoadPath) {

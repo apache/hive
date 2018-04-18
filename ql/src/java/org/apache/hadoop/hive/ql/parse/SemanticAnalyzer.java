@@ -40,8 +40,10 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.util.stream.Collectors;
 
 import org.antlr.runtime.ClassicToken;
 import org.antlr.runtime.CommonToken;
@@ -63,6 +65,8 @@ import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.StatsSetupConst.StatDB;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -117,6 +121,7 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.hooks.Entity;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity.WriteType;
@@ -7167,7 +7172,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Map<String, String> partSpec = null;
     boolean isMmTable = false, isMmCtas = false;
     Long writeId = null;
-    HiveTxnManager txnMgr = SessionState.get().getTxnMgr();
+    HiveTxnManager txnMgr = getTxnMgr();
 
     switch (dest_type.intValue()) {
     case QBMetaData.DEST_TABLE: {
@@ -14522,7 +14527,33 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     QueryResultsCache.LookupInfo lookupInfo = null;
     String queryString = getQueryStringForCache(astNode);
     if (queryString != null) {
-      lookupInfo = new QueryResultsCache.LookupInfo(queryString);
+      lookupInfo = new QueryResultsCache.LookupInfo(queryString,
+          new Supplier<ValidTxnWriteIdList>() {
+            ValidTxnWriteIdList cachedWriteIdList = null;
+            @Override
+            public ValidTxnWriteIdList get() {
+              if (cachedWriteIdList == null) {
+                // TODO: Once HIVE-18948 is in, should be able to retrieve writeIdList from the conf.
+                //cachedWriteIdList = AcidUtils.getValidTxnWriteIdList(conf);
+                //
+                List<String> transactionalTables = tablesFromReadEntities(inputs)
+                    .stream()
+                    .filter(table -> AcidUtils.isTransactionalTable(table))
+                    .map(table -> table.getFullyQualifiedName())
+                    .collect(Collectors.toList());
+                try {
+                  String txnString = conf.get(ValidTxnList.VALID_TXNS_KEY);
+                  cachedWriteIdList =
+                      getTxnMgr().getValidWriteIds(transactionalTables, txnString);
+                } catch (Exception err) {
+                  String msg = "Error while getting the txnWriteIdList for tables " + transactionalTables
+                      + " and validTxnList " + conf.get(ValidTxnList.VALID_TXNS_KEY);
+                  throw new RuntimeException(msg, err);
+                }
+              }
+              return cachedWriteIdList;
+            }
+          });
     }
     return lookupInfo;
   }
@@ -14551,7 +14582,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private QueryResultsCache.QueryInfo createCacheQueryInfoForQuery(QueryResultsCache.LookupInfo lookupInfo) {
-    return new QueryResultsCache.QueryInfo(lookupInfo, queryState.getHiveOperation(),
+    long queryTime = SessionState.get().getQueryCurrentTimestamp().getTime();
+    return new QueryResultsCache.QueryInfo(queryTime, lookupInfo, queryState.getHiveOperation(),
         resultSchema, getTableAccessInfo(), getColumnAccessInfo(), inputs);
   }
 
@@ -14620,7 +14652,29 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       return false;
     }
 
+    if (!conf.getBoolVar(ConfVars.HIVE_QUERY_RESULTS_CACHE_NONTRANSACTIONAL_TABLES_ENABLED)) {
+      List<Table> nonTransactionalTables = getNonTransactionalTables();
+      if (nonTransactionalTables.size() > 0) {
+        LOG.info("Not eligible for results caching - query contains non-transactional tables {}",
+            nonTransactionalTables);
+        return false;
+      }
+    }
     return true;
+  }
+
+  private static Set<Table> tablesFromReadEntities(Set<ReadEntity> readEntities) {
+    return readEntities.stream()
+        .filter(entity -> entity.getType() == Entity.Type.TABLE)
+        .map(entity -> entity.getTable())
+        .collect(Collectors.toSet());
+  }
+
+  private List<Table> getNonTransactionalTables() {
+    return tablesFromReadEntities(inputs)
+        .stream()
+        .filter(table -> !AcidUtils.isTransactionalTable(table))
+        .collect(Collectors.toList());
   }
 
   /**

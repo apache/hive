@@ -18,6 +18,7 @@
 package org.apache.hive.hcatalog.listener;
 
 import java.io.IOException;
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -72,6 +73,7 @@ import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
 import org.apache.hadoop.hive.metastore.events.OpenTxnEvent;
 import org.apache.hadoop.hive.metastore.events.CommitTxnEvent;
 import org.apache.hadoop.hive.metastore.events.AbortTxnEvent;
+import org.apache.hadoop.hive.metastore.events.AllocWriteIdEvent;
 import org.apache.hadoop.hive.metastore.events.ListenerEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
 import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
@@ -449,7 +451,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
   }
 
   @Override
-  public void onOpenTxn(OpenTxnEvent openTxnEvent) throws MetaException {
+  public void onOpenTxn(OpenTxnEvent openTxnEvent, Connection dbConn, SQLGenerator sqlGenerator) throws MetaException {
     int lastTxnIdx = openTxnEvent.getTxnIds().size() - 1;
     OpenTxnMessage msg = msgFactory.buildOpenTxnMessage(openTxnEvent.getTxnIds().get(0),
             openTxnEvent.getTxnIds().get(lastTxnIdx));
@@ -457,35 +459,37 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
             new NotificationEvent(0, now(), EventType.OPEN_TXN.toString(), msg.toString());
 
     try {
-      addNotificationLog(event, openTxnEvent);
+      addNotificationLog(event, openTxnEvent, dbConn, sqlGenerator);
     } catch (SQLException e) {
       throw new MetaException("Unable to execute direct SQL " + StringUtils.stringifyException(e));
     }
   }
 
   @Override
-  public void onCommitTxn(CommitTxnEvent commitTxnEvent) throws MetaException {
+  public void onCommitTxn(CommitTxnEvent commitTxnEvent, Connection dbConn, SQLGenerator sqlGenerator)
+          throws MetaException {
     NotificationEvent event =
             new NotificationEvent(0, now(), EventType.COMMIT_TXN.toString(), msgFactory.buildCommitTxnMessage(
                     commitTxnEvent.getTxnId())
                     .toString());
 
     try {
-      addNotificationLog(event, commitTxnEvent);
+      addNotificationLog(event, commitTxnEvent, dbConn, sqlGenerator);
     } catch (SQLException e) {
       throw new MetaException("Unable to execute direct SQL " + StringUtils.stringifyException(e));
     }
   }
 
   @Override
-  public void onAbortTxn(AbortTxnEvent abortTxnEvent) throws MetaException {
+  public void onAbortTxn(AbortTxnEvent abortTxnEvent, Connection dbConn, SQLGenerator sqlGenerator)
+          throws MetaException {
     NotificationEvent event =
         new NotificationEvent(0, now(), EventType.ABORT_TXN.toString(), msgFactory.buildAbortTxnMessage(
             abortTxnEvent.getTxnId())
             .toString());
 
     try {
-      addNotificationLog(event, abortTxnEvent);
+      addNotificationLog(event, abortTxnEvent, dbConn, sqlGenerator);
     } catch (SQLException e) {
       throw new MetaException("Unable to execute direct SQL " + StringUtils.stringifyException(e));
     }
@@ -591,6 +595,27 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     process(event, dropConstraintEvent);
   }
 
+  /***
+   * @param allocWriteIdEvent Alloc write id event
+   * @throws MetaException
+   */
+  @Override
+  public void onAllocWriteId(AllocWriteIdEvent allocWriteIdEvent, Connection dbConn, SQLGenerator sqlGenerator)
+          throws MetaException {
+    String tableName = allocWriteIdEvent.getTableName();
+    String dbName = allocWriteIdEvent.getDbName();
+    NotificationEvent event =
+            new NotificationEvent(0, now(), EventType.ALLOC_WRITE_ID.toString(), msgFactory
+                    .buildAllocWriteIdMessage(allocWriteIdEvent.getTxnToWriteIdList(), dbName, tableName).toString());
+    event.setTableName(tableName);
+    event.setDbName(dbName);
+    try {
+      addNotificationLog(event, allocWriteIdEvent, dbConn, sqlGenerator);
+    } catch (SQLException e) {
+      throw new MetaException("Unable to execute direct SQL " + StringUtils.stringifyException(e));
+    }
+  }
+
   private int now() {
     long millis = System.currentTimeMillis();
     millis /= 1000;
@@ -606,9 +631,9 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     return "'" + input + "'";
   }
 
-  private void addNotificationLog(NotificationEvent event, ListenerEvent listenerEvent)
-          throws MetaException, SQLException {
-    if ((listenerEvent.getConnection() == null) || (listenerEvent.getSqlGenerator() == null)) {
+  private void addNotificationLog(NotificationEvent event, ListenerEvent listenerEvent, Connection dbConn,
+                                  SQLGenerator sqlGenerator) throws MetaException, SQLException {
+    if ((dbConn == null) || (sqlGenerator == null)) {
       LOG.info("connection or sql generator is not set so executing sql via DN");
       process(event, listenerEvent);
       return;
@@ -616,8 +641,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     Statement stmt = null;
     ResultSet rs = null;
     try {
-      stmt = listenerEvent.getConnection().createStatement();
-      SQLGenerator sqlGenerator = listenerEvent.getSqlGenerator();
+      stmt = dbConn.createStatement();
       event.setMessageFormat(msgFactory.getMessageFormat());
 
       if (sqlGenerator.getDbProduct() == MYSQL) {

@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.history.HiveHistory;
 import org.apache.hadoop.hive.ql.lib.Node;
+import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapWork;
@@ -602,7 +603,7 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   public void shutdown() {
   }
 
-  Throwable getException() {
+  public Throwable getException() {
     return exception;
   }
 
@@ -645,4 +646,7 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
     return queryState;
   }
 
+  public HiveTxnManager getTxnMgr() {
+    return driverContext.getCtx().getHiveTxnManager();
+  }
 }

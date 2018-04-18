@@ -80,6 +80,7 @@ import org.apache.hadoop.hive.ql.exec.tez.WorkloadManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveMaterializedViewsRegistry;
+import org.apache.hadoop.hive.ql.metadata.events.NotificationEventPoll;
 import org.apache.hadoop.hive.ql.session.ClearDanglingScratchDir;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.util.ZooKeeperHiveHelper;
@@ -119,6 +120,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.SettableFuture;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 /**
@@ -149,6 +151,9 @@ public class HiveServer2 extends CompositeService {
   private Hive sessionHive;
   private String wmQueue;
   private AtomicBoolean isLeader = new AtomicBoolean(false);
+  // used for testing
+  private SettableFuture<Boolean> isLeaderTestFuture = SettableFuture.create();
+  private SettableFuture<Boolean> notLeaderTestFuture = SettableFuture.create();
 
   public HiveServer2() {
     super(HiveServer2.class.getSimpleName());
@@ -165,6 +170,24 @@ public class HiveServer2 extends CompositeService {
   @VisibleForTesting
   public void setPamAuthenticator(PamAuthenticator pamAuthenticator) {
     this.pamAuthenticator = pamAuthenticator;
+  }
+
+  @VisibleForTesting
+  public SettableFuture<Boolean> getIsLeaderTestFuture() {
+    return isLeaderTestFuture;
+  }
+
+  @VisibleForTesting
+  public SettableFuture<Boolean> getNotLeaderTestFuture() {
+    return notLeaderTestFuture;
+  }
+
+  private void resetIsLeaderTestFuture() {
+    isLeaderTestFuture = SettableFuture.create();
+  }
+
+  private void resetNotLeaderTestFuture() {
+    notLeaderTestFuture = SettableFuture.create();
   }
 
   @Override
@@ -231,6 +254,12 @@ public class HiveServer2 extends CompositeService {
       } catch (Exception err) {
         throw new RuntimeException("Error initializing the query results cache", err);
       }
+    }
+
+    try {
+      NotificationEventPoll.initialize(hiveConf);
+    } catch (Exception err) {
+      throw new RuntimeException("Error initializing notification event poll", err);
     }
 
     wmQueue = hiveConf.get(ConfVars.HIVE_SERVER2_TEZ_INTERACTIVE_QUEUE.varname, "").trim();
@@ -698,6 +727,12 @@ public class HiveServer2 extends CompositeService {
       }
       hiveServer2.startOrReconnectTezSessions();
       LOG.info("Started/Reconnected tez sessions.");
+
+      // resolve futures used for testing
+      if (HiveConf.getBoolVar(hiveServer2.hiveConf, ConfVars.HIVE_IN_TEST)) {
+        hiveServer2.isLeaderTestFuture.set(true);
+        hiveServer2.resetNotLeaderTestFuture();
+      }
     }
 
     @Override
@@ -707,6 +742,12 @@ public class HiveServer2 extends CompositeService {
       hiveServer2.closeHiveSessions();
       hiveServer2.stopOrDisconnectTezSessions();
       LOG.info("Stopped/Disconnected tez sessions.");
+
+      // resolve futures used for testing
+      if (HiveConf.getBoolVar(hiveServer2.hiveConf, ConfVars.HIVE_IN_TEST)) {
+        hiveServer2.notLeaderTestFuture.set(true);
+        hiveServer2.resetIsLeaderTestFuture();
+      }
     }
   }
 

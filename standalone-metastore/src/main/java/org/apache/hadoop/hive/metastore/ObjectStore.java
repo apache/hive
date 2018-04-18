@@ -3033,23 +3033,7 @@ public class ObjectStore implements RawStore, Configurable {
       throw new NoSuchObjectException(getCatalogQualifiedTableName(catName, dbName, tableName)
           + " table not found");
     }
-    List<FieldSchema> partCols = table.getPartitionKeys();
-    int numPartKeys = partCols.size();
-    if (part_vals.size() > numPartKeys) {
-      throw new MetaException("Incorrect number of partition values."
-          + " numPartKeys=" + numPartKeys + ", part_val=" + part_vals.size());
-    }
-    partCols = partCols.subList(0, part_vals.size());
-    // Construct a pattern of the form: partKey=partVal/partKey2=partVal2/...
-    // where partVal is either the escaped partition value given as input,
-    // or a regex of the form ".*"
-    // This works because the "=" and "/" separating key names and partition key/values
-    // are not escaped.
-    String partNameMatcher = Warehouse.makePartName(partCols, part_vals, ".*");
-    // add ".*" to the regex to match anything else afterwards the partial spec.
-    if (part_vals.size() < numPartKeys) {
-      partNameMatcher += ".*";
-    }
+    String partNameMatcher = MetaStoreUtils.makePartNameMatcher(table, part_vals);
     Query query = queryWrapper.query = pm.newQuery(MPartition.class);
     StringBuilder queryFilter = new StringBuilder("table.database.name == dbName");
     queryFilter.append(" && table.database.catalogName == catName");

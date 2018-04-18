@@ -26,15 +26,19 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
+
 import com.google.common.base.Throwables;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatisticsNames;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.DriverContext;
@@ -72,7 +76,6 @@ import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.util.StringUtils;
 
 import com.google.common.collect.Lists;
-import org.apache.spark.SparkException;
 
 public class SparkTask extends Task<SparkWork> {
   private static final String CLASS_NAME = SparkTask.class.getName();
@@ -153,7 +156,8 @@ public class SparkTask extends Task<SparkWork> {
 
       // Get the final state of the Spark job and parses its job info
       SparkJobStatus sparkJobStatus = jobRef.getSparkJobStatus();
-      getSparkJobInfo(sparkJobStatus, rc);
+      getSparkJobInfo(sparkJobStatus);
+      setSparkException(sparkJobStatus, rc);
 
       if (rc == 0) {
         sparkStatistics = sparkJobStatus.getSparkStatistics();
@@ -457,7 +461,7 @@ public class SparkTask extends Task<SparkWork> {
     return counters;
   }
 
-  private void getSparkJobInfo(SparkJobStatus sparkJobStatus, int rc) {
+  private void getSparkJobInfo(SparkJobStatus sparkJobStatus) {
     try {
       stageIds = new ArrayList<Integer>();
       int[] ids = sparkJobStatus.getStageIds();
@@ -482,36 +486,68 @@ public class SparkTask extends Task<SparkWork> {
       succeededTaskCount = sumComplete;
       totalTaskCount = sumTotal;
       failedTaskCount = sumFailed;
-      if (rc != 0) {
-        Throwable error = sparkJobStatus.getError();
-        if (error != null) {
-          if ((error instanceof InterruptedException) ||
-              (error instanceof HiveException &&
-              error.getCause() instanceof InterruptedException)) {
-            LOG.info("Killing Spark job since query was interrupted");
-            killJob();
-          }
-          HiveException he;
-          if (isOOMError(error)) {
-            he = new HiveException(error, ErrorMsg.SPARK_RUNTIME_OOM);
-          } else {
-            he = new HiveException(error, ErrorMsg.SPARK_JOB_RUNTIME_ERROR);
-          }
-          setException(he);
-        }
-      }
     } catch (Exception e) {
       LOG.error("Failed to get Spark job information", e);
     }
+  }
+
+  @VisibleForTesting
+  void setSparkException(SparkJobStatus sparkJobStatus, int rc) {
+    if (rc != 0) {
+
+      // Set the Spark Job Exception
+      Throwable sparkJobException = sparkJobStatus.getSparkJobException();
+      if (sparkJobException != null) {
+        HiveException he;
+        if (isOOMError(sparkJobException)) {
+          he = new HiveException(sparkJobException, ErrorMsg.SPARK_RUNTIME_OOM);
+        } else if (isTaskFailure(sparkJobException)) {
+          he = new HiveException(sparkJobException, ErrorMsg.SPARK_TASK_RUNTIME_ERROR,
+                  Throwables.getRootCause(sparkJobException).getMessage());
+        } else {
+          he = new HiveException(sparkJobException, ErrorMsg.SPARK_JOB_RUNTIME_ERROR,
+                  Throwables.getRootCause(sparkJobException).getMessage());
+        }
+        setException(he);
+      }
+
+      // Set the Monitor Error
+      Throwable monitorError = sparkJobStatus.getMonitorError();
+      if (monitorError != null) {
+        if ((monitorError instanceof InterruptedException) ||
+                (monitorError instanceof HiveException &&
+                        monitorError.getCause() instanceof InterruptedException)) {
+          LOG.info("Killing Spark job since query was interrupted");
+          killJob();
+        }
+
+        // Prefer to propagate errors from the Spark job rather than the monitor, as errors from
+        // the Spark job are likely to be more relevant
+        if (getException() == null) {
+          setException(monitorError);
+        }
+      }
+    }
+  }
+
+  private boolean isTaskFailure(Throwable error) {
+    Pattern taskFailedPattern = Pattern.compile("Task.*in stage.*failed.*times");
+    while (error != null) {
+      if (taskFailedPattern.matcher(error.getMessage()).find()) {
+        return true;
+      }
+      error = error.getCause();
+    }
+    return false;
   }
 
   private boolean isOOMError(Throwable error) {
     while (error != null) {
       if (error instanceof OutOfMemoryError) {
         return true;
-      } else if (error instanceof SparkException) {
-        String sts = Throwables.getStackTraceAsString(error);
-        return sts.contains("Container killed by YARN for exceeding memory limits");
+      } else if (error.getMessage().contains("Container killed by YARN for exceeding memory " +
+              "limits")) {
+        return true;
       }
       error = error.getCause();
     }

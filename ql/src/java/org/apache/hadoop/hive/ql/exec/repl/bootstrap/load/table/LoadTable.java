@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.TaskTracker;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.util.Context;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.util.PathUtils;
 import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
+import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer;
@@ -65,15 +66,17 @@ public class LoadTable {
   private final TableContext tableContext;
   private final TaskTracker tracker;
   private final TableEvent event;
+  private final HiveTxnManager txnMgr;
 
   public LoadTable(TableEvent event, Context context, ReplLogger replLogger,
-                   TableContext tableContext, TaskTracker limiter)
+                   TableContext tableContext, TaskTracker limiter, HiveTxnManager txnMgr)
       throws SemanticException, IOException {
     this.event = event;
     this.context = context;
     this.replLogger = replLogger;
     this.tableContext = tableContext;
     this.tracker = new TaskTracker(limiter);
+    this.txnMgr = txnMgr;
   }
 
   private void createTableReplLogTask(String tableName, TableType tableType) throws SemanticException {
@@ -230,7 +233,7 @@ public class LoadTable {
         tmpPath, Utilities.getTableDesc(table), new TreeMap<>(),
         replicationSpec.isReplace() ? LoadFileType.REPLACE_ALL : LoadFileType.OVERWRITE_EXISTING,
         //todo: what is the point of this?  If this is for replication, who would have opened a txn?
-        SessionState.get().getTxnMgr().getCurrentTxnId()
+        txnMgr.getCurrentTxnId()
     );
     MoveWork moveWork =
         new MoveWork(new HashSet<>(), new HashSet<>(), loadTableWork, null, false);

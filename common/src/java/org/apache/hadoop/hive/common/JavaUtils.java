@@ -228,10 +228,11 @@ public final class JavaUtils {
     @Override
     public boolean accept(Path path) {
       String name = path.getName();
+      //todo: what if this is a base?
       if (!name.startsWith(DELTA_PREFIX + "_")) return false;
       String idStr = name.substring(DELTA_PREFIX.length() + 1, DELTA_PREFIX.length() + 1 + DELTA_DIGITS_LEN);
       try {
-        Long.parseLong(idStr);
+        Long.parseLong(idStr);//what for? sanity check?
       } catch (NumberFormatException ex) {
         return false;
       }

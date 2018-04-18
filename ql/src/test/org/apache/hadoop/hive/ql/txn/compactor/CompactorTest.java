@@ -202,7 +202,8 @@ public abstract class CompactorTest {
   protected long allocateWriteId(String dbName, String tblName, long txnid)
           throws MetaException, TxnAbortedException, NoSuchTxnException {
     AllocateTableWriteIdsRequest awiRqst
-            = new AllocateTableWriteIdsRequest(Collections.singletonList(txnid), dbName, tblName);
+            = new AllocateTableWriteIdsRequest(dbName, tblName);
+    awiRqst.setTxnIds(Collections.singletonList(txnid));
     AllocateTableWriteIdsResponse awiResp = txnHandler.allocateTableWriteIds(awiRqst);
     return awiResp.getTxnToWriteIds().get(0).getWriteId();
   }
@@ -254,7 +255,8 @@ public abstract class CompactorTest {
   protected void burnThroughTransactions(String dbName, String tblName, int num, Set<Long> open, Set<Long> aborted)
       throws MetaException, NoSuchTxnException, TxnAbortedException {
     OpenTxnsResponse rsp = txnHandler.openTxns(new OpenTxnRequest(num, "me", "localhost"));
-    AllocateTableWriteIdsRequest awiRqst = new AllocateTableWriteIdsRequest(rsp.getTxn_ids(), dbName, tblName);
+    AllocateTableWriteIdsRequest awiRqst = new AllocateTableWriteIdsRequest(dbName, tblName);
+    awiRqst.setTxnIds(rsp.getTxn_ids());
     AllocateTableWriteIdsResponse awiResp = txnHandler.allocateTableWriteIds(awiRqst);
     int i = 0;
     for (long tid : rsp.getTxn_ids()) {

@@ -64,7 +64,9 @@ STAGE PLANS:
             LLAP IO: no inputs
             Map Vectorization:
                 enabled: false
-#### A masked pattern was here ####
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                enabledConditionsNotMet: Could not enable vectorization due to partition column names size 1 is greater than the number of table column names size 0 IS false
+                inputFileFormats: org.apache.hadoop.hive.ql.io.NullRowsInputFormat
         Map 2 
             Map Operator Tree:
                 TableScan

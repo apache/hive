@@ -134,6 +134,7 @@ public class TestActivePassiveHA {
     String instanceId2 = UUID.randomUUID().toString();
     miniHS2_2.start(getConfOverlay(instanceId2));
 
+    assertEquals(true, miniHS2_1.getIsLeaderTestFuture().get());
     assertEquals(true, miniHS2_1.isLeader());
     String url = "http://localhost:" + hiveConf1.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/leader";
     assertEquals("true", sendGet(url));
@@ -175,6 +176,7 @@ public class TestActivePassiveHA {
 
     miniHS2_1.stop();
 
+    assertEquals(true, miniHS2_2.getIsLeaderTestFuture().get());
     assertEquals(true, miniHS2_2.isLeader());
     url = "http://localhost:" + hiveConf2.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/leader";
     assertEquals("true", sendGet(url));
@@ -264,6 +266,7 @@ public class TestActivePassiveHA {
     confOverlay.put(ConfVars.HIVE_SERVER2_THRIFT_HTTP_PATH.varname, "clidriverTest");
     miniHS2_2.start(confOverlay);
 
+    assertEquals(true, miniHS2_1.getIsLeaderTestFuture().get());
     assertEquals(true, miniHS2_1.isLeader());
     String url = "http://localhost:" + hiveConf1.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/leader";
     assertEquals("true", sendGet(url));
@@ -285,6 +288,7 @@ public class TestActivePassiveHA {
 
     // miniHS2_2 will become leader
     miniHS2_1.stop();
+    assertEquals(true, miniHS2_2.getIsLeaderTestFuture().get());
     parsedUrl = HiveConnection.getAllUrls(zkJdbcUrl).get(0).getJdbcUriString();
     String hs2_2_directUrl = "jdbc:hive2://" + miniHS2_2.getHost() + ":" + miniHS2_2.getHttpPort() +
       "/default;serviceDiscoveryMode=" + serviceDiscoveryMode + ";zooKeeperNamespace=" + zkHANamespace + ";";
@@ -302,6 +306,7 @@ public class TestActivePassiveHA {
 
     // miniHS2_1 will become leader
     miniHS2_2.stop();
+    assertEquals(true, miniHS2_1.getIsLeaderTestFuture().get());
     parsedUrl = HiveConnection.getAllUrls(zkJdbcUrl).get(0).getJdbcUriString();
     hs2_1_directUrl = "jdbc:hive2://" + miniHS2_1.getHost() + ":" + miniHS2_1.getBinaryPort() +
       "/default;serviceDiscoveryMode=" + serviceDiscoveryMode + ";zooKeeperNamespace=" + zkHANamespace + ";";
@@ -330,6 +335,7 @@ public class TestActivePassiveHA {
       String url2 = "http://localhost:" + hiveConf2.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/leader";
 
       // when we start miniHS2_1 will be leader (sequential start)
+      assertEquals(true, miniHS2_1.getIsLeaderTestFuture().get());
       assertEquals(true, miniHS2_1.isLeader());
       assertEquals("true", sendGet(url1, true));
 
@@ -338,23 +344,28 @@ public class TestActivePassiveHA {
       assertTrue(resp.contains("Failover successful!"));
 
       // make sure miniHS2_1 is not leader
+      assertEquals(true, miniHS2_1.getNotLeaderTestFuture().get());
       assertEquals(false, miniHS2_1.isLeader());
       assertEquals("false", sendGet(url1, true));
 
       // make sure miniHS2_2 is the new leader
+      assertEquals(true, miniHS2_2.getIsLeaderTestFuture().get());
       assertEquals(true, miniHS2_2.isLeader());
       assertEquals("true", sendGet(url2, true));
 
       // send failover request again to miniHS2_1 and get a failure
       resp = sendDelete(url1, true);
       assertTrue(resp.contains("Cannot failover an instance that is not a leader"));
+      assertEquals(true, miniHS2_1.getNotLeaderTestFuture().get());
       assertEquals(false, miniHS2_1.isLeader());
 
       // send failover request to miniHS2_2 and make sure miniHS2_1 takes over (returning back to leader, test listeners)
       resp = sendDelete(url2, true);
       assertTrue(resp.contains("Failover successful!"));
+      assertEquals(true, miniHS2_1.getIsLeaderTestFuture().get());
       assertEquals(true, miniHS2_1.isLeader());
       assertEquals("true", sendGet(url1, true));
+      assertEquals(true, miniHS2_2.getNotLeaderTestFuture().get());
       assertEquals("false", sendGet(url2, true));
       assertEquals(false, miniHS2_2.isLeader());
     } finally {
@@ -382,13 +393,16 @@ public class TestActivePassiveHA {
 
       String url1 = "http://localhost:" + hiveConf1.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/leader";
       // when we start miniHS2_1 will be leader (sequential start)
+      assertEquals(true, miniHS2_1.getIsLeaderTestFuture().get());
       assertEquals(true, miniHS2_1.isLeader());
       assertEquals("true", sendGet(url1, true));
 
       // trigger failover on miniHS2_1 without authorization header
       assertEquals("Unauthorized", sendDelete(url1, false));
       assertTrue(sendDelete(url1, true).contains("Failover successful!"));
+      assertEquals(true, miniHS2_1.getNotLeaderTestFuture().get());
       assertEquals(false, miniHS2_1.isLeader());
+      assertEquals(true, miniHS2_2.getIsLeaderTestFuture().get());
       assertEquals(true, miniHS2_2.isLeader());
     } finally {
       // revert configs to not affect other tests
@@ -419,6 +433,7 @@ public class TestActivePassiveHA {
       assertTrue(zkJdbcUrl.contains(zkConnectString));
 
       // when we start miniHS2_1 will be leader (sequential start)
+      assertEquals(true, miniHS2_1.getIsLeaderTestFuture().get());
       assertEquals(true, miniHS2_1.isLeader());
       assertEquals("true", sendGet(url1, true));
 
@@ -441,10 +456,12 @@ public class TestActivePassiveHA {
       }
 
       // make sure miniHS2_1 is not leader
+      assertEquals(true, miniHS2_1.getNotLeaderTestFuture().get());
       assertEquals(false, miniHS2_1.isLeader());
       assertEquals("false", sendGet(url1, true));
 
       // make sure miniHS2_2 is the new leader
+      assertEquals(true, miniHS2_2.getIsLeaderTestFuture().get());
       assertEquals(true, miniHS2_2.isLeader());
       assertEquals("true", sendGet(url2, true));
 
@@ -461,13 +478,16 @@ public class TestActivePassiveHA {
       // send failover request again to miniHS2_1 and get a failure
       resp = sendDelete(url1, true);
       assertTrue(resp.contains("Cannot failover an instance that is not a leader"));
+      assertEquals(true, miniHS2_1.getNotLeaderTestFuture().get());
       assertEquals(false, miniHS2_1.isLeader());
 
       // send failover request to miniHS2_2 and make sure miniHS2_1 takes over (returning back to leader, test listeners)
       resp = sendDelete(url2, true);
       assertTrue(resp.contains("Failover successful!"));
+      assertEquals(true, miniHS2_1.getIsLeaderTestFuture().get());
       assertEquals(true, miniHS2_1.isLeader());
       assertEquals("true", sendGet(url1, true));
+      assertEquals(true, miniHS2_2.getNotLeaderTestFuture().get());
       assertEquals("false", sendGet(url2, true));
       assertEquals(false, miniHS2_2.isLeader());
       // make sure miniHS2_2 closes all its connections

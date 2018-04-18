@@ -43,8 +43,7 @@ public class DatabaseAndTableFilter extends BasicFilter {
   private boolean isTxnRelatedEvent(final NotificationEvent event) {
     return ((event.getEventType().equals(MessageFactory.OPEN_TXN_EVENT)) ||
             (event.getEventType().equals(MessageFactory.COMMIT_TXN_EVENT)) ||
-            (event.getEventType().equals(MessageFactory.ABORT_TXN_EVENT))
-          );
+            (event.getEventType().equals(MessageFactory.ABORT_TXN_EVENT)));
   }
 
   @Override

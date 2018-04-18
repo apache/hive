@@ -7114,33 +7114,57 @@ inline std::ostream& operator<<(std::ostream& out, const GetValidWriteIdsRespons
   return out;
 }
 
+typedef struct _AllocateTableWriteIdsRequest__isset {
+  _AllocateTableWriteIdsRequest__isset() : txnIds(false), replPolicy(false), srcTxnToWriteIdList(false) {}
+  bool txnIds :1;
+  bool replPolicy :1;
+  bool srcTxnToWriteIdList :1;
+} _AllocateTableWriteIdsRequest__isset;
 
 class AllocateTableWriteIdsRequest {
  public:
 
   AllocateTableWriteIdsRequest(const AllocateTableWriteIdsRequest&);
   AllocateTableWriteIdsRequest& operator=(const AllocateTableWriteIdsRequest&);
-  AllocateTableWriteIdsRequest() : dbName(), tableName() {
+  AllocateTableWriteIdsRequest() : dbName(), tableName(), replPolicy() {
   }
 
   virtual ~AllocateTableWriteIdsRequest() throw();
-  std::vector<int64_t>  txnIds;
   std::string dbName;
   std::string tableName;
+  std::vector<int64_t>  txnIds;
+  std::string replPolicy;
+  std::vector<TxnToWriteId>  srcTxnToWriteIdList;
 
-  void __set_txnIds(const std::vector<int64_t> & val);
+  _AllocateTableWriteIdsRequest__isset __isset;
 
   void __set_dbName(const std::string& val);
 
   void __set_tableName(const std::string& val);
 
+  void __set_txnIds(const std::vector<int64_t> & val);
+
+  void __set_replPolicy(const std::string& val);
+
+  void __set_srcTxnToWriteIdList(const std::vector<TxnToWriteId> & val);
+
   bool operator == (const AllocateTableWriteIdsRequest & rhs) const
   {
-    if (!(txnIds == rhs.txnIds))
-      return false;
     if (!(dbName == rhs.dbName))
       return false;
     if (!(tableName == rhs.tableName))
+      return false;
+    if (__isset.txnIds != rhs.__isset.txnIds)
+      return false;
+    else if (__isset.txnIds && !(txnIds == rhs.txnIds))
+      return false;
+    if (__isset.replPolicy != rhs.__isset.replPolicy)
+      return false;
+    else if (__isset.replPolicy && !(replPolicy == rhs.replPolicy))
+      return false;
+    if (__isset.srcTxnToWriteIdList != rhs.__isset.srcTxnToWriteIdList)
+      return false;
+    else if (__isset.srcTxnToWriteIdList && !(srcTxnToWriteIdList == rhs.srcTxnToWriteIdList))
       return false;
     return true;
   }

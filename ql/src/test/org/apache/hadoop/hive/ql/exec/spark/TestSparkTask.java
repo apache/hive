@@ -17,36 +17,48 @@
  */
 package org.apache.hadoop.hive.ql.exec.spark;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatisticsBuilder;
+import org.apache.hadoop.hive.ql.exec.spark.session.SparkSession;
 import org.apache.hadoop.hive.ql.exec.spark.status.RemoteSparkJobMonitor;
+import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobRef;
+import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobStatus;
 import org.apache.hadoop.hive.ql.exec.spark.status.impl.RemoteSparkJobStatus;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.spark.client.JobHandle.State;
+
+import org.apache.spark.SparkException;
+
 import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 public class TestSparkTask {
 
   @Test
   public void sparkTask_updates_Metrics() throws IOException {
 
-    Metrics mockMetrics = Mockito.mock(Metrics.class);
+    Metrics mockMetrics = mock(Metrics.class);
 
     SparkTask sparkTask = new SparkTask();
     sparkTask.updateTaskMetrics(mockMetrics);
@@ -89,7 +101,7 @@ public class TestSparkTask {
 
   @Test
   public void testRemoteSparkCancel() {
-    RemoteSparkJobStatus jobSts = Mockito.mock(RemoteSparkJobStatus.class);
+    RemoteSparkJobStatus jobSts = mock(RemoteSparkJobStatus.class);
     when(jobSts.getRemoteJobState()).thenReturn(State.CANCELLED);
     when(jobSts.isRemoteActive()).thenReturn(true);
     HiveConf hiveConf = new HiveConf();
@@ -109,6 +121,109 @@ public class TestSparkTask {
     Assert.assertTrue(statsString.contains("stat1"));
     Assert.assertTrue(statsString.contains("stat2"));
     Assert.assertTrue(statsString.contains("1"));
+  }
+
+  @Test
+  public void testSetSparkExceptionWithJobError() {
+    SparkTask sparkTask = new SparkTask();
+    SparkJobStatus mockSparkJobStatus = mock(SparkJobStatus.class);
+
+    ExecutionException ee = new ExecutionException("Exception thrown by job",
+            new SparkException("Job aborted due to stage failure: Not a task or OOM error"));
+
+    when(mockSparkJobStatus.getSparkJobException()).thenReturn(ee);
+
+    sparkTask.setSparkException(mockSparkJobStatus, 3);
+
+    Assert.assertTrue(sparkTask.getException() instanceof HiveException);
+    Assert.assertEquals(((HiveException) sparkTask.getException()).getCanonicalErrorMsg(),
+            ErrorMsg.SPARK_JOB_RUNTIME_ERROR);
+    Assert.assertTrue(sparkTask.getException().getMessage().contains("Not a task or OOM error"));
+  }
+
+  @Test
+  public void testSetSparkExceptionWithTimeoutError() {
+    SparkTask sparkTask = new SparkTask();
+    SparkJobStatus mockSparkJobStatus = mock(SparkJobStatus.class);
+    when(mockSparkJobStatus.getMonitorError()).thenReturn(new HiveException(ErrorMsg
+            .SPARK_JOB_MONITOR_TIMEOUT, Long.toString(60)));
+
+    sparkTask.setSparkException(mockSparkJobStatus, 3);
+
+    Assert.assertTrue(sparkTask.getException() instanceof HiveException);
+    Assert.assertEquals(((HiveException) sparkTask.getException()).getCanonicalErrorMsg(),
+            ErrorMsg.SPARK_JOB_MONITOR_TIMEOUT);
+    Assert.assertTrue(sparkTask.getException().getMessage().contains("60s"));
+  }
+
+  @Test
+  public void testSetSparkExceptionWithOOMError() {
+    SparkTask sparkTask = new SparkTask();
+    SparkJobStatus mockSparkJobStatus = mock(SparkJobStatus.class);
+
+    ExecutionException jobError = new ExecutionException(
+            new SparkException("Container killed by YARN for exceeding memory limits"));
+    when(mockSparkJobStatus.getSparkJobException()).thenReturn(jobError);
+
+    sparkTask.setSparkException(mockSparkJobStatus, 3);
+
+    Assert.assertTrue(sparkTask.getException() instanceof HiveException);
+    Assert.assertEquals(((HiveException) sparkTask.getException()).getCanonicalErrorMsg(),
+            ErrorMsg.SPARK_RUNTIME_OOM);
+  }
+
+  @Test
+  public void testSparkExceptionAndMonitorError() {
+    SparkTask sparkTask = new SparkTask();
+    SparkJobStatus mockSparkJobStatus = mock(SparkJobStatus.class);
+    when(mockSparkJobStatus.getMonitorError()).thenReturn(new RuntimeException());
+    when(mockSparkJobStatus.getSparkJobException()).thenReturn(
+            new ExecutionException(new SparkException("")));
+
+    sparkTask.setSparkException(mockSparkJobStatus, 3);
+
+    Assert.assertTrue(sparkTask.getException() instanceof HiveException);
+    Assert.assertEquals(((HiveException) sparkTask.getException()).getCanonicalErrorMsg(),
+            ErrorMsg.SPARK_JOB_RUNTIME_ERROR);
+  }
+
+  @Test
+  public void testHandleInterruptedException() throws Exception {
+    HiveConf hiveConf = new HiveConf();
+
+    SparkTask sparkTask = new SparkTask();
+    sparkTask.setWork(mock(SparkWork.class));
+
+    DriverContext mockDriverContext = mock(DriverContext.class);
+
+    QueryState mockQueryState = mock(QueryState.class);
+    when(mockQueryState.getConf()).thenReturn(hiveConf);
+
+    sparkTask.initialize(mockQueryState, null, mockDriverContext, null);
+
+    SparkJobStatus mockSparkJobStatus = mock(SparkJobStatus.class);
+    when(mockSparkJobStatus.getMonitorError()).thenReturn(new InterruptedException());
+
+    SparkSession mockSparkSession = mock(SparkSession.class);
+    SparkJobRef mockSparkJobRef = mock(SparkJobRef.class);
+
+    when(mockSparkJobRef.monitorJob()).thenReturn(2);
+    when(mockSparkJobRef.getSparkJobStatus()).thenReturn(mockSparkJobStatus);
+    when(mockSparkSession.submit(any(), any())).thenReturn(mockSparkJobRef);
+
+    SessionState.start(hiveConf);
+    SessionState.get().setSparkSession(mockSparkSession);
+
+    sparkTask.execute(mockDriverContext);
+
+    verify(mockSparkJobRef, atLeastOnce()).cancelJob();
+
+    when(mockSparkJobStatus.getMonitorError()).thenReturn(
+            new HiveException(new InterruptedException()));
+
+    sparkTask.execute(mockDriverContext);
+
+    verify(mockSparkJobRef, atLeastOnce()).cancelJob();
   }
 
   private boolean isEmptySparkWork(SparkWork sparkWork) {

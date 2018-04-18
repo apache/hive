@@ -76,8 +76,8 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.apache.hive.hcatalog</groupId>
-      <artifactId>hive-hcatalog-streaming</artifactId>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-streaming</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

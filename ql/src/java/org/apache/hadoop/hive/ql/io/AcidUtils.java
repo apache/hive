@@ -27,6 +27,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
+import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -41,6 +43,8 @@ import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcRecordUpdater;
 import org.apache.hadoop.hive.ql.io.orc.Reader;
 import org.apache.hadoop.hive.ql.io.orc.Writer;
+import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
+import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
@@ -1291,6 +1295,10 @@ public class AcidUtils {
         !isInsertOnlyTable(table.getParameters());
   }
 
+  public static boolean isFullAcidTable(Map<String, String> params) {
+    return isTransactionalTable(params) && !isInsertOnlyTable(params);
+  }
+
   public static boolean isTransactionalTable(org.apache.hadoop.hive.metastore.api.Table table) {
     return table != null && table.getParameters() != null &&
         isTablePropertyTransactional(table.getParameters());
@@ -1508,11 +1516,19 @@ public class AcidUtils {
   }
 
   /**
+   * Get the ValidTxnWriteIdList saved in the configuration.
+   */
+  public static ValidTxnWriteIdList getValidTxnWriteIdList(Configuration conf) {
+    String txnString = conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY);
+    ValidTxnWriteIdList validTxnList = new ValidTxnWriteIdList(txnString);
+    return validTxnList;
+  }
+
+  /**
    * Extract the ValidWriteIdList for the given table from the list of tables' ValidWriteIdList.
    */
   public static ValidWriteIdList getTableValidWriteIdList(Configuration conf, String fullTableName) {
-    String txnString = conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY);
-    ValidTxnWriteIdList validTxnList = new ValidTxnWriteIdList(txnString);
+    ValidTxnWriteIdList validTxnList = getValidTxnWriteIdList(conf);
     return validTxnList.getTableValidWriteIdList(fullTableName);
   }
 

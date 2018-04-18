@@ -165,16 +165,18 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
   }
 
   @Override
-  public Throwable getError() {
-    if (error != null) {
-      return error;
-    }
-    return jobHandle.getError();
+  public Throwable getMonitorError() {
+    return error;
   }
 
   @Override
-  public void setError(Throwable e) {
+  public void setMonitorError(Throwable e) {
     this.error = e;
+  }
+
+  @Override
+  public Throwable getSparkJobException() {
+    return jobHandle.getError();
   }
 
   /**
