@@ -69,10 +69,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   private static final String dumpSchema = "dump_dir,last_repl_id#string,string";
@@ -95,6 +97,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     }
   }
 
+  private static long sleepTime = 60000;
   private Logger LOG = LoggerFactory.getLogger(ReplDumpTask.class);
   private ReplLogger replLogger;
 
@@ -209,7 +212,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     // bootstrap case
     Hive hiveDb = getHive();
     Long bootDumpBeginReplId = hiveDb.getMSC().getCurrentNotificationEventId().getEventId();
-    String validTxnList = getValidTxnsList();
+    String validTxnList = getValidTxnListForReplDump(hiveDb);
     for (String dbName : Utils.matchesDb(hiveDb, work.dbNameOrPattern)) {
       LOG.debug("ReplicationSemanticAnalyzer: analyzeReplDump dumping db: " + dbName);
       replLogger = new BootstrapDumpLogger(dbName, dumpRoot.toString(),
@@ -295,15 +298,6 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     }
   }
 
-  private String getValidTxnsList() throws LockException {
-    String validTxnString = conf.get(ValidTxnList.VALID_TXNS_KEY);
-    if ((validTxnString == null) || validTxnString.isEmpty()) {
-      ValidTxnList txnList = getTxnMgr().getValidTxns();
-      validTxnString = txnList.toString();
-    }
-    return validTxnString;
-  }
-
   private String getValidWriteIdList(String dbName, String tblName, String validTxnString) throws LockException {
     if ((validTxnString == null) || validTxnString.isEmpty()) {
       return null;
@@ -313,6 +307,59 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
             .getValidWriteIds(Collections.singletonList(fullTableName), validTxnString)
             .getTableValidWriteIdList(fullTableName);
     return ((validWriteIds != null) ? validWriteIds.toString() : null);
+  }
+
+  private List<Long> getOpenTxns(ValidTxnList validTxnList) {
+    long[] invalidTxns = validTxnList.getInvalidTransactions();
+    List<Long> openTxns = new ArrayList<>();
+    for (long invalidTxn : invalidTxns) {
+      if (!validTxnList.isTxnAborted(invalidTxn)) {
+        openTxns.add(invalidTxn);
+      }
+    }
+    return openTxns;
+  }
+
+  private String getValidTxnListForReplDump(Hive hiveDb) throws HiveException {
+    // Key design point for REPL DUMP is to not have any txns older than current txn in which dump runs.
+    // This is needed to ensure that Repl dump doesn't copy any data files written by any open txns
+    // mainly for streaming ingest case where one delta file shall have data from committed/aborted/open txns.
+    // It may also have data inconsistency if the on-going txns doesn't have corresponding open/write
+    // events captured which means, catch-up incremental phase won't be able to replicate those txns.
+    // So, the logic is to wait for configured amount of time to see if all open txns < current txn is
+    // getting aborted/committed. If not, then we forcefully abort those txns just like AcidHouseKeeperService.
+    ValidTxnList validTxnList = getTxnMgr().getValidTxns();
+    long timeoutInMs = HiveConf.getTimeVar(conf,
+            HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_OPEN_TXN_TIMEOUT, TimeUnit.MILLISECONDS);
+    long waitUntilTime = System.currentTimeMillis() + timeoutInMs;
+    while (System.currentTimeMillis() < waitUntilTime) {
+      // If there are no txns which are open for the given ValidTxnList snapshot, then just return it.
+      if (getOpenTxns(validTxnList).isEmpty()) {
+        return validTxnList.toString();
+      }
+
+      // Wait for 1 minute and check again.
+      try {
+        Thread.sleep(sleepTime);
+      } catch (InterruptedException e) {
+        LOG.info("REPL DUMP thread sleep interrupted", e);
+      }
+      validTxnList = getTxnMgr().getValidTxns();
+    }
+
+    // After the timeout just force abort the open txns
+    List<Long> openTxns = getOpenTxns(validTxnList);
+    if (!openTxns.isEmpty()) {
+      hiveDb.abortTransactions(openTxns);
+      validTxnList = getTxnMgr().getValidTxns();
+      if (validTxnList.getMinOpenTxn() != null) {
+        openTxns = getOpenTxns(validTxnList);
+        LOG.warn("REPL DUMP unable to force abort all the open txns: {} after timeout due to unknown reasons. " +
+                "However, this is rare case that shouldn't happen.", openTxns);
+        throw new IllegalStateException("REPL DUMP triggered abort txns failed for unknown reasons.");
+      }
+    }
+    return validTxnList.toString();
   }
 
   private ReplicationSpec getNewReplicationSpec(String evState, String objState,

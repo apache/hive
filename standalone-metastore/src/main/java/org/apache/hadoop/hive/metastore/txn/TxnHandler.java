@@ -1135,15 +1135,14 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         long nextWriteId = validWriteIdList.getHighWatermark() + 1;
         rs = stmt.executeQuery(s);
         if (!rs.next()) {
-          // First allocation of write id should add the table to the next_write_id meta table
-          // The initial value for write id should be 1 and hence we add 1 with number of write ids allocated here
+          // First allocation of write id (hwm+1) should add the table to the next_write_id meta table.
           s = "insert into NEXT_WRITE_ID (nwi_database, nwi_table, nwi_next) values ("
                   + quoteString(dbName) + "," + quoteString(tblName) + ","
                   + Long.toString(nextWriteId) + ")";
           LOG.debug("Going to execute insert <" + s + ">");
           stmt.execute(s);
         } else {
-          // Update the NEXT_WRITE_ID for the given table after incrementing by number of write ids allocated
+          // Update the NEXT_WRITE_ID for the given table with hwm+1 from source
           s = "update NEXT_WRITE_ID set nwi_next = " + (nextWriteId)
                   + " where nwi_database = " + quoteString(dbName)
                   + " and nwi_table = " + quoteString(tblName);
