@@ -395,6 +395,14 @@ public abstract class AsyncPbRpcProxy<ProtocolType, TokenType extends TokenIdent
     this.token = token;
     if (token != null) {
       String tokenUser = getTokenUser(token);
+      if (tokenUser == null) {
+        try {
+          tokenUser = UserGroupInformation.getCurrentUser().getShortUserName();
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
+        LOG.warn("Cannot determine token user from the token; using {}", tokenUser);
+      }
       this.tokenUser = tokenUser;
     } else {
       this.tokenUser = null;
@@ -436,12 +444,15 @@ public abstract class AsyncPbRpcProxy<ProtocolType, TokenType extends TokenIdent
 
   private ProtocolType createProxy(
       final LlapNodeId nodeId, Token<TokenType> nodeToken) throws IOException {
-    if (nodeToken == null && token == null) {
+    if (nodeToken == null && this.token == null) {
       if (LOG.isDebugEnabled()) {
         LOG.debug("Creating a client without a token for " + nodeId);
       }
       return createProtocolImpl(getConfig(), nodeId.getHostname(),
           nodeId.getPort(), null, retryPolicy, socketFactory);
+    }
+    if (this.token != null && this.tokenUser == null) {
+      throw new AssertionError("Invalid internal state from " + this.token);
     }
     // Either the token should be passed in here, or in ctor.
     String tokenUser = this.tokenUser == null ? getTokenUser(nodeToken) : this.tokenUser;
