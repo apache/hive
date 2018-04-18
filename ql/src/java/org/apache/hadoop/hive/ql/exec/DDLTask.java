@@ -3969,7 +3969,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * how this is desirable.
    *
    * As of HIVE-14993, WriteEntity with different WriteType must be considered different.
-   * So WriteEntity create in DDLTask cause extra output in golden files, but only because
+   * So WriteEntity created in DDLTask cause extra output in golden files, but only because
    * DDLTask sets a different WriteType for the same Entity.
    *
    * In the spirit of bug-for-bug compatibility, this method ensures we only add new
