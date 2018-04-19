@@ -133,6 +133,13 @@ public class CoreNegativeCliDriver extends CliAdapter{
             debugHint : "\r\n" + result.getCapturedOutput();
         qt.failedDiff(result.getReturnCode(), fname, message);
       }
+    } catch (Error error) {
+      QTestProcessExecResult qTestProcessExecResult = qt.checkNegativeResults(fname, error);
+      if (qTestProcessExecResult.getReturnCode() != 0) {
+        String message = Strings.isNullOrEmpty(qTestProcessExecResult.getCapturedOutput()) ? debugHint :
+            "\r\n" + qTestProcessExecResult.getCapturedOutput();
+        qt.failedDiff(qTestProcessExecResult.getReturnCode(), fname, message);
+      }
     }
     catch (Exception e) {
       qt.failed(e, fname, debugHint);
