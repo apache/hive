@@ -14,20 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
+package org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc;
 
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.rules.AbstractJoinExtractFilterRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJdbcConverter;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.HiveJdbcConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 
 /**
  * JDBCExtractJoinFilterRule extracts out the {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter}
  * from a {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin} operator. 
  * if the HiveFilter could be replaced by two HiveFilter operators that one of them could be pushed down below the
- * {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJdbcConverter}
+ * {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.HiveJdbcConverter}
  */
 
 

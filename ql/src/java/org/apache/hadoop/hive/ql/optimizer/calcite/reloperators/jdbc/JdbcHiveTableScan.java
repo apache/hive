@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.optimizer.calcite.reloperators;
+package org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc;
 
 import java.util.List;
 
@@ -27,6 +27,7 @@ import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelNode;
 
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 /**
  * Relational expression representing a scan of a HiveDB collection.
  *

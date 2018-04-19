@@ -177,7 +177,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExcept;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveGroupingID;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIntersect;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJdbcConverter;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.HiveJdbcConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
@@ -186,7 +186,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableFunctionScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.JdbcHiveTableScan;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.JdbcHiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateJoinTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateProjectMergeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregatePullUpConstantsRule;
@@ -235,15 +235,15 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveUnionMergeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveUnionPullUpConstantsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveWindowingFixRule;
 
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.JDBCAggregationPushDownRule;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.JDBCFilterJoinRule;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.JDBCFilterPushDownRule;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.JDBCExtractJoinFilterRule;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.JDBCJoinPushDownRule;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.JDBCProjectPushDownRule;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.JDBCSortPushDownRule;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.JDBCUnionPushDownRule;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.JDBCAbstractSplitFilterRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCAggregationPushDownRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCFilterJoinRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCFilterPushDownRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCExtractJoinFilterRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCJoinPushDownRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCProjectPushDownRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCSortPushDownRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCUnionPushDownRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCAbstractSplitFilterRule;
 
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveAggregateIncrementalRewritingRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewRule;
@@ -1850,11 +1850,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
       );
       perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Druid transformation rules");
 
-      // 11. Apply Jdbc transformation rules
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Original plan for jdbc rules:" + System.lineSeparator() + RelOptUtil.toString(calciteOptimizedPlan));
-      }
-
       calciteOptimizedPlan = hepPlan(calciteOptimizedPlan, true, mdProvider.getMetadataProvider(), null,
               HepMatchOrder.TOP_DOWN,
               JDBCExtractJoinFilterRule.INSTANCE,
@@ -1865,10 +1860,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
               JDBCFilterPushDownRule.INSTANCE, JDBCProjectPushDownRule.INSTANCE, 
               JDBCAggregationPushDownRule.INSTANCE, JDBCSortPushDownRule.INSTANCE
       );
-
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Updated plan after jdbc rules:" + System.lineSeparator() + RelOptUtil.toString(calciteOptimizedPlan));
-      }
 
       // 12. Run rules to aid in translation from Calcite tree to Hive tree
       if (HiveConf.getBoolVar(conf, ConfVars.HIVE_CBO_RETPATH_HIVEOP)) {
@@ -2799,19 +2790,19 @@ public class CalcitePlanner extends SemanticAnalyzer {
                 HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_DRUID_BROKER_DEFAULT_ADDRESS);
             String dataSource = tabMetaData.getParameters().get(Constants.DRUID_DATA_SOURCE);
             Set<String> metrics = new HashSet<>();
-          RexBuilder rexBuilder = cluster.getRexBuilder();
-          RelDataTypeFactory dtFactory = rexBuilder.getTypeFactory();
+            RexBuilder rexBuilder = cluster.getRexBuilder();
+            RelDataTypeFactory dtFactory = rexBuilder.getTypeFactory();
             List<RelDataType> druidColTypes = new ArrayList<>();
             List<String> druidColNames = new ArrayList<>();
-          //@TODO FIX this, we actually do not need this anymore,
-          // in addition to that Druid allow numeric dimensions now so this check is not accurate
+            //@TODO FIX this, we actually do not need this anymore,
+            // in addition to that Druid allow numeric dimensions now so this check is not accurate
             for (RelDataTypeField field : rowType.getFieldList()) {
-            if (DruidTable.DEFAULT_TIMESTAMP_COLUMN.equals(field.getName())) {
-              // Druid's time column is always not null.
-              druidColTypes.add(dtFactory.createTypeWithNullability(field.getType(), false));
-            } else {
-              druidColTypes.add(field.getType());
-            }
+              if (DruidTable.DEFAULT_TIMESTAMP_COLUMN.equals(field.getName())) {
+                // Druid's time column is always not null.
+                druidColTypes.add(dtFactory.createTypeWithNullability(field.getType(), false));
+              } else {
+                druidColTypes.add(field.getType());
+              }
               druidColNames.add(field.getName());
               if (field.getName().equals(DruidTable.DEFAULT_TIMESTAMP_COLUMN)) {
                 // timestamp
@@ -2823,13 +2814,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
               }
               metrics.add(field.getName());
             }
-            // TODO: Default interval will be an Interval once Calcite 1.15.0 is released.
-            // We will need to update the type of this list.
-          List<Interval> intervals = Arrays.asList(DruidTable.DEFAULT_INTERVAL);
-          rowType = dtFactory.createStructType(druidColTypes, druidColNames);
-          DruidTable druidTable = new DruidTable(new DruidSchema(address, address, false),
-              dataSource, RelDataTypeImpl.proto(rowType), metrics, DruidTable.DEFAULT_TIMESTAMP_COLUMN,
-              intervals, null, null);
+
+            List<Interval> intervals = Arrays.asList(DruidTable.DEFAULT_INTERVAL);
+            rowType = dtFactory.createStructType(druidColTypes, druidColNames);
+            DruidTable druidTable = new DruidTable(new DruidSchema(address, address, false),
+                dataSource, RelDataTypeImpl.proto(rowType), metrics, DruidTable.DEFAULT_TIMESTAMP_COLUMN,
+                intervals, null, null);
 
             tableRel = DruidQuery.create(cluster, cluster.traitSetOf(BindableConvention.INSTANCE),
               optTable, druidTable, ImmutableList.<RelNode>of(hts));
