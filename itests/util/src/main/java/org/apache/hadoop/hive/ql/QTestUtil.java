@@ -1620,6 +1620,32 @@ public class QTestUtil {
     return result;
   }
 
+  public QTestProcessExecResult checkNegativeResults(String tname, Error e) throws Exception {
+
+    String outFileExtension = getOutFileExtension(tname);
+
+    File qf = new File(outDir, tname);
+    String expf = outPath(outDir.toString(), tname.concat(outFileExtension));
+
+    File outf = null;
+    outf = new File(logDir);
+    outf = new File(outf, qf.getName().concat(outFileExtension));
+
+    FileWriter outfd = new FileWriter(outf, true);
+
+    outfd
+        .write("FAILED: " + e.getClass().getSimpleName() + " " + e.getClass().getName() + ": " + e.getMessage() + "\n");
+    outfd.close();
+
+    QTestProcessExecResult result = executeDiffCommand(outf.getPath(), expf, false, qSortSet.contains(qf.getName()));
+    if (overWrite) {
+      overwriteResults(outf.getPath(), expf);
+      return QTestProcessExecResult.createWithoutOutput(0);
+    }
+
+    return result;
+  }
+
   public QTestProcessExecResult checkParseResults(String tname, ASTNode tree) throws Exception {
 
     if (tree != null) {
