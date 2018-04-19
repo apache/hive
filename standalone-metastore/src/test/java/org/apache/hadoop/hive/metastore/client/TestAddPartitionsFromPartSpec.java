@@ -27,7 +27,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
-import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -45,7 +44,6 @@ import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.thrift.TException;
-import org.apache.thrift.transport.TTransportException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -170,10 +168,9 @@ public class TestAddPartitionsFromPartSpec extends MetaStoreClientTest {
 
   // TODO add tests for partitions in other catalogs
 
-  @Test(expected = NullPointerException.class)
+  @Test(expected = MetaException.class)
   public void testAddPartitionSpecNullSpec() throws Exception {
 
-    // TODO: NPE should not be thrown.
     client.add_partitions_pspec(null);
   }
 
@@ -186,51 +183,36 @@ public class TestAddPartitionsFromPartSpec extends MetaStoreClientTest {
     client.add_partitions_pspec(partitionSpec);
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testAddPartitionSpecNullPartList() throws Exception {
 
     createTable();
     List<Partition> partitions = null;
     PartitionSpecProxy partitionSpec = buildPartitionSpec(DB_NAME, TABLE_NAME, null, partitions);
-    try {
-      client.add_partitions_pspec(partitionSpec);
-      Assert.fail("Exception should have been thrown.");
-    } catch (NullPointerException | TTransportException e) {
-      // TODO: NPE should not be thrown.
-    }
+    client.add_partitions_pspec(partitionSpec);
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testAddPartitionSpecNoDB() throws Exception {
 
     createTable();
     Partition partition = buildPartition(DB_NAME, TABLE_NAME, DEFAULT_YEAR_VALUE);
     PartitionSpecProxy partitionSpecProxy =
         buildPartitionSpec(null, TABLE_NAME, null, Lists.newArrayList(partition));
-    try {
-      client.add_partitions_pspec(partitionSpecProxy);
-      Assert.fail("Exception should have been thrown.");
-    } catch (NullPointerException | TTransportException e) {
-      // TODO: NPE should not be thrown.
-    }
+    client.add_partitions_pspec(partitionSpecProxy);
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testAddPartitionSpecNoTable() throws Exception {
 
     createTable();
     Partition partition = buildPartition(DB_NAME, TABLE_NAME, DEFAULT_YEAR_VALUE);
     PartitionSpecProxy partitionSpecProxy =
         buildPartitionSpec(DB_NAME, null, null, Lists.newArrayList(partition));
-    try {
-      client.add_partitions_pspec(partitionSpecProxy);
-      Assert.fail("Exception should have been thrown.");
-    } catch (NullPointerException | TTransportException e) {
-      // TODO: NPE should not be thrown.
-    }
+    client.add_partitions_pspec(partitionSpecProxy);
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testAddPartitionSpecNoDBAndTableInPartition() throws Exception {
 
     createTable();
@@ -239,12 +221,7 @@ public class TestAddPartitionsFromPartSpec extends MetaStoreClientTest {
     partition.setTableName(null);
     PartitionSpecProxy partitionSpecProxy =
         buildPartitionSpec(DB_NAME, TABLE_NAME, null, Lists.newArrayList(partition));
-    try {
-      client.add_partitions_pspec(partitionSpecProxy);
-      Assert.fail("Exception should have been thrown.");
-    } catch (NullPointerException | TTransportException e) {
-      // TODO: NPE should not be thrown.
-    }
+    client.add_partitions_pspec(partitionSpecProxy);
   }
 
   @Test
@@ -346,7 +323,7 @@ public class TestAddPartitionsFromPartSpec extends MetaStoreClientTest {
     }
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testAddPartitionSpecNullPart() throws Exception {
 
     createTable();
@@ -357,11 +334,7 @@ public class TestAddPartitionsFromPartSpec extends MetaStoreClientTest {
     partitions.add(partition2);
     PartitionSpecProxy partitionSpecProxy =
         buildPartitionSpec(DB_NAME, TABLE_NAME, null, partitions);
-    try {
-      client.add_partitions_pspec(partitionSpecProxy);
-    } catch (NullPointerException e) {
-      // TODO: NPE should not be thrown.
-    }
+    client.add_partitions_pspec(partitionSpecProxy);
   }
 
   @Test
@@ -457,7 +430,7 @@ public class TestAddPartitionsFromPartSpec extends MetaStoreClientTest {
     client.add_partitions_pspec(partitionSpecProxy);
   }
 
-  @Test(expected = NullPointerException.class)
+  @Test(expected = MetaException.class)
   public void testAddPartitionSpecChangeRootPathToNull() throws Exception {
 
     Table table = createTable();
@@ -467,7 +440,6 @@ public class TestAddPartitionsFromPartSpec extends MetaStoreClientTest {
         buildPartitionSpec(DB_NAME, TABLE_NAME, rootPath, Lists.newArrayList(partition));
     partitionSpecProxy.setRootLocation(null);
     client.add_partitions_pspec(partitionSpecProxy);
-    // TODO: NPE should not be thrown.
   }
 
   @Test(expected = MetaException.class)
@@ -570,7 +542,7 @@ public class TestAddPartitionsFromPartSpec extends MetaStoreClientTest {
     client.add_partitions_pspec(partitionSpecProxy);
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testAddPartitionSpecWithSharedSDNullSd() throws Exception {
 
     createTable();
@@ -578,12 +550,7 @@ public class TestAddPartitionsFromPartSpec extends MetaStoreClientTest {
     StorageDescriptor sd = null;
     PartitionSpecProxy partitionSpecProxy =
         buildPartitionSpecWithSharedSD(Lists.newArrayList(partition), sd);
-    try {
-      client.add_partitions_pspec(partitionSpecProxy);
-      Assert.fail("Exception should have been thrown.");
-    } catch (NullPointerException | TTransportException e) {
-      // TODO: NPE should not be thrown.
-    }
+    client.add_partitions_pspec(partitionSpecProxy);
   }
 
   @Test(expected = MetaException.class)
@@ -688,7 +655,7 @@ public class TestAddPartitionsFromPartSpec extends MetaStoreClientTest {
     client.add_partitions_pspec(partitionSpecProxy);
   }
 
-  @Test
+  @Test(expected=MetaException.class)
   public void testAddPartitionSpecWithSharedSDNoValue() throws Exception {
 
     Table table = createTable();
@@ -697,12 +664,7 @@ public class TestAddPartitionsFromPartSpec extends MetaStoreClientTest {
     String location = table.getSd().getLocation() + "/nullValueTest/";
     PartitionSpecProxy partitionSpecProxy =
         buildPartitionSpecWithSharedSD(Lists.newArrayList(partition), buildSD(location));
-    try {
-      client.add_partitions_pspec(partitionSpecProxy);
-      Assert.fail("Exception should have been thrown.");
-    } catch (NullPointerException | TTransportException e) {
-      // TODO: NPE should not be thrown.
-    }
+    client.add_partitions_pspec(partitionSpecProxy);
   }
 
   @Test(expected=MetaException.class)
@@ -721,18 +683,15 @@ public class TestAddPartitionsFromPartSpec extends MetaStoreClientTest {
     client.add_partitions_pspec(partitionSpecProxy);
   }
 
-  @Test
-  public void testAddPartitionSpecNullValue() throws Exception {
+  @Test(expected = MetaException.class)
+  public void testAddPartitionSpecNullValues() throws Exception {
 
     createTable();
     Partition partition = buildPartition(DB_NAME, TABLE_NAME, null);
+    partition.setValues(null);
     PartitionSpecProxy partitionSpecProxy =
         buildPartitionSpec(DB_NAME, TABLE_NAME, null, Lists.newArrayList(partition));
-    try {
-      client.add_partitions_pspec(partitionSpecProxy);
-    } catch (NullPointerException e) {
-      // TODO: NPE should not be thrown
-    }
+    client.add_partitions_pspec(partitionSpecProxy);
   }
 
   @Test
@@ -821,7 +780,7 @@ public class TestAddPartitionsFromPartSpec extends MetaStoreClientTest {
 
   // Helper methods
   private void createDB(String dbName) throws TException {
-    Database db = new DatabaseBuilder().setName(dbName).create(client, metaStore.getConf());
+    new DatabaseBuilder().setName(dbName).create(client, metaStore.getConf());
   }
 
   private Table createTable() throws Exception {
@@ -831,7 +790,7 @@ public class TestAddPartitionsFromPartSpec extends MetaStoreClientTest {
 
   private Table createTable(String dbName, String tableName, List<FieldSchema> partCols,
       String location) throws Exception {
-    Table table = new TableBuilder()
+    new TableBuilder()
         .setDbName(dbName)
         .setTableName(tableName)
         .addCol("test_id", "int", "test col id")
@@ -956,7 +915,7 @@ public class TestAddPartitionsFromPartSpec extends MetaStoreClientTest {
   }
 
   private PartitionSpecProxy buildPartitionSpec(String dbName, String tableName, String rootPath,
-      List<Partition> partitions) {
+      List<Partition> partitions) throws MetaException {
 
     PartitionSpec partitionSpec = new PartitionSpec();
     partitionSpec.setDbName(dbName);
@@ -987,7 +946,7 @@ public class TestAddPartitionsFromPartSpec extends MetaStoreClientTest {
   }
 
   private PartitionSpecProxy buildPartitionSpecWithSharedSD(List<PartitionWithoutSD> partitions,
-      StorageDescriptor sd) {
+      StorageDescriptor sd) throws MetaException {
 
     PartitionSpec partitionSpec = new PartitionSpec();
     partitionSpec.setDbName(DB_NAME);

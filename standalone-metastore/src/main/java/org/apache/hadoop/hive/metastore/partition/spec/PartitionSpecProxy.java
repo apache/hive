@@ -100,8 +100,9 @@ public abstract class PartitionSpecProxy {
      * Factory method. Construct PartitionSpecProxy from raw PartitionSpec.
      * @param partSpec Raw PartitionSpec from the Thrift API.
      * @return PartitionSpecProxy instance.
+     * @throws MetaException
      */
-    public static PartitionSpecProxy get(PartitionSpec partSpec) {
+    public static PartitionSpecProxy get(PartitionSpec partSpec) throws MetaException {
 
       if (partSpec == null) {
         return null;
@@ -123,8 +124,9 @@ public abstract class PartitionSpecProxy {
      * Factory method to construct CompositePartitionSpecProxy.
      * @param partitionSpecs List of raw PartitionSpecs.
      * @return A CompositePartitionSpecProxy instance.
+     * @throws MetaException
      */
-    public static PartitionSpecProxy get(List<PartitionSpec> partitionSpecs) {
+    public static PartitionSpecProxy get(List<PartitionSpec> partitionSpecs) throws MetaException {
       return new CompositePartitionSpecProxy(partitionSpecs);
     }
 

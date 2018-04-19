@@ -40,7 +40,7 @@ public class CompositePartitionSpecProxy extends PartitionSpecProxy {
   private List<PartitionSpecProxy> partitionSpecProxies;
   private int size = 0;
 
-  protected CompositePartitionSpecProxy(List<PartitionSpec> partitionSpecs) {
+  protected CompositePartitionSpecProxy(List<PartitionSpec> partitionSpecs) throws MetaException {
     this.partitionSpecs = partitionSpecs;
     if (partitionSpecs.isEmpty()) {
       catName = null;
@@ -63,13 +63,13 @@ public class CompositePartitionSpecProxy extends PartitionSpecProxy {
   }
 
   @Deprecated
-  protected CompositePartitionSpecProxy(String dbName, String tableName, List<PartitionSpec> partitionSpecs) {
+  protected CompositePartitionSpecProxy(String dbName, String tableName, List<PartitionSpec> partitionSpecs) throws MetaException {
     this(DEFAULT_CATALOG_NAME, dbName, tableName, partitionSpecs);
 
   }
 
   protected CompositePartitionSpecProxy(String catName, String dbName, String tableName,
-                                        List<PartitionSpec> partitionSpecs) {
+                                        List<PartitionSpec> partitionSpecs) throws MetaException {
     this.catName = catName;
     this.dbName = dbName;
     this.tableName = tableName;
