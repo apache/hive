@@ -877,6 +877,11 @@ public class MetastoreConf {
         "hive.metastore.wm.default.pool.size", 4,
         "The size of a default pool to create when creating an empty resource plan;\n" +
         "If not positive, no default pool will be created."),
+    RAWSTORE_PARTITION_BATCH_SIZE("metastore.rawstore.batch.size",
+        "metastore.rawstore.batch.size", -1,
+        "Batch size for partition and other object retrieval from the underlying DB in JDO.\n" +
+        "The JDO implementation such as DataNucleus may run into issues when the generated queries are\n" +
+        "too large. Use this parameter to break the query into multiple batches. -1 means no batching."),
 
     // Hive values we have copied and use as is
     // These two are used to indicate that we are running tests

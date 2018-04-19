@@ -269,3 +269,91 @@ POSTHOOK: Input: target@src1
 278	val_278
 98	val_98
 484	val_484
+PREHOOK: query: create table source.src2 like default.src
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:source
+PREHOOK: Output: source@src2
+POSTHOOK: query: create table source.src2 like default.src
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:source
+POSTHOOK: Output: source@src2
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table source.src2
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: source@src2
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table source.src2
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: source@src2
+PREHOOK: query: ANALYZE TABlE source.src2 COMPUTE STATISTICS FOR COLUMNS
+PREHOOK: type: QUERY
+PREHOOK: Input: source@src2
+#### A masked pattern was here ####
+PREHOOK: Output: source@src2
+POSTHOOK: query: ANALYZE TABlE source.src2 COMPUTE STATISTICS FOR COLUMNS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: source@src2
+#### A masked pattern was here ####
+POSTHOOK: Output: source@src2
+PREHOOK: query: ALTER TABLE source.src2 RENAME TO target.src3
+PREHOOK: type: ALTERTABLE_RENAME
+PREHOOK: Input: source@src2
+PREHOOK: Output: source@src2
+POSTHOOK: query: ALTER TABLE source.src2 RENAME TO target.src3
+POSTHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: Input: source@src2
+POSTHOOK: Output: source@src2
+POSTHOOK: Output: target@src3
+PREHOOK: query: DESC FORMATTED target.src3
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: target@src3
+POSTHOOK: query: DESC FORMATTED target.src3
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: target@src3
+# col_name            	data_type           	comment             
+key                 	string              	default             
+value               	string              	default             
+	 	 
+# Detailed Table Information	 	 
+Database:           	target              	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+#### A masked pattern was here ####
+	numFiles            	1                   
+	numRows             	500                 
+	rawDataSize         	5312                
+	totalSize           	5812                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: select * from target.src3 tablesample (10 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: target@src3
+#### A masked pattern was here ####
+POSTHOOK: query: select * from target.src3 tablesample (10 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: target@src3
+#### A masked pattern was here ####
+238	val_238
+86	val_86
+311	val_311
+27	val_27
+165	val_165
+409	val_409
+255	val_255
+278	val_278
+98	val_98
+484	val_484

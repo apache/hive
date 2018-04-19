@@ -253,6 +253,7 @@ public class ObjectStore implements RawStore, Configurable {
   private static Properties prop = null;
   private static PersistenceManagerFactory pmf = null;
   private static boolean forTwoMetastoreTesting = false;
+  private int batchSize = Batchable.NO_BATCHING;
 
   private static final DateTimeFormatter YMDHMS_FORMAT = DateTimeFormatter.ofPattern(
       "yyyy_MM_dd_HH_mm_ss");
@@ -395,6 +396,8 @@ public class ObjectStore implements RawStore, Configurable {
       if (registry != null) {
         directSqlErrors = Metrics.getOrCreateCounter(MetricsConstants.DIRECTSQL_ERRORS);
       }
+
+      this.batchSize = MetastoreConf.getIntVar(conf, ConfVars.RAWSTORE_PARTITION_BATCH_SIZE);
 
       if (!isInitialized) {
         throw new RuntimeException(
@@ -8609,25 +8612,33 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
 
-      List<MTableColumnStatistics> result = null;
       validateTableCols(table, colNames);
       Query query = queryWrapper.query = pm.newQuery(MTableColumnStatistics.class);
-      String filter = "tableName == t1 && dbName == t2 && catName == t3 && (";
-      String paramStr = "java.lang.String t1, java.lang.String t2, java.lang.String t3";
-      Object[] params = new Object[colNames.size() + 3];
-      params[0] = table.getTableName();
-      params[1] = table.getDbName();
-      params[2] = table.getCatName();
-      for (int i = 0; i < colNames.size(); ++i) {
-        filter += ((i == 0) ? "" : " || ") + "colName == c" + i;
-        paramStr += ", java.lang.String c" + i;
-        params[i + 3] = colNames.get(i);
-      }
-      filter += ")";
-      query.setFilter(filter);
-      query.declareParameters(paramStr);
-      result = (List<MTableColumnStatistics>) query.executeWithArray(params);
-      pm.retrieveAll(result);
+      List<MTableColumnStatistics> result =
+          Batchable.runBatched(batchSize, colNames, new Batchable<String, MTableColumnStatistics>() {
+            @Override
+            public List<MTableColumnStatistics> run(List<String> input)
+                throws MetaException {
+              String filter = "tableName == t1 && dbName == t2 && catName == t3 && (";
+              String paramStr = "java.lang.String t1, java.lang.String t2, java.lang.String t3";
+              Object[] params = new Object[input.size() + 3];
+              params[0] = table.getTableName();
+              params[1] = table.getDbName();
+              params[2] = table.getCatName();
+              for (int i = 0; i < input.size(); ++i) {
+                filter += ((i == 0) ? "" : " || ") + "colName == c" + i;
+                paramStr += ", java.lang.String c" + i;
+                params[i + 3] = input.get(i);
+              }
+              filter += ")";
+              query.setFilter(filter);
+              query.declareParameters(paramStr);
+              List<MTableColumnStatistics> paritial = (List<MTableColumnStatistics>) query.executeWithArray(params);
+              pm.retrieveAll(paritial);
+              return paritial;
+            }
+          });
+
       if (result.size() > colNames.size()) {
         throw new MetaException("Unexpected " + result.size() + " statistics for "
             + colNames.size() + " columns");
