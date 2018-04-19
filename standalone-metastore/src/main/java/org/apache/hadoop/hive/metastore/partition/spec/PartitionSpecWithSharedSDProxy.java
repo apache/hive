@@ -38,8 +38,11 @@ public class PartitionSpecWithSharedSDProxy extends PartitionSpecProxy {
 
   private PartitionSpec partitionSpec;
 
-  public PartitionSpecWithSharedSDProxy(PartitionSpec partitionSpec) {
+  public PartitionSpecWithSharedSDProxy(PartitionSpec partitionSpec) throws MetaException {
     assert partitionSpec.isSetSharedSDPartitionSpec();
+    if (partitionSpec.getSharedSDPartitionSpec().getSd() == null) {
+      throw new MetaException("The shared storage descriptor must be set.");
+    }
     this.partitionSpec = partitionSpec;
   }
 
