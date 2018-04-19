@@ -3250,6 +3250,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                 part.getTableName(), part.toString());
             throw new MetaException(errorMsg);
           }
+          if (part.getValues() == null || part.getValues().isEmpty()) {
+            throw new MetaException("The partition values cannot be null or empty.");
+          }
+          if (part.getValues().contains(null)) {
+            throw new MetaException("Partition value cannot be null.");
+          }
 
           boolean shouldAdd = startAddPartition(ms, part, ifNotExists);
           if (!shouldAdd) {
@@ -3410,7 +3416,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     public int add_partitions(final List<Partition> parts) throws MetaException,
         InvalidObjectException, AlreadyExistsException {
       startFunction("add_partition");
-      if (parts.size() == 0) {
+      if (parts == null) {
+        throw new MetaException("Partition list cannot be null.");
+      }
+      if (parts.isEmpty()) {
         return 0;
       }
 
@@ -3471,6 +3480,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                                           boolean ifNotExists)
         throws TException {
       boolean success = false;
+      if (dbName == null || tblName == null) {
+        throw new MetaException("The database and table name cannot be null.");
+      }
       // Ensures that the list doesn't have dups, and keeps track of directories we have created.
       final Map<PartValEqWrapperLite, Boolean> addedPartitions = new ConcurrentHashMap<>();
       PartitionSpecProxy partitionSpecProxy = PartitionSpecProxy.Factory.get(partSpecs);
@@ -3496,11 +3508,17 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           // will be created if the list contains an invalid partition.
           final Partition part = partitionIterator.getCurrent();
 
+          if (part.getDbName() == null || part.getTableName() == null) {
+            throw new MetaException("The database and table name must be set in the partition.");
+          }
           if (!part.getTableName().equalsIgnoreCase(tblName) || !part.getDbName().equalsIgnoreCase(dbName)) {
             String errorMsg = String.format(
                 "Partition does not belong to target table %s.%s. It belongs to the table %s.%s : %s",
                 dbName, tblName, part.getDbName(), part.getTableName(), part.toString());
             throw new MetaException(errorMsg);
+          }
+          if (part.getValues() == null || part.getValues().isEmpty()) {
+            throw new MetaException("The partition values cannot be null or empty.");
           }
 
           boolean shouldAdd = startAddPartition(ms, part, ifNotExists);
@@ -3733,6 +3751,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
         firePreEvent(new PreAddPartitionEvent(tbl, part, this));
 
+        if (part.getValues() == null || part.getValues().isEmpty()) {
+          throw new MetaException("The partition values cannot be null or empty.");
+        }
         boolean shouldAdd = startAddPartition(ms, part, false);
         assert shouldAdd; // start would throw if it already existed here
         boolean madeDir = createLocationForAddedPartition(tbl, part);
@@ -3789,6 +3810,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         final Partition part, EnvironmentContext envContext)
         throws InvalidObjectException, AlreadyExistsException,
         MetaException {
+      if (part == null) {
+        throw new MetaException("Partition cannot be null.");
+      }
       startTableFunction("add_partition",
           part.getCatName(), part.getDbName(), part.getTableName());
       Partition ret = null;
