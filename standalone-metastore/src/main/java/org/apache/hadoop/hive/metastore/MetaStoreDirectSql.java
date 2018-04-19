@@ -455,7 +455,7 @@ class MetaStoreDirectSql {
     if (partNames.isEmpty()) {
       return Collections.emptyList();
     }
-    return runBatched(partNames, new Batchable<String, Partition>() {
+    return Batchable.runBatched(batchSize, partNames, new Batchable<String, Partition>() {
       @Override
       public List<Partition> run(List<String> input) throws MetaException {
         String filter = "" + PARTITIONS + ".\"PART_NAME\" in (" + makeParams(input.size()) + ")";
@@ -596,7 +596,7 @@ class MetaStoreDirectSql {
     }
 
     // Get full objects. For Oracle/etc. do it in batches.
-    List<Partition> result = runBatched(sqlResult, new Batchable<Object, Partition>() {
+    List<Partition> result = Batchable.runBatched(batchSize, sqlResult, new Batchable<Object, Partition>() {
       @Override
       public List<Partition> run(List<Object> input) throws MetaException {
         return getPartitionsFromPartitionIds(catNameLcase, dbNameLcase, tblNameLcase, isView,
@@ -1374,7 +1374,7 @@ class MetaStoreDirectSql {
         return ensureList(qResult);
       }
     };
-    List<Object[]> list = runBatched(colNames, b);
+    List<Object[]> list = Batchable.runBatched(batchSize, colNames, b);
     if (list.isEmpty()) {
       return null;
     }
@@ -1460,10 +1460,10 @@ class MetaStoreDirectSql {
         + " where \"CAT_NAME\" = ? and \"DB_NAME\" = ? and \"TABLE_NAME\" = ? "
         + " and \"COLUMN_NAME\" in (%1$s) and \"PARTITION_NAME\" in (%2$s)"
         + " group by \"PARTITION_NAME\"";
-    List<Long> allCounts = runBatched(colNames, new Batchable<String, Long>() {
+    List<Long> allCounts = Batchable.runBatched(batchSize, colNames, new Batchable<String, Long>() {
       @Override
       public List<Long> run(final List<String> inputColName) throws MetaException {
-        return runBatched(partNames, new Batchable<String, Long>() {
+        return Batchable.runBatched(batchSize, partNames, new Batchable<String, Long>() {
           @Override
           public List<Long> run(List<String> inputPartNames) throws MetaException {
             long partsFound = 0;
@@ -1503,10 +1503,10 @@ class MetaStoreDirectSql {
     final String tableName, final List<String> partNames, List<String> colNames, long partsFound,
     final boolean useDensityFunctionForNDVEstimation, final double ndvTuner, final boolean enableBitVector) throws MetaException {
     final boolean areAllPartsFound = (partsFound == partNames.size());
-    return runBatched(colNames, new Batchable<String, ColumnStatisticsObj>() {
+    return Batchable.runBatched(batchSize, colNames, new Batchable<String, ColumnStatisticsObj>() {
       @Override
       public List<ColumnStatisticsObj> run(final List<String> inputColNames) throws MetaException {
-        return runBatched(partNames, new Batchable<String, ColumnStatisticsObj>() {
+        return Batchable.runBatched(batchSize, partNames, new Batchable<String, ColumnStatisticsObj>() {
           @Override
           public List<ColumnStatisticsObj> run(List<String> inputPartNames) throws MetaException {
             return columnStatisticsObjForPartitionsBatch(catName, dbName, tableName, inputPartNames,
@@ -1918,13 +1918,13 @@ class MetaStoreDirectSql {
           }
         };
         try {
-          return runBatched(partNames, b2);
+          return Batchable.runBatched(batchSize, partNames, b2);
         } finally {
           addQueryAfterUse(b2);
         }
       }
     };
-    List<Object[]> list = runBatched(colNames, b);
+    List<Object[]> list = Batchable.runBatched(batchSize, colNames, b);
 
     List<ColumnStatistics> result = new ArrayList<ColumnStatistics>(
         Math.min(list.size(), partNames.size()));
@@ -2026,49 +2026,6 @@ class MetaStoreDirectSql {
     }
   }
 
-
-  private static abstract class Batchable<I, R> {
-    private List<Query> queries = null;
-    public abstract List<R> run(List<I> input) throws MetaException;
-    public void addQueryAfterUse(Query query) {
-      if (queries == null) {
-        queries = new ArrayList<Query>(1);
-      }
-      queries.add(query);
-    }
-    protected void addQueryAfterUse(Batchable<?, ?> b) {
-      if (b.queries == null) return;
-      if (queries == null) {
-        queries = new ArrayList<Query>(1);
-      }
-      queries.addAll(b.queries);
-    }
-    public void closeAllQueries() {
-      for (Query q : queries) {
-        try {
-          q.closeAll();
-        } catch (Throwable t) {
-          LOG.error("Failed to close a query", t);
-        }
-      }
-    }
-  }
-
-  private <I,R> List<R> runBatched(List<I> input, Batchable<I, R> runnable) throws MetaException {
-    if (batchSize == NO_BATCHING || batchSize >= input.size()) {
-      return runnable.run(input);
-    }
-    List<R> result = new ArrayList<R>(input.size());
-    for (int fromIndex = 0, toIndex = 0; toIndex < input.size(); fromIndex = toIndex) {
-      toIndex = Math.min(fromIndex + batchSize, input.size());
-      List<I> batchedInput = input.subList(fromIndex, toIndex);
-      List<R> batchedOutput = runnable.run(batchedInput);
-      if (batchedOutput != null) {
-        result.addAll(batchedOutput);
-      }
-    }
-    return result;
-  }
 
   public List<SQLForeignKey> getForeignKeys(String catName, String parent_db_name,
                                             String parent_tbl_name, String foreign_db_name,
