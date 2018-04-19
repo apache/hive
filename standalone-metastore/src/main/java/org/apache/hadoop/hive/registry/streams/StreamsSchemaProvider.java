@@ -24,7 +24,7 @@ import org.apache.hadoop.hive.registry.AbstractSchemaProvider;
 import org.apache.hadoop.hive.registry.CompatibilityResult;
 import org.apache.hadoop.hive.registry.SchemaCompatibility;
 import org.apache.hadoop.hive.registry.SchemaFieldInfo;
-import org.apache.hadoop.hive.registry.errors.InvalidSchemaException;
+import org.apache.hadoop.hive.registry.common.errors.InvalidSchemaException;
 
 import java.io.IOException;
 import java.security.MessageDigest;

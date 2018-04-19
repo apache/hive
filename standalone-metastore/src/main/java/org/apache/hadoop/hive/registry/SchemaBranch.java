@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.registry;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.apache.hadoop.hive.metastore.api.ISchemaBranch;
 
 import java.io.Serializable;
 
@@ -30,6 +31,10 @@ public class SchemaBranch implements Serializable {
 
     private static final long serialVersionUID = -5159269803911927338L;
 
+    public static final String ID = "id";
+    public static final String NAME = "name";
+    public static final String SCHEMA_METADATA_NAME = "schemaMetadataName";
+
     private Long id;
     private String name;
     private String schemaMetadataName;
@@ -40,6 +45,13 @@ public class SchemaBranch implements Serializable {
 
     }
 
+    public SchemaBranch(ISchemaBranch iSchemaBranch) {
+      this(iSchemaBranch.getSchemaBranchId(),
+              iSchemaBranch.getName(),
+              iSchemaBranch.getSchemaMetadataName(),
+              iSchemaBranch.getDescription(),
+              iSchemaBranch.getTimestamp());
+    }
     public SchemaBranch(String name, String schemaMetadataName) {
         this(name, schemaMetadataName, null, null);
     }
@@ -55,6 +67,7 @@ public class SchemaBranch implements Serializable {
         this.description = description;
         this.timestamp = timestamp;
     }
+
 
     public Long getId() {
         return this.id;
@@ -106,4 +119,13 @@ public class SchemaBranch implements Serializable {
                 ", timestamp='" + timestamp + '\'' +
                 '}';
     }
+
+  public ISchemaBranch buildThriftSchemaBranchRequest() {
+    ISchemaBranch thriftSchemaBranch = new ISchemaBranch();
+    thriftSchemaBranch.setName(name);
+    thriftSchemaBranch.setDescription(description);
+    thriftSchemaBranch.setSchemaMetadataName(schemaMetadataName);
+    thriftSchemaBranch.setTimestamp(timestamp);
+    return thriftSchemaBranch;
+  }
 }

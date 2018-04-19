@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.registry.SchemaIdVersion;
 import org.apache.hadoop.hive.registry.SchemaVersionInfo;
 import org.apache.hadoop.hive.registry.SchemaVersionKey;
 import org.apache.hadoop.hive.registry.SchemaVersionRetriever;
-import org.apache.hadoop.hive.registry.errors.SchemaNotFoundException;
+import org.apache.hadoop.hive.registry.common.errors.SchemaNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

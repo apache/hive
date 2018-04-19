@@ -644,7 +644,7 @@ class MetaStoreDirectSql {
         }
         if ((sdId != null || colId != null || serdeId != null) || !isView) {
           throw new MetaException("Unexpected null for one of the IDs, SD " + sdId +
-                  ", serde " + serdeId + " for a " + (isView ? "" : "non-") + " view");
+                  ", serdes " + serdeId + " for a " + (isView ? "" : "non-") + " view");
         }
       }
 
@@ -696,7 +696,7 @@ class MetaStoreDirectSql {
         sd.setCols(cols);
       }
 
-      // We assume each SD has an unique serde.
+      // We assume each SD has an unique serdes.
       SerDeInfo serde = new SerDeInfo();
       SerDeInfo oldSerde = serdes.put(serdeId, serde);
       if (oldSerde != null) {

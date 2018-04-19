@@ -18,7 +18,7 @@
 package org.apache.hadoop.hive.metastore.client.builder;
 
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.SchemaVersion;
+import org.apache.hadoop.hive.metastore.api.ISchemaVersion;
 import org.apache.hadoop.hive.metastore.api.SchemaVersionState;
 
 public class SchemaVersionBuilder extends SerdeAndColsBuilder<SchemaVersionBuilder> {
@@ -77,8 +77,8 @@ public class SchemaVersionBuilder extends SerdeAndColsBuilder<SchemaVersionBuild
     return this;
   }
 
-  public SchemaVersion build() throws MetaException {
-    SchemaVersion schemaVersion = new SchemaVersion(schemaName, version, createdAt, getCols());
+  public ISchemaVersion build() throws MetaException {
+    ISchemaVersion schemaVersion = new ISchemaVersion(schemaName, version, createdAt, getCols());
     if (state != null) schemaVersion.setState(state);
     if (description != null) schemaVersion.setDescription(description);
     if (schemaText != null) schemaVersion.setSchemaText(schemaText);

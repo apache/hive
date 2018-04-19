@@ -496,7 +496,7 @@ public class Partition implements Serializable {
       }
       return HiveMetaStoreUtils.getFieldsFromDeserializer(table.getTableName(), getDeserializer());
     } catch (Exception e) {
-      LOG.error("Unable to get cols from serde: " +
+      LOG.error("Unable to get cols from serdes: " +
           tPartition.getSd().getSerdeInfo().getSerializationLib(), e);
     }
 

@@ -84,7 +84,7 @@ public class TestHCatInputFormat extends HCatBaseTest {
     Assert.assertEquals(0, driver.run("drop table if exists test_bad_records").getResponseCode());
     Assert.assertEquals(0, driver.run(
       "create table test_bad_records " +
-        "row format serde 'org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer' " +
+        "row format serdes 'org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer' " +
         "with serdeproperties ( " +
         "  'serialization.class'='org.apache.hadoop.hive.serde2.thrift.test.IntString', " +
         "  'serialization.format'='org.apache.thrift.protocol.TBinaryProtocol') " +

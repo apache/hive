@@ -658,7 +658,7 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapOomDebugD
 
     public CleanupThread(ConcurrentHashMap<Object, FileCache<FileData>> fileMap,
         AtomicInteger newEvictions, long cleanupInterval) {
-      super("Llap serde low level cache cleanup thread", fileMap, newEvictions, cleanupInterval);
+      super("Llap serdes low level cache cleanup thread", fileMap, newEvictions, cleanupInterval);
     }
 
     @Override

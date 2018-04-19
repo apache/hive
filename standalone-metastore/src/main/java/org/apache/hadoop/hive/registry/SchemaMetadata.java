@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.registry;
 
+import org.apache.hadoop.hive.metastore.api.ISchema;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
@@ -141,6 +142,8 @@ public class SchemaMetadata implements Serializable {
     public boolean isEvolve() {
         return evolve;
     }
+
+
 
     @Override
     public String toString() {

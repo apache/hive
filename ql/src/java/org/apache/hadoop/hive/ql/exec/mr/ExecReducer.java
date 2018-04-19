@@ -66,7 +66,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
   private static final Logger LOG = LoggerFactory.getLogger("ExecReducer");
   private static final String PLAN_KEY = "__REDUCE_PLAN__";
 
-  // Input value serde needs to be an array to support different SerDe
+  // Input value serdes needs to be an array to support different SerDe
   // for different tags
   private final Deserializer[] inputValueDeserializer = new Deserializer[Byte.MAX_VALUE];
   private final Object[] valueObject = new Object[Byte.MAX_VALUE];

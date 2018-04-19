@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.metastore.model;
 
 public class MSchemaVersion {
+  private Long schemaVersionId;
   private MISchema iSchema;
   private int version;
   private long createdAt;
@@ -28,6 +29,14 @@ public class MSchemaVersion {
   private String fingerprint;
   private String name;
   private MSerDeInfo serDe;
+
+  public MSchemaVersion(Long schemaVersionId, MISchema iSchema, int version, long createdAt,
+                        MColumnDescriptor cols, int state, String description,
+                        String schemaText, String fingerprint, String name,
+                        MSerDeInfo serDe) {
+    this(iSchema,version,createdAt, cols, state, description, schemaText, fingerprint, name, serDe);
+    this.schemaVersionId = schemaVersionId;
+  }
 
   public MSchemaVersion(MISchema iSchema, int version, long createdAt,
                         MColumnDescriptor cols, int state, String description,
@@ -44,6 +53,10 @@ public class MSchemaVersion {
     this.name = name;
     this.serDe = serDe;
   }
+
+  public Long getSchemaVersionId() { return schemaVersionId; }
+
+  public void setSchemaVersionId(Long schemaVersionId) { this.schemaVersionId = schemaVersionId; }
 
   public MISchema getiSchema() {
     return iSchema;

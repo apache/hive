@@ -143,7 +143,7 @@ public class TestHCatRecordSerDe extends TestCase {
       Assert.assertTrue(HCatDataCheckUtil.recordsEqual(r, (HCatRecord) s));
       Assert.assertTrue(HCatDataCheckUtil.recordsEqual(r, (HCatRecord) s2));
 
-      // serialize using another serde, and read out that object repr.
+      // serialize using another serdes, and read out that object repr.
       LazySimpleSerDe testSD = new LazySimpleSerDe();
       SerDeUtils.initializeSerDe(testSD, conf, tblProps, null);
 

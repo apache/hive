@@ -126,7 +126,7 @@ public class TestOldSchema {
     long now = System.currentTimeMillis();
     List<FieldSchema> cols = new ArrayList<>();
     cols.add(new FieldSchema("col1", "long", "nocomment"));
-    SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
+    SerDeInfo serde = new SerDeInfo("serdes", "seriallib", null);
     StorageDescriptor sd = new StorageDescriptor(cols, "file:/tmp", "input", "output", false, 0,
         serde, null, null, Collections.emptyMap());
     List<FieldSchema> partCols = new ArrayList<>();

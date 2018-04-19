@@ -15,6 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.hadoop.hive.registry.webservice;
 
 import com.codahale.metrics.annotation.Timed;
@@ -30,11 +31,11 @@ import org.apache.hadoop.hive.registry.SchemaMetadataInfo;
 import org.apache.hadoop.hive.registry.SchemaVersion;
 import org.apache.hadoop.hive.registry.SchemaVersionInfo;
 import org.apache.hadoop.hive.registry.SchemaVersionKey;
-import org.apache.hadoop.hive.registry.avro.AvroSchemaProvider;
-import org.apache.hadoop.hive.registry.errors.IncompatibleSchemaException;
-import org.apache.hadoop.hive.registry.errors.InvalidSchemaException;
-import org.apache.hadoop.hive.registry.errors.SchemaNotFoundException;
-import org.apache.hadoop.hive.registry.errors.UnsupportedSchemaTypeException;
+import org.apache.hadoop.hive.registry.serdes.avro.AvroSchemaProvider;
+import org.apache.hadoop.hive.registry.common.errors.IncompatibleSchemaException;
+import org.apache.hadoop.hive.registry.common.errors.InvalidSchemaException;
+import org.apache.hadoop.hive.registry.common.errors.SchemaNotFoundException;
+import org.apache.hadoop.hive.registry.common.errors.UnsupportedSchemaTypeException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -53,7 +54,6 @@ import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -105,17 +105,18 @@ public class ConfluentSchemaRegistryCompatibleResource extends BaseRegistryResou
     public Response getSubjects() {
         Response response;
         try {
-            List<String> registeredSubjects = schemaRegistry.findSchemaMetadata(Collections.emptyMap())
+           /* List<String> registeredSubjects = schemaRegistry.findSchemaMetadata(Collections.emptyMap())
                                                             .stream()
                                                             .map(x -> x.getSchemaMetadata().getName())
                                                             .collect(Collectors.toList());
 
-            response = WSUtils.respondEntity(registeredSubjects, Response.Status.OK);
+            response = WSUtils.respondEntity(registeredSubjects, Response.Status.OK);*/
         } catch (Exception ex) {
             LOG.error("Encountered error while retrieving all subjects", ex);
             response = serverError();
         }
-        return response;
+        //return response;
+        return null;
     }
 
     public static class ErrorMessage {
@@ -211,7 +212,8 @@ public class ConfluentSchemaRegistryCompatibleResource extends BaseRegistryResou
             SchemaVersionInfo schemaVersionInfo = null;
 
             if ("latest".equals(versionId)) {
-                schemaVersionInfo = schemaRegistry.getLatestSchemaVersionInfo(subject);
+                //schemaVersionInfo = schemaRegistry.getLatestSchemaVersionInfo(subject);
+                schemaVersionInfo = null;
             } else {
                 SchemaMetadataInfo schemaMetadataInfo = schemaRegistry.getSchemaMetadataInfo(subject);
                 if (schemaMetadataInfo == null) {
@@ -311,16 +313,16 @@ public class ConfluentSchemaRegistryCompatibleResource extends BaseRegistryResou
             SchemaMetadataInfo schemaMetadataInfo = schemaRegistry.getSchemaMetadataInfo(subject);
             if (schemaMetadataInfo == null) {
                 SchemaMetadata schemaMetadata = new SchemaMetadata.Builder(subject)
-                        .type(AvroSchemaProvider.TYPE)
-                        .schemaGroup("Kafka")
-                        .build();
+                    .type(AvroSchemaProvider.TYPE)
+                    .schemaGroup("Kafka")
+                    .build();
 
                 schemaRegistry.addSchemaMetadata(schemaMetadata);
                 schemaMetadataInfo = schemaRegistry.getSchemaMetadataInfo(subject);
             }
 
             SchemaIdVersion schemaVersionInfo = schemaRegistry.addSchemaVersion(schemaMetadataInfo.getSchemaMetadata(),
-                                                                                    new SchemaVersion(schemaStringFromJson(schema).getSchema(), null));
+                                                                                new SchemaVersion(schemaStringFromJson(schema).getSchema(), null));
 
             Id id = new Id();
             id.setId(schemaVersionInfo.getSchemaVersionId());

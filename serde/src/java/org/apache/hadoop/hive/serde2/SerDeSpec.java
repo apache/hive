@@ -28,6 +28,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 public @interface SerDeSpec {
-  // property names needed to keep internal structure of serde
+  // property names needed to keep internal structure of serdes
   String[] schemaProps();
 }

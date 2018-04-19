@@ -63,7 +63,7 @@ public class FetchWork implements Serializable {
   private transient StructObjectInspector statRowOI;
 
   /**
-   * Serialization Null Format for the serde used to fetch data.
+   * Serialization Null Format for the serdes used to fetch data.
    */
   private String serializationNullFormat = "NULL";
 

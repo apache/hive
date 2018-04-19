@@ -21,8 +21,8 @@ import org.apache.hadoop.hive.registry.CompatibilityResult;
 import org.apache.hadoop.hive.registry.SchemaMetadata;
 import org.apache.hadoop.hive.registry.SchemaMetadataInfo;
 import org.apache.hadoop.hive.registry.SchemaVersionInfo;
-import org.apache.hadoop.hive.registry.errors.SchemaBranchNotFoundException;
-import org.apache.hadoop.hive.registry.errors.SchemaNotFoundException;
+import org.apache.hadoop.hive.registry.common.errors.SchemaBranchNotFoundException;
+import org.apache.hadoop.hive.registry.common.errors.SchemaNotFoundException;
 
 import java.util.Collection;
 

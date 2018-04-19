@@ -201,7 +201,7 @@ public class TestCachedStore {
     cols.add(col2);
     Map<String, String> serdeParams = new HashMap<>();
     Map<String, String> tblParams = new HashMap<>();
-    SerDeInfo serdeInfo = new SerDeInfo("serde", "seriallib", new HashMap<>());
+    SerDeInfo serdeInfo = new SerDeInfo("serdes", "seriallib", new HashMap<>());
     StorageDescriptor sd =
         new StorageDescriptor(cols, serdeLocation, "input", "output", false, 0, serdeInfo, null,
             null, serdeParams);
@@ -305,7 +305,7 @@ public class TestCachedStore {
     cols.add(col2);
     Map<String, String> serdeParams = new HashMap<>();
     Map<String, String> tblParams = new HashMap<>();
-    SerDeInfo serdeInfo = new SerDeInfo("serde", "seriallib", null);
+    SerDeInfo serdeInfo = new SerDeInfo("serdes", "seriallib", null);
     StorageDescriptor sd =
         new StorageDescriptor(cols, serdeLocation, "input", "output", false, 0, serdeInfo, null,
             null, serdeParams);
@@ -422,7 +422,7 @@ public class TestCachedStore {
     cols.add(col3);
     Map<String, String> serdeParams = new HashMap<>();
     Map<String, String> tblParams = new HashMap<>();
-    final SerDeInfo serdeInfo = new SerDeInfo("serde", "seriallib", null);
+    final SerDeInfo serdeInfo = new SerDeInfo("serdes", "seriallib", null);
     StorageDescriptor sd =
         new StorageDescriptor(cols, serdeLocation, "input", "output", false, 0, serdeInfo, null,
             null, serdeParams);
@@ -696,7 +696,7 @@ public class TestCachedStore {
     List<FieldSchema> partCols = new ArrayList<>();
     partCols.add(new FieldSchema("col", "int", null));
     StorageDescriptor sd =
-        new StorageDescriptor(cols, null, "input", "output", false, 0, new SerDeInfo("serde", "seriallib", new HashMap<>()),
+        new StorageDescriptor(cols, null, "input", "output", false, 0, new SerDeInfo("serdes", "seriallib", new HashMap<>()),
             null, null, null);
 
     Table tbl =
@@ -762,7 +762,7 @@ public class TestCachedStore {
     List<FieldSchema> partCols = new ArrayList<>();
     partCols.add(new FieldSchema("col", "int", null));
     StorageDescriptor sd =
-        new StorageDescriptor(cols, null, "input", "output", false, 0, new SerDeInfo("serde", "seriallib", new HashMap<>()),
+        new StorageDescriptor(cols, null, "input", "output", false, 0, new SerDeInfo("serdes", "seriallib", new HashMap<>()),
             null, null, null);
     
     Table tbl =
@@ -832,7 +832,7 @@ public class TestCachedStore {
     List<FieldSchema> partCols = new ArrayList<>();
     partCols.add(new FieldSchema("col", "int", null));
     StorageDescriptor sd =
-        new StorageDescriptor(cols, null, "input", "output", false, 0, new SerDeInfo("serde", "seriallib", new HashMap<>()),
+        new StorageDescriptor(cols, null, "input", "output", false, 0, new SerDeInfo("serdes", "seriallib", new HashMap<>()),
             null, null, null);
     
     Table tbl =

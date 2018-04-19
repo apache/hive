@@ -25976,6 +25976,11 @@ ISchema::~ISchema() throw() {
 }
 
 
+void ISchema::__set_schemaId(const int64_t val) {
+  this->schemaId = val;
+__isset.schemaId = true;
+}
+
 void ISchema::__set_schemaType(const SchemaType::type val) {
   this->schemaType = val;
 }
@@ -26010,6 +26015,11 @@ void ISchema::__set_description(const std::string& val) {
 __isset.description = true;
 }
 
+void ISchema::__set_timestamp(const int64_t val) {
+  this->timestamp = val;
+__isset.timestamp = true;
+}
+
 uint32_t ISchema::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
@@ -26032,6 +26042,14 @@ uint32_t ISchema::read(::apache::thrift::protocol::TProtocol* iprot) {
     switch (fid)
     {
       case 1:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->schemaId);
+          this->__isset.schemaId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
         if (ftype == ::apache::thrift::protocol::T_I32) {
           int32_t ecast1018;
           xfer += iprot->readI32(ecast1018);
@@ -26041,7 +26059,7 @@ uint32_t ISchema::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
-      case 2:
+      case 3:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
           xfer += iprot->readString(this->name);
           this->__isset.name = true;
@@ -26049,7 +26067,7 @@ uint32_t ISchema::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
-      case 3:
+      case 4:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
           xfer += iprot->readString(this->dbName);
           this->__isset.dbName = true;
@@ -26057,7 +26075,7 @@ uint32_t ISchema::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
-      case 4:
+      case 5:
         if (ftype == ::apache::thrift::protocol::T_I32) {
           int32_t ecast1019;
           xfer += iprot->readI32(ecast1019);
@@ -26067,7 +26085,7 @@ uint32_t ISchema::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
-      case 5:
+      case 6:
         if (ftype == ::apache::thrift::protocol::T_I32) {
           int32_t ecast1020;
           xfer += iprot->readI32(ecast1020);
@@ -26077,7 +26095,7 @@ uint32_t ISchema::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
-      case 6:
+      case 7:
         if (ftype == ::apache::thrift::protocol::T_BOOL) {
           xfer += iprot->readBool(this->canEvolve);
           this->__isset.canEvolve = true;
@@ -26085,7 +26103,7 @@ uint32_t ISchema::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
-      case 7:
+      case 8:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
           xfer += iprot->readString(this->schemaGroup);
           this->__isset.schemaGroup = true;
@@ -26093,10 +26111,18 @@ uint32_t ISchema::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
-      case 8:
+      case 9:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
           xfer += iprot->readString(this->description);
           this->__isset.description = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 10:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->timestamp);
+          this->__isset.timestamp = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -26118,38 +26144,48 @@ uint32_t ISchema::write(::apache::thrift::protocol::TProtocol* oprot) const {
   apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
   xfer += oprot->writeStructBegin("ISchema");
 
-  xfer += oprot->writeFieldBegin("schemaType", ::apache::thrift::protocol::T_I32, 1);
+  if (this->__isset.schemaId) {
+    xfer += oprot->writeFieldBegin("schemaId", ::apache::thrift::protocol::T_I64, 1);
+    xfer += oprot->writeI64(this->schemaId);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldBegin("schemaType", ::apache::thrift::protocol::T_I32, 2);
   xfer += oprot->writeI32((int32_t)this->schemaType);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("name", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeFieldBegin("name", ::apache::thrift::protocol::T_STRING, 3);
   xfer += oprot->writeString(this->name);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("dbName", ::apache::thrift::protocol::T_STRING, 3);
+  xfer += oprot->writeFieldBegin("dbName", ::apache::thrift::protocol::T_STRING, 4);
   xfer += oprot->writeString(this->dbName);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("compatibility", ::apache::thrift::protocol::T_I32, 4);
+  xfer += oprot->writeFieldBegin("compatibility", ::apache::thrift::protocol::T_I32, 5);
   xfer += oprot->writeI32((int32_t)this->compatibility);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("validationLevel", ::apache::thrift::protocol::T_I32, 5);
+  xfer += oprot->writeFieldBegin("validationLevel", ::apache::thrift::protocol::T_I32, 6);
   xfer += oprot->writeI32((int32_t)this->validationLevel);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("canEvolve", ::apache::thrift::protocol::T_BOOL, 6);
+  xfer += oprot->writeFieldBegin("canEvolve", ::apache::thrift::protocol::T_BOOL, 7);
   xfer += oprot->writeBool(this->canEvolve);
   xfer += oprot->writeFieldEnd();
 
   if (this->__isset.schemaGroup) {
-    xfer += oprot->writeFieldBegin("schemaGroup", ::apache::thrift::protocol::T_STRING, 7);
+    xfer += oprot->writeFieldBegin("schemaGroup", ::apache::thrift::protocol::T_STRING, 8);
     xfer += oprot->writeString(this->schemaGroup);
     xfer += oprot->writeFieldEnd();
   }
   if (this->__isset.description) {
-    xfer += oprot->writeFieldBegin("description", ::apache::thrift::protocol::T_STRING, 8);
+    xfer += oprot->writeFieldBegin("description", ::apache::thrift::protocol::T_STRING, 9);
     xfer += oprot->writeString(this->description);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.timestamp) {
+    xfer += oprot->writeFieldBegin("timestamp", ::apache::thrift::protocol::T_I64, 10);
+    xfer += oprot->writeI64(this->timestamp);
     xfer += oprot->writeFieldEnd();
   }
   xfer += oprot->writeFieldStop();
@@ -26159,6 +26195,7 @@ uint32_t ISchema::write(::apache::thrift::protocol::TProtocol* oprot) const {
 
 void swap(ISchema &a, ISchema &b) {
   using ::std::swap;
+  swap(a.schemaId, b.schemaId);
   swap(a.schemaType, b.schemaType);
   swap(a.name, b.name);
   swap(a.dbName, b.dbName);
@@ -26167,10 +26204,12 @@ void swap(ISchema &a, ISchema &b) {
   swap(a.canEvolve, b.canEvolve);
   swap(a.schemaGroup, b.schemaGroup);
   swap(a.description, b.description);
+  swap(a.timestamp, b.timestamp);
   swap(a.__isset, b.__isset);
 }
 
 ISchema::ISchema(const ISchema& other1021) {
+  schemaId = other1021.schemaId;
   schemaType = other1021.schemaType;
   name = other1021.name;
   dbName = other1021.dbName;
@@ -26179,9 +26218,11 @@ ISchema::ISchema(const ISchema& other1021) {
   canEvolve = other1021.canEvolve;
   schemaGroup = other1021.schemaGroup;
   description = other1021.description;
+  timestamp = other1021.timestamp;
   __isset = other1021.__isset;
 }
 ISchema& ISchema::operator=(const ISchema& other1022) {
+  schemaId = other1022.schemaId;
   schemaType = other1022.schemaType;
   name = other1022.name;
   dbName = other1022.dbName;
@@ -26190,13 +26231,15 @@ ISchema& ISchema::operator=(const ISchema& other1022) {
   canEvolve = other1022.canEvolve;
   schemaGroup = other1022.schemaGroup;
   description = other1022.description;
+  timestamp = other1022.timestamp;
   __isset = other1022.__isset;
   return *this;
 }
 void ISchema::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
   out << "ISchema(";
-  out << "schemaType=" << to_string(schemaType);
+  out << "schemaId="; (__isset.schemaId ? (out << to_string(schemaId)) : (out << "<null>"));
+  out << ", " << "schemaType=" << to_string(schemaType);
   out << ", " << "name=" << to_string(name);
   out << ", " << "dbName=" << to_string(dbName);
   out << ", " << "compatibility=" << to_string(compatibility);
@@ -26204,61 +26247,67 @@ void ISchema::printTo(std::ostream& out) const {
   out << ", " << "canEvolve=" << to_string(canEvolve);
   out << ", " << "schemaGroup="; (__isset.schemaGroup ? (out << to_string(schemaGroup)) : (out << "<null>"));
   out << ", " << "description="; (__isset.description ? (out << to_string(description)) : (out << "<null>"));
+  out << ", " << "timestamp="; (__isset.timestamp ? (out << to_string(timestamp)) : (out << "<null>"));
   out << ")";
 }
 
 
-SchemaVersion::~SchemaVersion() throw() {
+ISchemaVersion::~ISchemaVersion() throw() {
 }
 
 
-void SchemaVersion::__set_schemaName(const std::string& val) {
+void ISchemaVersion::__set_schemaVersionId(const int64_t val) {
+  this->schemaVersionId = val;
+__isset.schemaVersionId = true;
+}
+
+void ISchemaVersion::__set_schemaName(const std::string& val) {
   this->schemaName = val;
 }
 
-void SchemaVersion::__set_version(const int32_t val) {
+void ISchemaVersion::__set_version(const int32_t val) {
   this->version = val;
 }
 
-void SchemaVersion::__set_createdAt(const int64_t val) {
+void ISchemaVersion::__set_createdAt(const int64_t val) {
   this->createdAt = val;
 }
 
-void SchemaVersion::__set_cols(const std::vector<FieldSchema> & val) {
+void ISchemaVersion::__set_cols(const std::vector<FieldSchema> & val) {
   this->cols = val;
 }
 
-void SchemaVersion::__set_state(const SchemaVersionState::type val) {
+void ISchemaVersion::__set_state(const SchemaVersionState::type val) {
   this->state = val;
 __isset.state = true;
 }
 
-void SchemaVersion::__set_description(const std::string& val) {
+void ISchemaVersion::__set_description(const std::string& val) {
   this->description = val;
 __isset.description = true;
 }
 
-void SchemaVersion::__set_schemaText(const std::string& val) {
+void ISchemaVersion::__set_schemaText(const std::string& val) {
   this->schemaText = val;
 __isset.schemaText = true;
 }
 
-void SchemaVersion::__set_fingerprint(const std::string& val) {
+void ISchemaVersion::__set_fingerprint(const std::string& val) {
   this->fingerprint = val;
 __isset.fingerprint = true;
 }
 
-void SchemaVersion::__set_name(const std::string& val) {
+void ISchemaVersion::__set_name(const std::string& val) {
   this->name = val;
 __isset.name = true;
 }
 
-void SchemaVersion::__set_serDe(const SerDeInfo& val) {
+void ISchemaVersion::__set_serDe(const SerDeInfo& val) {
   this->serDe = val;
 __isset.serDe = true;
 }
 
-uint32_t SchemaVersion::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t ISchemaVersion::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -26280,6 +26329,14 @@ uint32_t SchemaVersion::read(::apache::thrift::protocol::TProtocol* iprot) {
     switch (fid)
     {
       case 1:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->schemaVersionId);
+          this->__isset.schemaVersionId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
           xfer += iprot->readString(this->schemaName);
           this->__isset.schemaName = true;
@@ -26287,7 +26344,7 @@ uint32_t SchemaVersion::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
-      case 2:
+      case 3:
         if (ftype == ::apache::thrift::protocol::T_I32) {
           xfer += iprot->readI32(this->version);
           this->__isset.version = true;
@@ -26295,7 +26352,7 @@ uint32_t SchemaVersion::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
-      case 3:
+      case 4:
         if (ftype == ::apache::thrift::protocol::T_I64) {
           xfer += iprot->readI64(this->createdAt);
           this->__isset.createdAt = true;
@@ -26303,7 +26360,7 @@ uint32_t SchemaVersion::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
-      case 4:
+      case 5:
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->cols.clear();
@@ -26323,7 +26380,7 @@ uint32_t SchemaVersion::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
-      case 5:
+      case 6:
         if (ftype == ::apache::thrift::protocol::T_I32) {
           int32_t ecast1028;
           xfer += iprot->readI32(ecast1028);
@@ -26333,7 +26390,7 @@ uint32_t SchemaVersion::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
-      case 6:
+      case 7:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
           xfer += iprot->readString(this->description);
           this->__isset.description = true;
@@ -26341,7 +26398,7 @@ uint32_t SchemaVersion::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
-      case 7:
+      case 8:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
           xfer += iprot->readString(this->schemaText);
           this->__isset.schemaText = true;
@@ -26349,7 +26406,7 @@ uint32_t SchemaVersion::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
-      case 8:
+      case 9:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
           xfer += iprot->readString(this->fingerprint);
           this->__isset.fingerprint = true;
@@ -26357,7 +26414,7 @@ uint32_t SchemaVersion::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
-      case 9:
+      case 10:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
           xfer += iprot->readString(this->name);
           this->__isset.name = true;
@@ -26365,7 +26422,7 @@ uint32_t SchemaVersion::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
-      case 10:
+      case 11:
         if (ftype == ::apache::thrift::protocol::T_STRUCT) {
           xfer += this->serDe.read(iprot);
           this->__isset.serDe = true;
@@ -26385,24 +26442,29 @@ uint32_t SchemaVersion::read(::apache::thrift::protocol::TProtocol* iprot) {
   return xfer;
 }
 
-uint32_t SchemaVersion::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t ISchemaVersion::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("SchemaVersion");
+  xfer += oprot->writeStructBegin("ISchemaVersion");
 
-  xfer += oprot->writeFieldBegin("schemaName", ::apache::thrift::protocol::T_STRING, 1);
+  if (this->__isset.schemaVersionId) {
+    xfer += oprot->writeFieldBegin("schemaVersionId", ::apache::thrift::protocol::T_I64, 1);
+    xfer += oprot->writeI64(this->schemaVersionId);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldBegin("schemaName", ::apache::thrift::protocol::T_STRING, 2);
   xfer += oprot->writeString(this->schemaName);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("version", ::apache::thrift::protocol::T_I32, 2);
+  xfer += oprot->writeFieldBegin("version", ::apache::thrift::protocol::T_I32, 3);
   xfer += oprot->writeI32(this->version);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("createdAt", ::apache::thrift::protocol::T_I64, 3);
+  xfer += oprot->writeFieldBegin("createdAt", ::apache::thrift::protocol::T_I64, 4);
   xfer += oprot->writeI64(this->createdAt);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("cols", ::apache::thrift::protocol::T_LIST, 4);
+  xfer += oprot->writeFieldBegin("cols", ::apache::thrift::protocol::T_LIST, 5);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->cols.size()));
     std::vector<FieldSchema> ::const_iterator _iter1029;
@@ -26415,32 +26477,32 @@ uint32_t SchemaVersion::write(::apache::thrift::protocol::TProtocol* oprot) cons
   xfer += oprot->writeFieldEnd();
 
   if (this->__isset.state) {
-    xfer += oprot->writeFieldBegin("state", ::apache::thrift::protocol::T_I32, 5);
+    xfer += oprot->writeFieldBegin("state", ::apache::thrift::protocol::T_I32, 6);
     xfer += oprot->writeI32((int32_t)this->state);
     xfer += oprot->writeFieldEnd();
   }
   if (this->__isset.description) {
-    xfer += oprot->writeFieldBegin("description", ::apache::thrift::protocol::T_STRING, 6);
+    xfer += oprot->writeFieldBegin("description", ::apache::thrift::protocol::T_STRING, 7);
     xfer += oprot->writeString(this->description);
     xfer += oprot->writeFieldEnd();
   }
   if (this->__isset.schemaText) {
-    xfer += oprot->writeFieldBegin("schemaText", ::apache::thrift::protocol::T_STRING, 7);
+    xfer += oprot->writeFieldBegin("schemaText", ::apache::thrift::protocol::T_STRING, 8);
     xfer += oprot->writeString(this->schemaText);
     xfer += oprot->writeFieldEnd();
   }
   if (this->__isset.fingerprint) {
-    xfer += oprot->writeFieldBegin("fingerprint", ::apache::thrift::protocol::T_STRING, 8);
+    xfer += oprot->writeFieldBegin("fingerprint", ::apache::thrift::protocol::T_STRING, 9);
     xfer += oprot->writeString(this->fingerprint);
     xfer += oprot->writeFieldEnd();
   }
   if (this->__isset.name) {
-    xfer += oprot->writeFieldBegin("name", ::apache::thrift::protocol::T_STRING, 9);
+    xfer += oprot->writeFieldBegin("name", ::apache::thrift::protocol::T_STRING, 10);
     xfer += oprot->writeString(this->name);
     xfer += oprot->writeFieldEnd();
   }
   if (this->__isset.serDe) {
-    xfer += oprot->writeFieldBegin("serDe", ::apache::thrift::protocol::T_STRUCT, 10);
+    xfer += oprot->writeFieldBegin("serDe", ::apache::thrift::protocol::T_STRUCT, 11);
     xfer += this->serDe.write(oprot);
     xfer += oprot->writeFieldEnd();
   }
@@ -26449,8 +26511,9 @@ uint32_t SchemaVersion::write(::apache::thrift::protocol::TProtocol* oprot) cons
   return xfer;
 }
 
-void swap(SchemaVersion &a, SchemaVersion &b) {
+void swap(ISchemaVersion &a, ISchemaVersion &b) {
   using ::std::swap;
+  swap(a.schemaVersionId, b.schemaVersionId);
   swap(a.schemaName, b.schemaName);
   swap(a.version, b.version);
   swap(a.createdAt, b.createdAt);
@@ -26464,7 +26527,8 @@ void swap(SchemaVersion &a, SchemaVersion &b) {
   swap(a.__isset, b.__isset);
 }
 
-SchemaVersion::SchemaVersion(const SchemaVersion& other1030) {
+ISchemaVersion::ISchemaVersion(const ISchemaVersion& other1030) {
+  schemaVersionId = other1030.schemaVersionId;
   schemaName = other1030.schemaName;
   version = other1030.version;
   createdAt = other1030.createdAt;
@@ -26477,7 +26541,8 @@ SchemaVersion::SchemaVersion(const SchemaVersion& other1030) {
   serDe = other1030.serDe;
   __isset = other1030.__isset;
 }
-SchemaVersion& SchemaVersion::operator=(const SchemaVersion& other1031) {
+ISchemaVersion& ISchemaVersion::operator=(const ISchemaVersion& other1031) {
+  schemaVersionId = other1031.schemaVersionId;
   schemaName = other1031.schemaName;
   version = other1031.version;
   createdAt = other1031.createdAt;
@@ -26491,10 +26556,11 @@ SchemaVersion& SchemaVersion::operator=(const SchemaVersion& other1031) {
   __isset = other1031.__isset;
   return *this;
 }
-void SchemaVersion::printTo(std::ostream& out) const {
+void ISchemaVersion::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
-  out << "SchemaVersion(";
-  out << "schemaName=" << to_string(schemaName);
+  out << "ISchemaVersion(";
+  out << "schemaVersionId="; (__isset.schemaVersionId ? (out << to_string(schemaVersionId)) : (out << "<null>"));
+  out << ", " << "schemaName=" << to_string(schemaName);
   out << ", " << "version=" << to_string(version);
   out << ", " << "createdAt=" << to_string(createdAt);
   out << ", " << "cols=" << to_string(cols);
@@ -26504,6 +26570,178 @@ void SchemaVersion::printTo(std::ostream& out) const {
   out << ", " << "fingerprint="; (__isset.fingerprint ? (out << to_string(fingerprint)) : (out << "<null>"));
   out << ", " << "name="; (__isset.name ? (out << to_string(name)) : (out << "<null>"));
   out << ", " << "serDe="; (__isset.serDe ? (out << to_string(serDe)) : (out << "<null>"));
+  out << ")";
+}
+
+
+ISchemaBranch::~ISchemaBranch() throw() {
+}
+
+
+void ISchemaBranch::__set_schemaBranchId(const int64_t val) {
+  this->schemaBranchId = val;
+__isset.schemaBranchId = true;
+}
+
+void ISchemaBranch::__set_name(const std::string& val) {
+  this->name = val;
+}
+
+void ISchemaBranch::__set_schemaMetadataName(const std::string& val) {
+  this->schemaMetadataName = val;
+}
+
+void ISchemaBranch::__set_description(const std::string& val) {
+  this->description = val;
+__isset.description = true;
+}
+
+void ISchemaBranch::__set_timestamp(const int64_t val) {
+  this->timestamp = val;
+__isset.timestamp = true;
+}
+
+uint32_t ISchemaBranch::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->schemaBranchId);
+          this->__isset.schemaBranchId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->name);
+          this->__isset.name = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->schemaMetadataName);
+          this->__isset.schemaMetadataName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->description);
+          this->__isset.description = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->timestamp);
+          this->__isset.timestamp = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t ISchemaBranch::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("ISchemaBranch");
+
+  if (this->__isset.schemaBranchId) {
+    xfer += oprot->writeFieldBegin("schemaBranchId", ::apache::thrift::protocol::T_I64, 1);
+    xfer += oprot->writeI64(this->schemaBranchId);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldBegin("name", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->name);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("schemaMetadataName", ::apache::thrift::protocol::T_STRING, 3);
+  xfer += oprot->writeString(this->schemaMetadataName);
+  xfer += oprot->writeFieldEnd();
+
+  if (this->__isset.description) {
+    xfer += oprot->writeFieldBegin("description", ::apache::thrift::protocol::T_STRING, 4);
+    xfer += oprot->writeString(this->description);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.timestamp) {
+    xfer += oprot->writeFieldBegin("timestamp", ::apache::thrift::protocol::T_I64, 5);
+    xfer += oprot->writeI64(this->timestamp);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(ISchemaBranch &a, ISchemaBranch &b) {
+  using ::std::swap;
+  swap(a.schemaBranchId, b.schemaBranchId);
+  swap(a.name, b.name);
+  swap(a.schemaMetadataName, b.schemaMetadataName);
+  swap(a.description, b.description);
+  swap(a.timestamp, b.timestamp);
+  swap(a.__isset, b.__isset);
+}
+
+ISchemaBranch::ISchemaBranch(const ISchemaBranch& other1032) {
+  schemaBranchId = other1032.schemaBranchId;
+  name = other1032.name;
+  schemaMetadataName = other1032.schemaMetadataName;
+  description = other1032.description;
+  timestamp = other1032.timestamp;
+  __isset = other1032.__isset;
+}
+ISchemaBranch& ISchemaBranch::operator=(const ISchemaBranch& other1033) {
+  schemaBranchId = other1033.schemaBranchId;
+  name = other1033.name;
+  schemaMetadataName = other1033.schemaMetadataName;
+  description = other1033.description;
+  timestamp = other1033.timestamp;
+  __isset = other1033.__isset;
+  return *this;
+}
+void ISchemaBranch::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "ISchemaBranch(";
+  out << "schemaBranchId="; (__isset.schemaBranchId ? (out << to_string(schemaBranchId)) : (out << "<null>"));
+  out << ", " << "name=" << to_string(name);
+  out << ", " << "schemaMetadataName=" << to_string(schemaMetadataName);
+  out << ", " << "description="; (__isset.description ? (out << to_string(description)) : (out << "<null>"));
+  out << ", " << "timestamp="; (__isset.timestamp ? (out << to_string(timestamp)) : (out << "<null>"));
   out << ")";
 }
 
@@ -26617,17 +26855,17 @@ void swap(FindSchemasByColsRqst &a, FindSchemasByColsRqst &b) {
   swap(a.__isset, b.__isset);
 }
 
-FindSchemasByColsRqst::FindSchemasByColsRqst(const FindSchemasByColsRqst& other1032) {
-  colName = other1032.colName;
-  colNamespace = other1032.colNamespace;
-  type = other1032.type;
-  __isset = other1032.__isset;
+FindSchemasByColsRqst::FindSchemasByColsRqst(const FindSchemasByColsRqst& other1034) {
+  colName = other1034.colName;
+  colNamespace = other1034.colNamespace;
+  type = other1034.type;
+  __isset = other1034.__isset;
 }
-FindSchemasByColsRqst& FindSchemasByColsRqst::operator=(const FindSchemasByColsRqst& other1033) {
-  colName = other1033.colName;
-  colNamespace = other1033.colNamespace;
-  type = other1033.type;
-  __isset = other1033.__isset;
+FindSchemasByColsRqst& FindSchemasByColsRqst::operator=(const FindSchemasByColsRqst& other1035) {
+  colName = other1035.colName;
+  colNamespace = other1035.colNamespace;
+  type = other1035.type;
+  __isset = other1035.__isset;
   return *this;
 }
 void FindSchemasByColsRqst::printTo(std::ostream& out) const {
@@ -26726,15 +26964,15 @@ void swap(FindSchemasByColsRespEntry &a, FindSchemasByColsRespEntry &b) {
   swap(a.__isset, b.__isset);
 }
 
-FindSchemasByColsRespEntry::FindSchemasByColsRespEntry(const FindSchemasByColsRespEntry& other1034) {
-  schemaName = other1034.schemaName;
-  version = other1034.version;
-  __isset = other1034.__isset;
+FindSchemasByColsRespEntry::FindSchemasByColsRespEntry(const FindSchemasByColsRespEntry& other1036) {
+  schemaName = other1036.schemaName;
+  version = other1036.version;
+  __isset = other1036.__isset;
 }
-FindSchemasByColsRespEntry& FindSchemasByColsRespEntry::operator=(const FindSchemasByColsRespEntry& other1035) {
-  schemaName = other1035.schemaName;
-  version = other1035.version;
-  __isset = other1035.__isset;
+FindSchemasByColsRespEntry& FindSchemasByColsRespEntry::operator=(const FindSchemasByColsRespEntry& other1037) {
+  schemaName = other1037.schemaName;
+  version = other1037.version;
+  __isset = other1037.__isset;
   return *this;
 }
 void FindSchemasByColsRespEntry::printTo(std::ostream& out) const {
@@ -26779,14 +27017,14 @@ uint32_t FindSchemasByColsResp::read(::apache::thrift::protocol::TProtocol* ipro
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->schemaVersions.clear();
-            uint32_t _size1036;
-            ::apache::thrift::protocol::TType _etype1039;
-            xfer += iprot->readListBegin(_etype1039, _size1036);
-            this->schemaVersions.resize(_size1036);
-            uint32_t _i1040;
-            for (_i1040 = 0; _i1040 < _size1036; ++_i1040)
+            uint32_t _size1038;
+            ::apache::thrift::protocol::TType _etype1041;
+            xfer += iprot->readListBegin(_etype1041, _size1038);
+            this->schemaVersions.resize(_size1038);
+            uint32_t _i1042;
+            for (_i1042 = 0; _i1042 < _size1038; ++_i1042)
             {
-              xfer += this->schemaVersions[_i1040].read(iprot);
+              xfer += this->schemaVersions[_i1042].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -26815,10 +27053,10 @@ uint32_t FindSchemasByColsResp::write(::apache::thrift::protocol::TProtocol* opr
   xfer += oprot->writeFieldBegin("schemaVersions", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->schemaVersions.size()));
-    std::vector<FindSchemasByColsRespEntry> ::const_iterator _iter1041;
-    for (_iter1041 = this->schemaVersions.begin(); _iter1041 != this->schemaVersions.end(); ++_iter1041)
+    std::vector<FindSchemasByColsRespEntry> ::const_iterator _iter1043;
+    for (_iter1043 = this->schemaVersions.begin(); _iter1043 != this->schemaVersions.end(); ++_iter1043)
     {
-      xfer += (*_iter1041).write(oprot);
+      xfer += (*_iter1043).write(oprot);
     }
     xfer += oprot->writeListEnd();
   }
@@ -26835,13 +27073,13 @@ void swap(FindSchemasByColsResp &a, FindSchemasByColsResp &b) {
   swap(a.__isset, b.__isset);
 }
 
-FindSchemasByColsResp::FindSchemasByColsResp(const FindSchemasByColsResp& other1042) {
-  schemaVersions = other1042.schemaVersions;
-  __isset = other1042.__isset;
+FindSchemasByColsResp::FindSchemasByColsResp(const FindSchemasByColsResp& other1044) {
+  schemaVersions = other1044.schemaVersions;
+  __isset = other1044.__isset;
 }
-FindSchemasByColsResp& FindSchemasByColsResp::operator=(const FindSchemasByColsResp& other1043) {
-  schemaVersions = other1043.schemaVersions;
-  __isset = other1043.__isset;
+FindSchemasByColsResp& FindSchemasByColsResp::operator=(const FindSchemasByColsResp& other1045) {
+  schemaVersions = other1045.schemaVersions;
+  __isset = other1045.__isset;
   return *this;
 }
 void FindSchemasByColsResp::printTo(std::ostream& out) const {
@@ -26921,13 +27159,13 @@ void swap(MetaException &a, MetaException &b) {
   swap(a.__isset, b.__isset);
 }
 
-MetaException::MetaException(const MetaException& other1044) : TException() {
-  message = other1044.message;
-  __isset = other1044.__isset;
+MetaException::MetaException(const MetaException& other1046) : TException() {
+  message = other1046.message;
+  __isset = other1046.__isset;
 }
-MetaException& MetaException::operator=(const MetaException& other1045) {
-  message = other1045.message;
-  __isset = other1045.__isset;
+MetaException& MetaException::operator=(const MetaException& other1047) {
+  message = other1047.message;
+  __isset = other1047.__isset;
   return *this;
 }
 void MetaException::printTo(std::ostream& out) const {
@@ -27018,13 +27256,13 @@ void swap(UnknownTableException &a, UnknownTableException &b) {
   swap(a.__isset, b.__isset);
 }
 
-UnknownTableException::UnknownTableException(const UnknownTableException& other1046) : TException() {
-  message = other1046.message;
-  __isset = other1046.__isset;
+UnknownTableException::UnknownTableException(const UnknownTableException& other1048) : TException() {
+  message = other1048.message;
+  __isset = other1048.__isset;
 }
-UnknownTableException& UnknownTableException::operator=(const UnknownTableException& other1047) {
-  message = other1047.message;
-  __isset = other1047.__isset;
+UnknownTableException& UnknownTableException::operator=(const UnknownTableException& other1049) {
+  message = other1049.message;
+  __isset = other1049.__isset;
   return *this;
 }
 void UnknownTableException::printTo(std::ostream& out) const {
@@ -27115,13 +27353,13 @@ void swap(UnknownDBException &a, UnknownDBException &b) {
   swap(a.__isset, b.__isset);
 }
 
-UnknownDBException::UnknownDBException(const UnknownDBException& other1048) : TException() {
-  message = other1048.message;
-  __isset = other1048.__isset;
+UnknownDBException::UnknownDBException(const UnknownDBException& other1050) : TException() {
+  message = other1050.message;
+  __isset = other1050.__isset;
 }
-UnknownDBException& UnknownDBException::operator=(const UnknownDBException& other1049) {
-  message = other1049.message;
-  __isset = other1049.__isset;
+UnknownDBException& UnknownDBException::operator=(const UnknownDBException& other1051) {
+  message = other1051.message;
+  __isset = other1051.__isset;
   return *this;
 }
 void UnknownDBException::printTo(std::ostream& out) const {
@@ -27212,13 +27450,13 @@ void swap(AlreadyExistsException &a, AlreadyExistsException &b) {
   swap(a.__isset, b.__isset);
 }
 
-AlreadyExistsException::AlreadyExistsException(const AlreadyExistsException& other1050) : TException() {
-  message = other1050.message;
-  __isset = other1050.__isset;
+AlreadyExistsException::AlreadyExistsException(const AlreadyExistsException& other1052) : TException() {
+  message = other1052.message;
+  __isset = other1052.__isset;
 }
-AlreadyExistsException& AlreadyExistsException::operator=(const AlreadyExistsException& other1051) {
-  message = other1051.message;
-  __isset = other1051.__isset;
+AlreadyExistsException& AlreadyExistsException::operator=(const AlreadyExistsException& other1053) {
+  message = other1053.message;
+  __isset = other1053.__isset;
   return *this;
 }
 void AlreadyExistsException::printTo(std::ostream& out) const {
@@ -27309,13 +27547,13 @@ void swap(InvalidPartitionException &a, InvalidPartitionException &b) {
   swap(a.__isset, b.__isset);
 }
 
-InvalidPartitionException::InvalidPartitionException(const InvalidPartitionException& other1052) : TException() {
-  message = other1052.message;
-  __isset = other1052.__isset;
+InvalidPartitionException::InvalidPartitionException(const InvalidPartitionException& other1054) : TException() {
+  message = other1054.message;
+  __isset = other1054.__isset;
 }
-InvalidPartitionException& InvalidPartitionException::operator=(const InvalidPartitionException& other1053) {
-  message = other1053.message;
-  __isset = other1053.__isset;
+InvalidPartitionException& InvalidPartitionException::operator=(const InvalidPartitionException& other1055) {
+  message = other1055.message;
+  __isset = other1055.__isset;
   return *this;
 }
 void InvalidPartitionException::printTo(std::ostream& out) const {
@@ -27406,13 +27644,13 @@ void swap(UnknownPartitionException &a, UnknownPartitionException &b) {
   swap(a.__isset, b.__isset);
 }
 
-UnknownPartitionException::UnknownPartitionException(const UnknownPartitionException& other1054) : TException() {
-  message = other1054.message;
-  __isset = other1054.__isset;
+UnknownPartitionException::UnknownPartitionException(const UnknownPartitionException& other1056) : TException() {
+  message = other1056.message;
+  __isset = other1056.__isset;
 }
-UnknownPartitionException& UnknownPartitionException::operator=(const UnknownPartitionException& other1055) {
-  message = other1055.message;
-  __isset = other1055.__isset;
+UnknownPartitionException& UnknownPartitionException::operator=(const UnknownPartitionException& other1057) {
+  message = other1057.message;
+  __isset = other1057.__isset;
   return *this;
 }
 void UnknownPartitionException::printTo(std::ostream& out) const {
@@ -27503,13 +27741,13 @@ void swap(InvalidObjectException &a, InvalidObjectException &b) {
   swap(a.__isset, b.__isset);
 }
 
-InvalidObjectException::InvalidObjectException(const InvalidObjectException& other1056) : TException() {
-  message = other1056.message;
-  __isset = other1056.__isset;
+InvalidObjectException::InvalidObjectException(const InvalidObjectException& other1058) : TException() {
+  message = other1058.message;
+  __isset = other1058.__isset;
 }
-InvalidObjectException& InvalidObjectException::operator=(const InvalidObjectException& other1057) {
-  message = other1057.message;
-  __isset = other1057.__isset;
+InvalidObjectException& InvalidObjectException::operator=(const InvalidObjectException& other1059) {
+  message = other1059.message;
+  __isset = other1059.__isset;
   return *this;
 }
 void InvalidObjectException::printTo(std::ostream& out) const {
@@ -27600,13 +27838,13 @@ void swap(NoSuchObjectException &a, NoSuchObjectException &b) {
   swap(a.__isset, b.__isset);
 }
 
-NoSuchObjectException::NoSuchObjectException(const NoSuchObjectException& other1058) : TException() {
-  message = other1058.message;
-  __isset = other1058.__isset;
+NoSuchObjectException::NoSuchObjectException(const NoSuchObjectException& other1060) : TException() {
+  message = other1060.message;
+  __isset = other1060.__isset;
 }
-NoSuchObjectException& NoSuchObjectException::operator=(const NoSuchObjectException& other1059) {
-  message = other1059.message;
-  __isset = other1059.__isset;
+NoSuchObjectException& NoSuchObjectException::operator=(const NoSuchObjectException& other1061) {
+  message = other1061.message;
+  __isset = other1061.__isset;
   return *this;
 }
 void NoSuchObjectException::printTo(std::ostream& out) const {
@@ -27697,13 +27935,13 @@ void swap(IndexAlreadyExistsException &a, IndexAlreadyExistsException &b) {
   swap(a.__isset, b.__isset);
 }
 
-IndexAlreadyExistsException::IndexAlreadyExistsException(const IndexAlreadyExistsException& other1060) : TException() {
-  message = other1060.message;
-  __isset = other1060.__isset;
+IndexAlreadyExistsException::IndexAlreadyExistsException(const IndexAlreadyExistsException& other1062) : TException() {
+  message = other1062.message;
+  __isset = other1062.__isset;
 }
-IndexAlreadyExistsException& IndexAlreadyExistsException::operator=(const IndexAlreadyExistsException& other1061) {
-  message = other1061.message;
-  __isset = other1061.__isset;
+IndexAlreadyExistsException& IndexAlreadyExistsException::operator=(const IndexAlreadyExistsException& other1063) {
+  message = other1063.message;
+  __isset = other1063.__isset;
   return *this;
 }
 void IndexAlreadyExistsException::printTo(std::ostream& out) const {
@@ -27794,13 +28032,13 @@ void swap(InvalidOperationException &a, InvalidOperationException &b) {
   swap(a.__isset, b.__isset);
 }
 
-InvalidOperationException::InvalidOperationException(const InvalidOperationException& other1062) : TException() {
-  message = other1062.message;
-  __isset = other1062.__isset;
+InvalidOperationException::InvalidOperationException(const InvalidOperationException& other1064) : TException() {
+  message = other1064.message;
+  __isset = other1064.__isset;
 }
-InvalidOperationException& InvalidOperationException::operator=(const InvalidOperationException& other1063) {
-  message = other1063.message;
-  __isset = other1063.__isset;
+InvalidOperationException& InvalidOperationException::operator=(const InvalidOperationException& other1065) {
+  message = other1065.message;
+  __isset = other1065.__isset;
   return *this;
 }
 void InvalidOperationException::printTo(std::ostream& out) const {
@@ -27891,13 +28129,13 @@ void swap(ConfigValSecurityException &a, ConfigValSecurityException &b) {
   swap(a.__isset, b.__isset);
 }
 
-ConfigValSecurityException::ConfigValSecurityException(const ConfigValSecurityException& other1064) : TException() {
-  message = other1064.message;
-  __isset = other1064.__isset;
+ConfigValSecurityException::ConfigValSecurityException(const ConfigValSecurityException& other1066) : TException() {
+  message = other1066.message;
+  __isset = other1066.__isset;
 }
-ConfigValSecurityException& ConfigValSecurityException::operator=(const ConfigValSecurityException& other1065) {
-  message = other1065.message;
-  __isset = other1065.__isset;
+ConfigValSecurityException& ConfigValSecurityException::operator=(const ConfigValSecurityException& other1067) {
+  message = other1067.message;
+  __isset = other1067.__isset;
   return *this;
 }
 void ConfigValSecurityException::printTo(std::ostream& out) const {
@@ -27988,13 +28226,13 @@ void swap(InvalidInputException &a, InvalidInputException &b) {
   swap(a.__isset, b.__isset);
 }
 
-InvalidInputException::InvalidInputException(const InvalidInputException& other1066) : TException() {
-  message = other1066.message;
-  __isset = other1066.__isset;
+InvalidInputException::InvalidInputException(const InvalidInputException& other1068) : TException() {
+  message = other1068.message;
+  __isset = other1068.__isset;
 }
-InvalidInputException& InvalidInputException::operator=(const InvalidInputException& other1067) {
-  message = other1067.message;
-  __isset = other1067.__isset;
+InvalidInputException& InvalidInputException::operator=(const InvalidInputException& other1069) {
+  message = other1069.message;
+  __isset = other1069.__isset;
   return *this;
 }
 void InvalidInputException::printTo(std::ostream& out) const {
@@ -28085,13 +28323,13 @@ void swap(NoSuchTxnException &a, NoSuchTxnException &b) {
   swap(a.__isset, b.__isset);
 }
 
-NoSuchTxnException::NoSuchTxnException(const NoSuchTxnException& other1068) : TException() {
-  message = other1068.message;
-  __isset = other1068.__isset;
+NoSuchTxnException::NoSuchTxnException(const NoSuchTxnException& other1070) : TException() {
+  message = other1070.message;
+  __isset = other1070.__isset;
 }
-NoSuchTxnException& NoSuchTxnException::operator=(const NoSuchTxnException& other1069) {
-  message = other1069.message;
-  __isset = other1069.__isset;
+NoSuchTxnException& NoSuchTxnException::operator=(const NoSuchTxnException& other1071) {
+  message = other1071.message;
+  __isset = other1071.__isset;
   return *this;
 }
 void NoSuchTxnException::printTo(std::ostream& out) const {
@@ -28182,13 +28420,13 @@ void swap(TxnAbortedException &a, TxnAbortedException &b) {
   swap(a.__isset, b.__isset);
 }
 
-TxnAbortedException::TxnAbortedException(const TxnAbortedException& other1070) : TException() {
-  message = other1070.message;
-  __isset = other1070.__isset;
+TxnAbortedException::TxnAbortedException(const TxnAbortedException& other1072) : TException() {
+  message = other1072.message;
+  __isset = other1072.__isset;
 }
-TxnAbortedException& TxnAbortedException::operator=(const TxnAbortedException& other1071) {
-  message = other1071.message;
-  __isset = other1071.__isset;
+TxnAbortedException& TxnAbortedException::operator=(const TxnAbortedException& other1073) {
+  message = other1073.message;
+  __isset = other1073.__isset;
   return *this;
 }
 void TxnAbortedException::printTo(std::ostream& out) const {
@@ -28279,13 +28517,13 @@ void swap(TxnOpenException &a, TxnOpenException &b) {
   swap(a.__isset, b.__isset);
 }
 
-TxnOpenException::TxnOpenException(const TxnOpenException& other1072) : TException() {
-  message = other1072.message;
-  __isset = other1072.__isset;
+TxnOpenException::TxnOpenException(const TxnOpenException& other1074) : TException() {
+  message = other1074.message;
+  __isset = other1074.__isset;
 }
-TxnOpenException& TxnOpenException::operator=(const TxnOpenException& other1073) {
-  message = other1073.message;
-  __isset = other1073.__isset;
+TxnOpenException& TxnOpenException::operator=(const TxnOpenException& other1075) {
+  message = other1075.message;
+  __isset = other1075.__isset;
   return *this;
 }
 void TxnOpenException::printTo(std::ostream& out) const {
@@ -28376,13 +28614,13 @@ void swap(NoSuchLockException &a, NoSuchLockException &b) {
   swap(a.__isset, b.__isset);
 }
 
-NoSuchLockException::NoSuchLockException(const NoSuchLockException& other1074) : TException() {
-  message = other1074.message;
-  __isset = other1074.__isset;
+NoSuchLockException::NoSuchLockException(const NoSuchLockException& other1076) : TException() {
+  message = other1076.message;
+  __isset = other1076.__isset;
 }
-NoSuchLockException& NoSuchLockException::operator=(const NoSuchLockException& other1075) {
-  message = other1075.message;
-  __isset = other1075.__isset;
+NoSuchLockException& NoSuchLockException::operator=(const NoSuchLockException& other1077) {
+  message = other1077.message;
+  __isset = other1077.__isset;
   return *this;
 }
 void NoSuchLockException::printTo(std::ostream& out) const {

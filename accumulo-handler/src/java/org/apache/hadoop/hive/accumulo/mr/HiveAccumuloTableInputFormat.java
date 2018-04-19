@@ -80,7 +80,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Wraps older InputFormat for use with Hive.
  *
- * Configure input scan with proper ranges, iterators, and columns based on serde properties for
+ * Configure input scan with proper ranges, iterators, and columns based on serdes properties for
  * Hive table.
  */
 public class HiveAccumuloTableInputFormat implements

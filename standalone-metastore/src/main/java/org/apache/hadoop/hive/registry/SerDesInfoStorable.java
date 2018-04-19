@@ -19,15 +19,12 @@ package org.apache.hadoop.hive.registry;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.hadoop.hive.registry.common.Schema;
-import org.apache.hadoop.hive.registry.storage.core.PrimaryKey;
-import org.apache.hadoop.hive.registry.storage.core.catalog.AbstractStorable;
-
 import java.util.Collections;
 
 /**
  * This class is about entity representation to store serializer or deserializer information for a given schema.
  */
-public class SerDesInfoStorable extends AbstractStorable {
+public class SerDesInfoStorable {
     public static final String NAME_SPACE = "schema_serdes_info";
     public static final String ID = "id";
     public static final String DESCRIPTION = "description";
@@ -90,28 +87,7 @@ public class SerDesInfoStorable extends AbstractStorable {
         deserializerClassName = serDesPair.getDeserializerClassName();
     }
 
-    @JsonIgnore
-    @Override
-    public String getNameSpace() {
-        return NAME_SPACE;
-    }
 
-    @Override
-    @JsonIgnore
-    public PrimaryKey getPrimaryKey() {
-        return new PrimaryKey(Collections.<Schema.Field, Object>singletonMap(new Schema.Field(ID, Schema.Type.LONG), id));
-    }
-
-    @Override
-    @JsonIgnore
-    public Schema getSchema() {
-        return SCHEMA;
-    }
-
-    @Override
-    public Long getId() {
-        return id;
-    }
 
     public void setId(Long id) {
         this.id = id;

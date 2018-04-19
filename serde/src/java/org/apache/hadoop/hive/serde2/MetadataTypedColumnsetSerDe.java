@@ -100,7 +100,7 @@ public class MetadataTypedColumnsetSerDe extends AbstractSerDe {
     // so this hack applies to all such tables
     boolean columnsetSerDe = false;
     if ((serdeName != null)
-        && serdeName.equals("org.apache.hadoop.hive.serde.thrift.columnsetSerDe")) {
+        && serdeName.equals("org.apache.hadoop.hive.serdes.thrift.columnsetSerDe")) {
       columnsetSerDe = true;
     }
     final String columnNameDelimiter = tbl.containsKey(serdeConstants.COLUMN_NAME_DELIMITER) ? tbl

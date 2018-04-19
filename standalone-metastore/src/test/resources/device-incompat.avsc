@@ -1,0 +1,11 @@
+{
+   "type" : "record",
+   "namespace" : "org.apache.hadoop.hive.registry",
+   "name" : "Device",
+   "fields" : [
+      { "name" : "xid" , "type" : "long" },
+      { "name" : "name" , "type" : "string" },
+      { "name" : "version" , "type" : "int" },
+      { "name" : "mfr" , "type" : "string" }
+   ]
+}

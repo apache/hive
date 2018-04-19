@@ -66,7 +66,7 @@ public class ImportTableDesc {
                 table.getSd().getBucketCols(),
                 table.getSd().getSortCols(),
                 table.getSd().getNumBuckets(),
-                null, null, null, null, null, // these 5 delims passed as serde params
+                null, null, null, null, null, // these 5 delims passed as serdes params
                 null, // comment passed as table params
                 table.getSd().getInputFormat(),
                 table.getSd().getOutputFormat(),

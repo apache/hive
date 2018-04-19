@@ -19,6 +19,9 @@ package org.apache.hadoop.hive.registry;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.base.Preconditions;
+import org.apache.hadoop.hive.metastore.api.ISchema;
+import org.apache.hadoop.hive.metastore.api.SchemaCompatibility;
+import org.apache.hadoop.hive.metastore.api.SchemaValidation;
 
 import java.io.Serializable;
 
@@ -45,10 +48,24 @@ public final class SchemaMetadataInfo implements Serializable {
     private SchemaMetadataInfo() { /* Private constructor for Jackson JSON mapping */}
 
     /**
-     * @param schemaMetadata schema metadata
+     * @param iSchema Schema metadata
      */
+
+    public SchemaMetadataInfo(ISchema iSchema) {
+       this.schemaMetadata = new SchemaMetadata.Builder(iSchema.getName())
+                .type(iSchema.getSchemaType().toString())
+                .schemaGroup(iSchema.getSchemaGroup())
+                .compatibility(org.apache.hadoop.hive.registry.SchemaCompatibility.values()[iSchema.getCompatibility().ordinal()])
+                .validationLevel(SchemaValidationLevel.values()[iSchema.getValidationLevel().ordinal()])
+                .description(iSchema.getDescription())
+                .evolve(iSchema.isCanEvolve())
+                .build();
+       this.id = iSchema.getSchemaId();
+       this.timestamp = iSchema.getTimestamp();
+    }
+
     public SchemaMetadataInfo(SchemaMetadata schemaMetadata) {
-        this(schemaMetadata, null, null);
+        this(schemaMetadata, null, System.currentTimeMillis());
     }
 
     public SchemaMetadataInfo(SchemaMetadata schemaMetadata,
@@ -64,12 +81,29 @@ public final class SchemaMetadataInfo implements Serializable {
         return id;
     }
 
+    public void setId(Long id) { this.id = id; }
+
     public Long getTimestamp() {
         return timestamp;
     }
 
+    public void setTimestamp(Long timestamp) { this.timestamp = timestamp; }
+
     public SchemaMetadata getSchemaMetadata() {
         return schemaMetadata;
+    }
+
+    public void setSchemaMetadata(SchemaMetadata schemaMetadata) { this.schemaMetadata = schemaMetadata; }
+
+    public ISchema buildThriftSchemaRequest() {
+        ISchema thriftSchema = new ISchema();
+        thriftSchema.setName(schemaMetadata.getName());
+        thriftSchema.setDescription(schemaMetadata.getDescription());
+        thriftSchema.setCanEvolve(schemaMetadata.isEvolve());
+        thriftSchema.setCompatibility(SchemaCompatibility.findByValue(schemaMetadata.getCompatibility().ordinal()));
+        thriftSchema.setSchemaGroup(schemaMetadata.getSchemaGroup());
+        thriftSchema.setValidationLevel(SchemaValidation.findByValue(schemaMetadata.getValidationLevel().ordinal()));
+        return thriftSchema;
     }
 
     @Override

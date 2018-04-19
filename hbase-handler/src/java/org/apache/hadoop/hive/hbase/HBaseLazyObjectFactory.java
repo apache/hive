@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Properties;
 
 // Does same thing with LazyFactory#createLazyObjectInspector except that this replaces
-// original keyOI with OI which is create by HBaseKeyFactory provided by serde property for hbase
+// original keyOI with OI which is create by HBaseKeyFactory provided by serdes property for hbase
 public class HBaseLazyObjectFactory {
 
   public static ObjectInspector createLazyHBaseStructInspector(

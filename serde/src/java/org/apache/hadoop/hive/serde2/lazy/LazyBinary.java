@@ -52,7 +52,7 @@ public class LazyBinary extends LazyPrimitive<LazyBinaryObjectInspector, BytesWr
     data.set(decoded, 0, decoded.length);
   }
 
-  // todo this should be configured in serde
+  // todo this should be configured in serdes
   public static byte[] decodeIfNeeded(byte[] recv) {
     boolean arrayByteBase64 = Base64.isArrayByteBase64(recv);
     if (LOG.isDebugEnabled() && arrayByteBase64) {

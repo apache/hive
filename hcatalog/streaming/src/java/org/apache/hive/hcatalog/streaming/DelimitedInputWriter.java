@@ -300,7 +300,7 @@ public class DelimitedInputWriter extends AbstractRecordWriter {
   /**
    * Creates LazySimpleSerde
    * @return
-   * @throws SerializationError if serde could not be initialized
+   * @throws SerializationError if serdes could not be initialized
    * @param tbl
    */
   protected static LazySimpleSerDe createSerde(Table tbl, HiveConf conf, char serdeSeparator)
@@ -312,7 +312,7 @@ public class DelimitedInputWriter extends AbstractRecordWriter {
       SerDeUtils.initializeSerDe(serde, conf, tableProps, null);
       return serde;
     } catch (SerDeException e) {
-      throw new SerializationError("Error initializing serde", e);
+      throw new SerializationError("Error initializing serdes", e);
     }
   }
 

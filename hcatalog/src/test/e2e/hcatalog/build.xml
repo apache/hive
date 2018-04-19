@@ -77,7 +77,7 @@
     </path>
 
     <path id="hive.serde.jar.location">
-        <!-- <fileset dir="${hive.dir}/build/serde"> -->
+        <!-- <fileset dir="${hive.dir}/buserdeserde"> -->
         <fileset dir="${hive.home}/lib">
             <include name="hive-serde-*.jar"/>
         </fileset>

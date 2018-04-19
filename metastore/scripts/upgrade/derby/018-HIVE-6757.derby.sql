@@ -13,7 +13,7 @@ WHERE
 ;
 
 UPDATE SERDES
-  SET SLIB='org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
+  SET SLIB='org.apache.hadoop.hive.ql.io.parquet.serdes.ParquetHiveSerDe'
 WHERE
-  SLIB = 'parquet.hive.serde.ParquetHiveSerDe'
+  SLIB = 'parquet.hive.serdes.ParquetHiveSerDe'
 ;

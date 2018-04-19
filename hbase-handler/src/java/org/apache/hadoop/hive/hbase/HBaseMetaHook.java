@@ -69,7 +69,7 @@ public class HBaseMetaHook implements HiveMetaHook, Closeable {
     // for backwards compatibility with the original specs).
     String tableName = tbl.getParameters().get(HBaseSerDe.HBASE_TABLE_NAME);
     if (tableName == null) {
-      //convert to lower case in case we are getting from serde
+      //convert to lower case in case we are getting from serdes
       tableName = tbl.getSd().getSerdeInfo().getParameters().get(HBaseSerDe.HBASE_TABLE_NAME);
       //standardize to lower case
       if (tableName != null) {

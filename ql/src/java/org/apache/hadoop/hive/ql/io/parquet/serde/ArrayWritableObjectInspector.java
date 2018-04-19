@@ -175,7 +175,7 @@ public class ArrayWritableObjectInspector extends SettableStructObjectInspector 
     }
 
     //since setStructFieldData and create return a list, getStructFieldData should be able to
-    //handle list data. This is required when table serde is ParquetHiveSerDe and partition serde
+    //handle list data. This is required when table serdes is ParquetHiveSerDe and partition serdes
     //is something else.
     if (data instanceof List) {
       return ((List) data).get(((StructFieldImpl) fieldRef).getIndex());
@@ -202,7 +202,7 @@ public class ArrayWritableObjectInspector extends SettableStructObjectInspector 
     }
 
     //since setStructFieldData and create return a list, getStructFieldData should be able to
-    //handle list data. This is required when table serde is ParquetHiveSerDe and partition serde
+    //handle list data. This is required when table serdes is ParquetHiveSerDe and partition serdes
     //is something else.
     if (data instanceof List) {
       return ((List) data);

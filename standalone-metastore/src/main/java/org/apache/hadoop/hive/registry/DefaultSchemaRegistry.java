@@ -17,23 +17,25 @@
  */
 package org.apache.hadoop.hive.registry;
 
-import com.google.common.base.Preconditions;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.DefaultPartitionExpressionProxy;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.PartitionExpressionProxy;
+import org.apache.hadoop.hive.metastore.api.ISchema;
+import org.apache.hadoop.hive.metastore.api.ISchemaBranch;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.events.EventCleanerTask;
 import org.apache.hadoop.hive.registry.cache.SchemaBranchCache;
 import org.apache.hadoop.hive.registry.common.QueryParam;
-import org.apache.hadoop.hive.registry.common.util.FileStorage;
-import org.apache.hadoop.hive.registry.errors.IncompatibleSchemaException;
-import org.apache.hadoop.hive.registry.errors.InvalidSchemaBranchDeletionException;
-import org.apache.hadoop.hive.registry.errors.InvalidSchemaException;
-import org.apache.hadoop.hive.registry.errors.SchemaBranchAlreadyExistsException;
-import org.apache.hadoop.hive.registry.errors.SchemaBranchNotFoundException;
-import org.apache.hadoop.hive.registry.errors.SchemaNotFoundException;
-import org.apache.hadoop.hive.registry.errors.UnsupportedSchemaTypeException;
-import org.apache.hadoop.hive.registry.serde.SerDesException;
+import org.apache.hadoop.hive.registry.common.errors.IncompatibleSchemaException;
+import org.apache.hadoop.hive.registry.common.errors.InvalidSchemaBranchDeletionException;
+import org.apache.hadoop.hive.registry.common.errors.InvalidSchemaException;
+import org.apache.hadoop.hive.registry.common.errors.SchemaBranchAlreadyExistsException;
+import org.apache.hadoop.hive.registry.common.errors.SchemaBranchNotFoundException;
+import org.apache.hadoop.hive.registry.common.errors.SchemaNotFoundException;
+import org.apache.hadoop.hive.registry.common.errors.UnsupportedSchemaTypeException;
 import org.apache.hadoop.hive.registry.state.SchemaLifecycleException;
 import org.apache.hadoop.hive.registry.state.SchemaVersionLifecycleContext;
 import org.apache.hadoop.hive.registry.state.SchemaVersionLifecycleStateMachineInfo;
@@ -41,20 +43,18 @@ import org.apache.hadoop.hive.registry.state.SchemaVersionLifecycleStates;
 import org.apache.hadoop.hive.registry.state.details.InitializedStateDetails;
 import org.apache.hadoop.hive.registry.state.details.MergeInfo;
 import org.apache.hadoop.hive.registry.utils.ObjectMapperUtils;
+import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -67,7 +67,6 @@ public class DefaultSchemaRegistry implements ISchemaRegistry {
     public static final String ORDER_BY_FIELDS_PARAM_NAME = "_orderByFields";
     public static final String DEFAULT_SCHEMA_VERSION_MERGE_STRATEGY = "OPTIMISTIC";
 
-    private final FileStorage fileStorage;
     private final Collection<Map<String, Object>> schemaProvidersConfig;
     private final IMetaStoreClient metaStoreClient;
 
@@ -76,11 +75,23 @@ public class DefaultSchemaRegistry implements ISchemaRegistry {
     private SchemaVersionLifecycleManager schemaVersionLifecycleManager;
     private SchemaBranchCache schemaBranchCache;
 
-    public DefaultSchemaRegistry(FileStorage fileStorage,
-                                 Collection<Map<String, Object>> schemaProvidersConfig) throws MetaException {
-        this.fileStorage = fileStorage;
+    public DefaultSchemaRegistry(Collection<Map<String, Object>> schemaProvidersConfig) throws MetaException {
         this.schemaProvidersConfig = schemaProvidersConfig;
         Configuration conf = MetastoreConf.newMetastoreConf();
+        MetastoreConf.setVar(conf, MetastoreConf.ConfVars.THRIFT_URIS, "");
+        MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.EXECUTE_SET_UGI, false);
+        MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.AUTO_CREATE_ALL, true);
+        MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.SCHEMA_VERIFICATION, false);
+        if (MetastoreConf.getVar(conf, MetastoreConf.ConfVars.TASK_THREADS_ALWAYS).equals(
+                MetastoreConf.ConfVars.TASK_THREADS_ALWAYS.getDefaultVal())) {
+          MetastoreConf.setVar(conf, MetastoreConf.ConfVars.TASK_THREADS_ALWAYS,
+                  EventCleanerTask.class.getName());
+        }
+        if (MetastoreConf.getVar(conf, MetastoreConf.ConfVars.EXPRESSION_PROXY_CLASS).equals(
+                MetastoreConf.ConfVars.EXPRESSION_PROXY_CLASS.getDefaultVal())) {
+          MetastoreConf.setClass(conf, MetastoreConf.ConfVars.EXPRESSION_PROXY_CLASS,
+                  DefaultPartitionExpressionProxy.class, PartitionExpressionProxy.class);
+        }
         this.metaStoreClient = new HiveMetaStoreClient(conf);
     }
 
@@ -88,10 +99,10 @@ public class DefaultSchemaRegistry implements ISchemaRegistry {
     public void init(Map<String, Object> props) {
 
         Options options = new Options(props);
-        schemaBranchCache = new SchemaBranchCache(options.getMaxSchemaCacheSize(),
-                                                  options.getSchemaExpiryInSecs(),
-                                                  createSchemaBranchFetcher());
 
+        schemaBranchCache = new SchemaBranchCache(options.getMaxSchemaCacheSize(),
+                options.getSchemaExpiryInSecs(),
+                createSchemaBranchFetcher());
         SchemaMetadataFetcher schemaMetadataFetcher = createSchemaMetadataFetcher();
         schemaVersionLifecycleManager = new SchemaVersionLifecycleManager(metaStoreClient,
                                                                           props,
@@ -99,7 +110,7 @@ public class DefaultSchemaRegistry implements ISchemaRegistry {
                                                                           schemaBranchCache);
 
         Collection<? extends SchemaProvider> schemaProviders = initSchemaProviders(schemaProvidersConfig,
-                                                                                   schemaVersionLifecycleManager.getSchemaVersionRetriever());
+                                                                                   null);
 
         this.schemaTypeWithProviders = schemaProviders.stream()
                                                       .collect(Collectors.toMap(SchemaProvider::getType,
@@ -122,21 +133,21 @@ public class DefaultSchemaRegistry implements ISchemaRegistry {
     }
 
 
-    private SchemaBranchCache.SchemaBranchFetcher createSchemaBranchFetcher() {
-        return new SchemaBranchCache.SchemaBranchFetcher() {
-            @Override
-            public SchemaBranch getSchemaBranch(SchemaBranchKey schemaBranchKey) throws SchemaBranchNotFoundException {
-                return DefaultSchemaRegistry.this.getSchemaBranch(schemaBranchKey);
-            }
+  private SchemaBranchCache.SchemaBranchFetcher createSchemaBranchFetcher() {
+    return new SchemaBranchCache.SchemaBranchFetcher() {
+      @Override
+      public SchemaBranch getSchemaBranch(SchemaBranchKey schemaBranchKey) throws SchemaBranchNotFoundException {
+        return DefaultSchemaRegistry.this.getSchemaBranch(schemaBranchKey);
+      }
 
-            @Override
-            public SchemaBranch getSchemaBranch(Long id) throws SchemaBranchNotFoundException {
-                return DefaultSchemaRegistry.this.getSchemaBranch(id);
-            }
-        };
-    }
+      @Override
+      public SchemaBranch getSchemaBranch(Long id) throws SchemaBranchNotFoundException {
+        return DefaultSchemaRegistry.this.getSchemaBranch(id);
+      }
+    };
+  }
 
-    private SchemaMetadataFetcher createSchemaMetadataFetcher() {
+  private SchemaMetadataFetcher createSchemaMetadataFetcher() {
         return new SchemaMetadataFetcher() {
 
             @Override
@@ -156,7 +167,7 @@ public class DefaultSchemaRegistry implements ISchemaRegistry {
                 return schemaTypeWithProviders.get(providerType);
             }
         };
-    }
+  }
 
     public interface SchemaMetadataFetcher {
         SchemaMetadataInfo getSchemaMetadataInfo(String schemaName);
@@ -215,150 +226,151 @@ public class DefaultSchemaRegistry implements ISchemaRegistry {
 
     public Long addSchemaMetadata(SchemaMetadata schemaMetadata,
                                   boolean throwErrorIfExists) throws UnsupportedSchemaTypeException {
-        SchemaMetadataStorable givenSchemaMetadataStorable = SchemaMetadataStorable.fromSchemaMetadataInfo(new SchemaMetadataInfo(schemaMetadata));
+        SchemaMetadataInfo givenSchemaMetadataInfo = new SchemaMetadataInfo(schemaMetadata);
         String type = schemaMetadata.getType();
         if (schemaTypeWithProviders.get(type) == null) {
             throw new UnsupportedSchemaTypeException("Given schema type " + type + " not supported");
         }
-
-       /* if (!throwErrorIfExists) {
-            Storable schemaMetadataStorable = storageManager.get(givenSchemaMetadataStorable.getStorableKey());
-            if (schemaMetadataStorable != null) {
-                return schemaMetadataStorable.getId();
+        try {
+          if (!throwErrorIfExists) {
+            ISchema lookupSchemaMetadata = metaStoreClient.getISchemaByName(givenSchemaMetadataInfo.getSchemaMetadata().getName());
+            if (lookupSchemaMetadata != null) {
+              return lookupSchemaMetadata.getSchemaId();
             }
+          }
+          Long schemaId = metaStoreClient.createISchema(givenSchemaMetadataInfo.buildThriftSchemaRequest());
+          givenSchemaMetadataInfo.setId(schemaId);
+          // Add a schema branch for this metadata
+          SchemaBranch schemaBranch = new SchemaBranch(SchemaBranch.MASTER_BRANCH, schemaMetadata.getName(),
+                  String.format(SchemaBranch.MASTER_BRANCH_DESC, schemaMetadata.getName()),
+                  System.currentTimeMillis());
+          metaStoreClient.addSchemaBranch(schemaBranch.buildThriftSchemaBranchRequest());
+        } catch (TException te) {
+
         }
-        final Long nextId = storageManager.nextId(givenSchemaMetadataStorable.getNameSpace());
-        givenSchemaMetadataStorable.setId(nextId);
-        givenSchemaMetadataStorable.setTimestamp(System.currentTimeMillis());
-        storageManager.addOrUpdate(givenSchemaMetadataStorable);
-
-        // Add a schema branch for this metadata
-        SchemaBranchStorable schemaBranchStorable = new SchemaBranchStorable(SchemaBranch.MASTER_BRANCH, schemaMetadata.getName(), String.format(SchemaBranch.MASTER_BRANCH_DESC, schemaMetadata.getName()), System.currentTimeMillis());
-        schemaBranchStorable.setId(storageManager.nextId(SchemaBranchStorable.NAME_SPACE));
-        storageManager.add(schemaBranchStorable);*/
-
-        return givenSchemaMetadataStorable.getId();
+        return givenSchemaMetadataInfo.getId();
     }
 
     @Override
     public SchemaMetadataInfo getSchemaMetadataInfo(Long schemaMetadataId) {
-        SchemaMetadataStorable givenSchemaMetadataStorable = new SchemaMetadataStorable();
-        givenSchemaMetadataStorable.setId(schemaMetadataId);
-
-        List<QueryParam> params = Collections.singletonList(new QueryParam(SchemaMetadataStorable.ID, schemaMetadataId.toString()));
-        Collection<SchemaMetadataStorable> schemaMetadataStorables = storageManager.find(SchemaMetadataStorable.NAME_SPACE, params);
-        SchemaMetadataInfo schemaMetadataInfo = null;
-        if (schemaMetadataStorables != null && !schemaMetadataStorables.isEmpty()) {
-            schemaMetadataInfo = schemaMetadataStorables.iterator().next().toSchemaMetadataInfo();
-            if (schemaMetadataStorables.size() > 1) {
-                LOG.warn("No unique entry with schemaMetatadataId: [{}]", schemaMetadataId);
-            }
-            LOG.info("SchemaMetadata entries with id [{}] is [{}]", schemaMetadataStorables);
+      try {
+        ISchema iSchema = metaStoreClient.getISchema(schemaMetadataId);
+        if (iSchema != null) {
+          SchemaMetadataInfo schemaMetadataInfo = new SchemaMetadataInfo(iSchema);
+          LOG.info("SchemaMetadata entries with id [{}] is [{}]", schemaMetadataInfo);
+          return schemaMetadataInfo;
         }
+      } catch(TException te) {
 
-        return schemaMetadataInfo;
-    }
-
-    @Override
-    public SchemaMetadataInfo getSchemaMetadataInfo(String schemaName) {
-        SchemaMetadataStorable givenSchemaMetadataStorable = new SchemaMetadataStorable();
-        givenSchemaMetadataStorable.setName(schemaName);
-
-        SchemaMetadataStorable schemaMetadataStorable = storageManager.get(givenSchemaMetadataStorable.getStorableKey());
-
-        return schemaMetadataStorable != null ? schemaMetadataStorable.toSchemaMetadataInfo() : null;
+      }
+      return null;
     }
 
     public Collection<AggregatedSchemaMetadataInfo> findAggregatedSchemaMetadata(Map<String, String> props)
             throws SchemaBranchNotFoundException, SchemaNotFoundException {
 
         return findSchemaMetadata(props)
-                .stream()
-                .map(schemaMetadataInfo -> {
-                    try {
-                        return buildAggregatedSchemaMetadataInfo(schemaMetadataInfo);
-                    } catch (SchemaNotFoundException | SchemaBranchNotFoundException e) {
-                        throw new RuntimeException(e);
-                    }
-                })
-                .collect(Collectors.toList());
+              .stream()
+              .map(schemaMetadataInfo -> {
+                try {
+                  return buildAggregatedSchemaMetadataInfo(schemaMetadataInfo);
+                } catch (SchemaNotFoundException | SchemaBranchNotFoundException e) {
+                  throw new RuntimeException(e);
+                }
+              })
+              .collect(Collectors.toList());
     }
 
-    @Override
-    public SchemaMetadataInfo updateSchemaMetadata(String schemaName, SchemaMetadata schemaMetadata) {
-        if (!schemaName.equals(schemaMetadata.getName())) {
-            throw new IllegalArgumentException("schemaName must match the name in schemaMetadata");
-        }
-        SchemaMetadataStorable givenSchemaMetadataStorable = new SchemaMetadataStorable();
-        givenSchemaMetadataStorable.setName(schemaName);
-
-        SchemaMetadataStorable schemaMetadataStorable = storageManager.get(givenSchemaMetadataStorable.getStorableKey());
-        if (schemaMetadataStorable != null) {
-            schemaMetadataStorable = SchemaMetadataStorable.updateSchemaMetadata(schemaMetadataStorable, schemaMetadata);
-            storageManager.addOrUpdate(schemaMetadataStorable);
-            return schemaMetadataStorable.toSchemaMetadataInfo();
-        } else {
-            return null;
-        }
-    }
 
     @Override
     public Collection<SchemaMetadataInfo> findSchemaMetadata(Map<String, String> props) {
-        // todo get only few selected columns instead of getting the whole row.
-        Collection<SchemaMetadataStorable> storables;
+      /*// todo get only few selected columns instead of getting the whole row.
+      Collection<SchemaMetadata> storables;
 
-        if (props == null || props.isEmpty()) {
-            storables = storageManager.list(SchemaMetadataStorable.NAME_SPACE);
-        } else {
-            List<QueryParam> orderByFieldQueryParams = new ArrayList<>();
-            List<QueryParam> queryParams = new ArrayList<>(props.size());
-            for (Map.Entry<String, String> entry : props.entrySet()) {
-                QueryParam queryParam = new QueryParam(entry.getKey(), entry.getValue());
-                if (ORDER_BY_FIELDS_PARAM_NAME.equals(entry.getKey())) {
-                    orderByFieldQueryParams.add(queryParam);
-                } else {
-                    queryParams.add(queryParam);
-                }
+      if (props == null || props.isEmpty()) {
+        storables = storageManager.list(SchemaMetadataStorable.NAME_SPACE);
+      } else {
+        List<QueryParam> orderByFieldQueryParams = new ArrayList<>();
+        List<QueryParam> queryParams = new ArrayList<>(props.size());
+        for (Map.Entry<String, String> entry : props.entrySet()) {
+          QueryParam queryParam = new QueryParam(entry.getKey(), entry.getValue());
+          if (ORDER_BY_FIELDS_PARAM_NAME.equals(entry.getKey())) {
+            orderByFieldQueryParams.add(queryParam);
+          } else {
+            queryParams.add(queryParam);
+          }
+        }
+        storables = storageManager.find(SchemaMetadataStorable.NAME_SPACE, queryParams, getOrderByFields(orderByFieldQueryParams));
+      }
+
+      List<SchemaMetadataInfo> result;
+      if (storables != null && !storables.isEmpty()) {
+        result = storables.stream().map(SchemaMetadataStorable::toSchemaMetadataInfo).collect(Collectors.toList());
+      } else {
+        result = Collections.emptyList();
+      }*/
+      //return result;
+      return null;
+    }
+
+
+    @Override
+    public Collection<AggregatedSchemaBranch> getAggregatedSchemaBranch(String schemaName) throws SchemaNotFoundException, SchemaBranchNotFoundException {
+      /*Collection<AggregatedSchemaBranch> aggregatedSchemaBranches = new ArrayList<>();
+      for (SchemaBranch schemaBranch : getSchemaBranches(schemaName)) {
+        Long rootVersion = schemaBranch.getName().equals(SchemaBranch.MASTER_BRANCH) ? null: schemaVersionLifecycleManager.getRootVersion(schemaBranch).getId();
+        Collection<SchemaVersionInfo> schemaVersionInfos = getAllVersions(schemaBranch.getName(), schemaName);
+        schemaVersionInfos.stream().forEach(schemaVersionInfo -> {
+          SchemaVersionLifecycleContext context = null;
+          try {
+            context = schemaVersionLifecycleManager.createSchemaVersionLifeCycleContext(schemaVersionInfo.getId(), SchemaVersionLifecycleStates.INITIATED);
+            MergeInfo mergeInfo = null;
+            if (context.getDetails() == null) {
+              mergeInfo = null;
+            } else {
+              try {
+                InitializedStateDetails details = ObjectMapperUtils.deserialize(context.getDetails(), InitializedStateDetails.class);
+                mergeInfo = details.getMergeInfo();
+              } catch (IOException e) {
+                throw new RuntimeException(String.format("Failed to serialize state details of schema version : '%s'",context.getSchemaVersionId()),e);
+              }
             }
-            storables = storageManager.find(SchemaMetadataStorable.NAME_SPACE, queryParams, getOrderByFields(orderByFieldQueryParams));
-        }
+            schemaVersionInfo.setMergeInfo(mergeInfo);
+          } catch (SchemaNotFoundException e) {
+            // If the schema version has never been in 'INITIATED' state, then SchemaNotFoundException error is thrown which is expected
+            schemaVersionInfo.setMergeInfo(null);
+          }
+        });
+        aggregatedSchemaBranches.add(new AggregatedSchemaBranch(schemaBranch, rootVersion, schemaVersionInfos));
 
-        List<SchemaMetadataInfo> result;
-        if (storables != null && !storables.isEmpty()) {
-            result = storables.stream().map(SchemaMetadataStorable::toSchemaMetadataInfo).collect(Collectors.toList());
-        } else {
-            result = Collections.emptyList();
-        }
-
-        return result;
+      }*/
+      //return aggregatedSchemaBranches;
+      return null;
     }
 
-    private SchemaVersionKey getSchemaKey(Long schemaId) {
-        SchemaVersionKey schemaVersionKey = null;
-
-        List<QueryParam> queryParams = Collections.singletonList(new QueryParam(SchemaVersionStorable.ID, schemaId.toString()));
-        Collection<SchemaVersionStorable> versionedSchemas = storageManager.find(SchemaVersionStorable.NAME_SPACE, queryParams);
-        if (versionedSchemas != null && !versionedSchemas.isEmpty()) {
-            SchemaVersionStorable storable = versionedSchemas.iterator().next();
-            schemaVersionKey = new SchemaVersionKey(storable.getName(), storable.getVersion());
-        }
-
-        return schemaVersionKey;
+    public SchemaVersionLifecycleStateMachineInfo getSchemaVersionLifecycleStateMachineInfo() {
+      return schemaVersionLifecycleManager.getSchemaVersionLifecycleStateMachine().toConfig();
     }
 
-    private List<QueryParam> buildQueryParam(SchemaFieldQuery schemaFieldQuery) {
-        List<QueryParam> queryParams = new ArrayList<>(3);
-        if (schemaFieldQuery.getNamespace() != null) {
-            queryParams.add(new QueryParam(SchemaFieldInfo.FIELD_NAMESPACE, schemaFieldQuery.getNamespace()));
-        }
-        if (schemaFieldQuery.getName() != null) {
-            queryParams.add(new QueryParam(SchemaFieldInfo.NAME, schemaFieldQuery.getName()));
-        }
-        if (schemaFieldQuery.getType() != null) {
-            queryParams.add(new QueryParam(SchemaFieldInfo.TYPE, schemaFieldQuery.getType()));
-        }
+    private AggregatedSchemaMetadataInfo buildAggregatedSchemaMetadataInfo(SchemaMetadataInfo schemaMetadataInfo) throws SchemaNotFoundException, SchemaBranchNotFoundException {
 
-        return queryParams;
+      if (schemaMetadataInfo == null) {
+        return null;
+      }
+
+      List<SerDesInfo> serDesInfos = new ArrayList<>();
+
+      return new AggregatedSchemaMetadataInfo(schemaMetadataInfo.getSchemaMetadata(),
+              schemaMetadataInfo.getId(),
+              schemaMetadataInfo.getTimestamp(),
+              getAggregatedSchemaBranch(schemaMetadataInfo.getSchemaMetadata().getName()),
+              serDesInfos);
+    }
+
+
+    @Override
+    public SchemaMetadataInfo getSchemaMetadataInfo(String schemaName) {
+      return null;
     }
 
     public SchemaIdVersion addSchemaVersion(SchemaMetadata schemaMetadata,
@@ -472,16 +484,42 @@ public class DefaultSchemaRegistry implements ISchemaRegistry {
         return schemaVersionLifecycleManager.checkCompatibility(schemaBranchName, schemaName, toSchema);
     }
 
-    @Override
     public String uploadFile(InputStream inputStream) {
-        String fileName = UUID.randomUUID().toString();
-        try {
-            String uploadedFilePath = fileStorage.upload(inputStream, fileName);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        return null;
+    }
 
-        return fileName;
+
+    private SchemaBranch getSchemaBranch(SchemaBranchKey schemaBranchKey) throws SchemaBranchNotFoundException {
+
+      try {
+        Collection <ISchemaBranch> iSchemaBranches = metaStoreClient.getSchemaBranchBySchemaName(schemaBranchKey.getSchemaMetadataName());
+        if (iSchemaBranches == null || iSchemaBranches.isEmpty())
+          throw new SchemaBranchNotFoundException(String.format("Schema branch with key : %s not found", schemaBranchKey));
+        else if (iSchemaBranches.size() > 1)
+          throw new SchemaBranchNotFoundException(String.format("Failed to unique determine a schema branch with key : %s", schemaBranchKey));
+        return new SchemaBranch(iSchemaBranches.iterator().next());
+      } catch (TException te) {
+
+      }
+      return null;
+    }
+
+    private SchemaBranch getSchemaBranch(Long id) throws SchemaBranchNotFoundException {
+    try {
+        ISchemaBranch iSchemaBranch = metaStoreClient.getSchemaBranch(id);
+        if (iSchemaBranch == null)
+          throw new SchemaBranchNotFoundException(String.format("Schema branch with id : '%s' not found", id.toString()));
+        // size of the collection will always be less than 2, as ID is a primary key, so no need handle the case where size > 1
+        return new SchemaBranch(iSchemaBranch);
+      } catch (TException te) {
+
+      }
+      return null;
+    }
+
+    @Override
+    public void deleteSchemaBranch(Long schemaBranchId) throws SchemaBranchNotFoundException, InvalidSchemaBranchDeletionException {
+
     }
 
 

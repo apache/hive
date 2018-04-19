@@ -20,26 +20,26 @@ package org.apache.hadoop.hive.metastore.events;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
-import org.apache.hadoop.hive.metastore.api.SchemaVersion;
+import org.apache.hadoop.hive.metastore.api.ISchemaVersion;
 
 @InterfaceAudience.Public
 @InterfaceStability.Stable
 public class PreAlterSchemaVersionEvent extends PreEventContext {
 
-  private final SchemaVersion oldSchemaVersion, newSchemaVersion;
+  private final ISchemaVersion oldSchemaVersion, newSchemaVersion;
 
-  public PreAlterSchemaVersionEvent(IHMSHandler handler, SchemaVersion oldSchemaVersion,
-                                    SchemaVersion newSchemaVersion) {
+  public PreAlterSchemaVersionEvent(IHMSHandler handler, ISchemaVersion oldSchemaVersion,
+                                    ISchemaVersion newSchemaVersion) {
     super(PreEventType.ALTER_SCHEMA_VERSION, handler);
     this.oldSchemaVersion = oldSchemaVersion;
     this.newSchemaVersion = newSchemaVersion;
   }
 
-  public SchemaVersion getOldSchemaVersion() {
+  public ISchemaVersion getOldSchemaVersion() {
     return oldSchemaVersion;
   }
 
-  public SchemaVersion getNewSchemaVersion() {
+  public ISchemaVersion getNewSchemaVersion() {
     return newSchemaVersion;
   }
 }

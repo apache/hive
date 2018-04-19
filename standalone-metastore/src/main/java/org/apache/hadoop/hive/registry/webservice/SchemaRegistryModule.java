@@ -19,12 +19,10 @@ package org.apache.hadoop.hive.registry.webservice;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.registry.common.ModuleRegistration;
-import org.apache.hadoop.hive.registry.common.util.FileStorage;
 import org.apache.hadoop.hive.registry.DefaultSchemaRegistry;
 import org.apache.hadoop.hive.registry.SchemaProvider;
-import org.apache.hadoop.hive.registry.storage.core.StorageManager;
-import org.apache.hadoop.hive.registry.storage.core.StorageManagerAware;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,34 +35,27 @@ import java.util.Map;
 import static org.apache.hadoop.hive.registry.ISchemaRegistry.SCHEMA_PROVIDERS;
 
 
-public class SchemaRegistryModule implements ModuleRegistration, StorageManagerAware {
+public class SchemaRegistryModule implements ModuleRegistration {
     private static final Logger LOG = LoggerFactory.getLogger(SchemaRegistryModule.class);
 
     private Map<String, Object> config;
-    private FileStorage fileStorage;
-    private StorageManager storageManager;
-
     @Override
-    public void setStorageManager(StorageManager storageManager) {
-        this.storageManager = storageManager;
-    }
-
-    @Override
-    public void init(Map<String, Object> config, FileStorage fileStorage) {
+    public void init(Map<String, Object> config) {
         this.config = config;
-        this.fileStorage = fileStorage;
     }
 
     @Override
     public List<Object> getResources() {
-        Collection<Map<String, Object>> schemaProviders = (Collection<Map<String, Object>>) config.get(SCHEMA_PROVIDERS);
-        DefaultSchemaRegistry schemaRegistry = new DefaultSchemaRegistry(storageManager, fileStorage, schemaProviders);
-        schemaRegistry.init(config);
-        SchemaRegistryResource schemaRegistryResource = new SchemaRegistryResource(schemaRegistry);
-        ConfluentSchemaRegistryCompatibleResource
-            confluentSchemaRegistryResource = new ConfluentSchemaRegistryCompatibleResource(schemaRegistry);
-        
-        return Arrays.asList(schemaRegistryResource, confluentSchemaRegistryResource); 
+        try {
+            Collection<Map<String, Object>> schemaProviders = (Collection<Map<String, Object>>) config.get(SCHEMA_PROVIDERS);
+            DefaultSchemaRegistry schemaRegistry = new DefaultSchemaRegistry(schemaProviders);
+            schemaRegistry.init(config);
+            SchemaRegistryResource schemaRegistryResource = new SchemaRegistryResource(schemaRegistry);
+            return Arrays.asList(schemaRegistryResource);
+        } catch(MetaException me) {
+            LOG.error("Error encountered while registering SchemaRegsitryResource [{}]",me);
+        }
+        return null;
     }
 
     private Collection<? extends SchemaProvider> getSchemaProviders() {

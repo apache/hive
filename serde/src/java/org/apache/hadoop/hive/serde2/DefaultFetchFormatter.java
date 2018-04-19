@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hive.common.util.ReflectionUtil;
 
 /**
- * serialize row by user specified serde and call toString() to make string type result
+ * serialize row by user specified serdes and call toString() to make string type result
  */
 public class DefaultFetchFormatter<T> implements FetchFormatter<String> {
 

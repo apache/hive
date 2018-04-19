@@ -4076,7 +4076,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           ? tbl.getColsForMetastore() : part.getColsForMetastore());
       List<FieldSchema> newCols = alterTbl.getNewCols();
       if (serializationLib.equals(
-          "org.apache.hadoop.hive.serde.thrift.columnsetSerDe")) {
+          "org.apache.hadoop.hive.serdes.thrift.columnsetSerDe")) {
         console
         .printInfo("Replacing columns for columnsetSerDe and changing to LazySimpleSerDe");
         sd.getSerdeInfo().setSerializationLib(LazySimpleSerDe.class.getName());
@@ -4177,7 +4177,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       // change SerDe to LazySimpleSerDe if it is columnsetSerDe
       String serializationLib = sd.getSerdeInfo().getSerializationLib();
       if (serializationLib.equals(
-          "org.apache.hadoop.hive.serde.thrift.columnsetSerDe")) {
+          "org.apache.hadoop.hive.serdes.thrift.columnsetSerDe")) {
         console
         .printInfo("Replacing columns for columnsetSerDe and changing to LazySimpleSerDe");
         sd.getSerdeInfo().setSerializationLib(LazySimpleSerDe.class.getName());
@@ -4225,7 +4225,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       StorageDescriptor sd = retrieveStorageDescriptor(tbl, part);
       String serdeName = alterTbl.getSerdeName();
       String oldSerdeName = sd.getSerdeInfo().getSerializationLib();
-      // if orc table, restrict changing the serde as it can break schema evolution
+      // if orc table, restrict changing the serdes as it can break schema evolution
       if (isSchemaEvolutionEnabled(tbl) &&
           oldSerdeName.equalsIgnoreCase(OrcSerde.class.getName()) &&
           !serdeName.equalsIgnoreCase(OrcSerde.class.getName())) {
@@ -4242,7 +4242,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       } else {
         if (Table.shouldStoreFieldsInMetastore(conf, serdeName, tbl.getParameters())
             && !Table.hasMetastoreBasedSchema(conf, oldSerdeName)) {
-          // If new SerDe needs to store fields in metastore, but the old serde doesn't, save
+          // If new SerDe needs to store fields in metastore, but the old serdes doesn't, save
           // the fields so that new SerDe could operate. Note that this may fail if some fields
           // from old SerDe are too long to be stored in metastore, but there's nothing we can do.
           try {
@@ -4776,7 +4776,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   /**
-   * Check if the given serde is valid.
+   * Check if the given serdes is valid.
    */
   public static void validateSerDe(String serdeName, HiveConf conf) throws HiveException {
     try {
@@ -4787,7 +4787,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         LOG.debug("Found class for {}", serdeName);
       }
     } catch (Exception e) {
-      throw new HiveException("Cannot validate serde: " + serdeName, e);
+      throw new HiveException("Cannot validate serdes: " + serdeName, e);
     }
   }
 
@@ -4987,7 +4987,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         LOG.info("Default to LazySimpleSerDe for table {}", targetTableName);
         tbl.setSerializationLib(org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName());
       } else {
-        // let's validate that the serde exists
+        // let's validate that the serdes exists
         validateSerDe(crtTbl.getDefaultSerName());
         tbl.setSerializationLib(crtTbl.getDefaultSerName());
       }
@@ -5064,7 +5064,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           LOG.info("Default to LazySimpleSerDe for like table {}", targetTableName);
           tbl.setSerializationLib(org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName());
         } else {
-          // let's validate that the serde exists
+          // let's validate that the serdes exists
           validateSerDe(crtTbl.getDefaultSerName());
           tbl.setSerializationLib(crtTbl.getDefaultSerName());
         }

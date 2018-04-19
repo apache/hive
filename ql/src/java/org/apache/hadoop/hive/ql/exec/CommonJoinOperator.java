@@ -295,7 +295,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
         HiveConf.ConfVars.HIVEJOINCACHESIZE);
 
     // construct dummy null row (indicating empty table) and
-    // construct spill table serde which is used if input is too
+    // construct spill table serdes which is used if input is too
     // large to fit into main memory.
     byte pos = 0;
     for (Byte alias : order) {
@@ -321,7 +321,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
       values.addRow(dummyObj[pos]);
       dummyObjVectors[pos] = values;
 
-      // if serde is null, the input doesn't need to be spilled out
+      // if serdes is null, the input doesn't need to be spilled out
       // e.g., the output columns does not contains the input table
       RowContainer<List<Object>> rc = JoinUtil.getRowContainer(hconf,
           rowContainerStandardObjectInspectors[pos],

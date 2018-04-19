@@ -17,13 +17,13 @@
  */
 package org.apache.hadoop.hive.registry;
 
-import org.apache.hadoop.hive.registry.errors.IncompatibleSchemaException;
-import org.apache.hadoop.hive.registry.errors.InvalidSchemaBranchDeletionException;
-import org.apache.hadoop.hive.registry.errors.InvalidSchemaException;
-import org.apache.hadoop.hive.registry.errors.SchemaBranchAlreadyExistsException;
-import org.apache.hadoop.hive.registry.errors.SchemaBranchNotFoundException;
-import org.apache.hadoop.hive.registry.errors.SchemaNotFoundException;
-import org.apache.hadoop.hive.registry.serde.SerDesException;
+import org.apache.hadoop.hive.registry.common.errors.IncompatibleSchemaException;
+import org.apache.hadoop.hive.registry.common.errors.InvalidSchemaBranchDeletionException;
+import org.apache.hadoop.hive.registry.common.errors.InvalidSchemaException;
+import org.apache.hadoop.hive.registry.common.errors.SchemaBranchAlreadyExistsException;
+import org.apache.hadoop.hive.registry.common.errors.SchemaBranchNotFoundException;
+import org.apache.hadoop.hive.registry.common.errors.SchemaNotFoundException;
+import org.apache.hadoop.hive.registry.serdes.SerDesException;
 import org.apache.hadoop.hive.registry.state.SchemaLifecycleException;
 import org.apache.hadoop.hive.registry.state.SchemaVersionLifecycleStateMachineInfo;
 
@@ -71,7 +71,7 @@ public interface ISchemaRegistryService {
      *
      * @return information about given schema identified by {@code schemaName} after update.
      */
-    SchemaMetadataInfo updateSchemaMetadata(String schemaName, SchemaMetadata schemaMetadata);
+    //SchemaMetadataInfo updateSchemaMetadata(String schemaName, SchemaMetadata schemaMetadata);
 
     /**
      * @param schemaName name identifying a schema
@@ -199,7 +199,7 @@ public interface ISchemaRegistryService {
      *
      * @throws SchemaNotFoundException if there is no schema metadata registered with the given {@code schemaName}
      */
-    SchemaVersionInfo getLatestSchemaVersionInfo(String schemaName) throws SchemaNotFoundException;
+    //SchemaVersionInfo getLatestSchemaVersionInfo(String schemaName) throws SchemaNotFoundException;
 
     /**
      * @param schemaBranchName name of the schema branch
@@ -237,8 +237,8 @@ public interface ISchemaRegistryService {
      * @return true if the given {@code toSchemaText} is compatible with the validation level of the schema with id as {@code schemaName}.
      *
      * @throws SchemaNotFoundException if there is no schema metadata registered with the given {@code schemaName}
-     */
-    CompatibilityResult checkCompatibility(String schemaName, String toSchemaText) throws SchemaNotFoundException, SchemaBranchNotFoundException;
+
+    CompatibilityResult checkCompatibility(String schemaName, String toSchemaText) throws SchemaNotFoundException, SchemaBranchNotFoundException; */
 
 
     /**
@@ -257,7 +257,7 @@ public interface ISchemaRegistryService {
      *
      * @return schema versions matching the fields specified in the query
      */
-    Collection<SchemaVersionKey> findSchemasByFields(SchemaFieldQuery schemaFieldQuery) throws SchemaBranchNotFoundException, SchemaNotFoundException;
+    //Collection<SchemaVersionKey> findSchemasByFields(SchemaFieldQuery schemaFieldQuery) throws SchemaBranchNotFoundException, SchemaNotFoundException;
 
     /**
      * Uploads the given {@code inputStream} of any file and returns the identifier for which it can be downloaded later
@@ -269,7 +269,7 @@ public interface ISchemaRegistryService {
      *
      * @throws SerDesException if any error occurs while this operation is being done.
      */
-    String uploadFile(InputStream inputStream) throws SerDesException;
+    //String uploadFile(InputStream inputStream) throws SerDesException;
 
     /**
      * Downloads the content of file stored with the given {@code fileId} earlier uploaded using {@link #uploadFile(InputStream)}.
@@ -280,29 +280,16 @@ public interface ISchemaRegistryService {
      *
      * @throws IOException when there is no file stored with the given {@code fileId}
      */
-    InputStream downloadFile(String fileId) throws IOException;
+    //InputStream downloadFile(String fileId) throws IOException;
 
-    /**
-     * @param serializerInfo serializer information
-     *
-     * @return unique id for the added Serializer for the given {@code serializerInfo}
-     */
-    Long addSerDes(SerDesPair serializerInfo);
 
-    /**
-     * Maps Serializer/Deserializer of the given {@code serDesId} to Schema with {@code schemaName}
-     *
-     * @param schemaName name identifying a schema
-     * @param serDesId   serializer/deserializer
-     */
-    void mapSchemaWithSerDes(String schemaName, Long serDesId);
+    //Long addSerDes(SerDesPair serializerInfo);
 
-    /**
-     * @param schemaName name identifying a schema
-     *
-     * @return Collection of Serializers registered for the schema with {@code schemaName}
-     */
-    Collection<SerDesInfo> getSerDes(String schemaName);
+
+    //void mapSchemaWithSerDes(String schemaName, Long serDesId);
+
+
+    //Collection<SerDesInfo> getSerDes(String schemaName);
 
     default void enableSchemaVersion(Long schemaVersionId) throws SchemaNotFoundException, SchemaLifecycleException, IncompatibleSchemaException, SchemaBranchNotFoundException {
         throw new UnsupportedOperationException();
@@ -338,19 +325,18 @@ public interface ISchemaRegistryService {
 
     void transitionState(Long schemaVersionId, Byte targetStateId, byte[] transitionDetails) throws SchemaNotFoundException, SchemaLifecycleException;
 
-    SchemaVersionLifecycleStateMachineInfo getSchemaVersionLifecycleStateMachineInfo();
+    //SchemaVersionLifecycleStateMachineInfo getSchemaVersionLifecycleStateMachineInfo();
 
     /**
      *  Create a schema branch from a schema version id
-     * @param schemaVersionId    schema version id to be used for as the initial version for schema branch to be created
-     * @param schemaBranch       schema branch object to be used for creating a schema branch
      * @return
      * @throws SchemaBranchAlreadyExistsException {@code schemaBranch} already exists
      * @throws SchemaNotFoundException  {@code schemaVersionId} to be used to create a {@code schemaBranch} can't be found
      */
-    SchemaBranch createSchemaBranch(Long schemaVersionId, SchemaBranch schemaBranch) throws SchemaBranchAlreadyExistsException, SchemaNotFoundException;
 
-    Collection<SchemaBranch> getSchemaBranches(String schemaName) throws SchemaNotFoundException;
+    //SchemaBranch createSchemaBranch(Long schemaVersionId, SchemaBranch schemaBranch) throws SchemaBranchAlreadyExistsException, SchemaNotFoundException;
+
+    //Collection<SchemaBranch> getSchemaBranches(String schemaName) throws SchemaNotFoundException;
 
     /**
      *  Delete a schema branch and all the schema version part of the branch, only if the schema versions are not in enabled state.

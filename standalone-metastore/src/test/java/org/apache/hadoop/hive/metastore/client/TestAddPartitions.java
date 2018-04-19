@@ -1481,11 +1481,11 @@ public class TestAddPartitions {
         sd.getParameters().isEmpty());
     SerDeInfo serdeInfo = sd.getSerdeInfo();
     Assert.assertNotNull("The serdeInfo attribute should not be null.", serdeInfo);
-    Assert.assertNull("The default value of the serde's name attribute should be null.",
+    Assert.assertNull("The default value of the serdes's name attribute should be null.",
         serdeInfo.getName());
-    Assert.assertEquals("The serde's 'serializationLib' attribute doesn't have the default value.",
+    Assert.assertEquals("The serdes's 'serializationLib' attribute doesn't have the default value.",
         "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe", serdeInfo.getSerializationLib());
-    Assert.assertTrue("Per default the serde info parameters should be empty.",
+    Assert.assertTrue("Per default the serdes info parameters should be empty.",
         serdeInfo.getParameters().isEmpty());
     SkewedInfo skewedInfo = sd.getSkewedInfo();
     Assert.assertTrue("Per default the skewedInfo column names list should be empty.",

@@ -33,7 +33,7 @@ import org.apache.hadoop.io.Writable;
 /**
  * DelimitedJSONSerDe.
  *
- * This serde can only serialize, because it is just intended for use by the FetchTask class and the
+ * This serdes can only serialize, because it is just intended for use by the FetchTask class and the
  * TRANSFORM function.
  */
 public class DelimitedJSONSerDe extends LazySimpleSerDe {

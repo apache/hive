@@ -178,7 +178,7 @@ public class RegexSerDe extends AbstractSerDe {
 
     if (inputPattern == null) {
       throw new SerDeException(
-          "This table does not have serde property \"input.regex\"!");
+          "This table does not have serdes property \"input.regex\"!");
     }
     Text rowText = (Text) blob;
 
@@ -224,7 +224,7 @@ public class RegexSerDe extends AbstractSerDe {
     if (outputFormatString == null) {
       throw new SerDeException(
           "Cannot write data into table because \"output.format.string\""
-          + " is not specified in serde properties of the table.");
+          + " is not specified in serdes properties of the table.");
     }
 
     // Get all the fields out.

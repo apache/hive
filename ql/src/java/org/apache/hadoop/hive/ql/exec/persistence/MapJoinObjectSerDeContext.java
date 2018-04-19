@@ -45,7 +45,7 @@ public class MapJoinObjectSerDeContext {
   }
 
   /**
-   * @return the serde
+   * @return the serdes
    */
   public AbstractSerDe getSerDe() {
     return serde;
@@ -57,7 +57,7 @@ public class MapJoinObjectSerDeContext {
 
   @Override
   public String toString() {
-    return "MapJoinObjectSerDeContext [standardOI=" + standardOI + ", serde=" + serde
+    return "MapJoinObjectSerDeContext [standardOI=" + standardOI + ", serdes=" + serde
         + ", hasFilter=" + hasFilter + "]";
   }
 

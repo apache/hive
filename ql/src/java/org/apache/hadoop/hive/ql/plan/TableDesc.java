@@ -61,7 +61,7 @@ public class TableDesc implements Serializable, Cloneable {
   /**
    * @param inputFormatClass
    * @param outputFormatClass
-   * @param properties must contain serde class name associate with this table.
+   * @param properties must contain serdes class name associate with this table.
    */
   public TableDesc(
       final Class<? extends InputFormat> inputFormatClass,
@@ -155,7 +155,7 @@ public class TableDesc implements Serializable, Cloneable {
   /**
    * @return the serdeClassName
    */
-  @Explain(displayName = "serde")
+  @Explain(displayName = "serdes")
   public String getSerdeClassName() {
     return properties.getProperty(serdeConstants.SERIALIZATION_LIB);
   }

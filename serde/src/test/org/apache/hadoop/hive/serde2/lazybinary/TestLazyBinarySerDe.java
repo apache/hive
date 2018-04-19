@@ -111,7 +111,7 @@ public class TestLazyBinarySerDe extends TestCase {
    * @param rowOI
    *          array of struct object inspectors
    * @param serde
-   *          the serde
+   *          the serdes
    * @throws Throwable
    */
   private void testLazyBinarySerDe(Object[] rows, ObjectInspector rowOI,

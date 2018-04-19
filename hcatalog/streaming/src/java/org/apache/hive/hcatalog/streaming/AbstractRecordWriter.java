@@ -160,14 +160,14 @@ public abstract class AbstractRecordWriter implements RecordWriter {
   /**
    * Get the SerDe for the Objects created by {@link #encode}.  This is public so that test
    * frameworks can use it.
-   * @return serde
+   * @return serdes
    * @throws SerializationError
    */
   public abstract AbstractSerDe getSerde() throws SerializationError;
 
   /**
    * Encode a record as an Object that Hive can read with the ObjectInspector associated with the
-   * serde returned by {@link #getSerde}.  This is public so that test frameworks can use it.
+   * serdes returned by {@link #getSerde}.  This is public so that test frameworks can use it.
    * @param record record to be deserialized
    * @return deserialized record as an Object
    * @throws SerializationError

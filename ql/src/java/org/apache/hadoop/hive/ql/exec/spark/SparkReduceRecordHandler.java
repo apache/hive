@@ -76,7 +76,7 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
 
   private static final Logger LOG = LoggerFactory.getLogger(SparkReduceRecordHandler.class);
 
-  // Input value serde needs to be an array to support different SerDe
+  // Input value serdes needs to be an array to support different SerDe
   // for different tags
   private final Deserializer[] inputValueDeserializer = new Deserializer[Byte.MAX_VALUE];
   private final Object[] valueObject = new Object[Byte.MAX_VALUE];

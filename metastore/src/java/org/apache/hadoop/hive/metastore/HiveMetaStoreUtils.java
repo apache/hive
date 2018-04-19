@@ -59,7 +59,7 @@ public class HiveMetaStoreUtils {
    * @exception MetaException
    *              if any problems instantiating the Deserializer
    *
-   *              todo - this should move somewhere into serde.jar
+   *              todo - this should move somewhere into serdes.jar
    *
    */
   static public Deserializer getDeserializer(Configuration conf,
@@ -141,7 +141,7 @@ public class HiveMetaStoreUtils {
    * @param tableName name of the table
    * @param deserializer deserializer to use
    * @return the list of fields
-   * @throws SerDeException if the serde throws an exception
+   * @throws SerDeException if the serdes throws an exception
    * @throws MetaException if one of the fields or types in the table is invalid
    */
   public static List<FieldSchema> getFieldsFromDeserializer(String tableName,

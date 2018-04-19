@@ -73,7 +73,7 @@ import com.google.common.collect.Multimap;
  * This class is used to generate splits inside the AM on the cluster. It
  * optionally groups together splits based on available head room as well as
  * making sure that splits from different partitions are only grouped if they
- * are of the same schema, format and serde
+ * are of the same schema, format and serdes
  */
 public class HiveSplitGenerator extends InputInitializer {
 

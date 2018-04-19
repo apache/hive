@@ -603,7 +603,9 @@ class WMCreateOrDropTriggerToPoolMappingResponse;
 
 class ISchema;
 
-class SchemaVersion;
+class ISchemaVersion;
+
+class ISchemaBranch;
 
 class FindSchemasByColsRqst;
 
@@ -10994,7 +10996,8 @@ inline std::ostream& operator<<(std::ostream& out, const WMCreateOrDropTriggerTo
 }
 
 typedef struct _ISchema__isset {
-  _ISchema__isset() : schemaType(false), name(false), dbName(false), compatibility(false), validationLevel(false), canEvolve(false), schemaGroup(false), description(false) {}
+  _ISchema__isset() : schemaId(false), schemaType(false), name(false), dbName(false), compatibility(false), validationLevel(false), canEvolve(false), schemaGroup(false), description(false), timestamp(false) {}
+  bool schemaId :1;
   bool schemaType :1;
   bool name :1;
   bool dbName :1;
@@ -11003,6 +11006,7 @@ typedef struct _ISchema__isset {
   bool canEvolve :1;
   bool schemaGroup :1;
   bool description :1;
+  bool timestamp :1;
 } _ISchema__isset;
 
 class ISchema {
@@ -11010,10 +11014,11 @@ class ISchema {
 
   ISchema(const ISchema&);
   ISchema& operator=(const ISchema&);
-  ISchema() : schemaType((SchemaType::type)0), name(), dbName(), compatibility((SchemaCompatibility::type)0), validationLevel((SchemaValidation::type)0), canEvolve(0), schemaGroup(), description() {
+  ISchema() : schemaId(0), schemaType((SchemaType::type)0), name(), dbName(), compatibility((SchemaCompatibility::type)0), validationLevel((SchemaValidation::type)0), canEvolve(0), schemaGroup(), description(), timestamp(0) {
   }
 
   virtual ~ISchema() throw();
+  int64_t schemaId;
   SchemaType::type schemaType;
   std::string name;
   std::string dbName;
@@ -11022,8 +11027,11 @@ class ISchema {
   bool canEvolve;
   std::string schemaGroup;
   std::string description;
+  int64_t timestamp;
 
   _ISchema__isset __isset;
+
+  void __set_schemaId(const int64_t val);
 
   void __set_schemaType(const SchemaType::type val);
 
@@ -11041,8 +11049,14 @@ class ISchema {
 
   void __set_description(const std::string& val);
 
+  void __set_timestamp(const int64_t val);
+
   bool operator == (const ISchema & rhs) const
   {
+    if (__isset.schemaId != rhs.__isset.schemaId)
+      return false;
+    else if (__isset.schemaId && !(schemaId == rhs.schemaId))
+      return false;
     if (!(schemaType == rhs.schemaType))
       return false;
     if (!(name == rhs.name))
@@ -11062,6 +11076,10 @@ class ISchema {
     if (__isset.description != rhs.__isset.description)
       return false;
     else if (__isset.description && !(description == rhs.description))
+      return false;
+    if (__isset.timestamp != rhs.__isset.timestamp)
+      return false;
+    else if (__isset.timestamp && !(timestamp == rhs.timestamp))
       return false;
     return true;
   }
@@ -11085,8 +11103,9 @@ inline std::ostream& operator<<(std::ostream& out, const ISchema& obj)
   return out;
 }
 
-typedef struct _SchemaVersion__isset {
-  _SchemaVersion__isset() : schemaName(false), version(false), createdAt(false), cols(false), state(false), description(false), schemaText(false), fingerprint(false), name(false), serDe(false) {}
+typedef struct _ISchemaVersion__isset {
+  _ISchemaVersion__isset() : schemaVersionId(false), schemaName(false), version(false), createdAt(false), cols(false), state(false), description(false), schemaText(false), fingerprint(false), name(false), serDe(false) {}
+  bool schemaVersionId :1;
   bool schemaName :1;
   bool version :1;
   bool createdAt :1;
@@ -11097,17 +11116,18 @@ typedef struct _SchemaVersion__isset {
   bool fingerprint :1;
   bool name :1;
   bool serDe :1;
-} _SchemaVersion__isset;
+} _ISchemaVersion__isset;
 
-class SchemaVersion {
+class ISchemaVersion {
  public:
 
-  SchemaVersion(const SchemaVersion&);
-  SchemaVersion& operator=(const SchemaVersion&);
-  SchemaVersion() : schemaName(), version(0), createdAt(0), state((SchemaVersionState::type)0), description(), schemaText(), fingerprint(), name() {
+  ISchemaVersion(const ISchemaVersion&);
+  ISchemaVersion& operator=(const ISchemaVersion&);
+  ISchemaVersion() : schemaVersionId(0), schemaName(), version(0), createdAt(0), state((SchemaVersionState::type)0), description(), schemaText(), fingerprint(), name() {
   }
 
-  virtual ~SchemaVersion() throw();
+  virtual ~ISchemaVersion() throw();
+  int64_t schemaVersionId;
   std::string schemaName;
   int32_t version;
   int64_t createdAt;
@@ -11119,7 +11139,9 @@ class SchemaVersion {
   std::string name;
   SerDeInfo serDe;
 
-  _SchemaVersion__isset __isset;
+  _ISchemaVersion__isset __isset;
+
+  void __set_schemaVersionId(const int64_t val);
 
   void __set_schemaName(const std::string& val);
 
@@ -11141,8 +11163,12 @@ class SchemaVersion {
 
   void __set_serDe(const SerDeInfo& val);
 
-  bool operator == (const SchemaVersion & rhs) const
+  bool operator == (const ISchemaVersion & rhs) const
   {
+    if (__isset.schemaVersionId != rhs.__isset.schemaVersionId)
+      return false;
+    else if (__isset.schemaVersionId && !(schemaVersionId == rhs.schemaVersionId))
+      return false;
     if (!(schemaName == rhs.schemaName))
       return false;
     if (!(version == rhs.version))
@@ -11177,11 +11203,11 @@ class SchemaVersion {
       return false;
     return true;
   }
-  bool operator != (const SchemaVersion &rhs) const {
+  bool operator != (const ISchemaVersion &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const SchemaVersion & ) const;
+  bool operator < (const ISchemaVersion & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
@@ -11189,9 +11215,85 @@ class SchemaVersion {
   virtual void printTo(std::ostream& out) const;
 };
 
-void swap(SchemaVersion &a, SchemaVersion &b);
+void swap(ISchemaVersion &a, ISchemaVersion &b);
 
-inline std::ostream& operator<<(std::ostream& out, const SchemaVersion& obj)
+inline std::ostream& operator<<(std::ostream& out, const ISchemaVersion& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _ISchemaBranch__isset {
+  _ISchemaBranch__isset() : schemaBranchId(false), name(false), schemaMetadataName(false), description(false), timestamp(false) {}
+  bool schemaBranchId :1;
+  bool name :1;
+  bool schemaMetadataName :1;
+  bool description :1;
+  bool timestamp :1;
+} _ISchemaBranch__isset;
+
+class ISchemaBranch {
+ public:
+
+  ISchemaBranch(const ISchemaBranch&);
+  ISchemaBranch& operator=(const ISchemaBranch&);
+  ISchemaBranch() : schemaBranchId(0), name(), schemaMetadataName(), description(), timestamp(0) {
+  }
+
+  virtual ~ISchemaBranch() throw();
+  int64_t schemaBranchId;
+  std::string name;
+  std::string schemaMetadataName;
+  std::string description;
+  int64_t timestamp;
+
+  _ISchemaBranch__isset __isset;
+
+  void __set_schemaBranchId(const int64_t val);
+
+  void __set_name(const std::string& val);
+
+  void __set_schemaMetadataName(const std::string& val);
+
+  void __set_description(const std::string& val);
+
+  void __set_timestamp(const int64_t val);
+
+  bool operator == (const ISchemaBranch & rhs) const
+  {
+    if (__isset.schemaBranchId != rhs.__isset.schemaBranchId)
+      return false;
+    else if (__isset.schemaBranchId && !(schemaBranchId == rhs.schemaBranchId))
+      return false;
+    if (!(name == rhs.name))
+      return false;
+    if (!(schemaMetadataName == rhs.schemaMetadataName))
+      return false;
+    if (__isset.description != rhs.__isset.description)
+      return false;
+    else if (__isset.description && !(description == rhs.description))
+      return false;
+    if (__isset.timestamp != rhs.__isset.timestamp)
+      return false;
+    else if (__isset.timestamp && !(timestamp == rhs.timestamp))
+      return false;
+    return true;
+  }
+  bool operator != (const ISchemaBranch &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ISchemaBranch & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(ISchemaBranch &a, ISchemaBranch &b);
+
+inline std::ostream& operator<<(std::ostream& out, const ISchemaBranch& obj)
 {
   obj.printTo(out);
   return out;

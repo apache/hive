@@ -143,7 +143,7 @@ public final class DruidStorageHandlerUtils {
   public static final ObjectMapper SMILE_MAPPER = new DefaultObjectMapper(new SmileFactory());
 
   static {
-    // This is needed for serde of PagingSpec as it uses JacksonInject for injecting SelectQueryConfig
+    // This is needed for serdes of PagingSpec as it uses JacksonInject for injecting SelectQueryConfig
     InjectableValues.Std injectableValues = new InjectableValues.Std()
             .addValue(SelectQueryConfig.class, new SelectQueryConfig(false))
             .addValue(ExprMacroTable.class, ExprMacroTable.nil());

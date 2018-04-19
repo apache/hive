@@ -178,7 +178,7 @@ public final class PlanUtils {
   }
 
   /**
-   * Generate the table descriptor of given serde with the separatorCode and
+   * Generate the table descriptor of given serdes with the separatorCode and
    * column names (comma separated string).
    */
   public static TableDesc getTableDesc(
@@ -199,7 +199,7 @@ public final class PlanUtils {
   }
 
   /**
-   * Generate the table descriptor of the serde specified with the separatorCode
+   * Generate the table descriptor of the serdes specified with the separatorCode
    * and column names (comma separated string), and whether the last column
    * should take the rest of the line.
    */

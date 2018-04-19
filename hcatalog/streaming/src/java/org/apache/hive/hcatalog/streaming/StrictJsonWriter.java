@@ -132,10 +132,10 @@ public class StrictJsonWriter extends AbstractRecordWriter {
 
   /**
    * Creates JsonSerDe
-   * @param tbl   used to create serde
-   * @param conf  used to create serde
+   * @param tbl   used to create serdes
+   * @param conf  used to create serdes
    * @return
-   * @throws SerializationError if serde could not be initialized
+   * @throws SerializationError if serdes could not be initialized
    */
   private static JsonSerDe createSerde(Table tbl, HiveConf conf)
           throws SerializationError {
@@ -145,7 +145,7 @@ public class StrictJsonWriter extends AbstractRecordWriter {
       SerDeUtils.initializeSerDe(serde, conf, tableProps, null);
       return serde;
     } catch (SerDeException e) {
-      throw new SerializationError("Error initializing serde " + JsonSerDe.class.getName(), e);
+      throw new SerializationError("Error initializing serdes " + JsonSerDe.class.getName(), e);
     }
   }
 

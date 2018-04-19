@@ -69,6 +69,8 @@ public abstract class MessageFactory {
   public static final String ADD_SCHEMA_VERSION_EVENT = "ADD_SCHEMA_VERSION";
   public static final String ALTER_SCHEMA_VERSION_EVENT = "ALTER_SCHEMA_VERSION";
   public static final String DROP_SCHEMA_VERSION_EVENT = "DROP_SCHEMA_VERSION";
+  public static final String ADD_SCHEMA_BRANCH_EVENT = "ADD_SCHEMA_BRANCH_EVENT";
+  public static final String MAP_SCHEMA_BRANCH_TO_SCHEMA_VERSION = "MAP_SCHEMA_BRANCH_TO_SCHEMA_VERSION";
 
 
   private static MessageFactory instance = null;

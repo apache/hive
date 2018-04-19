@@ -19,9 +19,9 @@
 package org.apache.hadoop.hive.registry.state;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.hadoop.hive.registry.errors.IncompatibleSchemaException;
-import org.apache.hadoop.hive.registry.errors.SchemaBranchNotFoundException;
-import org.apache.hadoop.hive.registry.errors.SchemaNotFoundException;
+import org.apache.hadoop.hive.registry.common.errors.IncompatibleSchemaException;
+import org.apache.hadoop.hive.registry.common.errors.SchemaBranchNotFoundException;
+import org.apache.hadoop.hive.registry.common.errors.SchemaNotFoundException;
 
 import java.util.Collection;
 

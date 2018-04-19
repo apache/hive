@@ -138,11 +138,11 @@ public class StrictRegexWriter extends AbstractRecordWriter {
 
   /**
    * Creates RegexSerDe
-   * @param tbl   used to create serde
-   * @param conf  used to create serde
-   * @param regex  used to create serde
+   * @param tbl   used to create serdes
+   * @param conf  used to create serdes
+   * @param regex  used to create serdes
    * @return
-   * @throws SerializationError if serde could not be initialized
+   * @throws SerializationError if serdes could not be initialized
    */
   private static RegexSerDe createSerde(Table tbl, HiveConf conf, String regex)
           throws SerializationError {
@@ -155,7 +155,7 @@ public class StrictRegexWriter extends AbstractRecordWriter {
       SerDeUtils.initializeSerDe(serde, conf, tableProps, null);
       return serde;
     } catch (SerDeException e) {
-      throw new SerializationError("Error initializing serde " + RegexSerDe.class.getName(), e);
+      throw new SerializationError("Error initializing serdes " + RegexSerDe.class.getName(), e);
     }
   }
   

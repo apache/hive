@@ -29,7 +29,7 @@ import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 import org.apache.hadoop.hive.registry.SchemaBranch;
 import org.apache.hadoop.hive.registry.SchemaBranchKey;
-import org.apache.hadoop.hive.registry.errors.SchemaBranchNotFoundException;
+import org.apache.hadoop.hive.registry.common.errors.SchemaBranchNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

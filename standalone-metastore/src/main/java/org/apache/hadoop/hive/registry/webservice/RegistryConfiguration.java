@@ -19,10 +19,8 @@
 package org.apache.hadoop.hive.registry.webservice;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.apache.hadoop.hive.registry.common.FileStorageConfiguration;
 import org.apache.hadoop.hive.registry.common.ModuleConfiguration;
 import org.apache.hadoop.hive.registry.common.ServletFilterConfiguration;
-import org.apache.hadoop.hive.registry.storage.core.StorageProviderConfiguration;
 import io.dropwizard.Configuration;
 import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
 
@@ -31,11 +29,6 @@ import java.util.List;
 
 public class RegistryConfiguration extends Configuration {
 
-    @NotNull
-    private StorageProviderConfiguration storageProviderConfiguration;
-
-    @NotNull
-    private FileStorageConfiguration fileStorageConfiguration;
 
     @NotNull
     @JsonProperty
@@ -50,21 +43,6 @@ public class RegistryConfiguration extends Configuration {
 
     private List<ServletFilterConfiguration> servletFilters;
 
-    public StorageProviderConfiguration getStorageProviderConfiguration() {
-        return storageProviderConfiguration;
-    }
-
-    public void setStorageProviderConfiguration(StorageProviderConfiguration storageProviderConfiguration) {
-        this.storageProviderConfiguration = storageProviderConfiguration;
-    }
-
-    public FileStorageConfiguration getFileStorageConfiguration() {
-        return fileStorageConfiguration;
-    }
-
-    public void setFileStorageConfiguration(FileStorageConfiguration fileStorageConfiguration) {
-        this.fileStorageConfiguration = fileStorageConfiguration;
-    }
 
     public boolean isEnableCors() {
         return enableCors;

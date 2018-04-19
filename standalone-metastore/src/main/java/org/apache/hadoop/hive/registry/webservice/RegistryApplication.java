@@ -19,17 +19,11 @@ package org.apache.hadoop.hive.registry.webservice;
 
 import org.apache.hadoop.hive.registry.common.GenericExceptionMapper;
 import org.apache.hadoop.hive.registry.common.ServletFilterConfiguration;
-import org.apache.hadoop.hive.registry.storage.core.transaction.TransactionEventListener;
-import org.apache.hadoop.hive.registry.storage.core.NOOPTransactionManager;
-import org.apache.hadoop.hive.registry.storage.core.TransactionManager;
 import io.dropwizard.assets.AssetsBundle;
 import org.apache.hadoop.hive.registry.common.FileStorageConfiguration;
 import org.apache.hadoop.hive.registry.common.ModuleConfiguration;
 import org.apache.hadoop.hive.registry.common.ModuleRegistration;
 import org.apache.hadoop.hive.registry.common.util.FileStorage;
-import org.apache.hadoop.hive.registry.storage.core.StorageManager;
-import org.apache.hadoop.hive.registry.storage.core.StorageManagerAware;
-import org.apache.hadoop.hive.registry.storage.core.StorageProviderConfiguration;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
@@ -52,8 +46,7 @@ import java.util.Map;
 
 public class RegistryApplication extends Application<RegistryConfiguration> {
     private static final Logger LOG = LoggerFactory.getLogger(RegistryApplication.class);
-    protected StorageManager storageManager;
-    protected TransactionManager transactionManager;
+
 
     @Override
     public void run(RegistryConfiguration registryConfiguration, Environment environment) throws Exception {
@@ -90,13 +83,6 @@ public class RegistryApplication extends Application<RegistryConfiguration> {
 
     private void registerResources(Environment environment, RegistryConfiguration registryConfiguration)
             throws ClassNotFoundException, IllegalAccessException, InstantiationException {
-        storageManager = getStorageManager(registryConfiguration.getStorageProviderConfiguration());
-        if (storageManager instanceof TransactionManager)
-            transactionManager = (TransactionManager) storageManager;
-        else
-            transactionManager = new NOOPTransactionManager();
-        FileStorage fileStorage = getJarStorage(registryConfiguration.getFileStorageConfiguration());
-
         List<ModuleConfiguration> modules = registryConfiguration.getModules();
         List<Object> resourcesToRegister = new ArrayList<>();
         for (ModuleConfiguration moduleConfiguration : modules) {
@@ -107,13 +93,7 @@ public class RegistryApplication extends Application<RegistryConfiguration> {
             if (moduleConfiguration.getConfig() == null) {
                 moduleConfiguration.setConfig(new HashMap<String, Object>());
             }
-            moduleRegistration.init(moduleConfiguration.getConfig(), fileStorage);
-
-            if (moduleRegistration instanceof StorageManagerAware) {
-                LOG.info("Module [{}] is StorageManagerAware and setting StorageManager.", moduleName);
-                StorageManagerAware storageManagerAware = (StorageManagerAware) moduleRegistration;
-                storageManagerAware.setStorageManager(storageManager);
-            }
+            moduleRegistration.init(moduleConfiguration.getConfig());
 
             resourcesToRegister.addAll(moduleRegistration.getResources());
         }
@@ -124,8 +104,6 @@ public class RegistryApplication extends Application<RegistryConfiguration> {
         }
         
         environment.jersey().register(MultiPartFeature.class);
-        environment.jersey().register(new TransactionEventListener(transactionManager));
-
     }
 
     private void enableCORS(Environment environment) {
@@ -154,17 +132,6 @@ public class RegistryApplication extends Application<RegistryConfiguration> {
         return fileStorage;
     }
 
-    private StorageManager getStorageManager(StorageProviderConfiguration storageProviderConfiguration) {
-        final String providerClass = storageProviderConfiguration.getProviderClass();
-        StorageManager storageManager;
-        try {
-            storageManager = (StorageManager) Class.forName(providerClass).newInstance();
-        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-        storageManager.init(storageProviderConfiguration.getProperties());
-        return storageManager;
-    }
 
     private void addServletFilters(RegistryConfiguration registryConfiguration, Environment environment) {
         List<ServletFilterConfiguration> servletFilterConfigurations = registryConfiguration.getServletFilters();

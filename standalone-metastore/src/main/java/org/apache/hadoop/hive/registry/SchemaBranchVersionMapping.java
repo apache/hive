@@ -19,13 +19,11 @@
 package org.apache.hadoop.hive.registry;
 
 import org.apache.hadoop.hive.registry.common.Schema;
-import org.apache.hadoop.hive.registry.storage.core.PrimaryKey;
-import org.apache.hadoop.hive.registry.storage.core.catalog.AbstractStorable;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class SchemaBranchVersionMapping extends AbstractStorable {
+public class SchemaBranchVersionMapping {
     public static final String NAMESPACE = "schema_branch_version_mapping";
 
     public static final String SCHEMA_BRANCH_ID = "schemaBranchId";
@@ -42,18 +40,6 @@ public class SchemaBranchVersionMapping extends AbstractStorable {
         this.schemaVersionInfoId = schemaVersionInfoId;
     }
 
-    @Override
-    public String getNameSpace() {
-        return NAMESPACE;
-    }
-
-    @Override
-    public PrimaryKey getPrimaryKey() {
-        Map<Schema.Field, Object> fieldToObjectMap = new HashMap<>();
-        fieldToObjectMap.put(new Schema.Field(SCHEMA_BRANCH_ID, Schema.Type.LONG), this.schemaBranchId);
-        fieldToObjectMap.put(new Schema.Field(SCHEMA_VERSION_INFO_ID, Schema.Type.LONG), this.schemaVersionInfoId);
-        return new PrimaryKey(fieldToObjectMap);
-    }
 
     public Long getSchemaBranchId() {
         return schemaBranchId;

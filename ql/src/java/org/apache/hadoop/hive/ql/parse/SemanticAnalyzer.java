@@ -3755,7 +3755,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           .toString(), defaultOutputCols);
     }
 
-    // Error stream always uses the default serde with a single column
+    // Error stream always uses the default serdes with a single column
     errInfo = PlanUtils.getTableDesc(serde, Integer.toString(Utilities.tabCode), "KEY");
 
     // Output record readers
@@ -6982,7 +6982,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       ArrayList<ColumnInfo> colInfos = inputRR.getColumnInfos();
 
-      // CTAS case: the file output format and serde are defined by the create
+      // CTAS case: the file output format and serdes are defined by the create
       // table command rather than taking the default value
       List<FieldSchema> field_schemas = null;
       CreateTableDesc tblDesc = qb.getTableDesc();

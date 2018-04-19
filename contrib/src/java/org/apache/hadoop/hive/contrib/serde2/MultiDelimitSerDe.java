@@ -99,7 +99,7 @@ public class MultiDelimitSerDe extends AbstractEncodingAwareSerDe {
 
     fieldDelimited = tbl.getProperty(serdeConstants.FIELD_DELIM);
     if (fieldDelimited == null || fieldDelimited.isEmpty()) {
-      throw new SerDeException("This table does not have serde property \"field.delim\"!");
+      throw new SerDeException("This table does not have serdes property \"field.delim\"!");
     }
 
     // get the collection separator and map key separator

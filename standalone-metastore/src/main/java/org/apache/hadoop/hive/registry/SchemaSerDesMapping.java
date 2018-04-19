@@ -18,8 +18,6 @@
 package org.apache.hadoop.hive.registry;
 
 import org.apache.hadoop.hive.registry.common.Schema;
-import org.apache.hadoop.hive.registry.storage.core.PrimaryKey;
-import org.apache.hadoop.hive.registry.storage.core.catalog.AbstractStorable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,7 +25,7 @@ import java.util.Map;
 /**
  *
  */
-public class SchemaSerDesMapping extends AbstractStorable {
+public class SchemaSerDesMapping {
     public static final String NAMESPACE = "schema_serdes_mapping";
     public static final String SCHEMA_METADATA_ID = "schemaMetadataId";
     public static final String SERDES_ID = "serDesId";
@@ -43,18 +41,6 @@ public class SchemaSerDesMapping extends AbstractStorable {
         this.serDesId = serDesId;
     }
 
-    @Override
-    public String getNameSpace() {
-        return NAMESPACE;
-    }
-
-    @Override
-    public PrimaryKey getPrimaryKey() {
-        Map<Schema.Field, Object> fieldToObjectMap = new HashMap<>();
-        fieldToObjectMap.put(new Schema.Field(SCHEMA_METADATA_ID, Schema.Type.LONG), this.schemaMetadataId);
-        fieldToObjectMap.put(new Schema.Field(SERDES_ID, Schema.Type.LONG), this.serDesId);
-        return new PrimaryKey(fieldToObjectMap);
-    }
 
     public Long getSchemaMetadataId() {
         return schemaMetadataId;

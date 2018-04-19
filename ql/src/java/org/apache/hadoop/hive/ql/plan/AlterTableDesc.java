@@ -57,7 +57,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
    */
   public static enum AlterTableTypes {
     RENAME("rename"), ADDCOLS("add columns"), REPLACECOLS("replace columns"),
-    ADDPROPS("add props"), DROPPROPS("drop props"), ADDSERDE("add serde"), ADDSERDEPROPS("add serde props"),
+    ADDPROPS("add props"), DROPPROPS("drop props"), ADDSERDE("add serdes"), ADDSERDEPROPS("add serdes props"),
     ADDFILEFORMAT("add fileformat"), ADDCLUSTERSORTCOLUMN("add cluster sort column"),
     RENAMECOLUMN("rename column"), ADDPARTITION("add partition"), TOUCH("touch"), ARCHIVE("archieve"),
     UNARCHIVE("unarchieve"), ALTERLOCATION("alter location"),

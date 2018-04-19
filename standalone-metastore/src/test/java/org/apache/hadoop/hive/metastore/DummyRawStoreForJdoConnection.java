@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.metastore;
 
+
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 
 import java.nio.ByteBuffer;
@@ -65,7 +66,8 @@ import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
-import org.apache.hadoop.hive.metastore.api.SchemaVersion;
+import org.apache.hadoop.hive.metastore.api.ISchemaBranch;
+import org.apache.hadoop.hive.metastore.api.ISchemaVersion;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
@@ -1055,8 +1057,8 @@ public class DummyRawStoreForJdoConnection implements RawStore {
 
   }
 
-  public void createISchema(ISchema schema) throws AlreadyExistsException, MetaException {
-
+  public Long createISchema(ISchema schema) throws AlreadyExistsException, MetaException {
+    return null;
   }
 
   @Override
@@ -1066,7 +1068,12 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
-  public ISchema getISchema(String schemaName) throws MetaException {
+  public ISchema getISchemaByName(String schemaName) throws MetaException {
+    return null;
+  }
+
+  @Override
+  public ISchema getISchema(Long schemaId) throws MetaException {
     return null;
   }
 
@@ -1075,35 +1082,42 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
-  public void addSchemaVersion(SchemaVersion schemaVersion) throws
+  public Long addSchemaVersion(ISchemaVersion schemaVersion) throws
       AlreadyExistsException, InvalidObjectException, NoSuchObjectException, MetaException {
+    return null;
 
   }
 
   @Override
-  public void alterSchemaVersion(String schemaName, int version, SchemaVersion newVersion) throws
+  public void alterSchemaVersion(String schemaName, int version, ISchemaVersion newVersion) throws
       NoSuchObjectException, MetaException {
 
   }
 
   @Override
-  public SchemaVersion getSchemaVersion(String schemaName, int version) throws MetaException {
+  public ISchemaVersion getSchemaVersion(String schemaName, int version) throws MetaException {
     return null;
   }
 
   @Override
-  public SchemaVersion getLatestSchemaVersion(String schemaName) throws MetaException {
+  public ISchemaVersion getSchemaVersionById(Long schemaVersionId) throws MetaException {
+    return null;
+  }
+
+
+  @Override
+  public ISchemaVersion getLatestSchemaVersion(String schemaName) throws MetaException {
     return null;
   }
 
   @Override
-  public List<SchemaVersion> getAllSchemaVersion(String schemaName) throws MetaException {
+  public List<ISchemaVersion> getAllSchemaVersion(String schemaName) throws MetaException {
     return null;
   }
 
   @Override
-  public List<SchemaVersion> getSchemaVersionsByColumns(String colName, String colNamespace,
-                                                        String type) throws MetaException {
+  public List<ISchemaVersion> getSchemaVersionsByColumns(String colName, String colNamespace,
+                                                         String type) throws MetaException {
     return null;
   }
 
@@ -1112,6 +1126,29 @@ public class DummyRawStoreForJdoConnection implements RawStore {
       MetaException {
 
   }
+
+
+  @Override
+  public void addSchemaBranch(ISchemaBranch schemaBranch)  throws AlreadyExistsException, InvalidObjectException,
+          NoSuchObjectException, MetaException {
+
+  }
+
+  @Override
+  public void mapSchemaBranchToSchemaVersion(Long schemaBranchId, Long schemaVersionId) throws AlreadyExistsException,
+          InvalidObjectException, NoSuchObjectException, MetaException {
+  }
+
+  @Override
+  public ISchemaBranch getSchemaBranch(Long schemaBranchId) throws MetaException {
+    return null;
+  }
+
+  @Override
+ public  List<ISchemaBranch>  getSchemaBranchBySchemaName(String schemaName) throws MetaException {
+    return null;
+  }
+
 
   @Override
   public SerDeInfo getSerDeInfo(String serDeName) throws MetaException {

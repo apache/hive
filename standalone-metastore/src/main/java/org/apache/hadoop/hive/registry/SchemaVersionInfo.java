@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.registry;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.apache.hadoop.hive.metastore.api.ISchemaVersion;
 import org.apache.hadoop.hive.registry.state.SchemaVersionLifecycleStates;
 import org.apache.hadoop.hive.registry.state.details.MergeInfo;
 
@@ -81,6 +82,10 @@ public final class SchemaVersionInfo implements Serializable {
     @SuppressWarnings("unused")
     private SchemaVersionInfo() { /* Private constructor for Jackson JSON mapping */ }
 
+    public SchemaVersionInfo(ISchemaVersion iSchemaVersion) {
+        this(iSchemaVersion.getSchemaVersionId(), iSchemaVersion.getName(), iSchemaVersion.getVersion(),
+                iSchemaVersion.getSchemaText(), iSchemaVersion.getCreatedAt(), iSchemaVersion.getDescription());
+    }
     public SchemaVersionInfo(Long id,
                              String name,
                              Integer version,

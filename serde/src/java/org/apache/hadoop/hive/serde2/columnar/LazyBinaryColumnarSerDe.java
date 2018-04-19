@@ -40,8 +40,8 @@ import org.apache.hadoop.io.Writable;
 
 
 /**
- * LazyBinaryColumnarSerDe. This serde combines elements of columnar serde and lazybinary serde
- * to produce a serde which serializes columns into a BytesRefArrayWritable in a compact binary
+ * LazyBinaryColumnarSerDe. This serdes combines elements of columnar serdes and lazybinary serdes
+ * to produce a serdes which serializes columns into a BytesRefArrayWritable in a compact binary
  * format and which is deserialized in a lazy, i.e. on-demand fashion.
  *
  */

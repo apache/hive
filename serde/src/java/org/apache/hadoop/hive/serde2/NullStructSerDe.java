@@ -89,7 +89,7 @@ public class NullStructSerDe extends AbstractSerDe {
 
 
   /**
-   * A object inspector for null struct serde.
+   * A object inspector for null struct serdes.
    */
   public static class NullStructSerDeObjectInspector extends StructObjectInspector {
     public String getTypeName() {

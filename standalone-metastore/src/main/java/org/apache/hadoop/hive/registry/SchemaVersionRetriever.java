@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hive.registry;
 
-import org.apache.hadoop.hive.registry.errors.SchemaNotFoundException;
+import org.apache.hadoop.hive.registry.common.errors.SchemaNotFoundException;
 
 /**
  *

@@ -188,7 +188,7 @@ public class TestIncrementalObjectSizeEstimator {
     LOG.info("Estimated " + root.estimate(osm, map) + " for an empty OSM");
     mr.doStreamStep = true;
     osm = new OrcStripeMetadata(stripeKey, mr, si, null, null, null, null);
-    LOG.info("Estimated " + root.estimate(osm, map) + " for an empty OSM after serde");
+    LOG.info("Estimated " + root.estimate(osm, map) + " for an empty OSM after serdes");
 
     mr.isEmpty = false;
     stripeKey = new OrcBatchKey(0, 0, 0);
@@ -198,9 +198,9 @@ public class TestIncrementalObjectSizeEstimator {
     LOG.info("Estimated " + root.estimate(osm, map) + " for a test OSM w/o row index");
     mr.doStreamStep = true;
     osm = new OrcStripeMetadata(stripeKey, mr, si, null, null, null, null);
-    LOG.info("Estimated " + root.estimate(osm, map) + " for a test OSM after serde");
+    LOG.info("Estimated " + root.estimate(osm, map) + " for a test OSM after serdes");
     osm.resetRowIndex();
-    LOG.info("Estimated " + root.estimate(osm, map) + " for a test OSM w/o row index after serde");
+    LOG.info("Estimated " + root.estimate(osm, map) + " for a test OSM w/o row index after serdes");
 
     OrcFileMetadata ofm = OrcFileMetadata.createDummy(0);
     map = IncrementalObjectSizeEstimator.createEstimators(ofm);

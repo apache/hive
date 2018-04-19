@@ -75,7 +75,7 @@ public class HCatRecordSerDe extends AbstractSerDe {
     throws SerDeException {
 
     LOG.debug("Initializing HCatRecordSerDe");
-    LOG.debug("props to serde: {}", tbl.entrySet());
+    LOG.debug("props to serdes: {}", tbl.entrySet());
 
     // Get column names and types
     String columnNameProperty = tbl.getProperty(serdeConstants.LIST_COLUMNS);

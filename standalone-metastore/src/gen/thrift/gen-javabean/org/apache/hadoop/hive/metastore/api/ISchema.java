@@ -38,14 +38,16 @@ import org.slf4j.LoggerFactory;
 @org.apache.hadoop.classification.InterfaceAudience.Public @org.apache.hadoop.classification.InterfaceStability.Stable public class ISchema implements org.apache.thrift.TBase<ISchema, ISchema._Fields>, java.io.Serializable, Cloneable, Comparable<ISchema> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("ISchema");
 
-  private static final org.apache.thrift.protocol.TField SCHEMA_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("schemaType", org.apache.thrift.protocol.TType.I32, (short)1);
-  private static final org.apache.thrift.protocol.TField NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("name", org.apache.thrift.protocol.TType.STRING, (short)2);
-  private static final org.apache.thrift.protocol.TField DB_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("dbName", org.apache.thrift.protocol.TType.STRING, (short)3);
-  private static final org.apache.thrift.protocol.TField COMPATIBILITY_FIELD_DESC = new org.apache.thrift.protocol.TField("compatibility", org.apache.thrift.protocol.TType.I32, (short)4);
-  private static final org.apache.thrift.protocol.TField VALIDATION_LEVEL_FIELD_DESC = new org.apache.thrift.protocol.TField("validationLevel", org.apache.thrift.protocol.TType.I32, (short)5);
-  private static final org.apache.thrift.protocol.TField CAN_EVOLVE_FIELD_DESC = new org.apache.thrift.protocol.TField("canEvolve", org.apache.thrift.protocol.TType.BOOL, (short)6);
-  private static final org.apache.thrift.protocol.TField SCHEMA_GROUP_FIELD_DESC = new org.apache.thrift.protocol.TField("schemaGroup", org.apache.thrift.protocol.TType.STRING, (short)7);
-  private static final org.apache.thrift.protocol.TField DESCRIPTION_FIELD_DESC = new org.apache.thrift.protocol.TField("description", org.apache.thrift.protocol.TType.STRING, (short)8);
+  private static final org.apache.thrift.protocol.TField SCHEMA_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("schemaId", org.apache.thrift.protocol.TType.I64, (short)1);
+  private static final org.apache.thrift.protocol.TField SCHEMA_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("schemaType", org.apache.thrift.protocol.TType.I32, (short)2);
+  private static final org.apache.thrift.protocol.TField NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("name", org.apache.thrift.protocol.TType.STRING, (short)3);
+  private static final org.apache.thrift.protocol.TField DB_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("dbName", org.apache.thrift.protocol.TType.STRING, (short)4);
+  private static final org.apache.thrift.protocol.TField COMPATIBILITY_FIELD_DESC = new org.apache.thrift.protocol.TField("compatibility", org.apache.thrift.protocol.TType.I32, (short)5);
+  private static final org.apache.thrift.protocol.TField VALIDATION_LEVEL_FIELD_DESC = new org.apache.thrift.protocol.TField("validationLevel", org.apache.thrift.protocol.TType.I32, (short)6);
+  private static final org.apache.thrift.protocol.TField CAN_EVOLVE_FIELD_DESC = new org.apache.thrift.protocol.TField("canEvolve", org.apache.thrift.protocol.TType.BOOL, (short)7);
+  private static final org.apache.thrift.protocol.TField SCHEMA_GROUP_FIELD_DESC = new org.apache.thrift.protocol.TField("schemaGroup", org.apache.thrift.protocol.TType.STRING, (short)8);
+  private static final org.apache.thrift.protocol.TField DESCRIPTION_FIELD_DESC = new org.apache.thrift.protocol.TField("description", org.apache.thrift.protocol.TType.STRING, (short)9);
+  private static final org.apache.thrift.protocol.TField TIMESTAMP_FIELD_DESC = new org.apache.thrift.protocol.TField("timestamp", org.apache.thrift.protocol.TType.I64, (short)10);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -53,6 +55,7 @@ import org.slf4j.LoggerFactory;
     schemes.put(TupleScheme.class, new ISchemaTupleSchemeFactory());
   }
 
+  private long schemaId; // optional
   private SchemaType schemaType; // required
   private String name; // required
   private String dbName; // required
@@ -61,29 +64,32 @@ import org.slf4j.LoggerFactory;
   private boolean canEvolve; // required
   private String schemaGroup; // optional
   private String description; // optional
+  private long timestamp; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+    SCHEMA_ID((short)1, "schemaId"),
     /**
      * 
      * @see SchemaType
      */
-    SCHEMA_TYPE((short)1, "schemaType"),
-    NAME((short)2, "name"),
-    DB_NAME((short)3, "dbName"),
+    SCHEMA_TYPE((short)2, "schemaType"),
+    NAME((short)3, "name"),
+    DB_NAME((short)4, "dbName"),
     /**
      * 
      * @see SchemaCompatibility
      */
-    COMPATIBILITY((short)4, "compatibility"),
+    COMPATIBILITY((short)5, "compatibility"),
     /**
      * 
      * @see SchemaValidation
      */
-    VALIDATION_LEVEL((short)5, "validationLevel"),
-    CAN_EVOLVE((short)6, "canEvolve"),
-    SCHEMA_GROUP((short)7, "schemaGroup"),
-    DESCRIPTION((short)8, "description");
+    VALIDATION_LEVEL((short)6, "validationLevel"),
+    CAN_EVOLVE((short)7, "canEvolve"),
+    SCHEMA_GROUP((short)8, "schemaGroup"),
+    DESCRIPTION((short)9, "description"),
+    TIMESTAMP((short)10, "timestamp");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -98,22 +104,26 @@ import org.slf4j.LoggerFactory;
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // SCHEMA_TYPE
+        case 1: // SCHEMA_ID
+          return SCHEMA_ID;
+        case 2: // SCHEMA_TYPE
           return SCHEMA_TYPE;
-        case 2: // NAME
+        case 3: // NAME
           return NAME;
-        case 3: // DB_NAME
+        case 4: // DB_NAME
           return DB_NAME;
-        case 4: // COMPATIBILITY
+        case 5: // COMPATIBILITY
           return COMPATIBILITY;
-        case 5: // VALIDATION_LEVEL
+        case 6: // VALIDATION_LEVEL
           return VALIDATION_LEVEL;
-        case 6: // CAN_EVOLVE
+        case 7: // CAN_EVOLVE
           return CAN_EVOLVE;
-        case 7: // SCHEMA_GROUP
+        case 8: // SCHEMA_GROUP
           return SCHEMA_GROUP;
-        case 8: // DESCRIPTION
+        case 9: // DESCRIPTION
           return DESCRIPTION;
+        case 10: // TIMESTAMP
+          return TIMESTAMP;
         default:
           return null;
       }
@@ -154,12 +164,16 @@ import org.slf4j.LoggerFactory;
   }
 
   // isset id assignments
-  private static final int __CANEVOLVE_ISSET_ID = 0;
+  private static final int __SCHEMAID_ISSET_ID = 0;
+  private static final int __CANEVOLVE_ISSET_ID = 1;
+  private static final int __TIMESTAMP_ISSET_ID = 2;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.SCHEMA_GROUP,_Fields.DESCRIPTION};
+  private static final _Fields optionals[] = {_Fields.SCHEMA_ID,_Fields.SCHEMA_GROUP,_Fields.DESCRIPTION,_Fields.TIMESTAMP};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+    tmpMap.put(_Fields.SCHEMA_ID, new org.apache.thrift.meta_data.FieldMetaData("schemaId", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     tmpMap.put(_Fields.SCHEMA_TYPE, new org.apache.thrift.meta_data.FieldMetaData("schemaType", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, SchemaType.class)));
     tmpMap.put(_Fields.NAME, new org.apache.thrift.meta_data.FieldMetaData("name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
@@ -176,6 +190,8 @@ import org.slf4j.LoggerFactory;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.DESCRIPTION, new org.apache.thrift.meta_data.FieldMetaData("description", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.TIMESTAMP, new org.apache.thrift.meta_data.FieldMetaData("timestamp", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(ISchema.class, metaDataMap);
   }
@@ -206,6 +222,7 @@ import org.slf4j.LoggerFactory;
    */
   public ISchema(ISchema other) {
     __isset_bitfield = other.__isset_bitfield;
+    this.schemaId = other.schemaId;
     if (other.isSetSchemaType()) {
       this.schemaType = other.schemaType;
     }
@@ -228,6 +245,7 @@ import org.slf4j.LoggerFactory;
     if (other.isSetDescription()) {
       this.description = other.description;
     }
+    this.timestamp = other.timestamp;
   }
 
   public ISchema deepCopy() {
@@ -236,6 +254,8 @@ import org.slf4j.LoggerFactory;
 
   @Override
   public void clear() {
+    setSchemaIdIsSet(false);
+    this.schemaId = 0;
     this.schemaType = null;
     this.name = null;
     this.dbName = null;
@@ -245,6 +265,30 @@ import org.slf4j.LoggerFactory;
     this.canEvolve = false;
     this.schemaGroup = null;
     this.description = null;
+    setTimestampIsSet(false);
+    this.timestamp = 0;
+  }
+
+  public long getSchemaId() {
+    return this.schemaId;
+  }
+
+  public void setSchemaId(long schemaId) {
+    this.schemaId = schemaId;
+    setSchemaIdIsSet(true);
+  }
+
+  public void unsetSchemaId() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __SCHEMAID_ISSET_ID);
+  }
+
+  /** Returns true if field schemaId is set (has been assigned a value) and false otherwise */
+  public boolean isSetSchemaId() {
+    return EncodingUtils.testBit(__isset_bitfield, __SCHEMAID_ISSET_ID);
+  }
+
+  public void setSchemaIdIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __SCHEMAID_ISSET_ID, value);
   }
 
   /**
@@ -454,8 +498,38 @@ import org.slf4j.LoggerFactory;
     }
   }
 
+  public long getTimestamp() {
+    return this.timestamp;
+  }
+
+  public void setTimestamp(long timestamp) {
+    this.timestamp = timestamp;
+    setTimestampIsSet(true);
+  }
+
+  public void unsetTimestamp() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __TIMESTAMP_ISSET_ID);
+  }
+
+  /** Returns true if field timestamp is set (has been assigned a value) and false otherwise */
+  public boolean isSetTimestamp() {
+    return EncodingUtils.testBit(__isset_bitfield, __TIMESTAMP_ISSET_ID);
+  }
+
+  public void setTimestampIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __TIMESTAMP_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
+    case SCHEMA_ID:
+      if (value == null) {
+        unsetSchemaId();
+      } else {
+        setSchemaId((Long)value);
+      }
+      break;
+
     case SCHEMA_TYPE:
       if (value == null) {
         unsetSchemaType();
@@ -520,11 +594,22 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case TIMESTAMP:
+      if (value == null) {
+        unsetTimestamp();
+      } else {
+        setTimestamp((Long)value);
+      }
+      break;
+
     }
   }
 
   public Object getFieldValue(_Fields field) {
     switch (field) {
+    case SCHEMA_ID:
+      return getSchemaId();
+
     case SCHEMA_TYPE:
       return getSchemaType();
 
@@ -549,6 +634,9 @@ import org.slf4j.LoggerFactory;
     case DESCRIPTION:
       return getDescription();
 
+    case TIMESTAMP:
+      return getTimestamp();
+
     }
     throw new IllegalStateException();
   }
@@ -560,6 +648,8 @@ import org.slf4j.LoggerFactory;
     }
 
     switch (field) {
+    case SCHEMA_ID:
+      return isSetSchemaId();
     case SCHEMA_TYPE:
       return isSetSchemaType();
     case NAME:
@@ -576,6 +666,8 @@ import org.slf4j.LoggerFactory;
       return isSetSchemaGroup();
     case DESCRIPTION:
       return isSetDescription();
+    case TIMESTAMP:
+      return isSetTimestamp();
     }
     throw new IllegalStateException();
   }
@@ -592,6 +684,15 @@ import org.slf4j.LoggerFactory;
   public boolean equals(ISchema that) {
     if (that == null)
       return false;
+
+    boolean this_present_schemaId = true && this.isSetSchemaId();
+    boolean that_present_schemaId = true && that.isSetSchemaId();
+    if (this_present_schemaId || that_present_schemaId) {
+      if (!(this_present_schemaId && that_present_schemaId))
+        return false;
+      if (this.schemaId != that.schemaId)
+        return false;
+    }
 
     boolean this_present_schemaType = true && this.isSetSchemaType();
     boolean that_present_schemaType = true && that.isSetSchemaType();
@@ -665,12 +766,26 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_timestamp = true && this.isSetTimestamp();
+    boolean that_present_timestamp = true && that.isSetTimestamp();
+    if (this_present_timestamp || that_present_timestamp) {
+      if (!(this_present_timestamp && that_present_timestamp))
+        return false;
+      if (this.timestamp != that.timestamp)
+        return false;
+    }
+
     return true;
   }
 
   @Override
   public int hashCode() {
     List<Object> list = new ArrayList<Object>();
+
+    boolean present_schemaId = true && (isSetSchemaId());
+    list.add(present_schemaId);
+    if (present_schemaId)
+      list.add(schemaId);
 
     boolean present_schemaType = true && (isSetSchemaType());
     list.add(present_schemaType);
@@ -712,6 +827,11 @@ import org.slf4j.LoggerFactory;
     if (present_description)
       list.add(description);
 
+    boolean present_timestamp = true && (isSetTimestamp());
+    list.add(present_timestamp);
+    if (present_timestamp)
+      list.add(timestamp);
+
     return list.hashCode();
   }
 
@@ -723,6 +843,16 @@ import org.slf4j.LoggerFactory;
 
     int lastComparison = 0;
 
+    lastComparison = Boolean.valueOf(isSetSchemaId()).compareTo(other.isSetSchemaId());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetSchemaId()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.schemaId, other.schemaId);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     lastComparison = Boolean.valueOf(isSetSchemaType()).compareTo(other.isSetSchemaType());
     if (lastComparison != 0) {
       return lastComparison;
@@ -803,6 +933,16 @@ import org.slf4j.LoggerFactory;
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetTimestamp()).compareTo(other.isSetTimestamp());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetTimestamp()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.timestamp, other.timestamp);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -823,6 +963,12 @@ import org.slf4j.LoggerFactory;
     StringBuilder sb = new StringBuilder("ISchema(");
     boolean first = true;
 
+    if (isSetSchemaId()) {
+      sb.append("schemaId:");
+      sb.append(this.schemaId);
+      first = false;
+    }
+    if (!first) sb.append(", ");
     sb.append("schemaType:");
     if (this.schemaType == null) {
       sb.append("null");
@@ -886,6 +1032,12 @@ import org.slf4j.LoggerFactory;
       }
       first = false;
     }
+    if (isSetTimestamp()) {
+      if (!first) sb.append(", ");
+      sb.append("timestamp:");
+      sb.append(this.timestamp);
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -931,7 +1083,15 @@ import org.slf4j.LoggerFactory;
           break;
         }
         switch (schemeField.id) {
-          case 1: // SCHEMA_TYPE
+          case 1: // SCHEMA_ID
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.schemaId = iprot.readI64();
+              struct.setSchemaIdIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 2: // SCHEMA_TYPE
             if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
               struct.schemaType = org.apache.hadoop.hive.metastore.api.SchemaType.findByValue(iprot.readI32());
               struct.setSchemaTypeIsSet(true);
@@ -939,7 +1099,7 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 2: // NAME
+          case 3: // NAME
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.name = iprot.readString();
               struct.setNameIsSet(true);
@@ -947,7 +1107,7 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 3: // DB_NAME
+          case 4: // DB_NAME
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.dbName = iprot.readString();
               struct.setDbNameIsSet(true);
@@ -955,7 +1115,7 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 4: // COMPATIBILITY
+          case 5: // COMPATIBILITY
             if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
               struct.compatibility = org.apache.hadoop.hive.metastore.api.SchemaCompatibility.findByValue(iprot.readI32());
               struct.setCompatibilityIsSet(true);
@@ -963,7 +1123,7 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 5: // VALIDATION_LEVEL
+          case 6: // VALIDATION_LEVEL
             if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
               struct.validationLevel = org.apache.hadoop.hive.metastore.api.SchemaValidation.findByValue(iprot.readI32());
               struct.setValidationLevelIsSet(true);
@@ -971,7 +1131,7 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 6: // CAN_EVOLVE
+          case 7: // CAN_EVOLVE
             if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
               struct.canEvolve = iprot.readBool();
               struct.setCanEvolveIsSet(true);
@@ -979,7 +1139,7 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 7: // SCHEMA_GROUP
+          case 8: // SCHEMA_GROUP
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.schemaGroup = iprot.readString();
               struct.setSchemaGroupIsSet(true);
@@ -987,10 +1147,18 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 8: // DESCRIPTION
+          case 9: // DESCRIPTION
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.description = iprot.readString();
               struct.setDescriptionIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 10: // TIMESTAMP
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.timestamp = iprot.readI64();
+              struct.setTimestampIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -1008,6 +1176,11 @@ import org.slf4j.LoggerFactory;
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
+      if (struct.isSetSchemaId()) {
+        oprot.writeFieldBegin(SCHEMA_ID_FIELD_DESC);
+        oprot.writeI64(struct.schemaId);
+        oprot.writeFieldEnd();
+      }
       if (struct.schemaType != null) {
         oprot.writeFieldBegin(SCHEMA_TYPE_FIELD_DESC);
         oprot.writeI32(struct.schemaType.getValue());
@@ -1050,6 +1223,11 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldEnd();
         }
       }
+      if (struct.isSetTimestamp()) {
+        oprot.writeFieldBegin(TIMESTAMP_FIELD_DESC);
+        oprot.writeI64(struct.timestamp);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -1068,31 +1246,40 @@ import org.slf4j.LoggerFactory;
     public void write(org.apache.thrift.protocol.TProtocol prot, ISchema struct) throws org.apache.thrift.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
       BitSet optionals = new BitSet();
-      if (struct.isSetSchemaType()) {
+      if (struct.isSetSchemaId()) {
         optionals.set(0);
       }
-      if (struct.isSetName()) {
+      if (struct.isSetSchemaType()) {
         optionals.set(1);
       }
-      if (struct.isSetDbName()) {
+      if (struct.isSetName()) {
         optionals.set(2);
       }
-      if (struct.isSetCompatibility()) {
+      if (struct.isSetDbName()) {
         optionals.set(3);
       }
-      if (struct.isSetValidationLevel()) {
+      if (struct.isSetCompatibility()) {
         optionals.set(4);
       }
-      if (struct.isSetCanEvolve()) {
+      if (struct.isSetValidationLevel()) {
         optionals.set(5);
       }
-      if (struct.isSetSchemaGroup()) {
+      if (struct.isSetCanEvolve()) {
         optionals.set(6);
       }
-      if (struct.isSetDescription()) {
+      if (struct.isSetSchemaGroup()) {
         optionals.set(7);
       }
-      oprot.writeBitSet(optionals, 8);
+      if (struct.isSetDescription()) {
+        optionals.set(8);
+      }
+      if (struct.isSetTimestamp()) {
+        optionals.set(9);
+      }
+      oprot.writeBitSet(optionals, 10);
+      if (struct.isSetSchemaId()) {
+        oprot.writeI64(struct.schemaId);
+      }
       if (struct.isSetSchemaType()) {
         oprot.writeI32(struct.schemaType.getValue());
       }
@@ -1117,43 +1304,54 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetDescription()) {
         oprot.writeString(struct.description);
       }
+      if (struct.isSetTimestamp()) {
+        oprot.writeI64(struct.timestamp);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, ISchema struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(8);
+      BitSet incoming = iprot.readBitSet(10);
       if (incoming.get(0)) {
+        struct.schemaId = iprot.readI64();
+        struct.setSchemaIdIsSet(true);
+      }
+      if (incoming.get(1)) {
         struct.schemaType = org.apache.hadoop.hive.metastore.api.SchemaType.findByValue(iprot.readI32());
         struct.setSchemaTypeIsSet(true);
       }
-      if (incoming.get(1)) {
+      if (incoming.get(2)) {
         struct.name = iprot.readString();
         struct.setNameIsSet(true);
       }
-      if (incoming.get(2)) {
+      if (incoming.get(3)) {
         struct.dbName = iprot.readString();
         struct.setDbNameIsSet(true);
       }
-      if (incoming.get(3)) {
+      if (incoming.get(4)) {
         struct.compatibility = org.apache.hadoop.hive.metastore.api.SchemaCompatibility.findByValue(iprot.readI32());
         struct.setCompatibilityIsSet(true);
       }
-      if (incoming.get(4)) {
+      if (incoming.get(5)) {
         struct.validationLevel = org.apache.hadoop.hive.metastore.api.SchemaValidation.findByValue(iprot.readI32());
         struct.setValidationLevelIsSet(true);
       }
-      if (incoming.get(5)) {
+      if (incoming.get(6)) {
         struct.canEvolve = iprot.readBool();
         struct.setCanEvolveIsSet(true);
       }
-      if (incoming.get(6)) {
+      if (incoming.get(7)) {
         struct.schemaGroup = iprot.readString();
         struct.setSchemaGroupIsSet(true);
       }
-      if (incoming.get(7)) {
+      if (incoming.get(8)) {
         struct.description = iprot.readString();
         struct.setDescriptionIsSet(true);
+      }
+      if (incoming.get(9)) {
+        struct.timestamp = iprot.readI64();
+        struct.setTimestampIsSet(true);
       }
     }
   }

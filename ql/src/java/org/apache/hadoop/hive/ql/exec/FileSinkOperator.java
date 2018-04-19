@@ -759,7 +759,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         }
         fsp.outWriters[filesIdx] = HiveFileFormatUtils.getHiveRecordWriter(jc, conf.getTableInfo(),
             outputClass, conf, outPath, reporter);
-        // If the record writer provides stats, get it from there instead of the serde
+        // If the record writer provides stats, get it from there instead of the serdes
         statsFromRecordWriter[filesIdx] = fsp.outWriters[filesIdx] instanceof
             StatsProvidingRecordWriter;
         // increment the CREATED_FILES counter
@@ -1287,7 +1287,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         // before closing the operator check if statistics gathering is requested
         // and is provided by record writer. this is different from the statistics
         // gathering done in processOp(). In processOp(), for each row added
-        // serde statistics about the row is gathered and accumulated in hashmap.
+        // serdes statistics about the row is gathered and accumulated in hashmap.
         // this adds more overhead to the actual processing of row. But if the
         // record writer already gathers the statistics, it can simply return the
         // accumulated statistics which will be aggregated in case of spray writers

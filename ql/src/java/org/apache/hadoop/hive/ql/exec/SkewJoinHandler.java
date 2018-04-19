@@ -163,7 +163,7 @@ public class SkewJoinHandler {
       skewKeysTableObjectInspector.put((byte) i, structTblInpector);
     }
 
-    // reset rowcontainer's serde, objectinspector, and tableDesc.
+    // reset rowcontainer's serdes, objectinspector, and tableDesc.
     for (int i = 0; i < numAliases; i++) {
       Byte alias = conf.getTagOrder()[i];
       RowContainer<ArrayList<Object>> rc = (RowContainer)joinOp.storage[i];

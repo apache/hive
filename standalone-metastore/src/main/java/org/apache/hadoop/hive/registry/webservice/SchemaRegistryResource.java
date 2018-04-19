@@ -21,33 +21,24 @@ import com.codahale.metrics.annotation.Timed;
 import org.apache.hadoop.hive.registry.common.catalog.CatalogResponse;
 import org.apache.hadoop.hive.registry.common.transaction.UnitOfWork;
 import org.apache.hadoop.hive.registry.common.util.WSUtils;
-import org.apache.hadoop.hive.registry.AggregatedSchemaMetadataInfo;
 import org.apache.hadoop.hive.registry.CompatibilityResult;
 import org.apache.hadoop.hive.registry.ISchemaRegistry;
 import org.apache.hadoop.hive.registry.SchemaVersionMergeResult;
 import org.apache.hadoop.hive.registry.SchemaBranch;
-import org.apache.hadoop.hive.registry.SchemaFieldInfo;
-import org.apache.hadoop.hive.registry.SchemaFieldQuery;
 import org.apache.hadoop.hive.registry.SchemaIdVersion;
 import org.apache.hadoop.hive.registry.SchemaMetadata;
-import org.apache.hadoop.hive.registry.SchemaMetadataInfo;
 import org.apache.hadoop.hive.registry.SchemaProviderInfo;
 import org.apache.hadoop.hive.registry.SchemaVersion;
 import org.apache.hadoop.hive.registry.SchemaVersionInfo;
 import org.apache.hadoop.hive.registry.SchemaVersionKey;
-import org.apache.hadoop.hive.registry.SerDesInfo;
-import org.apache.hadoop.hive.registry.SerDesPair;
-import org.apache.hadoop.hive.registry.errors.IncompatibleSchemaException;
-import org.apache.hadoop.hive.registry.errors.InvalidSchemaBranchDeletionException;
-import org.apache.hadoop.hive.registry.errors.InvalidSchemaException;
-import org.apache.hadoop.hive.registry.errors.SchemaBranchAlreadyExistsException;
-import org.apache.hadoop.hive.registry.errors.SchemaBranchNotFoundException;
-import org.apache.hadoop.hive.registry.errors.SchemaNotFoundException;
-import org.apache.hadoop.hive.registry.errors.UnsupportedSchemaTypeException;
+import org.apache.hadoop.hive.registry.common.errors.IncompatibleSchemaException;
+import org.apache.hadoop.hive.registry.common.errors.InvalidSchemaBranchDeletionException;
+import org.apache.hadoop.hive.registry.common.errors.InvalidSchemaException;
+import org.apache.hadoop.hive.registry.common.errors.SchemaBranchAlreadyExistsException;
+import org.apache.hadoop.hive.registry.common.errors.SchemaBranchNotFoundException;
+import org.apache.hadoop.hive.registry.common.errors.SchemaNotFoundException;
+import org.apache.hadoop.hive.registry.common.errors.UnsupportedSchemaTypeException;
 import org.apache.hadoop.hive.registry.state.SchemaLifecycleException;
-import org.apache.hadoop.hive.registry.state.SchemaVersionLifecycleStateMachineInfo;
-import org.apache.hadoop.hive.registry.storage.core.search.OrderBy;
-import org.apache.hadoop.hive.registry.storage.core.search.WhereClause;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -69,21 +60,13 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import static org.apache.hadoop.hive.registry.DefaultSchemaRegistry.ORDER_BY_FIELDS_PARAM_NAME;
 import static org.apache.hadoop.hive.registry.SchemaBranch.MASTER_BRANCH;
 
 /**
@@ -124,217 +107,7 @@ public class SchemaRegistryResource extends BaseRegistryResource {
         }
     }
 
-    //TODO : Get all the versions across all the branches
 
-    @GET
-    @Path("/schemas/aggregated")
-    @ApiOperation(value = "Get list of schemas by filtering with the given query parameters",
-            response = AggregatedSchemaMetadataInfo.class, responseContainer = "List", tags = OPERATION_GROUP_SCHEMA)
-    @Timed
-    @UnitOfWork
-    public Response listAggregatedSchemas(@Context UriInfo uriInfo) {
-        try {
-            MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
-            Map<String, String> filters = new HashMap<>();
-            for (Map.Entry<String, List<String>> entry : queryParameters.entrySet()) {
-                List<String> value = entry.getValue();
-                filters.put(entry.getKey(), value != null && !value.isEmpty() ? value.get(0) : null);
-            }
-            Collection<AggregatedSchemaMetadataInfo> schemaMetadatas = schemaRegistry.findAggregatedSchemaMetadata(filters);
-
-            return WSUtils.respondEntities(schemaMetadatas, Response.Status.OK);
-        } catch (SchemaBranchNotFoundException e) {
-            return WSUtils.respond(Response.Status.NOT_FOUND, CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND,  e.getMessage());
-        } catch (Exception ex) {
-            LOG.error("Encountered error while listing schemas", ex);
-            return WSUtils.respond(Response.Status.INTERNAL_SERVER_ERROR, CatalogResponse.ResponseMessage.EXCEPTION, ex.getMessage());
-        }
-    }
-
-    @GET
-    @Path("/schemas/{name}/aggregated")
-    @ApiOperation(value = "Get aggregated schema information for the given schema name",
-            response = SchemaMetadataInfo.class, tags = OPERATION_GROUP_SCHEMA)
-    @Timed
-    @UnitOfWork
-    public Response getAggregatedSchemaInfo(@ApiParam(value = "Schema name", required = true) @PathParam("name") String schemaName) {
-        Response response;
-        try {
-            AggregatedSchemaMetadataInfo schemaMetadataInfo = schemaRegistry.getAggregatedSchemaMetadataInfo(schemaName);
-            if (schemaMetadataInfo != null) {
-                response = WSUtils.respondEntity(schemaMetadataInfo, Response.Status.OK);
-            } else {
-                response = WSUtils.respond(Response.Status.NOT_FOUND, CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND, schemaName);
-            }
-        } catch (SchemaBranchNotFoundException e) {
-            return WSUtils.respond(Response.Status.NOT_FOUND, CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND,  e.getMessage());
-        } catch (Exception ex) {
-            LOG.error("Encountered error while retrieving SchemaInfo with name: [{}]", schemaName, ex);
-            response = WSUtils.respond(Response.Status.INTERNAL_SERVER_ERROR, CatalogResponse.ResponseMessage.EXCEPTION, ex.getMessage());
-        }
-
-        return response;
-    }
-
-    @GET
-    @Path("/schemas")
-    @ApiOperation(value = "Get list of schemas by filtering with the given query parameters",
-            response = SchemaMetadataInfo.class, responseContainer = "List", tags = OPERATION_GROUP_SCHEMA)
-    @Timed
-    @UnitOfWork
-    public Response listSchemas(@Context UriInfo uriInfo) {
-        try {
-            MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
-            Map<String, String> filters = new HashMap<>();
-            for (Map.Entry<String, List<String>> entry : queryParameters.entrySet()) {
-                List<String> value = entry.getValue();
-                filters.put(entry.getKey(), value != null && !value.isEmpty() ? value.get(0) : null);
-            }
-
-            Collection<SchemaMetadataInfo> schemaMetadatas = schemaRegistry.findSchemaMetadata(filters);
-
-            return WSUtils.respondEntities(schemaMetadatas, Response.Status.OK);
-        } catch (Exception ex) {
-            LOG.error("Encountered error while listing schemas", ex);
-            return WSUtils.respond(Response.Status.INTERNAL_SERVER_ERROR, CatalogResponse.ResponseMessage.EXCEPTION, ex.getMessage());
-        }
-    }
-
-    @GET
-    @Path("/search/schemas")
-    @ApiOperation(value = "Search for schemas containing the given name and description",
-            notes = "Search the schemas for given name and description, return a list of schemas that contain the field.",
-            response = SchemaMetadataInfo.class, responseContainer = "Collection", tags = OPERATION_GROUP_SCHEMA)
-    @Timed
-    @UnitOfWork
-    public Response findSchemas(@Context UriInfo uriInfo) {
-        MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
-        try {
-            Collection<SchemaMetadataInfo> schemaMetadataInfos = findSchemaMetadataInfos(queryParameters);
-            return WSUtils.respondEntities(schemaMetadataInfos, Response.Status.OK);
-        } catch (Exception ex) {
-            LOG.error("Encountered error while finding schemas for given fields [{}]", queryParameters, ex);
-            return WSUtils.respond(Response.Status.INTERNAL_SERVER_ERROR, CatalogResponse.ResponseMessage.EXCEPTION, ex.getMessage());
-        }
-    }
-
-    private Collection<SchemaMetadataInfo> findSchemaMetadataInfos(MultivaluedMap<String, String> queryParameters) {
-        Collection<SchemaMetadataInfo> schemaMetadataInfos;
-        // name and description for now, complex queries are supported by backend and front end can send the json
-        // query for those complex queries.
-        if (queryParameters.containsKey(SchemaMetadataStorable.NAME)
-                || queryParameters.containsKey(SchemaMetadataStorable.DESCRIPTION)) {
-            String name = queryParameters.getFirst(SchemaMetadataStorable.NAME);
-            String description = queryParameters.getFirst(SchemaMetadataStorable.DESCRIPTION);
-            WhereClause whereClause = WhereClause.begin()
-                                                 .contains(SchemaMetadataStorable.NAME, name)
-                                                 .or()
-                                                 .contains(SchemaMetadataStorable.DESCRIPTION, description)
-                                                 .combine();
-            //todo refactor orderby field in DefaultSchemaRegistry#search APIs merge with these APIs
-            String orderByFieldStr = queryParameters.getFirst(ORDER_BY_FIELDS_PARAM_NAME);
-            schemaMetadataInfos = schemaRegistry.searchSchemas(whereClause, getOrderByFields(orderByFieldStr));
-        } else {
-            schemaMetadataInfos = Collections.emptyList();
-        }
-        return schemaMetadataInfos;
-    }
-
-    private List<OrderBy> getOrderByFields(String value) {
-        List<OrderBy> orderByList = new ArrayList<>();
-        // _orderByFields=[<field-name>,<a/d>,]*
-        // example can be : _orderByFields=foo,a,bar,d
-        // order by foo with ascending then bar with descending
-        String[] splitStrings = value.split(",");
-        for (int i = 0; i < splitStrings.length; i += 2) {
-            String ascStr = splitStrings[i + 1];
-            boolean descending;
-            if ("a".equals(ascStr)) {
-                descending = false;
-            } else if ("d".equals(ascStr)) {
-                descending = true;
-            } else {
-                throw new IllegalArgumentException("Ascending or Descending identifier can only be 'a' or 'd' respectively.");
-            }
-
-            String fieldName = splitStrings[i];
-            orderByList.add(descending ? OrderBy.desc(fieldName) : OrderBy.asc(fieldName));
-        }
-
-        return orderByList;
-    }
-
-    @GET
-    @Path("/search/schemas/aggregated")
-    @ApiOperation(value = "Search for schemas containing the given name and description",
-            notes = "Search the schemas for given name and description, return a list of schemas that contain the field.",
-            response = AggregatedSchemaMetadataInfo.class, responseContainer = "Collection", tags = OPERATION_GROUP_SCHEMA)
-    @Timed
-    @UnitOfWork
-    public Response findAggregatedSchemas(@Context UriInfo uriInfo) {
-        MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
-        try {
-            Collection<SchemaMetadataInfo> schemaMetadataInfos = findSchemaMetadataInfos(uriInfo.getQueryParameters());
-            List<AggregatedSchemaMetadataInfo> aggregatedSchemaMetadataInfos = new ArrayList<>();
-            for (SchemaMetadataInfo schemaMetadataInfo : schemaMetadataInfos) {
-                SchemaMetadata schemaMetadata = schemaMetadataInfo.getSchemaMetadata();
-                List<SerDesInfo> serDesInfos = new ArrayList<>(schemaRegistry.getSerDes(schemaMetadataInfo
-                                                                                                .getSchemaMetadata()
-                                                                                                .getName()));
-                aggregatedSchemaMetadataInfos.add(
-                        new AggregatedSchemaMetadataInfo(schemaMetadata,
-                                                         schemaMetadataInfo.getId(),
-                                                         schemaMetadataInfo.getTimestamp(),
-                                                         schemaRegistry.getAggregatedSchemaBranch(schemaMetadata.getName()),
-                                                         serDesInfos));
-            }
-
-            return WSUtils.respondEntities(aggregatedSchemaMetadataInfos, Response.Status.OK);
-        } catch (SchemaBranchNotFoundException e) {
-            return WSUtils.respond(Response.Status.NOT_FOUND, CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND,  e.getMessage());
-        } catch (Exception ex) {
-            LOG.error("Encountered error while finding schemas for given fields [{}]", queryParameters, ex);
-            return WSUtils.respond(Response.Status.INTERNAL_SERVER_ERROR, CatalogResponse.ResponseMessage.EXCEPTION, ex.getMessage());
-        }
-    }
-
-    @GET
-    @Path("/search/schemas/fields")
-    @ApiOperation(value = "Search for schemas containing the given field names",
-            notes = "Search the schemas for given field names and return a list of schemas that contain the field.",
-            response = SchemaVersionKey.class, responseContainer = "List", tags = OPERATION_GROUP_SCHEMA)
-    @Timed
-    @UnitOfWork
-    public Response findSchemasByFields(@Context UriInfo uriInfo) {
-        MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
-        try {
-            Collection<SchemaVersionKey> schemaVersionKeys = schemaRegistry.findSchemasByFields(buildSchemaFieldQuery(queryParameters));
-
-            return WSUtils.respondEntities(schemaVersionKeys, Response.Status.OK);
-        } catch (Exception ex) {
-            LOG.error("Encountered error while finding schemas for given fields [{}]", queryParameters, ex);
-            return WSUtils.respond(Response.Status.INTERNAL_SERVER_ERROR, CatalogResponse.ResponseMessage.EXCEPTION, ex.getMessage());
-        }
-    }
-
-    private SchemaFieldQuery buildSchemaFieldQuery(MultivaluedMap<String, String> queryParameters) {
-        SchemaFieldQuery.Builder builder = new SchemaFieldQuery.Builder();
-        for (Map.Entry<String, List<String>> entry : queryParameters.entrySet()) {
-            List<String> entryValue = entry.getValue();
-            String value = entryValue != null && !entryValue.isEmpty() ? entryValue.get(0) : null;
-            if (value != null) {
-                if (SchemaFieldInfo.FIELD_NAMESPACE.equals(entry.getKey())) {
-                    builder.namespace(value);
-                } else if (SchemaFieldInfo.NAME.equals(entry.getKey())) {
-                    builder.name(value);
-                } else if (SchemaFieldInfo.TYPE.equals(entry.getKey())) {
-                    builder.type(value);
-                }
-            }
-        }
-
-        return builder.build();
-    }
 
     @POST
     @Path("/schemas")
@@ -374,33 +147,7 @@ public class SchemaRegistryResource extends BaseRegistryResource {
         return response;
     }
 
-    @POST
-    @Path("/schemas/{name}")
-    @ApiOperation(value = "Updates schema information for the given schema name",
-        response = SchemaMetadataInfo.class, tags = OPERATION_GROUP_SCHEMA)
-    @Timed
-    @UnitOfWork
-    public Response updateSchemaInfo(@ApiParam(value = "Schema name", required = true) @PathParam("name") String schemaName, 
-                                     @ApiParam(value = "Schema to be added to the registry", required = true)
-                                         SchemaMetadata schemaMetadata,
-                                     @Context UriInfo uriInfo) {
-        Response response;
-        try {
-            SchemaMetadataInfo schemaMetadataInfo = schemaRegistry.updateSchemaMetadata(schemaName, schemaMetadata);
-            if (schemaMetadataInfo != null) {
-                response = WSUtils.respondEntity(schemaMetadataInfo, Response.Status.OK);
-            } else {
-                response = WSUtils.respond(Response.Status.NOT_FOUND, CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND, schemaName);
-            }
-        } catch (IllegalArgumentException ex) {
-            LOG.error("Expected parameter is invalid", schemaName, schemaMetadata, ex);
-            response = WSUtils.respond(Response.Status.BAD_REQUEST, CatalogResponse.ResponseMessage.BAD_REQUEST_PARAM_MISSING, ex.getMessage());
-        } catch (Exception ex) {
-            LOG.error("Encountered error while retrieving SchemaInfo with name: [{}]", schemaName, ex);
-            response = WSUtils.respond(Response.Status.INTERNAL_SERVER_ERROR, CatalogResponse.ResponseMessage.EXCEPTION, ex.getMessage());
-        }
-        return response;
-    }
+
 
     private void checkValidNames(String name) {
         for (String reservedName : reservedNames) {
@@ -418,51 +165,9 @@ public class SchemaRegistryResource extends BaseRegistryResource {
         return values != null && !values.isEmpty() && Boolean.parseBoolean(values.get(0));
     }
 
-    @GET
-    @Path("/schemas/{name}")
-    @ApiOperation(value = "Get schema information for the given schema name",
-            response = SchemaMetadataInfo.class, tags = OPERATION_GROUP_SCHEMA)
-    @Timed
-    @UnitOfWork
-    public Response getSchemaInfo(@ApiParam(value = "Schema name", required = true) @PathParam("name") String schemaName) {
-        Response response;
-        try {
-            SchemaMetadataInfo schemaMetadataInfo = schemaRegistry.getSchemaMetadataInfo(schemaName);
-            if (schemaMetadataInfo != null) {
-                response = WSUtils.respondEntity(schemaMetadataInfo, Response.Status.OK);
-            } else {
-                response = WSUtils.respond(Response.Status.NOT_FOUND, CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND, schemaName);
-            }
-        } catch (Exception ex) {
-            LOG.error("Encountered error while retrieving SchemaInfo with name: [{}]", schemaName, ex);
-            response = WSUtils.respond(Response.Status.INTERNAL_SERVER_ERROR, CatalogResponse.ResponseMessage.EXCEPTION, ex.getMessage());
-        }
 
-        return response;
-    }
 
-    @GET
-    @Path("/schemasById/{schemaId}")
-    @ApiOperation(value = "Get schema for a given schema identifier",
-            response = SchemaMetadataInfo.class, tags = OPERATION_GROUP_SCHEMA)
-    @Timed
-    @UnitOfWork
-    public Response getSchemaInfo(@ApiParam(value = "Schema identifier", required = true) @PathParam("schemaId") Long schemaId) {
-        Response response;
-        try {
-            SchemaMetadataInfo schemaMetadataInfo = schemaRegistry.getSchemaMetadataInfo(schemaId);
-            if (schemaMetadataInfo != null) {
-                response = WSUtils.respondEntity(schemaMetadataInfo, Response.Status.OK);
-            } else {
-                response = WSUtils.respond(Response.Status.NOT_FOUND, CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND, schemaId.toString());
-            }
-        } catch (Exception ex) {
-            LOG.error("Encountered error while retrieving SchemaInfo with schemaId: [{}]", schemaId, ex);
-            response = WSUtils.respond(Response.Status.INTERNAL_SERVER_ERROR, CatalogResponse.ResponseMessage.EXCEPTION, ex.getMessage());
-        }
 
-        return response;
-    }
 
     @POST
     @Path("/schemas/{name}/versions/upload")
@@ -643,23 +348,6 @@ public class SchemaRegistryResource extends BaseRegistryResource {
         return response;
     }
 
-    @GET
-    @Path("/schemas/versions/statemachine")
-    @ApiOperation(value = "Get schema version life cycle states",
-            response = SchemaVersionInfo.class, tags = OPERATION_GROUP_SCHEMA)
-    @Timed
-    public Response getSchemaVersionLifeCycleStates() {
-        Response response;
-        try {
-            SchemaVersionLifecycleStateMachineInfo states = schemaRegistry.getSchemaVersionLifecycleStateMachineInfo();
-            response = WSUtils.respondEntity(states, Response.Status.OK);
-        } catch (Exception ex) {
-            LOG.error("Encountered error while getting schema version lifecycle states", ex);
-            response = WSUtils.respond(Response.Status.INTERNAL_SERVER_ERROR, CatalogResponse.ResponseMessage.EXCEPTION, ex.getMessage());
-        }
-
-        return response;
-    }
 
     @POST
     @Path("/schemas/versions/{id}/state/enable")
@@ -853,30 +541,7 @@ public class SchemaRegistryResource extends BaseRegistryResource {
         return response;
     }
 
-    @GET
-    @Path("/schemas/{name}/serdes")
-    @ApiOperation(value = "Get list of Serializers registered for the given schema name",
-            response = SerDesInfo.class, responseContainer = "List", tags = OPERATION_GROUP_SERDE)
-    @Timed
-    @UnitOfWork
-    public Response getSerializers(@ApiParam(value = "Schema name", required = true) @PathParam("name") String schemaName) {
-        Response response;
-        try {
-            SchemaMetadataInfo schemaMetadataInfoStorable = schemaRegistry.getSchemaMetadataInfo(schemaName);
-            if (schemaMetadataInfoStorable != null) {
-                Collection<SerDesInfo> schemaSerializers = schemaRegistry.getSerDes(schemaMetadataInfoStorable.getSchemaMetadata().getName());
-                response = WSUtils.respondEntities(schemaSerializers, Response.Status.OK);
-            } else {
-                LOG.info("No schemas found with schemakey: [{}]", schemaName);
-                response = WSUtils.respond(Response.Status.NOT_FOUND, CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND, schemaName);
-            }
-        } catch (Exception ex) {
-            LOG.error("Encountered error while getting serializers for schemaKey [{}]", schemaName, ex);
-            response = WSUtils.respond(Response.Status.INTERNAL_SERVER_ERROR, CatalogResponse.ResponseMessage.EXCEPTION, ex.getMessage());
-        }
 
-        return response;
-    }
 
     @POST
     @Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -885,11 +550,11 @@ public class SchemaRegistryResource extends BaseRegistryResource {
     @Timed
     public Response uploadFile(@FormDataParam("file") final InputStream inputStream,
                                @FormDataParam("file") final FormDataContentDisposition contentDispositionHeader) {
-        Response response;
+        Response response = null;
         try {
             LOG.info("Received contentDispositionHeader: [{}]", contentDispositionHeader);
-            String uploadedFileId = schemaRegistry.uploadFile(inputStream);
-            response = WSUtils.respondEntity(uploadedFileId, Response.Status.OK);
+            //String uploadedFileId = schemaRegistry.uploadFile(inputStream);
+            //response = WSUtils.respondEntity(uploadedFileId, Response.Status.OK);
         } catch (Exception ex) {
             LOG.error("Encountered error while uploading file", ex);
             response = WSUtils.respond(Response.Status.INTERNAL_SERVER_ERROR, CatalogResponse.ResponseMessage.EXCEPTION, ex.getMessage());
@@ -898,90 +563,11 @@ public class SchemaRegistryResource extends BaseRegistryResource {
         return response;
     }
 
-    @GET
-    @Produces({"application/octet-stream", "application/json"})
-    @Path("/files/download/{fileId}")
-    @ApiOperation(value = "Downloads the respective for the given fileId if it exists", response = StreamingOutput.class, tags = OPERATION_GROUP_OTHER)
-    @Timed
-    public Response downloadFile(@ApiParam(value = "Identifier of the file to be downloaded", required = true) @PathParam("fileId") String fileId) {
-        Response response;
-        try {
-            StreamingOutput streamOutput = WSUtils.wrapWithStreamingOutput(schemaRegistry.downloadFile(fileId));
-            response = Response.ok(streamOutput).build();
-            return response;
-        } catch (FileNotFoundException e) {
-            LOG.error("No file found for fileId [{}]", fileId, e);
-            response = WSUtils.respondEntity(fileId, Response.Status.NOT_FOUND);
-        } catch (Exception ex) {
-            LOG.error("Encountered error while downloading file [{}]", fileId, ex);
-            response = WSUtils.respond(Response.Status.INTERNAL_SERVER_ERROR, CatalogResponse.ResponseMessage.EXCEPTION, ex.getMessage());
-        }
 
-        return response;
-    }
 
-    @POST
-    @Path("/serdes")
-    @ApiOperation(value = "Add a Serializer/Deserializer into the Schema Registry", response = Long.class, tags = OPERATION_GROUP_SERDE)
-    @Timed
-    @UnitOfWork
-    public Response addSerDes(@ApiParam(value = "Serializer/Deserializer information to be registered", required = true) SerDesPair serDesPair,
-                              @Context UriInfo uriInfo) {
-        return _addSerDesInfo(serDesPair);
-    }
 
-    @GET
-    @Path("/serdes/{id}")
-    @ApiOperation(value = "Get a Serializer for the given serializer id", response = SerDesInfo.class, tags = OPERATION_GROUP_SERDE)
-    @Timed
-    @UnitOfWork
-    public Response getSerDes(@ApiParam(value = "Serializer identifier", required = true) @PathParam("id") Long serializerId) {
-        return _getSerDesInfo(serializerId);
-    }
 
-    private Response _addSerDesInfo(SerDesPair serDesInfo) {
-        Response response;
-        try {
-            Long serializerId = schemaRegistry.addSerDes(serDesInfo);
-            response = WSUtils.respondEntity(serializerId, Response.Status.OK);
-        } catch (Exception ex) {
-            LOG.error("Encountered error while adding serializer/deserializer  [{}]", serDesInfo, ex);
-            response = WSUtils.respond(Response.Status.INTERNAL_SERVER_ERROR, CatalogResponse.ResponseMessage.EXCEPTION, ex.getMessage());
-        }
 
-        return response;
-    }
-
-    private Response _getSerDesInfo(Long serializerId) {
-        Response response;
-        try {
-            SerDesInfo serializerInfo = schemaRegistry.getSerDes(serializerId);
-            response = WSUtils.respondEntity(serializerInfo, Response.Status.OK);
-        } catch (Exception ex) {
-            LOG.error("Encountered error while getting serializer/deserializer [{}]", serializerId, ex);
-            response = WSUtils.respond(Response.Status.INTERNAL_SERVER_ERROR, CatalogResponse.ResponseMessage.EXCEPTION, ex.getMessage());
-        }
-        return response;
-    }
-
-    @POST
-    @Path("/schemas/{name}/mapping/{serDesId}")
-    @ApiOperation(value = "Bind the given Serializer/Deserializer to the schema identified by the schema name", tags = OPERATION_GROUP_SERDE)
-    @Timed
-    @UnitOfWork
-    public Response mapSchemaWithSerDes(@ApiParam(value = "Schema name", required = true) @PathParam("name") String schemaName,
-                                        @ApiParam(value = "Serializer/deserializer identifier", required = true) @PathParam("serDesId") Long serDesId,
-                                        @Context UriInfo uriInfo) {
-        Response response;
-        try {
-            schemaRegistry.mapSchemaWithSerDes(schemaName, serDesId);
-            response = WSUtils.respondEntity(true, Response.Status.OK);
-        } catch (Exception ex) {
-            response = WSUtils.respond(Response.Status.INTERNAL_SERVER_ERROR, CatalogResponse.ResponseMessage.EXCEPTION, ex.getMessage());
-        }
-
-        return response;
-    }
 
     @DELETE
     @Path("/schemas/{name}/versions/{version}")
@@ -1007,46 +593,6 @@ public class SchemaRegistryResource extends BaseRegistryResource {
         }
     }
 
-    @GET
-    @Path("/schemas/{name}/branches")
-    @ApiOperation(value = "Get list of registered schema branches",
-            response = SchemaBranch.class, responseContainer = "List",
-            tags = OPERATION_GROUP_OTHER)
-    @Timed
-    @UnitOfWork
-    public Response getAllBranches(@ApiParam(value = "Details about schema name",required = true) @PathParam("name") String schemaName,
-                                   @Context UriInfo uriInfo) {
-        try {
-            Collection<SchemaBranch> schemaBranches = schemaRegistry.getSchemaBranches(schemaName);
-            return WSUtils.respondEntities(schemaBranches, Response.Status.OK);
-        }  catch(SchemaNotFoundException e) {
-            return WSUtils.respond(Response.Status.NOT_FOUND, CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND, schemaName);
-        } catch (Exception ex) {
-            LOG.error("Encountered error while listing schema branches", ex);
-            return WSUtils.respond(Response.Status.INTERNAL_SERVER_ERROR, CatalogResponse.ResponseMessage.EXCEPTION, ex.getMessage());
-        }
-    }
-
-    @POST
-    @Path("/schemas/versionsById/{versionId}/branch")
-    @ApiOperation(value = "Fork a new schema branch given its schema name and version id",
-            response = SchemaBranch.class,
-            tags = OPERATION_GROUP_SCHEMA)
-    @UnitOfWork
-    public Response createSchemaBranch( @ApiParam(value = "Details about schema version",required = true) @PathParam("versionId") Long schemaVersionId,
-                                        @ApiParam(value = "Schema Branch Name", required = true) SchemaBranch schemaBranch) {
-        try {
-            SchemaBranch createdSchemaBranch = schemaRegistry.createSchemaBranch(schemaVersionId, schemaBranch);
-            return WSUtils.respondEntity(createdSchemaBranch, Response.Status.OK) ;
-        } catch (SchemaBranchAlreadyExistsException e) {
-            return WSUtils.respond(Response.Status.CONFLICT, CatalogResponse.ResponseMessage.ENTITY_CONFLICT,  schemaBranch.getName());
-        } catch (SchemaNotFoundException e) {
-            return WSUtils.respond(Response.Status.BAD_REQUEST, CatalogResponse.ResponseMessage.ENTITY_NOT_FOUND,  schemaVersionId.toString());
-        } catch (Exception ex) {
-            LOG.error("Encountered error while creating a new branch with name: [{}], version : [{}]", schemaBranch.getName(), schemaVersionId, ex);
-            return WSUtils.respond(Response.Status.INTERNAL_SERVER_ERROR, CatalogResponse.ResponseMessage.EXCEPTION, ex.getMessage());
-        }
-    }
 
     @POST
     @Path("/schemas/{versionId}/merge")

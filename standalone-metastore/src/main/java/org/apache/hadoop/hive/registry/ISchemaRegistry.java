@@ -17,12 +17,12 @@
  */
 package org.apache.hadoop.hive.registry;
 
-import org.apache.hadoop.hive.registry.errors.IncompatibleSchemaException;
-import org.apache.hadoop.hive.registry.errors.InvalidSchemaException;
-import org.apache.hadoop.hive.registry.errors.SchemaBranchNotFoundException;
-import org.apache.hadoop.hive.registry.errors.SchemaNotFoundException;
-import org.apache.hadoop.hive.registry.storage.core.search.OrderBy;
-import org.apache.hadoop.hive.registry.storage.core.search.WhereClause;
+import org.apache.hadoop.hive.registry.common.errors.IncompatibleSchemaException;
+import org.apache.hadoop.hive.registry.common.errors.InvalidSchemaException;
+import org.apache.hadoop.hive.registry.common.errors.SchemaBranchNotFoundException;
+import org.apache.hadoop.hive.registry.common.errors.SchemaNotFoundException;
+import org.apache.hadoop.hive.registry.common.search.OrderBy;
+import org.apache.hadoop.hive.registry.common.search.WhereClause;
 
 import java.util.Collection;
 import java.util.List;
@@ -69,7 +69,7 @@ public interface ISchemaRegistry extends ISchemaRegistryService {
      *
      * @return Collects aggregated schema metadata which contains the given properties.
      */
-    Collection<AggregatedSchemaMetadataInfo> findAggregatedSchemaMetadata(Map<String, String> props) throws SchemaNotFoundException, SchemaBranchNotFoundException;
+    //Collection<AggregatedSchemaMetadataInfo> findAggregatedSchemaMetadata(Map<String, String> props) throws SchemaNotFoundException, SchemaBranchNotFoundException;
 
     /**
      * @param schemaName name of the schema
@@ -77,7 +77,7 @@ public interface ISchemaRegistry extends ISchemaRegistryService {
      * @return {@link AggregatedSchemaMetadataInfo} for the given schema name, null if there is no schema registered with
      * the given schema name.
      */
-    AggregatedSchemaMetadataInfo getAggregatedSchemaMetadataInfo(String schemaName) throws SchemaNotFoundException, SchemaBranchNotFoundException;
+    //AggregatedSchemaMetadataInfo getAggregatedSchemaMetadataInfo(String schemaName) throws SchemaNotFoundException, SchemaBranchNotFoundException;
 
     /**
      * @param props properties
@@ -91,7 +91,7 @@ public interface ISchemaRegistry extends ISchemaRegistryService {
      *
      * @return SerDesInfo for the given serDesId, null if it does not exist.
      */
-    SerDesInfo getSerDes(Long serDesId);
+    //SerDesInfo getSerDes(Long serDesId);
 
     /**
      * Searches the registry to find schemas according to the given {@code whereClause} and orders the results by given {@code orderByFields}
@@ -101,7 +101,7 @@ public interface ISchemaRegistry extends ISchemaRegistryService {
      *
      * @return Collection of schemas from the results of given where clause.
      */
-    Collection<SchemaMetadataInfo> searchSchemas(WhereClause whereClause, List<OrderBy> orderByFields);
+    //Collection<SchemaMetadataInfo> searchSchemas(WhereClause whereClause, List<OrderBy> orderByFields);
 
     /**
      *  Merges a given schema version to 'MASTER' branch with a merge strategy

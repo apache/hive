@@ -448,9 +448,9 @@ public class HcatDelegator extends LauncherDelegator {
       return "";
   }
 
-  // Format the serde statement
+  // Format the serdes statement
   private String makeSerdeFormat(TableDesc.SerdeDesc desc) {
-    String res = "row format serde " + desc.name;
+    String res = "row format serdes " + desc.name;
     if (TempletonUtils.isset(desc.properties))
       res += String.format(" with serdeproperties (%s)",
         makePropertiesStatement(desc.properties));

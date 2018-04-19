@@ -17,11 +17,11 @@
  */
 package org.apache.hadoop.hive.registry;
 
-import org.apache.hadoop.hive.registry.errors.InvalidSchemaException;
-import org.apache.hadoop.hive.registry.errors.SchemaNotFoundException;
+import org.apache.hadoop.hive.registry.common.errors.InvalidSchemaException;
+import org.apache.hadoop.hive.registry.common.errors.SchemaNotFoundException;
 
 /**
- * This interface is defined for resolving schemas which have dependencies on other schemas. {@link org.apache.hadoop.hive.registry.errors.CyclicSchemaDependencyException}
+ * This interface is defined for resolving schemas which have dependencies on other schemas. {@link org.apache.hadoop.hive.registry.common.errors.CyclicSchemaDependencyException}
  * is thrown when there are cyclic dependencies among set of schemas.
  */
 public interface SchemaResolver {
