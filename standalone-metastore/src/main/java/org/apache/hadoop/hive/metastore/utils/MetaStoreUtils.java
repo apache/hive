@@ -934,6 +934,26 @@ public class MetaStoreUtils {
     }
     return pvals;
   }
+  public static String makePartNameMatcher(Table table, List<String> partVals) throws MetaException {
+    List<FieldSchema> partCols = table.getPartitionKeys();
+    int numPartKeys = partCols.size();
+    if (partVals.size() > numPartKeys) {
+      throw new MetaException("Incorrect number of partition values."
+          + " numPartKeys=" + numPartKeys + ", part_val=" + partVals);
+    }
+    partCols = partCols.subList(0, partVals.size());
+    // Construct a pattern of the form: partKey=partVal/partKey2=partVal2/...
+    // where partVal is either the escaped partition value given as input,
+    // or a regex of the form ".*"
+    // This works because the "=" and "/" separating key names and partition key/values
+    // are not escaped.
+    String partNameMatcher = Warehouse.makePartName(partCols, partVals, ".*");
+    // add ".*" to the regex to match anything else afterwards the partial spec.
+    if (partVals.size() < numPartKeys) {
+      partNameMatcher += ".*";
+    }
+    return partNameMatcher;
+  }
 
   /**
    * @param schema1: The first schema to be compared

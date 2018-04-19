@@ -448,7 +448,7 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
     };
     checkResult(expected, testQuery, isVectorized, "load data inpath");
   }
-  private void checkResult(String[][] expectedResult, String query, boolean isVectorized,
+  void checkResult(String[][] expectedResult, String query, boolean isVectorized,
       String msg) throws Exception{
     checkResult(expectedResult, query, isVectorized, msg, LOG);
   }

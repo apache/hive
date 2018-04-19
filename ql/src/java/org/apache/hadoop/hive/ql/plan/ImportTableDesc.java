@@ -60,7 +60,7 @@ public class ImportTableDesc {
         this.createTblDesc = new CreateTableDesc(dbName,
                 table.getTableName(),
                 false, // isExternal: set to false here, can be overwritten by the IMPORT stmt
-                table.isTemporary(),
+                false,
                 table.getSd().getCols(),
                 table.getPartitionKeys(),
                 table.getSd().getBucketCols(),

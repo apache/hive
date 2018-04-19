@@ -1295,6 +1295,10 @@ public class AcidUtils {
         !isInsertOnlyTable(table.getParameters());
   }
 
+  public static boolean isFullAcidTable(Map<String, String> params) {
+    return isTransactionalTable(params) && !isInsertOnlyTable(params);
+  }
+
   public static boolean isTransactionalTable(org.apache.hadoop.hive.metastore.api.Table table) {
     return table != null && table.getParameters() != null &&
         isTablePropertyTransactional(table.getParameters());
