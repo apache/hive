@@ -17,15 +17,20 @@
  */
 package org.apache.hadoop.hive.ql.plan;
 
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
-import org.apache.hadoop.hive.ql.plan.Explain;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 
 @Explain(displayName = "Export Work", explainLevels = { Explain.Level.USER, Explain.Level.DEFAULT,
     Explain.Level.EXTENDED })
 public class ExportWork implements Serializable {
+  private Logger LOG = LoggerFactory.getLogger(ExportWork.class);
 
   private static final long serialVersionUID = 1L;
 
@@ -33,13 +38,18 @@ public class ExportWork implements Serializable {
   private TableSpec tableSpec;
   private ReplicationSpec replicationSpec;
   private String astRepresentationForErrorMsg;
+  private String qualifiedTableName;
 
+  /**
+   * @param qualifiedTable if exporting Acid table, this is temp table - null otherwise
+   */
   public ExportWork(String exportRootDirName, TableSpec tableSpec, ReplicationSpec replicationSpec,
-      String astRepresentationForErrorMsg) {
+      String astRepresentationForErrorMsg, String qualifiedTable) {
     this.exportRootDirName = exportRootDirName;
     this.tableSpec = tableSpec;
     this.replicationSpec = replicationSpec;
     this.astRepresentationForErrorMsg = astRepresentationForErrorMsg;
+    this.qualifiedTableName = qualifiedTable;
   }
 
   public String getExportRootDir() {
@@ -70,4 +80,18 @@ public class ExportWork implements Serializable {
     this.astRepresentationForErrorMsg = astRepresentationForErrorMsg;
   }
 
+  /**
+   * For exporting Acid table, change the "pointer" to the temp table.
+   * This has to be done after the temp table is populated and all necessary Partition objects
+   * exist in the metastore.
+   * See {@link org.apache.hadoop.hive.ql.parse.UpdateDeleteSemanticAnalyzer#isAcidExport(ASTNode)}
+   * for more info.
+   */
+  public void acidPostProcess(Hive db) throws HiveException {
+    if(qualifiedTableName != null) {
+      LOG.info("Swapping export of " + tableSpec.tableName + " to " + qualifiedTableName +
+          " using partSpec=" + tableSpec.partSpec);
+      tableSpec = new TableSpec(db, qualifiedTableName, tableSpec.partSpec, true);
+    }
+  }
 }

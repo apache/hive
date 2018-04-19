@@ -49,7 +49,7 @@ public class TestTxnAddPartition extends TxnCommandsBaseForTests {
   static final private Logger LOG = LoggerFactory.getLogger(TestTxnAddPartition.class);
   private static final String TEST_DATA_DIR =
       new File(System.getProperty("java.io.tmpdir") +
-          File.separator + TestTxnLoadData.class.getCanonicalName()
+          File.separator + TestTxnAddPartition.class.getCanonicalName()
           + "-" + System.currentTimeMillis()
       ).getPath().replaceAll("\\\\", "/");
   @Rule
