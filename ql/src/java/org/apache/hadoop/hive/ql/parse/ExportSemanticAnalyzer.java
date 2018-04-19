@@ -20,14 +20,21 @@ package org.apache.hadoop.hive.ql.parse;
 
 
 import org.antlr.runtime.tree.Tree;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.repl.dump.TableExport;
 import org.apache.hadoop.hive.ql.plan.ExportWork;
+
+import javax.annotation.Nullable;
+import java.util.Set;
 
 /**
  * ExportSemanticAnalyzer.
@@ -41,6 +48,13 @@ public class ExportSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   @Override
   public void analyzeInternal(ASTNode ast) throws SemanticException {
+    rootTasks.add(analyzeExport(ast, null, db, conf, inputs, outputs));
+  }
+  /**
+   * @param acidTableName - table name in db.table format; not NULL if exporting Acid table
+   */
+  static Task<ExportWork> analyzeExport(ASTNode ast, @Nullable String acidTableName, Hive db,
+      HiveConf conf, Set<ReadEntity> inputs, Set<WriteEntity> outputs) throws SemanticException {
     Tree tableTree = ast.getChild(0);
     Tree toTree = ast.getChild(1);
 
@@ -94,9 +108,8 @@ public class ExportSemanticAnalyzer extends BaseSemanticAnalyzer {
     String exportRootDirName = tmpPath;
     // Configure export work
     ExportWork exportWork =
-        new ExportWork(exportRootDirName, ts, replicationSpec, ErrorMsg.INVALID_PATH.getMsg(ast));
+        new ExportWork(exportRootDirName, ts, replicationSpec, ErrorMsg.INVALID_PATH.getMsg(ast), acidTableName);
     // Create an export task and add it as a root task
-    Task<ExportWork> exportTask = TaskFactory.get(exportWork);
-    rootTasks.add(exportTask);
+    return  TaskFactory.get(exportWork);
   }
 }
