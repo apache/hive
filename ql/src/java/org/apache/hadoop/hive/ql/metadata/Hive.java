@@ -2299,7 +2299,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
     assert tbl.getPath() != null : "null==getPath() for " + tbl.getTableName();
     boolean isMmTable = AcidUtils.isInsertOnlyTable(tbl);
     boolean isFullAcidTable = AcidUtils.isFullAcidTable(tbl);
-    HiveConf sessionConf = SessionState.getSessionConf();
     if (conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML) && !tbl.isTemporary()) {
       newFiles = Collections.synchronizedList(new ArrayList<Path>());
     }
@@ -2341,11 +2340,11 @@ private void constructOneLBLocationMap(FileStatus fSta,
         boolean isAutopurge = "true".equalsIgnoreCase(tbl.getProperty("auto.purge"));
         // TODO: this should never run for MM tables anymore. Remove the flag, and maybe the filter?
         replaceFiles(tblPath, loadPath, destPath, tblPath,
-            sessionConf, isSrcLocal, isAutopurge, newFiles, filter, isMmTable?true:false, !tbl.isTemporary());
+            conf, isSrcLocal, isAutopurge, newFiles, filter, isMmTable?true:false, !tbl.isTemporary());
       } else {
         try {
-          FileSystem fs = tbl.getDataLocation().getFileSystem(sessionConf);
-          copyFiles(sessionConf, loadPath, destPath, fs, isSrcLocal, isAcidIUDoperation,
+          FileSystem fs = tbl.getDataLocation().getFileSystem(conf);
+          copyFiles(conf, loadPath, destPath, fs, isSrcLocal, isAcidIUDoperation,
             loadFileType == LoadFileType.OVERWRITE_EXISTING, newFiles,
                   tbl.getNumBuckets() > 0 ? true : false, isFullAcidTable);
         } catch (IOException e) {
