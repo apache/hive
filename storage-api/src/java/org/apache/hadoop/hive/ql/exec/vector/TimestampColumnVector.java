@@ -485,6 +485,14 @@ public class TimestampColumnVector extends ColumnVector {
   }
 
   /**
+   * Return the value for the utc boolean variable.
+   * @return
+   */
+  public boolean isUTC() {
+    return this.isUTC;
+  }
+
+  /**
    * Set the utc boolean variable
    * @param value
    */
