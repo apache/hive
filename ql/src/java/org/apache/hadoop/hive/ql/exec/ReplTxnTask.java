@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 import java.util.List;
+import java.util.Map;
 
 /**
  * ReplTxnTask.
