@@ -9094,18 +9094,18 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
       long lastEvent = rqst.getLastEvent();
+      int maxEvents = rqst.getMaxEvents() > 0 ? rqst.getMaxEvents() : Integer.MAX_VALUE;
       query = pm.newQuery(MNotificationLog.class, "eventId > lastEvent");
       query.declareParameters("java.lang.Long lastEvent");
       query.setOrdering("eventId ascending");
+      query.setRange(0, maxEvents);
       Collection<MNotificationLog> events = (Collection) query.execute(lastEvent);
       commited = commitTransaction();
       if (events == null) {
         return result;
       }
       Iterator<MNotificationLog> i = events.iterator();
-      int maxEvents = rqst.getMaxEvents() > 0 ? rqst.getMaxEvents() : Integer.MAX_VALUE;
-      int numEvents = 0;
-      while (i.hasNext() && numEvents++ < maxEvents) {
+      while (i.hasNext()) {
         result.addToEvents(translateDbToThrift(i.next()));
       }
       return result;
