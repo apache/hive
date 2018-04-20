@@ -8,13 +8,13 @@ CREATE TEMPORARY FUNCTION dboutput AS 'org.apache.hadoop.hive.contrib.genericudf
 
 FROM src 
 
-SELECT dboutput ( 'jdbc:derby:;databaseName=${system:test.tmp.dir}/test_dboutput_db;create=true','','',
+SELECT dboutput ( 'jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_as_external_table_db;create=true','','',
 'CREATE TABLE SIMPLE_DERBY_TABLE ("kkey" INTEGER NOT NULL )' ),
 
-dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_dboutput_db;create=true','','',
+dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_as_external_table_db;create=true','','',
 'INSERT INTO SIMPLE_DERBY_TABLE ("kkey") VALUES (?)','20'),
 
-dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_dboutput_db;create=true','','',
+dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_as_external_table_db;create=true','','',
 'INSERT INTO SIMPLE_DERBY_TABLE ("kkey") VALUES (?)','200')
 
 limit 1;
@@ -27,7 +27,7 @@ STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
                 "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
-                "hive.sql.jdbc.url" = "jdbc:derby:;databaseName=${system:test.tmp.dir}/test_dboutput_db;create=true;collation=TERRITORY_BASED:PRIMARY",
+                "hive.sql.jdbc.url" = "jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_as_external_table_db;create=true;collation=TERRITORY_BASED:PRIMARY",
                 "hive.sql.dbcp.username" = "APP",
                 "hive.sql.dbcp.password" = "mine", 
                 "hive.sql.table" = "SIMPLE_DERBY_TABLE",
