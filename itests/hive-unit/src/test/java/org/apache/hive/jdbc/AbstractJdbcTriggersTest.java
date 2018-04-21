@@ -160,7 +160,7 @@ public abstract class AbstractJdbcTriggersTest {
       if (errCaptureExpect != null && !errCaptureExpect.isEmpty()) {
         // failure hooks are run after HiveStatement is closed. wait sometime for failure hook to execute
         String stdErrStr = "";
-        while (!stdErrStr.contains(errCaptureExpect.get(0))) {
+        while (!stdErrStr.contains(errCaptureExpect.get(errCaptureExpect.size() - 1))) {
           baos.flush();
           stdErrStr = baos.toString();
           Thread.sleep(500);
