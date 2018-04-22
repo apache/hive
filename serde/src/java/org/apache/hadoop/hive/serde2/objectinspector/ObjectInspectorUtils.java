@@ -23,8 +23,8 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -445,7 +445,7 @@ public final class ObjectInspectorUtils {
     }
     case MAP: {
       MapObjectInspector moi = (MapObjectInspector) oi;
-      HashMap<Object, Object> map = new HashMap<Object, Object>();
+      Map<Object, Object> map = new LinkedHashMap<Object, Object>();
       Map<? extends Object, ? extends Object> omap = moi.getMap(o);
       for (Map.Entry<? extends Object, ? extends Object> entry : omap
           .entrySet()) {

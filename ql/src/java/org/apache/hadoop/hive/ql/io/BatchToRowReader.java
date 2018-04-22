@@ -27,11 +27,12 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
@@ -541,7 +542,7 @@ public abstract class BatchToRowReader<StructType, UnionType>
     }
   }
 
-  private HashMap<Object,Object> nextMap(
+  private Map<Object,Object> nextMap(
       ColumnVector vector, int row, MapTypeInfo schema, Object previous) {
     if (vector.isRepeating) {
       row = 0;
@@ -552,11 +553,11 @@ public abstract class BatchToRowReader<StructType, UnionType>
       int offset = (int) map.offsets[row];
       TypeInfo keyType = schema.getMapKeyTypeInfo();
       TypeInfo valueType = schema.getMapValueTypeInfo();
-      HashMap<Object,Object> result;
-      if (previous == null || previous.getClass() != HashMap.class) {
-        result = new HashMap<Object,Object>(length);
+      LinkedHashMap<Object,Object> result;
+      if (previous == null || previous.getClass() != LinkedHashMap.class) {
+        result = new LinkedHashMap<Object,Object>(length);
       } else {
-        result = (HashMap<Object,Object>) previous;
+        result = (LinkedHashMap<Object,Object>) previous;
         // I couldn't think of a good way to reuse the keys and value objects
         // without even more allocations, so take the easy and safe approach.
         result.clear();
