@@ -2211,17 +2211,36 @@ relySpecification
 createConstraint
 @init { pushMsg("pk or uk or nn constraint", state); }
 @after { popMsg(state); }
-    : (KW_CONSTRAINT constraintName=identifier)? tableConstraintType pkCols=columnParenthesesList constraintOptsCreate?
+    : (KW_CONSTRAINT constraintName=identifier)? tableLevelConstraint constraintOptsCreate?
     -> {$constraintName.tree != null}?
-            ^(tableConstraintType $pkCols ^(TOK_CONSTRAINT_NAME $constraintName) constraintOptsCreate?)
-    -> ^(tableConstraintType $pkCols constraintOptsCreate?)
+            ^({$tableLevelConstraint.tree} ^(TOK_CONSTRAINT_NAME $constraintName) constraintOptsCreate?)
+    -> ^({$tableLevelConstraint.tree} constraintOptsCreate?)
     ;
 
 alterConstraintWithName
 @init { pushMsg("pk or uk or nn constraint with name", state); }
 @after { popMsg(state); }
-    : KW_CONSTRAINT constraintName=identifier tableConstraintType pkCols=columnParenthesesList constraintOptsAlter?
-    -> ^(tableConstraintType $pkCols ^(TOK_CONSTRAINT_NAME $constraintName) constraintOptsAlter?)
+    : KW_CONSTRAINT constraintName=identifier tableLevelConstraint constraintOptsAlter?
+    ->^({$tableLevelConstraint.tree} ^(TOK_CONSTRAINT_NAME $constraintName) constraintOptsAlter?)
+    ;
+
+tableLevelConstraint
+    : pkUkConstraint
+    | checkConstraint
+    ;
+
+pkUkConstraint
+@init { pushMsg("pk or uk table level constraint", state); }
+@after { popMsg(state); }
+    : tableConstraintType pkCols=columnParenthesesList
+    -> ^(tableConstraintType $pkCols)
+    ;
+
+checkConstraint
+@init { pushMsg("CHECK constraint", state); }
+@after { popMsg(state); }
+    : KW_CHECK expression
+    -> ^(TOK_CHECK_CONSTRAINT expression)
     ;
 
 createForeignKey
@@ -2426,7 +2445,7 @@ alterColConstraint
 columnConstraintType
     : KW_NOT KW_NULL       ->    TOK_NOT_NULL
     | KW_DEFAULT defaultVal->    ^(TOK_DEFAULT_VALUE defaultVal)
-    | KW_CHECK expression  ->    ^(TOK_CHECK_CONSTRAINT expression)
+    | checkConstraint
     | tableConstraintType
     ;
 

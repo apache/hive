@@ -1065,9 +1065,14 @@ public abstract class BaseSemanticAnalyzer {
               + "Please use NOVALIDATE instead."));
     }
 
-    for (String columnName : columnNames) {
-      cstrInfos.add(new ConstraintInfo(columnName, constraintName,
-          enable, validate, rely, checkOrDefaultValue));
+    if(columnNames == null) {
+      cstrInfos.add(new ConstraintInfo(null, constraintName,
+                                       enable, validate, rely, checkOrDefaultValue));
+    } else {
+      for (String columnName : columnNames) {
+        cstrInfos.add(new ConstraintInfo(columnName, constraintName,
+                                         enable, validate, rely, checkOrDefaultValue));
+      }
     }
   }
 
@@ -1199,99 +1204,108 @@ public abstract class BaseSemanticAnalyzer {
       FieldSchema col = new FieldSchema();
       ASTNode child = (ASTNode) ast.getChild(i);
       switch (child.getToken().getType()) {
-        case HiveParser.TOK_UNIQUE: {
+      case HiveParser.TOK_UNIQUE: {
+        String[] qualifiedTabName = getQualifiedTableName((ASTNode) parent.getChild(0));
+        // TODO CAT - for now always use the default catalog.  Eventually will want to see if
+        // the user specified a catalog
+        String catName = MetaStoreUtils.getDefaultCatalog(conf);
+        processUniqueConstraints(catName, qualifiedTabName[0], qualifiedTabName[1], child,
+            uniqueConstraints);
+      }
+      break;
+      case HiveParser.TOK_PRIMARY_KEY: {
+        if (!primaryKeys.isEmpty()) {
+          throw new SemanticException(ErrorMsg.INVALID_CONSTRAINT.getMsg(
+              "Cannot exist more than one primary key definition for the same table"));
+        }
+        String[] qualifiedTabName = getQualifiedTableName((ASTNode) parent.getChild(0));
+        processPrimaryKeys(qualifiedTabName[0], qualifiedTabName[1], child, primaryKeys);
+      }
+      break;
+      case HiveParser.TOK_FOREIGN_KEY: {
+        String[] qualifiedTabName = getQualifiedTableName((ASTNode) parent.getChild(0));
+        processForeignKeys(qualifiedTabName[0], qualifiedTabName[1], child, foreignKeys);
+      }
+      break;
+      case HiveParser.TOK_CHECK_CONSTRAINT: {
+        // TODO CAT - for now always use the default catalog.  Eventually will want to see if
+        // the user specified a catalog
+        String catName = MetaStoreUtils.getDefaultCatalog(conf);
+        String[] qualifiedTabName = getQualifiedTableName((ASTNode) parent.getChild(0));
+        processCheckConstraints(catName, qualifiedTabName[0], qualifiedTabName[1], child, null,
+            checkConstraints, null, tokenRewriteStream);
+      }
+      break;
+      default:
+        Tree grandChild = child.getChild(0);
+        if (grandChild != null) {
+          String name = grandChild.getText();
+          if (lowerCase) {
+            name = name.toLowerCase();
+          }
+          checkColumnName(name);
+          // child 0 is the name of the column
+          col.setName(unescapeIdentifier(name));
+          // child 1 is the type of the column
+          ASTNode typeChild = (ASTNode) (child.getChild(1));
+          col.setType(getTypeStringFromAST(typeChild));
+
+          // child 2 is the optional comment of the column
+          // child 3 is the optional constraint
+          ASTNode constraintChild = null;
+          if (child.getChildCount() == 4) {
+            col.setComment(unescapeSQLString(child.getChild(2).getText()));
+            constraintChild = (ASTNode) child.getChild(3);
+          } else if (child.getChildCount() == 3
+              && ((ASTNode) child.getChild(2)).getToken().getType() == HiveParser.StringLiteral) {
+            col.setComment(unescapeSQLString(child.getChild(2).getText()));
+          } else if (child.getChildCount() == 3) {
+            constraintChild = (ASTNode) child.getChild(2);
+          }
+          if (constraintChild != null) {
             String[] qualifiedTabName = getQualifiedTableName((ASTNode) parent.getChild(0));
             // TODO CAT - for now always use the default catalog.  Eventually will want to see if
             // the user specified a catalog
             String catName = MetaStoreUtils.getDefaultCatalog(conf);
-            processUniqueConstraints(catName, qualifiedTabName[0], qualifiedTabName[1], child,
-                uniqueConstraints);
-          }
-          break;
-        case HiveParser.TOK_PRIMARY_KEY: {
-            if (!primaryKeys.isEmpty()) {
-              throw new SemanticException(ErrorMsg.INVALID_CONSTRAINT.getMsg(
-                  "Cannot exist more than one primary key definition for the same table"));
-            }
-            String[] qualifiedTabName = getQualifiedTableName((ASTNode) parent.getChild(0));
-            processPrimaryKeys(qualifiedTabName[0], qualifiedTabName[1], child, primaryKeys);
-          }
-          break;
-        case HiveParser.TOK_FOREIGN_KEY: {
-            String[] qualifiedTabName = getQualifiedTableName((ASTNode) parent.getChild(0));
-            processForeignKeys(qualifiedTabName[0], qualifiedTabName[1], child, foreignKeys);
-          }
-          break;
-        default:
-          Tree grandChild = child.getChild(0);
-          if(grandChild != null) {
-            String name = grandChild.getText();
-            if(lowerCase) {
-              name = name.toLowerCase();
-            }
-            checkColumnName(name);
-            // child 0 is the name of the column
-            col.setName(unescapeIdentifier(name));
-            // child 1 is the type of the column
-            ASTNode typeChild = (ASTNode) (child.getChild(1));
-            col.setType(getTypeStringFromAST(typeChild));
-
-            // child 2 is the optional comment of the column
-            // child 3 is the optional constraint
-            ASTNode constraintChild = null;
-            if (child.getChildCount() == 4) {
-              col.setComment(unescapeSQLString(child.getChild(2).getText()));
-              constraintChild = (ASTNode) child.getChild(3);
-            } else if (child.getChildCount() == 3
-                && ((ASTNode) child.getChild(2)).getToken().getType() == HiveParser.StringLiteral) {
-              col.setComment(unescapeSQLString(child.getChild(2).getText()));
-            } else if (child.getChildCount() == 3) {
-              constraintChild = (ASTNode) child.getChild(2);
-            }
-            if (constraintChild != null) {
-              String[] qualifiedTabName = getQualifiedTableName((ASTNode) parent.getChild(0));
-              // TODO CAT - for now always use the default catalog.  Eventually will want to see if
-              // the user specified a catalog
-              String catName = MetaStoreUtils.getDefaultCatalog(conf);
-              // Process column constraint
-              switch (constraintChild.getToken().getType()) {
-              case HiveParser.TOK_CHECK_CONSTRAINT:
-                processCheckConstraints(catName, qualifiedTabName[0], qualifiedTabName[1], constraintChild,
-                                          ImmutableList.of(col.getName()), checkConstraints, typeChild,
-                                        tokenRewriteStream);
-                break;
-              case HiveParser.TOK_DEFAULT_VALUE:
-                processDefaultConstraints(catName, qualifiedTabName[0], qualifiedTabName[1], constraintChild,
-                    ImmutableList.of(col.getName()), defaultConstraints, typeChild, tokenRewriteStream);
-                break;
-                case HiveParser.TOK_NOT_NULL:
-                  processNotNullConstraints(catName, qualifiedTabName[0], qualifiedTabName[1], constraintChild,
-                          ImmutableList.of(col.getName()), notNullConstraints);
-                  break;
-                case HiveParser.TOK_UNIQUE:
-                  processUniqueConstraints(catName, qualifiedTabName[0], qualifiedTabName[1], constraintChild,
-                          ImmutableList.of(col.getName()), uniqueConstraints);
-                  break;
-                case HiveParser.TOK_PRIMARY_KEY:
-                  if (!primaryKeys.isEmpty()) {
-                    throw new SemanticException(ErrorMsg.INVALID_CONSTRAINT.getMsg(
-                        "Cannot exist more than one primary key definition for the same table"));
-                  }
-                  processPrimaryKeys(qualifiedTabName[0], qualifiedTabName[1], constraintChild,
-                          ImmutableList.of(col.getName()), primaryKeys);
-                  break;
-                case HiveParser.TOK_FOREIGN_KEY:
-                  processForeignKeys(qualifiedTabName[0], qualifiedTabName[1], constraintChild,
-                          foreignKeys);
-                  break;
-                default:
-                  throw new SemanticException(ErrorMsg.NOT_RECOGNIZED_CONSTRAINT.getMsg(
-                      constraintChild.getToken().getText()));
+            // Process column constraint
+            switch (constraintChild.getToken().getType()) {
+            case HiveParser.TOK_CHECK_CONSTRAINT:
+              processCheckConstraints(catName, qualifiedTabName[0], qualifiedTabName[1], constraintChild,
+                  ImmutableList.of(col.getName()), checkConstraints, typeChild,
+                  tokenRewriteStream);
+              break;
+            case HiveParser.TOK_DEFAULT_VALUE:
+              processDefaultConstraints(catName, qualifiedTabName[0], qualifiedTabName[1], constraintChild,
+                  ImmutableList.of(col.getName()), defaultConstraints, typeChild, tokenRewriteStream);
+              break;
+            case HiveParser.TOK_NOT_NULL:
+              processNotNullConstraints(catName, qualifiedTabName[0], qualifiedTabName[1], constraintChild,
+                  ImmutableList.of(col.getName()), notNullConstraints);
+              break;
+            case HiveParser.TOK_UNIQUE:
+              processUniqueConstraints(catName, qualifiedTabName[0], qualifiedTabName[1], constraintChild,
+                  ImmutableList.of(col.getName()), uniqueConstraints);
+              break;
+            case HiveParser.TOK_PRIMARY_KEY:
+              if (!primaryKeys.isEmpty()) {
+                throw new SemanticException(ErrorMsg.INVALID_CONSTRAINT.getMsg(
+                    "Cannot exist more than one primary key definition for the same table"));
               }
+              processPrimaryKeys(qualifiedTabName[0], qualifiedTabName[1], constraintChild,
+                  ImmutableList.of(col.getName()), primaryKeys);
+              break;
+            case HiveParser.TOK_FOREIGN_KEY:
+              processForeignKeys(qualifiedTabName[0], qualifiedTabName[1], constraintChild,
+                  foreignKeys);
+              break;
+            default:
+              throw new SemanticException(ErrorMsg.NOT_RECOGNIZED_CONSTRAINT.getMsg(
+                  constraintChild.getToken().getText()));
             }
           }
-          colList.add(col);
-          break;
+        }
+        colList.add(col);
+        break;
       }
     }
     return colList;
