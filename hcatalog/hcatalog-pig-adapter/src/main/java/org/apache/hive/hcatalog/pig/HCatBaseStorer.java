@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -353,7 +354,7 @@ abstract class HCatBaseStorer extends StoreFunc implements StoreMetadata {
         return bagContents;
       case MAP:
         Map<?, ?> pigMap = (Map<?, ?>) pigObj;
-        Map<Object, Object> typeMap = new HashMap<Object, Object>();
+        Map<Object, Object> typeMap = new LinkedHashMap<Object, Object>();
         for (Entry<?, ?> entry : pigMap.entrySet()) {
           // the value has a schema and not a FieldSchema
           typeMap.put(
