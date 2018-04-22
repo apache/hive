@@ -1,4 +1,4 @@
-SET hive.vectorized.execution.enabled=false;
+SET hive.vectorized.execution.enabled=true;
 set hive.fetch.task.conversion=none;
 SET hive.auto.convert.join=true;
 
