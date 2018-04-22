@@ -1,12 +1,12 @@
-PREHOOK: query: create table tti(i int check i > 5)
+PREHOOK: query: create table tti(i int , j int, constraint ch1 check i > j)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tti
-POSTHOOK: query: create table tti(i int check i > 5)
+POSTHOOK: query: create table tti(i int , j int, constraint ch1 check i > j)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tti
-PREHOOK: query: insert into tti values(5)
+PREHOOK: query: insert into tti values(1,2)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tti

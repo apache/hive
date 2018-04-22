@@ -46,7 +46,6 @@ import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
 import org.apache.thrift.TException;
-import org.apache.thrift.transport.TTransportException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -512,7 +511,7 @@ public class TestAddPartitions extends MetaStoreClientTest {
   @Test(expected = MetaException.class)
   public void testAddPartitionNoPartColOnTable() throws Exception {
 
-    Table origTable = new TableBuilder()
+    new TableBuilder()
         .setDbName(DB_NAME)
         .setTableName(TABLE_NAME)
         .addCol("test_id", "int", "test col id")
@@ -575,27 +574,19 @@ public class TestAddPartitions extends MetaStoreClientTest {
     client.add_partition(partition);
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testAddPartitionNullPartition() throws Exception {
-    try {
-      client.add_partition(null);
-      Assert.fail("Exception should have been thrown.");
-    } catch (TTransportException | NullPointerException e) {
-      // TODO: NPE should not be thrown.
-    }
+
+    client.add_partition(null);
   }
 
-  @Test
-  public void testAddPartitionNullValue() throws Exception {
+  @Test(expected = MetaException.class)
+  public void testAddPartitionNullValues() throws Exception {
 
     createTable();
     Partition partition = buildPartition(DB_NAME, TABLE_NAME, null);
-    try {
-      client.add_partition(partition);
-    } catch (NullPointerException e) {
-      // TODO: This works different in remote and embedded mode.
-      // In embedded mode, no exception happens.
-    }
+    partition.setValues(null);
+    client.add_partition(partition);
   }
 
   @Test
@@ -698,14 +689,10 @@ public class TestAddPartitions extends MetaStoreClientTest {
     verifyPartitionAttributesDefaultValues(part, table.getSd().getLocation());
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testAddPartitionsNullList() throws Exception {
-    try {
-      client.add_partitions(null);
-      Assert.fail("Exception should have been thrown.");
-    } catch (TTransportException | NullPointerException e) {
-      // TODO: NPE should not be thrown
-    }
+
+    client.add_partitions(null);
   }
 
   @Test
@@ -1159,31 +1146,23 @@ public class TestAddPartitions extends MetaStoreClientTest {
     client.add_partitions(partitions);
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testAddPartitionsNullPartition() throws Exception {
-    try {
-      List<Partition> partitions = new ArrayList<>();
-      partitions.add(null);
-      client.add_partitions(partitions);
-      Assert.fail("Exception should have been thrown.");
-    } catch (TTransportException | NullPointerException e) {
-      // TODO: NPE should not be thrown
-    }
+
+    List<Partition> partitions = new ArrayList<>();
+    partitions.add(null);
+    client.add_partitions(partitions);
   }
 
-  @Test
-  public void testAddPartitionsNullValue() throws Exception {
+  @Test(expected = MetaException.class)
+  public void testAddPartitionsNullValues() throws Exception {
 
     createTable();
     Partition partition = buildPartition(DB_NAME, TABLE_NAME, null);
+    partition.setValues(null);
     List<Partition> partitions = new ArrayList<>();
     partitions.add(partition);
-    try {
-      client.add_partitions(partitions);
-    } catch (NullPointerException e) {
-      // TODO: This works different in remote and embedded mode.
-      // In embedded mode, no exception happens.
-    }
+    client.add_partitions(partitions);
   }
 
   @Test
@@ -1313,9 +1292,9 @@ public class TestAddPartitions extends MetaStoreClientTest {
     verifyPartition(table, "year=2016/month=march", Lists.newArrayList("2016", "march"), 3);
   }
 
-  @Test(expected = NullPointerException.class)
+  @Test(expected = MetaException.class)
   public void testAddPartsNullList() throws Exception {
-    // TODO: NPE should not be thrown
+
     client.add_partitions(null, false, false);
   }
 
@@ -1429,9 +1408,9 @@ public class TestAddPartitions extends MetaStoreClientTest {
     Assert.assertTrue(partitionNames.contains("year=2017"));
   }
 
-  @Test(expected = NullPointerException.class)
+  @Test(expected = MetaException.class)
   public void testAddPartsNullPartition() throws Exception {
-    // TODO: NPE should not be thrown
+
     List<Partition> partitions = new ArrayList<>();
     partitions.add(null);
     client.add_partitions(partitions, false, false);
@@ -1452,7 +1431,7 @@ public class TestAddPartitions extends MetaStoreClientTest {
 
   private Table createTable(String dbName, String tableName, List<FieldSchema> partCols,
       String location) throws Exception {
-    Table table = new TableBuilder()
+    new TableBuilder()
         .setDbName(dbName)
         .setTableName(tableName)
         .addCol("test_id", "int", "test col id")

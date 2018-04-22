@@ -18,6 +18,9 @@
 package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Arrays;
 
 import org.apache.hadoop.io.Writable;
@@ -53,6 +56,8 @@ public class TimestampColumnVector extends ColumnVector {
   private Writable scratchWritable;
       // Supports keeping a TimestampWritable object without having to import that definition...
 
+  private boolean isUTC;
+
   /**
    * Use this constructor by default. All column vectors
    * should normally be the default size.
@@ -75,6 +80,8 @@ public class TimestampColumnVector extends ColumnVector {
     scratchTimestamp = new Timestamp(0);
 
     scratchWritable = null;     // Allocated by caller.
+
+    isUTC = false;
   }
 
   /**
@@ -477,6 +484,22 @@ public class TimestampColumnVector extends ColumnVector {
     this.scratchWritable = scratchWritable;
   }
 
+  /**
+   * Return the value for the utc boolean variable.
+   * @return
+   */
+  public boolean isUTC() {
+    return this.isUTC;
+  }
+
+  /**
+   * Set the utc boolean variable
+   * @param value
+   */
+  public void setIsUTC(boolean value) {
+    this.isUTC = value;
+  }
+
   @Override
   public void stringifyValue(StringBuilder buffer, int row) {
     if (isRepeating) {
@@ -485,7 +508,13 @@ public class TimestampColumnVector extends ColumnVector {
     if (noNulls || !isNull[row]) {
       scratchTimestamp.setTime(time[row]);
       scratchTimestamp.setNanos(nanos[row]);
-      buffer.append(scratchTimestamp.toString());
+      if (isUTC) {
+        LocalDateTime ts =
+            LocalDateTime.ofInstant(Instant.ofEpochMilli(time[row]), ZoneOffset.UTC).withNano(nanos[row]);
+        buffer.append(ts.toLocalDate().toString() + ' ' + ts.toLocalTime().toString());
+      } else {
+        buffer.append(scratchTimestamp.toString());
+      }
     } else {
       buffer.append("null");
     }

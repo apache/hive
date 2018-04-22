@@ -26,7 +26,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 /**
- * Utitilities for Timestamps and the relevant conversions.
+ * Utilities for Timestamps and the relevant conversions.
  */
 public class TimestampUtils {
   public static final BigDecimal BILLION_BIG_DECIMAL = BigDecimal.valueOf(1000000000);

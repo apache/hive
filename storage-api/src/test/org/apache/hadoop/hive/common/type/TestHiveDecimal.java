@@ -30,7 +30,6 @@ import java.math.BigInteger;
 
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritableV1;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
-import org.apache.hadoop.hive.common.type.RandomTypeUtil;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
 import org.apache.hadoop.hive.ql.util.TimestampUtils;
 

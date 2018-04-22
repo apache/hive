@@ -771,7 +771,7 @@ public class TypeCheckProcFactory {
     PrimitiveObjectInspector keyPoi = (PrimitiveObjectInspector)keyOI;
     PrimitiveObjectInspector valuePoi = (PrimitiveObjectInspector)valueOI;
     Map<?,?> values = (Map<?,?>)((ConstantObjectInspector) inspector).getWritableConstantValue();
-    Map<Object, Object> constant = new HashMap<Object, Object>();
+    Map<Object, Object> constant = new LinkedHashMap<Object, Object>();
     for (Map.Entry<?, ?> e : values.entrySet()) {
       constant.put(keyPoi.getPrimitiveJavaObject(e.getKey()), valuePoi.getPrimitiveJavaObject(e.getValue()));
     }

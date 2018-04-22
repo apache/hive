@@ -23,7 +23,7 @@ import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -457,7 +457,7 @@ public class VerifyFastRow {
         MapTypeInfo mapTypeInfo = (MapTypeInfo) typeInfo;
         TypeInfo keyTypeInfo = mapTypeInfo.getMapKeyTypeInfo();
         TypeInfo valueTypeInfo = mapTypeInfo.getMapValueTypeInfo();
-        HashMap<Object, Object> hashMap = (HashMap<Object, Object>) object;
+        Map<Object, Object> hashMap = (Map<Object, Object>) object;
         serializeWrite.beginMap(hashMap);
         boolean isFirst = true;
         for (Map.Entry<Object, Object> entry : hashMap.entrySet()) {
@@ -630,7 +630,7 @@ public class VerifyFastRow {
         MapTypeInfo mapTypeInfo = (MapTypeInfo) typeInfo;
         TypeInfo keyTypeInfo = mapTypeInfo.getMapKeyTypeInfo();
         TypeInfo valueTypeInfo = mapTypeInfo.getMapValueTypeInfo();
-        HashMap<Object, Object> hashMap = new HashMap<Object, Object>();
+        Map<Object, Object> hashMap = new LinkedHashMap<Object, Object>();
         Object keyObj;
         Object valueObj;
         boolean isNull;

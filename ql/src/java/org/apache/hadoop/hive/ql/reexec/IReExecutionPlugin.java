@@ -59,6 +59,7 @@ public interface IReExecutionPlugin {
    */
   boolean shouldReExecute(int executionNum, PlanMapper oldPlanMapper, PlanMapper newPlanMapper);
 
+  void afterExecute(PlanMapper planMapper, boolean successfull);
 
 
 }

@@ -4687,7 +4687,8 @@ public class ObjectStore implements RawStore, Configurable {
       final String catName = normalizeIdentifier(cc.get(i).getCatName());
       final String tableDB = normalizeIdentifier(cc.get(i).getTable_db());
       final String tableName = normalizeIdentifier(cc.get(i).getTable_name());
-      final String columnName = normalizeIdentifier(cc.get(i).getColumn_name());
+      final String columnName = cc.get(i).getColumn_name() == null? null
+          : normalizeIdentifier(cc.get(i).getColumn_name());
       final String ccName = cc.get(i).getDc_name();
       boolean isEnable = cc.get(i).isEnable_cstr();
       boolean isValidate = cc.get(i).isValidate_cstr();
@@ -4720,9 +4721,6 @@ public class ObjectStore implements RawStore, Configurable {
       if (parentTable.getPartitionKeys() != null) {
         parentCD = null;
         parentIntegerIndex = getColumnIndexFromTableColumns(parentTable.getPartitionKeys(), columnName);
-      }
-      if (parentIntegerIndex == -1) {
-        throw new InvalidObjectException("Parent column not found: " + columnName);
       }
     }
     if (ccName == null) {
@@ -9094,18 +9092,18 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
       long lastEvent = rqst.getLastEvent();
+      int maxEvents = rqst.getMaxEvents() > 0 ? rqst.getMaxEvents() : Integer.MAX_VALUE;
       query = pm.newQuery(MNotificationLog.class, "eventId > lastEvent");
       query.declareParameters("java.lang.Long lastEvent");
       query.setOrdering("eventId ascending");
+      query.setRange(0, maxEvents);
       Collection<MNotificationLog> events = (Collection) query.execute(lastEvent);
       commited = commitTransaction();
       if (events == null) {
         return result;
       }
       Iterator<MNotificationLog> i = events.iterator();
-      int maxEvents = rqst.getMaxEvents() > 0 ? rqst.getMaxEvents() : Integer.MAX_VALUE;
-      int numEvents = 0;
-      while (i.hasNext() && numEvents++ < maxEvents) {
+      while (i.hasNext()) {
         result.addToEvents(translateDbToThrift(i.next()));
       }
       return result;

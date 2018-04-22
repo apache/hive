@@ -159,7 +159,7 @@ public class Context {
 
   private boolean isExplainPlan = false;
   private PlanMapper planMapper = new PlanMapper();
-  private StatsSource runtimeStatsSource;
+  private StatsSource statsSource;
   private int executionIndex;
 
   public void setOperation(Operation operation) {
@@ -1047,16 +1047,16 @@ public class Context {
     return planMapper;
   }
 
-  public void setStatsSource(StatsSource runtimeStatsSource) {
-    this.runtimeStatsSource = runtimeStatsSource;
+  public void setStatsSource(StatsSource statsSource) {
+    this.statsSource = statsSource;
   }
 
   public StatsSource getStatsSource() {
-    if (runtimeStatsSource != null) {
-      return runtimeStatsSource;
+    if (statsSource != null) {
+      return statsSource;
     } else {
       // hierarchical; add def stats also here
-      return new EmptyStatsSource();
+      return EmptyStatsSource.INSTANCE;
     }
   }
 

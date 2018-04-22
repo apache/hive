@@ -60,6 +60,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
@@ -798,6 +799,9 @@ public class BeeLine implements Closeable {
     if(!connSuccessful && !exit) {
       connSuccessful = defaultBeelineConnect(cl);
     }
+    if (exit) {
+      return 1;
+    }
 
     int code = 0;
     if (cl.getOptionValues('e') != null) {
@@ -1189,7 +1193,8 @@ public class BeeLine implements Closeable {
             }
           }
         } finally {
-          exit = false;
+          //exit beeline if there is initScript failure and --force is not set
+          exit = exitOnError && executionResult != ERRNO_OK;
         }
       }
     }
@@ -1888,7 +1893,7 @@ public class BeeLine implements Closeable {
 
 
   static Map<Object, Object> map(Object[] obs) {
-    Map<Object, Object> m = new HashMap<Object, Object>();
+    Map<Object, Object> m = new LinkedHashMap<Object, Object>();
     for (int i = 0; i < obs.length - 1; i += 2) {
       m.put(obs[i], obs[i + 1]);
     }

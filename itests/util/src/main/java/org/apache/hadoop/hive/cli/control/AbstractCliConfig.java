@@ -38,10 +38,13 @@ import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
 import org.apache.hive.testutils.HiveTestEnvSetup;
 
 import com.google.common.base.Splitter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractCliConfig {
 
   public static final String HIVE_ROOT = HiveTestEnvSetup.HIVE_ROOT;
+  private static final Logger LOG = LoggerFactory.getLogger(AbstractCliConfig.class);
 
   enum MetastoreType {
     sql
@@ -214,11 +217,18 @@ public abstract class AbstractCliConfig {
     if (queryFile != null && !queryFile.equals("")) {
       // The user may have passed a list of files - comma separated
       for (String qFile : TEST_SPLITTER.split(queryFile)) {
+        File qF;
         if (null != queryDir) {
-          testFiles.add(new File(queryDir, qFile));
+          qF = new File(queryDir, qFile);
         } else {
-          testFiles.add(new File(qFile));
+          qF = new File(qFile);
         }
+        if (excludedQueryFileNames.contains(qFile)) {
+          LOG.warn(qF.getAbsolutePath() + " is among the excluded query files for this driver."
+              + " Please update CliConfigs.java or testconfiguration.properties file to"
+              + " include the qfile");
+        }
+        testFiles.add(qF);
       }
     } else if (queryFileRegex != null && !queryFileRegex.equals("")) {
       for (String regex : TEST_SPLITTER.split(queryFileRegex)) {

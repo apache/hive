@@ -23,7 +23,7 @@ import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -550,10 +550,10 @@ public class BinarySortableSerDe extends AbstractSerDe {
 
       // Create the map if needed
       Map<Object, Object> r;
-      if (reuse == null) {
-        r = new HashMap<Object, Object>();
+      if (reuse == null || reuse.getClass() != LinkedHashMap.class) {
+        r = new LinkedHashMap<Object, Object>();
       } else {
-        r = (HashMap<Object, Object>) reuse;
+        r = (Map<Object, Object>) reuse;
         r.clear();
       }
 

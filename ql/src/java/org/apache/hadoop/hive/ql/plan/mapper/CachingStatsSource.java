@@ -19,31 +19,50 @@
 package org.apache.hadoop.hive.ql.plan.mapper;
 
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
 
-public class EmptyStatsSource implements StatsSource {
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 
-  public static StatsSource INSTANCE = new EmptyStatsSource();
+public class CachingStatsSource implements StatsSource {
 
-  private EmptyStatsSource() {
+
+  private final Cache<OpTreeSignature, OperatorStats> cache;
+
+  public CachingStatsSource(HiveConf conf) {
+    int size = conf.getIntVar(ConfVars.HIVE_QUERY_REEXECUTION_STATS_CACHE_SIZE);
+    cache = CacheBuilder.newBuilder().maximumSize(size).build();
   }
 
-  @Override
-  public boolean canProvideStatsFor(Class<?> class1) {
-    return false;
+  public void put(OpTreeSignature sig, OperatorStats opStat) {
+    cache.put(sig, opStat);
   }
 
   @Override
   public Optional<OperatorStats> lookup(OpTreeSignature treeSig) {
-    return Optional.empty();
+    return Optional.ofNullable(cache.getIfPresent(treeSig));
+  }
+
+  @Override
+  public boolean canProvideStatsFor(Class<?> clazz) {
+    if (Operator.class.isAssignableFrom(clazz)) {
+      return true;
+    }
+    return false;
   }
 
   @Override
   public void putAll(Map<OpTreeSignature, OperatorStats> map) {
-    throw new RuntimeException("This is an empty source!");
+    for (Entry<OpTreeSignature, OperatorStats> entry : map.entrySet()) {
+      put(entry.getKey(), entry.getValue());
+    }
   }
 
 }

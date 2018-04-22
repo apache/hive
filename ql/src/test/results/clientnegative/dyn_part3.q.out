@@ -11,4 +11,5 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@nzhang_part
 #### A masked pattern was here ####
+Error during job, obtaining debugging information...
 FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.mr.MapRedTask
