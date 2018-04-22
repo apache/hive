@@ -34,21 +34,21 @@ import org.slf4j.LoggerFactory;
  * A utility class that helps identify Hive-Jdbc functions gaps.
  */
 
-class JDBCRexCallValidator {
-  
-  private static final Logger LOG = LoggerFactory.getLogger(JDBCRexCallValidator.class);
-  
-  static private class JdbcRexCallValidatorVisitor extends RexVisitorImpl<Void> {
-    final private SqlDialect dialect; 
+public class JDBCRexCallValidator {
 
-    public JdbcRexCallValidatorVisitor(SqlDialect dialect) {
-      super (true);
+  private static final Logger LOG = LoggerFactory.getLogger(JDBCRexCallValidator.class);
+
+  private static class JdbcRexCallValidatorVisitor extends RexVisitorImpl<Void> {
+    private final SqlDialect dialect;
+
+    JdbcRexCallValidatorVisitor(SqlDialect dialect) {
+      super(true);
       this.dialect = dialect;
     }
 
     boolean res = true;
 
-    private boolean validRexCall (RexCall call) {
+    private boolean validRexCall(RexCall call) {
       if (call instanceof RexOver) {
         LOG.debug("RexOver operator push down is not supported for now with the following operator:" + call);
         return false;
@@ -65,23 +65,23 @@ class JDBCRexCallValidator {
 
     @Override
     public Void visitCall(RexCall call) {
-      if (res == true) {
-        res = validRexCall (call);
-        if (res == true) {
+      if (res) {
+        res = validRexCall(call);
+        if (res) {
           return super.visitCall(call);
         }
       }
       return null;
     }
 
-    private boolean go (RexNode cond) {
-       cond.accept(this);
-       return res;
+    private boolean go(RexNode cond) {
+      cond.accept(this);
+      return res;
     }
   }
-  
+
   public static boolean isValidJdbcOperation(RexNode cond, SqlDialect dialect) {
-    return new JdbcRexCallValidatorVisitor (dialect).go (cond);
+    return new JdbcRexCallValidatorVisitor(dialect).go(cond);
   }
 
 };

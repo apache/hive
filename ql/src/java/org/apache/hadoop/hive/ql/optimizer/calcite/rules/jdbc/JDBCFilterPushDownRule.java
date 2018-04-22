@@ -32,16 +32,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * JDBCExtractJoinFilterRule extracts out the {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter}
- * from a {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin} operator. 
+ * JDBCExtractJoinFilterRule extracts out the
+ * {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter}
+ * from a {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin} operator.
  * if the HiveFilter could be replaced by two HiveFilter operators that one of them could be pushed down below the
- * {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJdbcConverter}
+ * {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.HiveJdbcConverter}
  */
 
 public class JDBCFilterPushDownRule extends RelOptRule {
   private static final Logger LOG = LoggerFactory.getLogger(JDBCFilterPushDownRule.class);
-  
-  public static final JDBCFilterPushDownRule INSTANCE = new JDBCFilterPushDownRule ();
+
+  public static final JDBCFilterPushDownRule INSTANCE = new JDBCFilterPushDownRule();
 
   public JDBCFilterPushDownRule() {
     super(operand(HiveFilter.class,
@@ -53,7 +54,7 @@ public class JDBCFilterPushDownRule extends RelOptRule {
     final HiveFilter filter = call.rel(0);
     final HiveJdbcConverter converter = call.rel(1);
     
-    RexNode cond = filter.getCondition ();
+    RexNode cond = filter.getCondition();
 
     return JDBCRexCallValidator.isValidJdbcOperation(cond, converter.getJdbcDialect());
   }
@@ -65,13 +66,13 @@ public class JDBCFilterPushDownRule extends RelOptRule {
     final HiveFilter filter = call.rel(0);
     final HiveJdbcConverter converter = call.rel(1);
 
-    Filter newHiveFilter = filter.copy(filter.getTraitSet(), converter.getInput(),filter.getCondition());
+    Filter newHiveFilter = filter.copy(filter.getTraitSet(), converter.getInput(), filter.getCondition());
     JdbcFilter newJdbcFilter = (JdbcFilter) new JdbcFilterRule(converter.getJdbcConvention()).convert(newHiveFilter);
     if (newJdbcFilter != null) {
-      RelNode ConverterRes = converter.copy(converter.getTraitSet(), Arrays.asList(newJdbcFilter));
+      RelNode converterRes = converter.copy(converter.getTraitSet(), Arrays.asList(newJdbcFilter));
 
-      call.transformTo(ConverterRes);
+      call.transformTo(converterRes);
     }
   }
-  
+
 };

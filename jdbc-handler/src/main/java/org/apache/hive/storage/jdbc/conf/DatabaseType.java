@@ -21,6 +21,6 @@ public enum DatabaseType {
   ORACLE,
   POSTGRES,
   MSSQL,
-  METASTORE, 
+  METASTORE,
   JETHRO_DATA
 }

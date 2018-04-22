@@ -6,7 +6,7 @@ set hive.strict.checks.cartesian.product= false;
 CREATE TEMPORARY FUNCTION dboutput AS 'org.apache.hadoop.hive.contrib.genericudf.example.GenericUDFDBOutput';
 
 
-FROM src 
+FROM src
 
 SELECT dboutput ( 'jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_as_external_table_db;create=true','','',
 'CREATE TABLE SIMPLE_DERBY_TABLE ("kkey" INTEGER NOT NULL )' ),
@@ -29,7 +29,7 @@ TBLPROPERTIES (
                 "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
                 "hive.sql.jdbc.url" = "jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_as_external_table_db;create=true;collation=TERRITORY_BASED:PRIMARY",
                 "hive.sql.dbcp.username" = "APP",
-                "hive.sql.dbcp.password" = "mine", 
+                "hive.sql.dbcp.password" = "mine",
                 "hive.sql.table" = "SIMPLE_DERBY_TABLE",
                 "hive.sql.dbcp.maxActive" = "1"
 );

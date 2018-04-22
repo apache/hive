@@ -36,44 +36,43 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
 /**
  * This is a designated RelNode that splits the Hive operators and the Jdbc operators,
  * every successor of this node will be Jdbc operator. 
- *
  */
 public class HiveJdbcConverter extends ConverterImpl implements HiveRelNode {
 
-  final private JdbcConvention _convention;
+  private final JdbcConvention convention;
   
   public HiveJdbcConverter(RelOptCluster cluster,  RelTraitSet traits,
       JdbcRel input, JdbcConvention jc) {
     super(cluster, ConventionTraitDef.INSTANCE, traits, input);
-    _convention = jc;
+    convention = jc;
   }
-  
+
   private HiveJdbcConverter(RelOptCluster cluster,  RelTraitSet traits,
       RelNode input, JdbcConvention jc) {
     super(cluster, ConventionTraitDef.INSTANCE, traits, input);
-    _convention = jc;
+    convention = jc;
   }
-  
-  public JdbcConvention getJdbcConvention () {
-    return _convention;
+
+  public JdbcConvention getJdbcConvention() {
+    return convention;
   }
 
   public SqlDialect getJdbcDialect() {
-    return _convention.dialect;
+    return convention.dialect;
   }
 
   @Override
   public void implement(Implementor implementor) {
 
   }
-  
+
   @Override
   public RelNode copy(
       RelTraitSet traitSet,
       List<RelNode> inputs) {
-    return new HiveJdbcConverter(getCluster(), traitSet, sole(inputs), _convention);
+    return new HiveJdbcConverter(getCluster(), traitSet, sole(inputs), convention);
   }
-  
+
   public String generateSql() {
     SqlDialect dialect = getJdbcDialect();
     final JdbcImplementor jdbcImplementor =
@@ -83,9 +82,9 @@ public class HiveJdbcConverter extends ConverterImpl implements HiveRelNode {
         jdbcImplementor.visitChild(0, getInput());
     return result.asStatement().toSqlString(dialect).getSql();
   }
-  
-  public JdbcHiveTableScan getTableScan () {
-    final  JdbcHiveTableScan []  tmpJdbcHiveTableScan = new JdbcHiveTableScan[1];
+
+  public JdbcHiveTableScan getTableScan() {
+    final JdbcHiveTableScan[] tmpJdbcHiveTableScan = new JdbcHiveTableScan[1];
     new RelVisitor() {
 
       public void visit(
@@ -101,14 +100,8 @@ public class HiveJdbcConverter extends ConverterImpl implements HiveRelNode {
     }.go(this);
 
     JdbcHiveTableScan jdbcHiveTableScan = tmpJdbcHiveTableScan [0];
-    
+
     assert jdbcHiveTableScan != null;
     return jdbcHiveTableScan;
   }
-
-
-  public JdbcConvention getUnderlyingConvention () {
-    return (JdbcConvention) getTableScan().getConvention ();
-  }
-
 }

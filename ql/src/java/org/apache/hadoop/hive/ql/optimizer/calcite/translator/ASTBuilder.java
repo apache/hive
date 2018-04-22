@@ -45,8 +45,7 @@ import org.slf4j.LoggerFactory;
 
 
 public class ASTBuilder {
-  
-  public static final Logger logger  = LoggerFactory.getLogger(ASTBuilder.class);
+  public static final Logger LOGGER  = LoggerFactory.getLogger(ASTBuilder.class);
 
   public static ASTBuilder construct(int tokenType, String text) {
     ASTBuilder b = new ASTBuilder();
@@ -71,7 +70,7 @@ public class ASTBuilder {
     if (scan instanceof HiveJdbcConverter) {
       HiveJdbcConverter jdbcConverter = (HiveJdbcConverter) scan;
       JdbcHiveTableScan jdbcHiveTableScan = jdbcConverter.getTableScan();
-      
+
       hts = jdbcHiveTableScan.getHiveTableScan();
     } else if (scan instanceof DruidQuery) {
       hts = (HiveTableScan) ((DruidQuery) scan).getTableScan();
@@ -79,7 +78,6 @@ public class ASTBuilder {
       hts = (HiveTableScan) scan;
     }
 
-    
     assert hts != null;
     RelOptHiveTable hTbl = (RelOptHiveTable) hts.getTable();
     ASTBuilder b = ASTBuilder.construct(HiveParser.TOK_TABREF, "TOK_TABREF").add(
@@ -115,16 +113,16 @@ public class ASTBuilder {
               .add(HiveParser.StringLiteral, "\"" + Constants.DRUID_QUERY_TYPE + "\"")
               .add(HiveParser.StringLiteral, "\"" + dq.getQueryType().getQueryName() + "\""));
     } else if (scan instanceof HiveJdbcConverter) {
-            HiveJdbcConverter jdbcConverter = (HiveJdbcConverter) scan;
-            final String query = jdbcConverter.generateSql ();
-            logger.info("JETHRO: The HiveJdbcConverter generated sql message is: " + System.lineSeparator() + query);
-            propList.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTY, "TOK_TABLEPROPERTY")
-                .add(HiveParser.StringLiteral, "\"" + Constants.JDBC_QUERY + "\"")
-                .add(HiveParser.StringLiteral, "\"" + SemanticAnalyzer.escapeSQLString(query) + "\""));
-            
-            propList.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTY, "TOK_TABLEPROPERTY")
-                .add(HiveParser.StringLiteral, "\"" + Constants.HIVE_JDBC_QUERY + "\"")
-                .add(HiveParser.StringLiteral, "\"" + SemanticAnalyzer.escapeSQLString(query) + "\""));
+      HiveJdbcConverter jdbcConverter = (HiveJdbcConverter) scan;
+      final String query = jdbcConverter.generateSql ();
+      LOGGER.info("The HiveJdbcConverter generated sql message is: " + System.lineSeparator() + query);
+      propList.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTY, "TOK_TABLEPROPERTY")
+          .add(HiveParser.StringLiteral, "\"" + Constants.JDBC_QUERY + "\"")
+          .add(HiveParser.StringLiteral, "\"" + SemanticAnalyzer.escapeSQLString(query) + "\""));
+
+      propList.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTY, "TOK_TABLEPROPERTY")
+          .add(HiveParser.StringLiteral, "\"" + Constants.HIVE_JDBC_QUERY + "\"")
+          .add(HiveParser.StringLiteral, "\"" + SemanticAnalyzer.escapeSQLString(query) + "\""));
     }
 
     if (hts.isInsideView()) {

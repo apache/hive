@@ -430,7 +430,7 @@ public final class HiveMaterializedViewsRegistry {
       }
 
     }
- 
+
     return TableType.NATIVE;
   }
 

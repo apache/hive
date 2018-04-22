@@ -1853,9 +1853,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
       calciteOptimizedPlan = hepPlan(calciteOptimizedPlan, true, mdProvider.getMetadataProvider(), null,
               HepMatchOrder.TOP_DOWN,
               JDBCExtractJoinFilterRule.INSTANCE,
-              JDBCAbstractSplitFilterRule.SPLIT_FILTER_ABOVE_JOIN, JDBCAbstractSplitFilterRule.SPLIT_FILTER_ABOVE_CONVERTER,
+              JDBCAbstractSplitFilterRule.SPLIT_FILTER_ABOVE_JOIN,
+              JDBCAbstractSplitFilterRule.SPLIT_FILTER_ABOVE_CONVERTER,
               JDBCFilterJoinRule.INSTANCE,
-              
               JDBCJoinPushDownRule.INSTANCE, JDBCUnionPushDownRule.INSTANCE,
               JDBCFilterPushDownRule.INSTANCE, JDBCProjectPushDownRule.INSTANCE, 
               JDBCAggregationPushDownRule.INSTANCE, JDBCSortPushDownRule.INSTANCE
@@ -2753,7 +2753,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
         }
 
         // 4. Build operator
-        if (tableType == TableType.DRUID || (tableType == TableType.JDBC && tabMetaData.getProperty("hive.sql.table") != null)) {
+        if (tableType == TableType.DRUID ||
+                (tableType == TableType.JDBC && tabMetaData.getProperty("hive.sql.table") != null)) {
           // Create case sensitive columns list
           List<String> originalColumnNames =
                   ((StandardStructObjectInspector)rowObjectInspector).getOriginalColumnNames();
@@ -2776,14 +2777,14 @@ public class CalcitePlanner extends SemanticAnalyzer {
           RelOptHiveTable optTable = new RelOptHiveTable(relOptSchema, fullyQualifiedTabName,
               rowType, tabMetaData, nonPartitionColumns, partitionColumns, virtualCols, conf,
               partitionCache, colStatsCache, noColsMissingStats);
-          
+
           final HiveTableScan hts = new HiveTableScan(cluster,
               cluster.traitSetOf(HiveRelNode.CONVENTION), optTable,
               null == tableAlias ? tabMetaData.getTableName() : tableAlias,
                 getAliasId(tableAlias, qb),
-                HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP),//TODOY
+                HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP),
                 qb.isInsideView() || qb.getAliasInsideView().contains(tableAlias.toLowerCase()));
-          
+
           if (tableType == TableType.DRUID) {
             // Build Druid query
             String address =
@@ -2839,11 +2840,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
             JdbcSchema schema = new JdbcSchema(ds, jc.dialect, jc, null/*catalog */, null/*schema */);
             JdbcTable jt = (JdbcTable) schema.getTable(tableName);
             if (jt == null) {
-              throw new SemanticException ("Table " + tableName + " was not found in the database");
+              throw new SemanticException("Table " + tableName + " was not found in the database");
             }
 
-            JdbcHiveTableScan jdbcTableRel = new JdbcHiveTableScan (cluster, optTable, jt, jc, hts);
-            tableRel = new HiveJdbcConverter(cluster, jdbcTableRel.getTraitSet().replace (HiveRelNode.CONVENTION), jdbcTableRel, jc);
+            JdbcHiveTableScan jdbcTableRel = new JdbcHiveTableScan(cluster, optTable, jt, jc, hts);
+            tableRel = new HiveJdbcConverter(cluster, jdbcTableRel.getTraitSet().replace(HiveRelNode.CONVENTION),
+                    jdbcTableRel, jc);
           }
         } else {
           // Build row type from field <type, name>

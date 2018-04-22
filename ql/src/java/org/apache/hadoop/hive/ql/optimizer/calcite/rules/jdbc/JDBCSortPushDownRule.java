@@ -34,49 +34,49 @@ import org.slf4j.LoggerFactory;
 /**
  * JDBCSortPushDownRule convert a {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit}
  * into a {@link org.apache.calcite.adapter.jdbc.JdbcRules.JdbcSort}
- * and pushes it down below the {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJdbcConverter}}
+ * and pushes it down below the {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.HiveJdbcConverter}}
  * operator so it will be sent to the external table.
  */
 
 public class JDBCSortPushDownRule extends RelOptRule {
   private static final Logger LOG = LoggerFactory.getLogger(JDBCSortPushDownRule.class);
 
-  public static final JDBCSortPushDownRule INSTANCE = new JDBCSortPushDownRule ();
+  public static final JDBCSortPushDownRule INSTANCE = new JDBCSortPushDownRule();
 
   public JDBCSortPushDownRule() {
     super(operand(HiveSortLimit.class,
         operand(HiveJdbcConverter.class, operand(RelNode.class, any()))));
   }
-  
+
   public boolean matches(RelOptRuleCall call) {
     final Sort sort = (Sort) call.rel(0);
     final HiveJdbcConverter conv = call.rel(1);
 
-    for (RexNode curr_call : sort.getChildExps()) {
-      if (JDBCRexCallValidator.isValidJdbcOperation(curr_call, conv.getJdbcDialect()) == false) {
+    for (RexNode currCall : sort.getChildExps()) {
+      if (!JDBCRexCallValidator.isValidJdbcOperation(currCall, conv.getJdbcDialect())) {
         return false;
       }
     }
 
     return true;
   }
-  
+
   @Override
   public void onMatch(RelOptRuleCall call) {
     LOG.debug("JDBCSortPushDownRule has been called");
-    
+
     final HiveSortLimit sort = call.rel(0);
     final HiveJdbcConverter converter = call.rel(1);
     final RelNode input = call.rel(2);
-    
-    
+
     Sort newHiveSort = sort.copy(sort.getTraitSet(), input, sort.getCollation(), sort.getOffsetExpr (), sort.getFetchExpr());
-    JdbcSort newJdbcSort = (JdbcSort) new JdbcSortRule(converter.getJdbcConvention()).convert (newHiveSort, false);
+    JdbcSort newJdbcSort =
+            (JdbcSort) new JdbcSortRule(converter.getJdbcConvention()).convert(newHiveSort, false);
     if (newJdbcSort != null) {
-      RelNode ConverterRes = converter.copy(converter.getTraitSet(), Arrays.asList(newJdbcSort));
-      
-      call.transformTo(ConverterRes);
+      RelNode converterRes = converter.copy(converter.getTraitSet(), Arrays.asList(newJdbcSort));
+
+      call.transformTo(converterRes);
     }
   }
-  
+
 };

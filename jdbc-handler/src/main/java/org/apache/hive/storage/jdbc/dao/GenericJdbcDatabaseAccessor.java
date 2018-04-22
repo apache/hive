@@ -98,7 +98,7 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
     String metadataQuery = addLimitToQuery(sql, 1);
     return metadataQuery;
   }
-  
+
   @Override
   public List<String> getColumnTypes(Configuration conf) throws HiveJdbcDatabaseAccessException {
     Connection conn = null;
@@ -144,20 +144,18 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
         case Types.TIMESTAMP:
           columnTypes.add(serdeConstants.TIMESTAMP_TYPE_NAME);
           break;
-          
+
         default:
           columnTypes.add(metadata.getColumnTypeName(i+1));
           break;
-        };
+        }
       }
 
       return columnTypes;
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       LOGGER.error("Error while trying to get column names.", e);
       throw new HiveJdbcDatabaseAccessException("Error while trying to get column names: " + e.getMessage(), e);
-    }
-    finally {
+    } finally {
       cleanupResources(conn, ps, rs);
     }
 

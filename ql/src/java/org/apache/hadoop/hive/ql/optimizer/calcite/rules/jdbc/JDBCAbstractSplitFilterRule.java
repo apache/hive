@@ -44,12 +44,16 @@ import org.slf4j.LoggerFactory;
  */
 
 public abstract class JDBCAbstractSplitFilterRule extends RelOptRule {
-  static Logger LOG = LoggerFactory.getLogger(JDBCAbstractSplitFilterRule.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(JDBCAbstractSplitFilterRule.class);
 
-  static public JDBCAbstractSplitFilterRule SPLIT_FILTER_ABOVE_JOIN = new JDBCSplitFilterAboveJoinRule ();
-  static public JDBCAbstractSplitFilterRule SPLIT_FILTER_ABOVE_CONVERTER = new JDBCSplitFilterRule ();
+  public static final JDBCAbstractSplitFilterRule SPLIT_FILTER_ABOVE_JOIN = new JDBCSplitFilterAboveJoinRule();
+  public static final JDBCAbstractSplitFilterRule SPLIT_FILTER_ABOVE_CONVERTER = new JDBCSplitFilterRule();
 
-  static public class FilterSupportedFunctionsVisitor extends RexVisitorImpl<Void> {
+  /**
+   * FilterSupportedFunctionsVisitor traverse all of the Rex call and splits them into
+   * two lists, one with supported jdbc calls, and one with not supported jdbc calls
+   */
+  public static class FilterSupportedFunctionsVisitor extends RexVisitorImpl<Void> {
 
     private final SqlDialect dialect;
 
@@ -58,8 +62,8 @@ public abstract class JDBCAbstractSplitFilterRule extends RelOptRule {
       this.dialect = dialect;
     }
 
-    final private ArrayList<RexCall> validJdbcNode = new ArrayList<RexCall> ();
-    final private ArrayList<RexCall> invalidJdbcNode = new ArrayList<RexCall> ();
+    private final ArrayList<RexCall> validJdbcNode = new ArrayList<RexCall> ();
+    private final ArrayList<RexCall> invalidJdbcNode = new ArrayList<RexCall> ();
 
     public ArrayList<RexCall> getValidJdbcNode() {
       return validJdbcNode;
@@ -84,33 +88,33 @@ public abstract class JDBCAbstractSplitFilterRule extends RelOptRule {
       return null;
     }
 
-    public boolean canBeSplitted () {
-       return !validJdbcNode.isEmpty() && !invalidJdbcNode.isEmpty();
+    public boolean canBeSplit() {
+      return !validJdbcNode.isEmpty() && !invalidJdbcNode.isEmpty();
     }
   }
 
-  protected JDBCAbstractSplitFilterRule (RelOptRuleOperand operand) {
+  protected JDBCAbstractSplitFilterRule(RelOptRuleOperand operand) {
     super (operand);
   }
 
-  static public boolean canSplitFilter(RexNode cond, SqlDialect dialect) {
+  public static boolean canSplitFilter(RexNode cond, SqlDialect dialect) {
     FilterSupportedFunctionsVisitor visitor = new FilterSupportedFunctionsVisitor(dialect);
     cond.accept(visitor);
-    return visitor.canBeSplitted();
+    return visitor.canBeSplit();
   }
 
   public boolean matches(RelOptRuleCall call, SqlDialect dialect) {
-    LOG.debug("MySplitFilter.matches has been called");
-    
+    LOGGER.debug("MySplitFilter.matches has been called");
+
     final HiveFilter filter = call.rel(0);
-    
+
     RexNode cond = filter.getCondition ();
 
     return canSplitFilter(cond, dialect);
   }
 
   public void onMatch(RelOptRuleCall call, SqlDialect dialect) {
-    LOG.debug("MySplitFilter.onMatch has been called");
+    LOGGER.debug("MySplitFilter.onMatch has been called");
 
     final HiveFilter        filter = call.rel(0);
 
@@ -142,11 +146,15 @@ public abstract class JDBCAbstractSplitFilterRule extends RelOptRule {
       invalidCondition = rexBuilder.makeCall(SqlStdOperatorTable.AND, invalidJdbcNode);
     }
 
-    HiveFilter newJdbcInvalidFilter = new HiveFilter(filter.getCluster(), filter.getTraitSet(), newJdbcValidFilter, invalidCondition);
+    HiveFilter newJdbcInvalidFilter = new HiveFilter(filter.getCluster(), filter.getTraitSet(),
+                                                     newJdbcValidFilter, invalidCondition);
 
     call.transformTo(newJdbcInvalidFilter);
   }
 
+  /**
+   * JDBCSplitFilterAboveJoinRule split splitter above a HiveJoin operator, so we could push it into the HiveJoin
+   */
   public static class JDBCSplitFilterAboveJoinRule extends JDBCAbstractSplitFilterRule {
     public JDBCSplitFilterAboveJoinRule() {
       super(operand(HiveFilter.class,
@@ -156,7 +164,7 @@ public abstract class JDBCAbstractSplitFilterRule extends RelOptRule {
 
     @Override
     public boolean matches(RelOptRuleCall call) {
-      LOG.debug("MyUpperJoinFilterFilter.matches has been called");
+      LOGGER.debug("MyUpperJoinFilterFilter.matches has been called");
 
       final HiveJoin join = call.rel(1);
       final HiveJdbcConverter conv = call.rel(2);
@@ -173,12 +181,15 @@ public abstract class JDBCAbstractSplitFilterRule extends RelOptRule {
     }
   }
 
+  /**
+   * JDBCSplitFilterRule splits a HiveFilter rule so we could push part of the HiveFilter into the jdbc
+   */
   public static class JDBCSplitFilterRule extends JDBCAbstractSplitFilterRule {
     public JDBCSplitFilterRule() {
       super(operand(HiveFilter.class,
               operand(HiveJdbcConverter.class, any())));
     }
-    
+
     @Override
     public boolean matches(RelOptRuleCall call) {
       final HiveJdbcConverter conv = call.rel(1);

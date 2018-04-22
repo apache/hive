@@ -773,14 +773,14 @@ public class ASTConverter {
     }
 
     Schema(HiveJdbcConverter scan) {
-      HiveJdbcConverter jdbcHiveCoverter = (HiveJdbcConverter) (scan);
+      HiveJdbcConverter jdbcHiveCoverter = scan;
       final JdbcHiveTableScan jdbcTableScan = jdbcHiveCoverter.getTableScan();
-      String tabName = jdbcTableScan.getHiveTableScan().getTableAlias();//TODOY ask Jesus, verify with test
+      String tabName = jdbcTableScan.getHiveTableScan().getTableAlias();
       for (RelDataTypeField field : jdbcHiveCoverter.getRowType().getFieldList()) {
         add(new ColumnInfo(tabName, field.getName()));
       }
     }
-    
+
     Schema(Project select, String alias) {
       for (RelDataTypeField field : select.getRowType().getFieldList()) {
         add(new ColumnInfo(alias, field.getName()));

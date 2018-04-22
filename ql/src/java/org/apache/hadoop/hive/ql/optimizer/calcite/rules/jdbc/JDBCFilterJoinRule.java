@@ -33,10 +33,9 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterJoinRule;
  */
 
 public class JDBCFilterJoinRule extends HiveFilterJoinRule {
-  
-  final static public JDBCFilterJoinRule INSTANCE = new JDBCFilterJoinRule ();
-  
-  
+
+  public static final JDBCFilterJoinRule INSTANCE = new JDBCFilterJoinRule();
+
   public JDBCFilterJoinRule() {
     super(RelOptRule.operand(HiveFilter.class, 
             RelOptRule.operand(HiveJoin.class, 
@@ -51,14 +50,14 @@ public class JDBCFilterJoinRule extends HiveFilterJoinRule {
     Join   join = call.rel(1);
     HiveJdbcConverter   conv1 = call.rel(2);
     HiveJdbcConverter   conv2 = call.rel(3);
-    
-    if (conv1.getJdbcDialect().equals(conv2.getJdbcDialect()) == false) {
+
+    if (!conv1.getJdbcDialect().equals(conv2.getJdbcDialect())) {
       return false;
     }
-    
-    boolean visitorRes = JDBCRexCallValidator.isValidJdbcOperation(filter.getCondition(),conv1.getJdbcDialect());
+
+    boolean visitorRes = JDBCRexCallValidator.isValidJdbcOperation(filter.getCondition(), conv1.getJdbcDialect());
     if (visitorRes) {
-      return JDBCRexCallValidator.isValidJdbcOperation(join.getCondition(), conv1.getJdbcDialect());  
+      return JDBCRexCallValidator.isValidJdbcOperation(join.getCondition(), conv1.getJdbcDialect());
     }
     return false;
   }

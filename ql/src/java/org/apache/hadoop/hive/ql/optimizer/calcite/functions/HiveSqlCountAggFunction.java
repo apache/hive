@@ -67,7 +67,7 @@ public class HiveSqlCountAggFunction extends SqlAggFunction implements CanAggreg
   public boolean isDistinct() {
     return isDistinct;
   }
-  
+
   @Override
   public SqlSyntax getSyntax() {
     return SqlSyntax.FUNCTION_STAR;
