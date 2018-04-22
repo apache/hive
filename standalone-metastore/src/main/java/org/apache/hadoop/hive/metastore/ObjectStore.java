@@ -4687,7 +4687,8 @@ public class ObjectStore implements RawStore, Configurable {
       final String catName = normalizeIdentifier(cc.get(i).getCatName());
       final String tableDB = normalizeIdentifier(cc.get(i).getTable_db());
       final String tableName = normalizeIdentifier(cc.get(i).getTable_name());
-      final String columnName = normalizeIdentifier(cc.get(i).getColumn_name());
+      final String columnName = cc.get(i).getColumn_name() == null? null
+          : normalizeIdentifier(cc.get(i).getColumn_name());
       final String ccName = cc.get(i).getDc_name();
       boolean isEnable = cc.get(i).isEnable_cstr();
       boolean isValidate = cc.get(i).isValidate_cstr();
@@ -4720,9 +4721,6 @@ public class ObjectStore implements RawStore, Configurable {
       if (parentTable.getPartitionKeys() != null) {
         parentCD = null;
         parentIntegerIndex = getColumnIndexFromTableColumns(parentTable.getPartitionKeys(), columnName);
-      }
-      if (parentIntegerIndex == -1) {
-        throw new InvalidObjectException("Parent column not found: " + columnName);
       }
     }
     if (ccName == null) {

@@ -2155,7 +2155,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private void analyzeAlterTableAddConstraint(ASTNode ast, String tableName)
-    throws SemanticException {
+      throws SemanticException {
     ASTNode parent = (ASTNode) ast.getParent();
     String[] qualifiedTabName = getQualifiedTableName((ASTNode) parent.getChild(0));
     // TODO CAT - for now always use the default catalog.  Eventually will want to see if
@@ -2165,26 +2165,32 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     List<SQLPrimaryKey> primaryKeys = new ArrayList<>();
     List<SQLForeignKey> foreignKeys = new ArrayList<>();
     List<SQLUniqueConstraint> uniqueConstraints = new ArrayList<>();
+    List<SQLCheckConstraint> checkConstraints = new ArrayList<>();
 
     switch (child.getToken().getType()) {
-      case HiveParser.TOK_UNIQUE:
-        BaseSemanticAnalyzer.processUniqueConstraints(catName, qualifiedTabName[0], qualifiedTabName[1],
-                child, uniqueConstraints);
-        break;
-      case HiveParser.TOK_PRIMARY_KEY:
-        BaseSemanticAnalyzer.processPrimaryKeys(qualifiedTabName[0], qualifiedTabName[1],
-                child, primaryKeys);
-        break;
-      case HiveParser.TOK_FOREIGN_KEY:
-        BaseSemanticAnalyzer.processForeignKeys(qualifiedTabName[0], qualifiedTabName[1],
-                child, foreignKeys);
-        break;
-      default:
-        throw new SemanticException(ErrorMsg.NOT_RECOGNIZED_CONSTRAINT.getMsg(
-                child.getToken().getText()));
+    case HiveParser.TOK_UNIQUE:
+      BaseSemanticAnalyzer.processUniqueConstraints(catName, qualifiedTabName[0], qualifiedTabName[1],
+          child, uniqueConstraints);
+      break;
+    case HiveParser.TOK_PRIMARY_KEY:
+      BaseSemanticAnalyzer.processPrimaryKeys(qualifiedTabName[0], qualifiedTabName[1],
+          child, primaryKeys);
+      break;
+    case HiveParser.TOK_FOREIGN_KEY:
+      BaseSemanticAnalyzer.processForeignKeys(qualifiedTabName[0], qualifiedTabName[1],
+          child, foreignKeys);
+      break;
+    case HiveParser.TOK_CHECK_CONSTRAINT:
+      BaseSemanticAnalyzer.processCheckConstraints(catName, qualifiedTabName[0], qualifiedTabName[1],
+          child, null, checkConstraints, child,
+          this.ctx.getTokenRewriteStream());
+      break;
+    default:
+      throw new SemanticException(ErrorMsg.NOT_RECOGNIZED_CONSTRAINT.getMsg(
+          child.getToken().getText()));
     }
     AlterTableDesc alterTblDesc = new AlterTableDesc(tableName, primaryKeys, foreignKeys,
-            uniqueConstraints, null);
+        uniqueConstraints, null, null, checkConstraints, null);
 
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         alterTblDesc)));
