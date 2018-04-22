@@ -13,7 +13,6 @@
  */
 package org.apache.hadoop.hive.ql.io.parquet.serde;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -106,27 +105,27 @@ public abstract class AbstractParquetMapInspector implements SettableMapObjectIn
 
   @Override
   public Object create() {
-    Map<Object, Object> m = new HashMap<Object, Object>();
+    Map<Object, Object> m = new LinkedHashMap<Object, Object>();
     return m;
   }
 
   @Override
   public Object put(Object map, Object key, Object value) {
-    Map<Object, Object> m = (HashMap<Object, Object>) map;
+    Map<Object, Object> m = (Map<Object, Object>) map;
     m.put(key, value);
     return m;
   }
 
   @Override
   public Object remove(Object map, Object key) {
-    Map<Object, Object> m = (HashMap<Object, Object>) map;
+    Map<Object, Object> m = (Map<Object, Object>) map;
     m.remove(key);
     return m;
   }
 
   @Override
   public Object clear(Object map) {
-    Map<Object, Object> m = (HashMap<Object, Object>) map;
+    Map<Object, Object> m = (Map<Object, Object>) map;
     m.clear();
     return m;
   }
