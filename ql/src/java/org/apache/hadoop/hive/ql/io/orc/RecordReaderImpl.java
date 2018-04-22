@@ -19,8 +19,9 @@ package org.apache.hadoop.hive.ql.io.orc;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
@@ -534,10 +535,10 @@ public class RecordReaderImpl extends org.apache.orc.impl.RecordReaderImpl
     }
   }
 
-  static HashMap<Object,Object> nextMap(ColumnVector vector,
-                                        int row,
-                                        TypeDescription schema,
-                                        Object previous) {
+  static Map<Object,Object> nextMap(ColumnVector vector,
+                                    int row,
+                                    TypeDescription schema,
+                                    Object previous) {
     if (vector.isRepeating) {
       row = 0;
     }
@@ -547,11 +548,11 @@ public class RecordReaderImpl extends org.apache.orc.impl.RecordReaderImpl
       int offset = (int) map.offsets[row];
       TypeDescription keyType = schema.getChildren().get(0);
       TypeDescription valueType = schema.getChildren().get(1);
-      HashMap<Object,Object> result;
-      if (previous == null || previous.getClass() != HashMap.class) {
-        result = new HashMap<Object,Object>(length);
+      LinkedHashMap<Object,Object> result;
+      if (previous == null || previous.getClass() != LinkedHashMap.class) {
+        result = new LinkedHashMap<Object,Object>(length);
       } else {
-        result = (HashMap<Object,Object>) previous;
+        result = (LinkedHashMap<Object,Object>) previous;
         // I couldn't think of a good way to reuse the keys and value objects
         // without even more allocations, so take the easy and safe approach.
         result.clear();

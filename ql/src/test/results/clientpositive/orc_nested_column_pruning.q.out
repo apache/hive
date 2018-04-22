@@ -515,7 +515,7 @@ POSTHOOK: query: SELECT s2.f8 FROM nested_tbl_1 WHERE s1.f2 = 'foo' AND size(s2.
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nested_tbl_1
 #### A masked pattern was here ####
-{"f9":true,"f10":[10,11],"f11":{"key2":false,"key1":true}}
+{"f9":true,"f10":[10,11],"f11":{"key1":true,"key2":false}}
 PREHOOK: query: EXPLAIN SELECT col1, col2 FROM nested_tbl_1
 LATERAL VIEW explode(s2.f8.f10) tbl1 AS col1
 LATERAL VIEW explode(s3.f12) tbl2 AS col2
