@@ -19,7 +19,7 @@
 package org.apache.hadoop.hive.serde2.dynamic_type;
 
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -93,12 +93,12 @@ public class DynamicSerDeTypeMap extends DynamicSerDeTypeBase {
   @Override
   public Map<Object, Object> deserialize(Object reuse, TProtocol iprot)
       throws SerDeException, TException, IllegalAccessException {
-    HashMap<Object, Object> deserializeReuse;
-    if (reuse != null) {
-      deserializeReuse = (HashMap<Object, Object>) reuse;
+    Map<Object, Object> deserializeReuse;
+    if (reuse != null && reuse.getClass() == LinkedHashMap.class) {
+      deserializeReuse = (Map<Object, Object>) reuse;
       deserializeReuse.clear();
     } else {
-      deserializeReuse = new HashMap<Object, Object>();
+      deserializeReuse = new LinkedHashMap<Object, Object>();
     }
     TMap themap = iprot.readMapBegin();
     if (themap == null) {

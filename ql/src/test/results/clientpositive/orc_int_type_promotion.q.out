@@ -126,7 +126,7 @@ POSTHOOK: query: select * from alltypes_orc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypes_orc
 #### A masked pattern was here ####
-true	10	100	1000	10000	4.0	20.0	4.222	1969-12-31 15:59:58.174	1970-01-01	string	hello	hello	{"k2":"v2","k1":"v1"}	[100,200]	{"c1":null,"c2":" \"foo\"}"}
+true	10	100	1000	10000	4.0	20.0	4.222	1969-12-31 15:59:58.174	1970-01-01	string	hello	hello	{"k1":"v1","k2":"v2"}	[100,200]	{"c1":null,"c2":" \"foo\"}"}
 false	20	200	2000	20000	8.0	40.0	2.222	1970-12-31 15:59:58.174	1971-01-01	abcd	world	world	{"k3":"v3","k4":"v4"}	[200,300]	{"c1":null,"c2":" \"bar\"}"}
 PREHOOK: query: alter table alltypes_orc change si si int
 PREHOOK: type: ALTERTABLE_RENAMECOL
@@ -144,7 +144,7 @@ POSTHOOK: query: select * from alltypes_orc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypes_orc
 #### A masked pattern was here ####
-true	10	100	1000	10000	4.0	20.0	4.222	1969-12-31 15:59:58.174	1970-01-01	string	hello	hello	{"k2":"v2","k1":"v1"}	[100,200]	{"c1":null,"c2":" \"foo\"}"}
+true	10	100	1000	10000	4.0	20.0	4.222	1969-12-31 15:59:58.174	1970-01-01	string	hello	hello	{"k1":"v1","k2":"v2"}	[100,200]	{"c1":null,"c2":" \"foo\"}"}
 false	20	200	2000	20000	8.0	40.0	2.222	1970-12-31 15:59:58.174	1971-01-01	abcd	world	world	{"k3":"v3","k4":"v4"}	[200,300]	{"c1":null,"c2":" \"bar\"}"}
 PREHOOK: query: alter table alltypes_orc change si si bigint
 PREHOOK: type: ALTERTABLE_RENAMECOL
@@ -170,7 +170,7 @@ POSTHOOK: query: select * from alltypes_orc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypes_orc
 #### A masked pattern was here ####
-true	10	100	1000	10000	4.0	20.0	4.222	1969-12-31 15:59:58.174	1970-01-01	string	hello	hello	{"k2":"v2","k1":"v1"}	[100,200]	{"c1":null,"c2":" \"foo\"}"}
+true	10	100	1000	10000	4.0	20.0	4.222	1969-12-31 15:59:58.174	1970-01-01	string	hello	hello	{"k1":"v1","k2":"v2"}	[100,200]	{"c1":null,"c2":" \"foo\"}"}
 false	20	200	2000	20000	8.0	40.0	2.222	1970-12-31 15:59:58.174	1971-01-01	abcd	world	world	{"k3":"v3","k4":"v4"}	[200,300]	{"c1":null,"c2":" \"bar\"}"}
 PREHOOK: query: explain select ti, si, i, bi from alltypes_orc
 PREHOOK: type: QUERY

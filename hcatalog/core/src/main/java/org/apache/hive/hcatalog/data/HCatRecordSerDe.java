@@ -23,7 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -219,7 +219,7 @@ public class HCatRecordSerDe extends AbstractSerDe {
   private static Map<?, ?> serializeMap(Object f, MapObjectInspector moi) throws SerDeException {
     ObjectInspector koi = moi.getMapKeyObjectInspector();
     ObjectInspector voi = moi.getMapValueObjectInspector();
-    Map<Object, Object> m = new HashMap<Object, Object>();
+    Map<Object, Object> m = new LinkedHashMap<Object, Object>();
 
     Map<?, ?> readMap = moi.getMap(f);
     if (readMap == null) {
