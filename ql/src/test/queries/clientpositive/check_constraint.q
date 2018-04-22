@@ -1,6 +1,6 @@
- set hive.stats.autogather=false;
- set hive.support.concurrency=true;
- set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
+set hive.stats.autogather=false;
+set hive.support.concurrency=true;
+set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 
 CREATE TABLE table1(i int CHECK -i > -10,
     j int CHECK +j > 10,
@@ -33,6 +33,15 @@ Drop table tudf;
 -- multiple constraints
 create table tmulti(url string NOT NULL ENABLE, userName string, numClicks int CHECK numClicks > 0, d date);
 alter table tmulti add constraint un1 UNIQUE (userName, numClicks) DISABLE;
+DESC formatted tmulti;
+EXPLAIN INSERT INTO tmulti values('hive.apache.com', 'user1', 48, '12-01-2018');
+INSERT INTO tmulti values('hive.apache.com', 'user1', 48, '12-01-2018');
+Select * from tmulti;
+
+-- alter table add constraint
+truncate table tmulti;
+alter table tmulti add constraint chk1 CHECK (userName != NULL);
+alter table tmulti add constraint chk2 CHECK (numClicks <= 10000 AND userName != '');
 DESC formatted tmulti;
 EXPLAIN INSERT INTO tmulti values('hive.apache.com', 'user1', 48, '12-01-2018');
 INSERT INTO tmulti values('hive.apache.com', 'user1', 48, '12-01-2018');
@@ -76,6 +85,7 @@ create table acid_uami(i int,
                  clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true');
 DESC FORMATTED acid_uami;
 
+--! qt:dataset:src
 -- insert as select
 explain insert into table acid_uami select cast(key as int), cast (key as decimal(5,2)), value from src;
 insert into table acid_uami select cast(key as int), cast (key as decimal(5,2)), value from src;
@@ -190,3 +200,14 @@ create table trely(i int);
 ALTER TABLE trely CHANGE i i int CHECK i>0 ENABLE NOVALIDATE RELY;
 DESC FORMATTED trely;
 DROP TABLE trely;
+
+-- table level constraint
+create table tbl1(a string, b int, CONSTRAINT check1 CHECK a != '' AND b > 4);
+desc formatted tbl1;
+explain insert into tbl1 values('a', 69);
+insert into tbl1 values('a', 69);
+select * from tbl1;
+ALTER TABLE tbl1 add constraint chk2 CHECK (b < 100);
+desc formatted tbl1;
+explain insert into tbl1 values('a', 69);
+drop table tbl1;
