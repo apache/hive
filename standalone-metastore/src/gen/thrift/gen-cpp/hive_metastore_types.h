@@ -6977,11 +6977,13 @@ class ReplTblWriteIdStateRequest {
 
   ReplTblWriteIdStateRequest(const ReplTblWriteIdStateRequest&);
   ReplTblWriteIdStateRequest& operator=(const ReplTblWriteIdStateRequest&);
-  ReplTblWriteIdStateRequest() : validWriteIdlist(), dbName(), tableName() {
+  ReplTblWriteIdStateRequest() : validWriteIdlist(), user(), hostName(), dbName(), tableName() {
   }
 
   virtual ~ReplTblWriteIdStateRequest() throw();
   std::string validWriteIdlist;
+  std::string user;
+  std::string hostName;
   std::string dbName;
   std::string tableName;
   std::vector<std::string>  partNames;
@@ -6989,6 +6991,10 @@ class ReplTblWriteIdStateRequest {
   _ReplTblWriteIdStateRequest__isset __isset;
 
   void __set_validWriteIdlist(const std::string& val);
+
+  void __set_user(const std::string& val);
+
+  void __set_hostName(const std::string& val);
 
   void __set_dbName(const std::string& val);
 
@@ -6999,6 +7005,10 @@ class ReplTblWriteIdStateRequest {
   bool operator == (const ReplTblWriteIdStateRequest & rhs) const
   {
     if (!(validWriteIdlist == rhs.validWriteIdlist))
+      return false;
+    if (!(user == rhs.user))
+      return false;
+    if (!(hostName == rhs.hostName))
       return false;
     if (!(dbName == rhs.dbName))
       return false;

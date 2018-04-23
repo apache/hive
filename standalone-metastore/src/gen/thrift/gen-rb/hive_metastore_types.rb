@@ -2575,12 +2575,16 @@ end
 class ReplTblWriteIdStateRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   VALIDWRITEIDLIST = 1
-  DBNAME = 2
-  TABLENAME = 3
-  PARTNAMES = 4
+  USER = 2
+  HOSTNAME = 3
+  DBNAME = 4
+  TABLENAME = 5
+  PARTNAMES = 6
 
   FIELDS = {
     VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdlist'},
+    USER => {:type => ::Thrift::Types::STRING, :name => 'user'},
+    HOSTNAME => {:type => ::Thrift::Types::STRING, :name => 'hostName'},
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
     PARTNAMES => {:type => ::Thrift::Types::LIST, :name => 'partNames', :element => {:type => ::Thrift::Types::STRING}, :optional => true}
@@ -2590,6 +2594,8 @@ class ReplTblWriteIdStateRequest
 
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field validWriteIdlist is unset!') unless @validWriteIdlist
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field user is unset!') unless @user
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field hostName is unset!') unless @hostName
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tableName is unset!') unless @tableName
   end

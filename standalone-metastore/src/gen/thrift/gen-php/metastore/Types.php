@@ -16506,6 +16506,14 @@ class ReplTblWriteIdStateRequest {
   /**
    * @var string
    */
+  public $user = null;
+  /**
+   * @var string
+   */
+  public $hostName = null;
+  /**
+   * @var string
+   */
   public $dbName = null;
   /**
    * @var string
@@ -16524,14 +16532,22 @@ class ReplTblWriteIdStateRequest {
           'type' => TType::STRING,
           ),
         2 => array(
-          'var' => 'dbName',
+          'var' => 'user',
           'type' => TType::STRING,
           ),
         3 => array(
-          'var' => 'tableName',
+          'var' => 'hostName',
           'type' => TType::STRING,
           ),
         4 => array(
+          'var' => 'dbName',
+          'type' => TType::STRING,
+          ),
+        5 => array(
+          'var' => 'tableName',
+          'type' => TType::STRING,
+          ),
+        6 => array(
           'var' => 'partNames',
           'type' => TType::LST,
           'etype' => TType::STRING,
@@ -16544,6 +16560,12 @@ class ReplTblWriteIdStateRequest {
     if (is_array($vals)) {
       if (isset($vals['validWriteIdlist'])) {
         $this->validWriteIdlist = $vals['validWriteIdlist'];
+      }
+      if (isset($vals['user'])) {
+        $this->user = $vals['user'];
+      }
+      if (isset($vals['hostName'])) {
+        $this->hostName = $vals['hostName'];
       }
       if (isset($vals['dbName'])) {
         $this->dbName = $vals['dbName'];
@@ -16585,19 +16607,33 @@ class ReplTblWriteIdStateRequest {
           break;
         case 2:
           if ($ftype == TType::STRING) {
-            $xfer += $input->readString($this->dbName);
+            $xfer += $input->readString($this->user);
           } else {
             $xfer += $input->skip($ftype);
           }
           break;
         case 3:
           if ($ftype == TType::STRING) {
-            $xfer += $input->readString($this->tableName);
+            $xfer += $input->readString($this->hostName);
           } else {
             $xfer += $input->skip($ftype);
           }
           break;
         case 4:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->dbName);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 5:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->tableName);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 6:
           if ($ftype == TType::LST) {
             $this->partNames = array();
             $_size523 = 0;
@@ -16632,13 +16668,23 @@ class ReplTblWriteIdStateRequest {
       $xfer += $output->writeString($this->validWriteIdlist);
       $xfer += $output->writeFieldEnd();
     }
+    if ($this->user !== null) {
+      $xfer += $output->writeFieldBegin('user', TType::STRING, 2);
+      $xfer += $output->writeString($this->user);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->hostName !== null) {
+      $xfer += $output->writeFieldBegin('hostName', TType::STRING, 3);
+      $xfer += $output->writeString($this->hostName);
+      $xfer += $output->writeFieldEnd();
+    }
     if ($this->dbName !== null) {
-      $xfer += $output->writeFieldBegin('dbName', TType::STRING, 2);
+      $xfer += $output->writeFieldBegin('dbName', TType::STRING, 4);
       $xfer += $output->writeString($this->dbName);
       $xfer += $output->writeFieldEnd();
     }
     if ($this->tableName !== null) {
-      $xfer += $output->writeFieldBegin('tableName', TType::STRING, 3);
+      $xfer += $output->writeFieldBegin('tableName', TType::STRING, 5);
       $xfer += $output->writeString($this->tableName);
       $xfer += $output->writeFieldEnd();
     }
@@ -16646,7 +16692,7 @@ class ReplTblWriteIdStateRequest {
       if (!is_array($this->partNames)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
       }
-      $xfer += $output->writeFieldBegin('partNames', TType::LST, 4);
+      $xfer += $output->writeFieldBegin('partNames', TType::LST, 6);
       {
         $output->writeListBegin(TType::STRING, count($this->partNames));
         {

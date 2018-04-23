@@ -2225,7 +2225,24 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   @Override
   public void replTableWriteIdState(String validWriteIdList, String dbName, String tableName, List<String> partNames)
           throws TException {
-    ReplTblWriteIdStateRequest rqst = new ReplTblWriteIdStateRequest(validWriteIdList, dbName, tableName);
+    String user;
+    try {
+      user = UserGroupInformation.getCurrentUser().getUserName();
+    } catch (IOException e) {
+      LOG.error("Unable to resolve current user name " + e.getMessage());
+      throw new RuntimeException(e);
+    }
+
+    String hostName;
+    try {
+      hostName = InetAddress.getLocalHost().getHostName();
+    } catch (UnknownHostException e) {
+      LOG.error("Unable to resolve my host name " + e.getMessage());
+      throw new RuntimeException(e);
+    }
+
+    ReplTblWriteIdStateRequest rqst
+            = new ReplTblWriteIdStateRequest(validWriteIdList, user, hostName, dbName, tableName);
     if (partNames != null) {
       rqst.setPartNames(partNames);
     }

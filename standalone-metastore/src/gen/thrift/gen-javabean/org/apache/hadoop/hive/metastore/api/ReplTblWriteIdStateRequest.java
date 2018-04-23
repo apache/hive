@@ -39,9 +39,11 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("ReplTblWriteIdStateRequest");
 
   private static final org.apache.thrift.protocol.TField VALID_WRITE_IDLIST_FIELD_DESC = new org.apache.thrift.protocol.TField("validWriteIdlist", org.apache.thrift.protocol.TType.STRING, (short)1);
-  private static final org.apache.thrift.protocol.TField DB_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("dbName", org.apache.thrift.protocol.TType.STRING, (short)2);
-  private static final org.apache.thrift.protocol.TField TABLE_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("tableName", org.apache.thrift.protocol.TType.STRING, (short)3);
-  private static final org.apache.thrift.protocol.TField PART_NAMES_FIELD_DESC = new org.apache.thrift.protocol.TField("partNames", org.apache.thrift.protocol.TType.LIST, (short)4);
+  private static final org.apache.thrift.protocol.TField USER_FIELD_DESC = new org.apache.thrift.protocol.TField("user", org.apache.thrift.protocol.TType.STRING, (short)2);
+  private static final org.apache.thrift.protocol.TField HOST_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("hostName", org.apache.thrift.protocol.TType.STRING, (short)3);
+  private static final org.apache.thrift.protocol.TField DB_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("dbName", org.apache.thrift.protocol.TType.STRING, (short)4);
+  private static final org.apache.thrift.protocol.TField TABLE_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("tableName", org.apache.thrift.protocol.TType.STRING, (short)5);
+  private static final org.apache.thrift.protocol.TField PART_NAMES_FIELD_DESC = new org.apache.thrift.protocol.TField("partNames", org.apache.thrift.protocol.TType.LIST, (short)6);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -50,6 +52,8 @@ import org.slf4j.LoggerFactory;
   }
 
   private String validWriteIdlist; // required
+  private String user; // required
+  private String hostName; // required
   private String dbName; // required
   private String tableName; // required
   private List<String> partNames; // optional
@@ -57,9 +61,11 @@ import org.slf4j.LoggerFactory;
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     VALID_WRITE_IDLIST((short)1, "validWriteIdlist"),
-    DB_NAME((short)2, "dbName"),
-    TABLE_NAME((short)3, "tableName"),
-    PART_NAMES((short)4, "partNames");
+    USER((short)2, "user"),
+    HOST_NAME((short)3, "hostName"),
+    DB_NAME((short)4, "dbName"),
+    TABLE_NAME((short)5, "tableName"),
+    PART_NAMES((short)6, "partNames");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -76,11 +82,15 @@ import org.slf4j.LoggerFactory;
       switch(fieldId) {
         case 1: // VALID_WRITE_IDLIST
           return VALID_WRITE_IDLIST;
-        case 2: // DB_NAME
+        case 2: // USER
+          return USER;
+        case 3: // HOST_NAME
+          return HOST_NAME;
+        case 4: // DB_NAME
           return DB_NAME;
-        case 3: // TABLE_NAME
+        case 5: // TABLE_NAME
           return TABLE_NAME;
-        case 4: // PART_NAMES
+        case 6: // PART_NAMES
           return PART_NAMES;
         default:
           return null;
@@ -128,6 +138,10 @@ import org.slf4j.LoggerFactory;
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.VALID_WRITE_IDLIST, new org.apache.thrift.meta_data.FieldMetaData("validWriteIdlist", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.USER, new org.apache.thrift.meta_data.FieldMetaData("user", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.HOST_NAME, new org.apache.thrift.meta_data.FieldMetaData("hostName", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("dbName", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.TABLE_NAME, new org.apache.thrift.meta_data.FieldMetaData("tableName", org.apache.thrift.TFieldRequirementType.REQUIRED, 
@@ -144,11 +158,15 @@ import org.slf4j.LoggerFactory;
 
   public ReplTblWriteIdStateRequest(
     String validWriteIdlist,
+    String user,
+    String hostName,
     String dbName,
     String tableName)
   {
     this();
     this.validWriteIdlist = validWriteIdlist;
+    this.user = user;
+    this.hostName = hostName;
     this.dbName = dbName;
     this.tableName = tableName;
   }
@@ -159,6 +177,12 @@ import org.slf4j.LoggerFactory;
   public ReplTblWriteIdStateRequest(ReplTblWriteIdStateRequest other) {
     if (other.isSetValidWriteIdlist()) {
       this.validWriteIdlist = other.validWriteIdlist;
+    }
+    if (other.isSetUser()) {
+      this.user = other.user;
+    }
+    if (other.isSetHostName()) {
+      this.hostName = other.hostName;
     }
     if (other.isSetDbName()) {
       this.dbName = other.dbName;
@@ -179,6 +203,8 @@ import org.slf4j.LoggerFactory;
   @Override
   public void clear() {
     this.validWriteIdlist = null;
+    this.user = null;
+    this.hostName = null;
     this.dbName = null;
     this.tableName = null;
     this.partNames = null;
@@ -204,6 +230,52 @@ import org.slf4j.LoggerFactory;
   public void setValidWriteIdlistIsSet(boolean value) {
     if (!value) {
       this.validWriteIdlist = null;
+    }
+  }
+
+  public String getUser() {
+    return this.user;
+  }
+
+  public void setUser(String user) {
+    this.user = user;
+  }
+
+  public void unsetUser() {
+    this.user = null;
+  }
+
+  /** Returns true if field user is set (has been assigned a value) and false otherwise */
+  public boolean isSetUser() {
+    return this.user != null;
+  }
+
+  public void setUserIsSet(boolean value) {
+    if (!value) {
+      this.user = null;
+    }
+  }
+
+  public String getHostName() {
+    return this.hostName;
+  }
+
+  public void setHostName(String hostName) {
+    this.hostName = hostName;
+  }
+
+  public void unsetHostName() {
+    this.hostName = null;
+  }
+
+  /** Returns true if field hostName is set (has been assigned a value) and false otherwise */
+  public boolean isSetHostName() {
+    return this.hostName != null;
+  }
+
+  public void setHostNameIsSet(boolean value) {
+    if (!value) {
+      this.hostName = null;
     }
   }
 
@@ -301,6 +373,22 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case USER:
+      if (value == null) {
+        unsetUser();
+      } else {
+        setUser((String)value);
+      }
+      break;
+
+    case HOST_NAME:
+      if (value == null) {
+        unsetHostName();
+      } else {
+        setHostName((String)value);
+      }
+      break;
+
     case DB_NAME:
       if (value == null) {
         unsetDbName();
@@ -333,6 +421,12 @@ import org.slf4j.LoggerFactory;
     case VALID_WRITE_IDLIST:
       return getValidWriteIdlist();
 
+    case USER:
+      return getUser();
+
+    case HOST_NAME:
+      return getHostName();
+
     case DB_NAME:
       return getDbName();
 
@@ -355,6 +449,10 @@ import org.slf4j.LoggerFactory;
     switch (field) {
     case VALID_WRITE_IDLIST:
       return isSetValidWriteIdlist();
+    case USER:
+      return isSetUser();
+    case HOST_NAME:
+      return isSetHostName();
     case DB_NAME:
       return isSetDbName();
     case TABLE_NAME:
@@ -384,6 +482,24 @@ import org.slf4j.LoggerFactory;
       if (!(this_present_validWriteIdlist && that_present_validWriteIdlist))
         return false;
       if (!this.validWriteIdlist.equals(that.validWriteIdlist))
+        return false;
+    }
+
+    boolean this_present_user = true && this.isSetUser();
+    boolean that_present_user = true && that.isSetUser();
+    if (this_present_user || that_present_user) {
+      if (!(this_present_user && that_present_user))
+        return false;
+      if (!this.user.equals(that.user))
+        return false;
+    }
+
+    boolean this_present_hostName = true && this.isSetHostName();
+    boolean that_present_hostName = true && that.isSetHostName();
+    if (this_present_hostName || that_present_hostName) {
+      if (!(this_present_hostName && that_present_hostName))
+        return false;
+      if (!this.hostName.equals(that.hostName))
         return false;
     }
 
@@ -426,6 +542,16 @@ import org.slf4j.LoggerFactory;
     if (present_validWriteIdlist)
       list.add(validWriteIdlist);
 
+    boolean present_user = true && (isSetUser());
+    list.add(present_user);
+    if (present_user)
+      list.add(user);
+
+    boolean present_hostName = true && (isSetHostName());
+    list.add(present_hostName);
+    if (present_hostName)
+      list.add(hostName);
+
     boolean present_dbName = true && (isSetDbName());
     list.add(present_dbName);
     if (present_dbName)
@@ -458,6 +584,26 @@ import org.slf4j.LoggerFactory;
     }
     if (isSetValidWriteIdlist()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.validWriteIdlist, other.validWriteIdlist);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetUser()).compareTo(other.isSetUser());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetUser()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.user, other.user);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetHostName()).compareTo(other.isSetHostName());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetHostName()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.hostName, other.hostName);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -520,6 +666,22 @@ import org.slf4j.LoggerFactory;
     }
     first = false;
     if (!first) sb.append(", ");
+    sb.append("user:");
+    if (this.user == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.user);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("hostName:");
+    if (this.hostName == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.hostName);
+    }
+    first = false;
+    if (!first) sb.append(", ");
     sb.append("dbName:");
     if (this.dbName == null) {
       sb.append("null");
@@ -553,6 +715,14 @@ import org.slf4j.LoggerFactory;
     // check for required fields
     if (!isSetValidWriteIdlist()) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'validWriteIdlist' is unset! Struct:" + toString());
+    }
+
+    if (!isSetUser()) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'user' is unset! Struct:" + toString());
+    }
+
+    if (!isSetHostName()) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'hostName' is unset! Struct:" + toString());
     }
 
     if (!isSetDbName()) {
@@ -608,7 +778,23 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 2: // DB_NAME
+          case 2: // USER
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.user = iprot.readString();
+              struct.setUserIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 3: // HOST_NAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.hostName = iprot.readString();
+              struct.setHostNameIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 4: // DB_NAME
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.dbName = iprot.readString();
               struct.setDbNameIsSet(true);
@@ -616,7 +802,7 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 3: // TABLE_NAME
+          case 5: // TABLE_NAME
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.tableName = iprot.readString();
               struct.setTableNameIsSet(true);
@@ -624,7 +810,7 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 4: // PART_NAMES
+          case 6: // PART_NAMES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
                 org.apache.thrift.protocol.TList _list594 = iprot.readListBegin();
@@ -658,6 +844,16 @@ import org.slf4j.LoggerFactory;
       if (struct.validWriteIdlist != null) {
         oprot.writeFieldBegin(VALID_WRITE_IDLIST_FIELD_DESC);
         oprot.writeString(struct.validWriteIdlist);
+        oprot.writeFieldEnd();
+      }
+      if (struct.user != null) {
+        oprot.writeFieldBegin(USER_FIELD_DESC);
+        oprot.writeString(struct.user);
+        oprot.writeFieldEnd();
+      }
+      if (struct.hostName != null) {
+        oprot.writeFieldBegin(HOST_NAME_FIELD_DESC);
+        oprot.writeString(struct.hostName);
         oprot.writeFieldEnd();
       }
       if (struct.dbName != null) {
@@ -702,6 +898,8 @@ import org.slf4j.LoggerFactory;
     public void write(org.apache.thrift.protocol.TProtocol prot, ReplTblWriteIdStateRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
       oprot.writeString(struct.validWriteIdlist);
+      oprot.writeString(struct.user);
+      oprot.writeString(struct.hostName);
       oprot.writeString(struct.dbName);
       oprot.writeString(struct.tableName);
       BitSet optionals = new BitSet();
@@ -725,6 +923,10 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol iprot = (TTupleProtocol) prot;
       struct.validWriteIdlist = iprot.readString();
       struct.setValidWriteIdlistIsSet(true);
+      struct.user = iprot.readString();
+      struct.setUserIsSet(true);
+      struct.hostName = iprot.readString();
+      struct.setHostNameIsSet(true);
       struct.dbName = iprot.readString();
       struct.setDbNameIsSet(true);
       struct.tableName = iprot.readString();

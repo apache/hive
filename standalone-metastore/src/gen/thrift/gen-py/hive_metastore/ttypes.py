@@ -11536,6 +11536,8 @@ class ReplTblWriteIdStateRequest:
   """
   Attributes:
    - validWriteIdlist
+   - user
+   - hostName
    - dbName
    - tableName
    - partNames
@@ -11544,13 +11546,17 @@ class ReplTblWriteIdStateRequest:
   thrift_spec = (
     None, # 0
     (1, TType.STRING, 'validWriteIdlist', None, None, ), # 1
-    (2, TType.STRING, 'dbName', None, None, ), # 2
-    (3, TType.STRING, 'tableName', None, None, ), # 3
-    (4, TType.LIST, 'partNames', (TType.STRING,None), None, ), # 4
+    (2, TType.STRING, 'user', None, None, ), # 2
+    (3, TType.STRING, 'hostName', None, None, ), # 3
+    (4, TType.STRING, 'dbName', None, None, ), # 4
+    (5, TType.STRING, 'tableName', None, None, ), # 5
+    (6, TType.LIST, 'partNames', (TType.STRING,None), None, ), # 6
   )
 
-  def __init__(self, validWriteIdlist=None, dbName=None, tableName=None, partNames=None,):
+  def __init__(self, validWriteIdlist=None, user=None, hostName=None, dbName=None, tableName=None, partNames=None,):
     self.validWriteIdlist = validWriteIdlist
+    self.user = user
+    self.hostName = hostName
     self.dbName = dbName
     self.tableName = tableName
     self.partNames = partNames
@@ -11571,15 +11577,25 @@ class ReplTblWriteIdStateRequest:
           iprot.skip(ftype)
       elif fid == 2:
         if ftype == TType.STRING:
-          self.dbName = iprot.readString()
+          self.user = iprot.readString()
         else:
           iprot.skip(ftype)
       elif fid == 3:
         if ftype == TType.STRING:
-          self.tableName = iprot.readString()
+          self.hostName = iprot.readString()
         else:
           iprot.skip(ftype)
       elif fid == 4:
+        if ftype == TType.STRING:
+          self.dbName = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.STRING:
+          self.tableName = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 6:
         if ftype == TType.LIST:
           self.partNames = []
           (_etype526, _size523) = iprot.readListBegin()
@@ -11603,16 +11619,24 @@ class ReplTblWriteIdStateRequest:
       oprot.writeFieldBegin('validWriteIdlist', TType.STRING, 1)
       oprot.writeString(self.validWriteIdlist)
       oprot.writeFieldEnd()
+    if self.user is not None:
+      oprot.writeFieldBegin('user', TType.STRING, 2)
+      oprot.writeString(self.user)
+      oprot.writeFieldEnd()
+    if self.hostName is not None:
+      oprot.writeFieldBegin('hostName', TType.STRING, 3)
+      oprot.writeString(self.hostName)
+      oprot.writeFieldEnd()
     if self.dbName is not None:
-      oprot.writeFieldBegin('dbName', TType.STRING, 2)
+      oprot.writeFieldBegin('dbName', TType.STRING, 4)
       oprot.writeString(self.dbName)
       oprot.writeFieldEnd()
     if self.tableName is not None:
-      oprot.writeFieldBegin('tableName', TType.STRING, 3)
+      oprot.writeFieldBegin('tableName', TType.STRING, 5)
       oprot.writeString(self.tableName)
       oprot.writeFieldEnd()
     if self.partNames is not None:
-      oprot.writeFieldBegin('partNames', TType.LIST, 4)
+      oprot.writeFieldBegin('partNames', TType.LIST, 6)
       oprot.writeListBegin(TType.STRING, len(self.partNames))
       for iter529 in self.partNames:
         oprot.writeString(iter529)
@@ -11624,6 +11648,10 @@ class ReplTblWriteIdStateRequest:
   def validate(self):
     if self.validWriteIdlist is None:
       raise TProtocol.TProtocolException(message='Required field validWriteIdlist is unset!')
+    if self.user is None:
+      raise TProtocol.TProtocolException(message='Required field user is unset!')
+    if self.hostName is None:
+      raise TProtocol.TProtocolException(message='Required field hostName is unset!')
     if self.dbName is None:
       raise TProtocol.TProtocolException(message='Required field dbName is unset!')
     if self.tableName is None:
@@ -11634,6 +11662,8 @@ class ReplTblWriteIdStateRequest:
   def __hash__(self):
     value = 17
     value = (value * 31) ^ hash(self.validWriteIdlist)
+    value = (value * 31) ^ hash(self.user)
+    value = (value * 31) ^ hash(self.hostName)
     value = (value * 31) ^ hash(self.dbName)
     value = (value * 31) ^ hash(self.tableName)
     value = (value * 31) ^ hash(self.partNames)

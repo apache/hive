@@ -864,9 +864,11 @@ struct CommitTxnRequest {
 
 struct ReplTblWriteIdStateRequest {
     1: required string validWriteIdlist,
-    2: required string dbName,
-    3: required string tableName,
-    4: optional list<string> partNames,
+    2: required string user,
+    3: required string hostName,
+    4: required string dbName,
+    5: required string tableName,
+    6: optional list<string> partNames,
 }
 
 // Request msg to get the valid write ids list for the given list of tables wrt to input validTxnList
