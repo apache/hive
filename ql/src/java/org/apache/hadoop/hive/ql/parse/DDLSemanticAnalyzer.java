@@ -110,6 +110,7 @@ import org.apache.hadoop.hive.ql.plan.AlterResourcePlanDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableAlterPartDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
+import org.apache.hadoop.hive.ql.plan.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.plan.AlterTableExchangePartition;
 import org.apache.hadoop.hive.ql.plan.AlterTableSimpleDesc;
 import org.apache.hadoop.hive.ql.plan.AlterWMTriggerDesc;
@@ -122,6 +123,7 @@ import org.apache.hadoop.hive.ql.plan.CreateOrAlterWMPoolDesc;
 import org.apache.hadoop.hive.ql.plan.CreateOrDropTriggerToPoolMappingDesc;
 import org.apache.hadoop.hive.ql.plan.CreateResourcePlanDesc;
 import org.apache.hadoop.hive.ql.plan.CreateWMTriggerDesc;
+import org.apache.hadoop.hive.ql.plan.DDLDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.DescDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.DescFunctionDesc;
@@ -200,6 +202,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   private final Set<String> reservedPartitionValues;
   private final HiveAuthorizationTaskFactory hiveAuthorizationTaskFactory;
   private WriteEntity alterTableOutput;
+  // Equivalent to acidSinks, but for DDL operations that change data.
+  private DDLDesc.DDLDescWithWriteId ddlDescWithWriteId;
 
   static {
     TokenToTypeName.put(HiveParser.TOK_BOOLEAN, serdeConstants.BOOLEAN_TYPE_NAME);
@@ -1579,7 +1583,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         truncateTblDesc.setLbCtx(lbCtx);
 
         addInputsOutputsAlterTable(tableName, partSpec, AlterTableTypes.TRUNCATE);
-
         ddlWork.setNeedLock(true);
         TableDesc tblDesc = Utilities.getTableDesc(table);
         // Write the output to temporary directory and move it to the final location at the end
@@ -1752,7 +1755,18 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         || mapProp.containsKey(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
     addInputsOutputsAlterTable(tableName, partSpec, alterTblDesc, isPotentialMmSwitch);
 
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTblDesc)));
+    DDLWork ddlWork = new DDLWork(getInputs(), getOutputs(), alterTblDesc);
+    if (isPotentialMmSwitch) {
+      this.ddlDescWithWriteId = alterTblDesc;
+      ddlWork.setNeedLock(true); // Hmm... why don't many other operations here need locks?
+    }
+
+    rootTasks.add(TaskFactory.get(ddlWork));
+  }
+
+  @Override
+  public DDLDescWithWriteId getAcidDdlDesc() {
+    return ddlDescWithWriteId;
   }
 
   private void analyzeAlterTableSerdeProps(ASTNode ast, String tableName,
