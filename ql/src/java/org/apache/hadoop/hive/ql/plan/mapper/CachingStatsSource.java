@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
@@ -34,8 +36,9 @@ public class CachingStatsSource implements StatsSource {
 
   private final Cache<OpTreeSignature, OperatorStats> cache;
 
-  public CachingStatsSource(int cacheSize) {
-    cache = CacheBuilder.newBuilder().maximumSize(cacheSize).build();
+  public CachingStatsSource(HiveConf conf) {
+    int size = conf.getIntVar(ConfVars.HIVE_QUERY_REEXECUTION_STATS_CACHE_SIZE);
+    cache = CacheBuilder.newBuilder().maximumSize(size).build();
   }
 
   public void put(OpTreeSignature sig, OperatorStats opStat) {

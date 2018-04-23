@@ -1067,7 +1067,7 @@ public class QTestUtil {
     clearTablesCreatedDuringTests();
     clearUDFsCreatedDuringTests();
     clearKeysCreatedInTests();
-    StatsSources.clearGlobalStats();
+    StatsSources.clearAllStats();
   }
 
   protected void clearSettingsCreatedInTests() throws IOException {

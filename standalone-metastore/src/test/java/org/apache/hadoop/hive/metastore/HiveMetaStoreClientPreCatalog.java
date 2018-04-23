@@ -3352,14 +3352,4 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   public boolean heartbeatLockMaterializationRebuild(String dbName, String tableName, long txnId) throws TException {
     throw new UnsupportedOperationException();
   }
-
-  @Override
-  public void addRuntimeStat(RuntimeStat stat) throws TException {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public List<RuntimeStat> getRuntimeStats() throws TException {
-    throw new UnsupportedOperationException();
-  }
 }

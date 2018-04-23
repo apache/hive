@@ -18,12 +18,14 @@
 
 package org.apache.hadoop.hive.ql.plan.mapper;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.EquivGroup;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
@@ -31,50 +33,53 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
 
 public class StatsSources {
 
+  public static class MapBackedStatsSource implements StatsSource {
+
+    private Map<OpTreeSignature, OperatorStats> map = new HashMap<>();
+
+    @Override
+    public boolean canProvideStatsFor(Class<?> clazz) {
+      if (Operator.class.isAssignableFrom(clazz)) {
+        return true;
+      }
+      return false;
+    }
+
+    @Override
+    public Optional<OperatorStats> lookup(OpTreeSignature treeSig) {
+      return Optional.ofNullable(map.get(treeSig));
+    }
+
+    @Override
+    public void putAll(Map<OpTreeSignature, OperatorStats> map) {
+      map.putAll(map);
+    }
+
+  }
+
   private static final Logger LOG = LoggerFactory.getLogger(StatsSources.class);
 
-  static enum StatsSourceMode {
-    query, hiveserver, metastore;
-  }
-
-  public static void initialize(HiveConf hiveConf) {
-    // requesting for the stats source will implicitly initialize it
-    getStatsSource(hiveConf);
-  }
-
-  public static StatsSource getStatsSource(HiveConf conf) {
-    String mode = conf.getVar(ConfVars.HIVE_QUERY_REEXECUTION_STATS_PERSISTENCE);
-    int cacheSize = conf.getIntVar(ConfVars.HIVE_QUERY_REEXECUTION_STATS_CACHE_SIZE);
-    switch (mode) {
-    case "query":
-      return new MapBackedStatsSource();
-    case "hiveserver":
-      return StatsSources.globalStatsSource(cacheSize);
-    case "metastore":
-      return StatsSources.metastoreBackedStatsSource(StatsSources.globalStatsSource(cacheSize));
-    default:
-      throw new RuntimeException("Unknown StatsSource setting: " + mode);
-    }
-  }
-
   public static StatsSource getStatsSourceContaining(StatsSource currentStatsSource, PlanMapper pm) {
-    StatsSource statsSource = currentStatsSource;
-    if (currentStatsSource  == EmptyStatsSource.INSTANCE) {
-      statsSource = new MapBackedStatsSource();
+    if (currentStatsSource instanceof CachingStatsSource) {
+      CachingStatsSource sessionStatsSource = (CachingStatsSource) currentStatsSource;
+      loadFromPlanMapper(sessionStatsSource, pm);
+      return sessionStatsSource;
+    } else {
+      return new SimpleRuntimeStatsSource(pm);
     }
-
-    Map<OpTreeSignature, OperatorStats> statMap = extractStatMapFromPlanMapper(pm);
-    statsSource.putAll(statMap);
-    return statsSource;
   }
+
+  public static void loadFromPlanMapper(CachingStatsSource sessionStatsSource, PlanMapper pm) {
+    Map<OpTreeSignature, OperatorStats> map = extractStatMapFromPlanMapper(pm);
+    sessionStatsSource.putAll(map);
+  }
+
 
   private static Map<OpTreeSignature, OperatorStats> extractStatMapFromPlanMapper(PlanMapper pm) {
-    Builder<OpTreeSignature, OperatorStats> map = ImmutableMap.builder();
+    Map<OpTreeSignature, OperatorStats> map = new HashMap<OpTreeSignature, OperatorStats>();
     Iterator<EquivGroup> it = pm.iterateGroups();
     while (it.hasNext()) {
       EquivGroup e = it.next();
@@ -98,33 +103,20 @@ public class StatsSources {
         map.put(sig.get(0), stat.get(0));
       }
     }
-    return map.build();
+    return map;
   }
 
   private static StatsSource globalStatsSource;
-  private static MetastoreStatsConnector metastoreStatsConnector;
 
-  public static StatsSource globalStatsSource(int cacheSize) {
+  public static StatsSource globalStatsSource(HiveConf conf) {
     if (globalStatsSource == null) {
-      globalStatsSource = new CachingStatsSource(cacheSize);
+      globalStatsSource = new CachingStatsSource(conf);
     }
     return globalStatsSource;
   }
 
-  public static StatsSource metastoreBackedStatsSource(StatsSource parent) {
-    if (metastoreStatsConnector == null) {
-      metastoreStatsConnector = new MetastoreStatsConnector(parent);
-    }
-    return metastoreStatsConnector;
-  }
-
   @VisibleForTesting
-  public static void clearGlobalStats() {
-    if (metastoreStatsConnector != null) {
-      metastoreStatsConnector.destroy();
-    }
+  public static void clearAllStats() {
     globalStatsSource = null;
-    metastoreStatsConnector = null;
   }
-
 }

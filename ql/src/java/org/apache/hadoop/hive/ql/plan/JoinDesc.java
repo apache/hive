@@ -231,14 +231,14 @@ public class JoinDesc extends AbstractOperatorDesc {
    */
   @Explain(displayName = "keys")
   @Signature
-  public Map<String, String> getKeysString() {
+  public Map<Byte, String> getKeysString() {
     if (joinKeys == null) {
       return null;
     }
 
-    Map<String, String> keyMap = new LinkedHashMap<String, String>();
+    Map<Byte, String> keyMap = new LinkedHashMap<Byte, String>();
     for (byte i = 0; i < joinKeys.length; i++) {
-      keyMap.put(String.valueOf(i), PlanUtils.getExprListString(Arrays.asList(joinKeys[i])));
+      keyMap.put(i, PlanUtils.getExprListString(Arrays.asList(joinKeys[i])));
     }
     return keyMap;
   }
