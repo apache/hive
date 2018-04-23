@@ -192,13 +192,9 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   }
 
   @Explain(displayName = "directory", explainLevels = { Level.EXTENDED })
+  @Signature
   public Path getDirName() {
     return dirName;
-  }
-
-  @Signature
-  public String getDirNameString() {
-    return dirName.toString();
   }
 
   public void setDirName(final Path dirName) {
@@ -220,6 +216,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   }
 
   @Explain(displayName = "table", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Signature
   public TableDesc getTableInfo() {
     return tableInfo;
   }

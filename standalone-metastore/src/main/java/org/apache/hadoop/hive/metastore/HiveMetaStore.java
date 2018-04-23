@@ -50,6 +50,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -1236,9 +1237,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       startFunction("create_database", ": " + db.toString());
       boolean success = false;
       Exception ex = null;
-      if (!db.isSetCatalogName()) {
-        db.setCatalogName(getDefaultCatalog(conf));
-      }
+      if (!db.isSetCatalogName()) db.setCatalogName(getDefaultCatalog(conf));
       try {
         try {
           if (null != get_database_core(db.getCatalogName(), db.getName())) {
@@ -1754,9 +1753,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Path tblPath = null;
       boolean success = false, madeDir = false;
       try {
-        if (!tbl.isSetCatName()) {
-          tbl.setCatName(getDefaultCatalog(conf));
-        }
+        if (!tbl.isSetCatName()) tbl.setCatName(getDefaultCatalog(conf));
         firePreEvent(new PreCreateTableEvent(tbl, this));
 
         ms.openTransaction();
@@ -3397,14 +3394,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         return result;
       }
       try {
-        if (!request.isSetCatName()) {
-          request.setCatName(getDefaultCatalog(conf));
-        }
+        if (!request.isSetCatName()) request.setCatName(getDefaultCatalog(conf));
         // Make sure all of the partitions have the catalog set as well
         request.getParts().forEach(p -> {
-          if (!p.isSetCatName()) {
-            p.setCatName(getDefaultCatalog(conf));
-          }
+          if (!p.isSetCatName()) p.setCatName(getDefaultCatalog(conf));
         });
         List<Partition> parts = add_partitions_core(getMS(), request.getCatName(), request.getDbName(),
             request.getTblName(), request.getParts(), request.isIfNotExists());
@@ -3436,9 +3429,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         // Old API assumed all partitions belong to the same table; keep the same assumption
         if (!parts.get(0).isSetCatName()) {
           String defaultCat = getDefaultCatalog(conf);
-          for (Partition p : parts) {
-            p.setCatName(defaultCat);
-          }
+          for (Partition p : parts) p.setCatName(defaultCat);
         }
         ret = add_partitions_core(getMS(), parts.get(0).getCatName(), parts.get(0).getDbName(),
             parts.get(0).getTableName(), parts, false).size();
@@ -3749,9 +3740,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       boolean success = false;
       Table tbl = null;
       Map<String, String> transactionalListenerResponses = Collections.emptyMap();
-      if (!part.isSetCatName()) {
-        part.setCatName(getDefaultCatalog(conf));
-      }
+      if (!part.isSetCatName()) part.setCatName(getDefaultCatalog(conf));
       try {
         ms.openTransaction();
         tbl = ms.getTable(part.getCatName(), part.getDbName(), part.getTableName());
@@ -4759,9 +4748,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
 
       // Make sure the new partition has the catalog value set
-      if (!new_part.isSetCatName()) {
-        new_part.setCatName(catName);
-      }
+      if (!new_part.isSetCatName()) new_part.setCatName(catName);
 
       Partition oldPart = null;
       Exception ex = null;
@@ -4834,9 +4821,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         for (Partition tmpPart : new_parts) {
           // Make sure the catalog name is set in the new partition
-          if (!tmpPart.isSetCatName()) {
-            tmpPart.setCatName(getDefaultCatalog(conf));
-          }
+          if (!tmpPart.isSetCatName()) tmpPart.setCatName(getDefaultCatalog(conf));
           firePreEvent(new PreAlterPartitionEvent(parsedDbName[DB_NAME], tbl_name, null, tmpPart, this));
         }
         oldParts = alterHandler.alterPartitions(getMS(), wh, parsedDbName[CAT_NAME],
@@ -4941,9 +4926,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
       }
       // Set the catalog name if it hasn't been set in the new table
-      if (!newTable.isSetCatName()) {
-        newTable.setCatName(catName);
-      }
+      if (!newTable.isSetCatName()) newTable.setCatName(catName);
 
       boolean success = false;
       Exception ex = null;
@@ -8012,7 +7995,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
-    @Override
     public WMAlterPoolResponse alter_wm_pool(WMAlterPoolRequest request)
         throws AlreadyExistsException, NoSuchObjectException, InvalidObjectException, MetaException,
         TException {
@@ -8038,7 +8020,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
-    @Override
     public WMDropPoolResponse drop_wm_pool(WMDropPoolRequest request)
         throws NoSuchObjectException, InvalidOperationException, MetaException, TException {
       try {
@@ -8050,7 +8031,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
-    @Override
     public WMCreateOrUpdateMappingResponse create_or_update_wm_mapping(
         WMCreateOrUpdateMappingRequest request) throws AlreadyExistsException,
         NoSuchObjectException, InvalidObjectException, MetaException, TException {
@@ -8063,7 +8043,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
-    @Override
     public WMDropMappingResponse drop_wm_mapping(WMDropMappingRequest request)
         throws NoSuchObjectException, InvalidOperationException, MetaException, TException {
       try {
@@ -8075,7 +8054,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
-    @Override
     public WMCreateOrDropTriggerToPoolMappingResponse create_or_drop_wm_trigger_to_pool_mapping(
         WMCreateOrDropTriggerToPoolMappingRequest request) throws AlreadyExistsException,
         NoSuchObjectException, InvalidObjectException, MetaException, TException {
@@ -8094,7 +8072,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
-    @Override
     public void create_ischema(ISchema schema) throws TException {
       startFunction("create_ischema", ": " + schema.getName());
       boolean success = false;
@@ -8114,9 +8091,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
           success = ms.commitTransaction();
         } finally {
-          if (!success) {
-            ms.rollbackTransaction();
-          }
+          if (!success) ms.rollbackTransaction();
           if (!listeners.isEmpty()) {
             MetaStoreListenerNotifier.notifyEvent(listeners, EventType.CREATE_ISCHEMA,
                 new CreateISchemaEvent(success, this, schema), null,
@@ -8155,9 +8130,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
           success = ms.commitTransaction();
         } finally {
-          if (!success) {
-            ms.rollbackTransaction();
-          }
+          if (!success) ms.rollbackTransaction();
           if (!listeners.isEmpty()) {
             MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ALTER_ISCHEMA,
                 new AlterISchemaEvent(success, this, oldSchema, rqst.getNewSchema()), null,
@@ -8222,9 +8195,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
           success = ms.commitTransaction();
         } finally {
-          if (!success) {
-            ms.rollbackTransaction();
-          }
+          if (!success) ms.rollbackTransaction();
           if (!listeners.isEmpty()) {
             MetaStoreListenerNotifier.notifyEvent(listeners, EventType.DROP_ISCHEMA,
                 new DropISchemaEvent(success, this, schema), null,
@@ -8264,9 +8235,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
           success = ms.commitTransaction();
         } finally {
-          if (!success) {
-            ms.rollbackTransaction();
-          }
+          if (!success) ms.rollbackTransaction();
           if (!listeners.isEmpty()) {
             MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ADD_SCHEMA_VERSION,
                 new AddSchemaVersionEvent(success, this, schemaVersion), null,
@@ -8368,9 +8337,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
           success = ms.commitTransaction();
         } finally {
-          if (!success) {
-            ms.rollbackTransaction();
-          }
+          if (!success) ms.rollbackTransaction();
           if (!listeners.isEmpty()) {
             MetaStoreListenerNotifier.notifyEvent(listeners, EventType.DROP_SCHEMA_VERSION,
                 new DropSchemaVersionEvent(success, this, schemaVersion), null,
@@ -8439,9 +8406,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
           success = ms.commitTransaction();
         } finally {
-          if (!success) {
-            ms.rollbackTransaction();
-          }
+          if (!success) ms.rollbackTransaction();
           if (!listeners.isEmpty()) {
             MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ALTER_SCHEMA_VERSION,
                 new AlterSchemaVersionEvent(success, this, oldSchemaVersion, newSchemaVersion), null,
@@ -8483,9 +8448,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
           success = ms.commitTransaction();
         } finally {
-          if (!success) {
-            ms.rollbackTransaction();
-          }
+          if (!success) ms.rollbackTransaction();
           if (!listeners.isEmpty()) {
             MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ALTER_SCHEMA_VERSION,
                 new AlterSchemaVersionEvent(success, this, oldSchemaVersion, newSchemaVersion), null,
@@ -8516,9 +8479,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         ex = e;
         throw e;
       } finally {
-        if (!success) {
-          ms.rollbackTransaction();
-        }
+        if (!success) ms.rollbackTransaction();
         endFunction("create_serde", success, ex);
       }
     }
@@ -8553,44 +8514,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     public boolean heartbeat_lock_materialization_rebuild(String dbName, String tableName, long txnId)
         throws TException {
       return MaterializationsRebuildLockHandler.get().refreshLockResource(dbName, tableName, txnId);
-    }
-
-    @Override
-    public void add_runtime_stats(RuntimeStat stat) throws TException {
-      startFunction("store_runtime_stats");
-      Exception ex = null;
-      boolean success = false;
-      RawStore ms = getMS();
-      try {
-        ms.openTransaction();
-        ms.addRuntimeStat(stat);
-        success = ms.commitTransaction();
-      } catch (Exception e) {
-        LOG.error("Caught exception", e);
-        ex = e;
-        throw e;
-      } finally {
-        if (!success) {
-          ms.rollbackTransaction();
-        }
-        endFunction("store_runtime_stats", success, ex);
-      }
-    }
-
-    @Override
-    public List<RuntimeStat> get_runtime_stats(GetRuntimeStatsRequest rqst) throws TException {
-      startFunction("get_runtime_stats");
-      Exception ex = null;
-      try {
-        List<RuntimeStat> res = getMS().getRuntimeStats();
-        return res;
-      } catch (MetaException e) {
-        LOG.error("Caught exception", e);
-        ex = e;
-        throw e;
-      } finally {
-        endFunction("get_runtime_stats", ex == null, ex);
-      }
     }
   }
 

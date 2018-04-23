@@ -18,33 +18,48 @@
 
 package org.apache.hadoop.hive.ql.plan.mapper;
 
+import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
 
-public class MapBackedStatsSource implements StatsSource {
+public class SimpleRuntimeStatsSource implements StatsSource {
 
-  private Map<OpTreeSignature, OperatorStats> map = new ConcurrentHashMap<>();
+  private final PlanMapper pm;
+
+
+  public SimpleRuntimeStatsSource(PlanMapper pm) {
+    this.pm = pm;
+  }
 
   @Override
-  public boolean canProvideStatsFor(Class<?> clazz) {
-    if (Operator.class.isAssignableFrom(clazz)) {
+  public Optional<OperatorStats> lookup(OpTreeSignature sig) {
+    try {
+      List<OperatorStats> v = pm.lookupAll(OperatorStats.class, sig);
+      if (v.size() > 0) {
+        return Optional.of(v.get(0));
+      }
+      return Optional.empty();
+    } catch (NoSuchElementException | IllegalArgumentException iae) {
+      return Optional.empty();
+    }
+  }
+
+  @Override
+  public boolean canProvideStatsFor(Class<?> class1) {
+    if (Operator.class.isAssignableFrom(class1)) {
       return true;
     }
     return false;
   }
 
   @Override
-  public Optional<OperatorStats> lookup(OpTreeSignature treeSig) {
-    return Optional.ofNullable(map.get(treeSig));
+  public void putAll(Map<OpTreeSignature, OperatorStats> map) {
+    throw new RuntimeException();
   }
 
-  @Override
-  public void putAll(Map<OpTreeSignature, OperatorStats> map) {
-    this.map.putAll(map);
-  }
 }
