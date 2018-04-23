@@ -2199,6 +2199,11 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
         } else {
           // column statistics at index 0 contains only the number of rows
           ColumnStatistics stats = stripeStatistics.getColumnStatistics()[filterColumns[pred]];
+          // if row count is 0 and where there are no nulls it means index is disabled and we don't have stats
+          if (stats.getNumberOfValues() == 0 && !stats.hasNull()) {
+            truthValues[pred] = TruthValue.YES_NO_NULL;
+            continue;
+          }
           PredicateLeaf leaf = predLeaves.get(pred);
           try {
             truthValues[pred] = RecordReaderImpl.evaluatePredicate(stats, leaf, null);

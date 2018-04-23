@@ -113,18 +113,25 @@ public class OrcEncodedDataConsumer
       ConsumerStripeMetadata stripeMetadata = stripes.get(currentStripeIndex);
       // Get non null row count from root column, to get max vector batches
       int rgIdx = batch.getBatchKey().rgIx;
-      long nonNullRowCount = -1;
+      long nonNullRowCount;
+      boolean noIndex = false;
       if (rgIdx == OrcEncodedColumnBatch.ALL_RGS) {
         nonNullRowCount = stripeMetadata.getRowCount();
       } else {
         OrcProto.RowIndexEntry rowIndex = stripeMetadata.getRowIndexEntry(0, rgIdx);
-        nonNullRowCount = getRowCount(rowIndex);
+        // index is disabled
+        if (rowIndex == null) {
+          nonNullRowCount = stripeMetadata.getRowCount();
+          noIndex = true;
+        } else {
+          nonNullRowCount = getRowCount(rowIndex);
+        }
       }
       int maxBatchesRG = (int) ((nonNullRowCount / VectorizedRowBatch.DEFAULT_SIZE) + 1);
       int batchSize = VectorizedRowBatch.DEFAULT_SIZE;
       TypeDescription fileSchema = fileMetadata.getSchema();
 
-      if (columnReaders == null || !sameStripe) {
+      if (columnReaders == null || !sameStripe || noIndex) {
         createColumnReaders(batch, stripeMetadata, fileSchema);
       } else {
         repositionInStreams(this.columnReaders, batch, sameStripe, stripeMetadata);
