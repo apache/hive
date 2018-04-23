@@ -1475,7 +1475,7 @@ public class AcidUtils {
    /**
     * The method for altering table props; may set the table to MM, non-MM, or not affect MM.
     * todo: All such validation logic should be TransactionValidationListener
-    * @param tbl object image before alter table command
+    * @param tbl object image before alter table command (or null if not retrieved yet).
     * @param props prop values set in this alter table command
     */
   public static Boolean isToInsertOnlyTable(Table tbl, Map<String, String> props) {
@@ -1491,17 +1491,18 @@ public class AcidUtils {
       return null;
     }
 
-    if(transactional == null) {
+    if (transactional == null && tbl != null) {
       transactional = tbl.getParameters().get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
     }
     boolean isSetToTxn = "true".equalsIgnoreCase(transactional);
     if (transactionalProp == null) {
-      if (isSetToTxn) return false; // Assume the full ACID table.
+      if (isSetToTxn || tbl == null) return false; // Assume the full ACID table.
       throw new RuntimeException("Cannot change '" + hive_metastoreConstants.TABLE_IS_TRANSACTIONAL
           + "' without '" + hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES + "'");
     }
     if (!"insert_only".equalsIgnoreCase(transactionalProp)) return false; // Not MM.
     if (!isSetToTxn) {
+      if (tbl == null) return true; // No table information yet; looks like it could be valid.
       throw new RuntimeException("Cannot set '"
           + hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES + "' to 'insert_only' without "
           + "setting '" + hive_metastoreConstants.TABLE_IS_TRANSACTIONAL + "' to 'true'");

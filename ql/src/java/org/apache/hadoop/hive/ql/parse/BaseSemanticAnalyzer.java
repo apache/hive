@@ -80,6 +80,7 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
+import org.apache.hadoop.hive.ql.plan.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
@@ -2288,5 +2289,9 @@ public abstract class BaseSemanticAnalyzer {
 
   public void setCacheUsage(CacheUsage cacheUsage) {
     this.cacheUsage = cacheUsage;
+  }
+
+  public DDLDescWithWriteId getAcidDdlDesc() {
+    return null;
   }
 }
