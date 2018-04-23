@@ -2774,21 +2774,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
             fullyQualifiedTabName = tabMetaData.getTableName();
           }
 
-          RelOptHiveTable optTable = new RelOptHiveTable(relOptSchema, fullyQualifiedTabName,
-              rowType, tabMetaData, nonPartitionColumns, partitionColumns, virtualCols, conf,
-              partitionCache, colStatsCache, noColsMissingStats);
-
-          final HiveTableScan hts = new HiveTableScan(cluster,
-              cluster.traitSetOf(HiveRelNode.CONVENTION), optTable,
-              null == tableAlias ? tabMetaData.getTableName() : tableAlias,
-                getAliasId(tableAlias, qb),
-                HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP),
-                qb.isInsideView() || qb.getAliasInsideView().contains(tableAlias.toLowerCase()));
-
           if (tableType == TableType.DRUID) {
             // Build Druid query
-            String address =
-                HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_DRUID_BROKER_DEFAULT_ADDRESS);
+            String address = HiveConf.getVar(conf,
+                  HiveConf.ConfVars.HIVE_DRUID_BROKER_DEFAULT_ADDRESS);
             String dataSource = tabMetaData.getParameters().get(Constants.DRUID_DATA_SOURCE);
             Set<String> metrics = new HashSet<>();
             RexBuilder rexBuilder = cluster.getRexBuilder();
@@ -2821,10 +2810,27 @@ public class CalcitePlanner extends SemanticAnalyzer {
             DruidTable druidTable = new DruidTable(new DruidSchema(address, address, false),
                 dataSource, RelDataTypeImpl.proto(rowType), metrics, DruidTable.DEFAULT_TIMESTAMP_COLUMN,
                 intervals, null, null);
-
+            RelOptHiveTable optTable = new RelOptHiveTable(relOptSchema, fullyQualifiedTabName,
+                rowType, tabMetaData, nonPartitionColumns, partitionColumns, virtualCols, conf,
+                partitionCache, colStatsCache, noColsMissingStats);
+            final TableScan scan = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
+                optTable, null == tableAlias ? tabMetaData.getTableName() : tableAlias,
+                getAliasId(tableAlias, qb), HiveConf.getBoolVar(conf,
+                    HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP), qb.isInsideView()
+                    || qb.getAliasInsideView().contains(tableAlias.toLowerCase()));
             tableRel = DruidQuery.create(cluster, cluster.traitSetOf(BindableConvention.INSTANCE),
-              optTable, druidTable, ImmutableList.of(hts), DruidSqlOperatorConverter.getDefaultMap());
+                optTable, druidTable, ImmutableList.of(scan), DruidSqlOperatorConverter.getDefaultMap());
           } else if (tableType == TableType.JDBC) {
+		    RelOptHiveTable optTable = new RelOptHiveTable(relOptSchema, fullyQualifiedTabName,
+                  rowType, tabMetaData, nonPartitionColumns, partitionColumns, virtualCols, conf,
+                  partitionCache, colStatsCache, noColsMissingStats);
+
+            final HiveTableScan hts = new HiveTableScan(cluster,
+                  cluster.traitSetOf(HiveRelNode.CONVENTION), optTable,
+                  null == tableAlias ? tabMetaData.getTableName() : tableAlias,
+                  getAliasId(tableAlias, qb),
+                  HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP),
+                  qb.isInsideView() || qb.getAliasInsideView().contains(tableAlias.toLowerCase()));
             LOG.debug("JDBC is running");
             final String dataBaseType = tabMetaData.getProperty("hive.sql.database.type");
             final String url = tabMetaData.getProperty("hive.sql.jdbc.url");
