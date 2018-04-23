@@ -172,9 +172,10 @@ public class TestJdbcWithSQLAuthorization {
         stmt.execute("llap cache -purge");
       } catch (SQLException e) {
         caughtException = true;
-        String msg = "Error while processing statement: Permission denied: Principal [name=user1, type=USER] " +
-          "does not have following privileges for operation LLAP_CACHE [[ADMIN PRIVILEGE] on Object " +
-          "[type=COMMAND_PARAMS, name=[-purge]], [ADMIN PRIVILEGE] on Object [type=SERVICE_NAME, name=localhost]]";
+        String msg = "Error while processing statement: Permission denied: Principal [name=user1, type=USER] does " +
+          "not have following privileges for operation LLAP_CACHE_PURGE [[ADMIN PRIVILEGE] on Object " +
+          "[type=COMMAND_PARAMS, name=[llap, cache, -purge]], [ADMIN PRIVILEGE] on Object " +
+          "[type=SERVICE_NAME, name=localhost]]";
         assertEquals(msg, e.getMessage());
       } finally {
         stmt.close();
