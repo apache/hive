@@ -8647,33 +8647,33 @@ class Decimal {
   static $_TSPEC;
 
   /**
-   * @var string
-   */
-  public $unscaled = null;
-  /**
    * @var int
    */
   public $scale = null;
+  /**
+   * @var string
+   */
+  public $unscaled = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
       self::$_TSPEC = array(
-        1 => array(
-          'var' => 'unscaled',
-          'type' => TType::STRING,
-          ),
         3 => array(
           'var' => 'scale',
           'type' => TType::I16,
           ),
+        1 => array(
+          'var' => 'unscaled',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
-      if (isset($vals['unscaled'])) {
-        $this->unscaled = $vals['unscaled'];
-      }
       if (isset($vals['scale'])) {
         $this->scale = $vals['scale'];
+      }
+      if (isset($vals['unscaled'])) {
+        $this->unscaled = $vals['unscaled'];
       }
     }
   }
@@ -8697,16 +8697,16 @@ class Decimal {
       }
       switch ($fid)
       {
-        case 1:
-          if ($ftype == TType::STRING) {
-            $xfer += $input->readString($this->unscaled);
+        case 3:
+          if ($ftype == TType::I16) {
+            $xfer += $input->readI16($this->scale);
           } else {
             $xfer += $input->skip($ftype);
           }
           break;
-        case 3:
-          if ($ftype == TType::I16) {
-            $xfer += $input->readI16($this->scale);
+        case 1:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->unscaled);
           } else {
             $xfer += $input->skip($ftype);
           }

@@ -38,8 +38,8 @@ import org.slf4j.LoggerFactory;
 @org.apache.hadoop.classification.InterfaceAudience.Public @org.apache.hadoop.classification.InterfaceStability.Stable public class Decimal implements org.apache.thrift.TBase<Decimal, Decimal._Fields>, java.io.Serializable, Cloneable, Comparable<Decimal> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("Decimal");
 
-  private static final org.apache.thrift.protocol.TField UNSCALED_FIELD_DESC = new org.apache.thrift.protocol.TField("unscaled", org.apache.thrift.protocol.TType.STRING, (short)1);
   private static final org.apache.thrift.protocol.TField SCALE_FIELD_DESC = new org.apache.thrift.protocol.TField("scale", org.apache.thrift.protocol.TType.I16, (short)3);
+  private static final org.apache.thrift.protocol.TField UNSCALED_FIELD_DESC = new org.apache.thrift.protocol.TField("unscaled", org.apache.thrift.protocol.TType.STRING, (short)1);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -47,13 +47,13 @@ import org.slf4j.LoggerFactory;
     schemes.put(TupleScheme.class, new DecimalTupleSchemeFactory());
   }
 
-  private ByteBuffer unscaled; // required
   private short scale; // required
+  private ByteBuffer unscaled; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    UNSCALED((short)1, "unscaled"),
-    SCALE((short)3, "scale");
+    SCALE((short)3, "scale"),
+    UNSCALED((short)1, "unscaled");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -68,10 +68,10 @@ import org.slf4j.LoggerFactory;
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // UNSCALED
-          return UNSCALED;
         case 3: // SCALE
           return SCALE;
+        case 1: // UNSCALED
+          return UNSCALED;
         default:
           return null;
       }
@@ -117,10 +117,10 @@ import org.slf4j.LoggerFactory;
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.UNSCALED, new org.apache.thrift.meta_data.FieldMetaData("unscaled", org.apache.thrift.TFieldRequirementType.REQUIRED, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING        , true)));
     tmpMap.put(_Fields.SCALE, new org.apache.thrift.meta_data.FieldMetaData("scale", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I16)));
+    tmpMap.put(_Fields.UNSCALED, new org.apache.thrift.meta_data.FieldMetaData("unscaled", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING        , true)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Decimal.class, metaDataMap);
   }
@@ -129,13 +129,13 @@ import org.slf4j.LoggerFactory;
   }
 
   public Decimal(
-    ByteBuffer unscaled,
-    short scale)
+    short scale,
+    ByteBuffer unscaled)
   {
     this();
-    this.unscaled = org.apache.thrift.TBaseHelper.copyBinary(unscaled);
     this.scale = scale;
     setScaleIsSet(true);
+    this.unscaled = org.apache.thrift.TBaseHelper.copyBinary(unscaled);
   }
 
   /**
@@ -143,10 +143,10 @@ import org.slf4j.LoggerFactory;
    */
   public Decimal(Decimal other) {
     __isset_bitfield = other.__isset_bitfield;
+    this.scale = other.scale;
     if (other.isSetUnscaled()) {
       this.unscaled = org.apache.thrift.TBaseHelper.copyBinary(other.unscaled);
     }
-    this.scale = other.scale;
   }
 
   public Decimal deepCopy() {
@@ -155,9 +155,31 @@ import org.slf4j.LoggerFactory;
 
   @Override
   public void clear() {
-    this.unscaled = null;
     setScaleIsSet(false);
     this.scale = 0;
+    this.unscaled = null;
+  }
+
+  public short getScale() {
+    return this.scale;
+  }
+
+  public void setScale(short scale) {
+    this.scale = scale;
+    setScaleIsSet(true);
+  }
+
+  public void unsetScale() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __SCALE_ISSET_ID);
+  }
+
+  /** Returns true if field scale is set (has been assigned a value) and false otherwise */
+  public boolean isSetScale() {
+    return EncodingUtils.testBit(__isset_bitfield, __SCALE_ISSET_ID);
+  }
+
+  public void setScaleIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __SCALE_ISSET_ID, value);
   }
 
   public byte[] getUnscaled() {
@@ -192,38 +214,8 @@ import org.slf4j.LoggerFactory;
     }
   }
 
-  public short getScale() {
-    return this.scale;
-  }
-
-  public void setScale(short scale) {
-    this.scale = scale;
-    setScaleIsSet(true);
-  }
-
-  public void unsetScale() {
-    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __SCALE_ISSET_ID);
-  }
-
-  /** Returns true if field scale is set (has been assigned a value) and false otherwise */
-  public boolean isSetScale() {
-    return EncodingUtils.testBit(__isset_bitfield, __SCALE_ISSET_ID);
-  }
-
-  public void setScaleIsSet(boolean value) {
-    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __SCALE_ISSET_ID, value);
-  }
-
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
-    case UNSCALED:
-      if (value == null) {
-        unsetUnscaled();
-      } else {
-        setUnscaled((ByteBuffer)value);
-      }
-      break;
-
     case SCALE:
       if (value == null) {
         unsetScale();
@@ -232,16 +224,24 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case UNSCALED:
+      if (value == null) {
+        unsetUnscaled();
+      } else {
+        setUnscaled((ByteBuffer)value);
+      }
+      break;
+
     }
   }
 
   public Object getFieldValue(_Fields field) {
     switch (field) {
-    case UNSCALED:
-      return getUnscaled();
-
     case SCALE:
       return getScale();
+
+    case UNSCALED:
+      return getUnscaled();
 
     }
     throw new IllegalStateException();
@@ -254,10 +254,10 @@ import org.slf4j.LoggerFactory;
     }
 
     switch (field) {
-    case UNSCALED:
-      return isSetUnscaled();
     case SCALE:
       return isSetScale();
+    case UNSCALED:
+      return isSetUnscaled();
     }
     throw new IllegalStateException();
   }
@@ -275,21 +275,21 @@ import org.slf4j.LoggerFactory;
     if (that == null)
       return false;
 
-    boolean this_present_unscaled = true && this.isSetUnscaled();
-    boolean that_present_unscaled = true && that.isSetUnscaled();
-    if (this_present_unscaled || that_present_unscaled) {
-      if (!(this_present_unscaled && that_present_unscaled))
-        return false;
-      if (!this.unscaled.equals(that.unscaled))
-        return false;
-    }
-
     boolean this_present_scale = true;
     boolean that_present_scale = true;
     if (this_present_scale || that_present_scale) {
       if (!(this_present_scale && that_present_scale))
         return false;
       if (this.scale != that.scale)
+        return false;
+    }
+
+    boolean this_present_unscaled = true && this.isSetUnscaled();
+    boolean that_present_unscaled = true && that.isSetUnscaled();
+    if (this_present_unscaled || that_present_unscaled) {
+      if (!(this_present_unscaled && that_present_unscaled))
+        return false;
+      if (!this.unscaled.equals(that.unscaled))
         return false;
     }
 
@@ -300,15 +300,15 @@ import org.slf4j.LoggerFactory;
   public int hashCode() {
     List<Object> list = new ArrayList<Object>();
 
-    boolean present_unscaled = true && (isSetUnscaled());
-    list.add(present_unscaled);
-    if (present_unscaled)
-      list.add(unscaled);
-
     boolean present_scale = true;
     list.add(present_scale);
     if (present_scale)
       list.add(scale);
+
+    boolean present_unscaled = true && (isSetUnscaled());
+    list.add(present_unscaled);
+    if (present_unscaled)
+      list.add(unscaled);
 
     return list.hashCode();
   }
@@ -321,22 +321,22 @@ import org.slf4j.LoggerFactory;
 
     int lastComparison = 0;
 
-    lastComparison = Boolean.valueOf(isSetUnscaled()).compareTo(other.isSetUnscaled());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetUnscaled()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.unscaled, other.unscaled);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
     lastComparison = Boolean.valueOf(isSetScale()).compareTo(other.isSetScale());
     if (lastComparison != 0) {
       return lastComparison;
     }
     if (isSetScale()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.scale, other.scale);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetUnscaled()).compareTo(other.isSetUnscaled());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetUnscaled()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.unscaled, other.unscaled);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -361,6 +361,10 @@ import org.slf4j.LoggerFactory;
     StringBuilder sb = new StringBuilder("Decimal(");
     boolean first = true;
 
+    sb.append("scale:");
+    sb.append(this.scale);
+    first = false;
+    if (!first) sb.append(", ");
     sb.append("unscaled:");
     if (this.unscaled == null) {
       sb.append("null");
@@ -368,22 +372,18 @@ import org.slf4j.LoggerFactory;
       org.apache.thrift.TBaseHelper.toString(this.unscaled, sb);
     }
     first = false;
-    if (!first) sb.append(", ");
-    sb.append("scale:");
-    sb.append(this.scale);
-    first = false;
     sb.append(")");
     return sb.toString();
   }
 
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
-    if (!isSetUnscaled()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'unscaled' is unset! Struct:" + toString());
-    }
-
     if (!isSetScale()) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'scale' is unset! Struct:" + toString());
+    }
+
+    if (!isSetUnscaled()) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'unscaled' is unset! Struct:" + toString());
     }
 
     // check for sub-struct validity
@@ -425,18 +425,18 @@ import org.slf4j.LoggerFactory;
           break;
         }
         switch (schemeField.id) {
-          case 1: // UNSCALED
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.unscaled = iprot.readBinary();
-              struct.setUnscaledIsSet(true);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
           case 3: // SCALE
             if (schemeField.type == org.apache.thrift.protocol.TType.I16) {
               struct.scale = iprot.readI16();
               struct.setScaleIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 1: // UNSCALED
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.unscaled = iprot.readBinary();
+              struct.setUnscaledIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -479,17 +479,17 @@ import org.slf4j.LoggerFactory;
     @Override
     public void write(org.apache.thrift.protocol.TProtocol prot, Decimal struct) throws org.apache.thrift.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
-      oprot.writeBinary(struct.unscaled);
       oprot.writeI16(struct.scale);
+      oprot.writeBinary(struct.unscaled);
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, Decimal struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      struct.unscaled = iprot.readBinary();
-      struct.setUnscaledIsSet(true);
       struct.scale = iprot.readI16();
       struct.setScaleIsSet(true);
+      struct.unscaled = iprot.readBinary();
+      struct.setUnscaledIsSet(true);
     }
   }
 
