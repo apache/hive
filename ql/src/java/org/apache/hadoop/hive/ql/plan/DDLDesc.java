@@ -26,4 +26,10 @@ import java.io.Serializable;
  */
 public abstract class DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
+
+  public static interface DDLDescWithWriteId {
+    void setWriteId(long writeId);
+    String getFullTableName();
+    boolean mayNeedWriteId();
+  }
 }
