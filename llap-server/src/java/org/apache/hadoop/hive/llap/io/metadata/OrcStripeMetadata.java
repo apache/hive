@@ -88,11 +88,28 @@ public class OrcStripeMetadata implements ConsumerStripeMetadata {
 
   @Override
   public RowIndexEntry getRowIndexEntry(int colIx, int rgIx) {
+    if (rowIndex == null || rowIndex.getRowGroupIndex()[colIx] == null) {
+      return null;
+    }
     return rowIndex.getRowGroupIndex()[colIx].getEntry(rgIx);
   }
 
   @Override
   public boolean supportsRowIndexes() {
+    if (rowIndex == null) {
+      return false;
+    }
+    // if all row indexes are null then indexes are disabled
+    boolean allNulls = true;
+    for (OrcProto.RowIndex rowIndex : rowIndex.getRowGroupIndex()) {
+      if (rowIndex != null) {
+        allNulls = false;
+        break;
+      }
+    }
+    if (allNulls) {
+      return false;
+    }
     return true;
   }
 
