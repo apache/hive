@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Decimal;
+import org.apache.hadoop.hive.metastore.api.utils.DecimalUtils;
 import org.apache.hadoop.hive.metastore.columnstats.cache.DecimalColumnStatsDataInspector;
 import org.junit.Assert;
 import org.junit.Test;
@@ -33,9 +34,9 @@ import org.junit.experimental.categories.Category;
 @Category(MetastoreUnitTest.class)
 public class DecimalColumnStatsMergerTest {
 
-  private static final Decimal DECIMAL_3 = getDecimal(3, 0);
-  private static final Decimal DECIMAL_5 = getDecimal(5, 0);
-  private static final Decimal DECIMAL_20 = getDecimal(2, 1);
+  private static final Decimal DECIMAL_3 = DecimalUtils.getDecimal(3, 0);
+  private static final Decimal DECIMAL_5 = DecimalUtils.getDecimal(5, 0);
+  private static final Decimal DECIMAL_20 = DecimalUtils.getDecimal(2, 1);
 
   private DecimalColumnStatsMerger merger = new DecimalColumnStatsMerger();
 
@@ -184,12 +185,10 @@ public class DecimalColumnStatsMergerTest {
     Assert.assertEquals(DECIMAL_3, merger.getMin(DECIMAL_5, DECIMAL_3));
   }
 
-  /*
-   * it should pass, but fails because of HIVE-19131, get back to this later!
-   *
-   * @Test public void testCompareUnscaledValue() { Assert.assertEquals(DECIMAL_20,
-   * merger.compareValues(DECIMAL_3, DECIMAL_20)); }
-   */
+  @Test
+  public void testCompareUnscaledValue() {
+    Assert.assertEquals(DECIMAL_20, merger.getMax(DECIMAL_3, DECIMAL_20));
+  }
 
   @Test
   public void testCompareNullsMin() {
@@ -219,12 +218,6 @@ public class DecimalColumnStatsMergerTest {
   @Test
   public void testCompareSecondNullMax() {
     Assert.assertEquals(DECIMAL_3, merger.getMax(DECIMAL_3, null));
-  }
-
-  private static Decimal getDecimal(int number, int scale) {
-    ByteBuffer bb = ByteBuffer.allocate(4);
-    bb.asIntBuffer().put(number);
-    return new Decimal(bb, (short) scale);
   }
 
   private DecimalColumnStatsDataInspector createData(ColumnStatisticsObj objNulls, Decimal lowValue,
