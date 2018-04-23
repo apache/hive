@@ -105,8 +105,6 @@ public final class TaskFactory {
         MergeFileTask.class));
     taskvec.add(new TaskTuple<DependencyCollectionWork>(DependencyCollectionWork.class,
         DependencyCollectionTask.class));
-    taskvec.add(new TaskTuple<ImportCommitWork>(ImportCommitWork.class,
-        ImportCommitTask.class));
     taskvec.add(new TaskTuple<TezWork>(TezWork.class, TezTask.class));
     taskvec.add(new TaskTuple<SparkWork>(SparkWork.class, SparkTask.class));
     taskvec.add(new TaskTuple<>(ReplDumpWork.class, ReplDumpTask.class));

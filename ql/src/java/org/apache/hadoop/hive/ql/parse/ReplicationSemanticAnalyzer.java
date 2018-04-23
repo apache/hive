@@ -515,7 +515,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
                                                         String tableName,
                                                         Map<String, String> partSpec,
                                                         String replState,
-                                                        Task<? extends Serializable> preCursor) {
+                                                        Task<? extends Serializable> preCursor) throws SemanticException {
     HashMap<String, String> mapProp = new HashMap<>();
     mapProp.put(ReplicationSpec.KEY.CURR_STATE_ID.toString(), replState);
 
@@ -563,7 +563,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
   private List<Task<? extends Serializable>> addUpdateReplStateTasks(
           boolean isDatabaseLoad,
           UpdatedMetaDataTracker updatedMetadata,
-          List<Task<? extends Serializable>> importTasks) {
+          List<Task<? extends Serializable>> importTasks) throws SemanticException {
     String replState = updatedMetadata.getReplicationState();
     String dbName = updatedMetadata.getDatabase();
     String tableName = updatedMetadata.getTable();
