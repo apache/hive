@@ -188,39 +188,26 @@ public final class JavaUtils {
 
   public static class IdPathFilter implements PathFilter {
     private String baseDirName, deltaDirName;
-    private final boolean isMatch, isIgnoreTemp, isDeltaPrefix;
+    private final boolean isDeltaPrefix;
 
-    public IdPathFilter(long writeId, int stmtId, boolean isMatch) {
-      this(writeId, stmtId, isMatch, false);
-    }
-
-    public IdPathFilter(long writeId, int stmtId, boolean isMatch, boolean isIgnoreTemp) {
+    public IdPathFilter(long writeId, int stmtId) {
       String deltaDirName = null;
       deltaDirName = DELTA_PREFIX + "_" + String.format(DELTA_DIGITS, writeId) + "_" +
-              String.format(DELTA_DIGITS, writeId) + "_";
+              String.format(DELTA_DIGITS, writeId);
       isDeltaPrefix = (stmtId < 0);
       if (!isDeltaPrefix) {
-        deltaDirName += String.format(STATEMENT_DIGITS, stmtId);
+        deltaDirName += "_" + String.format(STATEMENT_DIGITS, stmtId);
       }
 
       this.baseDirName = BASE_PREFIX + "_" + String.format(DELTA_DIGITS, writeId);
       this.deltaDirName = deltaDirName;
-      this.isMatch = isMatch;
-      this.isIgnoreTemp = isIgnoreTemp;
     }
 
     @Override
     public boolean accept(Path path) {
       String name = path.getName();
-      if (name.equals(baseDirName) || (isDeltaPrefix && name.startsWith(deltaDirName))
-          || (!isDeltaPrefix && name.equals(deltaDirName))) {
-        return isMatch;
-      }
-      if (isIgnoreTemp && name.length() > 0) {
-        char c = name.charAt(0);
-        if (c == '.' || c == '_') return false; // Regardless of isMatch, ignore this.
-      }
-      return !isMatch;
+      return name.equals(baseDirName) || (isDeltaPrefix && name.startsWith(deltaDirName))
+          || (!isDeltaPrefix && name.equals(deltaDirName));
     }
   }
 
