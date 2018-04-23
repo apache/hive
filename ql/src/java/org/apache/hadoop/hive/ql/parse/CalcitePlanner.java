@@ -2823,7 +2823,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
                 intervals, null, null);
 
             tableRel = DruidQuery.create(cluster, cluster.traitSetOf(BindableConvention.INSTANCE),
-              optTable, druidTable, ImmutableList.<RelNode>of(hts));
+              optTable, druidTable, ImmutableList.of(hts), DruidSqlOperatorConverter.getDefaultMap());
           } else if (tableType == TableType.JDBC) {
             LOG.debug("JDBC is running");
             final String dataBaseType = tabMetaData.getProperty("hive.sql.database.type");
