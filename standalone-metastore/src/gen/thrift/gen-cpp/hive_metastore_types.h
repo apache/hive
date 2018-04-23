@@ -3890,22 +3890,22 @@ class Decimal {
 
   Decimal(const Decimal&);
   Decimal& operator=(const Decimal&);
-  Decimal() : unscaled(), scale(0) {
+  Decimal() : scale(0), unscaled() {
   }
 
   virtual ~Decimal() throw();
-  std::string unscaled;
   int16_t scale;
-
-  void __set_unscaled(const std::string& val);
+  std::string unscaled;
 
   void __set_scale(const int16_t val);
 
+  void __set_unscaled(const std::string& val);
+
   bool operator == (const Decimal & rhs) const
   {
-    if (!(unscaled == rhs.unscaled))
-      return false;
     if (!(scale == rhs.scale))
+      return false;
+    if (!(unscaled == rhs.unscaled))
       return false;
     return true;
   }

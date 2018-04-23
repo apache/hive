@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.metastore.api.Date;
 import org.apache.hadoop.hive.metastore.api.Decimal;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
+import org.apache.hadoop.hive.metastore.api.utils.DecimalUtils;
 import org.apache.hadoop.hive.metastore.columnstats.cache.DateColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.columnstats.cache.DecimalColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.columnstats.cache.DoubleColumnStatsDataInspector;
@@ -226,11 +227,11 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
           decimalStats.setNumDVs(Long.parseLong(value));
         } else if (fName.equals("lowValue")) {
           BigDecimal d = new BigDecimal(value);
-          decimalStats.setLowValue(new Decimal(ByteBuffer.wrap(d
+          decimalStats.setLowValue(DecimalUtils.getDecimal(ByteBuffer.wrap(d
               .unscaledValue().toByteArray()), (short) d.scale()));
         } else if (fName.equals("highValue")) {
           BigDecimal d = new BigDecimal(value);
-          decimalStats.setHighValue(new Decimal(ByteBuffer.wrap(d
+          decimalStats.setHighValue(DecimalUtils.getDecimal(ByteBuffer.wrap(d
               .unscaledValue().toByteArray()), (short) d.scale()));
         } else {
           throw new SemanticException("Unknown stat");
