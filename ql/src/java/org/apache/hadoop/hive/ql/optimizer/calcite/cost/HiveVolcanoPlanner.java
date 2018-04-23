@@ -23,15 +23,15 @@ import org.apache.calcite.adapter.druid.DruidQuery;
 import org.apache.calcite.plan.Convention;
 import org.apache.calcite.plan.ConventionTraitDef;
 import org.apache.calcite.plan.RelOptCost;
-import org.apache.calcite.plan.RelOptCostImpl;
 import org.apache.calcite.plan.RelOptPlanner;
+import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.plan.volcano.RelSubset;
 import org.apache.calcite.plan.volcano.VolcanoPlanner;
 import org.apache.calcite.rel.RelCollationTraitDef;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
-import org.apache.commons.math3.util.FastMath;
+import org.apache.calcite.util.Util;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveConfPlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HivePlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
@@ -48,7 +48,6 @@ public class HiveVolcanoPlanner extends VolcanoPlanner {
   private static final boolean ENABLE_COLLATION_TRAIT = true;
 
   private final boolean isHeuristic;
-  private static final double FACTOR = 0.2d;
 
 
   /** Creates a HiveVolcanoPlanner. */
@@ -96,7 +95,9 @@ public class HiveVolcanoPlanner extends VolcanoPlanner {
   public RelOptCost getCost(RelNode rel, RelMetadataQuery mq) {
     assert rel != null : "pre-condition: rel != null";
     if (rel instanceof RelSubset) {
-      return getCost(((RelSubset) rel).getBest(), mq);
+      // Get cost of the subset, best rel may have been chosen or not
+      RelSubset subset = (RelSubset) rel;
+      return getCost(Util.first(subset.getBest(), subset.getOriginal()), mq);
     }
     if (rel.getTraitSet().getTrait(ConventionTraitDef.INSTANCE)
         == Convention.NONE) {
@@ -121,15 +122,19 @@ public class HiveVolcanoPlanner extends VolcanoPlanner {
       }
     }
     if (isHeuristic && usesMaterializedViews) {
-      cost = costFactory.makeTinyCost();
+      // If a child of this expression uses a materialized view,
+      // then we decrease its cost by a certain factor. This is
+      // useful for e.g. partial rewritings, where a part of plan
+      // does not use the materialization, but we still want to
+      // decrease its cost so it is chosen instead of the original
+      // plan
+      cost = cost.multiplyBy(RelOptUtil.EPSILON);
+      if (!costFactory.makeZeroCost().isLt(cost)) {
+        // cost must be positive, so nudge it
+        cost = costFactory.makeTinyCost();
+      }
       for (RelNode input : rel.getInputs()) {
-        // If a child of this expression uses a materialized view,
-        // then we decrease its cost by a certain factor. This is
-        // useful for e.g. partial rewritings, where a part of plan
-        // does not use the materialization, but we still want to
-        // decrease its cost so it is chosen instead of the original
-        // plan
-        cost = cost.plus(getCost(input, mq).multiplyBy(FACTOR));
+        cost = cost.plus(getCost(input, mq));
       }
     } else {
       // No materialized view or not heuristic approach, normal costing
