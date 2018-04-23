@@ -18,7 +18,9 @@
 
 package org.apache.hadoop.hive.ql.plan.mapper;
 
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,6 +36,7 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
 import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignatureFactory;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Sets;
 
 /**
  * Enables to connect related objects to eachother.
@@ -43,7 +46,106 @@ import com.google.common.annotations.VisibleForTesting;
 public class PlanMapper {
 
   Set<EquivGroup> groups = new HashSet<>();
-  private Map<Object, EquivGroup> objectMap = new HashMap<>();
+  private Map<Object, EquivGroup> objectMap = new CompositeMap<>(OpTreeSignature.class);
+
+  /**
+   * Specialized class which can compare by identity or value; based on the key type.
+   */
+  private static class CompositeMap<K, V> implements Map<K, V> {
+
+    Map<K, V> comparedMap = new HashMap<>();
+    Map<K, V> identityMap = new IdentityHashMap<>();
+    final Set<Class<?>> typeCompared;
+
+    CompositeMap(Class<?>... comparedTypes) {
+      for (Class<?> class1 : comparedTypes) {
+        if (!Modifier.isFinal(class1.getModifiers())) {
+          throw new RuntimeException(class1 + " is not final...for this to reliably work; it should be");
+        }
+      }
+      typeCompared = Sets.newHashSet(comparedTypes);
+    }
+
+    @Override
+    public int size() {
+      return comparedMap.size() + identityMap.size();
+    }
+
+    @Override
+    public boolean isEmpty() {
+      return comparedMap.isEmpty() && identityMap.isEmpty();
+    }
+
+    @Override
+    public boolean containsKey(Object key) {
+      return comparedMap.containsKey(key) || identityMap.containsKey(key);
+    }
+
+    @Override
+    public boolean containsValue(Object value) {
+      return comparedMap.containsValue(value) || identityMap.containsValue(value);
+    }
+
+    @Override
+    public V get(Object key) {
+      V v0 = comparedMap.get(key);
+      if (v0 != null) {
+        return v0;
+      }
+      return identityMap.get(key);
+    }
+
+    @Override
+    public V put(K key, V value) {
+      if (shouldCompare(key.getClass())) {
+        return comparedMap.put(key, value);
+      } else {
+        return identityMap.put(key, value);
+      }
+    }
+
+    @Override
+    public V remove(Object key) {
+      if (shouldCompare(key.getClass())) {
+        return comparedMap.remove(key);
+      } else {
+        return identityMap.remove(key);
+      }
+    }
+
+    private boolean shouldCompare(Class<?> key) {
+      return typeCompared.contains(key);
+    }
+
+    @Override
+    public void putAll(Map<? extends K, ? extends V> m) {
+      for (Entry<? extends K, ? extends V> e : m.entrySet()) {
+        put(e.getKey(), e.getValue());
+      }
+    }
+
+    @Override
+    public void clear() {
+      comparedMap.clear();
+      identityMap.clear();
+    }
+
+    @Override
+    public Set<K> keySet() {
+      return Sets.union(comparedMap.keySet(), identityMap.keySet());
+    }
+
+    @Override
+    public Collection<V> values() {
+      throw new UnsupportedOperationException("This method is not supported");
+    }
+
+    @Override
+    public Set<Entry<K, V>> entrySet() {
+      return Sets.union(comparedMap.entrySet(), identityMap.entrySet());
+    }
+
+  }
 
   /**
    * A set of objects which are representing the same thing.
@@ -55,7 +157,7 @@ public class PlanMapper {
    *   there might be more than one, since an optimization may replace an operator with a new one
    *   <li> Signature - to enable inter-plan look up of the same data
    *   <li> OperatorStats - collected runtime information
-   * <ul>
+   * </ul>
    */
   public class EquivGroup {
     Set<Object> members = new HashSet<>();
@@ -116,7 +218,7 @@ public class PlanMapper {
 
   private Object getKeyFor(Object o) {
     if (o instanceof Operator) {
-      Operator operator = (Operator) o;
+      Operator<?> operator = (Operator<?>) o;
       return signatureCache.getSignature(operator);
     }
     return o;

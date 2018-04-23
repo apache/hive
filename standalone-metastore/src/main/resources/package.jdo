@@ -1339,6 +1339,20 @@
         <column name="SERDE_ID"/>
       </field>
     </class>
+    <class name="MRuntimeStat" identity-type="datastore" table="RUNTIME_STATS" detachable="true">
+      <datastore-identity>
+        <column name="RS_ID"/>
+      </datastore-identity>
+      <field name="createTime">
+        <column name="CREATE_TIME" jdbc-type="integer"/>
+      </field>
+      <field name="weight">
+        <column name="WEIGHT" jdbc-type="integer"/>
+      </field>
+      <field name="payload">
+        <column name="PAYLOAD" jdbc-type="BLOB" allows-null="true"/>
+      </field>
+   </class>
   </package>
 </jdo>
 

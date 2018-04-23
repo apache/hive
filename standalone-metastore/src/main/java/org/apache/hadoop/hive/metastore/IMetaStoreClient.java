@@ -94,6 +94,7 @@ import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.Role;
+import org.apache.hadoop.hive.metastore.api.RuntimeStat;
 import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
@@ -1891,6 +1892,7 @@ public interface IMetaStoreClient {
    * @throws TException Thrift transport error.
    * @deprecated Use {@link #dropPartitions(String, String, String, List, boolean, boolean, boolean)}
    */
+  @Deprecated
   List<Partition> dropPartitions(String dbName, String tblName,
       List<ObjectPair<Integer, byte[]>> partExprs, boolean deleteData,
       boolean ifExists, boolean needResults) throws NoSuchObjectException, MetaException, TException;
@@ -3641,4 +3643,11 @@ public interface IMetaStoreClient {
    * @return true if the lock could be renewed, false otherwise
    */
   boolean heartbeatLockMaterializationRebuild(String dbName, String tableName, long txnId) throws TException;
+
+  /** Adds a RuntimeStat for metastore persistence. */
+  void addRuntimeStat(RuntimeStat stat) throws TException;
+
+  /** Reads runtime statistics. */
+  List<RuntimeStat> getRuntimeStats() throws TException;
+
 }
