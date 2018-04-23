@@ -506,8 +506,8 @@ struct BinaryColumnStatsData {
 
 
 struct Decimal {
-1: required binary unscaled,
-3: required i16 scale
+3: required i16 scale, // force using scale first in Decimal.compareTo
+1: required binary unscaled
 }
 
 struct DecimalColumnStatsData {
