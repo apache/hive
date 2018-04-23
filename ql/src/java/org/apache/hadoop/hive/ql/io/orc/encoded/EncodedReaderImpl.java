@@ -395,7 +395,7 @@ class EncodedReaderImpl implements EncodedReader {
     // We go by RG and not by column because that is how data is processed.
     boolean hasError = true;
     try {
-      int rgCount = (int)Math.ceil((double)stripe.getNumberOfRows() / rowIndexStride);
+      int rgCount = rowIndexStride == 0 ? 1 : (int)Math.ceil((double)stripe.getNumberOfRows() / rowIndexStride);
       for (int rgIx = 0; rgIx < rgCount; ++rgIx) {
         if (rgs != null && !rgs[rgIx]) {
           continue; // RG filtered.
@@ -409,19 +409,31 @@ class EncodedReaderImpl implements EncodedReader {
           ecb.init(fileKey, stripeIx, rgIx, physicalFileIncludes.length);
           for (int colIx = 0; colIx < colCtxs.length; ++colIx) {
             ColumnReadContext ctx = colCtxs[colIx];
-            if (ctx == null) continue; // This column is not included.
+            if (ctx == null) continue; // This column is not included
+
+            OrcProto.RowIndexEntry index;
+            OrcProto.RowIndexEntry nextIndex;
+            // index is disabled
+            if (ctx.rowIndex == null) {
+              if (isTracingEnabled) {
+                LOG.trace("Row index is null. Likely reading a file with indexes disabled.");
+              }
+              index = null;
+              nextIndex = null;
+            } else {
+              index = ctx.rowIndex.getEntry(rgIx);
+              nextIndex = isLastRg ? null : ctx.rowIndex.getEntry(rgIx + 1);
+            }
             if (isTracingEnabled) {
               LOG.trace("ctx: {} rgIx: {} isLastRg: {} rgCount: {}", ctx, rgIx, isLastRg, rgCount);
             }
-            OrcProto.RowIndexEntry index = ctx.rowIndex.getEntry(rgIx),
-                nextIndex = isLastRg ? null : ctx.rowIndex.getEntry(rgIx + 1);
             ecb.initOrcColumn(ctx.colIx);
             trace.logStartCol(ctx.colIx);
             for (int streamIx = 0; streamIx < ctx.streamCount; ++streamIx) {
               StreamContext sctx = ctx.streams[streamIx];
-              ColumnStreamData cb = null;
+              ColumnStreamData cb;
               try {
-                if (RecordReaderUtils.isDictionary(sctx.kind, ctx.encoding)) {
+                if (RecordReaderUtils.isDictionary(sctx.kind, ctx.encoding) || index == null) {
                   // This stream is for entire stripe and needed for every RG; uncompress once and reuse.
                   if (isTracingEnabled) {
                     LOG.trace("Getting stripe-level stream [" + sctx.kind + ", " + ctx.encoding + "] for"
@@ -685,12 +697,14 @@ class EncodedReaderImpl implements EncodedReader {
   @Override
   public void close() throws IOException {
     try {
-      if (isCodecFromPool && !isCodecFailure) {
-        OrcCodecPool.returnCodec(compressionKind, codec);
-      } else {
-        codec.close();
+      if (codec != null) {
+        if (isCodecFromPool && !isCodecFailure) {
+          OrcCodecPool.returnCodec(compressionKind, codec);
+        } else {
+          codec.close();
+        }
+        codec = null;
       }
-      codec = null;
     } catch (Exception ex) {
       LOG.error("Ignoring error from codec", ex);
     } finally {

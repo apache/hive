@@ -692,10 +692,12 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       return result;
     } finally {
       try {
-        if (isPool && !isCodecError) {
-          OrcCodecPool.returnCodec(kind, codec);
-        } else {
-          codec.close();
+        if (codec != null) {
+          if (isPool && !isCodecError) {
+            OrcCodecPool.returnCodec(kind, codec);
+          } else {
+            codec.close();
+          }
         }
       } catch (Exception ex) {
         LOG.error("Ignoring codec cleanup error", ex);

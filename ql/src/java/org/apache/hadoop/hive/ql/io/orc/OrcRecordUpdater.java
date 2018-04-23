@@ -294,6 +294,13 @@ public class OrcRecordUpdater implements RecordUpdater {
       writerOptions.bufferSize(baseBufferSizeValue / ratio);
       writerOptions.stripeSize(baseStripeSizeValue / ratio);
       writerOptions.blockPadding(false);
+      if (optionsCloneForDelta.getConfiguration().getBoolean(
+        HiveConf.ConfVars.HIVE_ORC_DELTA_STREAMING_OPTIMIZATIONS_ENABLED.varname, false)) {
+        writerOptions.compress(CompressionKind.NONE);
+        writerOptions.encodingStrategy(org.apache.orc.OrcFile.EncodingStrategy.SPEED);
+        writerOptions.rowIndexStride(0);
+        writerOptions.getConfiguration().set(OrcConf.DICTIONARY_KEY_SIZE_THRESHOLD.getAttribute(), "-1.0");
+      }
     }
     writerOptions.fileSystem(fs).callback(indexBuilder);
     rowInspector = (StructObjectInspector)options.getInspector();
