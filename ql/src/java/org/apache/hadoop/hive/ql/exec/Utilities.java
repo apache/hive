@@ -4076,7 +4076,7 @@ public final class Utilities {
       Boolean isBaseDir) throws IOException {
     int skipLevels = dpLevels + lbLevels;
     if (filter == null) {
-      filter = new JavaUtils.IdPathFilter(writeId, stmtId, true, false);
+      filter = new JavaUtils.IdPathFilter(writeId, stmtId);
     }
     if (skipLevels == 0) {
       return statusToPath(fs.listStatus(path, filter));
@@ -4250,7 +4250,7 @@ public final class Utilities {
     FileSystem fs = specPath.getFileSystem(hconf);
     Path manifestDir = getManifestDir(specPath, writeId, stmtId, unionSuffix, isInsertOverwrite);
     if (!success) {
-      JavaUtils.IdPathFilter filter = new JavaUtils.IdPathFilter(writeId, stmtId, true);
+      JavaUtils.IdPathFilter filter = new JavaUtils.IdPathFilter(writeId, stmtId);
       tryDeleteAllMmFiles(fs, specPath, manifestDir, dpLevels, lbLevels,
           filter, writeId, stmtId, hconf);
       return;
@@ -4275,7 +4275,7 @@ public final class Utilities {
     }
 
     Utilities.FILE_OP_LOGGER.debug("Looking for files in: {}", specPath);
-    JavaUtils.IdPathFilter filter = new JavaUtils.IdPathFilter(writeId, stmtId, true, false);
+    JavaUtils.IdPathFilter filter = new JavaUtils.IdPathFilter(writeId, stmtId);
     if (isMmCtas && !fs.exists(specPath)) {
       Utilities.FILE_OP_LOGGER.info("Creating table directory for CTAS with no output at {}", specPath);
       FileUtils.mkdir(fs, specPath, hconf);
