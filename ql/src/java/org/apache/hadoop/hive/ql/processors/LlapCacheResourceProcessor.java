@@ -58,6 +58,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
 
 public class LlapCacheResourceProcessor implements CommandProcessor {
   public static final Logger LOG = LoggerFactory.getLogger(LlapCacheResourceProcessor.class);
@@ -97,8 +98,10 @@ public class LlapCacheResourceProcessor implements CommandProcessor {
       hs2Host = ss.getHiveServer2Host();
     }
     if (purge) {
+      List<String> fullCommand = Lists.newArrayList("llap", "cache");
+      fullCommand.addAll(Arrays.asList(params));
       CommandProcessorResponse authErrResp =
-        CommandUtil.authorizeCommandAndServiceObject(ss, HiveOperationType.LLAP_CACHE, Arrays.asList(params), hs2Host);
+        CommandUtil.authorizeCommandAndServiceObject(ss, HiveOperationType.LLAP_CACHE_PURGE, fullCommand, hs2Host);
       if (authErrResp != null) {
         // there was an authorization issue
         return authErrResp;
