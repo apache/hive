@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.DecimalColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.utils.DecimalUtils;
 import org.apache.hadoop.hive.metastore.columnstats.cache.DecimalColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.ColStatsObjWithSourceInfo;
@@ -363,9 +364,9 @@ public class DecimalColumnStatsAggregator extends ColumnStatsAggregator implemen
         ndv = (long) (ndvMin + (ndvMax - ndvMin) * minInd / (minInd - maxInd));
       }
     }
-    extrapolateDecimalData.setLowValue(StatObjectConverter.createThriftDecimal(String
+    extrapolateDecimalData.setLowValue(DecimalUtils.createThriftDecimal(String
         .valueOf(lowValue)));
-    extrapolateDecimalData.setHighValue(StatObjectConverter.createThriftDecimal(String
+    extrapolateDecimalData.setHighValue(DecimalUtils.createThriftDecimal(String
         .valueOf(highValue)));
     extrapolateDecimalData.setNumNulls(numNulls);
     extrapolateDecimalData.setNumDVs(ndv);

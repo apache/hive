@@ -8491,12 +8491,12 @@ Decimal::~Decimal() throw() {
 }
 
 
-void Decimal::__set_unscaled(const std::string& val) {
-  this->unscaled = val;
-}
-
 void Decimal::__set_scale(const int16_t val) {
   this->scale = val;
+}
+
+void Decimal::__set_unscaled(const std::string& val) {
+  this->unscaled = val;
 }
 
 uint32_t Decimal::read(::apache::thrift::protocol::TProtocol* iprot) {
@@ -8511,8 +8511,8 @@ uint32_t Decimal::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   using ::apache::thrift::protocol::TProtocolException;
 
-  bool isset_unscaled = false;
   bool isset_scale = false;
+  bool isset_unscaled = false;
 
   while (true)
   {
@@ -8522,18 +8522,18 @@ uint32_t Decimal::read(::apache::thrift::protocol::TProtocol* iprot) {
     }
     switch (fid)
     {
-      case 1:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readBinary(this->unscaled);
-          isset_unscaled = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
       case 3:
         if (ftype == ::apache::thrift::protocol::T_I16) {
           xfer += iprot->readI16(this->scale);
           isset_scale = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readBinary(this->unscaled);
+          isset_unscaled = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -8547,9 +8547,9 @@ uint32_t Decimal::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   xfer += iprot->readStructEnd();
 
-  if (!isset_unscaled)
-    throw TProtocolException(TProtocolException::INVALID_DATA);
   if (!isset_scale)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  if (!isset_unscaled)
     throw TProtocolException(TProtocolException::INVALID_DATA);
   return xfer;
 }
@@ -8574,24 +8574,24 @@ uint32_t Decimal::write(::apache::thrift::protocol::TProtocol* oprot) const {
 
 void swap(Decimal &a, Decimal &b) {
   using ::std::swap;
-  swap(a.unscaled, b.unscaled);
   swap(a.scale, b.scale);
+  swap(a.unscaled, b.unscaled);
 }
 
 Decimal::Decimal(const Decimal& other310) {
-  unscaled = other310.unscaled;
   scale = other310.scale;
+  unscaled = other310.unscaled;
 }
 Decimal& Decimal::operator=(const Decimal& other311) {
-  unscaled = other311.unscaled;
   scale = other311.scale;
+  unscaled = other311.unscaled;
   return *this;
 }
 void Decimal::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
   out << "Decimal(";
-  out << "unscaled=" << to_string(unscaled);
-  out << ", " << "scale=" << to_string(scale);
+  out << "scale=" << to_string(scale);
+  out << ", " << "unscaled=" << to_string(unscaled);
   out << ")";
 }
 

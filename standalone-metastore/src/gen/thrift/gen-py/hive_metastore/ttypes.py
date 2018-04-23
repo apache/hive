@@ -5954,8 +5954,8 @@ class BinaryColumnStatsData:
 class Decimal:
   """
   Attributes:
-   - unscaled
    - scale
+   - unscaled
   """
 
   thrift_spec = (
@@ -5965,9 +5965,9 @@ class Decimal:
     (3, TType.I16, 'scale', None, None, ), # 3
   )
 
-  def __init__(self, unscaled=None, scale=None,):
-    self.unscaled = unscaled
+  def __init__(self, scale=None, unscaled=None,):
     self.scale = scale
+    self.unscaled = unscaled
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -5978,14 +5978,14 @@ class Decimal:
       (fname, ftype, fid) = iprot.readFieldBegin()
       if ftype == TType.STOP:
         break
-      if fid == 1:
-        if ftype == TType.STRING:
-          self.unscaled = iprot.readString()
-        else:
-          iprot.skip(ftype)
-      elif fid == 3:
+      if fid == 3:
         if ftype == TType.I16:
           self.scale = iprot.readI16()
+        else:
+          iprot.skip(ftype)
+      elif fid == 1:
+        if ftype == TType.STRING:
+          self.unscaled = iprot.readString()
         else:
           iprot.skip(ftype)
       else:
@@ -6010,17 +6010,17 @@ class Decimal:
     oprot.writeStructEnd()
 
   def validate(self):
-    if self.unscaled is None:
-      raise TProtocol.TProtocolException(message='Required field unscaled is unset!')
     if self.scale is None:
       raise TProtocol.TProtocolException(message='Required field scale is unset!')
+    if self.unscaled is None:
+      raise TProtocol.TProtocolException(message='Required field unscaled is unset!')
     return
 
 
   def __hash__(self):
     value = 17
-    value = (value * 31) ^ hash(self.unscaled)
     value = (value * 31) ^ hash(self.scale)
+    value = (value * 31) ^ hash(self.unscaled)
     return value
 
   def __repr__(self):

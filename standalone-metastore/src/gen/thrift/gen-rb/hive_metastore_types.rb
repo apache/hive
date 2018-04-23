@@ -1320,19 +1320,19 @@ end
 
 class Decimal
   include ::Thrift::Struct, ::Thrift::Struct_Union
-  UNSCALED = 1
   SCALE = 3
+  UNSCALED = 1
 
   FIELDS = {
-    UNSCALED => {:type => ::Thrift::Types::STRING, :name => 'unscaled', :binary => true},
-    SCALE => {:type => ::Thrift::Types::I16, :name => 'scale'}
+    SCALE => {:type => ::Thrift::Types::I16, :name => 'scale'},
+    UNSCALED => {:type => ::Thrift::Types::STRING, :name => 'unscaled', :binary => true}
   }
 
   def struct_fields; FIELDS; end
 
   def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field unscaled is unset!') unless @unscaled
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field scale is unset!') unless @scale
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field unscaled is unset!') unless @unscaled
   end
 
   ::Thrift::Struct.generate_accessors self
