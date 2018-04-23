@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 /**
  * JDBCExtractJoinFilterRule extracts out the
  * {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter}
- * from a {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin} operator. 
+ * from a {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin} operator.
  * if the HiveFilter could be replaced by two HiveFilter operators that one of them could be pushed down below the
  * {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.HiveJdbcConverter}
  */
@@ -45,7 +45,7 @@ public final class JDBCExtractJoinFilterRule extends AbstractJoinExtractFilterRu
   public JDBCExtractJoinFilterRule() {
     super(operand(HiveJoin.class,
             operand(HiveJdbcConverter.class, any()),
-            operand(HiveJdbcConverter.class, any())), 
+            operand(HiveJdbcConverter.class, any())),
           HiveRelFactories.HIVE_BUILDER, null);
   }
 

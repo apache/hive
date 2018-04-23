@@ -53,7 +53,7 @@ public class JDBCProjectPushDownRule extends RelOptRule {
     final HiveProject project = call.rel(0);
     final HiveJdbcConverter conv = call.rel(1);
     for (RexNode currProject : project.getProjects()) {
-      if (JDBCRexCallValidator.isValidJdbcOperation(currProject, conv.getJdbcDialect()) == false) {
+      if (!JDBCRexCallValidator.isValidJdbcOperation(currProject, conv.getJdbcDialect())) {
         return false;
       }
     }

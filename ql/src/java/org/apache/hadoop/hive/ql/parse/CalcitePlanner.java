@@ -1857,7 +1857,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
               JDBCAbstractSplitFilterRule.SPLIT_FILTER_ABOVE_CONVERTER,
               JDBCFilterJoinRule.INSTANCE,
               JDBCJoinPushDownRule.INSTANCE, JDBCUnionPushDownRule.INSTANCE,
-              JDBCFilterPushDownRule.INSTANCE, JDBCProjectPushDownRule.INSTANCE, 
+              JDBCFilterPushDownRule.INSTANCE, JDBCProjectPushDownRule.INSTANCE,
               JDBCAggregationPushDownRule.INSTANCE, JDBCSortPushDownRule.INSTANCE
       );
 

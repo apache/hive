@@ -45,7 +45,7 @@ TBLPROPERTIES (
                 "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "APP",
-                "hive.sql.dbcp.password" = "mine", 
+                "hive.sql.dbcp.password" = "mine",
                 "hive.sql.table" = "SIMPLE_DERBY_TABLE",
                 "hive.sql.dbcp.maxActive" = "1"
 )
@@ -62,7 +62,7 @@ TBLPROPERTIES (
                 "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "APP",
-                "hive.sql.dbcp.password" = "mine", 
+                "hive.sql.dbcp.password" = "mine",
                 "hive.sql.table" = "SIMPLE_DERBY_TABLE",
                 "hive.sql.dbcp.maxActive" = "1"
 )

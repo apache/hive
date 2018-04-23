@@ -41,7 +41,7 @@ public class JDBCJoinPushDownRule extends RelOptRule {
   private static final Logger LOG = LoggerFactory.getLogger(JDBCJoinPushDownRule.class);
 
   public static final JDBCJoinPushDownRule INSTANCE = new JDBCJoinPushDownRule();
-  
+
   public JDBCJoinPushDownRule() {
     super(operand(HiveJoin.class,
             operand(HiveJdbcConverter.class, any()),
@@ -60,7 +60,7 @@ public class JDBCJoinPushDownRule extends RelOptRule {
       return false;
     }*/
 
-    if (converter1.getJdbcConvention().getName().equals(converter2.getJdbcConvention().getName()) == false) {
+    if (!converter1.getJdbcConvention().getName().equals(converter2.getJdbcConvention().getName())) {
       return false;
     }
 
@@ -89,10 +89,10 @@ public class JDBCJoinPushDownRule extends RelOptRule {
     JdbcJoin newJdbcJoin = (JdbcJoin) new JdbcJoinRule(converter1.getJdbcConvention()).convert(newHiveJoin,
             false);
     if (newJdbcJoin != null) {
-      RelNode ConverterRes = converter1.copy(converter1.getTraitSet(), Arrays.asList(newJdbcJoin));
-      if (ConverterRes != null) {
-        call.transformTo(ConverterRes);
-      } 
+      RelNode converterRes = converter1.copy(converter1.getTraitSet(), Arrays.asList(newJdbcJoin));
+      if (converterRes != null) {
+        call.transformTo(converterRes);
+      }
     }
   }
 

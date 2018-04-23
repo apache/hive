@@ -37,10 +37,10 @@ public class JDBCFilterJoinRule extends HiveFilterJoinRule {
   public static final JDBCFilterJoinRule INSTANCE = new JDBCFilterJoinRule();
 
   public JDBCFilterJoinRule() {
-    super(RelOptRule.operand(HiveFilter.class, 
-            RelOptRule.operand(HiveJoin.class, 
-                RelOptRule.operand(HiveJdbcConverter.class, RelOptRule.any()),
-                RelOptRule.operand(HiveJdbcConverter.class, RelOptRule.any()))),
+    super(RelOptRule.operand(HiveFilter.class,
+            RelOptRule.operand(HiveJoin.class,
+              RelOptRule.operand(HiveJdbcConverter.class, RelOptRule.any()),
+              RelOptRule.operand(HiveJdbcConverter.class, RelOptRule.any()))),
         "JDBCFilterJoinRule", true, HiveRelFactories.HIVE_BUILDER);
   }
 

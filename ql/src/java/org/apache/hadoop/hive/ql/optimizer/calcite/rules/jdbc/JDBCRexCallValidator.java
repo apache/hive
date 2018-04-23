@@ -41,7 +41,7 @@ public class JDBCRexCallValidator {
   private static class JdbcRexCallValidatorVisitor extends RexVisitorImpl<Void> {
     private final SqlDialect dialect;
 
-    JdbcRexCallValidatorVisitor(SqlDialect dialect) {
+    private JdbcRexCallValidatorVisitor(SqlDialect dialect) {
       super(true);
       this.dialect = dialect;
     }

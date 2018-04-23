@@ -35,12 +35,12 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
 
 /**
  * This is a designated RelNode that splits the Hive operators and the Jdbc operators,
- * every successor of this node will be Jdbc operator. 
+ * every successor of this node will be Jdbc operator.
  */
 public class HiveJdbcConverter extends ConverterImpl implements HiveRelNode {
 
   private final JdbcConvention convention;
-  
+
   public HiveJdbcConverter(RelOptCluster cluster,  RelTraitSet traits,
       JdbcRel input, JdbcConvention jc) {
     super(cluster, ConventionTraitDef.INSTANCE, traits, input);

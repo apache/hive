@@ -53,7 +53,7 @@ public class JDBCFilterPushDownRule extends RelOptRule {
   public boolean matches(RelOptRuleCall call) {
     final HiveFilter filter = call.rel(0);
     final HiveJdbcConverter converter = call.rel(1);
-    
+
     RexNode cond = filter.getCondition();
 
     return JDBCRexCallValidator.isValidJdbcOperation(cond, converter.getJdbcDialect());

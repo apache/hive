@@ -39,7 +39,8 @@ import org.slf4j.LoggerFactory;
 /**
  * JDBCAbstractSplitFilterRule split a {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter} into
  * two {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter} operators where the lower operator
- * could be pushed down below the {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJdbcConverter}}
+ * could be pushed down below the
+ * {@link org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.HiveJdbcConverter}}
  * operator and therefore could be sent to the external table.
  */
 
@@ -58,12 +59,12 @@ public abstract class JDBCAbstractSplitFilterRule extends RelOptRule {
     private final SqlDialect dialect;
 
     public FilterSupportedFunctionsVisitor (SqlDialect dialect) {
-      super (true);
+      super(true);
       this.dialect = dialect;
     }
 
-    private final ArrayList<RexCall> validJdbcNode = new ArrayList<RexCall> ();
-    private final ArrayList<RexCall> invalidJdbcNode = new ArrayList<RexCall> ();
+    private final ArrayList<RexCall> validJdbcNode = new ArrayList<RexCall>();
+    private final ArrayList<RexCall> invalidJdbcNode = new ArrayList<RexCall>();
 
     public ArrayList<RexCall> getValidJdbcNode() {
       return validJdbcNode;
@@ -94,7 +95,7 @@ public abstract class JDBCAbstractSplitFilterRule extends RelOptRule {
   }
 
   protected JDBCAbstractSplitFilterRule(RelOptRuleOperand operand) {
-    super (operand);
+    super(operand);
   }
 
   public static boolean canSplitFilter(RexNode cond, SqlDialect dialect) {
@@ -108,7 +109,7 @@ public abstract class JDBCAbstractSplitFilterRule extends RelOptRule {
 
     final HiveFilter filter = call.rel(0);
 
-    RexNode cond = filter.getCondition ();
+    RexNode cond = filter.getCondition();
 
     return canSplitFilter(cond, dialect);
   }
@@ -118,7 +119,7 @@ public abstract class JDBCAbstractSplitFilterRule extends RelOptRule {
 
     final HiveFilter        filter = call.rel(0);
 
-    RexCall callExpression = (RexCall) filter.getCondition ();
+    RexCall callExpression = (RexCall) filter.getCondition();
 
     FilterSupportedFunctionsVisitor visitor = new FilterSupportedFunctionsVisitor(dialect);
     callExpression.accept(visitor);
@@ -137,7 +138,8 @@ public abstract class JDBCAbstractSplitFilterRule extends RelOptRule {
       validCondition = rexBuilder.makeCall(SqlStdOperatorTable.AND, validJdbcNode);
     }
 
-    HiveFilter newJdbcValidFilter = new HiveFilter(filter.getCluster(), filter.getTraitSet(), filter.getInput(), validCondition);
+    HiveFilter newJdbcValidFilter = new HiveFilter(filter.getCluster(), filter.getTraitSet(), filter.getInput(),
+            validCondition);
 
     RexNode invalidCondition;
     if (invalidJdbcNode.size() == 1) {
@@ -152,13 +154,13 @@ public abstract class JDBCAbstractSplitFilterRule extends RelOptRule {
     call.transformTo(newJdbcInvalidFilter);
   }
 
-  /**
-   * JDBCSplitFilterAboveJoinRule split splitter above a HiveJoin operator, so we could push it into the HiveJoin
+  /*
+   * JDBCSplitFilterAboveJoinRule split splitter above a HiveJoin operator, so we could push it into the HiveJoin.
    */
   public static class JDBCSplitFilterAboveJoinRule extends JDBCAbstractSplitFilterRule {
     public JDBCSplitFilterAboveJoinRule() {
       super(operand(HiveFilter.class,
-              operand(HiveJoin.class, 
+              operand(HiveJoin.class,
                   operand(HiveJdbcConverter.class, any()))));
     }
 
@@ -169,7 +171,7 @@ public abstract class JDBCAbstractSplitFilterRule extends RelOptRule {
       final HiveJoin join = call.rel(1);
       final HiveJdbcConverter conv = call.rel(2);
 
-      RexNode joinCond = join.getCondition ();
+      RexNode joinCond = join.getCondition();
 
       return super.matches(call) && JDBCRexCallValidator.isValidJdbcOperation(joinCond, conv.getJdbcDialect());
     }
@@ -181,8 +183,8 @@ public abstract class JDBCAbstractSplitFilterRule extends RelOptRule {
     }
   }
 
-  /**
-   * JDBCSplitFilterRule splits a HiveFilter rule so we could push part of the HiveFilter into the jdbc
+  /*
+   * JDBCSplitFilterRule splits a HiveFilter rule so we could push part of the HiveFilter into the jdbc.
    */
   public static class JDBCSplitFilterRule extends JDBCAbstractSplitFilterRule {
     public JDBCSplitFilterRule() {

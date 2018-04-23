@@ -69,7 +69,9 @@ public class JDBCSortPushDownRule extends RelOptRule {
     final HiveJdbcConverter converter = call.rel(1);
     final RelNode input = call.rel(2);
 
-    Sort newHiveSort = sort.copy(sort.getTraitSet(), input, sort.getCollation(), sort.getOffsetExpr (), sort.getFetchExpr());
+    Sort newHiveSort = sort.copy(sort.getTraitSet(), input, sort.getCollation(), sort.getOffsetExpr(),
+            sort.getFetchExpr());
+
     JdbcSort newJdbcSort =
             (JdbcSort) new JdbcSortRule(converter.getJdbcConvention()).convert(newHiveSort, false);
     if (newJdbcSort != null) {
