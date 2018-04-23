@@ -2383,19 +2383,25 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     rqst.setMaxEvents(maxEvents);
     NotificationEventResponse rsp = client.get_next_notification(rqst);
     LOG.debug("Got back " + rsp.getEventsSize() + " events");
-    if (filter == null) {
-      return rsp;
-    } else {
-      NotificationEventResponse filtered = new NotificationEventResponse();
-      if (rsp != null && rsp.getEvents() != null) {
-        for (NotificationEvent e : rsp.getEvents()) {
-          if (filter.accept(e)) {
-            filtered.addToEvents(e);
-          }
+    NotificationEventResponse filtered = new NotificationEventResponse();
+    if (rsp != null && rsp.getEvents() != null) {
+      long nextEventId = lastEventId + 1;
+      for (NotificationEvent e : rsp.getEvents()) {
+        if (e.getEventId() != nextEventId) {
+          LOG.error("Requested events are found missing in NOTIFICATION_LOG table. Expected: {}, Actual: {}. "
+                  + "Probably, cleaner would've cleaned it up. "
+                  + "Try setting higher value for hive.metastore.event.db.listener.timetolive. "
+                  + "Also, bootstrap the system again to get back the consistent replicated state.",
+                  nextEventId, e.getEventId());
+          throw new IllegalStateException("Notification events are missing.");
         }
+        if ((filter != null) && filter.accept(e)) {
+          filtered.addToEvents(e);
+        }
+        nextEventId++;
       }
-      return filtered;
     }
+    return (filter != null) ? filtered : rsp;
   }
 
   @InterfaceAudience.LimitedPrivate({"HCatalog"})
