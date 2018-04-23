@@ -488,8 +488,11 @@ public class Operation2Privilege {
 
     // Handled via adminPrivOps (see above).
     op2Priv.put(HiveOperationType.KILL_QUERY, PrivRequirement.newIOPrivRequirement(null, null));
-    op2Priv.put(HiveOperationType.LLAP_CLUSTER, PrivRequirement.newIOPrivRequirement(null, null));
-    op2Priv.put(HiveOperationType.LLAP_CACHE, PrivRequirement.newIOPrivRequirement(ADMIN_PRIV_AR, ADMIN_PRIV_AR));
+    // llap cluster info does not need admin privilege, since it is read only assigning privilege same as
+    // describe/explain/show commands
+    op2Priv.put(HiveOperationType.LLAP_CLUSTER_INFO, PrivRequirement.newIOPrivRequirement(SEL_NOGRANT_AR, null));
+    // llap cache purge requires admin privilege as it mutates state (cache) on the cluster
+    op2Priv.put(HiveOperationType.LLAP_CACHE_PURGE, PrivRequirement.newIOPrivRequirement(ADMIN_PRIV_AR, ADMIN_PRIV_AR));
     op2Priv.put(HiveOperationType.CREATE_RESOURCEPLAN, PrivRequirement.newIOPrivRequirement(null, null));
     op2Priv.put(HiveOperationType.ALTER_RESOURCEPLAN, PrivRequirement.newIOPrivRequirement(null, null));
     op2Priv.put(HiveOperationType.DROP_RESOURCEPLAN, PrivRequirement.newIOPrivRequirement(null, null));

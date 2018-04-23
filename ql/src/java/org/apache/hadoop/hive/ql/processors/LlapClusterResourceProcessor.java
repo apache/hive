@@ -24,6 +24,7 @@ import static org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe.defaultN
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Arrays;
+import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -36,11 +37,13 @@ import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
 
 public class LlapClusterResourceProcessor implements CommandProcessor {
   public static final Logger LOG = LoggerFactory.getLogger(LlapClusterResourceProcessor.class);
@@ -75,10 +78,21 @@ public class LlapClusterResourceProcessor implements CommandProcessor {
   private CommandProcessorResponse llapClusterCommandHandler(final SessionState ss,
     final String[] params) throws ParseException {
     CommandLine args = parseCommandArgs(CLUSTER_OPTIONS, params);
+    String hs2Host = null;
+    if (ss.isHiveServerQuery()) {
+      hs2Host = ss.getHiveServer2Host();
+    }
 
-    // no auth check for "LLAP CLUSTER INFO"
     boolean hasInfo = args.hasOption("info");
     if (hasInfo) {
+      List<String> fullCommand = Lists.newArrayList("llap", "cluster");
+      fullCommand.addAll(Arrays.asList(params));
+      CommandProcessorResponse authErrResp =
+        CommandUtil.authorizeCommandAndServiceObject(ss, HiveOperationType.LLAP_CLUSTER_INFO, fullCommand, hs2Host);
+      if (authErrResp != null) {
+        // there was an authorization issue
+        return authErrResp;
+      }
       try {
         LlapRegistryService llapRegistryService = LlapRegistryService.getClient(ss.getConf());
         String appId = llapRegistryService.getApplicationId() == null ? "null" :
