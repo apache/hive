@@ -289,7 +289,7 @@ public class HiveAlterHandler implements AlterHandler {
             !isPartitionedTable) {
           Database db = msdb.getDatabase(newDbName);
           // Update table stats. For partitioned table, we update stats in alterPartition()
-          MetaStoreUtils.updateTableStatsFast(db, newt, wh, false, true, environmentContext);
+          MetaStoreUtils.updateTableStatsSlow(db, newt, wh, false, true, environmentContext);
         }
 
         if (cascade && isPartitionedTable) {
