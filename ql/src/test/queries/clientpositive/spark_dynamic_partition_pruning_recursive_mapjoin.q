@@ -1,3 +1,4 @@
+SET hive.vectorized.execution.enabled=false;
 SET hive.spark.dynamic.partition.pruning=true;
 SET hive.auto.convert.join=true;
 SET hive.strict.checks.cartesian.product=false;
