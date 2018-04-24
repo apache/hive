@@ -224,6 +224,8 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void get_serde(SerDeInfo& _return, const GetSerdeRequest& rqst) = 0;
   virtual void get_lock_materialization_rebuild(LockResponse& _return, const std::string& dbName, const std::string& tableName, const int64_t txnId) = 0;
   virtual bool heartbeat_lock_materialization_rebuild(const std::string& dbName, const std::string& tableName, const int64_t txnId) = 0;
+  virtual void add_runtime_stats(const RuntimeStat& stat) = 0;
+  virtual void get_runtime_stats(std::vector<RuntimeStat> & _return, const GetRuntimeStatsRequest& rqst) = 0;
 };
 
 class ThriftHiveMetastoreIfFactory : virtual public  ::facebook::fb303::FacebookServiceIfFactory {
@@ -886,6 +888,12 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
   bool heartbeat_lock_materialization_rebuild(const std::string& /* dbName */, const std::string& /* tableName */, const int64_t /* txnId */) {
     bool _return = false;
     return _return;
+  }
+  void add_runtime_stats(const RuntimeStat& /* stat */) {
+    return;
+  }
+  void get_runtime_stats(std::vector<RuntimeStat> & /* _return */, const GetRuntimeStatsRequest& /* rqst */) {
+    return;
   }
 };
 
@@ -25644,6 +25652,222 @@ class ThriftHiveMetastore_heartbeat_lock_materialization_rebuild_presult {
 
 };
 
+typedef struct _ThriftHiveMetastore_add_runtime_stats_args__isset {
+  _ThriftHiveMetastore_add_runtime_stats_args__isset() : stat(false) {}
+  bool stat :1;
+} _ThriftHiveMetastore_add_runtime_stats_args__isset;
+
+class ThriftHiveMetastore_add_runtime_stats_args {
+ public:
+
+  ThriftHiveMetastore_add_runtime_stats_args(const ThriftHiveMetastore_add_runtime_stats_args&);
+  ThriftHiveMetastore_add_runtime_stats_args& operator=(const ThriftHiveMetastore_add_runtime_stats_args&);
+  ThriftHiveMetastore_add_runtime_stats_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_add_runtime_stats_args() throw();
+  RuntimeStat stat;
+
+  _ThriftHiveMetastore_add_runtime_stats_args__isset __isset;
+
+  void __set_stat(const RuntimeStat& val);
+
+  bool operator == (const ThriftHiveMetastore_add_runtime_stats_args & rhs) const
+  {
+    if (!(stat == rhs.stat))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_add_runtime_stats_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_add_runtime_stats_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_add_runtime_stats_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_add_runtime_stats_pargs() throw();
+  const RuntimeStat* stat;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_add_runtime_stats_result__isset {
+  _ThriftHiveMetastore_add_runtime_stats_result__isset() : o1(false) {}
+  bool o1 :1;
+} _ThriftHiveMetastore_add_runtime_stats_result__isset;
+
+class ThriftHiveMetastore_add_runtime_stats_result {
+ public:
+
+  ThriftHiveMetastore_add_runtime_stats_result(const ThriftHiveMetastore_add_runtime_stats_result&);
+  ThriftHiveMetastore_add_runtime_stats_result& operator=(const ThriftHiveMetastore_add_runtime_stats_result&);
+  ThriftHiveMetastore_add_runtime_stats_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_add_runtime_stats_result() throw();
+  MetaException o1;
+
+  _ThriftHiveMetastore_add_runtime_stats_result__isset __isset;
+
+  void __set_o1(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_add_runtime_stats_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_add_runtime_stats_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_add_runtime_stats_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_add_runtime_stats_presult__isset {
+  _ThriftHiveMetastore_add_runtime_stats_presult__isset() : o1(false) {}
+  bool o1 :1;
+} _ThriftHiveMetastore_add_runtime_stats_presult__isset;
+
+class ThriftHiveMetastore_add_runtime_stats_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_add_runtime_stats_presult() throw();
+  MetaException o1;
+
+  _ThriftHiveMetastore_add_runtime_stats_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_get_runtime_stats_args__isset {
+  _ThriftHiveMetastore_get_runtime_stats_args__isset() : rqst(false) {}
+  bool rqst :1;
+} _ThriftHiveMetastore_get_runtime_stats_args__isset;
+
+class ThriftHiveMetastore_get_runtime_stats_args {
+ public:
+
+  ThriftHiveMetastore_get_runtime_stats_args(const ThriftHiveMetastore_get_runtime_stats_args&);
+  ThriftHiveMetastore_get_runtime_stats_args& operator=(const ThriftHiveMetastore_get_runtime_stats_args&);
+  ThriftHiveMetastore_get_runtime_stats_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_runtime_stats_args() throw();
+  GetRuntimeStatsRequest rqst;
+
+  _ThriftHiveMetastore_get_runtime_stats_args__isset __isset;
+
+  void __set_rqst(const GetRuntimeStatsRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_get_runtime_stats_args & rhs) const
+  {
+    if (!(rqst == rhs.rqst))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_runtime_stats_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_runtime_stats_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_runtime_stats_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_runtime_stats_pargs() throw();
+  const GetRuntimeStatsRequest* rqst;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_runtime_stats_result__isset {
+  _ThriftHiveMetastore_get_runtime_stats_result__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_get_runtime_stats_result__isset;
+
+class ThriftHiveMetastore_get_runtime_stats_result {
+ public:
+
+  ThriftHiveMetastore_get_runtime_stats_result(const ThriftHiveMetastore_get_runtime_stats_result&);
+  ThriftHiveMetastore_get_runtime_stats_result& operator=(const ThriftHiveMetastore_get_runtime_stats_result&);
+  ThriftHiveMetastore_get_runtime_stats_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_runtime_stats_result() throw();
+  std::vector<RuntimeStat>  success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_get_runtime_stats_result__isset __isset;
+
+  void __set_success(const std::vector<RuntimeStat> & val);
+
+  void __set_o1(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_get_runtime_stats_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_runtime_stats_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_runtime_stats_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_runtime_stats_presult__isset {
+  _ThriftHiveMetastore_get_runtime_stats_presult__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_get_runtime_stats_presult__isset;
+
+class ThriftHiveMetastore_get_runtime_stats_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_runtime_stats_presult() throw();
+  std::vector<RuntimeStat> * success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_get_runtime_stats_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  ::facebook::fb303::FacebookServiceClient {
  public:
   ThriftHiveMetastoreClient(boost::shared_ptr< ::apache::thrift::protocol::TProtocol> prot) :
@@ -26261,6 +26485,12 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   bool heartbeat_lock_materialization_rebuild(const std::string& dbName, const std::string& tableName, const int64_t txnId);
   void send_heartbeat_lock_materialization_rebuild(const std::string& dbName, const std::string& tableName, const int64_t txnId);
   bool recv_heartbeat_lock_materialization_rebuild();
+  void add_runtime_stats(const RuntimeStat& stat);
+  void send_add_runtime_stats(const RuntimeStat& stat);
+  void recv_add_runtime_stats();
+  void get_runtime_stats(std::vector<RuntimeStat> & _return, const GetRuntimeStatsRequest& rqst);
+  void send_get_runtime_stats(const GetRuntimeStatsRequest& rqst);
+  void recv_get_runtime_stats(std::vector<RuntimeStat> & _return);
 };
 
 class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceProcessor {
@@ -26473,6 +26703,8 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_get_serde(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_lock_materialization_rebuild(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_heartbeat_lock_materialization_rebuild(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_add_runtime_stats(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_runtime_stats(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
  public:
   ThriftHiveMetastoreProcessor(boost::shared_ptr<ThriftHiveMetastoreIf> iface) :
      ::facebook::fb303::FacebookServiceProcessor(iface),
@@ -26679,6 +26911,8 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["get_serde"] = &ThriftHiveMetastoreProcessor::process_get_serde;
     processMap_["get_lock_materialization_rebuild"] = &ThriftHiveMetastoreProcessor::process_get_lock_materialization_rebuild;
     processMap_["heartbeat_lock_materialization_rebuild"] = &ThriftHiveMetastoreProcessor::process_heartbeat_lock_materialization_rebuild;
+    processMap_["add_runtime_stats"] = &ThriftHiveMetastoreProcessor::process_add_runtime_stats;
+    processMap_["get_runtime_stats"] = &ThriftHiveMetastoreProcessor::process_get_runtime_stats;
   }
 
   virtual ~ThriftHiveMetastoreProcessor() {}
@@ -28654,6 +28888,25 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     return ifaces_[i]->heartbeat_lock_materialization_rebuild(dbName, tableName, txnId);
   }
 
+  void add_runtime_stats(const RuntimeStat& stat) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->add_runtime_stats(stat);
+    }
+    ifaces_[i]->add_runtime_stats(stat);
+  }
+
+  void get_runtime_stats(std::vector<RuntimeStat> & _return, const GetRuntimeStatsRequest& rqst) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_runtime_stats(_return, rqst);
+    }
+    ifaces_[i]->get_runtime_stats(_return, rqst);
+    return;
+  }
+
 };
 
 // The 'concurrent' client is a thread safe client that correctly handles
@@ -29276,6 +29529,12 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   bool heartbeat_lock_materialization_rebuild(const std::string& dbName, const std::string& tableName, const int64_t txnId);
   int32_t send_heartbeat_lock_materialization_rebuild(const std::string& dbName, const std::string& tableName, const int64_t txnId);
   bool recv_heartbeat_lock_materialization_rebuild(const int32_t seqid);
+  void add_runtime_stats(const RuntimeStat& stat);
+  int32_t send_add_runtime_stats(const RuntimeStat& stat);
+  void recv_add_runtime_stats(const int32_t seqid);
+  void get_runtime_stats(std::vector<RuntimeStat> & _return, const GetRuntimeStatsRequest& rqst);
+  int32_t send_get_runtime_stats(const GetRuntimeStatsRequest& rqst);
+  void recv_get_runtime_stats(std::vector<RuntimeStat> & _return, const int32_t seqid);
 };
 
 #ifdef _WIN32

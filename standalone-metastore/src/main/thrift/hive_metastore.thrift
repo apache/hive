@@ -1517,6 +1517,15 @@ struct GetSerdeRequest {
   1: string serdeName
 }
 
+struct RuntimeStat {
+  1: optional i32 createTime,
+  2: required i32 weight,
+  3: required binary payload
+}
+
+struct GetRuntimeStatsRequest {
+}
+
 // Exceptions.
 
 exception MetaException {
@@ -2171,6 +2180,9 @@ service ThriftHiveMetastore extends fb303.FacebookService
 
   LockResponse get_lock_materialization_rebuild(1: string dbName, 2: string tableName, 3: i64 txnId)
   bool heartbeat_lock_materialization_rebuild(1: string dbName, 2: string tableName, 3: i64 txnId)
+  
+  void add_runtime_stats(1: RuntimeStat stat) throws(1:MetaException o1)
+  list<RuntimeStat> get_runtime_stats(1: GetRuntimeStatsRequest rqst) throws(1:MetaException o1)
 }
 
 // * Note about the DDL_TIME: When creating or altering a table or a partition,

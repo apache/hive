@@ -659,6 +659,10 @@ class SetSchemaVersionStateRequest;
 
 class GetSerdeRequest;
 
+class RuntimeStat;
+
+class GetRuntimeStatsRequest;
+
 class MetaException;
 
 class UnknownTableException;
@@ -12929,6 +12933,99 @@ class GetSerdeRequest {
 void swap(GetSerdeRequest &a, GetSerdeRequest &b);
 
 inline std::ostream& operator<<(std::ostream& out, const GetSerdeRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _RuntimeStat__isset {
+  _RuntimeStat__isset() : createTime(false) {}
+  bool createTime :1;
+} _RuntimeStat__isset;
+
+class RuntimeStat {
+ public:
+
+  RuntimeStat(const RuntimeStat&);
+  RuntimeStat& operator=(const RuntimeStat&);
+  RuntimeStat() : createTime(0), weight(0), payload() {
+  }
+
+  virtual ~RuntimeStat() throw();
+  int32_t createTime;
+  int32_t weight;
+  std::string payload;
+
+  _RuntimeStat__isset __isset;
+
+  void __set_createTime(const int32_t val);
+
+  void __set_weight(const int32_t val);
+
+  void __set_payload(const std::string& val);
+
+  bool operator == (const RuntimeStat & rhs) const
+  {
+    if (__isset.createTime != rhs.__isset.createTime)
+      return false;
+    else if (__isset.createTime && !(createTime == rhs.createTime))
+      return false;
+    if (!(weight == rhs.weight))
+      return false;
+    if (!(payload == rhs.payload))
+      return false;
+    return true;
+  }
+  bool operator != (const RuntimeStat &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const RuntimeStat & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(RuntimeStat &a, RuntimeStat &b);
+
+inline std::ostream& operator<<(std::ostream& out, const RuntimeStat& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class GetRuntimeStatsRequest {
+ public:
+
+  GetRuntimeStatsRequest(const GetRuntimeStatsRequest&);
+  GetRuntimeStatsRequest& operator=(const GetRuntimeStatsRequest&);
+  GetRuntimeStatsRequest() {
+  }
+
+  virtual ~GetRuntimeStatsRequest() throw();
+
+  bool operator == (const GetRuntimeStatsRequest & /* rhs */) const
+  {
+    return true;
+  }
+  bool operator != (const GetRuntimeStatsRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetRuntimeStatsRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(GetRuntimeStatsRequest &a, GetRuntimeStatsRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const GetRuntimeStatsRequest& obj)
 {
   obj.printTo(out);
   return out;
