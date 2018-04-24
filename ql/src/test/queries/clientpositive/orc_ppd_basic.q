@@ -1,4 +1,5 @@
 --! qt:dataset:alltypesorc
+SET hive.vectorized.execution.enabled=false;
 set hive.compute.query.using.stats=false;
 set hive.mapred.mode=nonstrict;
 SET hive.fetch.task.conversion=none;

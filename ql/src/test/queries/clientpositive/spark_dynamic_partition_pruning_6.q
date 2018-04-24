@@ -1,3 +1,4 @@
+SET hive.vectorized.execution.enabled=false;
 set hive.spark.dynamic.partition.pruning=true;
 
 -- SORT_QUERY_RESULTS
