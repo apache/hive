@@ -19,12 +19,21 @@ package org.apache.hadoop.hive.ql.parse;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
+import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsResponse;
+import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
+import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
+import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
+import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.shims.Utils;
 import org.junit.rules.TestName;
 import org.junit.rules.TestRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -32,7 +41,9 @@ import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * TestReplicationScenariosAcidTables - test replication for ACID tables
@@ -140,6 +151,112 @@ public class TestReplicationScenariosAcidTables {
             .verifyResults(new String[] {"111", "222"})
             .run("select id from t5 order by id")
             .verifyResults(new String[] {"1111", "2222", "3333"});
+  }
+
+  @Test
+  public void testAcidTablesBootstrapWithOpenTxnsTimeout() throws Throwable {
+    // Open 5 txns
+    HiveConf primaryConf = primary.getConf();
+    TxnStore txnHandler = TxnUtils.getTxnStore(primary.getConf());
+    OpenTxnsResponse otResp = txnHandler.openTxns(new OpenTxnRequest(5, "u1", "localhost"));
+    List<Long> txns = otResp.getTxn_ids();
+    String txnIdRange = " txn_id >= " + txns.get(0) + " and txn_id <= " + txns.get(4);
+    Assert.assertEquals(TxnDbUtil.queryToString(primaryConf, "select * from TXNS"),
+            5, TxnDbUtil.countQueryAgent(primaryConf,
+                  "select count(*) from TXNS where txn_state = 'o' and " + txnIdRange));
+
+    // Create 2 tables, one partitioned and other not. Also, have both types of full ACID and MM tables.
+    primary.run("use " + primaryDbName)
+            .run("create table t1 (id int) clustered by(id) into 3 buckets stored as orc " +
+                    "tblproperties (\"transactional\"=\"true\")")
+            .run("insert into t1 values(1)")
+            .run("create table t2 (rank int) partitioned by (name string) tblproperties(\"transactional\"=\"true\", " +
+                    "\"transactional_properties\"=\"insert_only\")")
+            .run("insert into t2 partition(name='Bob') values(11)")
+            .run("insert into t2 partition(name='Carl') values(10)");
+    // Allocate write ids for both tables t1 and t2 for all txns
+    // t1=5+1(insert) and t2=5+2(insert)
+    AllocateTableWriteIdsRequest rqst = new AllocateTableWriteIdsRequest(primaryDbName, "t1");
+    rqst.setTxnIds(txns);
+    txnHandler.allocateTableWriteIds(rqst);
+    rqst.setTableName("t2");
+    txnHandler.allocateTableWriteIds(rqst);
+    Assert.assertEquals(TxnDbUtil.queryToString(primaryConf, "select * from TXN_TO_WRITE_ID"),
+            6, TxnDbUtil.countQueryAgent(primaryConf,
+                    "select count(*) from TXN_TO_WRITE_ID where t2w_database = '" + primaryDbName.toLowerCase()
+                            + "' and t2w_table = 't1'"));
+    Assert.assertEquals(TxnDbUtil.queryToString(primaryConf, "select * from TXN_TO_WRITE_ID"),
+            7, TxnDbUtil.countQueryAgent(primaryConf,
+                    "select count(*) from TXN_TO_WRITE_ID where t2w_database = '" + primaryDbName.toLowerCase()
+                            + "' and t2w_table = 't2'"));
+
+    // Bootstrap dump with open txn timeout as 1s.
+    List<String> withConfigs = Arrays.asList(
+            "'hive.repl.bootstrap.dump.open.txn.timeout'='1s'");
+    WarehouseInstance.Tuple bootstrapDump = primary
+            .run("use " + primaryDbName)
+            .dump(primaryDbName, null, withConfigs);
+
+    // After bootstrap dump, all the opened txns should be aborted. Verify it.
+    Assert.assertEquals(TxnDbUtil.queryToString(primaryConf, "select * from TXNS"),
+            0, TxnDbUtil.countQueryAgent(primaryConf,
+                    "select count(*) from TXNS where txn_state = 'o' and " + txnIdRange));
+    Assert.assertEquals(TxnDbUtil.queryToString(primaryConf, "select * from TXNS"),
+            5, TxnDbUtil.countQueryAgent(primaryConf,
+                    "select count(*) from TXNS where txn_state = 'a' and " + txnIdRange));
+
+    // Verify the next write id
+    String[] nextWriteId = TxnDbUtil.queryToString(primaryConf, "select nwi_next from NEXT_WRITE_ID where "
+            + " nwi_database = '" + primaryDbName.toLowerCase() + "' and nwi_table = 't1'")
+            .split("\n");
+    Assert.assertEquals(Long.parseLong(nextWriteId[1].trim()), 7L);
+    nextWriteId = TxnDbUtil.queryToString(primaryConf, "select nwi_next from NEXT_WRITE_ID where "
+            + " nwi_database = '" + primaryDbName.toLowerCase() + "' and nwi_table = 't2'")
+            .split("\n");
+    Assert.assertEquals(Long.parseLong(nextWriteId[1].trim()), 8L);
+
+    // Bootstrap load which should also replicate the aborted write ids on both tables.
+    HiveConf replicaConf = replica.getConf();
+    replica.load(replicatedDbName, bootstrapDump.dumpLocation)
+            .run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[] {"t1", "t2"})
+            .run("repl status " + replicatedDbName)
+            .verifyResult(bootstrapDump.lastReplicationId)
+            .run("select id from t1")
+            .verifyResults(new String[]{"1"})
+            .run("select rank from t2 order by rank")
+            .verifyResults(new String[] {"10", "11"});
+
+    // Verify if HWM is properly set after REPL LOAD
+    nextWriteId = TxnDbUtil.queryToString(replicaConf, "select nwi_next from NEXT_WRITE_ID where "
+            + " nwi_database = '" + replicatedDbName.toLowerCase() + "' and nwi_table = 't1'")
+            .split("\n");
+    Assert.assertEquals(Long.parseLong(nextWriteId[1].trim()), 7L);
+    nextWriteId = TxnDbUtil.queryToString(replicaConf, "select nwi_next from NEXT_WRITE_ID where "
+            + " nwi_database = '" + replicatedDbName.toLowerCase() + "' and nwi_table = 't2'")
+            .split("\n");
+    Assert.assertEquals(Long.parseLong(nextWriteId[1].trim()), 8L);
+
+    // Verify if all the aborted write ids are replicated to the replicated DB
+    Assert.assertEquals(TxnDbUtil.queryToString(replicaConf, "select * from TXN_TO_WRITE_ID"),
+            5, TxnDbUtil.countQueryAgent(replicaConf,
+                    "select count(*) from TXN_TO_WRITE_ID where t2w_database = '" + replicatedDbName.toLowerCase()
+                            + "' and t2w_table = 't1'"));
+    Assert.assertEquals(TxnDbUtil.queryToString(replicaConf, "select * from TXN_TO_WRITE_ID"),
+            5, TxnDbUtil.countQueryAgent(replicaConf,
+                    "select count(*) from TXN_TO_WRITE_ID where t2w_database = '" + replicatedDbName.toLowerCase()
+                            + "' and t2w_table = 't2'"));
+
+    // Verify if entries added in TXN_COMPONENTS for each table/partition
+    Assert.assertEquals(TxnDbUtil.queryToString(replicaConf, "select * from TXN_COMPONENTS"),
+            1, TxnDbUtil.countQueryAgent(replicaConf,
+                    "select count(*) from TXN_COMPONENTS where tc_database = '" + replicatedDbName.toLowerCase()
+                            + "' and tc_table = 't1'"));
+    Assert.assertEquals(TxnDbUtil.queryToString(replicaConf, "select * from TXN_COMPONENTS"),
+            2, TxnDbUtil.countQueryAgent(replicaConf,
+                    "select count(*) from TXN_COMPONENTS where tc_database = '" + replicatedDbName.toLowerCase()
+                            + "' and tc_table = 't2'"));
   }
 
   @Test
