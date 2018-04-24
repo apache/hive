@@ -154,7 +154,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
           isLocationSet, isExternalSet, isPartSpecSet, waitOnPrecursor,
           parsedLocation, parsedTableName, parsedDbName, parsedPartSpec, fromTree.getText(),
           new EximUtil.SemanticAnalyzerWrapperContext(conf, db, inputs, outputs, rootTasks, LOG, ctx),
-          null);
+          null, getTxnMgr());
 
     } catch (SemanticException e) {
       throw e;
@@ -200,7 +200,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       String parsedLocation, String parsedTableName, String overrideDBName,
       LinkedHashMap<String, String> parsedPartSpec,
       String fromLocn, EximUtil.SemanticAnalyzerWrapperContext x,
-      UpdatedMetaDataTracker updatedMetadata
+      UpdatedMetaDataTracker updatedMetadata, HiveTxnManager txnMgr
   ) throws IOException, MetaException, HiveException, URISyntaxException {
 
     // initialize load path
@@ -333,7 +333,6 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       //(because Export was done from transactional table), need a writeId
       // Explain plan doesn't open a txn and hence no need to allocate write id.
       if (x.getCtx().getExplainConfig() == null) {
-        HiveTxnManager txnMgr = SessionState.get().getTxnMgr();
         writeId = txnMgr.getTableWriteId(tblDesc.getDatabaseName(), tblDesc.getTableName());
         stmtId = txnMgr.getStmtIdAndIncrement();
 

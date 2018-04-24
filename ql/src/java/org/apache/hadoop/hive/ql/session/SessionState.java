@@ -461,6 +461,13 @@ public class SessionState {
     return txnMgr;
   }
 
+  /**
+   * Get the transaction manager for the current SessionState.
+   * Note that the Driver can be initialized with a different txn manager than the SessionState's
+   * txn manager (HIVE-17482), and so it is preferable to use the txn manager propagated down from
+   * the Driver as opposed to calling this method.
+   * @return transaction manager for the current SessionState
+   */
   public HiveTxnManager getTxnMgr() {
     return txnMgr;
   }

@@ -42,7 +42,7 @@ public class TableHandler extends AbstractMessageHandler {
       // Also, REPL LOAD doesn't support external table and hence no location set as well.
       ImportSemanticAnalyzer.prepareImport(false, false, false, false,
           (context.precursor != null), null, context.tableName, context.dbName,
-          null, context.location, x, updatedMetadata);
+          null, context.location, x, updatedMetadata, context.getTxnMgr());
 
       return importTasks;
     } catch (Exception e) {

@@ -371,7 +371,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       if ((!evDump) && (tblNameOrPattern != null) && !(tblNameOrPattern.isEmpty())) {
         ReplLoadWork replLoadWork =
             new ReplLoadWork(conf, loadPath.toString(), dbNameOrPattern, tblNameOrPattern,
-                queryState.getLineageState(), SessionState.get().getTxnMgr().getCurrentTxnId());
+                queryState.getLineageState(), getTxnMgr().getCurrentTxnId());
         rootTasks.add(TaskFactory.get(replLoadWork, conf));
         return;
       }
@@ -402,7 +402,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         }
 
         ReplLoadWork replLoadWork = new ReplLoadWork(conf, loadPath.toString(), dbNameOrPattern,
-            queryState.getLineageState(), SessionState.get().getTxnMgr().getCurrentTxnId());
+            queryState.getLineageState(), getTxnMgr().getCurrentTxnId());
         rootTasks.add(TaskFactory.get(replLoadWork, conf));
         //
         //        for (FileStatus dir : dirsInLoadPath) {
