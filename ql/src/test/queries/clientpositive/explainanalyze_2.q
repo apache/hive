@@ -1,6 +1,7 @@
 --! qt:dataset:srcpart
 --! qt:dataset:src1
 --! qt:dataset:src
+SET hive.vectorized.execution.enabled=false;
 set hive.map.aggr=false;
 
 set hive.strict.checks.bucketing=false;

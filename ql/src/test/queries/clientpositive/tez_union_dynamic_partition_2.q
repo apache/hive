@@ -1,3 +1,4 @@
+SET hive.vectorized.execution.enabled=false;
 drop table if exists dummy;
 drop table if exists partunion1;
  

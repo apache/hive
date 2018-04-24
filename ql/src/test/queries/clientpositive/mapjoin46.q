@@ -1,3 +1,4 @@
+SET hive.vectorized.execution.enabled=false;
 set hive.auto.convert.join=true;
 set hive.strict.checks.cartesian.product=false;
 set hive.join.emit.interval=2;
