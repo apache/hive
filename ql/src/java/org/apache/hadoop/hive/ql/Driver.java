@@ -113,6 +113,7 @@ import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzerFactory;
+import org.apache.hadoop.hive.ql.plan.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -1415,8 +1416,9 @@ public class Driver implements IDriver {
       if(userFromUGI == null) {
         throw createProcessorResponse(10);
       }
+
       // Set the table write id in all of the acid file sinks
-      if (haveAcidWrite()) {
+      if (!plan.getAcidSinks().isEmpty()) {
         List<FileSinkDesc> acidSinks = new ArrayList<>(plan.getAcidSinks());
         //sorting makes tests easier to write since file names and ROW__IDs depend on statementId
         //so this makes (file name -> data) mapping stable
@@ -1433,6 +1435,18 @@ public class Driver implements IDriver {
           desc.setStatementId(queryTxnMgr.getStmtIdAndIncrement());
         }
       }
+
+      // Note: the sinks and DDL cannot coexist at this time; but if they could we would
+      //       need to make sure we don't get two write IDs for the same table.
+      DDLDescWithWriteId acidDdlDesc = plan.getAcidDdlDesc();
+      if (acidDdlDesc != null && acidDdlDesc.mayNeedWriteId()) {
+        String fqTableName = acidDdlDesc.getFullTableName();
+        long writeId = queryTxnMgr.getTableWriteId(
+            Utilities.getDatabaseName(fqTableName), Utilities.getTableName(fqTableName));
+        acidDdlDesc.setWriteId(writeId);
+      }
+
+
       /*It's imperative that {@code acquireLocks()} is called for all commands so that
       HiveTxnManager can transition its state machine correctly*/
       queryTxnMgr.acquireLocks(plan, ctx, userFromUGI, lDrvState);
@@ -1454,10 +1468,6 @@ public class Driver implements IDriver {
     } finally {
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.ACQUIRE_READ_WRITE_LOCKS);
     }
-  }
-
-  private boolean haveAcidWrite() {
-    return !plan.getAcidSinks().isEmpty();
   }
 
   public void releaseLocksAndCommitOrRollback(boolean commit) throws LockException {
@@ -1886,7 +1896,7 @@ public class Driver implements IDriver {
       return false;
     }
     // Lock operations themselves don't require the lock.
-    if (isExplicitLockOperation()){
+    if (isExplicitLockOperation()) {
       return false;
     }
     if (!HiveConf.getBoolVar(conf, ConfVars.HIVE_LOCK_MAPRED_ONLY)) {
@@ -2115,7 +2125,6 @@ public class Driver implements IDriver {
       perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.RUN_TASKS);
       // Loop while you either have tasks running, or tasks queued up
       while (driverCxt.isRunning()) {
-
         // Launch upto maxthreads tasks
         Task<? extends Serializable> task;
         while ((task = driverCxt.getRunnable(maxthreads)) != null) {

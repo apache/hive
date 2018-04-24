@@ -54,6 +54,7 @@ import java.util.regex.Pattern;
 import java.util.concurrent.ExecutionException;
 
 import com.google.common.collect.ImmutableSet;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
@@ -148,6 +149,7 @@ import org.apache.hadoop.hive.ql.lockmgr.HiveLockMode;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject.HiveLockObjectData;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
+import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.metadata.CheckConstraint;
 import org.apache.hadoop.hive.ql.metadata.CheckResult;
 import org.apache.hadoop.hive.ql.metadata.DefaultConstraint;
@@ -4423,27 +4425,17 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
   }
 
-  private List<Task<?>> generateAddMmTasks(Table tbl) throws HiveException {
+  private List<Task<?>> generateAddMmTasks(Table tbl, Long writeId) throws HiveException {
     // We will move all the files in the table/partition directories into the first MM
     // directory, then commit the first write ID.
     List<Path> srcs = new ArrayList<>(), tgts = new ArrayList<>();
-    long mmWriteId = 0;
-    try {
-      HiveTxnManager txnManager = getTxnMgr();
-      if (txnManager.isTxnOpen()) {
-        mmWriteId = txnManager.getTableWriteId(tbl.getDbName(), tbl.getTableName());
-      } else {
-        txnManager.openTxn(new Context(conf), conf.getUser());
-        mmWriteId = txnManager.getTableWriteId(tbl.getDbName(), tbl.getTableName());
-        txnManager.commitTxn();
-      }
-    } catch (Exception e) {
-      String errorMessage = "FAILED: Error in acquiring locks: " + e.getMessage();
-      console.printError(errorMessage, "\n"
-          + org.apache.hadoop.util.StringUtils.stringifyException(e));
+    if (writeId == null) {
+      throw new HiveException("Internal error - write ID not set for MM conversion");
     }
+
     int stmtId = 0;
-    String mmDir = AcidUtils.deltaSubdir(mmWriteId, mmWriteId, stmtId);
+    String mmDir = AcidUtils.deltaSubdir(writeId, writeId, stmtId);
+
     Hive db = getHive();
     if (tbl.getPartitionKeys().size() > 0) {
       PartitionIterable parts = new PartitionIterable(db, tbl, null,
@@ -4471,10 +4463,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // Don't set inputs and outputs - the locks have already been taken so it's pointless.
     MoveWork mw = new MoveWork(null, null, null, null, false);
     mw.setMultiFilesDesc(new LoadMultiFilesDesc(srcs, tgts, true, null, null));
-    ImportCommitWork icw = new ImportCommitWork(tbl.getDbName(), tbl.getTableName(), mmWriteId, stmtId);
-    Task<?> mv = TaskFactory.get(mw), ic = TaskFactory.get(icw);
-    mv.addDependentTask(ic);
-    return Lists.<Task<?>>newArrayList(mv);
+    return Lists.<Task<?>>newArrayList(TaskFactory.get(mw));
   }
 
   private List<Task<?>> alterTableAddProps(AlterTableDesc alterTbl, Table tbl,
@@ -4491,7 +4480,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       Boolean isToMmTable = AcidUtils.isToInsertOnlyTable(tbl, alterTbl.getProps());
       if (isToMmTable != null) {
         if (!isFromMmTable && isToMmTable) {
-          result = generateAddMmTasks(tbl);
+          result = generateAddMmTasks(tbl, alterTbl.getWriteId());
         } else if (isFromMmTable && !isToMmTable) {
           throw new HiveException("Cannot convert an ACID table to non-ACID");
         }

@@ -35,7 +35,6 @@ import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
-import org.apache.hadoop.hive.ql.exec.ImportCommitWork;
 import org.apache.hadoop.hive.ql.exec.ReplCopyTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -480,8 +479,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
 
  private static Task<?> addSinglePartition(URI fromURI, FileSystem fs, ImportTableDesc tblDesc,
       Table table, Warehouse wh, AddPartitionDesc addPartitionDesc, ReplicationSpec replicationSpec,
-      EximUtil.SemanticAnalyzerWrapperContext x, Long writeId, int stmtId, boolean isSourceMm,
-      Task<?> commitTask)
+      EximUtil.SemanticAnalyzerWrapperContext x, Long writeId, int stmtId, boolean isSourceMm)
       throws MetaException, IOException, HiveException {
     AddPartitionDesc.OnePartitionDesc partSpec = addPartitionDesc.getPartition(0);
     if (tblDesc.isExternal() && tblDesc.getLocation() == null) {
@@ -540,9 +538,6 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       copyTask.addDependentTask(loadPartTask);
       addPartTask.addDependentTask(loadPartTask);
       x.getTasks().add(copyTask);
-      if (commitTask != null) {
-        loadPartTask.addDependentTask(commitTask);
-      }
       return addPartTask;
     }
   }
@@ -839,16 +834,13 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     if (table != null) {
       if (table.isPartitioned()) {
         x.getLOG().debug("table partitioned");
-        Task<?> ict = createImportCommitTask(x.getConf(),
-            table.getDbName(), table.getTableName(), writeId, stmtId,
-            AcidUtils.isInsertOnlyTable(table.getParameters()));
 
         for (AddPartitionDesc addPartitionDesc : partitionDescs) {
           Map<String, String> partSpec = addPartitionDesc.getPartition(0).getPartSpec();
           org.apache.hadoop.hive.ql.metadata.Partition ptn = null;
           if ((ptn = x.getHive().getPartition(table, partSpec, false)) == null) {
             x.getTasks().add(addSinglePartition(
-                fromURI, fs, tblDesc, table, wh, addPartitionDesc, replicationSpec, x, writeId, stmtId, isSourceMm, ict));
+                fromURI, fs, tblDesc, table, wh, addPartitionDesc, replicationSpec, x, writeId, stmtId, isSourceMm));
           } else {
             throw new SemanticException(
                 ErrorMsg.PARTITION_EXISTS.getMsg(partSpecToString(partSpec)));
@@ -878,12 +870,9 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       x.getOutputs().add(new WriteEntity(parentDb, WriteEntity.WriteType.DDL_SHARED));
 
       if (isPartitioned(tblDesc)) {
-        Task<?> ict = createImportCommitTask(x.getConf(),
-            tblDesc.getDatabaseName(), tblDesc.getTableName(), writeId, stmtId,
-            AcidUtils.isInsertOnlyTable(tblDesc.getTblProps()));
         for (AddPartitionDesc addPartitionDesc : partitionDescs) {
           t.addDependentTask(addSinglePartition(fromURI, fs, tblDesc, table, wh, addPartitionDesc,
-            replicationSpec, x, writeId, stmtId, isSourceMm, ict));
+            replicationSpec, x, writeId, stmtId, isSourceMm));
         }
       } else {
         x.getLOG().debug("adding dependent CopyWork/MoveWork for table");
@@ -918,14 +907,6 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
           Warehouse.getQualifiedName(tblDesk.getDatabaseName(), tblDesk.getTableName()));
     }
     return newTable;
-  }
-
-  private static Task<?> createImportCommitTask(
-      HiveConf conf, String dbName, String tblName, Long writeId, int stmtId, boolean isMmTable) {
-    // TODO: noop, remove?
-    Task<ImportCommitWork> ict = (!isMmTable) ? null : TaskFactory.get(
-        new ImportCommitWork(dbName, tblName, writeId, stmtId), conf);
-    return ict;
   }
 
   /**
@@ -1022,13 +1003,10 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
 
       if (!replicationSpec.isMetadataOnly()) {
         if (isPartitioned(tblDesc)) {
-          Task<?> ict = createImportCommitTask(x.getConf(),
-              tblDesc.getDatabaseName(), tblDesc.getTableName(), writeId, stmtId,
-              AcidUtils.isInsertOnlyTable(tblDesc.getTblProps()));
           for (AddPartitionDesc addPartitionDesc : partitionDescs) {
             addPartitionDesc.setReplicationSpec(replicationSpec);
             t.addDependentTask(
-                addSinglePartition(fromURI, fs, tblDesc, table, wh, addPartitionDesc, replicationSpec, x, writeId, stmtId, isSourceMm, ict));
+                addSinglePartition(fromURI, fs, tblDesc, table, wh, addPartitionDesc, replicationSpec, x, writeId, stmtId, isSourceMm));
             if (updatedMetadata != null) {
               updatedMetadata.addPartition(addPartitionDesc.getPartition(0).getPartSpec());
             }
@@ -1055,13 +1033,10 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
           addPartitionDesc.setReplicationSpec(replicationSpec);
           Map<String, String> partSpec = addPartitionDesc.getPartition(0).getPartSpec();
           org.apache.hadoop.hive.ql.metadata.Partition ptn = null;
-          Task<?> ict = replicationSpec.isMetadataOnly() ? null : createImportCommitTask(
-                  x.getConf(), tblDesc.getDatabaseName(), tblDesc.getTableName(), writeId, stmtId,
-                  AcidUtils.isInsertOnlyTable(tblDesc.getTblProps()));
           if ((ptn = x.getHive().getPartition(table, partSpec, false)) == null) {
             if (!replicationSpec.isMetadataOnly()){
               x.getTasks().add(addSinglePartition(
-                  fromURI, fs, tblDesc, table, wh, addPartitionDesc, replicationSpec, x, writeId, stmtId, isSourceMm, ict));
+                  fromURI, fs, tblDesc, table, wh, addPartitionDesc, replicationSpec, x, writeId, stmtId, isSourceMm));
               if (updatedMetadata != null) {
                 updatedMetadata.addPartition(addPartitionDesc.getPartition(0).getPartSpec());
               }
@@ -1078,7 +1053,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
             if (replicationSpec.allowReplacementInto(ptn.getParameters())){
               if (!replicationSpec.isMetadataOnly()){
                 x.getTasks().add(addSinglePartition(
-                    fromURI, fs, tblDesc, table, wh, addPartitionDesc, replicationSpec, x, writeId, stmtId, isSourceMm, ict));
+                    fromURI, fs, tblDesc, table, wh, addPartitionDesc, replicationSpec, x, writeId, stmtId, isSourceMm));
               } else {
                 x.getTasks().add(alterSinglePartition(
                     fromURI, fs, tblDesc, table, wh, addPartitionDesc, replicationSpec, ptn, x));

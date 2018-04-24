@@ -1874,6 +1874,9 @@ public class HiveConf extends Configuration {
 
     HIVE_ORC_BASE_DELTA_RATIO("hive.exec.orc.base.delta.ratio", 8, "The ratio of base writer and\n" +
         "delta writer in terms of STRIPE_SIZE and BUFFER_SIZE."),
+    HIVE_ORC_DELTA_STREAMING_OPTIMIZATIONS_ENABLED("hive.exec.orc.delta.streaming.optimizations.enabled", false,
+      "Whether to enable streaming optimizations for ORC delta files. This will disable ORC's internal indexes,\n" +
+        "disable compression, enable fast encoding and disable dictionary encoding."),
     HIVE_ORC_SPLIT_STRATEGY("hive.exec.orc.split.strategy", "HYBRID", new StringSet("HYBRID", "BI", "ETL"),
         "This is not a user level config. BI strategy is used when the requirement is to spend less time in split generation" +
         " as opposed to query execution (split generation does not read or cache file footers)." +
@@ -4267,15 +4270,15 @@ public class HiveConf extends Configuration {
         new StringSet("query", "hiveserver", "metastore"),
         "Sets the persistence scope of runtime statistics\n"
             + "  query: runtime statistics are only used during re-execution\n"
-            + "  hiveserver: runtime statistics are persisted in the hiveserver - all sessions share it"),
+            + "  hiveserver: runtime statistics are persisted in the hiveserver - all sessions share it\n"
+            + "  metastore: runtime statistics are persisted in the metastore as well"),
 
     HIVE_QUERY_MAX_REEXECUTION_COUNT("hive.query.reexecution.max.count", 1,
         "Maximum number of re-executions for a single query."),
     HIVE_QUERY_REEXECUTION_ALWAYS_COLLECT_OPERATOR_STATS("hive.query.reexecution.always.collect.operator.stats", false,
         "If sessionstats are enabled; this option can be used to collect statistics all the time"),
     HIVE_QUERY_REEXECUTION_STATS_CACHE_SIZE("hive.query.reexecution.stats.cache.size", 100_000,
-        "Size of the runtime statistics cache. Unit is: OperatorStat entry; a query plan consist ~100"),
-
+        "Size of the runtime statistics cache. Unit is: OperatorStat entry; a query plan consist ~100. See also: runtime.stats.max.entries"),
 
     HIVE_QUERY_RESULTS_CACHE_ENABLED("hive.query.results.cache.enabled", true,
         "If the query results cache is enabled. This will keep results of previously executed queries " +

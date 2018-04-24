@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
+import org.apache.hadoop.hive.metastore.api.utils.DecimalUtils;
 import org.apache.hadoop.hive.metastore.columnstats.cache.DateColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.columnstats.cache.DecimalColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.columnstats.cache.DoubleColumnStatsDataInspector;
@@ -97,8 +98,8 @@ public class StatObjectConverter {
            doubleStats.isSetHighValue() ? doubleStats.getHighValue() : null);
      } else if (statsObj.getStatsData().isSetDecimalStats()) {
        DecimalColumnStatsData decimalStats = statsObj.getStatsData().getDecimalStats();
-       String low = decimalStats.isSetLowValue() ? createJdoDecimalString(decimalStats.getLowValue()) : null;
-       String high = decimalStats.isSetHighValue() ? createJdoDecimalString(decimalStats.getHighValue()) : null;
+       String low = decimalStats.isSetLowValue() ? DecimalUtils.createJdoDecimalString(decimalStats.getLowValue()) : null;
+       String high = decimalStats.isSetHighValue() ? DecimalUtils.createJdoDecimalString(decimalStats.getHighValue()) : null;
        mColStats.setDecimalStats(
            decimalStats.isSetNumNulls() ? decimalStats.getNumNulls() : null,
            decimalStats.isSetNumDVs() ? decimalStats.getNumDVs() : null,
@@ -282,11 +283,11 @@ public class StatObjectConverter {
       decimalStats.setNumNulls(mStatsObj.getNumNulls());
       String decimalHighValue = mStatsObj.getDecimalHighValue();
       if (decimalHighValue != null) {
-        decimalStats.setHighValue(createThriftDecimal(decimalHighValue));
+        decimalStats.setHighValue(DecimalUtils.createThriftDecimal(decimalHighValue));
       }
       String decimalLowValue = mStatsObj.getDecimalLowValue();
       if (decimalLowValue != null) {
-        decimalStats.setLowValue(createThriftDecimal(decimalLowValue));
+        decimalStats.setLowValue(DecimalUtils.createThriftDecimal(decimalLowValue));
       }
       decimalStats.setNumDVs(mStatsObj.getNumDVs());
       decimalStats.setBitVectors((mStatsObj.getBitVector()==null||!enableBitVector)? null : mStatsObj.getBitVector());
@@ -362,8 +363,8 @@ public class StatObjectConverter {
           doubleStats.isSetHighValue() ? doubleStats.getHighValue() : null);
     } else if (statsObj.getStatsData().isSetDecimalStats()) {
       DecimalColumnStatsData decimalStats = statsObj.getStatsData().getDecimalStats();
-      String low = decimalStats.isSetLowValue() ? createJdoDecimalString(decimalStats.getLowValue()) : null;
-      String high = decimalStats.isSetHighValue() ? createJdoDecimalString(decimalStats.getHighValue()) : null;
+      String low = decimalStats.isSetLowValue() ? DecimalUtils.createJdoDecimalString(decimalStats.getLowValue()) : null;
+      String high = decimalStats.isSetHighValue() ? DecimalUtils.createJdoDecimalString(decimalStats.getHighValue()) : null;
       mColStats.setDecimalStats(
           decimalStats.isSetNumNulls() ? decimalStats.getNumNulls() : null,
           decimalStats.isSetNumDVs() ? decimalStats.getNumDVs() : null,
@@ -454,10 +455,10 @@ public class StatObjectConverter {
       DecimalColumnStatsDataInspector decimalStats = new DecimalColumnStatsDataInspector();
       decimalStats.setNumNulls(mStatsObj.getNumNulls());
       if (mStatsObj.getDecimalHighValue() != null) {
-        decimalStats.setHighValue(createThriftDecimal(mStatsObj.getDecimalHighValue()));
+        decimalStats.setHighValue(DecimalUtils.createThriftDecimal(mStatsObj.getDecimalHighValue()));
       }
       if (mStatsObj.getDecimalLowValue() != null) {
-        decimalStats.setLowValue(createThriftDecimal(mStatsObj.getDecimalLowValue()));
+        decimalStats.setLowValue(DecimalUtils.createThriftDecimal(mStatsObj.getDecimalLowValue()));
       }
       decimalStats.setNumDVs(mStatsObj.getNumDVs());
       decimalStats.setBitVectors((mStatsObj.getBitVector()==null||!enableBitVector)? null : mStatsObj.getBitVector());
@@ -543,10 +544,10 @@ public class StatObjectConverter {
       DecimalColumnStatsDataInspector decimalStats = new DecimalColumnStatsDataInspector();
       decimalStats.setNumNulls(MetaStoreDirectSql.extractSqlLong(nulls));
       if (dechigh != null) {
-        decimalStats.setHighValue(createThriftDecimal((String)dechigh));
+        decimalStats.setHighValue(DecimalUtils.createThriftDecimal((String)dechigh));
       }
       if (declow != null) {
-        decimalStats.setLowValue(createThriftDecimal((String)declow));
+        decimalStats.setLowValue(DecimalUtils.createThriftDecimal((String)declow));
       }
       decimalStats.setNumDVs(MetaStoreDirectSql.extractSqlLong(dist));
       decimalStats.setBitVectors(MetaStoreDirectSql.extractSqlBlob(bitVector));
@@ -700,19 +701,19 @@ public class StatObjectConverter {
       BigDecimal bhigh = null;
       if (dechigh instanceof BigDecimal) {
         bhigh = (BigDecimal) dechigh;
-        high = new Decimal(ByteBuffer.wrap(bhigh.unscaledValue().toByteArray()),
+        high = DecimalUtils.getDecimal(ByteBuffer.wrap(bhigh.unscaledValue().toByteArray()),
             (short) bhigh.scale());
       } else if (dechigh instanceof String) {
         bhigh = new BigDecimal((String) dechigh);
-        high = createThriftDecimal((String) dechigh);
+        high = DecimalUtils.createThriftDecimal((String) dechigh);
       }
       decimalStats.setHighValue(high);
       if (declow instanceof BigDecimal) {
         blow = (BigDecimal) declow;
-        low = new Decimal(ByteBuffer.wrap(blow.unscaledValue().toByteArray()), (short) blow.scale());
+        low = DecimalUtils.getDecimal(ByteBuffer.wrap(blow.unscaledValue().toByteArray()), (short) blow.scale());
       } else if (dechigh instanceof String) {
         blow = new BigDecimal((String) declow);
-        low = createThriftDecimal((String) declow);
+        low = DecimalUtils.createThriftDecimal((String) declow);
       }
       decimalStats.setLowValue(low);
       long lowerBound = MetaStoreDirectSql.extractSqlLong(dist);
@@ -733,15 +734,6 @@ public class StatObjectConverter {
       }
       data.setDecimalStats(decimalStats);
     }
-  }
-
-  public static Decimal createThriftDecimal(String s) {
-    BigDecimal d = new BigDecimal(s);
-    return new Decimal(ByteBuffer.wrap(d.unscaledValue().toByteArray()), (short)d.scale());
-  }
-
-  private static String createJdoDecimalString(Decimal d) {
-    return new BigDecimal(new BigInteger(d.getUnscaled()), d.getScale()).toString();
   }
 
   /**
