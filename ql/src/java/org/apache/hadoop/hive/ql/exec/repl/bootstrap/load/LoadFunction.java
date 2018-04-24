@@ -75,7 +75,7 @@ public class LoadFunction {
       List<Task<? extends Serializable>> tasks = handler.handle(
           new MessageHandler.Context(
               dbNameToLoadIn, null, fromPath.toString(), null, null, context.hiveConf,
-              context.hiveDb, null, LOG)
+              context.hiveDb, context.nestedContext, LOG)
       );
       createFunctionReplLogTask(tasks, handler.getFunctionName());
       tasks.forEach(tracker::addTask);
