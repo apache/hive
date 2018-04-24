@@ -1847,7 +1847,7 @@ public class HiveConf extends Configuration {
         "while writing a table with ORC file format, enabling this config will do stripe-level\n" +
         "fast merge for small ORC files. Note that enabling this config will not honor the\n" +
         "padding tolerance config (hive.exec.orc.block.padding.tolerance)."),
-    HIVE_ORC_CODEC_POOL("hive.use.orc.codec.pool", false,
+    HIVE_ORC_CODEC_POOL("hive.use.orc.codec.pool", true,
         "Whether to use codec pool in ORC. Disable if there are bugs with codec reuse."),
 
     HIVEUSEEXPLICITRCFILEHEADER("hive.exec.rcfile.use.explicit.header", true,
