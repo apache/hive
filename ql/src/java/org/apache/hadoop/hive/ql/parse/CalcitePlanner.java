@@ -2070,7 +2070,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         final String validTxnsList = conf.get(ValidTxnList.VALID_TXNS_KEY);
         ValidTxnWriteIdList txnWriteIds = null;
         if (validTxnsList != null && !validTxnsList.isEmpty()) {
-          txnWriteIds = SessionState.get().getTxnMgr().getValidWriteIds(tablesUsed, validTxnsList);
+          txnWriteIds = getTxnMgr().getValidWriteIds(tablesUsed, validTxnsList);
         }
         if (mvRebuildMode != MaterializationRebuildMode.NONE) {
           // We only retrieve the materialization corresponding to the rebuild. In turn,

@@ -81,7 +81,7 @@ public class LoadConstraint {
         tasks.addAll(pkHandler.handle(
             new MessageHandler.Context(
                 dbNameToLoadIn, null, fromPath.toString(), null, pkDumpMetaData, context.hiveConf,
-                context.hiveDb, null, LOG)));
+                context.hiveDb, context.nestedContext, LOG)));
       }
 
       if (uksString != null && !uksString.isEmpty()) {
@@ -92,7 +92,7 @@ public class LoadConstraint {
         tasks.addAll(ukHandler.handle(
             new MessageHandler.Context(
                 dbNameToLoadIn, null, fromPath.toString(), null, ukDumpMetaData, context.hiveConf,
-                context.hiveDb, null, LOG)));
+                context.hiveDb, context.nestedContext, LOG)));
       }
 
       if (nnsString != null && !nnsString.isEmpty()) {
@@ -103,7 +103,7 @@ public class LoadConstraint {
         tasks.addAll(nnHandler.handle(
             new MessageHandler.Context(
                 dbNameToLoadIn, null, fromPath.toString(), null, nnDumpMetaData, context.hiveConf,
-                context.hiveDb, null, LOG)));
+                context.hiveDb, context.nestedContext, LOG)));
       }
 
       if (fksString != null && !fksString.isEmpty()) {
@@ -114,7 +114,7 @@ public class LoadConstraint {
         tasks.addAll(fkHandler.handle(
             new MessageHandler.Context(
                 dbNameToLoadIn, null, fromPath.toString(), null, fkDumpMetaData, context.hiveConf,
-                context.hiveDb, null, LOG)));
+                context.hiveDb, context.nestedContext, LOG)));
       }
 
       tasks.forEach(tracker::addTask);
