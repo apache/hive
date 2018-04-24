@@ -34,11 +34,11 @@ import org.slf4j.LoggerFactory;
  * A utility class that helps identify Hive-Jdbc functions gaps.
  */
 
-public class JDBCRexCallValidator {
+public final class JDBCRexCallValidator {
 
   private static final Logger LOG = LoggerFactory.getLogger(JDBCRexCallValidator.class);
 
-  private static class JdbcRexCallValidatorVisitor extends RexVisitorImpl<Void> {
+  private static final class JdbcRexCallValidatorVisitor extends RexVisitorImpl<Void> {
     private final SqlDialect dialect;
 
     private JdbcRexCallValidatorVisitor(SqlDialect dialect) {
@@ -78,6 +78,9 @@ public class JDBCRexCallValidator {
       cond.accept(this);
       return res;
     }
+  }
+
+  private JDBCRexCallValidator() {
   }
 
   public static boolean isValidJdbcOperation(RexNode cond, SqlDialect dialect) {

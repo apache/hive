@@ -52,13 +52,13 @@ public abstract class JDBCAbstractSplitFilterRule extends RelOptRule {
 
   /**
    * FilterSupportedFunctionsVisitor traverse all of the Rex call and splits them into
-   * two lists, one with supported jdbc calls, and one with not supported jdbc calls
+   * two lists, one with supported jdbc calls, and one with not supported jdbc calls.
    */
   public static class FilterSupportedFunctionsVisitor extends RexVisitorImpl<Void> {
 
     private final SqlDialect dialect;
 
-    public FilterSupportedFunctionsVisitor (SqlDialect dialect) {
+    public FilterSupportedFunctionsVisitor(SqlDialect dialect) {
       super(true);
       this.dialect = dialect;
     }
@@ -154,7 +154,7 @@ public abstract class JDBCAbstractSplitFilterRule extends RelOptRule {
     call.transformTo(newJdbcInvalidFilter);
   }
 
-  /*
+  /**
    * JDBCSplitFilterAboveJoinRule split splitter above a HiveJoin operator, so we could push it into the HiveJoin.
    */
   public static class JDBCSplitFilterAboveJoinRule extends JDBCAbstractSplitFilterRule {
@@ -183,7 +183,7 @@ public abstract class JDBCAbstractSplitFilterRule extends RelOptRule {
     }
   }
 
-  /*
+  /**
    * JDBCSplitFilterRule splits a HiveFilter rule so we could push part of the HiveFilter into the jdbc.
    */
   public static class JDBCSplitFilterRule extends JDBCAbstractSplitFilterRule {
