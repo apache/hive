@@ -1,3 +1,4 @@
+SET hive.vectorized.execution.enabled=false;
 set hive.mapred.mode=nonstrict;
 CREATE TABLE t1 (c1 BIGINT, c2 STRING);
 

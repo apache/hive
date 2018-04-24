@@ -1,3 +1,4 @@
+SET hive.vectorized.execution.enabled=false;
 SET hive.auto.convert.join=true;
 SET hive.auto.convert.join.noconditionaltask=true;
 SET hive.auto.convert.join.noconditionaltask.size=1000000000;

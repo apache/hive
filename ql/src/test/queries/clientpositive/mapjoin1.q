@@ -1,4 +1,5 @@
 
+SET hive.vectorized.execution.enabled=false;
 set hive.auto.convert.join=true;
 SELECT  /*+ MAPJOIN(b) */ sum(a.key) as sum_a
     FROM srcpart a

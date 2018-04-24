@@ -1,3 +1,4 @@
+SET hive.vectorized.execution.enabled=false;
 set hive.strict.checks.bucketing=false;
 
 CREATE TABLE srcbucket_mapjoin(key int, value string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE;

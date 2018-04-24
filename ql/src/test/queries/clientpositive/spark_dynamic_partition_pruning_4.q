@@ -1,3 +1,4 @@
+SET hive.vectorized.execution.enabled=false;
 set hive.spark.dynamic.partition.pruning=true;
 set hive.combine.equivalent.work.optimization=true;
 
