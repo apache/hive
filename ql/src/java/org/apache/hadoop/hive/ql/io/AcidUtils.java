@@ -27,8 +27,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
-import org.apache.hadoop.hive.common.JavaUtils;
-import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -43,15 +41,12 @@ import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcRecordUpdater;
 import org.apache.hadoop.hive.ql.io.orc.Reader;
 import org.apache.hadoop.hive.ql.io.orc.Writer;
-import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
-import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatusWithId;
 import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hadoop.mapred.JobConf;
 import org.apache.hive.common.util.Ref;
 import org.apache.orc.FileFormatException;
 import org.apache.orc.impl.OrcAcidUtils;
@@ -61,7 +56,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -1705,6 +1700,7 @@ public class AcidUtils {
   public static final class OrcAcidVersion {
     private static final String ACID_VERSION_KEY = "hive.acid.version";
     private static final String ACID_FORMAT = "_orc_acid_version";
+    private static final Charset UTF8 = Charset.forName("UTF-8");
     public static final int ORC_ACID_VERSION_DEFAULT = 0;
     /**
      * 2 is the version of Acid released in Hive 3.0.
@@ -1716,9 +1712,7 @@ public class AcidUtils {
      */
     public static void setAcidVersionInDataFile(Writer writer) {
       //so that we know which version wrote the file
-      ByteBuffer bf = ByteBuffer.allocate(4).putInt(ORC_ACID_VERSION);
-      bf.rewind(); //don't ask - some ByteBuffer weridness. w/o this, empty buffer is written
-      writer.addUserMetadata(ACID_VERSION_KEY, bf);
+      writer.addUserMetadata(ACID_VERSION_KEY, UTF8.encode(String.valueOf(ORC_ACID_VERSION)));
     }
     /**
      * This is smart enough to handle streaming ingest where there could be a
@@ -1735,8 +1729,10 @@ public class AcidUtils {
               .filesystem(fs)
               //make sure to check for side file in case streaming ingest died
               .maxLength(getLogicalLength(fs, fileStatus)));
-      if(orcReader.hasMetadataValue(ACID_VERSION_KEY)) {
-        return orcReader.getMetadataValue(ACID_VERSION_KEY).getInt();
+      if (orcReader.hasMetadataValue(ACID_VERSION_KEY)) {
+        char[] versionChar = UTF8.decode(orcReader.getMetadataValue(ACID_VERSION_KEY)).array();
+        String version = new String(versionChar);
+        return Integer.valueOf(version);
       }
       return ORC_ACID_VERSION_DEFAULT;
     }
@@ -1748,7 +1744,7 @@ public class AcidUtils {
       Path formatFile = getVersionFilePath(deltaOrBaseDir);
       if(!fs.exists(formatFile)) {
         try (FSDataOutputStream strm = fs.create(formatFile, false)) {
-          strm.writeInt(ORC_ACID_VERSION);
+          strm.write(UTF8.encode(String.valueOf(ORC_ACID_VERSION)).array());
         } catch (IOException ioe) {
           LOG.error("Failed to create " + formatFile + " due to: " + ioe.getMessage(), ioe);
           throw ioe;
@@ -1767,7 +1763,13 @@ public class AcidUtils {
         return ORC_ACID_VERSION_DEFAULT;
       }
       try (FSDataInputStream inputStream = fs.open(formatFile)) {
-        return inputStream.readInt();
+        byte[] bytes = new byte[1];
+        int read = inputStream.read(bytes);
+        if (read != -1) {
+          String version = new String(bytes, UTF8);
+          return Integer.valueOf(version);
+        }
+        return ORC_ACID_VERSION_DEFAULT;
       }
       catch(IOException ex) {
         LOG.error(formatFile + " is unreadable due to: " + ex.getMessage(), ex);
