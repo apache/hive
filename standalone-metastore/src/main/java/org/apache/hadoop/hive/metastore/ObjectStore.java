@@ -55,6 +55,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.jdo.JDOCanRetryException;
 import javax.jdo.JDODataStoreException;
@@ -83,7 +84,6 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.MetaStoreDirectSql.SqlFilterForPushdown;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
-import org.apache.hadoop.hive.metastore.api.BasicTxnInfo;
 import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
@@ -124,6 +124,7 @@ import org.apache.hadoop.hive.metastore.api.ResourceType;
 import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
+import org.apache.hadoop.hive.metastore.api.RuntimeStat;
 import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
@@ -186,6 +187,7 @@ import org.apache.hadoop.hive.metastore.model.MPartitionPrivilege;
 import org.apache.hadoop.hive.metastore.model.MResourceUri;
 import org.apache.hadoop.hive.metastore.model.MRole;
 import org.apache.hadoop.hive.metastore.model.MRoleMap;
+import org.apache.hadoop.hive.metastore.model.MRuntimeStat;
 import org.apache.hadoop.hive.metastore.model.MSchemaVersion;
 import org.apache.hadoop.hive.metastore.model.MSerDeInfo;
 import org.apache.hadoop.hive.metastore.model.MStorageDescriptor;
@@ -210,7 +212,6 @@ import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.ObjectPair;
-import org.apache.thrift.TDeserializer;
 import org.apache.thrift.TException;
 import org.datanucleus.AbstractNucleusContext;
 import org.datanucleus.ClassLoaderResolver;
@@ -809,7 +810,9 @@ public class ObjectStore implements RawStore, Configurable {
       pm.makePersistent(mCat);
       committed = commitTransaction();
     } finally {
-      if (!committed) rollbackTransaction();
+      if (!committed) {
+        rollbackTransaction();
+      }
     }
   }
 
@@ -832,7 +835,9 @@ public class ObjectStore implements RawStore, Configurable {
       pm.makePersistent(mCat);
       committed = commitTransaction();
     } finally {
-      if (!committed) rollbackTransaction();
+      if (!committed) {
+        rollbackTransaction();
+      }
     }
   }
 
@@ -840,7 +845,9 @@ public class ObjectStore implements RawStore, Configurable {
   public Catalog getCatalog(String catalogName) throws NoSuchObjectException, MetaException {
     LOG.debug("Fetching catalog " + catalogName);
     MCatalog mCat = getMCatalog(catalogName);
-    if (mCat == null) throw new NoSuchObjectException("No catalog " + catalogName);
+    if (mCat == null) {
+      throw new NoSuchObjectException("No catalog " + catalogName);
+    }
     return mCatToCat(mCat);
   }
 
@@ -874,11 +881,15 @@ public class ObjectStore implements RawStore, Configurable {
       openTransaction();
       MCatalog mCat = getMCatalog(catalogName);
       pm.retrieve(mCat);
-      if (mCat == null) throw new NoSuchObjectException("No catalog " + catalogName);
+      if (mCat == null) {
+        throw new NoSuchObjectException("No catalog " + catalogName);
+      }
       pm.deletePersistent(mCat);
       committed = commitTransaction();
     } finally {
-      if (!committed) rollbackTransaction();
+      if (!committed) {
+        rollbackTransaction();
+      }
     }
   }
 
@@ -903,14 +914,18 @@ public class ObjectStore implements RawStore, Configurable {
   private MCatalog catToMCat(Catalog cat) {
     MCatalog mCat = new MCatalog();
     mCat.setName(normalizeIdentifier(cat.getName()));
-    if (cat.isSetDescription()) mCat.setDescription(cat.getDescription());
+    if (cat.isSetDescription()) {
+      mCat.setDescription(cat.getDescription());
+    }
     mCat.setLocationUri(cat.getLocationUri());
     return mCat;
   }
 
   private Catalog mCatToCat(MCatalog mCat) {
     Catalog cat = new Catalog(mCat.getName(), mCat.getLocationUri());
-    if (mCat.getDescription() != null) cat.setDescription(mCat.getDescription());
+    if (mCat.getDescription() != null) {
+      cat.setDescription(mCat.getDescription());
+    }
     return cat;
   }
 
@@ -1983,10 +1998,18 @@ public class ObjectStore implements RawStore, Configurable {
     }
     SerDeInfo serde =
         new SerDeInfo(ms.getName(), ms.getSerializationLib(), convertMap(ms.getParameters()));
-    if (ms.getDescription() != null) serde.setDescription(ms.getDescription());
-    if (ms.getSerializerClass() != null) serde.setSerializerClass(ms.getSerializerClass());
-    if (ms.getDeserializerClass() != null) serde.setDeserializerClass(ms.getDeserializerClass());
-    if (ms.getSerdeType() > 0) serde.setSerdeType(SerdeType.findByValue(ms.getSerdeType()));
+    if (ms.getDescription() != null) {
+      serde.setDescription(ms.getDescription());
+    }
+    if (ms.getSerializerClass() != null) {
+      serde.setSerializerClass(ms.getSerializerClass());
+    }
+    if (ms.getDeserializerClass() != null) {
+      serde.setDeserializerClass(ms.getDeserializerClass());
+    }
+    if (ms.getSerdeType() > 0) {
+      serde.setSerdeType(SerdeType.findByValue(ms.getSerdeType()));
+    }
     return serde;
   }
 
@@ -3679,7 +3702,7 @@ public class ObjectStore implements RawStore, Configurable {
       @Override
       protected boolean canUseDirectSql(GetHelper<Integer> ctx) throws MetaException {
         return directSql.generateSqlFilterForPushdown(ctx.getTable(), exprTree, filter);
-      };
+      }
 
       @Override
       protected Integer getSqlResult(GetHelper<Integer> ctx) throws MetaException {
@@ -9998,7 +10021,9 @@ public class ObjectStore implements RawStore, Configurable {
       pm.makePersistent(mSchema);
       committed = commitTransaction();
     } finally {
-      if (!committed) rollbackTransaction();
+      if (!committed) {
+        rollbackTransaction();
+      }
     }
   }
 
@@ -10017,11 +10042,17 @@ public class ObjectStore implements RawStore, Configurable {
       oldMSchema.setCompatibility(newSchema.getCompatibility().getValue());
       oldMSchema.setValidationLevel(newSchema.getValidationLevel().getValue());
       oldMSchema.setCanEvolve(newSchema.isCanEvolve());
-      if (newSchema.isSetSchemaGroup()) oldMSchema.setSchemaGroup(newSchema.getSchemaGroup());
-      if (newSchema.isSetDescription()) oldMSchema.setDescription(newSchema.getDescription());
+      if (newSchema.isSetSchemaGroup()) {
+        oldMSchema.setSchemaGroup(newSchema.getSchemaGroup());
+      }
+      if (newSchema.isSetDescription()) {
+        oldMSchema.setDescription(newSchema.getDescription());
+      }
       committed = commitTransaction();
     } finally {
-      if (!committed) rollbackTransaction();
+      if (!committed) {
+        rollbackTransaction();
+      }
     }
   }
 
@@ -10035,7 +10066,9 @@ public class ObjectStore implements RawStore, Configurable {
       committed = commitTransaction();
       return schema;
     } finally {
-      if (!committed) rollbackTransaction();
+      if (!committed) {
+        rollbackTransaction();
+      }
     }
   }
 
@@ -10054,7 +10087,9 @@ public class ObjectStore implements RawStore, Configurable {
       pm.retrieve(mSchema);
       return mSchema;
     } finally {
-      if (query != null) query.closeAll();
+      if (query != null) {
+        query.closeAll();
+      }
     }
   }
 
@@ -10071,7 +10106,9 @@ public class ObjectStore implements RawStore, Configurable {
       }
       committed = commitTransaction();
     } finally {
-      if (!committed) rollbackTransaction();
+      if (!committed) {
+        rollbackTransaction();
+      }
     }
   }
 
@@ -10096,7 +10133,9 @@ public class ObjectStore implements RawStore, Configurable {
       pm.makePersistent(mSchemaVersion);
       committed = commitTransaction();
     } finally {
-      if (!committed) rollbackTransaction();;
+      if (!committed) {
+        rollbackTransaction();
+      }
     }
   }
 
@@ -10113,11 +10152,17 @@ public class ObjectStore implements RawStore, Configurable {
       }
 
       // We only support changing the SerDe mapping and the state.
-      if (newVersion.isSetSerDe()) oldMSchemaVersion.setSerDe(convertToMSerDeInfo(newVersion.getSerDe()));
-      if (newVersion.isSetState()) oldMSchemaVersion.setState(newVersion.getState().getValue());
+      if (newVersion.isSetSerDe()) {
+        oldMSchemaVersion.setSerDe(convertToMSerDeInfo(newVersion.getSerDe()));
+      }
+      if (newVersion.isSetState()) {
+        oldMSchemaVersion.setState(newVersion.getState().getValue());
+      }
       committed = commitTransaction();
     } finally {
-      if (!committed) commitTransaction();
+      if (!committed) {
+        commitTransaction();
+      }
     }
   }
 
@@ -10132,7 +10177,9 @@ public class ObjectStore implements RawStore, Configurable {
       committed = commitTransaction();
       return schemaVersion;
     } finally {
-      if (!committed) rollbackTransaction();;
+      if (!committed) {
+        rollbackTransaction();
+      }
     }
   }
 
@@ -10152,11 +10199,15 @@ public class ObjectStore implements RawStore, Configurable {
       pm.retrieve(mSchemaVersion);
       if (mSchemaVersion != null) {
         pm.retrieveAll(mSchemaVersion.getCols());
-        if (mSchemaVersion.getSerDe() != null) pm.retrieve(mSchemaVersion.getSerDe());
+        if (mSchemaVersion.getSerDe() != null) {
+          pm.retrieve(mSchemaVersion.getSerDe());
+        }
       }
       return mSchemaVersion;
     } finally {
-      if (query != null) query.closeAll();
+      if (query != null) {
+        query.closeAll();
+      }
     }
   }
 
@@ -10180,7 +10231,9 @@ public class ObjectStore implements RawStore, Configurable {
       pm.retrieve(mSchemaVersion);
       if (mSchemaVersion != null) {
         pm.retrieveAll(mSchemaVersion.getCols());
-        if (mSchemaVersion.getSerDe() != null) pm.retrieve(mSchemaVersion.getSerDe());
+        if (mSchemaVersion.getSerDe() != null) {
+          pm.retrieve(mSchemaVersion.getSerDe());
+        }
       }
       SchemaVersion version = mSchemaVersion == null ? null : convertToSchemaVersion(mSchemaVersion);
       committed = commitTransaction();
@@ -10206,11 +10259,15 @@ public class ObjectStore implements RawStore, Configurable {
       query.setOrdering("version descending");
       List<MSchemaVersion> mSchemaVersions = query.setParameters(name, dbName, catName).executeList();
       pm.retrieveAll(mSchemaVersions);
-      if (mSchemaVersions == null || mSchemaVersions.isEmpty()) return null;
+      if (mSchemaVersions == null || mSchemaVersions.isEmpty()) {
+        return null;
+      }
       List<SchemaVersion> schemaVersions = new ArrayList<>(mSchemaVersions.size());
       for (MSchemaVersion mSchemaVersion : mSchemaVersions) {
         pm.retrieveAll(mSchemaVersion.getCols());
-        if (mSchemaVersion.getSerDe() != null) pm.retrieve(mSchemaVersion.getSerDe());
+        if (mSchemaVersion.getSerDe() != null) {
+          pm.retrieve(mSchemaVersion.getSerDe());
+        }
         schemaVersions.add(convertToSchemaVersion(mSchemaVersion));
       }
       committed = commitTransaction();
@@ -10232,8 +10289,12 @@ public class ObjectStore implements RawStore, Configurable {
     Query query = null;
     try {
       openTransaction();
-      if (colName != null) colName = normalizeIdentifier(colName);
-      if (type != null) type = normalizeIdentifier(type);
+      if (colName != null) {
+        colName = normalizeIdentifier(colName);
+      }
+      if (type != null) {
+        type = normalizeIdentifier(type);
+      }
       Map<String, String> parameters = new HashMap<>(3);
       StringBuilder sql = new StringBuilder("select SCHEMA_VERSION_ID from " +
           "SCHEMA_VERSION, COLUMNS_V2 where SCHEMA_VERSION.CD_ID = COLUMNS_V2.CD_ID ");
@@ -10259,12 +10320,16 @@ public class ObjectStore implements RawStore, Configurable {
       query = pm.newQuery("javax.jdo.query.SQL", sql.toString());
       query.setClass(MSchemaVersion.class);
       List<MSchemaVersion> mSchemaVersions = query.setNamedParameters(parameters).executeList();
-      if (mSchemaVersions == null || mSchemaVersions.isEmpty()) return Collections.emptyList();
+      if (mSchemaVersions == null || mSchemaVersions.isEmpty()) {
+        return Collections.emptyList();
+      }
       pm.retrieveAll(mSchemaVersions);
       List<SchemaVersion> schemaVersions = new ArrayList<>(mSchemaVersions.size());
       for (MSchemaVersion mSchemaVersion : mSchemaVersions) {
         pm.retrieveAll(mSchemaVersion.getCols());
-        if (mSchemaVersion.getSerDe() != null) pm.retrieve(mSchemaVersion.getSerDe());
+        if (mSchemaVersion.getSerDe() != null) {
+          pm.retrieve(mSchemaVersion.getSerDe());
+        }
         schemaVersions.add(convertToSchemaVersion(mSchemaVersion));
       }
       committed = commitTransaction();
@@ -10291,7 +10356,9 @@ public class ObjectStore implements RawStore, Configurable {
       }
       committed = commitTransaction();
     } finally {
-      if (!committed) rollbackTransaction();
+      if (!committed) {
+        rollbackTransaction();
+      }
     }
   }
 
@@ -10308,7 +10375,9 @@ public class ObjectStore implements RawStore, Configurable {
       committed = commitTransaction();
       return serde;
     } finally {
-      if (!committed) rollbackTransaction();;
+      if (!committed) {
+        rollbackTransaction();
+      }
     }
   }
 
@@ -10322,7 +10391,9 @@ public class ObjectStore implements RawStore, Configurable {
       pm.retrieve(mSerDeInfo);
       return mSerDeInfo;
     } finally {
-      if (query != null) query.closeAll();
+      if (query != null) {
+        query.closeAll();
+      }
     }
   }
 
@@ -10338,7 +10409,9 @@ public class ObjectStore implements RawStore, Configurable {
       pm.makePersistent(mSerde);
       committed = commitTransaction();
     } finally {
-      if (!committed) rollbackTransaction();
+      if (!committed) {
+        rollbackTransaction();
+      }
     }
 
   }
@@ -10355,7 +10428,9 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private ISchema convertToISchema(MISchema mSchema) {
-    if (mSchema == null) return null;
+    if (mSchema == null) {
+      return null;
+    }
     ISchema schema = new ISchema(SchemaType.findByValue(mSchema.getSchemaType()),
                                  mSchema.getName(),
                                  mSchema.getDb().getCatalogName(),
@@ -10363,8 +10438,12 @@ public class ObjectStore implements RawStore, Configurable {
                                  SchemaCompatibility.findByValue(mSchema.getCompatibility()),
                                  SchemaValidation.findByValue(mSchema.getValidationLevel()),
                                  mSchema.getCanEvolve());
-    if (mSchema.getDescription() != null) schema.setDescription(mSchema.getDescription());
-    if (mSchema.getSchemaGroup() != null) schema.setSchemaGroup(mSchema.getSchemaGroup());
+    if (mSchema.getDescription() != null) {
+      schema.setDescription(mSchema.getDescription());
+    }
+    if (mSchema.getSchemaGroup() != null) {
+      schema.setSchemaGroup(mSchema.getSchemaGroup());
+    }
     return schema;
   }
 
@@ -10385,19 +10464,33 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private SchemaVersion convertToSchemaVersion(MSchemaVersion mSchemaVersion) throws MetaException {
-    if (mSchemaVersion == null) return null;
+    if (mSchemaVersion == null) {
+      return null;
+    }
     SchemaVersion schemaVersion = new SchemaVersion(
         new ISchemaName(mSchemaVersion.getiSchema().getDb().getCatalogName(),
             mSchemaVersion.getiSchema().getDb().getName(), mSchemaVersion.getiSchema().getName()),
         mSchemaVersion.getVersion(),
         mSchemaVersion.getCreatedAt(),
         convertToFieldSchemas(mSchemaVersion.getCols().getCols()));
-    if (mSchemaVersion.getState() > 0) schemaVersion.setState(SchemaVersionState.findByValue(mSchemaVersion.getState()));
-    if (mSchemaVersion.getDescription() != null) schemaVersion.setDescription(mSchemaVersion.getDescription());
-    if (mSchemaVersion.getSchemaText() != null) schemaVersion.setSchemaText(mSchemaVersion.getSchemaText());
-    if (mSchemaVersion.getFingerprint() != null) schemaVersion.setFingerprint(mSchemaVersion.getFingerprint());
-    if (mSchemaVersion.getName() != null) schemaVersion.setName(mSchemaVersion.getName());
-    if (mSchemaVersion.getSerDe() != null) schemaVersion.setSerDe(convertToSerDeInfo(mSchemaVersion.getSerDe()));
+    if (mSchemaVersion.getState() > 0) {
+      schemaVersion.setState(SchemaVersionState.findByValue(mSchemaVersion.getState()));
+    }
+    if (mSchemaVersion.getDescription() != null) {
+      schemaVersion.setDescription(mSchemaVersion.getDescription());
+    }
+    if (mSchemaVersion.getSchemaText() != null) {
+      schemaVersion.setSchemaText(mSchemaVersion.getSchemaText());
+    }
+    if (mSchemaVersion.getFingerprint() != null) {
+      schemaVersion.setFingerprint(mSchemaVersion.getFingerprint());
+    }
+    if (mSchemaVersion.getName() != null) {
+      schemaVersion.setName(mSchemaVersion.getName());
+    }
+    if (mSchemaVersion.getSerDe() != null) {
+      schemaVersion.setSerDe(convertToSerDeInfo(mSchemaVersion.getSerDe()));
+    }
     return schemaVersion;
   }
 
@@ -11507,4 +11600,61 @@ public class ObjectStore implements RawStore, Configurable {
       rollbackAndCleanup(commited, (Query)null);
     }
   }
+
+  @Override
+  public void addRuntimeStat(RuntimeStat stat) throws MetaException {
+    LOG.debug("runtimeStat: " + stat);
+    MRuntimeStat mStat = MRuntimeStat.fromThrift(stat);
+    pm.makePersistent(mStat);
+  }
+
+  @Override
+  public int deleteRuntimeStats(int maxRetainedWeight, int maxRetainSecs) throws MetaException {
+    List<MRuntimeStat> all = getMRuntimeStats();
+    int retentionTime = 0;
+    if (maxRetainSecs >= 0) {
+      retentionTime = (int) (System.currentTimeMillis() / 1000) - maxRetainSecs;
+    }
+    if (maxRetainedWeight < 0) {
+      maxRetainedWeight = Integer.MAX_VALUE;
+    }
+
+    Object maxIdToRemove = null;
+    long totalWeight = 0;
+    int deleted = 0;
+    for (MRuntimeStat mRuntimeStat : all) {
+      totalWeight += mRuntimeStat.getWeight();
+      if (totalWeight > maxRetainedWeight || mRuntimeStat.getCreatedTime() < retentionTime) {
+        LOG.debug("removing runtime stat: " + mRuntimeStat);
+        pm.deletePersistent(mRuntimeStat);
+        deleted++;
+      }
+    }
+    return deleted;
+  }
+
+  @Override
+  public List<RuntimeStat> getRuntimeStats() throws MetaException {
+    boolean committed = false;
+    try {
+      openTransaction();
+      List<MRuntimeStat> mStats = getMRuntimeStats();
+      List<RuntimeStat> stats = mStats.stream().map(MRuntimeStat::toThrift).collect(Collectors.toList());
+      committed = commitTransaction();
+      return stats;
+    } finally {
+      if (!committed) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  private List<MRuntimeStat> getMRuntimeStats() {
+    Query<MRuntimeStat> query = pm.newQuery(MRuntimeStat.class);
+    query.setOrdering("createTime descending");
+    List<MRuntimeStat> res = (List<MRuntimeStat>) query.execute();
+    pm.retrieveAll(res);
+    return res;
+  }
+
 }

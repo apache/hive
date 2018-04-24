@@ -4825,6 +4825,43 @@ class GetSerdeRequest
   ::Thrift::Struct.generate_accessors self
 end
 
+class RuntimeStat
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  CREATETIME = 1
+  WEIGHT = 2
+  PAYLOAD = 3
+
+  FIELDS = {
+    CREATETIME => {:type => ::Thrift::Types::I32, :name => 'createTime', :optional => true},
+    WEIGHT => {:type => ::Thrift::Types::I32, :name => 'weight'},
+    PAYLOAD => {:type => ::Thrift::Types::STRING, :name => 'payload', :binary => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field weight is unset!') unless @weight
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field payload is unset!') unless @payload
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class GetRuntimeStatsRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+
+  FIELDS = {
+
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class MetaException < ::Thrift::Exception
   include ::Thrift::Struct, ::Thrift::Struct_Union
   def initialize(message=nil)
