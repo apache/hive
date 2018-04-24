@@ -1656,9 +1656,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             if(!updateTxnComponents) {
               continue;
             }
-            String dbName = lc.getDbname();
-            String tblName = lc.getTablename();
-            String partName = lc.getPartitionname();
+            String dbName = normalizeCase(lc.getDbname());
+            String tblName = normalizeCase(lc.getTablename());
+            String partName = normalizeCase(lc.getPartitionname());
             Long writeId = null;
             if (tblName != null) {
               // It is assumed the caller have already allocated write id for adding/updating data to
@@ -1666,8 +1666,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
               // may return empty result sets.
               // Get the write id allocated by this txn for the given table writes
               s = "select t2w_writeid from TXN_TO_WRITE_ID where"
-                      + " t2w_database = " + quoteString(dbName.toLowerCase())
-                      + " and t2w_table = " + quoteString(tblName.toLowerCase())
+                      + " t2w_database = " + quoteString(dbName)
+                      + " and t2w_table = " + quoteString(tblName)
                       + " and t2w_txnid = " + txnid;
               LOG.debug("Going to execute query <" + s + ">");
               rs = stmt.executeQuery(s);
@@ -1704,9 +1704,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
               + lc + " agentInfo=" + rqst.getAgentInfo());
           }
           intLockId++;
-          String dbName = lc.getDbname();
-          String tblName = lc.getTablename();
-          String partName = lc.getPartitionname();
+          String dbName = normalizeCase(lc.getDbname());
+          String tblName = normalizeCase(lc.getTablename());
+          String partName = normalizeCase(lc.getPartitionname());
           LockType lockType = lc.getType();
           char lockChar = 'z';
           switch (lockType) {
@@ -1763,6 +1763,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     catch(RetryException e) {
       return enqueueLockWithRetry(rqst);
     }
+  }
+  private static String normalizeCase(String s) {
+    return s == null ? null : s.toLowerCase();
   }
   private LockResponse checkLockWithRetry(Connection dbConn, long extLockId, long txnId)
     throws NoSuchLockException, NoSuchTxnException, TxnAbortedException, MetaException {
@@ -2385,7 +2388,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         Long writeId = rqst.getWriteid();
         List<String> rows = new ArrayList<>();
         for (String partName : rqst.getPartitionnames()) {
-          rows.add(rqst.getTxnid() + "," + quoteString(rqst.getDbname()) + "," + quoteString(rqst.getTablename()) +
+          rows.add(rqst.getTxnid() + "," + quoteString(normalizeCase(rqst.getDbname()))
+              + "," + quoteString(normalizeCase(rqst.getTablename())) +
               "," + quoteString(partName) + "," + quoteChar(ot.sqlConst) + "," + writeId);
         }
         int modCount = 0;
