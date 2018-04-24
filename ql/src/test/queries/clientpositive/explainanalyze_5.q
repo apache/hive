@@ -1,3 +1,4 @@
+SET hive.vectorized.execution.enabled=false;
 set hive.map.aggr=false;
 
 set hive.stats.column.autogather=true;

@@ -1,3 +1,4 @@
+SET hive.vectorized.execution.enabled=false;
 create table tx(a int,f string);
 insert into tx values (1,'non_existent_file');
 
