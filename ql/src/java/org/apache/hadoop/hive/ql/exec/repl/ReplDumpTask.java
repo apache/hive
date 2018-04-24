@@ -211,15 +211,15 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   private Long bootStrapDump(Path dumpRoot, DumpMetaData dmd, Path cmRoot) throws Exception {
     // bootstrap case
     Hive hiveDb = getHive();
-    String validTxnList = getValidTxnListForReplDump(hiveDb);
     Long bootDumpBeginReplId = hiveDb.getMSC().getCurrentNotificationEventId().getEventId();
+    String validTxnList = getValidTxnListForReplDump(hiveDb);
     for (String dbName : Utils.matchesDb(hiveDb, work.dbNameOrPattern)) {
       LOG.debug("ReplicationSemanticAnalyzer: analyzeReplDump dumping db: " + dbName);
       replLogger = new BootstrapDumpLogger(dbName, dumpRoot.toString(),
               Utils.getAllTables(getHive(), dbName).size(),
               getHive().getAllFunctions().size());
       replLogger.startLog();
-      Path dbRoot = dumpDbMetadata(dbName, dumpRoot);
+      Path dbRoot = dumpDbMetadata(dbName, dumpRoot, bootDumpBeginReplId);
       dumpFunctionMetadata(dbName, dumpRoot);
 
       String uniqueKey = Utils.setDbBootstrapDumpState(hiveDb, dbName);
@@ -266,12 +266,12 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return bootDumpBeginReplId;
   }
 
-  private Path dumpDbMetadata(String dbName, Path dumpRoot) throws Exception {
+  private Path dumpDbMetadata(String dbName, Path dumpRoot, long lastReplId) throws Exception {
     Path dbRoot = new Path(dumpRoot, dbName);
     // TODO : instantiating FS objects are generally costly. Refactor
     FileSystem fs = dbRoot.getFileSystem(conf);
     Path dumpPath = new Path(dbRoot, EximUtil.METADATA_NAME);
-    HiveWrapper.Tuple<Database> database = new HiveWrapper(getHive(), dbName).database();
+    HiveWrapper.Tuple<Database> database = new HiveWrapper(getHive(), dbName, lastReplId).database();
     EximUtil.createDbExportDump(fs, dumpPath, database.object, database.replicationSpec);
     return dbRoot;
   }
