@@ -2,8 +2,7 @@
 set hive.metastore.event.listeners=org.apache.hive.hcatalog.listener.DbNotificationListener;
 
 set hive.query.results.cache.enabled=true;
--- Enable this setting when HIVE-18609 is in
---set hive.query.results.cache.nontransactional.tables.enabled=true;
+set hive.query.results.cache.nontransactional.tables.enabled=true;
 
 set hive.fetch.task.conversion=more;
 -- Start polling the notification events
