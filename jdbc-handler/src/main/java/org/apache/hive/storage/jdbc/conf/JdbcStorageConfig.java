@@ -18,7 +18,8 @@ public enum JdbcStorageConfig {
   DATABASE_TYPE("database.type", true),
   JDBC_URL("jdbc.url", true),
   JDBC_DRIVER_CLASS("jdbc.driver", true),
-  QUERY("query", true),
+  QUERY("query", false),
+  TABLE("table", false),
   JDBC_FETCH_SIZE("jdbc.fetch.size", false),
   COLUMN_MAPPING("column.mapping", false);
 

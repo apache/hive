@@ -64,9 +64,11 @@ import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveGroupingID;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.HiveJdbcConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableFunctionScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.JdbcHiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.SqlFunctionConverter.HiveToken;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
@@ -344,6 +346,10 @@ public class ASTConverter {
       TableScan f = (TableScan) r;
       s = new Schema(f);
       ast = ASTBuilder.table(f);
+    } else if (r instanceof HiveJdbcConverter) {
+      HiveJdbcConverter f = (HiveJdbcConverter) r;
+      s = new Schema(f);
+      ast = ASTBuilder.table(f);
     } else if (r instanceof DruidQuery) {
       DruidQuery f = (DruidQuery) r;
       s = new Schema(f);
@@ -425,7 +431,8 @@ public class ASTConverter {
     public void visit(RelNode node, int ordinal, RelNode parent) {
 
       if (node instanceof TableScan ||
-          node instanceof DruidQuery) {
+          node instanceof DruidQuery ||
+          node instanceof HiveJdbcConverter) {
         ASTConverter.this.from = node;
       } else if (node instanceof Filter) {
         handle((Filter) node);
@@ -761,6 +768,15 @@ public class ASTConverter {
       HiveTableScan hts = (HiveTableScan) ((DruidQuery)dq).getTableScan();
       String tabName = hts.getTableAlias();
       for (RelDataTypeField field : dq.getRowType().getFieldList()) {
+        add(new ColumnInfo(tabName, field.getName()));
+      }
+    }
+
+    Schema(HiveJdbcConverter scan) {
+      HiveJdbcConverter jdbcHiveCoverter = scan;
+      final JdbcHiveTableScan jdbcTableScan = jdbcHiveCoverter.getTableScan();
+      String tabName = jdbcTableScan.getHiveTableScan().getTableAlias();
+      for (RelDataTypeField field : jdbcHiveCoverter.getRowType().getFieldList()) {
         add(new ColumnInfo(tabName, field.getName()));
       }
     }

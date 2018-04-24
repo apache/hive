@@ -48,12 +48,18 @@ public class Constants {
   public static final String DRUID_SEGMENT_VERSION = "druid.segment.version";
   public static final String DRUID_JOB_WORKING_DIRECTORY = "druid.job.workingDirectory";
 
+
   public static final String KAFKA_TOPIC = "kafka.topic";
   public static final String KAFKA_BOOTSTRAP_SERVERS = "kafka.bootstrap.servers";
 
   public static final String DRUID_KAFKA_INGESTION_PROPERTY_PREFIX = "druid.kafka.ingestion.";
   /* Kafka Ingestion state - valid values - START/STOP/RESET */
   public static final String DRUID_KAFKA_INGESTION = "druid.kafka.ingestion";
+
+  public static final String HIVE_JDBC_QUERY = "hive.sql.generated.query";
+  public static final String JDBC_QUERY = "hive.sql.query";
+  public static final String JDBC_HIVE_STORAGE_HANDLER_ID =
+      "org.apache.hive.storage.jdbc.JdbcStorageHandler";
 
   public static final String HIVE_SERVER2_JOB_CREDSTORE_PASSWORD_ENVVAR = "HIVE_JOB_CREDSTORE_PASSWORD";
   public static final String HADOOP_CREDENTIAL_PASSWORD_ENVVAR = "HADOOP_CREDSTORE_PASSWORD";
