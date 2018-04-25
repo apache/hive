@@ -65,7 +65,7 @@ public final class SignatureUtils {
       if (sigMethods.isEmpty()) {
         // by supplying using "o" this enforces identity/equls matching
         // which will most probably make the signature very unique
-        ret.put(classLabel, o);
+        ret.put(classLabel, System.identityHashCode(o));
       } else {
         ret.put(classLabel, "1");
         for (Method method : sigMethods) {
