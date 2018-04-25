@@ -44,13 +44,12 @@ public class JdbcStorageConfigManager {
   public static final String CONFIG_USERNAME = CONFIG_PREFIX + ".dbcp.username";
   private static final EnumSet<JdbcStorageConfig> DEFAULT_REQUIRED_PROPERTIES =
     EnumSet.of(JdbcStorageConfig.DATABASE_TYPE,
-        JdbcStorageConfig.JDBC_URL,
-        JdbcStorageConfig.JDBC_DRIVER_CLASS,
-        JdbcStorageConfig.QUERY);
+               JdbcStorageConfig.JDBC_URL,
+               JdbcStorageConfig.JDBC_DRIVER_CLASS);
 
   private static final EnumSet<JdbcStorageConfig> METASTORE_REQUIRED_PROPERTIES =
     EnumSet.of(JdbcStorageConfig.DATABASE_TYPE,
-        JdbcStorageConfig.QUERY);
+               JdbcStorageConfig.QUERY);
 
   private JdbcStorageConfigManager() {
   }
@@ -120,6 +119,12 @@ public class JdbcStorageConfigManager {
 
   public static String getQueryToExecute(Configuration config) {
     String query = config.get(JdbcStorageConfig.QUERY.getPropertyName());
+
+    if (query == null) {
+      String tableName = config.get(JdbcStorageConfig.TABLE.getPropertyName());
+      query = "select * from " + tableName;
+    }
+
     String hiveFilterCondition = QueryConditionBuilder.getInstance().buildCondition(config);
     if ((hiveFilterCondition != null) && (!hiveFilterCondition.trim().isEmpty())) {
       query = query + " WHERE " + hiveFilterCondition;
