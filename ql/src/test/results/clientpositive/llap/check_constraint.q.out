@@ -3551,7 +3551,8 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{}                  
+	numFiles            	1                   
+	totalSize           	5                   
 	transactional       	true                
 	transactional_properties	insert_only         
 #### A masked pattern was here ####
