@@ -1,5 +1,44 @@
 
 set hive.strict.checks.cartesian.product= false;
+
+
+CREATE TEMPORARY FUNCTION dboutput AS 'org.apache.hadoop.hive.contrib.genericudf.example.GenericUDFDBOutput';
+
+
+FROM src
+
+SELECT dboutput ( 'jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_as_external_table_db;create=true','','',
+'CREATE TABLE SIMPLE_DERBY_TABLE ("kkey" INTEGER NOT NULL )' ),
+
+dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_as_external_table_db;create=true','','',
+'INSERT INTO SIMPLE_DERBY_TABLE ("kkey") VALUES (?)','20'),
+
+dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_as_external_table_db;create=true','','',
+'INSERT INTO SIMPLE_DERBY_TABLE ("kkey") VALUES (?)','200')
+
+limit 1;
+
+CREATE EXTERNAL TABLE ext_simple_derby_table
+(
+ kkey bigint
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+                "hive.sql.database.type" = "DERBY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+                "hive.sql.jdbc.url" = "jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_as_external_table_db;create=true;collation=TERRITORY_BASED:PRIMARY",
+                "hive.sql.dbcp.username" = "APP",
+                "hive.sql.dbcp.password" = "mine",
+                "hive.sql.table" = "SIMPLE_DERBY_TABLE",
+                "hive.sql.dbcp.maxActive" = "1"
+);
+
+select * from ext_simple_derby_table;
+
+explain select * from ext_simple_derby_table where 100 < ext_simple_derby_table.kkey;
+
+select * from ext_simple_derby_table where 100 < ext_simple_derby_table.kkey;
+
 CREATE EXTERNAL TABLE tables
 (
 id bigint,
@@ -25,6 +64,7 @@ TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
 "hive.sql.query" = "SELECT DB_ID, NAME FROM DBS"
 );
+
 
 select tables.name as tn, dbs.NAME as dn, tables.type as t
 from tables join dbs on (tables.db_id = dbs.DB_ID) order by tn, dn, t;
