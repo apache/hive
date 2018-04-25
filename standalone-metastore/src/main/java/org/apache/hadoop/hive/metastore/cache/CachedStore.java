@@ -89,6 +89,7 @@ import org.apache.hadoop.hive.metastore.columnstats.aggr.ColumnStatsAggregator;
 import org.apache.hadoop.hive.metastore.columnstats.aggr.ColumnStatsAggregatorFactory;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
+import org.apache.hadoop.hive.metastore.api.RuntimeStat;
 import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
@@ -220,8 +221,9 @@ public class CachedStore implements RawStore, Configurable {
         LOG.info("Going to cache catalogs: "
             + org.apache.commons.lang.StringUtils.join(catalogsToCache, ", "));
         List<Catalog> catalogs = new ArrayList<>(catalogsToCache.size());
-        for (String catName : catalogsToCache)
+        for (String catName : catalogsToCache) {
           catalogs.add(rawStore.getCatalog(catName));
+        }
         sharedCache.populateCatalogsInCache(catalogs);
       } catch (MetaException | NoSuchObjectException e) {
         LOG.warn("Failed to populate catalogs in cache, going to try again", e);
@@ -2175,6 +2177,7 @@ public class CachedStore implements RawStore, Configurable {
     return rawStore.addNotNullConstraints(nns);
   }
 
+  @Override
   public List<String> addDefaultConstraints(List<SQLDefaultConstraint> nns)
       throws InvalidObjectException, MetaException {
     // TODO constraintCache
@@ -2195,6 +2198,7 @@ public class CachedStore implements RawStore, Configurable {
     rawStore.createISchema(schema);
   }
 
+  @Override
   public List<ColStatsObjWithSourceInfo> getPartitionColStatsForDatabase(String catName, String dbName)
       throws MetaException, NoSuchObjectException {
     return rawStore.getPartitionColStatsForDatabase(catName, dbName);
@@ -2465,5 +2469,20 @@ public class CachedStore implements RawStore, Configurable {
   void resetCatalogCache() {
     sharedCache.resetCatalogCache();
     setCachePrewarmedState(false);
+  }
+
+  @Override
+  public void addRuntimeStat(RuntimeStat stat) throws MetaException {
+    rawStore.addRuntimeStat(stat);
+  }
+
+  @Override
+  public List<RuntimeStat> getRuntimeStats() throws MetaException {
+    return rawStore.getRuntimeStats();
+  }
+
+  @Override
+  public int deleteRuntimeStats(int maxRetained, int maxRetainSecs) throws MetaException {
+    return rawStore.deleteRuntimeStats(maxRetained, maxRetainSecs);
   }
 }

@@ -226,6 +226,8 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  SerDeInfo get_serde(GetSerdeRequest rqst)')
   print('  LockResponse get_lock_materialization_rebuild(string dbName, string tableName, i64 txnId)')
   print('  bool heartbeat_lock_materialization_rebuild(string dbName, string tableName, i64 txnId)')
+  print('  void add_runtime_stats(RuntimeStat stat)')
+  print('   get_runtime_stats(GetRuntimeStatsRequest rqst)')
   print('  string getName()')
   print('  string getVersion()')
   print('  fb_status getStatus()')
@@ -1506,6 +1508,18 @@ elif cmd == 'heartbeat_lock_materialization_rebuild':
     print('heartbeat_lock_materialization_rebuild requires 3 args')
     sys.exit(1)
   pp.pprint(client.heartbeat_lock_materialization_rebuild(args[0],args[1],eval(args[2]),))
+
+elif cmd == 'add_runtime_stats':
+  if len(args) != 1:
+    print('add_runtime_stats requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.add_runtime_stats(eval(args[0]),))
+
+elif cmd == 'get_runtime_stats':
+  if len(args) != 1:
+    print('get_runtime_stats requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_runtime_stats(eval(args[0]),))
 
 elif cmd == 'getName':
   if len(args) != 0:
