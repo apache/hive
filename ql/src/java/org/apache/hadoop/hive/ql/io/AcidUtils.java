@@ -18,7 +18,21 @@
 
 package org.apache.hadoop.hive.ql.io;
 
-import com.google.common.annotations.VisibleForTesting;
+import static org.apache.hadoop.hive.ql.exec.Utilities.COPY_KEYWORD;
+
+import java.io.IOException;
+import java.io.Serializable;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.regex.Pattern;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -54,6 +68,8 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.charset.Charset;
@@ -67,6 +83,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import static org.apache.hadoop.hive.ql.exec.Utilities.COPY_KEYWORD;
+
 
 /**
  * Utilities that are shared by all of the ACID input and output formats. They
@@ -1822,5 +1839,61 @@ public class AcidUtils {
       return true;
     }
     return false;
+  }
+
+  public static class AnyIdDirFilter implements PathFilter {
+     @Override
+     public boolean accept(Path path) {
+       return extractWriteId(path) != null;
+     }
+  }
+
+  public static class IdPathFilter implements PathFilter {
+    private String baseDirName, deltaDirName;
+    private final boolean isDeltaPrefix;
+
+    public IdPathFilter(long writeId, int stmtId) {
+      String deltaDirName = null;
+      deltaDirName = DELTA_PREFIX + String.format(DELTA_DIGITS, writeId) + "_" +
+              String.format(DELTA_DIGITS, writeId);
+      isDeltaPrefix = (stmtId < 0);
+      if (!isDeltaPrefix) {
+        deltaDirName += "_" + String.format(STATEMENT_DIGITS, stmtId);
+      }
+
+      this.baseDirName = BASE_PREFIX + String.format(DELTA_DIGITS, writeId);
+      this.deltaDirName = deltaDirName;
+    }
+
+    @Override
+    public boolean accept(Path path) {
+      String name = path.getName();
+      return name.equals(baseDirName) || (isDeltaPrefix && name.startsWith(deltaDirName))
+          || (!isDeltaPrefix && name.equals(deltaDirName));
+    }
+  }
+
+
+  public static Long extractWriteId(Path file) {
+    String fileName = file.getName();
+    if (!fileName.startsWith(DELTA_PREFIX) && !fileName.startsWith(BASE_PREFIX)) {
+      LOG.trace("Cannot extract write ID for a MM table: {}", file);
+      return null;
+    }
+    String[] parts = fileName.split("_", 4);  // e.g. delta_0000001_0000001_0000 or base_0000022
+    if (parts.length < 2) {
+      LOG.debug("Cannot extract write ID for a MM table: " + file
+          + " (" + Arrays.toString(parts) + ")");
+      return null;
+    }
+    long writeId = -1;
+    try {
+      writeId = Long.parseLong(parts[1]);
+    } catch (NumberFormatException ex) {
+      LOG.debug("Cannot extract write ID for a MM table: " + file
+          + "; parsing " + parts[1] + " got " + ex.getMessage());
+      return null;
+    }
+    return writeId;
   }
 }
