@@ -109,7 +109,7 @@ public class TestJdbcWithMiniKdcCookie {
       // login failure.
       getConnection(HIVE_NON_EXISTENT_USER);
     } catch (IOException e) {
-      Assert.assertTrue(e.getMessage().contains("Login failure"));
+      Assert.assertTrue(e.getMessage().contains("javax.security.auth.login.LoginException"));
     }
   }
 
