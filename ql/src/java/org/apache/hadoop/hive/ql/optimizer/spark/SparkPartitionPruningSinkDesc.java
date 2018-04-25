@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.optimizer.spark;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.exec.spark.SparkUtilities;
 import org.apache.hadoop.hive.ql.optimizer.signature.Signature;
 import org.apache.hadoop.hive.ql.plan.AbstractOperatorDesc;
 import org.apache.hadoop.hive.ql.plan.Explain;
@@ -140,5 +141,19 @@ public class SparkPartitionPruningSinkDesc extends AbstractOperatorDesc {
       }
     }
     targetInfos.removeAll(toRemove);
+  }
+
+  // Return a combined column name with corresponding target map work ID.
+  public static String colNameWithTargetId(MapWork target, String colName) {
+    return SparkUtilities.getWorkId(target) + ":" + colName;
+  }
+
+  // Return the column from a combined column name.
+  public static String stripOffTargetId(String name) {
+    int idx = name.indexOf(":");
+    if (idx != -1) {
+      return name.substring(idx + 1);
+    }
+    return name;
   }
 }

@@ -32,6 +32,7 @@ import java.util.Set;
 
 import com.clearspring.analytics.util.Preconditions;
 import javolution.testing.AssertionException;
+import org.apache.hadoop.hive.ql.optimizer.spark.SparkPartitionPruningSinkDesc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
@@ -174,7 +175,7 @@ public class SparkDynamicPartitionPruner {
       throws HiveException {
     Set<Object> values = info.values;
     // strip the column name of the targetId
-    String columnName = info.columnName.substring(info.columnName.indexOf(':') + 1);
+    String columnName = SparkPartitionPruningSinkDesc.stripOffTargetId(info.columnName);
 
     ObjectInspector oi =
         PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(TypeInfoFactory
