@@ -269,12 +269,12 @@ public class JoinDesc extends AbstractOperatorDesc {
    */
   @Explain(displayName = "filter predicates")
   @Signature
-  public Map<Byte, String> getFiltersStringMap() {
+  public Map<String, String> getFiltersStringMap() {
     if (getFilters() == null || getFilters().size() == 0) {
       return null;
     }
 
-    LinkedHashMap<Byte, String> ret = new LinkedHashMap<Byte, String>();
+    LinkedHashMap<String, String> ret = new LinkedHashMap<>();
     boolean filtersPresent = false;
 
     for (Map.Entry<Byte, List<ExprNodeDesc>> ent : getFilters().entrySet()) {
@@ -295,7 +295,7 @@ public class JoinDesc extends AbstractOperatorDesc {
           sb.append("}");
         }
       }
-      ret.put(ent.getKey(), sb.toString());
+      ret.put(String.valueOf(ent.getKey()), sb.toString());
     }
 
     if (filtersPresent) {
