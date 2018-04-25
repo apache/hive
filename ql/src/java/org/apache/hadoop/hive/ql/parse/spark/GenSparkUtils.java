@@ -475,7 +475,8 @@ public class GenSparkUtils {
       }
 
       targetInfo.work = targetWork;
-      targetInfo.columnName = SparkUtilities.getWorkId(targetWork) + ":" + targetInfo.columnName;
+      targetInfo.columnName = SparkPartitionPruningSinkDesc.colNameWithTargetId(
+          targetWork, targetInfo.columnName);
 
       pruningSink.addAsSourceEvent(targetWork, targetInfo.partKey, targetInfo.columnName,
           targetInfo.columnType);
