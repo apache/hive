@@ -43,6 +43,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.sql.DataSource;
 import com.google.common.collect.Iterables;
 import org.antlr.runtime.ClassicToken;
 import org.antlr.runtime.CommonToken;
@@ -52,6 +53,9 @@ import org.antlr.runtime.tree.TreeVisitorAction;
 import org.apache.calcite.adapter.druid.DruidQuery;
 import org.apache.calcite.adapter.druid.DruidSchema;
 import org.apache.calcite.adapter.druid.DruidTable;
+import org.apache.calcite.adapter.jdbc.JdbcConvention;
+import org.apache.calcite.adapter.jdbc.JdbcSchema;
+import org.apache.calcite.adapter.jdbc.JdbcTable;
 import org.apache.calcite.config.CalciteConnectionConfig;
 import org.apache.calcite.config.CalciteConnectionConfigImpl;
 import org.apache.calcite.config.CalciteConnectionProperty;
@@ -106,6 +110,8 @@ import org.apache.calcite.rex.RexWindowBound;
 import org.apache.calcite.schema.SchemaPlus;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlCall;
+import org.apache.calcite.sql.SqlDialect;
+import org.apache.calcite.sql.SqlDialectFactoryImpl;
 import org.apache.calcite.sql.SqlExplainLevel;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlLiteral;
@@ -171,6 +177,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExcept;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveGroupingID;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIntersect;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.HiveJdbcConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
@@ -179,6 +186,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableFunctionScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.JdbcHiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateJoinTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateProjectMergeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregatePullUpConstantsRule;
@@ -226,10 +234,22 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSubQueryRemoveRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveUnionMergeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveUnionPullUpConstantsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveWindowingFixRule;
+
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCAggregationPushDownRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCFilterJoinRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCFilterPushDownRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCExtractJoinFilterRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCJoinPushDownRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCProjectPushDownRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCSortPushDownRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCUnionPushDownRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCAbstractSplitFilterRule;
+
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveAggregateIncrementalRewritingRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveNoAggregateIncrementalRewritingRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.MaterializedViewRewritingRelVisitor;
+
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTBuilder;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.HiveOpConverter;
@@ -1830,6 +1850,17 @@ public class CalcitePlanner extends SemanticAnalyzer {
       );
       perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Druid transformation rules");
 
+      calciteOptimizedPlan = hepPlan(calciteOptimizedPlan, true, mdProvider.getMetadataProvider(), null,
+              HepMatchOrder.TOP_DOWN,
+              JDBCExtractJoinFilterRule.INSTANCE,
+              JDBCAbstractSplitFilterRule.SPLIT_FILTER_ABOVE_JOIN,
+              JDBCAbstractSplitFilterRule.SPLIT_FILTER_ABOVE_CONVERTER,
+              JDBCFilterJoinRule.INSTANCE,
+              JDBCJoinPushDownRule.INSTANCE, JDBCUnionPushDownRule.INSTANCE,
+              JDBCFilterPushDownRule.INSTANCE, JDBCProjectPushDownRule.INSTANCE,
+              JDBCAggregationPushDownRule.INSTANCE, JDBCSortPushDownRule.INSTANCE
+      );
+
       // 12. Run rules to aid in translation from Calcite tree to Hive tree
       if (HiveConf.getBoolVar(conf, ConfVars.HIVE_CBO_RETPATH_HIVEOP)) {
         perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
@@ -2722,7 +2753,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
         }
 
         // 4. Build operator
-        if (tableType == TableType.DRUID) {
+        if (tableType == TableType.DRUID ||
+                (tableType == TableType.JDBC && tabMetaData.getProperty("hive.sql.table") != null)) {
           // Create case sensitive columns list
           List<String> originalColumnNames =
                   ((StandardStructObjectInspector)rowObjectInspector).getOriginalColumnNames();
@@ -2742,51 +2774,85 @@ public class CalcitePlanner extends SemanticAnalyzer {
             fullyQualifiedTabName = tabMetaData.getTableName();
           }
 
-          // Build Druid query
-          String address = HiveConf.getVar(conf,
+          if (tableType == TableType.DRUID) {
+            // Build Druid query
+            String address = HiveConf.getVar(conf,
                   HiveConf.ConfVars.HIVE_DRUID_BROKER_DEFAULT_ADDRESS);
-          String dataSource = tabMetaData.getParameters().get(Constants.DRUID_DATA_SOURCE);
-          Set<String> metrics = new HashSet<>();
-          RexBuilder rexBuilder = cluster.getRexBuilder();
-          RelDataTypeFactory dtFactory = rexBuilder.getTypeFactory();
-          List<RelDataType> druidColTypes = new ArrayList<>();
-          List<String> druidColNames = new ArrayList<>();
-          //@TODO FIX this, we actually do not need this anymore,
-          // in addition to that Druid allow numeric dimensions now so this check is not accurate
-          for (RelDataTypeField field : rowType.getFieldList()) {
-            if (DruidTable.DEFAULT_TIMESTAMP_COLUMN.equals(field.getName())) {
-              // Druid's time column is always not null.
-              druidColTypes.add(dtFactory.createTypeWithNullability(field.getType(), false));
-            } else {
-              druidColTypes.add(field.getType());
+            String dataSource = tabMetaData.getParameters().get(Constants.DRUID_DATA_SOURCE);
+            Set<String> metrics = new HashSet<>();
+            RexBuilder rexBuilder = cluster.getRexBuilder();
+            RelDataTypeFactory dtFactory = rexBuilder.getTypeFactory();
+            List<RelDataType> druidColTypes = new ArrayList<>();
+            List<String> druidColNames = new ArrayList<>();
+            //@TODO FIX this, we actually do not need this anymore,
+            // in addition to that Druid allow numeric dimensions now so this check is not accurate
+            for (RelDataTypeField field : rowType.getFieldList()) {
+              if (DruidTable.DEFAULT_TIMESTAMP_COLUMN.equals(field.getName())) {
+                // Druid's time column is always not null.
+                druidColTypes.add(dtFactory.createTypeWithNullability(field.getType(), false));
+              } else {
+                druidColTypes.add(field.getType());
+              }
+              druidColNames.add(field.getName());
+              if (field.getName().equals(DruidTable.DEFAULT_TIMESTAMP_COLUMN)) {
+                // timestamp
+                continue;
+              }
+              if (field.getType().getSqlTypeName() == SqlTypeName.VARCHAR) {
+                // dimension
+                continue;
+              }
+              metrics.add(field.getName());
             }
-            druidColNames.add(field.getName());
-            if (field.getName().equals(DruidTable.DEFAULT_TIMESTAMP_COLUMN)) {
-              // timestamp
-              continue;
-            }
-            if (field.getType().getSqlTypeName() == SqlTypeName.VARCHAR) {
-              // dimension
-              continue;
-            }
-            metrics.add(field.getName());
-          }
 
-          List<Interval> intervals = Arrays.asList(DruidTable.DEFAULT_INTERVAL);
-          rowType = dtFactory.createStructType(druidColTypes, druidColNames);
-          DruidTable druidTable = new DruidTable(new DruidSchema(address, address, false),
-              dataSource, RelDataTypeImpl.proto(rowType), metrics, DruidTable.DEFAULT_TIMESTAMP_COLUMN,
-              intervals, null, null);
-          RelOptHiveTable optTable = new RelOptHiveTable(relOptSchema, fullyQualifiedTabName,
-              rowType, tabMetaData, nonPartitionColumns, partitionColumns, virtualCols, conf,
-              partitionCache, colStatsCache, noColsMissingStats);
-          final TableScan scan = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
-              optTable, null == tableAlias ? tabMetaData.getTableName() : tableAlias,
-              getAliasId(tableAlias, qb), HiveConf.getBoolVar(conf,
-                  HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP), qb.isInsideView()
-                  || qb.getAliasInsideView().contains(tableAlias.toLowerCase()));
-          tableRel = DruidQuery.create(cluster, cluster.traitSetOf(BindableConvention.INSTANCE),
-              optTable, druidTable, ImmutableList.of(scan), DruidSqlOperatorConverter.getDefaultMap());
+            List<Interval> intervals = Arrays.asList(DruidTable.DEFAULT_INTERVAL);
+            rowType = dtFactory.createStructType(druidColTypes, druidColNames);
+            DruidTable druidTable = new DruidTable(new DruidSchema(address, address, false),
+                dataSource, RelDataTypeImpl.proto(rowType), metrics, DruidTable.DEFAULT_TIMESTAMP_COLUMN,
+                intervals, null, null);
+            RelOptHiveTable optTable = new RelOptHiveTable(relOptSchema, fullyQualifiedTabName,
+                rowType, tabMetaData, nonPartitionColumns, partitionColumns, virtualCols, conf,
+                partitionCache, colStatsCache, noColsMissingStats);
+            final TableScan scan = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
+                optTable, null == tableAlias ? tabMetaData.getTableName() : tableAlias,
+                getAliasId(tableAlias, qb), HiveConf.getBoolVar(conf,
+                    HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP), qb.isInsideView()
+                    || qb.getAliasInsideView().contains(tableAlias.toLowerCase()));
+            tableRel = DruidQuery.create(cluster, cluster.traitSetOf(BindableConvention.INSTANCE),
+                optTable, druidTable, ImmutableList.of(scan), DruidSqlOperatorConverter.getDefaultMap());
+          } else if (tableType == TableType.JDBC) {
+            RelOptHiveTable optTable = new RelOptHiveTable(relOptSchema, fullyQualifiedTabName,
+                  rowType, tabMetaData, nonPartitionColumns, partitionColumns, virtualCols, conf,
+                  partitionCache, colStatsCache, noColsMissingStats);
+
+            final HiveTableScan hts = new HiveTableScan(cluster,
+                  cluster.traitSetOf(HiveRelNode.CONVENTION), optTable,
+                  null == tableAlias ? tabMetaData.getTableName() : tableAlias,
+                  getAliasId(tableAlias, qb),
+                  HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP),
+                  qb.isInsideView() || qb.getAliasInsideView().contains(tableAlias.toLowerCase()));
+            LOG.debug("JDBC is running");
+            final String dataBaseType = tabMetaData.getProperty("hive.sql.database.type");
+            final String url = tabMetaData.getProperty("hive.sql.jdbc.url");
+            final String driver = tabMetaData.getProperty("hive.sql.jdbc.driver");
+            final String user = tabMetaData.getProperty("hive.sql.dbcp.username");
+            final String pswd = tabMetaData.getProperty("hive.sql.dbcp.password");
+            //final String query = tabMetaData.getProperty("hive.sql.query");
+            final String tableName = tabMetaData.getProperty("hive.sql.table");
+
+            final DataSource ds = JdbcSchema.dataSource(url, driver, user, pswd);
+            SqlDialect jdbcDialect = JdbcSchema.createDialect(SqlDialectFactoryImpl.INSTANCE, ds);
+            JdbcConvention jc = JdbcConvention.of(jdbcDialect, null, dataBaseType);
+            JdbcSchema schema = new JdbcSchema(ds, jc.dialect, jc, null/*catalog */, null/*schema */);
+            JdbcTable jt = (JdbcTable) schema.getTable(tableName);
+            if (jt == null) {
+              throw new SemanticException("Table " + tableName + " was not found in the database");
+            }
+
+            JdbcHiveTableScan jdbcTableRel = new JdbcHiveTableScan(cluster, optTable, jt, jc, hts);
+            tableRel = new HiveJdbcConverter(cluster, jdbcTableRel.getTraitSet().replace(HiveRelNode.CONVENTION),
+                    jdbcTableRel, jc);
+          }
         } else {
           // Build row type from field <type, name>
           RelDataType rowType = inferNotNullableColumns(tabMetaData, TypeConverter.getType(cluster, rr, null));
@@ -2886,11 +2952,20 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     private TableType obtainTableType(Table tabMetaData) {
-      if (tabMetaData.getStorageHandler() != null &&
-              tabMetaData.getStorageHandler().toString().equals(
-                      Constants.DRUID_HIVE_STORAGE_HANDLER_ID)) {
-        return TableType.DRUID;
+      if (tabMetaData.getStorageHandler() != null) {
+        final String storageHandlerStr = tabMetaData.getStorageHandler().toString();
+        if (storageHandlerStr
+            .equals(Constants.DRUID_HIVE_STORAGE_HANDLER_ID)) {
+          return TableType.DRUID;
+        }
+
+        if (storageHandlerStr
+            .equals(Constants.JDBC_HIVE_STORAGE_HANDLER_ID)) {
+          return TableType.JDBC;
+        }
+
       }
+
       return TableType.NATIVE;
     }
 
@@ -4975,6 +5050,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
   private enum TableType {
     DRUID,
-    NATIVE
+    NATIVE,
+    JDBC
   }
 }

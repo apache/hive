@@ -29,6 +29,7 @@ import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlFunctionCategory;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlSplittableAggFunction;
+import org.apache.calcite.sql.SqlSyntax;
 import org.apache.calcite.sql.SqlSplittableAggFunction.CountSplitter;
 import org.apache.calcite.sql.SqlSplittableAggFunction.Registry;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
@@ -65,6 +66,11 @@ public class HiveSqlCountAggFunction extends SqlAggFunction implements CanAggreg
   @Override
   public boolean isDistinct() {
     return isDistinct;
+  }
+
+  @Override
+  public SqlSyntax getSyntax() {
+    return SqlSyntax.FUNCTION_STAR;
   }
 
   @Override

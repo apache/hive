@@ -43,7 +43,7 @@ public class JdbcRecordReader implements RecordReader<LongWritable, MapWritable>
 
 
   public JdbcRecordReader(JobConf conf, JdbcInputSplit split) {
-    LOGGER.debug("Initializing JdbcRecordReader");
+    LOGGER.trace("Initializing JdbcRecordReader");
     this.split = split;
     this.conf = conf;
   }
@@ -52,14 +52,14 @@ public class JdbcRecordReader implements RecordReader<LongWritable, MapWritable>
   @Override
   public boolean next(LongWritable key, MapWritable value) throws IOException {
     try {
-      LOGGER.debug("JdbcRecordReader.next called");
+      LOGGER.trace("JdbcRecordReader.next called");
       if (dbAccessor == null) {
         dbAccessor = DatabaseAccessorFactory.getAccessor(conf);
         iterator = dbAccessor.getRecordIterator(conf, split.getLimit(), split.getOffset());
       }
 
       if (iterator.hasNext()) {
-        LOGGER.debug("JdbcRecordReader has more records to read.");
+        LOGGER.trace("JdbcRecordReader has more records to read.");
         key.set(pos);
         pos++;
         Map<String, Object> record = iterator.next();
