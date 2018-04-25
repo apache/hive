@@ -676,6 +676,16 @@ CREATE TABLE REPL_TXN_MAP (
   RTM_TARGET_TXN_ID bigint NOT NULL,
   PRIMARY KEY (RTM_REPL_POLICY, RTM_SRC_TXN_ID)
 );
+
+CREATE TABLE "APP"."RUNTIME_STATS" (
+  "RS_ID" bigint primary key,
+  "CREATE_TIME" integer not null,
+  "WEIGHT" integer not null,
+  "PAYLOAD" BLOB
+);
+
+CREATE INDEX IDX_RUNTIME_STATS_CREATE_TIME ON RUNTIME_STATS(CREATE_TIME);
+
 -- -----------------------------------------------------------------
 -- Record schema version. Should be the last step in the init script
 -- -----------------------------------------------------------------

@@ -24,7 +24,7 @@ import java.util.Optional;
 import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
 
-public class EmptyStatsSource implements StatsSource {
+public final class EmptyStatsSource implements StatsSource {
 
   public static StatsSource INSTANCE = new EmptyStatsSource();
 

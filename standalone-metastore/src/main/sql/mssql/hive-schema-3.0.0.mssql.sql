@@ -1230,6 +1230,15 @@ CREATE UNIQUE INDEX PART_TABLE_PK ON SEQUENCE_TABLE (SEQUENCE_NAME);
 
 INSERT INTO SEQUENCE_TABLE (SEQUENCE_NAME, NEXT_VAL) VALUES ('org.apache.hadoop.hive.metastore.model.MNotificationLog', 1);
 
+CREATE TABLE RUNTIME_STATS (
+  RS_ID bigint primary key,
+  CREATE_TIME bigint NOT NULL,
+  WEIGHT bigint NOT NULL,
+  PAYLOAD varbinary(max)
+);
+
+CREATE INDEX IDX_RUNTIME_STATS_CREATE_TIME ON RUNTIME_STATS(CREATE_TIME);
+
 -- -----------------------------------------------------------------
 -- Record schema version. Should be the last step in the init script
 -- -----------------------------------------------------------------

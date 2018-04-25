@@ -69,6 +69,7 @@ import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
+import org.apache.hadoop.hive.metastore.api.RuntimeStat;
 import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
@@ -295,6 +296,7 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
     objectStore.updateCreationMetadata(catName, dbname, tablename, cm);
   }
 
+  @Override
   public void alterTable(String catName, String dbName, String name, Table newTable)
       throws InvalidObjectException, MetaException {
     if (shouldEventSucceed) {
@@ -1126,6 +1128,7 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
     return null;
   }
 
+  @Override
   public void createISchema(ISchema schema) throws AlreadyExistsException, MetaException,
       NoSuchObjectException {
     objectStore.createISchema(schema);
@@ -1195,4 +1198,20 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   public void addSerde(SerDeInfo serde) throws AlreadyExistsException, MetaException {
     objectStore.addSerde(serde);
   }
+
+  @Override
+  public void addRuntimeStat(RuntimeStat stat) throws MetaException {
+    objectStore.addRuntimeStat(stat);
+  }
+
+  @Override
+  public List<RuntimeStat> getRuntimeStats() throws MetaException {
+    return objectStore.getRuntimeStats();
+  }
+
+  @Override
+  public int deleteRuntimeStats(int maxRetained, int maxRetainSecs) {
+    return 0;
+  }
+
 }
