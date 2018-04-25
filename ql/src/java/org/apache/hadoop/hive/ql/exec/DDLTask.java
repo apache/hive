@@ -5301,6 +5301,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       String sh = tbl.getStorageHandler().toString();
       retval = !sh.equals("org.apache.hadoop.hive.hbase.HBaseStorageHandler")
               && !sh.equals(Constants.DRUID_HIVE_STORAGE_HANDLER_ID)
+              && !sh.equals(Constants.JDBC_HIVE_STORAGE_HANDLER_ID)
               && !sh.equals("org.apache.hadoop.hive.accumulo.AccumuloStorageHandler");
     }
     return retval;

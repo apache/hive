@@ -66,7 +66,7 @@ public class JdbcInputFormat extends HiveInputFormat<LongWritable, MapWritable> 
         dbAccessor = DatabaseAccessorFactory.getAccessor(job);
       }
 
-      int numRecords = dbAccessor.getTotalNumberOfRecords(job);
+      int numRecords = numSplits <=1 ? Integer.MAX_VALUE : dbAccessor.getTotalNumberOfRecords(job);
 
       if (numRecords < numSplits) {
         numSplits = numRecords;

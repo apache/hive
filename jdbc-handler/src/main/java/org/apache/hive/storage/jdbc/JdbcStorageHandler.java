@@ -15,6 +15,7 @@
 package org.apache.hive.storage.jdbc;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
@@ -122,6 +123,11 @@ public class JdbcStorageHandler implements HiveStorageHandler {
   @Override
   public void configureJobConf(TableDesc tableDesc, JobConf jobConf) {
 
+  }
+
+  @Override
+  public String toString() {
+    return Constants.JDBC_HIVE_STORAGE_HANDLER_ID;
   }
 
 }

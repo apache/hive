@@ -24,9 +24,9 @@ public interface DatabaseAccessor {
 
   List<String> getColumnNames(Configuration conf) throws HiveJdbcDatabaseAccessException;
 
+  List<String> getColumnTypes(Configuration conf) throws HiveJdbcDatabaseAccessException;
 
   int getTotalNumberOfRecords(Configuration conf) throws HiveJdbcDatabaseAccessException;
-
 
   JdbcRecordIterator
     getRecordIterator(Configuration conf, int limit, int offset) throws HiveJdbcDatabaseAccessException;
