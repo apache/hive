@@ -268,8 +268,9 @@ public class SQLOperation extends ExecuteStatementOperation {
       // 1) ThreadLocal Hive object needs to be set in background thread
       // 2) The metastore client in Hive is associated with right user.
       // 3) Current UGI will get used by metastore when metastore is in embedded mode
-      Runnable work = new BackgroundWork(getCurrentUGI(), parentSession.getSessionHive(),
-          SessionState.getPerfLogger(), SessionState.get(), asyncPrepare);
+      Runnable work =
+          new BackgroundWork(getCurrentUGI(), parentSession.getSessionHive(), SessionState.get(),
+              asyncPrepare);
 
       try {
         // This submit blocks if no background threads are available to run this operation
@@ -287,12 +288,11 @@ public class SQLOperation extends ExecuteStatementOperation {
   private final class BackgroundWork implements Runnable {
     private final UserGroupInformation currentUGI;
     private final Hive parentHive;
-    private final PerfLogger parentPerfLogger;
     private final SessionState parentSessionState;
     private final boolean asyncPrepare;
 
     private BackgroundWork(UserGroupInformation currentUGI,
-        Hive parentHive, PerfLogger parentPerfLogger,
+        Hive parentHive,
         SessionState parentSessionState, boolean asyncPrepare) {
       // Note: parentHive can be shared by multiple threads and so it should be protected from any
       // thread closing metastore connections when some other thread still accessing it. So, it is
@@ -301,7 +301,6 @@ public class SQLOperation extends ExecuteStatementOperation {
       // Shall refer to sessionHive in HiveSessionImpl.java for the usage.
       this.currentUGI = currentUGI;
       this.parentHive = parentHive;
-      this.parentPerfLogger = parentPerfLogger;
       this.parentSessionState = parentSessionState;
       this.asyncPrepare = asyncPrepare;
     }
@@ -315,7 +314,7 @@ public class SQLOperation extends ExecuteStatementOperation {
           Hive.set(parentHive);
           // TODO: can this result in cross-thread reuse of session state?
           SessionState.setCurrentSessionState(parentSessionState);
-          PerfLogger.setPerfLogger(parentPerfLogger);
+          PerfLogger.setPerfLogger(SessionState.getPerfLogger());
           LogUtils.registerLoggingContext(queryState.getConf());
           try {
             if (asyncPrepare) {
