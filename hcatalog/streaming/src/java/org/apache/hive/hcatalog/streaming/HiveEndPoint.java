@@ -88,13 +88,13 @@ public class HiveEndPoint {
     if (database==null) {
       throw new IllegalArgumentException("Database cannot be null for HiveEndPoint");
     }
-    this.database = database;
-    this.table = table;
+    this.database = database.toLowerCase();
     if (table==null) {
       throw new IllegalArgumentException("Table cannot be null for HiveEndPoint");
     }
     this.partitionVals = partitionVals==null ? new ArrayList<String>()
                                              : new ArrayList<String>( partitionVals );
+    this.table = table.toLowerCase();
   }
 
 

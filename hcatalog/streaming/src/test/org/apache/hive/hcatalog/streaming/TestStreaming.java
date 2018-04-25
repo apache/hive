@@ -67,6 +67,8 @@ import org.apache.hadoop.hive.metastore.api.TxnState;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
+import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -353,10 +355,10 @@ public class TestStreaming {
     //todo: why does it need transactional_properties?
     queryTable(driver, "create table default.streamingnobuckets (a string, b string) stored as orc TBLPROPERTIES('transactional'='true', 'transactional_properties'='default')");
     queryTable(driver, "insert into default.streamingnobuckets values('foo','bar')");
-    List<String> rs = queryTable(driver, "select * from default.streamingnobuckets");
+    List<String> rs = queryTable(driver, "select * from default.streamingNoBuckets");
     Assert.assertEquals(1, rs.size());
     Assert.assertEquals("foo\tbar", rs.get(0));
-    HiveEndPoint endPt = new HiveEndPoint(metaStoreURI, "default", "streamingnobuckets", null);
+    HiveEndPoint endPt = new HiveEndPoint(metaStoreURI, "Default", "StreamingNoBuckets", null);
     String[] colNames1 = new String[] { "a", "b" };
     StreamingConnection connection = endPt.newConnection(false, "UT_" + Thread.currentThread().getName());
     DelimitedInputWriter wr = new DelimitedInputWriter(colNames1,",",  endPt, connection);
@@ -365,6 +367,11 @@ public class TestStreaming {
     txnBatch.beginNextTransaction();
     txnBatch.write("a1,b2".getBytes());
     txnBatch.write("a3,b4".getBytes());
+    TxnStore txnHandler = TxnUtils.getTxnStore(conf);
+    ShowLocksResponse resp = txnHandler.showLocks(new ShowLocksRequest());
+    Assert.assertEquals(resp.getLocksSize(), 1);
+    Assert.assertEquals("streamingnobuckets", resp.getLocks().get(0).getTablename());
+    Assert.assertEquals("default", resp.getLocks().get(0).getDbname());
     txnBatch.commit();
     txnBatch.beginNextTransaction();
     txnBatch.write("a5,b6".getBytes());
