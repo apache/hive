@@ -32,6 +32,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.parse.repl.dump.io.FileOperations;
 import org.apache.hadoop.hive.ql.plan.CopyWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
@@ -112,7 +113,7 @@ public class CopyTask extends Task<CopyWork> implements Serializable {
     if (!fs.exists(path)) return null;
     if (!isSourceMm) return matchFilesOneDir(fs, path, null);
     // Note: this doesn't handle list bucketing properly; neither does the original code.
-    FileStatus[] mmDirs = fs.listStatus(path, new JavaUtils.AnyIdDirFilter());
+    FileStatus[] mmDirs = fs.listStatus(path, new AcidUtils.AnyIdDirFilter());
     if (mmDirs == null || mmDirs.length == 0) return null;
     List<FileStatus> allFiles = new ArrayList<FileStatus>();
     for (FileStatus mmDir : mmDirs) {
