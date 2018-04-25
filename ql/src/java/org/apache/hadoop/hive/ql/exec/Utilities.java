@@ -4076,7 +4076,7 @@ public final class Utilities {
       Boolean isBaseDir) throws IOException {
     int skipLevels = dpLevels + lbLevels;
     if (filter == null) {
-      filter = new JavaUtils.IdPathFilter(writeId, stmtId);
+      filter = new AcidUtils.IdPathFilter(writeId, stmtId);
     }
     if (skipLevels == 0) {
       return statusToPath(fs.listStatus(path, filter));
@@ -4084,7 +4084,7 @@ public final class Utilities {
     // TODO: for some reason, globStatus doesn't work for masks like "...blah/*/delta_0000007_0000007*"
     //       the last star throws it off. So, for now, if stmtId is missing use recursion.
     //       For the same reason, we cannot use it if we don't know isBaseDir. Currently, we don't
-    //       /want/ to know isBaseDir because that is error prone; so, it ends up never being used. 
+    //       /want/ to know isBaseDir because that is error prone; so, it ends up never being used.
     if (stmtId < 0 || isBaseDir == null
         || (HiveConf.getBoolVar(conf, ConfVars.HIVE_MM_AVOID_GLOBSTATUS_ON_S3) && isS3(fs))) {
       return getMmDirectoryCandidatesRecursive(fs, path, skipLevels, filter);
@@ -4183,7 +4183,7 @@ public final class Utilities {
   }
 
   private static void tryDeleteAllMmFiles(FileSystem fs, Path specPath, Path manifestDir,
-      int dpLevels, int lbLevels, JavaUtils.IdPathFilter filter, long writeId, int stmtId,
+      int dpLevels, int lbLevels, AcidUtils.IdPathFilter filter, long writeId, int stmtId,
       Configuration conf) throws IOException {
     Path[] files = getMmDirectoryCandidates(
         fs, specPath, dpLevels, lbLevels, filter, writeId, stmtId, conf, null);
@@ -4250,7 +4250,7 @@ public final class Utilities {
     FileSystem fs = specPath.getFileSystem(hconf);
     Path manifestDir = getManifestDir(specPath, writeId, stmtId, unionSuffix, isInsertOverwrite);
     if (!success) {
-      JavaUtils.IdPathFilter filter = new JavaUtils.IdPathFilter(writeId, stmtId);
+      AcidUtils.IdPathFilter filter = new AcidUtils.IdPathFilter(writeId, stmtId);
       tryDeleteAllMmFiles(fs, specPath, manifestDir, dpLevels, lbLevels,
           filter, writeId, stmtId, hconf);
       return;
@@ -4275,7 +4275,7 @@ public final class Utilities {
     }
 
     Utilities.FILE_OP_LOGGER.debug("Looking for files in: {}", specPath);
-    JavaUtils.IdPathFilter filter = new JavaUtils.IdPathFilter(writeId, stmtId);
+    AcidUtils.IdPathFilter filter = new AcidUtils.IdPathFilter(writeId, stmtId);
     if (isMmCtas && !fs.exists(specPath)) {
       Utilities.FILE_OP_LOGGER.info("Creating table directory for CTAS with no output at {}", specPath);
       FileUtils.mkdir(fs, specPath, hconf);
@@ -4405,7 +4405,7 @@ public final class Utilities {
     for (int i = 0; i < children.length; ++i) {
       FileStatus file = children[i];
       Path childPath = file.getPath();
-      Long writeId = JavaUtils.extractWriteId(childPath);
+      Long writeId = AcidUtils.extractWriteId(childPath);
       if (!file.isDirectory() || writeId == null || !validWriteIdList.isWriteIdValid(writeId)) {
         Utilities.FILE_OP_LOGGER.debug("Skipping path {}", childPath);
         if (result == null) {

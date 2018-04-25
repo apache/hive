@@ -4380,47 +4380,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         + " to MM is not supported. Please re-create a table in the desired format.");
   }
 
-  private void handleRemoveMm(
-      Path path, ValidWriteIdList validWriteIdList, List<Path> result) throws HiveException {
-    // Note: doesn't take LB into account; that is not presently supported here (throws above).
-    try {
-      FileSystem fs = path.getFileSystem(conf);
-      for (FileStatus file : fs.listStatus(path)) {
-        Path childPath = file.getPath();
-        if (!file.isDirectory()) {
-          ensureDelete(fs, childPath, "a non-directory file");
-          continue;
-        }
-        Long writeId = JavaUtils.extractWriteId(childPath);
-        if (writeId == null) {
-          ensureDelete(fs, childPath, "an unknown directory");
-        } else if (!validWriteIdList.isWriteIdValid(writeId)) {
-          // Assume no concurrent active writes - we rely on locks here. We could check and fail.
-          ensureDelete(fs, childPath, "an uncommitted directory");
-        } else {
-          result.add(childPath);
-        }
-      }
-    } catch (IOException ex) {
-      throw new HiveException(ex);
-    }
-  }
-
-  private static void ensureDelete(FileSystem fs, Path path, String what) throws IOException {
-    if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
-      Utilities.FILE_OP_LOGGER.trace("Deleting " + what + " " + path);
-    }
-    try {
-      if (!fs.delete(path, true)) {
-        throw new IOException("delete returned false");
-      }
-    } catch (Exception ex) {
-      String error = "Couldn't delete " + path + "; cannot remove MM setting from the table";
-      LOG.error(error, ex);
-      throw (ex instanceof IOException) ? (IOException)ex : new IOException(ex);
-    }
-  }
-
   private List<Task<?>> generateAddMmTasks(Table tbl, Long writeId) throws HiveException {
     // We will move all the files in the table/partition directories into the first MM
     // directory, then commit the first write ID.
