@@ -29,22 +29,22 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
  */
 public interface OpTreeSignatureFactory {
 
-  public OpTreeSignature getSignature(Operator<? extends OperatorDesc> op);
+  OpTreeSignature getSignature(Operator<? extends OperatorDesc> op);
 
-  static final OpTreeSignatureFactory DIRECT = new Direct();
+  OpTreeSignatureFactory DIRECT = new Direct();
 
-  public static OpTreeSignatureFactory direct() {
+  static OpTreeSignatureFactory direct() {
     return DIRECT;
   }
 
-  public static OpTreeSignatureFactory newCache() {
+  static OpTreeSignatureFactory newCache() {
     return new CachedFactory();
   }
 
   // FIXME: possible alternative: move both OpSignature/OpTreeSignature into
   // under some class as nested ones; and that way this factory level caching can be made "transparent"
 
-  static class Direct implements OpTreeSignatureFactory {
+  class Direct implements OpTreeSignatureFactory {
 
     @Override
     public OpTreeSignature getSignature(Operator<? extends OperatorDesc> op) {
@@ -53,7 +53,7 @@ public interface OpTreeSignatureFactory {
 
   }
 
-  static class CachedFactory implements OpTreeSignatureFactory {
+  class CachedFactory implements OpTreeSignatureFactory {
 
     Map<Operator<? extends OperatorDesc>, OpTreeSignature> cache = new IdentityHashMap<>();
 

@@ -64,6 +64,7 @@ import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
+import org.apache.hadoop.hive.metastore.api.RuntimeStat;
 import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
@@ -276,6 +277,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
       throws MetaException {
   }
 
+  @Override
   public List<String> getTables(String catName, String dbName, String pattern) throws MetaException {
     return Collections.emptyList();
   }
@@ -1080,6 +1082,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
     return null;
   }
 
+  @Override
   public void createISchema(ISchema schema) throws AlreadyExistsException, MetaException {
 
   }
@@ -1147,5 +1150,19 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   @Override
   public void addSerde(SerDeInfo serde) throws AlreadyExistsException, MetaException {
 
+  }
+
+  @Override
+  public void addRuntimeStat(RuntimeStat stat) throws MetaException {
+  }
+
+  @Override
+  public List<RuntimeStat> getRuntimeStats() throws MetaException {
+    return Collections.emptyList();
+  }
+
+  @Override
+  public int deleteRuntimeStats(int maxRetained, int maxRetainSecs) throws MetaException {
+    return 0;
   }
 }

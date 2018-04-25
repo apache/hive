@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.metastore.HiveAlterHandler;
 import org.apache.hadoop.hive.metastore.MaterializationsCacheCleanerTask;
 import org.apache.hadoop.hive.metastore.MaterializationsRebuildLockCleanerTask;
 import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
+import org.apache.hadoop.hive.metastore.RuntimeStatsCleanerTask;
 import org.apache.hadoop.hive.metastore.events.EventCleanerTask;
 import org.apache.hadoop.hive.metastore.security.MetastoreDelegationTokenManager;
 import org.apache.hadoop.hive.metastore.txn.AcidCompactionHistoryService;
@@ -577,6 +578,15 @@ public class MetastoreConf {
          "hive.metastore.materializations.invalidation.max.duration",
          86400, TimeUnit.SECONDS, "Maximum duration for query producing a materialization. After this time, transaction" +
          "entries that are not relevant for materializations can be removed from invalidation cache."),
+
+    RUNTIME_STATS_CLEAN_FREQUENCY("runtime.stats.clean.frequency", "hive.metastore.runtime.stats.clean.frequency", 3600,
+        TimeUnit.SECONDS, "Frequency at which timer task runs to remove outdated runtime stat entries."),
+    RUNTIME_STATS_MAX_AGE("runtime.stats.max.age", "hive.metastore.runtime.stats.max.age", 86400 * 3, TimeUnit.SECONDS,
+        "Stat entries which are older than this are removed."),
+    RUNTIME_STATS_MAX_ENTRIES("runtime.stats.max.entries", "hive.metastore.runtime.stats.max.entries", 100_000,
+        "Maximum number of runtime stats to keep; unit is operator stat infos - a complicated query has ~100 of these."
+            + "See also: hive.query.reexecution.stats.cache.size"),
+
     // Parameters for exporting metadata on table drop (requires the use of the)
     // org.apache.hadoop.hive.ql.parse.MetaDataExportListener preevent listener
     METADATA_EXPORT_LOCATION("metastore.metadata.export.location", "hive.metadata.export.location",
@@ -732,10 +742,10 @@ public class MetastoreConf {
             + "The only supported special character right now is '/'. This flag applies only to quoted table names.\n"
             + "The default value is true."),
     TASK_THREADS_ALWAYS("metastore.task.threads.always", "metastore.task.threads.always",
-        EventCleanerTask.class.getName() + "," +
+        EventCleanerTask.class.getName() + "," + RuntimeStatsCleanerTask.class.getName() + "," +
         "org.apache.hadoop.hive.metastore.repl.DumpDirCleanerTask" + "," +
         MaterializationsCacheCleanerTask.class.getName() + "," +
-        MaterializationsRebuildLockCleanerTask.class.getName(),
+            MaterializationsRebuildLockCleanerTask.class.getName() + "," + RuntimeStatsCleanerTask.class.getName(),
         "Comma separated list of tasks that will be started in separate threads.  These will " +
             "always be started, regardless of whether the metastore is running in embedded mode " +
             "or in server mode.  They must implement " + MetastoreTaskThread.class.getName()),
@@ -1125,16 +1135,22 @@ public class MetastoreConf {
        */
       hiveSiteURL = findConfigFile(classLoader, "hive-site.xml");
     }
-    if (hiveSiteURL != null) conf.addResource(hiveSiteURL);
+    if (hiveSiteURL != null) {
+      conf.addResource(hiveSiteURL);
+    }
 
     // Now add hivemetastore-site.xml.  Again we add this before our own config files so that the
     // newer overrides the older.
     hiveMetastoreSiteURL = findConfigFile(classLoader, "hivemetastore-site.xml");
-    if (hiveMetastoreSiteURL != null) conf.addResource(hiveMetastoreSiteURL);
+    if (hiveMetastoreSiteURL != null) {
+      conf.addResource(hiveMetastoreSiteURL);
+    }
 
     // Add in our conf file
     metastoreSiteURL = findConfigFile(classLoader, "metastore-site.xml");
-    if (metastoreSiteURL !=  null) conf.addResource(metastoreSiteURL);
+    if (metastoreSiteURL !=  null) {
+      conf.addResource(metastoreSiteURL);
+    }
 
     // If a system property that matches one of our conf value names is set then use the value
     // it's set to to set our own conf value.
@@ -1266,8 +1282,12 @@ public class MetastoreConf {
   public static Collection<String> getStringCollection(Configuration conf, ConfVars var) {
     assert var.defaultVal.getClass() == String.class;
     String val = conf.get(var.varname);
-    if (val == null) val = conf.get(var.hiveName, (String)var.defaultVal);
-    if (val == null) return Collections.emptySet();
+    if (val == null) {
+      val = conf.get(var.hiveName, (String)var.defaultVal);
+    }
+    if (val == null) {
+      return Collections.emptySet();
+    }
     return StringUtils.asSet(val.split(","));
   }
 

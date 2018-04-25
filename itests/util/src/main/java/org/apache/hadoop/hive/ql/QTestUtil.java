@@ -1072,7 +1072,7 @@ public class QTestUtil {
     clearTablesCreatedDuringTests();
     clearUDFsCreatedDuringTests();
     clearKeysCreatedInTests();
-    StatsSources.clearAllStats();
+    StatsSources.clearGlobalStats();
   }
 
 
