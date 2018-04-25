@@ -588,7 +588,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         }
         if (!file.isDirectory()) {
           Utilities.FILE_OP_LOGGER.warn("Ignoring a file not in MM directory " + path);
-        } else if (JavaUtils.extractWriteId(path) == null) {
+        } else if (AcidUtils.extractWriteId(path) == null) {
           subdirs.add(path);
         } else if (!hadAcidState) {
           AcidUtils.Directory dirInfo
