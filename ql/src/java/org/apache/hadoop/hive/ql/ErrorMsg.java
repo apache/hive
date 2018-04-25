@@ -460,6 +460,8 @@ public enum ErrorMsg {
   LOAD_DATA_ACID_FILE(10413,
       "\"{0}\" was created created by Acid write - it cannot be loaded into anther Acid table",
       true),
+  ACID_OP_ON_INSERTONLYTRAN_TABLE(10414, "Attempt to do update or delete on table {0} that is " +
+    "insert-only transactional", true),
 
 
   //========================== 20000 range starts here ========================//

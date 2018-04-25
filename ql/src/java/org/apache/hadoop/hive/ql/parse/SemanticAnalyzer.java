@@ -2236,12 +2236,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             "Inconsistent data structure detected: we are writing to " + ts.tableHandle  + " in " +
                 name + " but it's not in isInsertIntoTable() or getInsertOverwriteTables()";
         // Disallow update and delete on non-acid tables
-        boolean isAcid = AcidUtils.isFullAcidTable(ts.tableHandle);
-        if ((updating(name) || deleting(name)) && !isAcid) {
-          // Whether we are using an acid compliant transaction manager has already been caught in
-          // UpdateDeleteSemanticAnalyzer, so if we are updating or deleting and getting nonAcid
-          // here, it means the table itself doesn't support it.
-          throw new SemanticException(ErrorMsg.ACID_OP_ON_NONACID_TABLE, ts.tableName);
+        boolean isFullAcid = AcidUtils.isFullAcidTable(ts.tableHandle);
+        if ((updating(name) || deleting(name)) && !isFullAcid) {
+          if (!AcidUtils.isInsertOnlyTable(ts.tableHandle)) {
+            // Whether we are using an acid compliant transaction manager has already been caught in
+            // UpdateDeleteSemanticAnalyzer, so if we are updating or deleting and getting nonAcid
+            // here, it means the table itself doesn't support it.
+            throw new SemanticException(ErrorMsg.ACID_OP_ON_NONACID_TABLE, ts.tableName);
+          } else {
+            throw new SemanticException(ErrorMsg.ACID_OP_ON_INSERTONLYTRAN_TABLE, ts.tableName);
+          }
         }
         // TableSpec ts is got from the query (user specified),
         // which means the user didn't specify partitions in their query,
