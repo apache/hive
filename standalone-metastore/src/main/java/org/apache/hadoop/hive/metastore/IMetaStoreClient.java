@@ -1935,6 +1935,17 @@ public interface IMetaStoreClient {
   ISchemaVersion getSchemaVersionById(Long schemaVersionId) throws TException;
 
   /**
+   * Get all versions of a schema that matches schemaName and schemaText.
+   * @param schemaName name of the schemaName
+   * @param fingerPrint fingerPrint of schemaText
+   * @return the schema version or null if no such schema version
+   * @throws NoSuchObjectException no schema matching this name and version exists
+   * @throws MetaException general metastore error
+   * @throws TException general thrift error
+   */
+  List<ISchemaVersion> getSchemaVersionByNameAndFingerprint(String schemaName, String fingerPrint) throws TException;
+
+  /**
    * Get the latest version of a schema.
    * @param schemaName name of the schema
    * @return latest version of the schema or null if the schema does not exist or there are no

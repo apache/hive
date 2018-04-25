@@ -972,6 +972,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_schema_version_by_id\n");
   }
 
+  void get_schema_versions_by_name_and_fingerprint(std::vector<ISchemaVersion> & _return, const std::string& schemaName, const std::string& fingerPrint) {
+    // Your implementation goes here
+    printf("get_schema_versions_by_name_and_fingerprint\n");
+  }
+
   void get_schema_all_versions(std::vector<ISchemaVersion> & _return, const std::string& schemaName) {
     // Your implementation goes here
     printf("get_schema_all_versions\n");
@@ -1005,6 +1010,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void get_schema_branch_by_schema_name(std::vector<ISchemaBranch> & _return, const std::string& schemaName) {
     // Your implementation goes here
     printf("get_schema_branch_by_schema_name\n");
+  }
+
+  void get_schema_branch_by_schema_version_id(std::vector<ISchemaBranch> & _return, const int64_t schemaVersionId) {
+    // Your implementation goes here
+    printf("get_schema_branch_by_schema_version_id\n");
   }
 
   void map_schema_version_to_serde(const std::string& schemaName, const int32_t version, const std::string& serdeName) {

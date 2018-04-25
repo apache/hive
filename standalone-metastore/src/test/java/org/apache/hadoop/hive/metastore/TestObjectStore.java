@@ -651,6 +651,41 @@ public class TestObjectStore {
     Assert.assertEquals(new Long(nSchemaVersion.getSchemaVersionId()), schemaVersionId);
     Assert.assertEquals(nSchemaVersion.getSchemaText(), schemaText);
     Assert.assertEquals(nSchemaVersion.getFingerprint(), fingerprint);
+
+    // Add Schema Version
+
+    String description = "very descriptive";
+    String schemaText = "this should look like json, but oh well";
+    String fingerprint = "this should be an md5 string";
+    String versionName = "why would I name a version?";
+    long creationTime = 10;
+    String serdeName = "serde_for_schema37";
+    String serializer = "org.apache.hadoop.hive.metastore.test.Serializer";
+    String deserializer = "org.apache.hadoop.hive.metastore.test.Deserializer";
+    String serdeDescription = "how do you describe a serdes?";
+    int version = 1;
+    ISchemaVersion schemaVersion = new SchemaVersionBuilder()
+        .setSchemaName(schemaName)
+        .setVersion(version)
+        .addCol("a", ColumnType.INT_TYPE_NAME)
+        .addCol("b", ColumnType.FLOAT_TYPE_NAME)
+        .setCreatedAt(creationTime)
+        .setState(SchemaVersionState.INITIATED)
+        .setDescription(description)
+        .setSchemaText(schemaText)
+        .setFingerprint(fingerprint)
+        .setName(versionName)
+        .setSerdeName(serdeName)
+        .setSerdeSerializerClass(serializer)
+        .setSerdeDeserializerClass(deserializer)
+        .setSerdeDescription(serdeDescription)
+        .build();
+    Long schemaVersionId = objectStore.addSchemaVersion(schemaVersion);
+    ISchemaVersion nSchemaVersion = objectStore.getSchemaVersion(schemaName, 1);
+    Assert.assertEquals(new Long(nSchemaVersion.getSchemaVersionId()), schemaVersionId);
+    Assert.assertEquals(nSchemaVersion.getSchemaText(), schemaText);
+    Assert.assertEquals(nSchemaVersion.getFingerprint(), fingerprint);
+
     ISchemaBranch schemaBranch = new ISchemaBranch();
     schemaBranch.setName("master");
     schemaBranch.setDescription("master branch");

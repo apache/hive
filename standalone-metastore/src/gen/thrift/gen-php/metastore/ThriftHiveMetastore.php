@@ -1464,6 +1464,14 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf {
   public function get_schema_version_by_id($schemaVersionid);
   /**
    * @param string $schemaName
+   * @param string $fingerPrint
+   * @return \metastore\ISchemaVersion[]
+   * @throws \metastore\NoSuchObjectException
+   * @throws \metastore\MetaException
+   */
+  public function get_schema_versions_by_name_and_fingerprint($schemaName, $fingerPrint);
+  /**
+   * @param string $schemaName
    * @return \metastore\ISchemaVersion[]
    * @throws \metastore\NoSuchObjectException
    * @throws \metastore\MetaException
@@ -1511,6 +1519,13 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf {
    * @throws \metastore\MetaException
    */
   public function get_schema_branch_by_schema_name($schemaName);
+  /**
+   * @param int $schemaVersionId
+   * @return \metastore\ISchemaBranch[]
+   * @throws \metastore\NoSuchObjectException
+   * @throws \metastore\MetaException
+   */
+  public function get_schema_branch_by_schema_version_id($schemaVersionId);
   /**
    * @param string $schemaName
    * @param int $version
@@ -12376,6 +12391,64 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
     throw new \Exception("get_schema_version_by_id failed: unknown result");
   }
 
+  public function get_schema_versions_by_name_and_fingerprint($schemaName, $fingerPrint)
+  {
+    $this->send_get_schema_versions_by_name_and_fingerprint($schemaName, $fingerPrint);
+    return $this->recv_get_schema_versions_by_name_and_fingerprint();
+  }
+
+  public function send_get_schema_versions_by_name_and_fingerprint($schemaName, $fingerPrint)
+  {
+    $args = new \metastore\ThriftHiveMetastore_get_schema_versions_by_name_and_fingerprint_args();
+    $args->schemaName = $schemaName;
+    $args->fingerPrint = $fingerPrint;
+    $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
+    if ($bin_accel)
+    {
+      thrift_protocol_write_binary($this->output_, 'get_schema_versions_by_name_and_fingerprint', TMessageType::CALL, $args, $this->seqid_, $this->output_->isStrictWrite());
+    }
+    else
+    {
+      $this->output_->writeMessageBegin('get_schema_versions_by_name_and_fingerprint', TMessageType::CALL, $this->seqid_);
+      $args->write($this->output_);
+      $this->output_->writeMessageEnd();
+      $this->output_->getTransport()->flush();
+    }
+  }
+
+  public function recv_get_schema_versions_by_name_and_fingerprint()
+  {
+    $bin_accel = ($this->input_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_read_binary');
+    if ($bin_accel) $result = thrift_protocol_read_binary($this->input_, '\metastore\ThriftHiveMetastore_get_schema_versions_by_name_and_fingerprint_result', $this->input_->isStrictRead());
+    else
+    {
+      $rseqid = 0;
+      $fname = null;
+      $mtype = 0;
+
+      $this->input_->readMessageBegin($fname, $mtype, $rseqid);
+      if ($mtype == TMessageType::EXCEPTION) {
+        $x = new TApplicationException();
+        $x->read($this->input_);
+        $this->input_->readMessageEnd();
+        throw $x;
+      }
+      $result = new \metastore\ThriftHiveMetastore_get_schema_versions_by_name_and_fingerprint_result();
+      $result->read($this->input_);
+      $this->input_->readMessageEnd();
+    }
+    if ($result->success !== null) {
+      return $result->success;
+    }
+    if ($result->o1 !== null) {
+      throw $result->o1;
+    }
+    if ($result->o2 !== null) {
+      throw $result->o2;
+    }
+    throw new \Exception("get_schema_versions_by_name_and_fingerprint failed: unknown result");
+  }
+
   public function get_schema_all_versions($schemaName)
   {
     $this->send_get_schema_all_versions($schemaName);
@@ -12769,6 +12842,63 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
       throw $result->o2;
     }
     throw new \Exception("get_schema_branch_by_schema_name failed: unknown result");
+  }
+
+  public function get_schema_branch_by_schema_version_id($schemaVersionId)
+  {
+    $this->send_get_schema_branch_by_schema_version_id($schemaVersionId);
+    return $this->recv_get_schema_branch_by_schema_version_id();
+  }
+
+  public function send_get_schema_branch_by_schema_version_id($schemaVersionId)
+  {
+    $args = new \metastore\ThriftHiveMetastore_get_schema_branch_by_schema_version_id_args();
+    $args->schemaVersionId = $schemaVersionId;
+    $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
+    if ($bin_accel)
+    {
+      thrift_protocol_write_binary($this->output_, 'get_schema_branch_by_schema_version_id', TMessageType::CALL, $args, $this->seqid_, $this->output_->isStrictWrite());
+    }
+    else
+    {
+      $this->output_->writeMessageBegin('get_schema_branch_by_schema_version_id', TMessageType::CALL, $this->seqid_);
+      $args->write($this->output_);
+      $this->output_->writeMessageEnd();
+      $this->output_->getTransport()->flush();
+    }
+  }
+
+  public function recv_get_schema_branch_by_schema_version_id()
+  {
+    $bin_accel = ($this->input_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_read_binary');
+    if ($bin_accel) $result = thrift_protocol_read_binary($this->input_, '\metastore\ThriftHiveMetastore_get_schema_branch_by_schema_version_id_result', $this->input_->isStrictRead());
+    else
+    {
+      $rseqid = 0;
+      $fname = null;
+      $mtype = 0;
+
+      $this->input_->readMessageBegin($fname, $mtype, $rseqid);
+      if ($mtype == TMessageType::EXCEPTION) {
+        $x = new TApplicationException();
+        $x->read($this->input_);
+        $this->input_->readMessageEnd();
+        throw $x;
+      }
+      $result = new \metastore\ThriftHiveMetastore_get_schema_branch_by_schema_version_id_result();
+      $result->read($this->input_);
+      $this->input_->readMessageEnd();
+    }
+    if ($result->success !== null) {
+      return $result->success;
+    }
+    if ($result->o1 !== null) {
+      throw $result->o1;
+    }
+    if ($result->o2 !== null) {
+      throw $result->o2;
+    }
+    throw new \Exception("get_schema_branch_by_schema_version_id failed: unknown result");
   }
 
   public function map_schema_version_to_serde($schemaName, $version, $serdeName)
@@ -56361,6 +56491,257 @@ class ThriftHiveMetastore_get_schema_version_by_id_result {
 
 }
 
+class ThriftHiveMetastore_get_schema_versions_by_name_and_fingerprint_args {
+  static $_TSPEC;
+
+  /**
+   * @var string
+   */
+  public $schemaName = null;
+  /**
+   * @var string
+   */
+  public $fingerPrint = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'schemaName',
+          'type' => TType::STRING,
+          ),
+        2 => array(
+          'var' => 'fingerPrint',
+          'type' => TType::STRING,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['schemaName'])) {
+        $this->schemaName = $vals['schemaName'];
+      }
+      if (isset($vals['fingerPrint'])) {
+        $this->fingerPrint = $vals['fingerPrint'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'ThriftHiveMetastore_get_schema_versions_by_name_and_fingerprint_args';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->schemaName);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->fingerPrint);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_schema_versions_by_name_and_fingerprint_args');
+    if ($this->schemaName !== null) {
+      $xfer += $output->writeFieldBegin('schemaName', TType::STRING, 1);
+      $xfer += $output->writeString($this->schemaName);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->fingerPrint !== null) {
+      $xfer += $output->writeFieldBegin('fingerPrint', TType::STRING, 2);
+      $xfer += $output->writeString($this->fingerPrint);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class ThriftHiveMetastore_get_schema_versions_by_name_and_fingerprint_result {
+  static $_TSPEC;
+
+  /**
+   * @var \metastore\ISchemaVersion[]
+   */
+  public $success = null;
+  /**
+   * @var \metastore\NoSuchObjectException
+   */
+  public $o1 = null;
+  /**
+   * @var \metastore\MetaException
+   */
+  public $o2 = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        0 => array(
+          'var' => 'success',
+          'type' => TType::LST,
+          'etype' => TType::STRUCT,
+          'elem' => array(
+            'type' => TType::STRUCT,
+            'class' => '\metastore\ISchemaVersion',
+            ),
+          ),
+        1 => array(
+          'var' => 'o1',
+          'type' => TType::STRUCT,
+          'class' => '\metastore\NoSuchObjectException',
+          ),
+        2 => array(
+          'var' => 'o2',
+          'type' => TType::STRUCT,
+          'class' => '\metastore\MetaException',
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['success'])) {
+        $this->success = $vals['success'];
+      }
+      if (isset($vals['o1'])) {
+        $this->o1 = $vals['o1'];
+      }
+      if (isset($vals['o2'])) {
+        $this->o2 = $vals['o2'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'ThriftHiveMetastore_get_schema_versions_by_name_and_fingerprint_result';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 0:
+          if ($ftype == TType::LST) {
+            $this->success = array();
+            $_size1242 = 0;
+            $_etype1245 = 0;
+            $xfer += $input->readListBegin($_etype1245, $_size1242);
+            for ($_i1246 = 0; $_i1246 < $_size1242; ++$_i1246)
+            {
+              $elem1247 = null;
+              $elem1247 = new \metastore\ISchemaVersion();
+              $xfer += $elem1247->read($input);
+              $this->success []= $elem1247;
+            }
+            $xfer += $input->readListEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 1:
+          if ($ftype == TType::STRUCT) {
+            $this->o1 = new \metastore\NoSuchObjectException();
+            $xfer += $this->o1->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRUCT) {
+            $this->o2 = new \metastore\MetaException();
+            $xfer += $this->o2->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_schema_versions_by_name_and_fingerprint_result');
+    if ($this->success !== null) {
+      if (!is_array($this->success)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('success', TType::LST, 0);
+      {
+        $output->writeListBegin(TType::STRUCT, count($this->success));
+        {
+          foreach ($this->success as $iter1248)
+          {
+            $xfer += $iter1248->write($output);
+          }
+        }
+        $output->writeListEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->o1 !== null) {
+      $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
+      $xfer += $this->o1->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->o2 !== null) {
+      $xfer += $output->writeFieldBegin('o2', TType::STRUCT, 2);
+      $xfer += $this->o2->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
 class ThriftHiveMetastore_get_schema_all_versions_args {
   static $_TSPEC;
 
@@ -56511,15 +56892,15 @@ class ThriftHiveMetastore_get_schema_all_versions_result {
         case 0:
           if ($ftype == TType::LST) {
             $this->success = array();
-            $_size1242 = 0;
-            $_etype1245 = 0;
-            $xfer += $input->readListBegin($_etype1245, $_size1242);
-            for ($_i1246 = 0; $_i1246 < $_size1242; ++$_i1246)
+            $_size1249 = 0;
+            $_etype1252 = 0;
+            $xfer += $input->readListBegin($_etype1252, $_size1249);
+            for ($_i1253 = 0; $_i1253 < $_size1249; ++$_i1253)
             {
-              $elem1247 = null;
-              $elem1247 = new \metastore\ISchemaVersion();
-              $xfer += $elem1247->read($input);
-              $this->success []= $elem1247;
+              $elem1254 = null;
+              $elem1254 = new \metastore\ISchemaVersion();
+              $xfer += $elem1254->read($input);
+              $this->success []= $elem1254;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -56563,9 +56944,9 @@ class ThriftHiveMetastore_get_schema_all_versions_result {
       {
         $output->writeListBegin(TType::STRUCT, count($this->success));
         {
-          foreach ($this->success as $iter1248)
+          foreach ($this->success as $iter1255)
           {
-            $xfer += $iter1248->write($output);
+            $xfer += $iter1255->write($output);
           }
         }
         $output->writeListEnd();
@@ -57761,15 +58142,15 @@ class ThriftHiveMetastore_get_schema_branch_by_schema_name_result {
         case 0:
           if ($ftype == TType::LST) {
             $this->success = array();
-            $_size1249 = 0;
-            $_etype1252 = 0;
-            $xfer += $input->readListBegin($_etype1252, $_size1249);
-            for ($_i1253 = 0; $_i1253 < $_size1249; ++$_i1253)
+            $_size1256 = 0;
+            $_etype1259 = 0;
+            $xfer += $input->readListBegin($_etype1259, $_size1256);
+            for ($_i1260 = 0; $_i1260 < $_size1256; ++$_i1260)
             {
-              $elem1254 = null;
-              $elem1254 = new \metastore\ISchemaBranch();
-              $xfer += $elem1254->read($input);
-              $this->success []= $elem1254;
+              $elem1261 = null;
+              $elem1261 = new \metastore\ISchemaBranch();
+              $xfer += $elem1261->read($input);
+              $this->success []= $elem1261;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -57813,9 +58194,237 @@ class ThriftHiveMetastore_get_schema_branch_by_schema_name_result {
       {
         $output->writeListBegin(TType::STRUCT, count($this->success));
         {
-          foreach ($this->success as $iter1255)
+          foreach ($this->success as $iter1262)
           {
-            $xfer += $iter1255->write($output);
+            $xfer += $iter1262->write($output);
+          }
+        }
+        $output->writeListEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->o1 !== null) {
+      $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
+      $xfer += $this->o1->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->o2 !== null) {
+      $xfer += $output->writeFieldBegin('o2', TType::STRUCT, 2);
+      $xfer += $this->o2->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class ThriftHiveMetastore_get_schema_branch_by_schema_version_id_args {
+  static $_TSPEC;
+
+  /**
+   * @var int
+   */
+  public $schemaVersionId = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'schemaVersionId',
+          'type' => TType::I64,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['schemaVersionId'])) {
+        $this->schemaVersionId = $vals['schemaVersionId'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'ThriftHiveMetastore_get_schema_branch_by_schema_version_id_args';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->schemaVersionId);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_schema_branch_by_schema_version_id_args');
+    if ($this->schemaVersionId !== null) {
+      $xfer += $output->writeFieldBegin('schemaVersionId', TType::I64, 1);
+      $xfer += $output->writeI64($this->schemaVersionId);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class ThriftHiveMetastore_get_schema_branch_by_schema_version_id_result {
+  static $_TSPEC;
+
+  /**
+   * @var \metastore\ISchemaBranch[]
+   */
+  public $success = null;
+  /**
+   * @var \metastore\NoSuchObjectException
+   */
+  public $o1 = null;
+  /**
+   * @var \metastore\MetaException
+   */
+  public $o2 = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        0 => array(
+          'var' => 'success',
+          'type' => TType::LST,
+          'etype' => TType::STRUCT,
+          'elem' => array(
+            'type' => TType::STRUCT,
+            'class' => '\metastore\ISchemaBranch',
+            ),
+          ),
+        1 => array(
+          'var' => 'o1',
+          'type' => TType::STRUCT,
+          'class' => '\metastore\NoSuchObjectException',
+          ),
+        2 => array(
+          'var' => 'o2',
+          'type' => TType::STRUCT,
+          'class' => '\metastore\MetaException',
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['success'])) {
+        $this->success = $vals['success'];
+      }
+      if (isset($vals['o1'])) {
+        $this->o1 = $vals['o1'];
+      }
+      if (isset($vals['o2'])) {
+        $this->o2 = $vals['o2'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'ThriftHiveMetastore_get_schema_branch_by_schema_version_id_result';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 0:
+          if ($ftype == TType::LST) {
+            $this->success = array();
+            $_size1263 = 0;
+            $_etype1266 = 0;
+            $xfer += $input->readListBegin($_etype1266, $_size1263);
+            for ($_i1267 = 0; $_i1267 < $_size1263; ++$_i1267)
+            {
+              $elem1268 = null;
+              $elem1268 = new \metastore\ISchemaBranch();
+              $xfer += $elem1268->read($input);
+              $this->success []= $elem1268;
+            }
+            $xfer += $input->readListEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 1:
+          if ($ftype == TType::STRUCT) {
+            $this->o1 = new \metastore\NoSuchObjectException();
+            $xfer += $this->o1->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRUCT) {
+            $this->o2 = new \metastore\MetaException();
+            $xfer += $this->o2->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_schema_branch_by_schema_version_id_result');
+    if ($this->success !== null) {
+      if (!is_array($this->success)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('success', TType::LST, 0);
+      {
+        $output->writeListBegin(TType::STRUCT, count($this->success));
+        {
+          foreach ($this->success as $iter1269)
+          {
+            $xfer += $iter1269->write($output);
           }
         }
         $output->writeListEnd();

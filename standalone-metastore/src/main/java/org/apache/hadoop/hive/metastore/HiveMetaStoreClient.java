@@ -2860,6 +2860,16 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  public ISchemaVersion getSchemaVersionById(Long schemaVersionId) throws TException {
+    return client.get_schema_version_by_id(schemaVersionId);
+  }
+
+  @Override
+  public List<ISchemaVersion> getSchemaVersionByNameAndFingerprint(String schemaName, String fingerPrint) throws TException {
+    return client.get_schema_versions_by_name_and_fingerprint(schemaName, fingerPrint);
+  }
+
+  @Override
   public List<ISchemaVersion> getSchemaAllVersions(String schemaName) throws TException {
     return client.get_schema_all_versions(schemaName);
   }

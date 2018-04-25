@@ -1492,6 +1492,14 @@ class Iface(fb303.FacebookService.Iface):
     """
     pass
 
+  def get_schema_versions_by_name_and_fingerprint(self, schemaName, fingerPrint):
+    """
+    Parameters:
+     - schemaName
+     - fingerPrint
+    """
+    pass
+
   def get_schema_all_versions(self, schemaName):
     """
     Parameters:
@@ -1540,6 +1548,13 @@ class Iface(fb303.FacebookService.Iface):
     """
     Parameters:
      - schemaName
+    """
+    pass
+
+  def get_schema_branch_by_schema_version_id(self, schemaVersionId):
+    """
+    Parameters:
+     - schemaVersionId
     """
     pass
 
@@ -8427,6 +8442,43 @@ class Client(fb303.FacebookService.Client, Iface):
       raise result.o2
     raise TApplicationException(TApplicationException.MISSING_RESULT, "get_schema_version_by_id failed: unknown result")
 
+  def get_schema_versions_by_name_and_fingerprint(self, schemaName, fingerPrint):
+    """
+    Parameters:
+     - schemaName
+     - fingerPrint
+    """
+    self.send_get_schema_versions_by_name_and_fingerprint(schemaName, fingerPrint)
+    return self.recv_get_schema_versions_by_name_and_fingerprint()
+
+  def send_get_schema_versions_by_name_and_fingerprint(self, schemaName, fingerPrint):
+    self._oprot.writeMessageBegin('get_schema_versions_by_name_and_fingerprint', TMessageType.CALL, self._seqid)
+    args = get_schema_versions_by_name_and_fingerprint_args()
+    args.schemaName = schemaName
+    args.fingerPrint = fingerPrint
+    args.write(self._oprot)
+    self._oprot.writeMessageEnd()
+    self._oprot.trans.flush()
+
+  def recv_get_schema_versions_by_name_and_fingerprint(self):
+    iprot = self._iprot
+    (fname, mtype, rseqid) = iprot.readMessageBegin()
+    if mtype == TMessageType.EXCEPTION:
+      x = TApplicationException()
+      x.read(iprot)
+      iprot.readMessageEnd()
+      raise x
+    result = get_schema_versions_by_name_and_fingerprint_result()
+    result.read(iprot)
+    iprot.readMessageEnd()
+    if result.success is not None:
+      return result.success
+    if result.o1 is not None:
+      raise result.o1
+    if result.o2 is not None:
+      raise result.o2
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "get_schema_versions_by_name_and_fingerprint failed: unknown result")
+
   def get_schema_all_versions(self, schemaName):
     """
     Parameters:
@@ -8671,6 +8723,41 @@ class Client(fb303.FacebookService.Client, Iface):
     if result.o2 is not None:
       raise result.o2
     raise TApplicationException(TApplicationException.MISSING_RESULT, "get_schema_branch_by_schema_name failed: unknown result")
+
+  def get_schema_branch_by_schema_version_id(self, schemaVersionId):
+    """
+    Parameters:
+     - schemaVersionId
+    """
+    self.send_get_schema_branch_by_schema_version_id(schemaVersionId)
+    return self.recv_get_schema_branch_by_schema_version_id()
+
+  def send_get_schema_branch_by_schema_version_id(self, schemaVersionId):
+    self._oprot.writeMessageBegin('get_schema_branch_by_schema_version_id', TMessageType.CALL, self._seqid)
+    args = get_schema_branch_by_schema_version_id_args()
+    args.schemaVersionId = schemaVersionId
+    args.write(self._oprot)
+    self._oprot.writeMessageEnd()
+    self._oprot.trans.flush()
+
+  def recv_get_schema_branch_by_schema_version_id(self):
+    iprot = self._iprot
+    (fname, mtype, rseqid) = iprot.readMessageBegin()
+    if mtype == TMessageType.EXCEPTION:
+      x = TApplicationException()
+      x.read(iprot)
+      iprot.readMessageEnd()
+      raise x
+    result = get_schema_branch_by_schema_version_id_result()
+    result.read(iprot)
+    iprot.readMessageEnd()
+    if result.success is not None:
+      return result.success
+    if result.o1 is not None:
+      raise result.o1
+    if result.o2 is not None:
+      raise result.o2
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "get_schema_branch_by_schema_version_id failed: unknown result")
 
   def map_schema_version_to_serde(self, schemaName, version, serdeName):
     """
@@ -9010,6 +9097,7 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
     self._processMap["get_schema_version"] = Processor.process_get_schema_version
     self._processMap["get_schema_latest_version"] = Processor.process_get_schema_latest_version
     self._processMap["get_schema_version_by_id"] = Processor.process_get_schema_version_by_id
+    self._processMap["get_schema_versions_by_name_and_fingerprint"] = Processor.process_get_schema_versions_by_name_and_fingerprint
     self._processMap["get_schema_all_versions"] = Processor.process_get_schema_all_versions
     self._processMap["drop_schema_version"] = Processor.process_drop_schema_version
     self._processMap["get_schemas_by_cols"] = Processor.process_get_schemas_by_cols
@@ -9017,6 +9105,7 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
     self._processMap["map_schema_branch_to_schema_version"] = Processor.process_map_schema_branch_to_schema_version
     self._processMap["get_schema_branch"] = Processor.process_get_schema_branch
     self._processMap["get_schema_branch_by_schema_name"] = Processor.process_get_schema_branch_by_schema_name
+    self._processMap["get_schema_branch_by_schema_version_id"] = Processor.process_get_schema_branch_by_schema_version_id
     self._processMap["map_schema_version_to_serde"] = Processor.process_map_schema_version_to_serde
     self._processMap["set_schema_version_state"] = Processor.process_set_schema_version_state
     self._processMap["add_serde"] = Processor.process_add_serde
@@ -13736,6 +13825,31 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
     oprot.writeMessageEnd()
     oprot.trans.flush()
 
+  def process_get_schema_versions_by_name_and_fingerprint(self, seqid, iprot, oprot):
+    args = get_schema_versions_by_name_and_fingerprint_args()
+    args.read(iprot)
+    iprot.readMessageEnd()
+    result = get_schema_versions_by_name_and_fingerprint_result()
+    try:
+      result.success = self._handler.get_schema_versions_by_name_and_fingerprint(args.schemaName, args.fingerPrint)
+      msg_type = TMessageType.REPLY
+    except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
+      raise
+    except NoSuchObjectException as o1:
+      msg_type = TMessageType.REPLY
+      result.o1 = o1
+    except MetaException as o2:
+      msg_type = TMessageType.REPLY
+      result.o2 = o2
+    except Exception as ex:
+      msg_type = TMessageType.EXCEPTION
+      logging.exception(ex)
+      result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+    oprot.writeMessageBegin("get_schema_versions_by_name_and_fingerprint", msg_type, seqid)
+    result.write(oprot)
+    oprot.writeMessageEnd()
+    oprot.trans.flush()
+
   def process_get_schema_all_versions(self, seqid, iprot, oprot):
     args = get_schema_all_versions_args()
     args.read(iprot)
@@ -13910,6 +14024,31 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
       logging.exception(ex)
       result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
     oprot.writeMessageBegin("get_schema_branch_by_schema_name", msg_type, seqid)
+    result.write(oprot)
+    oprot.writeMessageEnd()
+    oprot.trans.flush()
+
+  def process_get_schema_branch_by_schema_version_id(self, seqid, iprot, oprot):
+    args = get_schema_branch_by_schema_version_id_args()
+    args.read(iprot)
+    iprot.readMessageEnd()
+    result = get_schema_branch_by_schema_version_id_result()
+    try:
+      result.success = self._handler.get_schema_branch_by_schema_version_id(args.schemaVersionId)
+      msg_type = TMessageType.REPLY
+    except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
+      raise
+    except NoSuchObjectException as o1:
+      msg_type = TMessageType.REPLY
+      result.o1 = o1
+    except MetaException as o2:
+      msg_type = TMessageType.REPLY
+      result.o2 = o2
+    except Exception as ex:
+      msg_type = TMessageType.EXCEPTION
+      logging.exception(ex)
+      result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+    oprot.writeMessageBegin("get_schema_branch_by_schema_version_id", msg_type, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
@@ -46035,6 +46174,185 @@ class get_schema_version_by_id_result:
   def __ne__(self, other):
     return not (self == other)
 
+class get_schema_versions_by_name_and_fingerprint_args:
+  """
+  Attributes:
+   - schemaName
+   - fingerPrint
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRING, 'schemaName', None, None, ), # 1
+    (2, TType.STRING, 'fingerPrint', None, None, ), # 2
+  )
+
+  def __init__(self, schemaName=None, fingerPrint=None,):
+    self.schemaName = schemaName
+    self.fingerPrint = fingerPrint
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRING:
+          self.schemaName = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.fingerPrint = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('get_schema_versions_by_name_and_fingerprint_args')
+    if self.schemaName is not None:
+      oprot.writeFieldBegin('schemaName', TType.STRING, 1)
+      oprot.writeString(self.schemaName)
+      oprot.writeFieldEnd()
+    if self.fingerPrint is not None:
+      oprot.writeFieldBegin('fingerPrint', TType.STRING, 2)
+      oprot.writeString(self.fingerPrint)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.schemaName)
+    value = (value * 31) ^ hash(self.fingerPrint)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class get_schema_versions_by_name_and_fingerprint_result:
+  """
+  Attributes:
+   - success
+   - o1
+   - o2
+  """
+
+  thrift_spec = (
+    (0, TType.LIST, 'success', (TType.STRUCT,(ISchemaVersion, ISchemaVersion.thrift_spec)), None, ), # 0
+    (1, TType.STRUCT, 'o1', (NoSuchObjectException, NoSuchObjectException.thrift_spec), None, ), # 1
+    (2, TType.STRUCT, 'o2', (MetaException, MetaException.thrift_spec), None, ), # 2
+  )
+
+  def __init__(self, success=None, o1=None, o2=None,):
+    self.success = success
+    self.o1 = o1
+    self.o2 = o2
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 0:
+        if ftype == TType.LIST:
+          self.success = []
+          (_etype1241, _size1238) = iprot.readListBegin()
+          for _i1242 in xrange(_size1238):
+            _elem1243 = ISchemaVersion()
+            _elem1243.read(iprot)
+            self.success.append(_elem1243)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 1:
+        if ftype == TType.STRUCT:
+          self.o1 = NoSuchObjectException()
+          self.o1.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRUCT:
+          self.o2 = MetaException()
+          self.o2.read(iprot)
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('get_schema_versions_by_name_and_fingerprint_result')
+    if self.success is not None:
+      oprot.writeFieldBegin('success', TType.LIST, 0)
+      oprot.writeListBegin(TType.STRUCT, len(self.success))
+      for iter1244 in self.success:
+        iter1244.write(oprot)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    if self.o1 is not None:
+      oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+      self.o1.write(oprot)
+      oprot.writeFieldEnd()
+    if self.o2 is not None:
+      oprot.writeFieldBegin('o2', TType.STRUCT, 2)
+      self.o2.write(oprot)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.success)
+    value = (value * 31) ^ hash(self.o1)
+    value = (value * 31) ^ hash(self.o2)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
 class get_schema_all_versions_args:
   """
   Attributes:
@@ -46131,11 +46449,11 @@ class get_schema_all_versions_result:
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
-          (_etype1241, _size1238) = iprot.readListBegin()
-          for _i1242 in xrange(_size1238):
-            _elem1243 = ISchemaVersion()
-            _elem1243.read(iprot)
-            self.success.append(_elem1243)
+          (_etype1248, _size1245) = iprot.readListBegin()
+          for _i1249 in xrange(_size1245):
+            _elem1250 = ISchemaVersion()
+            _elem1250.read(iprot)
+            self.success.append(_elem1250)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -46164,8 +46482,8 @@ class get_schema_all_versions_result:
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.STRUCT, len(self.success))
-      for iter1244 in self.success:
-        iter1244.write(oprot)
+      for iter1251 in self.success:
+        iter1251.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.o1 is not None:
@@ -47090,11 +47408,11 @@ class get_schema_branch_by_schema_name_result:
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
-          (_etype1248, _size1245) = iprot.readListBegin()
-          for _i1249 in xrange(_size1245):
-            _elem1250 = ISchemaBranch()
-            _elem1250.read(iprot)
-            self.success.append(_elem1250)
+          (_etype1255, _size1252) = iprot.readListBegin()
+          for _i1256 in xrange(_size1252):
+            _elem1257 = ISchemaBranch()
+            _elem1257.read(iprot)
+            self.success.append(_elem1257)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -47123,8 +47441,174 @@ class get_schema_branch_by_schema_name_result:
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.STRUCT, len(self.success))
-      for iter1251 in self.success:
-        iter1251.write(oprot)
+      for iter1258 in self.success:
+        iter1258.write(oprot)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    if self.o1 is not None:
+      oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+      self.o1.write(oprot)
+      oprot.writeFieldEnd()
+    if self.o2 is not None:
+      oprot.writeFieldBegin('o2', TType.STRUCT, 2)
+      self.o2.write(oprot)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.success)
+    value = (value * 31) ^ hash(self.o1)
+    value = (value * 31) ^ hash(self.o2)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class get_schema_branch_by_schema_version_id_args:
+  """
+  Attributes:
+   - schemaVersionId
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I64, 'schemaVersionId', None, None, ), # 1
+  )
+
+  def __init__(self, schemaVersionId=None,):
+    self.schemaVersionId = schemaVersionId
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I64:
+          self.schemaVersionId = iprot.readI64()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('get_schema_branch_by_schema_version_id_args')
+    if self.schemaVersionId is not None:
+      oprot.writeFieldBegin('schemaVersionId', TType.I64, 1)
+      oprot.writeI64(self.schemaVersionId)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.schemaVersionId)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class get_schema_branch_by_schema_version_id_result:
+  """
+  Attributes:
+   - success
+   - o1
+   - o2
+  """
+
+  thrift_spec = (
+    (0, TType.LIST, 'success', (TType.STRUCT,(ISchemaBranch, ISchemaBranch.thrift_spec)), None, ), # 0
+    (1, TType.STRUCT, 'o1', (NoSuchObjectException, NoSuchObjectException.thrift_spec), None, ), # 1
+    (2, TType.STRUCT, 'o2', (MetaException, MetaException.thrift_spec), None, ), # 2
+  )
+
+  def __init__(self, success=None, o1=None, o2=None,):
+    self.success = success
+    self.o1 = o1
+    self.o2 = o2
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 0:
+        if ftype == TType.LIST:
+          self.success = []
+          (_etype1262, _size1259) = iprot.readListBegin()
+          for _i1263 in xrange(_size1259):
+            _elem1264 = ISchemaBranch()
+            _elem1264.read(iprot)
+            self.success.append(_elem1264)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 1:
+        if ftype == TType.STRUCT:
+          self.o1 = NoSuchObjectException()
+          self.o1.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRUCT:
+          self.o2 = MetaException()
+          self.o2.read(iprot)
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('get_schema_branch_by_schema_version_id_result')
+    if self.success is not None:
+      oprot.writeFieldBegin('success', TType.LIST, 0)
+      oprot.writeListBegin(TType.STRUCT, len(self.success))
+      for iter1265 in self.success:
+        iter1265.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.o1 is not None:

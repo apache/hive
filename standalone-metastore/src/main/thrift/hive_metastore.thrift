@@ -1997,6 +1997,8 @@ service ThriftHiveMetastore extends fb303.FacebookService
   ISchemaVersion get_schema_version_by_id(1:i64 schemaVersionid)
         throws (1:NoSuchObjectException o1, 2:MetaException o2)
 
+  list<ISchemaVersion> get_schema_versions_by_name_and_fingerprint(1:string schemaName, 2:string fingerPrint)
+        throws (1:NoSuchObjectException o1, 2:MetaException o2)
   list<ISchemaVersion> get_schema_all_versions(1: string schemaName)
         throws (1:NoSuchObjectException o1, 2:MetaException o2)
   void drop_schema_version(1: string schemaName, 2: i32 version)
@@ -2014,6 +2016,9 @@ service ThriftHiveMetastore extends fb303.FacebookService
         throws (1:NoSuchObjectException o1, 2:MetaException o2)
 
   list<ISchemaBranch> get_schema_branch_by_schema_name(1: string schemaName)
+        throws (1:NoSuchObjectException o1, 2:MetaException o2)
+
+  list<ISchemaBranch> get_schema_branch_by_schema_version_id(1: i64 schemaVersionId)
         throws (1:NoSuchObjectException o1, 2:MetaException o2)
 
   // There is no blanket update of SchemaVersion since it is (mostly) immutable.  The only

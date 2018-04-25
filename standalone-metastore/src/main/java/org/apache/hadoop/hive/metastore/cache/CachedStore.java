@@ -2537,6 +2537,12 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
+  public List<ISchemaVersion> getSchemaVersionsByNameAndFingerprint(String schemaName, String fingerPrint)
+    throws MetaException {
+    return rawStore.getSchemaVersionsByNameAndFingerprint(schemaName, fingerPrint);
+  }
+
+  @Override
   public List<ISchemaVersion> getAllSchemaVersion(String schemaName) throws MetaException {
     return rawStore.getAllSchemaVersion(schemaName);
   }
@@ -2573,6 +2579,11 @@ public class CachedStore implements RawStore, Configurable {
   @Override
   public List<ISchemaBranch> getSchemaBranchBySchemaName(String schemaName) throws MetaException {
     return rawStore.getSchemaBranchBySchemaName(schemaName);
+  }
+
+  @Override
+  public List<ISchemaBranch> getSchemaBranchBySchemaVersionId(Long schemaVersionId) throws MetaException {
+    return rawStore.getSchemaBranchBySchemaVersionId(schemaVersionId);
   }
 
   @Override

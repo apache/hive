@@ -565,36 +565,35 @@ public class SchemaVersionLifecycleManager {
 
         Preconditions.checkNotNull(schemaBranchName, "Schema branch name can't be null");
 
-        /String fingerPrint = getFingerprint(type, schemaText);
+        String fingerPrint = getFingerprint(type, schemaText);
         LOG.debug("Fingerprint of the given schema [{}] is [{}]", schemaText, fingerPrint);
-        List<QueryParam> queryParams = Lists.newArrayList(
-                new QueryParam(SchemaVersionStorable.NAME, schemaMetadataName),
-                new QueryParam(SchemaVersionStorable.FINGERPRINT, fingerPrint));
+        try {
+            Collection<ISchemaVersion> versionedSchemas = metaStoreClient.getSchemaVersionByNameAndFingerprint(schemaMetadataName, fingerPrint);
 
-        Collection<SchemaVersionStorable> versionedSchemas = storageManager.find(SchemaVersionStorable.NAME_SPACE, queryParams);
+            Set<Long> matchedSchemaVersionIds = null;
+            if (versionedSchemas != null && !versionedSchemas.isEmpty()) {
+                if (versionedSchemas.size() > 1) {
+                    LOG.warn("Exists more than one schema with schemaMetadataName: [{}] and schemaText [{}]", schemaMetadataName, schemaText);
+                }
 
-        Set<Long> matchedSchemaVersionIds = null;
-        if (versionedSchemas != null && !versionedSchemas.isEmpty()) {
-            if (versionedSchemas.size() > 1) {
-                LOG.warn("Exists more than one schema with schemaMetadataName: [{}] and schemaText [{}]", schemaMetadataName, schemaText);
+                matchedSchemaVersionIds = versionedSchemas.stream()
+                    .map(schemaVersion -> schemaVersion.getSchemaVersionId())
+                    .collect(Collectors.toSet());
             }
 
-            matchedSchemaVersionIds = versionedSchemas.stream()
-                                                      .map(schemaVersionStorable -> schemaVersionStorable.getId())
-                                                      .collect(Collectors.toSet());
-        }
+            if (matchedSchemaVersionIds == null) {
+                return null;
+            } else {
+                SchemaBranch schemaBranch = schemaBranchCache.get(SchemaBranchCache.Key.of(new SchemaBranchKey(schemaBranchName, schemaMetadataName)));
 
-        if (matchedSchemaVersionIds == null) {
-            return null;
-        } else {
-            SchemaBranch schemaBranch = schemaBranchCache.get(SchemaBranchCache.Key.of(new SchemaBranchKey(schemaBranchName, schemaMetadataName)));
-
-            for (SchemaVersionInfo schemaVersionInfo : getSortedSchemaVersions(schemaBranch)) {
-                if (matchedSchemaVersionIds.contains(schemaVersionInfo.getId()))
-                    return schemaVersionInfo;
+                for (SchemaVersionInfo schemaVersionInfo : getSortedSchemaVersions(schemaBranch)) {
+                    if (matchedSchemaVersionIds.contains(schemaVersionInfo.getId()))
+                        return schemaVersionInfo;
+                }
+                return null;
             }
+        } catch (TException te) {
 
-            return null;
         }
         return null;
     }
@@ -863,12 +862,6 @@ public class SchemaVersionLifecycleManager {
         deleteSchemaVersionBranchMapping(schemaVersionId);
     }
 
-    /*private StorableKey createSchemaVersionStorableKey(Long id) {
-        /*SchemaVersionStorable schemaVersionStorable = new SchemaVersionStorable();
-        schemaVersionStorable.setId(id);
-        return schemaVersionStorable.getStorableKey();
-        return null;
-    }*/
 
     private void deleteSchemaVersionBranchMapping(Long schemaVersionId) throws SchemaNotFoundException, SchemaLifecycleException {
         List<QueryParam> schemaVersionMappingStorableQueryParams = Lists.newArrayList();
@@ -990,21 +983,17 @@ public class SchemaVersionLifecycleManager {
         if (SchemaVersionKey.LATEST_VERSION.equals(version)) {
             schemaVersionInfo = getLatestSchemaVersionInfo(schemaName);
         } else {
-            /*List<QueryParam> queryParams = Lists.newArrayList(
-                    new QueryParam(SchemaVersionStorable.NAME, schemaName),
-                    new QueryParam(SchemaVersionStorable.VERSION, version.toString()));
-
-            Collection<SchemaVersionStorable> versionedSchemas = storageManager.find(SchemaVersionStorable.NAME_SPACE, queryParams);
-            if (versionedSchemas != null && !versionedSchemas.isEmpty()) {
-                if (versionedSchemas.size() > 1) {
-                    LOG.warn("More than one schema exists with name: [{}] and version [{}]", schemaName, version);
+            try {
+                ISchemaVersion versionedSchema = metaStoreClient.getSchemaVersion(schemaName, version);
+                if (versionedSchema != null) {
+                    schemaVersionInfo = new SchemaVersionInfo(versionedSchema);
+                } else {
+                    throw new SchemaNotFoundException("No Schema version exists with name " + schemaName + " and version " + version);
                 }
-                schemaVersionInfo = versionedSchemas.iterator().next().toSchemaVersionInfo();
-            } else {
-                throw new SchemaNotFoundException("No Schema version exists with name " + schemaName + " and version " + version);
-            }*/
+            } catch (TException te) {
+            }
         }
-        LOG.info("##### fetched schema version info [{}]", schemaVersionInfo);
+        LOG.info("##### fetched schema vzAersion info [{}]", schemaVersionInfo);
         return schemaVersionInfo;
     }
 
@@ -1077,12 +1066,5 @@ public class SchemaVersionLifecycleManager {
         return sortedVersionInfo.iterator().next();
     }
 
-    public void invalidateAllSchemaVersionCache() {
-        schemaVersionInfoCache.invalidateAll();
-    }
-
-    public void invalidateSchemaVersionCache(SchemaVersionInfoCache.Key key) {
-        schemaVersionInfoCache.invalidateSchema(key);
-    }
 
 }

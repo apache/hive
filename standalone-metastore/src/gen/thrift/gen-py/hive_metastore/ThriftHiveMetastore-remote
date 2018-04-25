@@ -214,6 +214,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  ISchemaVersion get_schema_version(string schemaName, i32 version)')
   print('  ISchemaVersion get_schema_latest_version(string schemaName)')
   print('  ISchemaVersion get_schema_version_by_id(i64 schemaVersionid)')
+  print('   get_schema_versions_by_name_and_fingerprint(string schemaName, string fingerPrint)')
   print('   get_schema_all_versions(string schemaName)')
   print('  void drop_schema_version(string schemaName, i32 version)')
   print('  FindSchemasByColsResp get_schemas_by_cols(FindSchemasByColsRqst rqst)')
@@ -221,6 +222,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  void map_schema_branch_to_schema_version(i64 schemaBranchId, i64 schemaVersionId)')
   print('  ISchemaBranch get_schema_branch(i64 schemaBranchId)')
   print('   get_schema_branch_by_schema_name(string schemaName)')
+  print('   get_schema_branch_by_schema_version_id(i64 schemaVersionId)')
   print('  void map_schema_version_to_serde(string schemaName, i32 version, string serdeName)')
   print('  void set_schema_version_state(string schemaName, i32 version, SchemaVersionState state)')
   print('  void add_serde(SerDeInfo serde)')
@@ -1434,6 +1436,12 @@ elif cmd == 'get_schema_version_by_id':
     sys.exit(1)
   pp.pprint(client.get_schema_version_by_id(eval(args[0]),))
 
+elif cmd == 'get_schema_versions_by_name_and_fingerprint':
+  if len(args) != 2:
+    print('get_schema_versions_by_name_and_fingerprint requires 2 args')
+    sys.exit(1)
+  pp.pprint(client.get_schema_versions_by_name_and_fingerprint(args[0],args[1],))
+
 elif cmd == 'get_schema_all_versions':
   if len(args) != 1:
     print('get_schema_all_versions requires 1 args')
@@ -1475,6 +1483,12 @@ elif cmd == 'get_schema_branch_by_schema_name':
     print('get_schema_branch_by_schema_name requires 1 args')
     sys.exit(1)
   pp.pprint(client.get_schema_branch_by_schema_name(args[0],))
+
+elif cmd == 'get_schema_branch_by_schema_version_id':
+  if len(args) != 1:
+    print('get_schema_branch_by_schema_version_id requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_schema_branch_by_schema_version_id(eval(args[0]),))
 
 elif cmd == 'map_schema_version_to_serde':
   if len(args) != 3:

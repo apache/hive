@@ -1119,6 +1119,12 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
     return objectStore.getLatestSchemaVersion(schemaName);
   }
 
+
+  @Override
+  public List<ISchemaVersion> getSchemaVersionsByNameAndFingerprint(String schemaName, String fingerPrint) throws MetaException {
+    return objectStore.getSchemaVersionsByNameAndFingerprint(schemaName, fingerPrint);
+  }
+
   @Override
   public List<ISchemaVersion> getAllSchemaVersion(String schemaName) throws MetaException {
     return objectStore.getAllSchemaVersion(schemaName);
@@ -1151,6 +1157,11 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   @Override
   public ISchemaBranch getSchemaBranch(Long schemaBranchId) throws MetaException {
     return objectStore.getSchemaBranch(schemaBranchId);
+  }
+
+  @Override
+  public List<ISchemaBranch> getSchemaBranchBySchemaVersionId(Long schemaVersionId) throws MetaException {
+    return objectStore.getSchemaBranchBySchemaVersionId(schemaVersionId);
   }
 
   @Override

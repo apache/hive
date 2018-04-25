@@ -9897,6 +9897,33 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
+  public List<ISchemaVersion> getSchemaVersionsByNameAndFingerprint(String schemaName, String fingerPrint)
+    throws MetaException {
+    boolean committed = false;
+    Query query = null;
+    try {
+      openTransaction();
+      schemaName = normalizeIdentifier(schemaName);
+      query = pm.newQuery(MSchemaVersion.class, "iSchema.name == schemaName && iScheam.fingerPrint == fingerPrint");
+      query.declareParameters("java.lang.String schemaName, java.lang.String fingerPrint");
+      query.setOrdering("version descending");
+      List<MSchemaVersion> mSchemaVersions = query.setParameters(schemaName, fingerPrint).executeList();
+      pm.retrieveAll(mSchemaVersions);
+      if (mSchemaVersions == null || mSchemaVersions.isEmpty()) return null;
+      List<ISchemaVersion> schemaVersions = new ArrayList<>(mSchemaVersions.size());
+      for (MSchemaVersion mSchemaVersion : mSchemaVersions) {
+        pm.retrieveAll(mSchemaVersion.getCols());
+        if (mSchemaVersion.getSerDe() != null) pm.retrieve(mSchemaVersion.getSerDe());
+        schemaVersions.add(convertToSchemaVersion(mSchemaVersion));
+      }
+      committed = commitTransaction();
+      return schemaVersions;
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
+  }
+
+  @Override
   public List<ISchemaVersion> getAllSchemaVersion(String schemaName) throws MetaException {
     boolean committed = false;
     Query query = null;
@@ -10064,6 +10091,29 @@ public class ObjectStore implements RawStore, Configurable {
       rollbackAndCleanup(committed, query);
     }
   }
+
+  @Override
+  public List<ISchemaBranch> getSchemaBranchBySchemaVersionId(Long schemaVersionId) throws MetaException {
+    boolean committed = false;
+    Query query = null;
+    try {
+      openTransaction();
+      query = pm.newQuery(MSchemaBranch.class, "iSchemaBranch == schemaName");
+      query.declareParameters("java.lang.String schemaName");
+      List<MSchemaBranch> mSchemaBranches = query.setParameters(schemaVersionId).executeList();
+      pm.retrieveAll(mSchemaBranches);
+      if (mSchemaBranches == null || mSchemaBranches.isEmpty()) return null;
+      List<ISchemaBranch> schemaBranches = new ArrayList<>(mSchemaBranches.size());
+      for (MSchemaBranch mSchemaBranch : mSchemaBranches) {
+        schemaBranches.add(convertToSchemaBranch(mSchemaBranch));
+      }
+      committed = commitTransaction();
+      return schemaBranches;
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
+  }
+
   @Override
   public SerDeInfo getSerDeInfo(String serDeName) throws NoSuchObjectException, MetaException {
     boolean committed = false;

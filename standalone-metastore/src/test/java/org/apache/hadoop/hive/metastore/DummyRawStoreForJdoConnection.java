@@ -1111,6 +1111,11 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
+  public List<ISchemaVersion> getSchemaVersionsByNameAndFingerprint(String schemaName, String fingerPrint) throws MetaException {
+    return null;
+  }
+
+  @Override
   public List<ISchemaVersion> getAllSchemaVersion(String schemaName) throws MetaException {
     return null;
   }
@@ -1149,6 +1154,10 @@ public class DummyRawStoreForJdoConnection implements RawStore {
     return null;
   }
 
+  @Override
+  public List<ISchemaBranch> getSchemaBranchBySchemaVersionId(Long schemaVersionId) throws MetaException {
+    return null;
+  }
 
   @Override
   public SerDeInfo getSerDeInfo(String serDeName) throws MetaException {

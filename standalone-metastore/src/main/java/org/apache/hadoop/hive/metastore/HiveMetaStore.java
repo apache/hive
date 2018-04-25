@@ -7820,7 +7820,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         ex = e;
         throw e;
       } finally {
-        endFunction("get_schema_version", schemaVersion != null, ex);
+        endFunction("get_schema_version_by_id", schemaVersion != null, ex);
       }
     }
 
@@ -7846,8 +7846,30 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
+    public List<ISchemaVersion> get_schema_versions_by_name_and_fingerprint(String schemaName, String fingerPrint)
+        throws TException {
+      startFunction("get_schema_version_by_name_and_fingerprint", ": " + schemaName);
+      Exception ex = null;
+      List<ISchemaVersion> schemaVersions = null;
+      try {
+        schemaVersions = getMS().getSchemaVersionsByNameAndFingerprint(schemaName, fingerPrint);
+        if (schemaVersions == null) {
+          throw new NoSuchObjectException("No versions of schema with " + schemaName + " and schemaText " + fingerPrint + "exist");
+        }
+        firePreEvent(new PreReadhSchemaVersionEvent(this, schemaVersions));
+        return schemaVersions;
+      } catch (MetaException e) {
+        LOG.error("Caught exception getting all schema versions", e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("get_schema_versions_by_name_and_fingerprint", schemaVersions != null, ex);
+      }
+    }
+
+    @Override
     public List<ISchemaVersion> get_schema_all_versions(String schemaName) throws TException {
-      startFunction("get_all_schema_versions", ": " + schemaName);
+      startFunction("get_schema_all_versions", ": " + schemaName);
       Exception ex = null;
       List<ISchemaVersion> schemaVersions = null;
       try {
@@ -7862,7 +7884,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         ex = e;
         throw e;
       } finally {
-        endFunction("get_all_schema_versions", schemaVersions != null, ex);
+        endFunction("get_schema_all_versions", schemaVersions != null, ex);
       }
     }
 
@@ -8126,7 +8148,28 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         firePreEvent(new PreReadhSchemaBranchEvent(this, schemaBranches));
         return schemaBranches;
       } catch (MetaException e) {
-        LOG.error("Caught exception getting all schema versions", e);
+        LOG.error("Caught exception getting schema branches for schema " + schemaName, e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("get_schema_branch_by_schema_name", schemaBranches != null, ex);
+      }
+    }
+
+    @Override
+    public List<ISchemaBranch> get_schema_branch_by_schema_version_id(long schemaVersionId) throws TException {
+      startFunction("get_schema_branch_by_schema_version_id", ": " + schemaVersionId);
+      Exception ex = null;
+      List<ISchemaBranch> schemaBranches = null;
+      try {
+        schemaBranches = getMS().getSchemaBranchBySchemaVersionId(schemaVersionId);
+        if (schemaBranches == null) {
+          throw new NoSuchObjectException("No schemaBranches for " + schemaVersionId + "exist");
+        }
+        firePreEvent(new PreReadhSchemaBranchEvent(this, schemaBranches));
+        return schemaBranches;
+      } catch (MetaException e) {
+        LOG.error("Caught exception getting schema branches for " + schemaVersionId, e);
         ex = e;
         throw e;
       } finally {

@@ -923,6 +923,16 @@ public interface RawStore extends Configurable {
   List<ISchemaVersion> getAllSchemaVersion(String schemaName) throws MetaException;
 
   /**
+   * Get all of the versions of a schema that matches schemaName and fingerPrint
+   * @param schemaName name of the schema
+   * @param fingerPrint fingerPrint of the schemaText
+   * @return all the version of the schema
+   * @throws MetaException general database exception
+   */
+
+  List<ISchemaVersion> getSchemaVersionsByNameAndFingerprint(String schemaName, String fingerPrint) throws MetaException;
+
+  /**
    * Find all SchemaVersion objects that match a query.  The query will select all SchemaVersions
    * that are equal to all of the non-null passed in arguments.  That is, if arguments
    * colName='name', colNamespace=null, type='string' are passed in, then all schemas that have
@@ -995,6 +1005,14 @@ public interface RawStore extends Configurable {
 
   List<ISchemaBranch> getSchemaBranchBySchemaName(String schemaName) throws MetaException;
 
+  /**
+   * Get SchemaBranch by schema version id
+   * @param schemaVersionId schema metadata name
+   * @return one or more ISchemaBranch associated with a schema name
+   * @throws MetaException general database exception
+   */
+
+  List<ISchemaBranch> getSchemaBranchBySchemaVersionId(Long schemaVersionId) throws MetaException;
 
   /**
    * Get serdes information
