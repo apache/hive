@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.optimizer;
 
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -30,6 +31,7 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.DateColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -72,6 +74,8 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMin;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFSum;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
@@ -146,11 +150,12 @@ public class StatsOptimizer extends Transform {
     }
 
     enum StatType{
-      Integeral,
+      Integer,
       Double,
       String,
       Boolean,
       Binary,
+      Date,
       Unsupported
     }
 
@@ -163,7 +168,6 @@ public class StatsOptimizer extends Transform {
       Object cast(long longValue) { return (short)longValue; } },
       TINYINT { @Override
       Object cast(long longValue) { return (byte)longValue; } };
-
       abstract Object cast(long longValue);
     }
 
@@ -175,6 +179,13 @@ public class StatsOptimizer extends Transform {
 
       abstract Object cast(double doubleValue);
     }
+    
+    enum DateSubType {
+      DAYS {@Override
+        Object cast(long longValue) { return (new DateWritable((int)longValue)).get();}
+      };
+      abstract Object cast(long longValue);
+    }
 
     enum GbyKeyType {
       NULL, CONSTANT, OTHER
@@ -182,7 +193,7 @@ public class StatsOptimizer extends Transform {
 
     private StatType getType(String origType) {
       if (serdeConstants.IntegralTypes.contains(origType)) {
-        return StatType.Integeral;
+        return StatType.Integer;
       } else if (origType.equals(serdeConstants.DOUBLE_TYPE_NAME) ||
           origType.equals(serdeConstants.FLOAT_TYPE_NAME)) {
         return StatType.Double;
@@ -192,6 +203,8 @@ public class StatsOptimizer extends Transform {
         return StatType.Boolean;
       } else if (origType.equals(serdeConstants.STRING_TYPE_NAME)) {
         return StatType.String;
+      } else if (origType.equals(serdeConstants.DATE_TYPE_NAME)) {
+        return StatType.Date;
       }
       return StatType.Unsupported;
     }
@@ -199,7 +212,7 @@ public class StatsOptimizer extends Transform {
     private Long getNullcountFor(StatType type, ColumnStatisticsData statData) {
 
       switch(type) {
-      case Integeral :
+      case Integer :
         return statData.getLongStats().getNumNulls();
       case Double:
         return statData.getDoubleStats().getNumNulls();
@@ -209,6 +222,8 @@ public class StatsOptimizer extends Transform {
         return statData.getBooleanStats().getNumNulls();
       case Binary:
         return statData.getBinaryStats().getNumNulls();
+      case Date:
+        return statData.getDateStats().getNumNulls();
       default:
         return null;
       }
@@ -515,7 +530,7 @@ public class StatsOptimizer extends Transform {
               ColumnStatisticsData statData = stats.get(0).getStatsData();
               String name = colDesc.getTypeString().toUpperCase();
               switch (type) {
-                case Integeral: {
+                case Integer: {
                   LongSubType subType = LongSubType.valueOf(name);
                   LongColumnStatsData lstats = statData.getLongStats();
                   if (lstats.isSetHighValue()) {
@@ -535,6 +550,15 @@ public class StatsOptimizer extends Transform {
                   }
                   break;
                 }
+                case Date: {
+                  DateColumnStatsData dstats = statData.getDateStats();
+                  if (dstats.isSetHighValue()) {
+                    oneRow.add(DateSubType.DAYS.cast(dstats.getHighValue().getDaysSinceEpoch())); 
+                  } else {
+                    oneRow.add(null);
+                  }
+                  break;
+                }
                 default:
                   // unsupported type
                   Logger.debug("Unsupported type: " + colDesc.getTypeString() + " encountered in " +
@@ -546,7 +570,7 @@ public class StatsOptimizer extends Transform {
                   tsOp.getConf().getAlias(), tsOp).getPartitions();
               String name = colDesc.getTypeString().toUpperCase();
               switch (type) {
-                case Integeral: {
+                case Integer: {
                   LongSubType subType = LongSubType.valueOf(name);
 
                   Long maxVal = null;
@@ -598,6 +622,30 @@ public class StatsOptimizer extends Transform {
                   }
                   break;
                 }
+                case Date: {
+                  Long maxVal = null;
+                  Collection<List<ColumnStatisticsObj>> result =
+                      verifyAndGetPartColumnStats(hive, tbl, colName, parts);
+                  if (result == null) {
+                    return null; // logging inside
+                  }
+                  for (List<ColumnStatisticsObj> statObj : result) {
+                    ColumnStatisticsData statData = validateSingleColStat(statObj);
+                    if (statData == null) return null;
+                    DateColumnStatsData dstats = statData.getDateStats();
+                    if (!dstats.isSetHighValue()) {
+                      continue;
+                    }
+                    long curVal = dstats.getHighValue().getDaysSinceEpoch();
+                    maxVal = maxVal == null ? curVal : Math.max(maxVal, curVal);
+                  }
+                  if (maxVal != null) {
+                    oneRow.add(DateSubType.DAYS.cast(maxVal));
+                  } else {
+                    oneRow.add(null);
+                  }
+                  break;
+                }
                 default:
                   Logger.debug("Unsupported type: " + colDesc.getTypeString() + " encountered in " +
                       "metadata optimizer for column : " + colName);
@@ -619,7 +667,7 @@ public class StatsOptimizer extends Transform {
                   .get(0).getStatsData();
               String name = colDesc.getTypeString().toUpperCase();
               switch (type) {
-                case Integeral: {
+                case Integer: {
                   LongSubType subType = LongSubType.valueOf(name);
                   LongColumnStatsData lstats = statData.getLongStats();
                   if (lstats.isSetLowValue()) {
@@ -639,6 +687,15 @@ public class StatsOptimizer extends Transform {
                   }
                   break;
                 }
+                case Date: {
+                  DateColumnStatsData dstats = statData.getDateStats();
+                  if (dstats.isSetLowValue()) {
+                    oneRow.add(DateSubType.DAYS.cast(dstats.getLowValue().getDaysSinceEpoch())); 
+                  } else {
+                    oneRow.add(null);
+                  }
+                  break;
+                }
                 default: // unsupported type
                   Logger.debug("Unsupported type: " + colDesc.getTypeString() + " encountered in " +
                       "metadata optimizer for column : " + colName);
@@ -648,7 +705,7 @@ public class StatsOptimizer extends Transform {
               Set<Partition> parts = pctx.getPrunedPartitions(tsOp.getConf().getAlias(), tsOp).getPartitions();
               String name = colDesc.getTypeString().toUpperCase();
               switch(type) {
-                case Integeral: {
+                case Integer: {
                   LongSubType subType = LongSubType.valueOf(name);
 
                   Long minVal = null;
@@ -697,6 +754,30 @@ public class StatsOptimizer extends Transform {
                     oneRow.add(subType.cast(minVal));
                   } else {
                     oneRow.add(minVal);
+                  }
+                  break;
+                }
+                case Date: {
+                  Long minVal = null;
+                  Collection<List<ColumnStatisticsObj>> result =
+                      verifyAndGetPartColumnStats(hive, tbl, colName, parts);
+                  if (result == null) {
+                    return null; // logging inside
+                  }
+                  for (List<ColumnStatisticsObj> statObj : result) {
+                    ColumnStatisticsData statData = validateSingleColStat(statObj);
+                    if (statData == null) return null;
+                    DateColumnStatsData dstats = statData.getDateStats();
+                    if (!dstats.isSetLowValue()) {
+                      continue;
+                    }
+                    long curVal = dstats.getLowValue().getDaysSinceEpoch();
+                    minVal = minVal == null ? curVal : Math.min(minVal, curVal);
+                  }
+                  if (minVal != null) {
+                    oneRow.add(DateSubType.DAYS.cast(minVal));
+                  } else {
+                    oneRow.add(null);
                   }
                   break;
                 }
