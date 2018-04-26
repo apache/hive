@@ -37,6 +37,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
@@ -103,6 +104,8 @@ public class Table implements Serializable {
   private transient TableSpec tableSpec;
 
   private transient boolean materializedTable;
+
+  private transient TableName fullTableName;
 
   /**
    * Used only for serialization.
@@ -691,6 +694,22 @@ public class Table implements Serializable {
 
   public String getDbName() {
     return tTable.getDbName();
+  }
+
+  public String getCatName() {
+    // Returning the default 'hive' catalog here is not ideal, but I don't have access to the
+    // conf file.
+    return tTable.isSetCatName() ? tTable.getCatName() : Warehouse.DEFAULT_CATALOG_NAME;
+  }
+
+  /**
+   * Get a full table name object for this Table
+   */
+  public TableName getFullTableName() {
+    if (fullTableName == null) {
+      fullTableName = new TableName(getCatName(), getDbName(), getTableName());
+    }
+    return fullTableName;
   }
 
   public int getNumBuckets() {

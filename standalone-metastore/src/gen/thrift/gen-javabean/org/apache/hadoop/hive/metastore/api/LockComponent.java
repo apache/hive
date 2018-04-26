@@ -46,6 +46,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField OPERATION_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("operationType", org.apache.thrift.protocol.TType.I32, (short)6);
   private static final org.apache.thrift.protocol.TField IS_TRANSACTIONAL_FIELD_DESC = new org.apache.thrift.protocol.TField("isTransactional", org.apache.thrift.protocol.TType.BOOL, (short)7);
   private static final org.apache.thrift.protocol.TField IS_DYNAMIC_PARTITION_WRITE_FIELD_DESC = new org.apache.thrift.protocol.TField("isDynamicPartitionWrite", org.apache.thrift.protocol.TType.BOOL, (short)8);
+  private static final org.apache.thrift.protocol.TField CAT_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("catName", org.apache.thrift.protocol.TType.STRING, (short)9);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -61,6 +62,7 @@ import org.slf4j.LoggerFactory;
   private DataOperationType operationType; // optional
   private boolean isTransactional; // optional
   private boolean isDynamicPartitionWrite; // optional
+  private String catName; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -83,7 +85,8 @@ import org.slf4j.LoggerFactory;
      */
     OPERATION_TYPE((short)6, "operationType"),
     IS_TRANSACTIONAL((short)7, "isTransactional"),
-    IS_DYNAMIC_PARTITION_WRITE((short)8, "isDynamicPartitionWrite");
+    IS_DYNAMIC_PARTITION_WRITE((short)8, "isDynamicPartitionWrite"),
+    CAT_NAME((short)9, "catName");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -114,6 +117,8 @@ import org.slf4j.LoggerFactory;
           return IS_TRANSACTIONAL;
         case 8: // IS_DYNAMIC_PARTITION_WRITE
           return IS_DYNAMIC_PARTITION_WRITE;
+        case 9: // CAT_NAME
+          return CAT_NAME;
         default:
           return null;
       }
@@ -157,7 +162,7 @@ import org.slf4j.LoggerFactory;
   private static final int __ISTRANSACTIONAL_ISSET_ID = 0;
   private static final int __ISDYNAMICPARTITIONWRITE_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.TABLENAME,_Fields.PARTITIONNAME,_Fields.OPERATION_TYPE,_Fields.IS_TRANSACTIONAL,_Fields.IS_DYNAMIC_PARTITION_WRITE};
+  private static final _Fields optionals[] = {_Fields.TABLENAME,_Fields.PARTITIONNAME,_Fields.OPERATION_TYPE,_Fields.IS_TRANSACTIONAL,_Fields.IS_DYNAMIC_PARTITION_WRITE,_Fields.CAT_NAME};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -177,6 +182,8 @@ import org.slf4j.LoggerFactory;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     tmpMap.put(_Fields.IS_DYNAMIC_PARTITION_WRITE, new org.apache.thrift.meta_data.FieldMetaData("isDynamicPartitionWrite", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.CAT_NAME, new org.apache.thrift.meta_data.FieldMetaData("catName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(LockComponent.class, metaDataMap);
   }
@@ -226,6 +233,9 @@ import org.slf4j.LoggerFactory;
     }
     this.isTransactional = other.isTransactional;
     this.isDynamicPartitionWrite = other.isDynamicPartitionWrite;
+    if (other.isSetCatName()) {
+      this.catName = other.catName;
+    }
   }
 
   public LockComponent deepCopy() {
@@ -245,6 +255,7 @@ import org.slf4j.LoggerFactory;
 
     this.isDynamicPartitionWrite = false;
 
+    this.catName = null;
   }
 
   /**
@@ -453,6 +464,29 @@ import org.slf4j.LoggerFactory;
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __ISDYNAMICPARTITIONWRITE_ISSET_ID, value);
   }
 
+  public String getCatName() {
+    return this.catName;
+  }
+
+  public void setCatName(String catName) {
+    this.catName = catName;
+  }
+
+  public void unsetCatName() {
+    this.catName = null;
+  }
+
+  /** Returns true if field catName is set (has been assigned a value) and false otherwise */
+  public boolean isSetCatName() {
+    return this.catName != null;
+  }
+
+  public void setCatNameIsSet(boolean value) {
+    if (!value) {
+      this.catName = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case TYPE:
@@ -519,6 +553,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case CAT_NAME:
+      if (value == null) {
+        unsetCatName();
+      } else {
+        setCatName((String)value);
+      }
+      break;
+
     }
   }
 
@@ -548,6 +590,9 @@ import org.slf4j.LoggerFactory;
     case IS_DYNAMIC_PARTITION_WRITE:
       return isIsDynamicPartitionWrite();
 
+    case CAT_NAME:
+      return getCatName();
+
     }
     throw new IllegalStateException();
   }
@@ -575,6 +620,8 @@ import org.slf4j.LoggerFactory;
       return isSetIsTransactional();
     case IS_DYNAMIC_PARTITION_WRITE:
       return isSetIsDynamicPartitionWrite();
+    case CAT_NAME:
+      return isSetCatName();
     }
     throw new IllegalStateException();
   }
@@ -664,6 +711,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_catName = true && this.isSetCatName();
+    boolean that_present_catName = true && that.isSetCatName();
+    if (this_present_catName || that_present_catName) {
+      if (!(this_present_catName && that_present_catName))
+        return false;
+      if (!this.catName.equals(that.catName))
+        return false;
+    }
+
     return true;
   }
 
@@ -710,6 +766,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_isDynamicPartitionWrite);
     if (present_isDynamicPartitionWrite)
       list.add(isDynamicPartitionWrite);
+
+    boolean present_catName = true && (isSetCatName());
+    list.add(present_catName);
+    if (present_catName)
+      list.add(catName);
 
     return list.hashCode();
   }
@@ -802,6 +863,16 @@ import org.slf4j.LoggerFactory;
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetCatName()).compareTo(other.isSetCatName());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetCatName()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.catName, other.catName);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -885,6 +956,16 @@ import org.slf4j.LoggerFactory;
       if (!first) sb.append(", ");
       sb.append("isDynamicPartitionWrite:");
       sb.append(this.isDynamicPartitionWrite);
+      first = false;
+    }
+    if (isSetCatName()) {
+      if (!first) sb.append(", ");
+      sb.append("catName:");
+      if (this.catName == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.catName);
+      }
       first = false;
     }
     sb.append(")");
@@ -1008,6 +1089,14 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 9: // CAT_NAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.catName = iprot.readString();
+              struct.setCatNameIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -1067,6 +1156,13 @@ import org.slf4j.LoggerFactory;
         oprot.writeBool(struct.isDynamicPartitionWrite);
         oprot.writeFieldEnd();
       }
+      if (struct.catName != null) {
+        if (struct.isSetCatName()) {
+          oprot.writeFieldBegin(CAT_NAME_FIELD_DESC);
+          oprot.writeString(struct.catName);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -1103,7 +1199,10 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetIsDynamicPartitionWrite()) {
         optionals.set(4);
       }
-      oprot.writeBitSet(optionals, 5);
+      if (struct.isSetCatName()) {
+        optionals.set(5);
+      }
+      oprot.writeBitSet(optionals, 6);
       if (struct.isSetTablename()) {
         oprot.writeString(struct.tablename);
       }
@@ -1119,6 +1218,9 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetIsDynamicPartitionWrite()) {
         oprot.writeBool(struct.isDynamicPartitionWrite);
       }
+      if (struct.isSetCatName()) {
+        oprot.writeString(struct.catName);
+      }
     }
 
     @Override
@@ -1130,7 +1232,7 @@ import org.slf4j.LoggerFactory;
       struct.setLevelIsSet(true);
       struct.dbname = iprot.readString();
       struct.setDbnameIsSet(true);
-      BitSet incoming = iprot.readBitSet(5);
+      BitSet incoming = iprot.readBitSet(6);
       if (incoming.get(0)) {
         struct.tablename = iprot.readString();
         struct.setTablenameIsSet(true);
@@ -1150,6 +1252,10 @@ import org.slf4j.LoggerFactory;
       if (incoming.get(4)) {
         struct.isDynamicPartitionWrite = iprot.readBool();
         struct.setIsDynamicPartitionWriteIsSet(true);
+      }
+      if (incoming.get(5)) {
+        struct.catName = iprot.readString();
+        struct.setCatNameIsSet(true);
       }
     }
   }

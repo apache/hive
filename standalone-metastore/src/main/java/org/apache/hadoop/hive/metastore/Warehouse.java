@@ -66,7 +66,7 @@ public class Warehouse {
   public static final String DEFAULT_DATABASE_COMMENT = "Default Hive database";
   public static final String DEFAULT_SERIALIZATION_FORMAT = "1";
   public static final String DATABASE_WAREHOUSE_SUFFIX = ".db";
-  private static final String CAT_DB_TABLE_SEPARATOR = ".";
+  public static final String CAT_DB_TABLE_SEPARATOR = ".";
 
   private Path whRoot;
   private final Configuration conf;

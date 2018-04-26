@@ -38,6 +38,7 @@ import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
@@ -57,6 +58,7 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
@@ -706,7 +708,9 @@ public class HiveStreamingConnection implements StreamingConnection {
     }
 
     private List<TxnToWriteId> allocateWriteIdsImpl(final List<Long> txnIds) throws TException {
-      return conn.getMSC().allocateTableWriteIdsBatch(txnIds, conn.database, conn.table);
+      // TODO CAT - Fix in HIVE-19822
+      return conn.getMSC().allocateTableWriteIdsBatch(txnIds,
+          new TableName(MetaStoreUtils.getDefaultCatalog(conn.conf), conn.database, conn.table));
     }
 
     @Override
@@ -851,8 +855,10 @@ public class HiveStreamingConnection implements StreamingConnection {
         TxnToWriteId txnToWriteId = txnToWriteIds.get(currentTxnIndex);
         if (conn.isDynamicPartitioning()) {
           List<String> partNames = new ArrayList<>(recordWriter.getPartitions());
-          conn.getMSC().addDynamicPartitions(txnToWriteId.getTxnId(), txnToWriteId.getWriteId(), conn.database, conn.table,
-            partNames, DataOperationType.INSERT);
+          // TODO CAT - Fix in HIVE-19822
+          conn.getMSC().addDynamicPartitions(txnToWriteId.getTxnId(), txnToWriteId.getWriteId(),
+              new TableName(MetaStoreUtils.getDefaultCatalog(conn.conf), conn.database, conn.table),
+              partNames, DataOperationType.INSERT);
         }
         transactionLock.lock();
         try {

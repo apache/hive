@@ -37,7 +37,7 @@ public class ValidTxnWriteIdList {
 
   // Map of valid write ids list for all the tables read by the current txn
   // Key is full table name string of format <db_name>.<table_name>
-  private Map<String, ValidWriteIdList> tablesValidWriteIdList = new HashMap<>();
+  private Map<TableName, ValidWriteIdList> tablesValidWriteIdList = new HashMap<>();
   public ValidTxnWriteIdList(Long txnId) {
     this.txnId = txnId;
   }
@@ -55,8 +55,7 @@ public class ValidTxnWriteIdList {
     tablesValidWriteIdList.put(validWriteIds.getTableName(), validWriteIds);
   }
 
-  // Input fullTableName is of format <db_name>.<table_name>
-  public ValidWriteIdList getTableValidWriteIdList(String fullTableName) {
+  public ValidWriteIdList getTableValidWriteIdList(TableName fullTableName) {
     if (tablesValidWriteIdList.containsKey(fullTableName)) {
       return tablesValidWriteIdList.get(fullTableName);
     }
@@ -87,7 +86,7 @@ public class ValidTxnWriteIdList {
     // First $ separated substring will be txnId and the rest are ValidReaderWriteIdList
     StringBuilder buf = new StringBuilder(txnId.toString());
     int index = 0;
-    for (HashMap.Entry<String, ValidWriteIdList> entry : tablesValidWriteIdList.entrySet()) {
+    for (HashMap.Entry<TableName, ValidWriteIdList> entry : tablesValidWriteIdList.entrySet()) {
       if (index < tablesValidWriteIdList.size()) {
         buf.append('$');
       }

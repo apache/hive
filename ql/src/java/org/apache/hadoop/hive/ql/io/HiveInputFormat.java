@@ -41,6 +41,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.StringInternUtils;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -48,6 +49,8 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
 import org.apache.hadoop.hive.llap.io.api.LlapIo;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
+import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -460,8 +463,12 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       InputFormat inputFormat, Class<? extends InputFormat> inputFormatClass, int splits,
       TableDesc table, List<InputSplit> result)
           throws IOException {
+    // TODO CAT - Fix in HIVE-19791
+    TableName tableName = new TableName(MetaStoreUtils.getDefaultCatalog(conf),
+        table.getDbName() == null ? Warehouse.DEFAULT_DATABASE_NAME : table.getDbName(),
+        table.getTableName());
     ValidWriteIdList validWriteIdList = AcidUtils.getTableValidWriteIdList(
-        conf, table.getTableName());
+        conf, tableName);
     ValidWriteIdList validMmWriteIdList = getMmValidWriteIds(conf, table, validWriteIdList);
 
     try {
@@ -559,7 +566,11 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       JobConf conf, TableDesc table, ValidWriteIdList validWriteIdList) throws IOException {
     if (!AcidUtils.isInsertOnlyTable(table.getProperties())) return null;
     if (validWriteIdList == null) {
-      validWriteIdList = AcidUtils.getTableValidWriteIdList( conf, table.getTableName());
+      // TODO CAT - Fix in HIVE-19791
+      TableName tableName = new TableName(MetaStoreUtils.getDefaultCatalog(conf),
+          table.getDbName() == null ? Warehouse.DEFAULT_DATABASE_NAME : table.getDbName(),
+          table.getTableName());
+      validWriteIdList = AcidUtils.getTableValidWriteIdList(conf, tableName);
       if (validWriteIdList == null) {
         throw new IOException("Insert-Only table: " + table.getTableName()
                 + " is missing from the ValidWriteIdList config: "

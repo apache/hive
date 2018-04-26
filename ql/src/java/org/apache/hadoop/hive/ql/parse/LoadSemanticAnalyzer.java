@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.parse;
 
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.net.URLCodec;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf.StrictChecks;
 import java.io.IOException;
 import java.io.Serializable;
@@ -385,8 +386,7 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
     boolean isTxnTable = AcidUtils.isTransactionalTable(ts.tableHandle);
     if (isTxnTable) {
       try {
-        writeId = getTxnMgr().getTableWriteId(ts.tableHandle.getDbName(),
-                ts.tableHandle.getTableName());
+        writeId = getTxnMgr().getTableWriteId(ts.tableHandle.getFullTableName());
       } catch (LockException ex) {
         throw new SemanticException("Failed to allocate the write id", ex);
       }

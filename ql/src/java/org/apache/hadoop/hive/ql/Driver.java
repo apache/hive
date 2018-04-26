@@ -46,8 +46,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.hive.common.JavaUtils;
-import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
-import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
@@ -63,8 +62,7 @@ import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
-import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
-import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.cache.results.CacheUsage;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache.CacheEntry;
@@ -1319,13 +1317,12 @@ public class Driver implements IDriver {
       throw new IllegalStateException("calling recordValidWritsIdss() without initializing ValidTxnList " +
               JavaUtils.txnIdToString(txnMgr.getCurrentTxnId()));
     }
-    List<String> txnTables = getTransactionalTableList(plan);
+    List<TableName> txnTables = getTransactionalTableList(plan);
     ValidTxnWriteIdList txnWriteIds = null;
     if (compactionWriteIds != null) {
       if (txnTables.size() != 1) {
         throw new LockException("Unexpected tables in compaction: " + txnTables);
       }
-      String fullTableName = txnTables.get(0);
       txnWriteIds = new ValidTxnWriteIdList(0L); // No transaction for the compaction for now.
       txnWriteIds.addTableValidWriteIdList(compactionWriteIds);
     } else {
@@ -1343,8 +1340,9 @@ public class Driver implements IDriver {
       Operator<?> source = plan.getFetchTask().getWork().getSource();
       if (source instanceof TableScanOperator) {
         TableScanOperator tsOp = (TableScanOperator)source;
-        String fullTableName = AcidUtils.getFullTableName(tsOp.getConf().getDatabaseName(),
-                                                          tsOp.getConf().getTableName());
+        TableName fullTableName = new TableName(
+            SessionState.get() == null ? MetaStoreUtils.getDefaultCatalog(conf) : SessionState.get().getCurrentCatalog(),
+            tsOp.getConf().getDatabaseName(), tsOp.getConf().getTableName());
         ValidWriteIdList writeIdList = txnWriteIds.getTableValidWriteIdList(fullTableName);
         if (tsOp.getConf().isTranscationalTable() && (writeIdList == null)) {
           throw new IllegalStateException("ACID table: " + fullTableName
@@ -1359,8 +1357,8 @@ public class Driver implements IDriver {
   }
 
   // Make the list of transactional tables list which are getting read or written by current txn
-  private List<String> getTransactionalTableList(QueryPlan plan) {
-    Set<String> tableList = new HashSet<>();
+  private List<TableName> getTransactionalTableList(QueryPlan plan) {
+    Set<TableName> tableList = new HashSet<>();
 
     for (ReadEntity input : plan.getInputs()) {
       addTableFromEntity(input, tableList);
@@ -1368,10 +1366,10 @@ public class Driver implements IDriver {
     for (WriteEntity output : plan.getOutputs()) {
       addTableFromEntity(output, tableList);
     }
-    return new ArrayList<String>(tableList);
+    return new ArrayList<>(tableList);
   }
 
-  private void addTableFromEntity(Entity entity, Collection<String> tableList) {
+  private void addTableFromEntity(Entity entity, Collection<TableName> tableList) {
     Table tbl;
     switch (entity.getType()) {
       case TABLE: {
@@ -1390,8 +1388,7 @@ public class Driver implements IDriver {
     if (!AcidUtils.isTransactionalTable(tbl)) {
       return;
     }
-    String fullTableName = AcidUtils.getFullTableName(tbl.getDbName(), tbl.getTableName());
-    tableList.add(fullTableName);
+    tableList.add(tbl.getFullTableName());
   }
 
   private String getUserFromUGI() {
@@ -1435,6 +1432,12 @@ public class Driver implements IDriver {
         throw createProcessorResponse(10);
       }
 
+      // Figure out our catalog
+      // TODO CAT - fix in HIVE-19791
+      // but I have to draw the line somewhere and come back to this later.
+      String currentCat = SessionState.get() == null ? MetaStoreUtils.getDefaultCatalog(conf) :
+          SessionState.get().getCurrentCatalog();
+
       // Set the table write id in all of the acid file sinks
       if (!plan.getAcidSinks().isEmpty()) {
         List<FileSinkDesc> acidSinks = new ArrayList<>(plan.getAcidSinks());
@@ -1444,8 +1447,9 @@ public class Driver implements IDriver {
           fsd1.getDirName().compareTo(fsd2.getDirName()));
         for (FileSinkDesc desc : acidSinks) {
           TableDesc tableInfo = desc.getTableInfo();
-          long writeId = queryTxnMgr.getTableWriteId(Utilities.getDatabaseName(tableInfo.getTableName()),
-                  Utilities.getTableName(tableInfo.getTableName()));
+          long writeId = queryTxnMgr.getTableWriteId(new TableName(currentCat,
+              Utilities .getDatabaseName (tableInfo .getTableName()),
+              Utilities.getTableName(tableInfo.getTableName())));
           desc.setTableWriteId(writeId);
 
           //it's possible to have > 1 FileSink writing to the same table/partition
@@ -1459,8 +1463,8 @@ public class Driver implements IDriver {
       DDLDescWithWriteId acidDdlDesc = plan.getAcidDdlDesc();
       if (acidDdlDesc != null && acidDdlDesc.mayNeedWriteId()) {
         String fqTableName = acidDdlDesc.getFullTableName();
-        long writeId = queryTxnMgr.getTableWriteId(
-            Utilities.getDatabaseName(fqTableName), Utilities.getTableName(fqTableName));
+        long writeId = queryTxnMgr.getTableWriteId(new TableName(currentCat,
+            Utilities.getDatabaseName(fqTableName), Utilities.getTableName(fqTableName)));
         acidDdlDesc.setWriteId(writeId);
       }
 

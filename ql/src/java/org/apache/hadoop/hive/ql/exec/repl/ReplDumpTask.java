@@ -21,6 +21,7 @@ import com.google.common.primitives.Ints;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -39,6 +40,7 @@ import org.apache.hadoop.hive.metastore.messaging.event.filters.AndFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.DatabaseAndTableFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.EventBoundaryFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.MessageFormatFilter;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -227,7 +229,10 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       for (String tblName : Utils.matchesTbl(hiveDb, dbName, work.tableNameOrPattern)) {
         LOG.debug(
             "analyzeReplDump dumping table: " + tblName + " to db root " + dbRoot.toUri());
-        dumpTable(dbName, tblName, validTxnList, dbRoot);
+        // TODO CAT - Fix in HIVE-19803.  I expect I'll need to add an outer loop to this to
+        // iterate through catalogs too.
+        dumpTable(new TableName(MetaStoreUtils.getDefaultCatalog(conf), dbName, tblName),
+            validTxnList, dbRoot);
         dumpConstraintMetadata(dbName, tblName, dbRoot);
       }
       Utils.resetDbBootstrapDumpState(hiveDb, dbName, uniqueKey);
@@ -277,24 +282,24 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return dbRoot;
   }
 
-  private void dumpTable(String dbName, String tblName, String validTxnList, Path dbRoot) throws Exception {
+  private void dumpTable(TableName fullTableName, String validTxnList, Path dbRoot) throws Exception {
     try {
       Hive db = getHive();
-      HiveWrapper.Tuple<Table> tuple = new HiveWrapper(db, dbName).table(tblName);
+      HiveWrapper.Tuple<Table> tuple = new HiveWrapper(db, fullTableName.getDb()).table(fullTableName.getTable());
       TableSpec tableSpec = new TableSpec(tuple.object);
       TableExport.Paths exportPaths =
-          new TableExport.Paths(work.astRepresentationForErrorMsg, dbRoot, tblName, conf, true);
+          new TableExport.Paths(work.astRepresentationForErrorMsg, dbRoot, fullTableName.getTable(), conf, true);
       String distCpDoAsUser = conf.getVar(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER);
       tuple.replicationSpec.setIsReplace(true);  // by default for all other objects this is false
       if (AcidUtils.isTransactionalTable(tableSpec.tableHandle)) {
-        tuple.replicationSpec.setValidWriteIdList(getValidWriteIdList(dbName, tblName, validTxnList));
+        tuple.replicationSpec.setValidWriteIdList(getValidWriteIdList(fullTableName, validTxnList));
       }
       MmContext mmCtx = MmContext.createIfNeeded(tableSpec.tableHandle);
       new TableExport(
           exportPaths, tableSpec, tuple.replicationSpec, db, distCpDoAsUser, conf, mmCtx).write();
 
 
-      replLogger.tableLog(tblName, tableSpec.tableHandle.getTableType());
+      replLogger.tableLog(fullTableName.getTable(), tableSpec.tableHandle.getTableType());
     } catch (InvalidTableException te) {
       // Bootstrap dump shouldn't fail if the table is dropped/renamed while dumping it.
       // Just log a debug message and skip it.
@@ -302,11 +307,10 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     }
   }
 
-  private String getValidWriteIdList(String dbName, String tblName, String validTxnString) throws LockException {
+  private String getValidWriteIdList(TableName fullTableName, String validTxnString) throws LockException {
     if ((validTxnString == null) || validTxnString.isEmpty()) {
       return null;
     }
-    String fullTableName = AcidUtils.getFullTableName(dbName, tblName);
     ValidWriteIdList validWriteIds = getTxnMgr()
             .getValidWriteIds(Collections.singletonList(fullTableName), validTxnString)
             .getTableValidWriteIdList(fullTableName);

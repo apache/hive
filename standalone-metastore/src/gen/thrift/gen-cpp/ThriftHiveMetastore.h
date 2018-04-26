@@ -171,6 +171,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void commit_txn(const CommitTxnRequest& rqst) = 0;
   virtual void repl_tbl_writeid_state(const ReplTblWriteIdStateRequest& rqst) = 0;
   virtual void get_valid_write_ids(GetValidWriteIdsResponse& _return, const GetValidWriteIdsRequest& rqst) = 0;
+  virtual void get_valid_write_ids2(GetValidWriteIdsResponse2& _return, const GetValidWriteIdsRequest2& rqst) = 0;
   virtual void allocate_table_write_ids(AllocateTableWriteIdsResponse& _return, const AllocateTableWriteIdsRequest& rqst) = 0;
   virtual void lock(LockResponse& _return, const LockRequest& rqst) = 0;
   virtual void check_lock(LockResponse& _return, const CheckLockRequest& rqst) = 0;
@@ -730,6 +731,9 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void get_valid_write_ids(GetValidWriteIdsResponse& /* _return */, const GetValidWriteIdsRequest& /* rqst */) {
+    return;
+  }
+  void get_valid_write_ids2(GetValidWriteIdsResponse2& /* _return */, const GetValidWriteIdsRequest2& /* rqst */) {
     return;
   }
   void allocate_table_write_ids(AllocateTableWriteIdsResponse& /* _return */, const AllocateTableWriteIdsRequest& /* rqst */) {
@@ -19528,6 +19532,126 @@ class ThriftHiveMetastore_get_valid_write_ids_presult {
 
 };
 
+typedef struct _ThriftHiveMetastore_get_valid_write_ids2_args__isset {
+  _ThriftHiveMetastore_get_valid_write_ids2_args__isset() : rqst(false) {}
+  bool rqst :1;
+} _ThriftHiveMetastore_get_valid_write_ids2_args__isset;
+
+class ThriftHiveMetastore_get_valid_write_ids2_args {
+ public:
+
+  ThriftHiveMetastore_get_valid_write_ids2_args(const ThriftHiveMetastore_get_valid_write_ids2_args&);
+  ThriftHiveMetastore_get_valid_write_ids2_args& operator=(const ThriftHiveMetastore_get_valid_write_ids2_args&);
+  ThriftHiveMetastore_get_valid_write_ids2_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_valid_write_ids2_args() throw();
+  GetValidWriteIdsRequest2 rqst;
+
+  _ThriftHiveMetastore_get_valid_write_ids2_args__isset __isset;
+
+  void __set_rqst(const GetValidWriteIdsRequest2& val);
+
+  bool operator == (const ThriftHiveMetastore_get_valid_write_ids2_args & rhs) const
+  {
+    if (!(rqst == rhs.rqst))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_valid_write_ids2_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_valid_write_ids2_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_valid_write_ids2_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_valid_write_ids2_pargs() throw();
+  const GetValidWriteIdsRequest2* rqst;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_valid_write_ids2_result__isset {
+  _ThriftHiveMetastore_get_valid_write_ids2_result__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_get_valid_write_ids2_result__isset;
+
+class ThriftHiveMetastore_get_valid_write_ids2_result {
+ public:
+
+  ThriftHiveMetastore_get_valid_write_ids2_result(const ThriftHiveMetastore_get_valid_write_ids2_result&);
+  ThriftHiveMetastore_get_valid_write_ids2_result& operator=(const ThriftHiveMetastore_get_valid_write_ids2_result&);
+  ThriftHiveMetastore_get_valid_write_ids2_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_valid_write_ids2_result() throw();
+  GetValidWriteIdsResponse2 success;
+  NoSuchTxnException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_get_valid_write_ids2_result__isset __isset;
+
+  void __set_success(const GetValidWriteIdsResponse2& val);
+
+  void __set_o1(const NoSuchTxnException& val);
+
+  void __set_o2(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_get_valid_write_ids2_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_valid_write_ids2_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_valid_write_ids2_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_valid_write_ids2_presult__isset {
+  _ThriftHiveMetastore_get_valid_write_ids2_presult__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_get_valid_write_ids2_presult__isset;
+
+class ThriftHiveMetastore_get_valid_write_ids2_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_valid_write_ids2_presult() throw();
+  GetValidWriteIdsResponse2* success;
+  NoSuchTxnException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_get_valid_write_ids2_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 typedef struct _ThriftHiveMetastore_allocate_table_write_ids_args__isset {
   _ThriftHiveMetastore_allocate_table_write_ids_args__isset() : rqst(false) {}
   bool rqst :1;
@@ -26670,6 +26794,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void get_valid_write_ids(GetValidWriteIdsResponse& _return, const GetValidWriteIdsRequest& rqst);
   void send_get_valid_write_ids(const GetValidWriteIdsRequest& rqst);
   void recv_get_valid_write_ids(GetValidWriteIdsResponse& _return);
+  void get_valid_write_ids2(GetValidWriteIdsResponse2& _return, const GetValidWriteIdsRequest2& rqst);
+  void send_get_valid_write_ids2(const GetValidWriteIdsRequest2& rqst);
+  void recv_get_valid_write_ids2(GetValidWriteIdsResponse2& _return);
   void allocate_table_write_ids(AllocateTableWriteIdsResponse& _return, const AllocateTableWriteIdsRequest& rqst);
   void send_allocate_table_write_ids(const AllocateTableWriteIdsRequest& rqst);
   void recv_allocate_table_write_ids(AllocateTableWriteIdsResponse& _return);
@@ -27003,6 +27130,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_commit_txn(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_repl_tbl_writeid_state(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_valid_write_ids(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_valid_write_ids2(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_allocate_table_write_ids(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_lock(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_check_lock(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -27214,6 +27342,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["commit_txn"] = &ThriftHiveMetastoreProcessor::process_commit_txn;
     processMap_["repl_tbl_writeid_state"] = &ThriftHiveMetastoreProcessor::process_repl_tbl_writeid_state;
     processMap_["get_valid_write_ids"] = &ThriftHiveMetastoreProcessor::process_get_valid_write_ids;
+    processMap_["get_valid_write_ids2"] = &ThriftHiveMetastoreProcessor::process_get_valid_write_ids2;
     processMap_["allocate_table_write_ids"] = &ThriftHiveMetastoreProcessor::process_allocate_table_write_ids;
     processMap_["lock"] = &ThriftHiveMetastoreProcessor::process_lock;
     processMap_["check_lock"] = &ThriftHiveMetastoreProcessor::process_check_lock;
@@ -28729,6 +28858,16 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     return;
   }
 
+  void get_valid_write_ids2(GetValidWriteIdsResponse2& _return, const GetValidWriteIdsRequest2& rqst) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_valid_write_ids2(_return, rqst);
+    }
+    ifaces_[i]->get_valid_write_ids2(_return, rqst);
+    return;
+  }
+
   void allocate_table_write_ids(AllocateTableWriteIdsResponse& _return, const AllocateTableWriteIdsRequest& rqst) {
     size_t sz = ifaces_.size();
     size_t i = 0;
@@ -29757,6 +29896,9 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void get_valid_write_ids(GetValidWriteIdsResponse& _return, const GetValidWriteIdsRequest& rqst);
   int32_t send_get_valid_write_ids(const GetValidWriteIdsRequest& rqst);
   void recv_get_valid_write_ids(GetValidWriteIdsResponse& _return, const int32_t seqid);
+  void get_valid_write_ids2(GetValidWriteIdsResponse2& _return, const GetValidWriteIdsRequest2& rqst);
+  int32_t send_get_valid_write_ids2(const GetValidWriteIdsRequest2& rqst);
+  void recv_get_valid_write_ids2(GetValidWriteIdsResponse2& _return, const int32_t seqid);
   void allocate_table_write_ids(AllocateTableWriteIdsResponse& _return, const AllocateTableWriteIdsRequest& rqst);
   int32_t send_allocate_table_write_ids(const AllocateTableWriteIdsRequest& rqst);
   void recv_allocate_table_write_ids(AllocateTableWriteIdsResponse& _return, const int32_t seqid);

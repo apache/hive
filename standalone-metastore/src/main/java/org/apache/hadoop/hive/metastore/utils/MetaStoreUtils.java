@@ -18,7 +18,7 @@
 package org.apache.hadoop.hive.metastore.utils;
 
 import org.apache.hadoop.hive.common.TableName;
-import org.apache.hadoop.hive.metastore.api.WMPoolSchedulingPolicy;
+import org.apache.hadoop.hive.metastore.api.*;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicates;
@@ -38,21 +38,7 @@ import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
-import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
-import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.Decimal;
-import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.Order;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.SerDeInfo;
-import org.apache.hadoop.hive.metastore.api.SkewedInfo;
-import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
-import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.api.FullTableName;
 import org.apache.hadoop.hive.metastore.columnstats.aggr.ColumnStatsAggregator;
 import org.apache.hadoop.hive.metastore.columnstats.aggr.ColumnStatsAggregatorFactory;
 import org.apache.hadoop.hive.metastore.columnstats.merge.ColumnStatsMerger;
@@ -95,7 +81,6 @@ import java.util.Properties;
 import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.StringJoiner;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
@@ -1803,6 +1788,32 @@ public class MetaStoreUtils {
     String catName = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CATALOG_DEFAULT);
     if (catName == null || "".equals(catName)) catName = Warehouse.DEFAULT_CATALOG_NAME;
     return catName;
+  }
+
+  public static TableName thriftTableNameToTableName(FullTableName fullTableName, Configuration conf) {
+    return new TableName(
+        fullTableName.isSetCatName() ? fullTableName.getCatName() : getDefaultCatalog(conf),
+        fullTableName.getDbName(), fullTableName.getTableName());
+  }
+
+  public static FullTableName tableNameToThriftTableName(TableName tableName) {
+    return new FullTableName(tableName.getCat(), tableName.getDb(), tableName.getTable());
+  }
+
+  public static List<FullTableName> tableNameToThriftTableName(List<TableName> tableNames) {
+    List<FullTableName> fullTableNames = new ArrayList<>(tableNames.size());
+    for (TableName tableName : tableNames) fullTableNames.add(tableNameToThriftTableName(tableName));
+    return fullTableNames;
+  }
+
+  public static TableName tableNameFromTable(Table table, Configuration conf) {
+    return new TableName(table.isSetCatName() ? table.getCatName() : getDefaultCatalog(conf),
+        table.getDbName(), table.getTableName());
+  }
+
+  public static FullTableName fullTableNameFromTable(Table table, Configuration conf) {
+    return new FullTableName(table.isSetCatName() ? table.getCatName() : getDefaultCatalog(conf),
+        table.getDbName(), table.getTableName());
   }
 
 }

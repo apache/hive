@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.lockmgr;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
@@ -78,12 +79,11 @@ public interface HiveTxnManager {
  /**
   * Replicate Table Write Ids state to mark aborted write ids and writeid high water mark.
   * @param validWriteIdList Snapshot of writeid list when the table/partition is dumped.
-  * @param dbName Database name
   * @param tableName Table which is written.
   * @param partNames List of partitions being written.
   * @throws LockException in case of failure.
   */
-  void replTableWriteIdState(String validWriteIdList, String dbName, String tableName, List<String> partNames)
+  void replTableWriteIdState(String validWriteIdList, TableName tableName, List<String> partNames)
           throws LockException;
 
   /**
@@ -176,12 +176,12 @@ public interface HiveTxnManager {
    * {@link ValidTxnWriteIdList} object can be passed as string to the processing
    * tasks for use in the reading the data.  This call will return same results as long as validTxnString
    * passed is same.
-   * @param tableList list of tables (<db_name>.<table_name>) read/written by current transaction.
+   * @param tableList list of tables read/written by current transaction.
    * @param validTxnList snapshot of valid txns for the current txn
    * @return list of valid table write Ids.
    * @throws LockException
    */
-  ValidTxnWriteIdList getValidWriteIds(List<String> tableList, String validTxnList) throws LockException;
+  ValidTxnWriteIdList getValidWriteIds(List<TableName> tableList, String validTxnList) throws LockException;
 
   /**
    * Get the name for currently installed transaction manager.
@@ -275,17 +275,16 @@ public interface HiveTxnManager {
   /**
    * if {@code isTxnOpen()}, returns the table write ID associated with current active transaction.
    */
-  long getTableWriteId(String dbName, String tableName) throws LockException;
+  long getTableWriteId(TableName tableName) throws LockException;
 
   /**
    * Allocates write id for each transaction in the list.
-   * @param dbName database name
    * @param tableName the name of the table to allocate the write id
    * @param replPolicy used by replication task to identify the source cluster
    * @param srcTxnToWriteIdList List of txn id to write id Map
    * @throws LockException
    */
-  void replAllocateTableWriteIdsBatch(String dbName, String tableName, String replPolicy,
+  void replAllocateTableWriteIdsBatch(TableName tableName, String replPolicy,
                                       List<TxnToWriteId> srcTxnToWriteIdList) throws LockException;
 
   /**
@@ -302,6 +301,5 @@ public interface HiveTxnManager {
    * @return the response from the metastore, where the lock id is equal to the txn id and
    * the status can be either ACQUIRED or NOT ACQUIRED
    */
-  LockResponse acquireMaterializationRebuildLock(String dbName, String tableName, long txnId)
-      throws LockException;
+  LockResponse acquireMaterializationRebuildLock(TableName tableName, long txnId) throws LockException;
 }

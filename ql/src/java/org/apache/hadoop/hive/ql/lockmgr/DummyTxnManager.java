@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.lockmgr;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.slf4j.Logger;
@@ -73,15 +74,18 @@ class DummyTxnManager extends HiveTxnManagerImpl {
   public int getStmtIdAndIncrement() {
     return 0;
   }
+
   @Override
-  public long getTableWriteId(String dbName, String tableName) throws LockException {
-    return 0L;
+  public long getTableWriteId(TableName tableName) throws LockException {
+    return 0;
   }
+
   @Override
-  public void replAllocateTableWriteIdsBatch(String dbName, String tableName, String replPolicy,
-                                             List<TxnToWriteId> srcTxnToWriteIdList) throws LockException {
-    return;
+  public void replAllocateTableWriteIdsBatch(
+      TableName tableName, String replPolicy, List<TxnToWriteId> srcTxnToWriteIdList)
+      throws LockException {
   }
+
   @Override
   public HiveLockManager getLockManager() throws LockException {
     if (lockMgr == null) {
@@ -235,9 +239,8 @@ class DummyTxnManager extends HiveTxnManagerImpl {
   }
 
   @Override
-  public void replTableWriteIdState(String validWriteIdList, String dbName, String tableName, List<String> partNames)
-          throws LockException {
-    // No-op
+  public void replTableWriteIdState(String validWriteIdList, TableName tableName,
+                                    List<String> partNames) throws LockException {
   }
 
   @Override
@@ -251,7 +254,7 @@ class DummyTxnManager extends HiveTxnManagerImpl {
   }
 
   @Override
-  public ValidTxnWriteIdList getValidWriteIds(List<String> tableList,
+  public ValidTxnWriteIdList getValidWriteIds(List<TableName> tableList,
                                               String validTxnList) throws LockException {
     return new ValidTxnWriteIdList(getCurrentTxnId());
   }

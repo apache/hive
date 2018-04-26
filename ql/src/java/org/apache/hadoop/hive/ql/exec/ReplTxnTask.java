@@ -18,7 +18,9 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -92,15 +94,21 @@ public class ReplTxnTask extends Task<ReplTxnWork> {
         return 0;
       case REPL_ALLOC_WRITE_ID:
         assert work.getTxnToWriteIdList() != null;
-        String dbName = work.getDbName();
         List <TxnToWriteId> txnToWriteIdList = work.getTxnToWriteIdList();
-        txnManager.replAllocateTableWriteIdsBatch(dbName, tableName, replPolicy, txnToWriteIdList);
-        LOG.info("Replayed alloc write Id Event for repl policy: " + replPolicy + " db Name : " + dbName +
-                " txnToWriteIdList: " +txnToWriteIdList.toString() + " table name: " + tableName);
+        // TODO CAT - fix in HIVE-19803
+        TableName fullTableName = new TableName(MetaStoreUtils.getDefaultCatalog(conf),
+            work.getDbName(), tableName);
+        txnManager.replAllocateTableWriteIdsBatch(fullTableName, replPolicy, txnToWriteIdList);
+        LOG.info("Replayed alloc write Id Event for repl policy: " + replPolicy +
+            " txnToWriteIdList: " +txnToWriteIdList.toString() + " table name: " +
+            fullTableName.toString());
         return 0;
       case REPL_WRITEID_STATE:
-        txnManager.replTableWriteIdState(work.getValidWriteIdList(),
-                work.getDbName(), tableName, work.getPartNames());
+        // TODO CAT - fix in HIVE-19803
+        TableName fullTableName1 = new TableName(MetaStoreUtils.getDefaultCatalog(conf),
+            work.getDbName(), tableName);
+        txnManager.replTableWriteIdState(work.getValidWriteIdList(), fullTableName1,
+            work.getPartNames());
         LOG.info("Replicated WriteId state for DbName: " + work.getDbName()
                 + " TableName: " + tableName
                 + " ValidWriteIdList: " + work.getValidWriteIdList());

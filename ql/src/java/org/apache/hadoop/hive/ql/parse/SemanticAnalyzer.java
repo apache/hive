@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.StatsSetupConst.StatDB;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
@@ -67,6 +68,7 @@ import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -7303,10 +7305,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             writeId = 0L; // For explain plan, txn won't be opened and doesn't make sense to allocate write id
           } else {
             if (isMmTable) {
-              writeId = txnMgr.getTableWriteId(dest_tab.getDbName(), dest_tab.getTableName());
+              writeId = txnMgr.getTableWriteId(dest_tab.getFullTableName());
             } else {
               writeId = acidOp == Operation.NOT_ACID ? null :
-                      txnMgr.getTableWriteId(dest_tab.getDbName(), dest_tab.getTableName());
+                      txnMgr.getTableWriteId(dest_tab.getFullTableName());
             }
           }
         } catch (LockException ex) {
@@ -7400,10 +7402,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           writeId = 0L; // For explain plan, txn won't be opened and doesn't make sense to allocate write id
         } else {
           if (isMmTable) {
-            writeId = txnMgr.getTableWriteId(dest_tab.getDbName(), dest_tab.getTableName());
+            writeId = txnMgr.getTableWriteId(dest_tab.getFullTableName());
           } else {
             writeId = (acidOp == Operation.NOT_ACID) ? null :
-                    txnMgr.getTableWriteId(dest_tab.getDbName(), dest_tab.getTableName());
+                    txnMgr.getTableWriteId(dest_tab.getFullTableName());
           }
         }
       } catch (LockException ex) {
@@ -7454,7 +7456,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             if (ctx.getExplainConfig() != null) {
               writeId = 0L; // For explain plan, txn won't be opened and doesn't make sense to allocate write id
             } else {
-              writeId = txnMgr.getTableWriteId(tblDesc.getDatabaseName(), tblDesc.getTableName());
+              // TODO CAT - Fix in HIVE-19791
+              TableName tableName = new TableName(
+                  SessionState.get() == null ? MetaStoreUtils.getDefaultCatalog(conf) :
+                      SessionState.get().getCurrentCatalog(),
+                  tblDesc.getDatabaseName(), tblDesc.getTableName());
+              writeId = txnMgr.getTableWriteId(tableName);
             }
           } catch (LockException ex) {
             throw new SemanticException("Failed to allocate write Id", ex);
@@ -14637,10 +14644,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                 // TODO: Once HIVE-18948 is in, should be able to retrieve writeIdList from the conf.
                 //cachedWriteIdList = AcidUtils.getValidTxnWriteIdList(conf);
                 //
-                List<String> transactionalTables = tablesFromReadEntities(inputs)
+                List<TableName> transactionalTables = tablesFromReadEntities(inputs)
                     .stream()
                     .filter(table -> AcidUtils.isTransactionalTable(table))
-                    .map(table -> table.getFullyQualifiedName())
+                    .map(table -> table.getFullTableName())
                     .collect(Collectors.toList());
                 try {
                   String txnString = conf.get(ValidTxnList.VALID_TXNS_KEY);

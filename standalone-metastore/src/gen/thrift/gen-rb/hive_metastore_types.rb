@@ -2605,6 +2605,7 @@ class ReplTblWriteIdStateRequest
   DBNAME = 4
   TABLENAME = 5
   PARTNAMES = 6
+  CATNAME = 7
 
   FIELDS = {
     VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdlist'},
@@ -2612,7 +2613,8 @@ class ReplTblWriteIdStateRequest
     HOSTNAME => {:type => ::Thrift::Types::STRING, :name => 'hostName'},
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
-    PARTNAMES => {:type => ::Thrift::Types::LIST, :name => 'partNames', :element => {:type => ::Thrift::Types::STRING}, :optional => true}
+    PARTNAMES => {:type => ::Thrift::Types::LIST, :name => 'partNames', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -2635,6 +2637,49 @@ class GetValidWriteIdsRequest
 
   FIELDS = {
     FULLTABLENAMES => {:type => ::Thrift::Types::LIST, :name => 'fullTableNames', :element => {:type => ::Thrift::Types::STRING}},
+    VALIDTXNLIST => {:type => ::Thrift::Types::STRING, :name => 'validTxnList'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field fullTableNames is unset!') unless @fullTableNames
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field validTxnList is unset!') unless @validTxnList
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class FullTableName
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  CATNAME = 1
+  DBNAME = 2
+  TABLENAME = 3
+
+  FIELDS = {
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName'},
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+    TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field catName is unset!') unless @catName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tableName is unset!') unless @tableName
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class GetValidWriteIdsRequest2
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  FULLTABLENAMES = 1
+  VALIDTXNLIST = 2
+
+  FIELDS = {
+    FULLTABLENAMES => {:type => ::Thrift::Types::LIST, :name => 'fullTableNames', :element => {:type => ::Thrift::Types::STRUCT, :class => ::FullTableName}},
     VALIDTXNLIST => {:type => ::Thrift::Types::STRING, :name => 'validTxnList'}
   }
 
@@ -2676,12 +2721,57 @@ class TableValidWriteIds
   ::Thrift::Struct.generate_accessors self
 end
 
+class TableValidWriteIds2
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  FULLTABLENAME = 1
+  WRITEIDHIGHWATERMARK = 2
+  INVALIDWRITEIDS = 3
+  MINOPENWRITEID = 4
+  ABORTEDBITS = 5
+
+  FIELDS = {
+    FULLTABLENAME => {:type => ::Thrift::Types::STRUCT, :name => 'fullTableName', :class => ::FullTableName},
+    WRITEIDHIGHWATERMARK => {:type => ::Thrift::Types::I64, :name => 'writeIdHighWaterMark'},
+    INVALIDWRITEIDS => {:type => ::Thrift::Types::LIST, :name => 'invalidWriteIds', :element => {:type => ::Thrift::Types::I64}},
+    MINOPENWRITEID => {:type => ::Thrift::Types::I64, :name => 'minOpenWriteId', :optional => true},
+    ABORTEDBITS => {:type => ::Thrift::Types::STRING, :name => 'abortedBits', :binary => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field fullTableName is unset!') unless @fullTableName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field writeIdHighWaterMark is unset!') unless @writeIdHighWaterMark
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field invalidWriteIds is unset!') unless @invalidWriteIds
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field abortedBits is unset!') unless @abortedBits
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class GetValidWriteIdsResponse
   include ::Thrift::Struct, ::Thrift::Struct_Union
   TBLVALIDWRITEIDS = 1
 
   FIELDS = {
     TBLVALIDWRITEIDS => {:type => ::Thrift::Types::LIST, :name => 'tblValidWriteIds', :element => {:type => ::Thrift::Types::STRUCT, :class => ::TableValidWriteIds}}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tblValidWriteIds is unset!') unless @tblValidWriteIds
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class GetValidWriteIdsResponse2
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  TBLVALIDWRITEIDS = 1
+
+  FIELDS = {
+    TBLVALIDWRITEIDS => {:type => ::Thrift::Types::LIST, :name => 'tblValidWriteIds', :element => {:type => ::Thrift::Types::STRUCT, :class => ::TableValidWriteIds2}}
   }
 
   def struct_fields; FIELDS; end
@@ -2700,13 +2790,15 @@ class AllocateTableWriteIdsRequest
   TXNIDS = 3
   REPLPOLICY = 4
   SRCTXNTOWRITEIDLIST = 5
+  CATNAME = 6
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
     TXNIDS => {:type => ::Thrift::Types::LIST, :name => 'txnIds', :element => {:type => ::Thrift::Types::I64}, :optional => true},
     REPLPOLICY => {:type => ::Thrift::Types::STRING, :name => 'replPolicy', :optional => true},
-    SRCTXNTOWRITEIDLIST => {:type => ::Thrift::Types::LIST, :name => 'srcTxnToWriteIdList', :element => {:type => ::Thrift::Types::STRUCT, :class => ::TxnToWriteId}, :optional => true}
+    SRCTXNTOWRITEIDLIST => {:type => ::Thrift::Types::LIST, :name => 'srcTxnToWriteIdList', :element => {:type => ::Thrift::Types::STRUCT, :class => ::TxnToWriteId}, :optional => true},
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -2766,6 +2858,7 @@ class LockComponent
   OPERATIONTYPE = 6
   ISTRANSACTIONAL = 7
   ISDYNAMICPARTITIONWRITE = 8
+  CATNAME = 9
 
   FIELDS = {
     TYPE => {:type => ::Thrift::Types::I32, :name => 'type', :enum_class => ::LockType},
@@ -2775,7 +2868,8 @@ class LockComponent
     PARTITIONNAME => {:type => ::Thrift::Types::STRING, :name => 'partitionname', :optional => true},
     OPERATIONTYPE => {:type => ::Thrift::Types::I32, :name => 'operationType', :default =>     5, :optional => true, :enum_class => ::DataOperationType},
     ISTRANSACTIONAL => {:type => ::Thrift::Types::BOOL, :name => 'isTransactional', :default => false, :optional => true},
-    ISDYNAMICPARTITIONWRITE => {:type => ::Thrift::Types::BOOL, :name => 'isDynamicPartitionWrite', :default => false, :optional => true}
+    ISDYNAMICPARTITIONWRITE => {:type => ::Thrift::Types::BOOL, :name => 'isDynamicPartitionWrite', :default => false, :optional => true},
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -2805,13 +2899,15 @@ class LockRequest
   USER = 3
   HOSTNAME = 4
   AGENTINFO = 5
+  CATNAME = 6
 
   FIELDS = {
     COMPONENT => {:type => ::Thrift::Types::LIST, :name => 'component', :element => {:type => ::Thrift::Types::STRUCT, :class => ::LockComponent}},
     TXNID => {:type => ::Thrift::Types::I64, :name => 'txnid', :optional => true},
     USER => {:type => ::Thrift::Types::STRING, :name => 'user'},
     HOSTNAME => {:type => ::Thrift::Types::STRING, :name => 'hostname'},
-    AGENTINFO => {:type => ::Thrift::Types::STRING, :name => 'agentInfo', :default => %q"Unknown", :optional => true}
+    AGENTINFO => {:type => ::Thrift::Types::STRING, :name => 'agentInfo', :default => %q"Unknown", :optional => true},
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -2892,12 +2988,14 @@ class ShowLocksRequest
   TABLENAME = 2
   PARTNAME = 3
   ISEXTENDED = 4
+  CATNAME = 5
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname', :optional => true},
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tablename', :optional => true},
     PARTNAME => {:type => ::Thrift::Types::STRING, :name => 'partname', :optional => true},
-    ISEXTENDED => {:type => ::Thrift::Types::BOOL, :name => 'isExtended', :default => false, :optional => true}
+    ISEXTENDED => {:type => ::Thrift::Types::BOOL, :name => 'isExtended', :default => false, :optional => true},
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -2926,6 +3024,7 @@ class ShowLocksResponseElement
   BLOCKEDBYEXTID = 14
   BLOCKEDBYINTID = 15
   LOCKIDINTERNAL = 16
+  CATNAME = 17
 
   FIELDS = {
     LOCKID => {:type => ::Thrift::Types::I64, :name => 'lockid'},
@@ -2943,7 +3042,8 @@ class ShowLocksResponseElement
     AGENTINFO => {:type => ::Thrift::Types::STRING, :name => 'agentInfo', :optional => true},
     BLOCKEDBYEXTID => {:type => ::Thrift::Types::I64, :name => 'blockedByExtId', :optional => true},
     BLOCKEDBYINTID => {:type => ::Thrift::Types::I64, :name => 'blockedByIntId', :optional => true},
-    LOCKIDINTERNAL => {:type => ::Thrift::Types::I64, :name => 'lockIdInternal', :optional => true}
+    LOCKIDINTERNAL => {:type => ::Thrift::Types::I64, :name => 'lockIdInternal', :optional => true},
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -3049,6 +3149,7 @@ class CompactionRequest
   TYPE = 4
   RUNAS = 5
   PROPERTIES = 6
+  CATNAME = 7
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
@@ -3056,7 +3157,8 @@ class CompactionRequest
     PARTITIONNAME => {:type => ::Thrift::Types::STRING, :name => 'partitionname', :optional => true},
     TYPE => {:type => ::Thrift::Types::I32, :name => 'type', :enum_class => ::CompactionType},
     RUNAS => {:type => ::Thrift::Types::STRING, :name => 'runas', :optional => true},
-    PROPERTIES => {:type => ::Thrift::Types::MAP, :name => 'properties', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}, :optional => true}
+    PROPERTIES => {:type => ::Thrift::Types::MAP, :name => 'properties', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}, :optional => true},
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -3126,6 +3228,7 @@ class ShowCompactResponseElement
   ENDTIME = 11
   HADOOPJOBID = 12
   ID = 13
+  CATNAME = 14
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
@@ -3140,7 +3243,8 @@ class ShowCompactResponseElement
     METAINFO => {:type => ::Thrift::Types::STRING, :name => 'metaInfo', :optional => true},
     ENDTIME => {:type => ::Thrift::Types::I64, :name => 'endTime', :optional => true},
     HADOOPJOBID => {:type => ::Thrift::Types::STRING, :name => 'hadoopJobId', :default => %q"None", :optional => true},
-    ID => {:type => ::Thrift::Types::I64, :name => 'id', :optional => true}
+    ID => {:type => ::Thrift::Types::I64, :name => 'id', :optional => true},
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -3183,6 +3287,7 @@ class AddDynamicPartitions
   TABLENAME = 4
   PARTITIONNAMES = 5
   OPERATIONTYPE = 6
+  CATNAME = 7
 
   FIELDS = {
     TXNID => {:type => ::Thrift::Types::I64, :name => 'txnid'},
@@ -3190,7 +3295,8 @@ class AddDynamicPartitions
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tablename'},
     PARTITIONNAMES => {:type => ::Thrift::Types::LIST, :name => 'partitionnames', :element => {:type => ::Thrift::Types::STRING}},
-    OPERATIONTYPE => {:type => ::Thrift::Types::I32, :name => 'operationType', :default =>     5, :optional => true, :enum_class => ::DataOperationType}
+    OPERATIONTYPE => {:type => ::Thrift::Types::I32, :name => 'operationType', :default =>     5, :optional => true, :enum_class => ::DataOperationType},
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -3217,6 +3323,7 @@ class BasicTxnInfo
   DBNAME = 4
   TABLENAME = 5
   PARTITIONNAME = 6
+  CATNAME = 7
 
   FIELDS = {
     ISNULL => {:type => ::Thrift::Types::BOOL, :name => 'isnull'},
@@ -3224,7 +3331,8 @@ class BasicTxnInfo
     TXNID => {:type => ::Thrift::Types::I64, :name => 'txnid', :optional => true},
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname', :optional => true},
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tablename', :optional => true},
-    PARTITIONNAME => {:type => ::Thrift::Types::STRING, :name => 'partitionname', :optional => true}
+    PARTITIONNAME => {:type => ::Thrift::Types::STRING, :name => 'partitionname', :optional => true},
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true}
   }
 
   def struct_fields; FIELDS; end

@@ -28,7 +28,7 @@ import java.util.BitSet;
  */
 public class ValidReaderWriteIdList implements ValidWriteIdList {
 
-  private String tableName; // Full table name of format <db_name>.<table_name>
+  private TableName tableName; // Full table name of format <db_name>.<table_name>
   protected long[] exceptions;
   protected BitSet abortedBits; // BitSet for flagging aborted write ids. Bit is true if aborted, false if open
   //default value means there are no open write ids in the snapshot
@@ -42,10 +42,10 @@ public class ValidReaderWriteIdList implements ValidWriteIdList {
   /**
    * Used if there are no open write ids in the snapshot.
    */
-  public ValidReaderWriteIdList(String tableName, long[] exceptions, BitSet abortedBits, long highWatermark) {
+  public ValidReaderWriteIdList(TableName tableName, long[] exceptions, BitSet abortedBits, long highWatermark) {
     this(tableName, exceptions, abortedBits, highWatermark, Long.MAX_VALUE);
   }
-  public ValidReaderWriteIdList(String tableName,
+  public ValidReaderWriteIdList(TableName tableName,
                                 long[] exceptions, BitSet abortedBits, long highWatermark, long minOpenWriteId) {
     this.tableName = tableName;
     if (exceptions.length > 0) {
@@ -115,7 +115,7 @@ public class ValidReaderWriteIdList implements ValidWriteIdList {
     if (tableName == null) {
       buf.append("null");
     } else {
-      buf.append(tableName);
+      buf.append(tableName.toString());
     }
     buf.append(':');
     buf.append(highWatermark);
@@ -156,9 +156,11 @@ public class ValidReaderWriteIdList implements ValidWriteIdList {
       abortedBits = new BitSet();
     } else {
       String[] values = src.split(":");
-      tableName = values[0];
-      if (tableName.equalsIgnoreCase("null")) {
+      String tmp = values[0];
+      if (tmp.equalsIgnoreCase("null")) {
         tableName = null;
+      } else {
+        tableName = TableName.fromString(tmp, null, null);
       }
       highWatermark = Long.parseLong(values[1]);
       minOpenWriteId = Long.parseLong(values[2]);
@@ -197,7 +199,7 @@ public class ValidReaderWriteIdList implements ValidWriteIdList {
   }
 
   @Override
-  public String getTableName() {
+  public TableName getTableName() {
     return tableName;
   }
 

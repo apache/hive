@@ -26,7 +26,7 @@ import java.util.BitSet;
  * Tests for {@link ValidCompactorWriteIdList}.
  */
 public class TestValidCompactorWriteIdList {
-  private final String tableName = "t1";
+  private final TableName tableName = TableName.fromString("t1", "hive", "default");
 
   @Test
   public void minTxnHigh() {

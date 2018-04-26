@@ -21,19 +21,19 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import javax.security.auth.login.LoginException;
 
-import org.apache.curator.shaded.com.google.common.collect.Lists;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
@@ -105,7 +105,10 @@ public class FileOperations {
   }
 
   private void copyMmPath() throws LoginException, IOException {
-    ValidWriteIdList ids = AcidUtils.getTableValidWriteIdList(hiveConf, mmCtx.getFqTableName());
+    // TODO CAT - Fix in HIVE-19803
+    TableName fullTableName = TableName.fromString(mmCtx.getFqTableName(),
+        MetaStoreUtils.getDefaultCatalog(hiveConf), null);
+    ValidWriteIdList ids = AcidUtils.getTableValidWriteIdList(hiveConf, fullTableName);
     for (Path fromPath : dataPathList) {
       fromPath = dataFileSystem.makeQualified(fromPath);
       List<Path> validPaths = new ArrayList<>(), dirsWithOriginals = new ArrayList<>();

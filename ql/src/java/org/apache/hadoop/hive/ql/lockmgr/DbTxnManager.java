@@ -21,6 +21,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -105,7 +106,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   /**
    * The local cache of table write IDs allocated/created by the current transaction
    */
-  private Map<String, Long> tableWriteIds = new HashMap<>();
+  private Map<TableName, Long> tableWriteIds = new HashMap<>();
 
   /**
    * assigns a unique monotonically increasing ID to each statement
@@ -723,10 +724,10 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   }
 
   @Override
-  public void replTableWriteIdState(String validWriteIdList, String dbName, String tableName, List<String> partNames)
-          throws LockException {
+  public void replTableWriteIdState(String validWriteIdList, TableName tableName, List<String> partNames)
+      throws LockException {
     try {
-      getMS().replTableWriteIdState(validWriteIdList, dbName, tableName, partNames);
+      getMS().replTableWriteIdState(validWriteIdList, tableName, partNames);
     } catch (TException e) {
       throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
     }
@@ -862,13 +863,13 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   }
 
   @Override
-  public ValidTxnWriteIdList getValidWriteIds(List<String> tableList,
+  public ValidTxnWriteIdList getValidWriteIds(List<TableName> tableList,
                                               String validTxnList) throws LockException {
     assert isTxnOpen();
     assert validTxnList != null && !validTxnList.isEmpty();
     try {
-      return TxnUtils.createValidTxnWriteIdList(
-          txnId, getMS().getValidWriteIds(tableList, validTxnList));
+      return TxnUtils.createValidTxnWriteIdList(txnId, getMS().getValidWriteIds(tableList,
+          validTxnList), conf);
     } catch (TException e) {
       throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
     }
@@ -1015,15 +1016,14 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   }
 
   @Override
-  public long getTableWriteId(String dbName, String tableName) throws LockException {
+  public long getTableWriteId(TableName tableName) throws LockException {
     assert isTxnOpen();
-    String fullTableName = AcidUtils.getFullTableName(dbName, tableName);
-    if (tableWriteIds.containsKey(fullTableName)) {
-      return tableWriteIds.get(fullTableName);
+    if (tableWriteIds.containsKey(tableName)) {
+      return tableWriteIds.get(tableName);
     }
     try {
-      long writeId = getMS().allocateTableWriteId(txnId, dbName, tableName);
-      tableWriteIds.put(fullTableName, writeId);
+      long writeId = getMS().allocateTableWriteId(txnId, tableName);
+      tableWriteIds.put(tableName, writeId);
       return writeId;
     } catch (TException e) {
       throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
@@ -1031,11 +1031,12 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   }
 
   @Override
-  public LockResponse acquireMaterializationRebuildLock(String dbName, String tableName, long txnId) throws LockException {
+  public LockResponse acquireMaterializationRebuildLock(TableName tableName, long txnId) throws LockException {
     // Acquire lock
     LockResponse lockResponse;
     try {
-      lockResponse = getMS().lockMaterializationRebuild(dbName, tableName, txnId);
+      // TODO CAT - will be fixed as part of HIVE-18960
+      lockResponse = getMS().lockMaterializationRebuild(tableName.getDb(), tableName.getTable(), txnId);
     } catch (TException e) {
       throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
     }
@@ -1045,27 +1046,31 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       long heartbeatInterval = getHeartbeatInterval(conf);
       assert heartbeatInterval > 0;
       MaterializationRebuildLockHeartbeater heartbeater = new MaterializationRebuildLockHeartbeater(
-          this, dbName, tableName, queryId, txnId);
+          this, tableName, queryId, txnId);
       ScheduledFuture<?> task = startHeartbeat(initialDelay, heartbeatInterval, heartbeater);
       heartbeater.task.set(task);
       LOG.debug("Started heartbeat for materialization rebuild lock for {} with delay/interval = {}/{} {} for query: {}",
-          AcidUtils.getFullTableName(dbName, tableName), initialDelay, heartbeatInterval, TimeUnit.MILLISECONDS, queryId);
+          tableName.toString(), initialDelay, heartbeatInterval,
+          TimeUnit.MILLISECONDS, queryId);
     }
     return lockResponse;
   }
 
-  private boolean heartbeatMaterializationRebuildLock(String dbName, String tableName, long txnId) throws LockException {
+  private boolean heartbeatMaterializationRebuildLock(TableName tableName, long txnId) throws LockException {
     try {
-      return getMS().heartbeatLockMaterializationRebuild(dbName, tableName, txnId);
+      // TODO CAT - will be fixed as part of HIVE-18960
+      return getMS().heartbeatLockMaterializationRebuild(tableName.getDb(), tableName.getTable(), txnId);
     } catch (TException e) {
       throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
     }
   }
 
-  public void replAllocateTableWriteIdsBatch(String dbName, String tableName, String replPolicy,
-                                             List<TxnToWriteId> srcTxnToWriteIdList) throws LockException {
+  @Override
+  public void replAllocateTableWriteIdsBatch(TableName tableName, String replPolicy,
+                                             List<TxnToWriteId> srcTxnToWriteIdList)
+      throws LockException {
     try {
-      getMS().replAllocateTableWriteIdsBatch(dbName, tableName, replPolicy, srcTxnToWriteIdList);
+      getMS().replAllocateTableWriteIdsBatch(tableName, replPolicy, srcTxnToWriteIdList);
     } catch (TException e) {
       throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
     }
@@ -1146,17 +1151,15 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   private static class MaterializationRebuildLockHeartbeater implements Runnable {
 
     private final DbTxnManager txnMgr;
-    private final String dbName;
-    private final String tableName;
+    private final TableName tableName;
     private final String queryId;
     private final long txnId;
     private final AtomicReference<ScheduledFuture<?>> task;
 
-    MaterializationRebuildLockHeartbeater(DbTxnManager txnMgr, String dbName, String tableName,
-        String queryId, long txnId) {
+    MaterializationRebuildLockHeartbeater(DbTxnManager txnMgr, TableName tableName, String queryId,
+                                          long txnId) {
       this.txnMgr = txnMgr;
       this.queryId = queryId;
-      this.dbName = dbName;
       this.tableName = tableName;
       this.txnId = txnId;
       this.task = new AtomicReference<>();
@@ -1168,10 +1171,10 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     @Override
     public void run() {
       LOG.trace("Heartbeating materialization rebuild lock for {} for query: {}",
-          AcidUtils.getFullTableName(dbName, tableName), queryId);
+          tableName.toString(), queryId);
       boolean refreshed;
       try {
-        refreshed = txnMgr.heartbeatMaterializationRebuildLock(dbName, tableName, txnId);
+        refreshed = txnMgr.heartbeatMaterializationRebuildLock(tableName, txnId);
       } catch (LockException e) {
         LOG.error("Failed trying to acquire lock", e);
         throw new RuntimeException(e);
@@ -1183,7 +1186,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
         if (t != null) {
           t.cancel(false);
           LOG.debug("Stopped heartbeat for materialization rebuild lock for {} for query: {}",
-              AcidUtils.getFullTableName(dbName, tableName), queryId);
+              tableName.toString(), queryId);
         }
       }
     }

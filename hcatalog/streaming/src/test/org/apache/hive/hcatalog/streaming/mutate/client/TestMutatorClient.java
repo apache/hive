@@ -29,8 +29,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat;
@@ -53,6 +55,8 @@ public class TestMutatorClient {
   private static final String TABLE_NAME_1 = "TABLE_1";
   private static final String TABLE_NAME_2 = "TABLE_2";
   private static final String DB_NAME = "DB_1";
+  private static final TableName FULL_TABLE_NAME_1 = new TableName(Warehouse.DEFAULT_CATALOG_NAME, DB_NAME, TABLE_NAME_1);
+  private static final TableName FULL_TABLE_NAME_2 = new TableName(Warehouse.DEFAULT_CATALOG_NAME, DB_NAME, TABLE_NAME_2);
   private static final String USER = "user";
   private static final AcidTable TABLE_1 = new AcidTable(DB_NAME, TABLE_NAME_1, true, TableType.SINK);
   private static final AcidTable TABLE_2 = new AcidTable(DB_NAME, TABLE_NAME_2, true, TableType.SINK);
@@ -91,8 +95,8 @@ public class TestMutatorClient {
     when(mockParameters.get("transactional")).thenReturn(Boolean.TRUE.toString());
 
     when(mockMetaStoreClient.openTxn(USER)).thenReturn(TRANSACTION_ID);
-    when(mockMetaStoreClient.allocateTableWriteId(TRANSACTION_ID, DB_NAME, TABLE_NAME_1)).thenReturn(WRITE_ID1);
-    when(mockMetaStoreClient.allocateTableWriteId(TRANSACTION_ID, DB_NAME, TABLE_NAME_2)).thenReturn(WRITE_ID2);
+    when(mockMetaStoreClient.allocateTableWriteId(TRANSACTION_ID, FULL_TABLE_NAME_1)).thenReturn(WRITE_ID1);
+    when(mockMetaStoreClient.allocateTableWriteId(TRANSACTION_ID, FULL_TABLE_NAME_2)).thenReturn(WRITE_ID2);
 
     client = new MutatorClient(mockMetaStoreClient, mockConfiguration, mockLockFailureListener, USER,
         Collections.singletonList(TABLE_1));

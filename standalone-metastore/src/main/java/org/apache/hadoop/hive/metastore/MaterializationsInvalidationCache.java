@@ -33,6 +33,7 @@ import java.util.concurrent.Executors;
 import org.apache.hadoop.conf.Configuration;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.api.BasicTxnInfo;
@@ -41,6 +42,7 @@ import org.apache.hadoop.hive.metastore.api.Materialization;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -217,7 +219,8 @@ public final class MaterializationsInvalidationCache {
     } else {
       ValidTxnWriteIdList txnList = new ValidTxnWriteIdList(validTxnList);
       for (String qNameTableUsed : tablesUsed) {
-        ValidWriteIdList tableTxnList = txnList.getTableValidWriteIdList(qNameTableUsed);
+        ValidWriteIdList tableTxnList =
+            txnList.getTableValidWriteIdList(toTableName(qNameTableUsed));
         // First we insert a new tree set to keep table modifications, unless it already exists
         ConcurrentSkipListMap<Long, Long> modificationsTree = new ConcurrentSkipListMap<>();
         final ConcurrentSkipListMap<Long, Long> prevModificationsTree = tableModifications.putIfAbsent(
@@ -230,8 +233,9 @@ public final class MaterializationsInvalidationCache {
         // check if the MV is still valid.
         try {
           String[] names =  qNameTableUsed.split("\\.");
+          // TODO - need to fix this to get the catalog name of the table too when HIVE-18960 is done
           BasicTxnInfo e = handler.getTxnHandler().getFirstCompletedTransactionForTableAfterCommit(
-                  names[0], names[1], tableTxnList);
+              MetaStoreUtils.getDefaultCatalog(conf), names[0], names[1], tableTxnList);
           if (!e.isIsnull()) {
             modificationsTree.put(e.getTxnid(), e.getTime());
             // We do not need to do anything more for current table, as we detected
@@ -356,7 +360,7 @@ public final class MaterializationsInvalidationCache {
     boolean containsUpdateDelete = false;
     for (String qNameTableUsed : materialization.getTablesUsed()) {
       final ValidWriteIdList tableMaterializationTxnList =
-          materializationTxnList.getTableValidWriteIdList(qNameTableUsed);
+          materializationTxnList.getTableValidWriteIdList(toTableName(qNameTableUsed));
 
       final ConcurrentSkipListMap<Long, Long> usedTableModifications =
           tableModifications.get(qNameTableUsed);
@@ -430,7 +434,8 @@ public final class MaterializationsInvalidationCache {
         long currentInvalidatingTxnId = 0L;
         long currentInvalidatingTxnTime = 0L;
         for (String qNameTableUsed : m.getTablesUsed()) {
-          ValidWriteIdList tableTxnList = txnList.getTableValidWriteIdList(qNameTableUsed);
+          ValidWriteIdList tableTxnList =
+              txnList.getTableValidWriteIdList(toTableName(qNameTableUsed));
           final Entry<Long, Long> tn = tableModifications.get(qNameTableUsed)
               .higherEntry(tableTxnList.getHighWatermark());
           if (tn != null) {
@@ -529,6 +534,10 @@ public final class MaterializationsInvalidationCache {
       return false;
     }
     return true;
+  }
+
+  private TableName toTableName(String qualifiedName) {
+    return TableName.fromString(qualifiedName, MetaStoreUtils.getDefaultCatalog(conf), null);
   }
 
 }

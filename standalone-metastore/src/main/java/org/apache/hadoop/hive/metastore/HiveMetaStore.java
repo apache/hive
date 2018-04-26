@@ -62,6 +62,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
 import javax.jdo.JDOException;
@@ -7138,6 +7139,25 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     @Override
     public GetValidWriteIdsResponse get_valid_write_ids(GetValidWriteIdsRequest rqst) throws TException {
+      List<FullTableName> names = new ArrayList<>(rqst.getFullTableNamesSize());
+      rqst.getFullTableNames().forEach(
+          e -> names.add(MetaStoreUtils.tableNameToThriftTableName(TableName.fromString(e,
+              MetaStoreUtils.getDefaultCatalog(conf), null))));
+      GetValidWriteIdsRequest2 rqst2 = new GetValidWriteIdsRequest2(names, rqst.getValidTxnList());
+      GetValidWriteIdsResponse2 rsp2 = get_valid_write_ids2(rqst2);
+      List<TableValidWriteIds> validIds = new ArrayList<>(rsp2.getTblValidWriteIdsSize());
+      rsp2.getTblValidWriteIds().forEach(e -> {
+        TableValidWriteIds old = new TableValidWriteIds(
+            MetaStoreUtils.thriftTableNameToTableName(e.getFullTableName(), conf).toString(),
+            e.getWriteIdHighWaterMark(), e.getInvalidWriteIds(), e.bufferForAbortedBits());
+        if (e.isSetMinOpenWriteId()) old.setMinOpenWriteId(e.getMinOpenWriteId());
+        validIds.add(old);
+      });
+      return new GetValidWriteIdsResponse(validIds);
+    }
+
+    @Override
+    public GetValidWriteIdsResponse2 get_valid_write_ids2(GetValidWriteIdsRequest2 rqst) throws TException {
       return getTxnHandler().getValidWriteIds(rqst);
     }
 

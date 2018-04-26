@@ -28,6 +28,7 @@ import java.util.Map.Entry;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
@@ -110,6 +111,7 @@ import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
+import org.apache.hadoop.hive.metastore.api.TableValidWriteIds2;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.api.TxnOpenException;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
@@ -2767,11 +2769,11 @@ public interface IMetaStoreClient {
 
   /**
    * Get a structure that details valid transactions.
-   * @param fullTableName full table name of format <db_name>.<table_name>
+   * @param tableName full table name
    * @return list of valid write ids for the given table
    * @throws TException
    */
-  ValidWriteIdList getValidWriteIds(String fullTableName) throws TException;
+  ValidWriteIdList getValidWriteIds(TableName tableName) throws TException;
 
   /**
    * Get a structure that details valid write ids list for all tables read by current txn.
@@ -2781,7 +2783,7 @@ public interface IMetaStoreClient {
    * @return list of valid write ids for the given list of tables.
    * @throws TException
    */
-  List<TableValidWriteIds> getValidWriteIds(List<String> tablesList, String validTxnList)
+  List<TableValidWriteIds2> getValidWriteIds(List<TableName> tablesList, String validTxnList)
           throws TException;
 
   /**
@@ -2892,41 +2894,37 @@ public interface IMetaStoreClient {
   /**
    * Allocate a per table write ID and associate it with the given transaction.
    * @param txnId id of transaction to which the allocated write ID to be associated.
-   * @param dbName name of DB in which the table belongs.
    * @param tableName table to which the write ID to be allocated
    * @throws TException
    */
-  long allocateTableWriteId(long txnId, String dbName, String tableName) throws TException;
+  long allocateTableWriteId(long txnId, TableName tableName) throws TException;
 
   /**
    * Replicate Table Write Ids state to mark aborted write ids and writeid high water mark.
    * @param validWriteIdList Snapshot of writeid list when the table/partition is dumped.
-   * @param dbName Database name
    * @param tableName Table which is written.
    * @param partNames List of partitions being written.
    * @throws TException in case of failure to replicate the writeid state
    */
-  void replTableWriteIdState(String validWriteIdList, String dbName, String tableName, List<String> partNames)
+  void replTableWriteIdState(String validWriteIdList, TableName tableName, List<String> partNames)
           throws TException;
 
   /**
    * Allocate a per table write ID and associate it with the given transaction.
    * @param txnIds ids of transaction batchto which the allocated write ID to be associated.
-   * @param dbName name of DB in which the table belongs.
    * @param tableName table to which the write ID to be allocated
    * @throws TException
    */
-  List<TxnToWriteId> allocateTableWriteIdsBatch(List<Long> txnIds, String dbName, String tableName) throws TException;
+  List<TxnToWriteId> allocateTableWriteIdsBatch(List<Long> txnIds, TableName tableName) throws TException;
 
   /**
    * Allocate a per table write ID and associate it with the given transaction. Used by replication load task.
-   * @param dbName name of DB in which the table belongs.
    * @param tableName table to which the write ID to be allocated
    * @param replPolicy Used by replication task to identify the source cluster.
    * @param srcTxnToWriteIdList List of txn to write id map sent from the source cluster.
    * @throws TException
    */
-  List<TxnToWriteId> replAllocateTableWriteIdsBatch(String dbName, String tableName, String replPolicy,
+  List<TxnToWriteId> replAllocateTableWriteIdsBatch(TableName tableName, String replPolicy,
                                                     List<TxnToWriteId> srcTxnToWriteIdList) throws TException;
   /**
    * Show the list of currently open transactions.  This is for use by "show transactions" in the
@@ -3063,30 +3061,9 @@ public interface IMetaStoreClient {
   /**
    * Send a request to compact a table or partition.  This will not block until the compaction is
    * complete.  It will instead put a request on the queue for that table or partition to be
-   * compacted.  No checking is done on the dbname, tableName, or partitionName to make sure they
-   * refer to valid objects.  It is assumed this has already been done by the caller.
-   * @param dbname Name of the database the table is in.  If null, this will be assumed to be
-   *               'default'.
-   * @param tableName Name of the table to be compacted.  This cannot be null.  If partitionName
-   *                  is null, this must be a non-partitioned table.
-   * @param partitionName Name of the partition to be compacted
-   * @param type Whether this is a major or minor compaction.
-   * @throws TException
-   */
-  @Deprecated
-  void compact(String dbname, String tableName, String partitionName,  CompactionType type)
-      throws TException;
-  @Deprecated
-  void compact(String dbname, String tableName, String partitionName, CompactionType type,
-               Map<String, String> tblproperties) throws TException;
-  /**
-   * Send a request to compact a table or partition.  This will not block until the compaction is
-   * complete.  It will instead put a request on the queue for that table or partition to be
-   * compacted.  No checking is done on the dbname, tableName, or partitionName to make sure they
+   * compacted.  No checking is done on the tableName, or partitionName to make sure they
    * refer to valid objects.  It is assumed this has already been done by the caller.  At most one
    * Compaction can be scheduled/running for any given resource at a time.
-   * @param dbname Name of the database the table is in.  If null, this will be assumed to be
-   *               'default'.
    * @param tableName Name of the table to be compacted.  This cannot be null.  If partitionName
    *                  is null, this must be a non-partitioned table.
    * @param partitionName Name of the partition to be compacted
@@ -3095,8 +3072,8 @@ public interface IMetaStoreClient {
    * @return id of newly scheduled compaction or id/state of one which is already scheduled/running
    * @throws TException
    */
-  CompactionResponse compact2(String dbname, String tableName, String partitionName, CompactionType type,
-                              Map<String, String> tblproperties) throws TException;
+  CompactionResponse compact(TableName tableName, String partitionName, CompactionType type,
+                             Map<String, String> tblproperties) throws TException;
 
   /**
    * Get a list of all compactions.
@@ -3107,22 +3084,15 @@ public interface IMetaStoreClient {
   ShowCompactResponse showCompactions() throws TException;
 
   /**
-   * @deprecated in Hive 1.3.0/2.1.0 - will be removed in 2 releases
-   */
-  @Deprecated
-  void addDynamicPartitions(long txnId, long writeId, String dbName, String tableName, List<String> partNames)
-    throws TException;
-  /**
    * Send a list of partitions to the metastore to indicate which partitions were loaded
    * dynamically.
    * @param txnId id of the transaction
    * @param writeId table write id for this txn
-   * @param dbName database name
    * @param tableName table name
    * @param partNames partition name, as constructed by Warehouse.makePartName
    * @throws TException
    */
-  void addDynamicPartitions(long txnId, long writeId, String dbName, String tableName, List<String> partNames,
+  void addDynamicPartitions(long txnId, long writeId, TableName tableName, List<String> partNames,
                             DataOperationType operationType)
     throws TException;
 

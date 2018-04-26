@@ -2100,7 +2100,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
       partName = partitions.get(0).getName();
     }
-    CompactionResponse resp = db.compact2(tbl.getDbName(), tbl.getTableName(), partName,
+    CompactionResponse resp = db.compact(tbl.getFullTableName(), partName,
       desc.getCompactionType(), desc.getProps());
     if(resp.isAccepted()) {
       console.printInfo("Compaction enqueued with id " + resp.getId());

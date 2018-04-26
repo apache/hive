@@ -20,6 +20,7 @@ package org.apache.hive.hcatalog.streaming;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.slf4j.Logger;
@@ -646,13 +647,17 @@ public class HiveEndPoint {
     private List<TxnToWriteId> allocateWriteIdsImpl(final IMetaStoreClient msClient,
                                                     final List<Long> txnIds, UserGroupInformation ugi)
             throws IOException, TException,  InterruptedException {
+      // We don't seem to have access to the configuration file here.  Since this is deprecated
+      // anyway restricting it to teh default seems ok.
+      final TableName fullTableName = new TableName(Warehouse.DEFAULT_CATALOG_NAME,
+          endPt.database, endPt.table);
       if(ugi==null) {
-        return  msClient.allocateTableWriteIdsBatch(txnIds, endPt.database, endPt.table);
+        return  msClient.allocateTableWriteIdsBatch(txnIds, fullTableName);
       }
       return (List<TxnToWriteId>) ugi.doAs(new PrivilegedExceptionAction<Object>() {
         @Override
         public Object run() throws Exception {
-          return msClient.allocateTableWriteIdsBatch(txnIds, endPt.database, endPt.table);
+          return msClient.allocateTableWriteIdsBatch(txnIds, fullTableName);
         }
       });
     }

@@ -21,12 +21,15 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionResponse;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
+import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest2;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
@@ -38,6 +41,7 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatusWithId;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -146,11 +150,10 @@ public class Initiator extends CompactorThread {
 
               // Compaction doesn't work under a transaction and hence pass null for validTxnList
               // The response will have one entry per table and hence we get only one ValidWriteIdList
-              String fullTableName = TxnUtils.getFullTableName(t.getDbName(), t.getTableName());
-              GetValidWriteIdsRequest rqst
-                      = new GetValidWriteIdsRequest(Collections.singletonList(fullTableName), null);
+              GetValidWriteIdsRequest2 rqst = new GetValidWriteIdsRequest2(
+                  Collections.singletonList(MetaStoreUtils.fullTableNameFromTable(t, conf)), null);
               ValidWriteIdList tblValidWriteIds = TxnUtils.createValidCompactWriteIdList(
-                      txnHandler.getValidWriteIds(rqst).getTblValidWriteIds().get(0));
+                      txnHandler.getValidWriteIds(rqst).getTblValidWriteIds().get(0), conf);
 
               StorageDescriptor sd = resolveStorageDescriptor(t, p);
               String runAs = findUserToRunAs(sd.getLocation(), t);

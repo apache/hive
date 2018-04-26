@@ -3587,8 +3587,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           //so that we only allocate a writeId only if actually adding data
           // (vs. adding a partition w/o data)
           try {
-            writeId = getTxnMgr().getTableWriteId(tab.getDbName(),
-                tab.getTableName());
+            writeId = getTxnMgr().getTableWriteId(tab.getFullTableName());
           } catch (LockException ex) {
             throw new SemanticException("Failed to allocate the write id", ex);
           }

@@ -41,6 +41,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
@@ -1581,7 +1582,7 @@ public class AcidUtils {
   /**
    * Extract the ValidWriteIdList for the given table from the list of tables' ValidWriteIdList.
    */
-  public static ValidWriteIdList getTableValidWriteIdList(Configuration conf, String fullTableName) {
+  public static ValidWriteIdList getTableValidWriteIdList(Configuration conf, TableName fullTableName) {
     ValidTxnWriteIdList validTxnList = getValidTxnWriteIdList(conf);
     return validTxnList.getTableValidWriteIdList(fullTableName);
   }
@@ -1601,28 +1602,23 @@ public class AcidUtils {
    */
   public static void setValidWriteIdList(Configuration conf, TableScanDesc tsDesc) {
     if (tsDesc.isTranscationalTable()) {
-      String dbName = tsDesc.getDatabaseName();
-      String tableName = tsDesc.getTableName();
-      ValidWriteIdList validWriteIdList = getTableValidWriteIdList(conf,
-                                                    AcidUtils.getFullTableName(dbName, tableName));
+      TableName fullTableName =
+          new TableName(tsDesc.getCatalogName(), tsDesc.getDatabaseName(), tsDesc.getTableName());
+      ValidWriteIdList validWriteIdList = getTableValidWriteIdList(conf, fullTableName);
       if (validWriteIdList != null) {
         setValidWriteIdList(conf, validWriteIdList);
       } else {
         // Log error if the acid table is missing from the ValidWriteIdList conf
-        LOG.error("setValidWriteIdList on table: " + AcidUtils.getFullTableName(dbName, tableName)
+        LOG.error("setValidWriteIdList on table: " + fullTableName.toString()
                 + " isAcidTable: " + true
                 + " acidProperty: " + getAcidOperationalProperties(conf)
                 + " couldn't find the ValidWriteId list from ValidTxnWriteIdList: "
                 + conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
-        throw new IllegalStateException("ACID table: " + AcidUtils.getFullTableName(dbName, tableName)
+        throw new IllegalStateException("ACID table: " + fullTableName.toString()
                 + " is missing from the ValidWriteIdList config: "
                 + conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
       }
     }
-  }
-
-  public static String getFullTableName(String dbName, String tableName) {
-    return dbName.toLowerCase() + "." + tableName.toLowerCase();
   }
 
   /**
@@ -1839,8 +1835,7 @@ public class AcidUtils {
   public static List<FileStatus> getAcidFilesForStats(
       Table table, Path dir, Configuration jc, FileSystem fs) throws IOException {
     List<FileStatus> fileList = new ArrayList<>();
-    ValidWriteIdList idList = AcidUtils.getTableValidWriteIdList(jc,
-        AcidUtils.getFullTableName(table.getDbName(), table.getTableName()));
+    ValidWriteIdList idList = AcidUtils.getTableValidWriteIdList(jc, table.getFullTableName());
     if (idList == null) {
       LOG.warn("Cannot get ACID state for " + table.getDbName() + "." + table.getTableName()
           + " from " + jc.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));

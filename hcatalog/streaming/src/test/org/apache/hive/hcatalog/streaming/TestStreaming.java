@@ -46,11 +46,13 @@ import org.apache.hadoop.fs.RawLocalFileSystem;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.Validator;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 import org.apache.hadoop.hive.metastore.api.LockState;
@@ -555,7 +557,8 @@ public class TestStreaming {
   @Deprecated
   private void checkDataWritten(Path partitionPath, long minTxn, long maxTxn, int buckets, int numExpectedFiles,
                                 String... records) throws Exception {
-    ValidWriteIdList writeIds = msClient.getValidWriteIds(AcidUtils.getFullTableName(dbName, tblName));
+    ValidWriteIdList writeIds =
+        msClient.getValidWriteIds(new TableName(Warehouse.DEFAULT_CATALOG_NAME, dbName, tblName));
     AcidUtils.Directory dir = AcidUtils.getAcidState(partitionPath, conf, writeIds);
     Assert.assertEquals(0, dir.getObsolete().size());
     Assert.assertEquals(0, dir.getOriginalFiles().size());
@@ -608,7 +611,8 @@ public class TestStreaming {
    */
   private void checkDataWritten2(Path partitionPath, long minTxn, long maxTxn, int numExpectedFiles,
                                 String validationQuery, boolean vectorize, String... records) throws Exception {
-    ValidWriteIdList txns = msClient.getValidWriteIds(AcidUtils.getFullTableName(dbName, tblName));
+    ValidWriteIdList txns =
+        msClient.getValidWriteIds(new TableName(Warehouse.DEFAULT_CATALOG_NAME, dbName, tblName));
     AcidUtils.Directory dir = AcidUtils.getAcidState(partitionPath, conf, txns);
     Assert.assertEquals(0, dir.getObsolete().size());
     Assert.assertEquals(0, dir.getOriginalFiles().size());
@@ -652,7 +656,8 @@ public class TestStreaming {
   }
 
   private void checkNothingWritten(Path partitionPath) throws Exception {
-    ValidWriteIdList writeIds = msClient.getValidWriteIds(AcidUtils.getFullTableName(dbName, tblName));
+    ValidWriteIdList writeIds =
+        msClient.getValidWriteIds(new TableName(Warehouse.DEFAULT_CATALOG_NAME, dbName, tblName));
     AcidUtils.Directory dir = AcidUtils.getAcidState(partitionPath, conf, writeIds);
     Assert.assertEquals(0, dir.getObsolete().size());
     Assert.assertEquals(0, dir.getOriginalFiles().size());
@@ -1237,7 +1242,7 @@ public class TestStreaming {
     file to exist and indicate the true length of primary file*/
     FileSystem fs = partLoc.getFileSystem(conf);
     AcidUtils.Directory dir = AcidUtils.getAcidState(partLoc, conf,
-            msClient.getValidWriteIds(AcidUtils.getFullTableName(dbName, tblName)));
+            msClient.getValidWriteIds(new TableName(Warehouse.DEFAULT_CATALOG_NAME, dbName, tblName)));
     for(AcidUtils.ParsedDelta pd : dir.getCurrentDirectories()) {
       for(FileStatus stat : fs.listStatus(pd.getPath(), AcidUtils.bucketFileFilter)) {
         Path lengthFile = OrcAcidUtils.getSideFile(stat.getPath());
@@ -1262,7 +1267,8 @@ public class TestStreaming {
     //so each of 2 deltas has 1 bucket0 and 1 bucket0_flush_length.  Furthermore, each bucket0
     //has now received more data(logically - it's buffered) but it is not yet committed.
     //lets check that side files exist, etc
-    dir = AcidUtils.getAcidState(partLoc, conf, msClient.getValidWriteIds(AcidUtils.getFullTableName(dbName, tblName)));
+    dir = AcidUtils.getAcidState(partLoc, conf, msClient.getValidWriteIds(
+        new TableName(Warehouse.DEFAULT_CATALOG_NAME, dbName, tblName)));
     for(AcidUtils.ParsedDelta pd : dir.getCurrentDirectories()) {
       for(FileStatus stat : fs.listStatus(pd.getPath(), AcidUtils.bucketFileFilter)) {
         Path lengthFile = OrcAcidUtils.getSideFile(stat.getPath());

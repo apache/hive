@@ -92,6 +92,7 @@ import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
@@ -2272,7 +2273,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
           partNames.add(p.getName());
         }
         getMSC().addDynamicPartitions(parentSession.getTxnMgr().getCurrentTxnId(), writeId,
-                tbl.getDbName(), tbl.getTableName(), partNames,
+                new TableName(tbl.getCatName(), tbl.getDbName(), tbl.getTableName()), partNames,
                 AcidUtils.toDataOperationType(operation));
       }
       LOG.info("Loaded " + partitionsMap.size() + " partitions");
@@ -4444,17 +4445,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
   /**
-   * @deprecated use {@link #compact2(String, String, String, String, Map)}
-   */
-  @Deprecated
-  public void compact(String dbname, String tableName, String partName, String compactType,
-                      Map<String, String> tblproperties) throws HiveException {
-    compact2(dbname, tableName, partName, compactType, tblproperties);
-  }
-  /**
    * Enqueue a compaction request.  Only 1 compaction for a given resource (db/table/partSpec) can
    * be scheduled/running at any given time.
-   * @param dbname name of the database, if null default will be used.
    * @param tableName name of the table, cannot be null
    * @param partName name of the partition, if null table will be compacted (valid only for
    *                 non-partitioned tables).
@@ -4463,8 +4455,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @return id of new request or id already existing request for specified resource
    * @throws HiveException
    */
-  public CompactionResponse compact2(String dbname, String tableName, String partName, String compactType,
-                                     Map<String, String> tblproperties)
+  public CompactionResponse compact(TableName tableName, String partName, String compactType,
+                                    Map<String, String> tblproperties)
       throws HiveException {
     try {
       CompactionType cr = null;
@@ -4475,7 +4467,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       } else {
         throw new RuntimeException("Unknown compaction type " + compactType);
       }
-      return getMSC().compact2(dbname, tableName, partName, cr, tblproperties);
+      return getMSC().compact(tableName, partName, cr, tblproperties);
     } catch (Exception e) {
       LOG.error(StringUtils.stringifyException(e));
       throw new HiveException(e);

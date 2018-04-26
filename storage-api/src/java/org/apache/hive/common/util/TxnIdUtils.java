@@ -25,7 +25,7 @@ public class TxnIdUtils {
    * Check if 2 ValidWriteIdLists are at an equivalent commit point.
    */
   public static boolean checkEquivalentWriteIds(ValidWriteIdList a, ValidWriteIdList b) {
-    if (!a.getTableName().equalsIgnoreCase(b.getTableName())) {
+    if (!a.getTableName().equals(b.getTableName())) {
       return false;
     }
     ValidWriteIdList newer = a;

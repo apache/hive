@@ -19,10 +19,12 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
+import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest2;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.mapred.JobConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -143,10 +145,10 @@ public class Worker extends CompactorThread {
 
         // Compaction doesn't work under a transaction and hence pass 0 for current txn Id
         // The response will have one entry per table and hence we get only one OpenWriteIds
-        String fullTableName = TxnUtils.getFullTableName(t.getDbName(), t.getTableName());
-        GetValidWriteIdsRequest rqst = new GetValidWriteIdsRequest(Collections.singletonList(fullTableName), null);
-        final ValidWriteIdList tblValidWriteIds =
-                TxnUtils.createValidCompactWriteIdList(txnHandler.getValidWriteIds(rqst).getTblValidWriteIds().get(0));
+        GetValidWriteIdsRequest2 rqst = new GetValidWriteIdsRequest2(
+            Collections.singletonList(MetaStoreUtils.fullTableNameFromTable(t, conf)), null);
+        final ValidWriteIdList tblValidWriteIds = TxnUtils.createValidCompactWriteIdList(
+            txnHandler.getValidWriteIds(rqst).getTblValidWriteIds().get(0), conf);
         LOG.debug("ValidCompactWriteIdList: " + tblValidWriteIds.writeToString());
         txnHandler.setCompactionHighestWriteId(ci, tblValidWriteIds.getHighWatermark());
         final StringBuilder jobName = new StringBuilder(name);

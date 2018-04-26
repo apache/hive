@@ -84,6 +84,7 @@ public final class TxnDbUtil {
 
       stmt.execute("CREATE TABLE TXN_COMPONENTS (" +
           "  TC_TXNID bigint NOT NULL REFERENCES TXNS (TXN_ID)," +
+          "  TC_CATALOG varchar(256) NOT NULL," +
           "  TC_DATABASE varchar(128) NOT NULL," +
           "  TC_TABLE varchar(128)," +
           "  TC_PARTITION varchar(767)," +
@@ -91,6 +92,7 @@ public final class TxnDbUtil {
           "  TC_WRITEID bigint)");
       stmt.execute("CREATE TABLE COMPLETED_TXN_COMPONENTS (" +
           "  CTC_TXNID bigint NOT NULL," +
+          "  CTC_CATALOG varchar(256) NOT NULL," +
           "  CTC_DATABASE varchar(128) NOT NULL," +
           "  CTC_TABLE varchar(128)," +
           "  CTC_PARTITION varchar(767)," +
@@ -102,10 +104,12 @@ public final class TxnDbUtil {
 
       stmt.execute("CREATE TABLE TXN_TO_WRITE_ID (" +
           " T2W_TXNID bigint NOT NULL," +
+          " T2W_CATALOG varchar(256) NOT NULL," +
           " T2W_DATABASE varchar(128) NOT NULL," +
           " T2W_TABLE varchar(256) NOT NULL," +
           " T2W_WRITEID bigint NOT NULL)");
       stmt.execute("CREATE TABLE NEXT_WRITE_ID (" +
+          " NWI_CATALOG varchar(256) NOT NULL," +
           " NWI_DATABASE varchar(128) NOT NULL," +
           " NWI_TABLE varchar(256) NOT NULL," +
           " NWI_NEXT bigint NOT NULL)");
@@ -119,6 +123,7 @@ public final class TxnDbUtil {
           " HL_LOCK_EXT_ID bigint NOT NULL," +
           " HL_LOCK_INT_ID bigint NOT NULL," +
           " HL_TXNID bigint NOT NULL," +
+          " HL_CATALOG varchar(256) NOT NULL," +
           " HL_DB varchar(128) NOT NULL," +
           " HL_TABLE varchar(128)," +
           " HL_PARTITION varchar(767)," +
@@ -140,6 +145,7 @@ public final class TxnDbUtil {
 
       stmt.execute("CREATE TABLE COMPACTION_QUEUE (" +
           " CQ_ID bigint PRIMARY KEY," +
+          " CQ_CATALOG varchar(256) NOT NULL," +
           " CQ_DATABASE varchar(128) NOT NULL," +
           " CQ_TABLE varchar(128) NOT NULL," +
           " CQ_PARTITION varchar(767)," +
@@ -158,6 +164,7 @@ public final class TxnDbUtil {
 
       stmt.execute("CREATE TABLE COMPLETED_COMPACTIONS (" +
           " CC_ID bigint PRIMARY KEY," +
+          " CC_CATALOG varchar(256) NOT NULL," +
           " CC_DATABASE varchar(128) NOT NULL," +
           " CC_TABLE varchar(128) NOT NULL," +
           " CC_PARTITION varchar(767)," +
@@ -179,6 +186,7 @@ public final class TxnDbUtil {
         " PRIMARY KEY(MT_KEY1, MT_KEY2))");
 
       stmt.execute("CREATE TABLE WRITE_SET (" +
+        " WS_CATALOG varchar(128) NOT NULL," +
         " WS_DATABASE varchar(128) NOT NULL," +
         " WS_TABLE varchar(128) NOT NULL," +
         " WS_PARTITION varchar(767)," +

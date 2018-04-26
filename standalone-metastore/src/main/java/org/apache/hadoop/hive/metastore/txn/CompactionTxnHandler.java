@@ -70,7 +70,7 @@ class CompactionTxnHandler extends TxnHandler {
         stmt = dbConn.createStatement();
         // Check for completed transactions
         String s = "select distinct ctc_database, ctc_table, " +
-          "ctc_partition from COMPLETED_TXN_COMPONENTS";
+          "ctc_partition, ctc_catalog from COMPLETED_TXN_COMPONENTS";
         LOG.debug("Going to execute query <" + s + ">");
         rs = stmt.executeQuery(s);
         while (rs.next()) {
@@ -78,15 +78,16 @@ class CompactionTxnHandler extends TxnHandler {
           info.dbname = rs.getString(1);
           info.tableName = rs.getString(2);
           info.partName = rs.getString(3);
+          info.catName = rs.getString(4);
           response.add(info);
         }
         rs.close();
 
         // Check for aborted txns
-        s = "select tc_database, tc_table, tc_partition " +
+        s = "select tc_database, tc_table, tc_partition, tc_catalog " +
           "from TXNS, TXN_COMPONENTS " +
           "where txn_id = tc_txnid and txn_state = '" + TXN_ABORTED + "' " +
-          "group by tc_database, tc_table, tc_partition " +
+          "group by tc_catalog, tc_database, tc_table, tc_partition " +
           "having count(*) > " + maxAborted;
 
         LOG.debug("Going to execute query <" + s + ">");
@@ -96,6 +97,7 @@ class CompactionTxnHandler extends TxnHandler {
           info.dbname = rs.getString(1);
           info.tableName = rs.getString(2);
           info.partName = rs.getString(3);
+          info.catName = rs.getString(4);
           info.tooManyAborts = true;
           response.add(info);
         }
@@ -173,7 +175,8 @@ class CompactionTxnHandler extends TxnHandler {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
         String s = "select cq_id, cq_database, cq_table, cq_partition, " +
-          "cq_type, cq_tblproperties from COMPACTION_QUEUE where cq_state = '" + INITIATED_STATE + "'";
+          "cq_type, cq_tblproperties, cq_catalog from COMPACTION_QUEUE where cq_state = '" +
+            INITIATED_STATE + "'";
         LOG.debug("Going to execute query <" + s + ">");
         rs = stmt.executeQuery(s);
         if (!rs.next()) {
@@ -185,6 +188,7 @@ class CompactionTxnHandler extends TxnHandler {
         do {
           CompactionInfo info = new CompactionInfo();
           info.id = rs.getLong(1);
+          info.catName = rs.getString("cq_catalog");
           info.dbname = rs.getString(2);
           info.tableName = rs.getString(3);
           info.partName = rs.getString(4);
@@ -286,14 +290,15 @@ class CompactionTxnHandler extends TxnHandler {
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
-        String s = "select cq_id, cq_database, cq_table, cq_partition, "
-                + "cq_type, cq_run_as, cq_highest_write_id from COMPACTION_QUEUE where cq_state = '"
-                + READY_FOR_CLEANING + "'";
+        String s = "select cq_id, cq_database, cq_table, cq_partition, cq_type, cq_run_as, " +
+            "cq_highest_write_id, cq_catalog from COMPACTION_QUEUE where cq_state = '"
+            + READY_FOR_CLEANING + "'";
         LOG.debug("Going to execute query <" + s + ">");
         rs = stmt.executeQuery(s);
         while (rs.next()) {
           CompactionInfo info = new CompactionInfo();
           info.id = rs.getLong(1);
+          info.catName = rs.getString("cq_catalog");
           info.dbname = rs.getString(2);
           info.tableName = rs.getString(3);
           info.partName = rs.getString(4);
@@ -339,7 +344,11 @@ class CompactionTxnHandler extends TxnHandler {
       ResultSet rs = null;
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
-        pStmt = dbConn.prepareStatement("select CQ_ID, CQ_DATABASE, CQ_TABLE, CQ_PARTITION, CQ_STATE, CQ_TYPE, CQ_TBLPROPERTIES, CQ_WORKER_ID, CQ_START, CQ_RUN_AS, CQ_HIGHEST_WRITE_ID, CQ_META_INFO, CQ_HADOOP_JOB_ID from COMPACTION_QUEUE WHERE CQ_ID = ?");
+        pStmt = dbConn.prepareStatement("select CQ_ID, CQ_DATABASE, CQ_TABLE, " +
+            "CQ_PARTITION, CQ_STATE, CQ_TYPE, CQ_TBLPROPERTIES, CQ_WORKER_ID, CQ_START, " +
+            "CQ_RUN_AS, CQ_HIGHEST_WRITE_ID, CQ_META_INFO, CQ_HADOOP_JOB_ID, cq_catalog " +
+            "from COMPACTION_QUEUE " +
+            "WHERE CQ_ID = ?");
         pStmt.setLong(1, info.id);
         rs = pStmt.executeQuery();
         if(rs.next()) {
@@ -359,7 +368,11 @@ class CompactionTxnHandler extends TxnHandler {
           LOG.debug("Going to rollback");
           dbConn.rollback();
         }
-        pStmt = dbConn.prepareStatement("insert into COMPLETED_COMPACTIONS(CC_ID, CC_DATABASE, CC_TABLE, CC_PARTITION, CC_STATE, CC_TYPE, CC_TBLPROPERTIES, CC_WORKER_ID, CC_START, CC_END, CC_RUN_AS, CC_HIGHEST_WRITE_ID, CC_META_INFO, CC_HADOOP_JOB_ID) VALUES(?,?,?,?,?, ?,?,?,?,?, ?,?,?,?)");
+        pStmt = dbConn.prepareStatement(
+            "insert into COMPLETED_COMPACTIONS(CC_ID, CC_DATABASE, CC_TABLE, CC_PARTITION, " +
+                "CC_STATE, CC_TYPE, CC_TBLPROPERTIES, CC_WORKER_ID, CC_START, CC_END, CC_RUN_AS, " +
+                "CC_HIGHEST_WRITE_ID, CC_META_INFO, CC_HADOOP_JOB_ID, cc_catalog) " +
+                "VALUES(?,?,?,?,?, ?,?,?,?,?, ?,?,?,?,?)");
         info.state = SUCCEEDED_STATE;
         CompactionInfo.insertIntoCompletedCompactions(pStmt, info, getDbTime(dbConn));
         updCount = pStmt.executeUpdate();
@@ -367,7 +380,7 @@ class CompactionTxnHandler extends TxnHandler {
         // Remove entries from completed_txn_components as well, so we don't start looking there
         // again but only up to the highest write ID include in this compaction job.
         //highestWriteId will be NULL in upgrade scenarios
-        s = "delete from COMPLETED_TXN_COMPONENTS where ctc_database = ? and " +
+        s = "delete from COMPLETED_TXN_COMPONENTS where ctc_catalog = ? and ctc_database = ? and " +
             "ctc_table = ?";
         if (info.partName != null) {
           s += " and ctc_partition = ?";
@@ -377,6 +390,7 @@ class CompactionTxnHandler extends TxnHandler {
         }
         pStmt = dbConn.prepareStatement(s);
         int paramCount = 1;
+        pStmt.setString(paramCount++, info.catName);
         pStmt.setString(paramCount++, info.dbname);
         pStmt.setString(paramCount++, info.tableName);
         if (info.partName != null) {
@@ -392,12 +406,13 @@ class CompactionTxnHandler extends TxnHandler {
         }
 
         s = "select distinct txn_id from TXNS, TXN_COMPONENTS where txn_id = tc_txnid and txn_state = '" +
-          TXN_ABORTED + "' and tc_database = ? and tc_table = ?";
+          TXN_ABORTED + "' and tc_catalog = ? and tc_database = ? and tc_table = ?";
         if (info.highestWriteId != 0) s += " and tc_writeid <= ?";
         if (info.partName != null) s += " and tc_partition = ?";
 
         pStmt = dbConn.prepareStatement(s);
         paramCount = 1;
+        pStmt.setString(paramCount++, info.catName);
         pStmt.setString(paramCount++, info.dbname);
         pStmt.setString(paramCount++, info.tableName);
         if(info.highestWriteId != 0) {
@@ -427,6 +442,7 @@ class CompactionTxnHandler extends TxnHandler {
           prefix.append("delete from TXN_COMPONENTS where ");
 
           //because 1 txn may include different partitions/tables even in auto commit mode
+          suffix.append(" and tc_catalog = ?");
           suffix.append(" and tc_database = ?");
           suffix.append(" and tc_table = ?");
           if (info.partName != null) {
@@ -449,6 +465,7 @@ class CompactionTxnHandler extends TxnHandler {
             }
             totalCount += insertCount;
             paramCount = insertCount + 1;
+            pStmt.setString(paramCount++, info.catName);
             pStmt.setString(paramCount++, info.dbname);
             pStmt.setString(paramCount++, info.tableName);
             if (info.partName != null) {
@@ -858,14 +875,16 @@ class CompactionTxnHandler extends TxnHandler {
         stmt = dbConn.createStatement();
         /*cc_id is monotonically increasing so for any entity sorts in order of compaction history,
         thus this query groups by entity and withing group sorts most recent first*/
-        rs = stmt.executeQuery("select cc_id, cc_database, cc_table, cc_partition, cc_state from " +
-          "COMPLETED_COMPACTIONS order by cc_database, cc_table, cc_partition, cc_id desc");
+        rs = stmt.executeQuery("select cc_id, cc_database, cc_table, cc_partition, cc_state, cc_catalog" +
+            " from COMPLETED_COMPACTIONS " +
+            "order by cc_catalog, cc_database, cc_table, cc_partition, cc_id desc");
         String lastCompactedEntity = null;
         /*In each group, walk from most recent and count occurences of each state type.  Once you
         * have counted enough (for each state) to satisfy retention policy, delete all other
         * instances of this status.*/
         while(rs.next()) {
-          CompactionInfo ci = new CompactionInfo(rs.getLong(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5).charAt(0));
+          CompactionInfo ci = new CompactionInfo(rs.getLong(1), rs.getString("cc_catalog"),
+              rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5).charAt(0));
           if(!ci.getFullPartitionName().equals(lastCompactedEntity)) {
             lastCompactedEntity = ci.getFullPartitionName();
             rc = new RetentionCounters(MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_HISTORY_RETENTION_ATTEMPTED),
@@ -955,14 +974,14 @@ class CompactionTxnHandler extends TxnHandler {
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         pStmt = dbConn.prepareStatement("select CC_STATE from COMPLETED_COMPACTIONS where " +
-          "CC_DATABASE = ? and " +
-          "CC_TABLE = ? " +
-          (ci.partName != null ? "and CC_PARTITION = ?" : "") +
+            "cc_catalog = ? and CC_DATABASE = ? and CC_TABLE = ? " +
+            (ci.partName != null ? "and CC_PARTITION = ?" : "") +
           " and CC_STATE != " + quoteChar(ATTEMPTED_STATE) + " order by CC_ID desc");
-        pStmt.setString(1, ci.dbname);
-        pStmt.setString(2, ci.tableName);
+        pStmt.setString(1, ci.catName);
+        pStmt.setString(2, ci.dbname);
+        pStmt.setString(3, ci.tableName);
         if (ci.partName != null) {
-          pStmt.setString(3, ci.partName);
+          pStmt.setString(4, ci.partName);
         }
         rs = pStmt.executeQuery();
         int numFailed = 0;
@@ -1010,7 +1029,10 @@ class CompactionTxnHandler extends TxnHandler {
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
-        pStmt = dbConn.prepareStatement("select CQ_ID, CQ_DATABASE, CQ_TABLE, CQ_PARTITION, CQ_STATE, CQ_TYPE, CQ_TBLPROPERTIES, CQ_WORKER_ID, CQ_START, CQ_RUN_AS, CQ_HIGHEST_WRITE_ID, CQ_META_INFO, CQ_HADOOP_JOB_ID from COMPACTION_QUEUE WHERE CQ_ID = ?");
+        pStmt = dbConn.prepareStatement(
+            "select CQ_ID, CQ_DATABASE, CQ_TABLE, CQ_PARTITION, CQ_STATE, CQ_TYPE, " +
+                "CQ_TBLPROPERTIES, CQ_WORKER_ID, CQ_START, CQ_RUN_AS, CQ_HIGHEST_WRITE_ID, " +
+                "CQ_META_INFO, CQ_HADOOP_JOB_ID, cq_catalog from COMPACTION_QUEUE WHERE CQ_ID = ?");
         pStmt.setLong(1, ci.id);
         rs = pStmt.executeQuery();
         if(rs.next()) {
@@ -1044,7 +1066,11 @@ class CompactionTxnHandler extends TxnHandler {
         close(rs, stmt, null);
         closeStmt(pStmt);
 
-        pStmt = dbConn.prepareStatement("insert into COMPLETED_COMPACTIONS(CC_ID, CC_DATABASE, CC_TABLE, CC_PARTITION, CC_STATE, CC_TYPE, CC_TBLPROPERTIES, CC_WORKER_ID, CC_START, CC_END, CC_RUN_AS, CC_HIGHEST_WRITE_ID, CC_META_INFO, CC_HADOOP_JOB_ID) VALUES(?,?,?,?,?, ?,?,?,?,?, ?,?,?,?)");
+        pStmt = dbConn.prepareStatement(
+            "insert into COMPLETED_COMPACTIONS(CC_ID, CC_DATABASE, CC_TABLE, CC_PARTITION, " +
+                "CC_STATE, CC_TYPE, CC_TBLPROPERTIES, CC_WORKER_ID, CC_START, CC_END, CC_RUN_AS, " +
+                "CC_HIGHEST_WRITE_ID, CC_META_INFO, CC_HADOOP_JOB_ID, cc_catalog) " +
+                "VALUES(?,?,?,?,?, ?,?,?,?,?, ?,?,?,?,?)");
         CompactionInfo.insertIntoCompletedCompactions(pStmt, ci, getDbTime(dbConn));
         int updCount = pStmt.executeUpdate();
         LOG.debug("Going to commit");

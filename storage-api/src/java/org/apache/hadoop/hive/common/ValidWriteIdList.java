@@ -80,9 +80,9 @@ public interface ValidWriteIdList {
 
   /**
    * Get the table for which the ValidWriteIdList is formed
-   * @return table name (&lt;db_name&gt;.&lt;table_name&gt;) associated with ValidWriteIdList.
+   * @return table name associated with ValidWriteIdList.
    */
-  String getTableName();
+  TableName getTableName();
 
   /**
    * Get the largest write id used.

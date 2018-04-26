@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.LockState;
@@ -216,8 +217,7 @@ abstract class HiveTxnManagerImpl implements HiveTxnManager, Configurable {
   }
 
   @Override
-  public LockResponse acquireMaterializationRebuildLock(String dbName, String tableName, long txnId)
-      throws LockException {
+  public LockResponse acquireMaterializationRebuildLock(TableName tableName, long txnId) throws LockException {
     // This is default implementation. Locking only works for incremental maintenance
     // which only works for DB transactional manager, thus we cannot acquire a lock.
     return new LockResponse(0L, LockState.NOT_ACQUIRED);

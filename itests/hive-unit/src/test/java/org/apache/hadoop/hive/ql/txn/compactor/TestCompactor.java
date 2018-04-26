@@ -43,11 +43,13 @@ import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.cli.CliSessionState;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
@@ -417,14 +419,14 @@ public class TestCompactor {
       tblName + " after load:");
 
     TxnStore txnHandler = TxnUtils.getTxnStore(conf);
-    CompactionInfo ci = new CompactionInfo("default", tblName, "bkt=0", CompactionType.MAJOR);
+    CompactionInfo ci = new CompactionInfo("hive", "default", tblName, "bkt=0", CompactionType.MAJOR);
     LOG.debug("List of stats columns before analyze Part1: " + txnHandler.findColumnsWithStats(ci));
     Worker.StatsUpdater su = Worker.StatsUpdater.init(ci, colNames, conf,
       System.getProperty("user.name"));
     su.gatherStats();//compute stats before compaction
     LOG.debug("List of stats columns after analyze Part1: " + txnHandler.findColumnsWithStats(ci));
 
-    CompactionInfo ciPart2 = new CompactionInfo("default", tblName, "bkt=1", CompactionType.MAJOR);
+    CompactionInfo ciPart2 = new CompactionInfo("hive", "default", tblName, "bkt=1", CompactionType .MAJOR);
     LOG.debug("List of stats columns before analyze Part2: " + txnHandler.findColumnsWithStats(ci));
     su = Worker.StatsUpdater.init(ciPart2, colNames, conf, System.getProperty("user.name"));
     su.gatherStats();//compute stats before compaction
@@ -507,7 +509,7 @@ public class TestCompactor {
       txnBatch.close();
       connection.close();
     }
-    execSelectAndDumpData("select * from " + ci.getFullTableName(), driver, ci.getFullTableName());
+    execSelectAndDumpData("select * from " + ci.getFullTableName(), driver, ci.getFullTableName().toString());
 
     //so now we have written some new data to bkt=0 and it shows up
     CompactionRequest rqst = new CompactionRequest(ci.dbname, ci.tableName, CompactionType.MAJOR);
@@ -1124,7 +1126,8 @@ public class TestCompactor {
     verifyFooBarResult(tblName, 1);
 
     long openTxnId = msClient.openTxn("test");
-    long openWriteId = msClient.allocateTableWriteId(openTxnId, dbName, tblName);
+    long openWriteId = msClient.allocateTableWriteId(openTxnId, new TableName(
+            Warehouse.DEFAULT_CATALOG_NAME, dbName, tblName));
     Assert.assertEquals(3, openWriteId); // Just check to make sure base_5 below is not new.
 
     executeStatementOnDriver("INSERT INTO " + tblName +"(a,b) VALUES(1, 'foo')", driver);
@@ -1226,7 +1229,7 @@ public class TestCompactor {
 
   }
 
-  private void verifyFooBarResult(String tblName, int count) throws Exception, IOException {
+  private void verifyFooBarResult(String tblName, int count) throws Exception {
     List<String> valuesReadFromHiveDriver = new ArrayList<String>();
     executeStatementOnDriver("SELECT a,b FROM " + tblName, driver);
     driver.getResults(valuesReadFromHiveDriver);
@@ -1737,8 +1740,8 @@ public class TestCompactor {
 
   @Test
   public void testCompactionInfoEquals() {
-    CompactionInfo compactionInfo = new CompactionInfo("dbName", "tableName", "partName", CompactionType.MINOR);
-    CompactionInfo compactionInfo1 = new CompactionInfo("dbName", "tableName", "partName", CompactionType.MINOR);
+    CompactionInfo compactionInfo = new CompactionInfo("hive", "dbName", "tableName", "partName", CompactionType.MINOR);
+    CompactionInfo compactionInfo1 = new CompactionInfo("hive", "dbName", "tableName", "partName", CompactionType.MINOR);
     Assert.assertTrue("The object must be equal", compactionInfo.equals(compactionInfo));
 
     Assert.assertFalse("The object must be not equal", compactionInfo.equals(new Object()));
@@ -1747,8 +1750,8 @@ public class TestCompactor {
 
   @Test
   public void testCompactionInfoHashCode() {
-    CompactionInfo compactionInfo = new CompactionInfo("dbName", "tableName", "partName", CompactionType.MINOR);
-    CompactionInfo compactionInfo1 = new CompactionInfo("dbName", "tableName", "partName", CompactionType.MINOR);
+    CompactionInfo compactionInfo = new CompactionInfo("hive", "dbName", "tableName", "partName", CompactionType.MINOR);
+    CompactionInfo compactionInfo1 = new CompactionInfo("hive", "dbName", "tableName", "partName", CompactionType.MINOR);
 
     Assert.assertEquals("The hash codes must be equal", compactionInfo.hashCode(), compactionInfo1.hashCode());
   }
@@ -1807,8 +1810,8 @@ public class TestCompactor {
     throws IOException {
     ValidWriteIdList writeIdList = new ValidWriteIdList() {
       @Override
-      public String getTableName() {
-        return "AcidTable";
+      public TableName getTableName() {
+        return new TableName("hive", "default", "AcidTable");
       }
 
       @Override

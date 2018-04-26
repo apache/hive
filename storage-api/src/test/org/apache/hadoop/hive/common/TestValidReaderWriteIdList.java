@@ -32,7 +32,7 @@ import java.util.BitSet;
  * Tests for {@link ValidReaderWriteIdList}.
  */
 public class TestValidReaderWriteIdList {
-  private final String tableName = "t1";
+  private final TableName tableName = TableName.fromString("t1", "hive", "default");
 
   @Test
   public void noExceptions() throws Exception {

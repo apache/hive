@@ -53,6 +53,7 @@ import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
@@ -64,6 +65,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventUtils;
 import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.Entity.Type;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -709,8 +711,9 @@ public final class QueryResultsCache {
             return false;
           }
           ValidWriteIdList currentWriteIdForTable =
-              currentTxnWriteIdList.getTableValidWriteIdList(tableName);
-          ValidWriteIdList cachedWriteIdForTable = entry.txnWriteIdList.getTableValidWriteIdList(tableName);
+              currentTxnWriteIdList.getTableValidWriteIdList(toTableName(tableName));
+          ValidWriteIdList cachedWriteIdForTable =
+              entry.txnWriteIdList.getTableValidWriteIdList(toTableName(tableName));
 
           LOG.debug("Checking writeIds for table {}: currentWriteIdForTable {}, cachedWriteIdForTable {}",
               tableName, currentWriteIdForTable, cachedWriteIdForTable);
@@ -1013,5 +1016,10 @@ public final class QueryResultsCache {
         LOG.debug("Cache not instantiated, skipping event on {}.{}", dbName, tableName);
       }
     }
+  }
+
+  private TableName toTableName(String qualifiedName) {
+    // We assume the name is of the form db.table
+    return TableName.fromString(qualifiedName, MetaStoreUtils.getDefaultCatalog(conf), null);
   }
 }

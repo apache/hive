@@ -18,7 +18,9 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.LockState;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -27,7 +29,6 @@ import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,8 +84,12 @@ public class MaterializedViewRebuildSemanticAnalyzer extends CalcitePlanner {
         HiveTxnManager txnManager = getTxnMgr();
         LockState state;
         try {
+          // TODO CAT - Fix in HIVE-19802
+          TableName fullTableName = new TableName(
+              SessionState.get() == null ? MetaStoreUtils.getDefaultCatalog(conf) : SessionState .get().getCurrentCatalog(),
+              qualifiedTableName[0], qualifiedTableName[1]);
           state = txnManager.acquireMaterializationRebuildLock(
-              qualifiedTableName[0], qualifiedTableName[1], txnManager.getCurrentTxnId()).getState();
+              fullTableName, txnManager.getCurrentTxnId()).getState();
         } catch (LockException e) {
           throw new SemanticException("Exception acquiring lock for rebuilding the materialized view", e);
         }

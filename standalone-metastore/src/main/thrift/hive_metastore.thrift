@@ -876,15 +876,29 @@ struct ReplTblWriteIdStateRequest {
     4: required string dbName,
     5: required string tableName,
     6: optional list<string> partNames,
+    7: optional string catName,
 }
 
-// Request msg to get the valid write ids list for the given list of tables wrt to input validTxnList
+// Deprecated, use GetValidWriteIdsRequest2
 struct GetValidWriteIdsRequest {
     1: required list<string> fullTableNames, // Full table names of format <db_name>.<table_name>
     2: required string validTxnList, // Valid txn list string wrt the current txn of the caller
 }
 
+struct FullTableName {
+    1: required string catName,
+    2: required string dbName,
+    3: required string tableName
+}
+
+// Request msg to get the valid write ids list for the given list of tables wrt to input validTxnList
+struct GetValidWriteIdsRequest2 {
+    1: required list<FullTableName> fullTableNames,
+    2: required string validTxnList, // Valid txn list string wrt the current txn of the caller
+}
+
 // Valid Write ID list of one table wrt to current txn
+// Deprecated, use TableValidWriteIds2
 struct TableValidWriteIds {
     1: required string fullTableName,  // Full table name of format <db_name>.<table_name>
     2: required i64 writeIdHighWaterMark, // The highest write id valid for this table wrt given txn
@@ -893,9 +907,23 @@ struct TableValidWriteIds {
     5: required binary abortedBits, // Bit array to identify the aborted write ids in invalidWriteIds list
 }
 
-// Valid Write ID list for all the input tables wrt to current txn
+// Valid Write ID list of one table wrt to current txn
+struct TableValidWriteIds2 {
+    1: required FullTableName fullTableName,
+    2: required i64 writeIdHighWaterMark, // The highest write id valid for this table wrt given txn
+    3: required list<i64> invalidWriteIds, // List of open and aborted writes ids in the table
+    4: optional i64 minOpenWriteId, // Minimum write id which maps to a opened txn
+    5: required binary abortedBits, // Bit array to identify the aborted write ids in invalidWriteIds list
+}
+
+// Deprecated, use GetValidWriteIdsResponse2
 struct GetValidWriteIdsResponse {
     1: required list<TableValidWriteIds> tblValidWriteIds,
+}
+
+// Valid Write ID list for all the input tables wrt to current txn
+struct GetValidWriteIdsResponse2 {
+    1: required list<TableValidWriteIds2> tblValidWriteIds,
 }
 
 // Request msg to allocate table write ids for the given list of txns
@@ -908,6 +936,7 @@ struct AllocateTableWriteIdsRequest {
     4: optional string replPolicy,
     // The list is assumed to be sorted by both txnids and write ids. The write id list is assumed to be contiguous.
     5: optional list<TxnToWriteId> srcTxnToWriteIdList,
+    6: optional string catName,
 }
 
 // Map for allocated write id against the txn for which it is allocated
@@ -928,7 +957,8 @@ struct LockComponent {
     5: optional string partitionname,
     6: optional DataOperationType operationType = DataOperationType.UNSET,
     7: optional bool isTransactional = false,
-    8: optional bool isDynamicPartitionWrite = false
+    8: optional bool isDynamicPartitionWrite = false,
+    9: optional string catName
 }
 
 struct LockRequest {
@@ -937,6 +967,7 @@ struct LockRequest {
     3: required string user,     // used in 'show locks' to help admins find who has open locks
     4: required string hostname, // used in 'show locks' to help admins find who has open locks
     5: optional string agentInfo = "Unknown",
+    6: optional string catName
 }
 
 struct LockResponse {
@@ -959,6 +990,7 @@ struct ShowLocksRequest {
     2: optional string tablename,
     3: optional string partname,
     4: optional bool isExtended=false,
+    5: optional string catName
 }
 
 struct ShowLocksResponseElement {
@@ -978,6 +1010,7 @@ struct ShowLocksResponseElement {
     14: optional i64 blockedByExtId,
     15: optional i64 blockedByIntId,
     16: optional i64 lockIdInternal,
+    17: optional string catName
 }
 
 struct ShowLocksResponse {
@@ -1005,7 +1038,8 @@ struct CompactionRequest {
     3: optional string partitionname,
     4: required CompactionType type,
     5: optional string runas,
-    6: optional map<string, string> properties
+    6: optional map<string, string> properties,
+    7: optional string catName
 }
 
 struct CompactionResponse {
@@ -1031,6 +1065,7 @@ struct ShowCompactResponseElement {
     11: optional i64 endTime,
     12: optional string hadoopJobId = "None",
     13: optional i64 id,
+    14: optional string catName
 }
 
 struct ShowCompactResponse {
@@ -1043,7 +1078,8 @@ struct AddDynamicPartitions {
     3: required string dbname,
     4: required string tablename,
     5: required list<string> partitionnames,
-    6: optional DataOperationType operationType = DataOperationType.UNSET
+    6: optional DataOperationType operationType = DataOperationType.UNSET,
+    7: optional string catName
 }
 
 struct BasicTxnInfo {
@@ -1052,7 +1088,8 @@ struct BasicTxnInfo {
     3: optional i64 txnid,
     4: optional string dbname,
     5: optional string tablename,
-    6: optional string partitionname
+    6: optional string partitionname,
+    7: optional string catName
 }
 
 struct CreationMetadata {
@@ -2082,8 +2119,14 @@ service ThriftHiveMetastore extends fb303.FacebookService
   void abort_txns(1:AbortTxnsRequest rqst) throws (1:NoSuchTxnException o1)
   void commit_txn(1:CommitTxnRequest rqst) throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2)
   void repl_tbl_writeid_state(1: ReplTblWriteIdStateRequest rqst)
+
+  // deprecated, use get_valid_write_ids2
   GetValidWriteIdsResponse get_valid_write_ids(1:GetValidWriteIdsRequest rqst)
       throws (1:NoSuchTxnException o1, 2:MetaException o2)
+
+  GetValidWriteIdsResponse2 get_valid_write_ids2(1:GetValidWriteIdsRequest2 rqst)
+      throws (1:NoSuchTxnException o1, 2:MetaException o2)
+
   AllocateTableWriteIdsResponse allocate_table_write_ids(1:AllocateTableWriteIdsRequest rqst)
     throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2, 3:MetaException o3)
   LockResponse lock(1:LockRequest rqst) throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2)

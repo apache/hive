@@ -25,6 +25,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -33,6 +34,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.ReplCopyTask;
@@ -336,7 +338,12 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       //(because Export was done from transactional table), need a writeId
       // Explain plan doesn't open a txn and hence no need to allocate write id.
       if (x.getCtx().getExplainConfig() == null) {
-        writeId = txnMgr.getTableWriteId(tblDesc.getDatabaseName(), tblDesc.getTableName());
+        // TODO CAT - Fix in HIVE-19791
+        TableName tableName = new TableName(
+            SessionState.get() == null ? Warehouse.DEFAULT_CATALOG_NAME :
+                SessionState.get().getCurrentCatalog(),
+            tblDesc.getDatabaseName(), tblDesc.getTableName());
+        writeId = txnMgr.getTableWriteId(tableName);
         stmtId = txnMgr.getStmtIdAndIncrement();
       }
     }

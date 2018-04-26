@@ -44,6 +44,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("type", org.apache.thrift.protocol.TType.I32, (short)4);
   private static final org.apache.thrift.protocol.TField RUNAS_FIELD_DESC = new org.apache.thrift.protocol.TField("runas", org.apache.thrift.protocol.TType.STRING, (short)5);
   private static final org.apache.thrift.protocol.TField PROPERTIES_FIELD_DESC = new org.apache.thrift.protocol.TField("properties", org.apache.thrift.protocol.TType.MAP, (short)6);
+  private static final org.apache.thrift.protocol.TField CAT_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("catName", org.apache.thrift.protocol.TType.STRING, (short)7);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -57,6 +58,7 @@ import org.slf4j.LoggerFactory;
   private CompactionType type; // required
   private String runas; // optional
   private Map<String,String> properties; // optional
+  private String catName; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -69,7 +71,8 @@ import org.slf4j.LoggerFactory;
      */
     TYPE((short)4, "type"),
     RUNAS((short)5, "runas"),
-    PROPERTIES((short)6, "properties");
+    PROPERTIES((short)6, "properties"),
+    CAT_NAME((short)7, "catName");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -96,6 +99,8 @@ import org.slf4j.LoggerFactory;
           return RUNAS;
         case 6: // PROPERTIES
           return PROPERTIES;
+        case 7: // CAT_NAME
+          return CAT_NAME;
         default:
           return null;
       }
@@ -136,7 +141,7 @@ import org.slf4j.LoggerFactory;
   }
 
   // isset id assignments
-  private static final _Fields optionals[] = {_Fields.PARTITIONNAME,_Fields.RUNAS,_Fields.PROPERTIES};
+  private static final _Fields optionals[] = {_Fields.PARTITIONNAME,_Fields.RUNAS,_Fields.PROPERTIES,_Fields.CAT_NAME};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -154,6 +159,8 @@ import org.slf4j.LoggerFactory;
         new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
+    tmpMap.put(_Fields.CAT_NAME, new org.apache.thrift.meta_data.FieldMetaData("catName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(CompactionRequest.class, metaDataMap);
   }
@@ -195,6 +202,9 @@ import org.slf4j.LoggerFactory;
       Map<String,String> __this__properties = new HashMap<String,String>(other.properties);
       this.properties = __this__properties;
     }
+    if (other.isSetCatName()) {
+      this.catName = other.catName;
+    }
   }
 
   public CompactionRequest deepCopy() {
@@ -209,6 +219,7 @@ import org.slf4j.LoggerFactory;
     this.type = null;
     this.runas = null;
     this.properties = null;
+    this.catName = null;
   }
 
   public String getDbname() {
@@ -368,6 +379,29 @@ import org.slf4j.LoggerFactory;
     }
   }
 
+  public String getCatName() {
+    return this.catName;
+  }
+
+  public void setCatName(String catName) {
+    this.catName = catName;
+  }
+
+  public void unsetCatName() {
+    this.catName = null;
+  }
+
+  /** Returns true if field catName is set (has been assigned a value) and false otherwise */
+  public boolean isSetCatName() {
+    return this.catName != null;
+  }
+
+  public void setCatNameIsSet(boolean value) {
+    if (!value) {
+      this.catName = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case DBNAME:
@@ -418,6 +452,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case CAT_NAME:
+      if (value == null) {
+        unsetCatName();
+      } else {
+        setCatName((String)value);
+      }
+      break;
+
     }
   }
 
@@ -440,6 +482,9 @@ import org.slf4j.LoggerFactory;
 
     case PROPERTIES:
       return getProperties();
+
+    case CAT_NAME:
+      return getCatName();
 
     }
     throw new IllegalStateException();
@@ -464,6 +509,8 @@ import org.slf4j.LoggerFactory;
       return isSetRunas();
     case PROPERTIES:
       return isSetProperties();
+    case CAT_NAME:
+      return isSetCatName();
     }
     throw new IllegalStateException();
   }
@@ -535,6 +582,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_catName = true && this.isSetCatName();
+    boolean that_present_catName = true && that.isSetCatName();
+    if (this_present_catName || that_present_catName) {
+      if (!(this_present_catName && that_present_catName))
+        return false;
+      if (!this.catName.equals(that.catName))
+        return false;
+    }
+
     return true;
   }
 
@@ -571,6 +627,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_properties);
     if (present_properties)
       list.add(properties);
+
+    boolean present_catName = true && (isSetCatName());
+    list.add(present_catName);
+    if (present_catName)
+      list.add(catName);
 
     return list.hashCode();
   }
@@ -639,6 +700,16 @@ import org.slf4j.LoggerFactory;
     }
     if (isSetProperties()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.properties, other.properties);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetCatName()).compareTo(other.isSetCatName());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetCatName()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.catName, other.catName);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -713,6 +784,16 @@ import org.slf4j.LoggerFactory;
         sb.append("null");
       } else {
         sb.append(this.properties);
+      }
+      first = false;
+    }
+    if (isSetCatName()) {
+      if (!first) sb.append(", ");
+      sb.append("catName:");
+      if (this.catName == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.catName);
       }
       first = false;
     }
@@ -814,19 +895,27 @@ import org.slf4j.LoggerFactory;
           case 6: // PROPERTIES
             if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map682 = iprot.readMapBegin();
-                struct.properties = new HashMap<String,String>(2*_map682.size);
-                String _key683;
-                String _val684;
-                for (int _i685 = 0; _i685 < _map682.size; ++_i685)
+                org.apache.thrift.protocol.TMap _map706 = iprot.readMapBegin();
+                struct.properties = new HashMap<String,String>(2*_map706.size);
+                String _key707;
+                String _val708;
+                for (int _i709 = 0; _i709 < _map706.size; ++_i709)
                 {
-                  _key683 = iprot.readString();
-                  _val684 = iprot.readString();
-                  struct.properties.put(_key683, _val684);
+                  _key707 = iprot.readString();
+                  _val708 = iprot.readString();
+                  struct.properties.put(_key707, _val708);
                 }
                 iprot.readMapEnd();
               }
               struct.setPropertiesIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 7: // CAT_NAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.catName = iprot.readString();
+              struct.setCatNameIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -878,13 +967,20 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldBegin(PROPERTIES_FIELD_DESC);
           {
             oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, struct.properties.size()));
-            for (Map.Entry<String, String> _iter686 : struct.properties.entrySet())
+            for (Map.Entry<String, String> _iter710 : struct.properties.entrySet())
             {
-              oprot.writeString(_iter686.getKey());
-              oprot.writeString(_iter686.getValue());
+              oprot.writeString(_iter710.getKey());
+              oprot.writeString(_iter710.getValue());
             }
             oprot.writeMapEnd();
           }
+          oprot.writeFieldEnd();
+        }
+      }
+      if (struct.catName != null) {
+        if (struct.isSetCatName()) {
+          oprot.writeFieldBegin(CAT_NAME_FIELD_DESC);
+          oprot.writeString(struct.catName);
           oprot.writeFieldEnd();
         }
       }
@@ -918,7 +1014,10 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetProperties()) {
         optionals.set(2);
       }
-      oprot.writeBitSet(optionals, 3);
+      if (struct.isSetCatName()) {
+        optionals.set(3);
+      }
+      oprot.writeBitSet(optionals, 4);
       if (struct.isSetPartitionname()) {
         oprot.writeString(struct.partitionname);
       }
@@ -928,12 +1027,15 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetProperties()) {
         {
           oprot.writeI32(struct.properties.size());
-          for (Map.Entry<String, String> _iter687 : struct.properties.entrySet())
+          for (Map.Entry<String, String> _iter711 : struct.properties.entrySet())
           {
-            oprot.writeString(_iter687.getKey());
-            oprot.writeString(_iter687.getValue());
+            oprot.writeString(_iter711.getKey());
+            oprot.writeString(_iter711.getValue());
           }
         }
+      }
+      if (struct.isSetCatName()) {
+        oprot.writeString(struct.catName);
       }
     }
 
@@ -946,7 +1048,7 @@ import org.slf4j.LoggerFactory;
       struct.setTablenameIsSet(true);
       struct.type = org.apache.hadoop.hive.metastore.api.CompactionType.findByValue(iprot.readI32());
       struct.setTypeIsSet(true);
-      BitSet incoming = iprot.readBitSet(3);
+      BitSet incoming = iprot.readBitSet(4);
       if (incoming.get(0)) {
         struct.partitionname = iprot.readString();
         struct.setPartitionnameIsSet(true);
@@ -957,18 +1059,22 @@ import org.slf4j.LoggerFactory;
       }
       if (incoming.get(2)) {
         {
-          org.apache.thrift.protocol.TMap _map688 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.properties = new HashMap<String,String>(2*_map688.size);
-          String _key689;
-          String _val690;
-          for (int _i691 = 0; _i691 < _map688.size; ++_i691)
+          org.apache.thrift.protocol.TMap _map712 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.properties = new HashMap<String,String>(2*_map712.size);
+          String _key713;
+          String _val714;
+          for (int _i715 = 0; _i715 < _map712.size; ++_i715)
           {
-            _key689 = iprot.readString();
-            _val690 = iprot.readString();
-            struct.properties.put(_key689, _val690);
+            _key713 = iprot.readString();
+            _val714 = iprot.readString();
+            struct.properties.put(_key713, _val714);
           }
         }
         struct.setPropertiesIsSet(true);
+      }
+      if (incoming.get(3)) {
+        struct.catName = iprot.readString();
+        struct.setCatNameIsSet(true);
       }
     }
   }

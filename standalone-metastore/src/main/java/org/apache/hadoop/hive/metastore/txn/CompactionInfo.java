@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.txn;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
@@ -30,6 +31,7 @@ import java.sql.SQLException;
  */
 public class CompactionInfo implements Comparable<CompactionInfo> {
   public long id;
+  public String catName;
   public String dbname;
   public String tableName;
   public String partName;
@@ -51,16 +53,18 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
   String hadoopJobId;
 
   private String fullPartitionName = null;
-  private String fullTableName = null;
+  private TableName fullTableName = null;
 
-  public CompactionInfo(String dbname, String tableName, String partName, CompactionType type) {
+  public CompactionInfo(String catName, String dbname, String tableName, String partName,
+                        CompactionType type) {
+    this.catName = catName;
     this.dbname = dbname;
     this.tableName = tableName;
     this.partName = partName;
     this.type = type;
   }
-  CompactionInfo(long id, String dbname, String tableName, String partName, char state) {
-    this(dbname, tableName, partName, null);
+  CompactionInfo(long id, String catName, String dbname, String tableName, String partName, char state) {
+    this(catName, dbname, tableName, partName, null);
     this.id = id;
     this.state = state;
   }
@@ -80,12 +84,9 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     return fullPartitionName;
   }
 
-  public String getFullTableName() {
+  public TableName getFullTableName() {
     if (fullTableName == null) {
-      StringBuilder buf = new StringBuilder(dbname);
-      buf.append('.');
-      buf.append(tableName);
-      fullTableName = buf.toString();
+      fullTableName = new TableName(catName, dbname, tableName);
     }
     return fullTableName;
   }
@@ -137,6 +138,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
   static CompactionInfo loadFullFromCompactionQueue(ResultSet rs) throws SQLException {
     CompactionInfo fullCi = new CompactionInfo();
     fullCi.id = rs.getLong(1);
+    fullCi.catName = rs.getString("cq_catalog");
     fullCi.dbname = rs.getString(2);
     fullCi.tableName = rs.getString(3);
     fullCi.partName = rs.getString(4);
@@ -166,5 +168,6 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     pStmt.setLong(12, ci.highestWriteId);
     pStmt.setBytes(13, ci.metaInfo);
     pStmt.setString(14, ci.hadoopJobId);
+    pStmt.setString(15, ci.catName);
   }
 }

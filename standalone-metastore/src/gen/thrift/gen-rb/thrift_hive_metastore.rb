@@ -2501,6 +2501,23 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_valid_write_ids failed: unknown result')
     end
 
+    def get_valid_write_ids2(rqst)
+      send_get_valid_write_ids2(rqst)
+      return recv_get_valid_write_ids2()
+    end
+
+    def send_get_valid_write_ids2(rqst)
+      send_message('get_valid_write_ids2', Get_valid_write_ids2_args, :rqst => rqst)
+    end
+
+    def recv_get_valid_write_ids2()
+      result = receive_message(Get_valid_write_ids2_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_valid_write_ids2 failed: unknown result')
+    end
+
     def allocate_table_write_ids(rqst)
       send_allocate_table_write_ids(rqst)
       return recv_allocate_table_write_ids()
@@ -5364,6 +5381,19 @@ module ThriftHiveMetastore
         result.o2 = o2
       end
       write_result(result, oprot, 'get_valid_write_ids', seqid)
+    end
+
+    def process_get_valid_write_ids2(seqid, iprot, oprot)
+      args = read_args(iprot, Get_valid_write_ids2_args)
+      result = Get_valid_write_ids2_result.new()
+      begin
+        result.success = @handler.get_valid_write_ids2(args.rqst)
+      rescue ::NoSuchTxnException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_valid_write_ids2', seqid)
     end
 
     def process_allocate_table_write_ids(seqid, iprot, oprot)
@@ -11676,6 +11706,42 @@ module ThriftHiveMetastore
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::GetValidWriteIdsResponse},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchTxnException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_valid_write_ids2_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    RQST = 1
+
+    FIELDS = {
+      RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::GetValidWriteIdsRequest2}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_valid_write_ids2_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::GetValidWriteIdsResponse2},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchTxnException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
     }

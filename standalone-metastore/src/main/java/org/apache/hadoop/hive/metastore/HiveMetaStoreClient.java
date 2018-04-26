@@ -54,6 +54,7 @@ import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.api.*;
@@ -2425,17 +2426,19 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public ValidWriteIdList getValidWriteIds(String fullTableName) throws TException {
-    GetValidWriteIdsRequest rqst = new GetValidWriteIdsRequest(Collections.singletonList(fullTableName), null);
-    GetValidWriteIdsResponse validWriteIds = client.get_valid_write_ids(rqst);
-    return TxnUtils.createValidReaderWriteIdList(validWriteIds.getTblValidWriteIds().get(0));
+  public ValidWriteIdList getValidWriteIds(TableName fullTableName) throws TException {
+    GetValidWriteIdsRequest2 rqst = new GetValidWriteIdsRequest2(Collections.singletonList(
+        MetaStoreUtils.tableNameToThriftTableName(fullTableName)), null);
+    GetValidWriteIdsResponse2 validWriteIds = client.get_valid_write_ids2(rqst);
+    return TxnUtils.createValidReaderWriteIdList(validWriteIds.getTblValidWriteIds().get(0), conf);
   }
 
   @Override
-  public List<TableValidWriteIds> getValidWriteIds(
-      List<String> tablesList, String validTxnList) throws TException {
-    GetValidWriteIdsRequest rqst = new GetValidWriteIdsRequest(tablesList, validTxnList);
-    return client.get_valid_write_ids(rqst).getTblValidWriteIds();
+  public List<TableValidWriteIds2> getValidWriteIds(
+      List<TableName> tablesList, String validTxnList) throws TException {
+    GetValidWriteIdsRequest2 rqst =
+        new GetValidWriteIdsRequest2(MetaStoreUtils.tableNameToThriftTableName(tablesList), validTxnList);
+    return client.get_valid_write_ids2(rqst).getTblValidWriteIds();
   }
 
   @Override
@@ -2516,7 +2519,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public void replTableWriteIdState(String validWriteIdList, String dbName, String tableName, List<String> partNames)
+  public void replTableWriteIdState(String validWriteIdList, TableName tableName, List<String> partNames)
           throws TException {
     String user;
     try {
@@ -2534,8 +2537,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       throw new RuntimeException(e);
     }
 
-    ReplTblWriteIdStateRequest rqst
-            = new ReplTblWriteIdStateRequest(validWriteIdList, user, hostName, dbName, tableName);
+    ReplTblWriteIdStateRequest rqst = new ReplTblWriteIdStateRequest(validWriteIdList, user,
+        hostName, tableName.getDb(), tableName.getTable());
+    rqst.setCatName(tableName.getCat());
     if (partNames != null) {
       rqst.setPartNames(partNames);
     }
@@ -2543,22 +2547,26 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public long allocateTableWriteId(long txnId, String dbName, String tableName) throws TException {
-    return allocateTableWriteIdsBatch(Collections.singletonList(txnId), dbName, tableName).get(0).getWriteId();
+  public long allocateTableWriteId(long txnId, TableName tableName) throws TException {
+    return allocateTableWriteIdsBatch(Collections.singletonList(txnId), tableName).get(0).getWriteId();
   }
 
   @Override
-  public List<TxnToWriteId> allocateTableWriteIdsBatch(List<Long> txnIds, String dbName, String tableName)
+  public List<TxnToWriteId> allocateTableWriteIdsBatch(List<Long> txnIds, TableName tableName)
           throws TException {
-    AllocateTableWriteIdsRequest rqst = new AllocateTableWriteIdsRequest(dbName, tableName);
+    AllocateTableWriteIdsRequest rqst =
+        new AllocateTableWriteIdsRequest(tableName.getDb(), tableName.getTable());
+    rqst.setCatName(tableName.getCat());
     rqst.setTxnIds(txnIds);
     return allocateTableWriteIdsBatchIntr(rqst);
   }
 
   @Override
-  public List<TxnToWriteId> replAllocateTableWriteIdsBatch(String dbName, String tableName,
-                                 String replPolicy, List<TxnToWriteId> srcTxnToWriteIdList) throws TException {
-    AllocateTableWriteIdsRequest rqst = new AllocateTableWriteIdsRequest(dbName, tableName);
+  public List<TxnToWriteId> replAllocateTableWriteIdsBatch(
+      TableName tableName, String replPolicy, List<TxnToWriteId> srcTxnToWriteIdList) throws TException {
+    AllocateTableWriteIdsRequest rqst =
+        new AllocateTableWriteIdsRequest(tableName.getDb(), tableName.getTable());
+    rqst.setCatName(tableName.getCat());
     rqst.setReplPolicy(replPolicy);
     rqst.setSrcTxnToWriteIdList(srcTxnToWriteIdList);
     return allocateTableWriteIdsBatchIntr(rqst);
@@ -2616,39 +2624,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  @Deprecated
-  public void compact(String dbname, String tableName, String partitionName,  CompactionType type)
-      throws TException {
+  public CompactionResponse compact(TableName tableName, String partitionName, CompactionType type,
+                                     Map<String, String> tblproperties) throws TException {
     CompactionRequest cr = new CompactionRequest();
-    if (dbname == null) {
-      cr.setDbname(DEFAULT_DATABASE_NAME);
-    } else {
-      cr.setDbname(dbname);
-    }
-    cr.setTablename(tableName);
-    if (partitionName != null) {
-      cr.setPartitionname(partitionName);
-    }
-    cr.setType(type);
-    client.compact(cr);
-  }
-  @Deprecated
-  @Override
-  public void compact(String dbname, String tableName, String partitionName, CompactionType type,
-                      Map<String, String> tblproperties) throws TException {
-    compact2(dbname, tableName, partitionName, type, tblproperties);
-  }
-
-  @Override
-  public CompactionResponse compact2(String dbname, String tableName, String partitionName, CompactionType type,
-                      Map<String, String> tblproperties) throws TException {
-    CompactionRequest cr = new CompactionRequest();
-    if (dbname == null) {
-      cr.setDbname(DEFAULT_DATABASE_NAME);
-    } else {
-      cr.setDbname(dbname);
-    }
-    cr.setTablename(tableName);
+    cr.setCatName(tableName.getCat());
+    cr.setDbname(tableName.getDb());
+    cr.setTablename(tableName.getTable());
     if (partitionName != null) {
       cr.setPartitionname(partitionName);
     }
@@ -2656,21 +2637,19 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     cr.setProperties(tblproperties);
     return client.compact2(cr);
   }
+
   @Override
   public ShowCompactResponse showCompactions() throws TException {
     return client.show_compact(new ShowCompactRequest());
   }
 
-  @Deprecated
   @Override
-  public void addDynamicPartitions(long txnId, long writeId, String dbName, String tableName,
-                                   List<String> partNames) throws TException {
-    client.add_dynamic_partitions(new AddDynamicPartitions(txnId, writeId, dbName, tableName, partNames));
-  }
-  @Override
-  public void addDynamicPartitions(long txnId, long writeId, String dbName, String tableName,
-                                   List<String> partNames, DataOperationType operationType) throws TException {
-    AddDynamicPartitions adp = new AddDynamicPartitions(txnId, writeId, dbName, tableName, partNames);
+  public void addDynamicPartitions(long txnId, long writeId, TableName tableName,
+                                   List<String> partNames, DataOperationType operationType)
+      throws TException {
+    AddDynamicPartitions adp =
+        new AddDynamicPartitions(txnId, writeId, tableName.getDb(), tableName.getTable(), partNames);
+    adp.setCatName(tableName.getCat());
     adp.setOperationType(operationType);
     client.add_dynamic_partitions(adp);
   }

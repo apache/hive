@@ -131,7 +131,7 @@ public interface TxnStore extends Configurable {
    */
   @RetrySemantics.Idempotent
   BasicTxnInfo getFirstCompletedTransactionForTableAfterCommit(
-      String inputDbName, String inputTableName, ValidWriteIdList txnList)
+      String inputCatName, String inputDbName, String inputTableName, ValidWriteIdList txnList)
           throws MetaException;
   /**
    * Gets the list of valid write ids for the given table wrt to current txn
@@ -140,7 +140,7 @@ public interface TxnStore extends Configurable {
    * @throws MetaException
    */
   @RetrySemantics.ReadOnly
-  GetValidWriteIdsResponse getValidWriteIds(GetValidWriteIdsRequest rqst)
+  GetValidWriteIdsResponse2 getValidWriteIds(GetValidWriteIdsRequest2 rqst)
           throws NoSuchTxnException,  MetaException;
 
   /**
@@ -270,7 +270,7 @@ public interface TxnStore extends Configurable {
    */
   @RetrySemantics.Idempotent
   void cleanupRecords(HiveObjectType type, Database db, Table table,
-                             Iterator<Partition> partitionIterator) throws MetaException;
+                      Iterator<Partition> partitionIterator) throws MetaException;
 
   @RetrySemantics.Idempotent
   void onRename(String oldCatName, String oldDbName, String oldTabName, String oldPartName,

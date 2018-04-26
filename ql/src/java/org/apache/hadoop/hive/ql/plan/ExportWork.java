@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -50,7 +51,7 @@ public class ExportWork implements Serializable {
     public static MmContext createIfNeeded(Table t) {
       if (t == null) return null;
       if (!AcidUtils.isInsertOnlyTable(t.getParameters())) return null;
-      return new MmContext(AcidUtils.getFullTableName(t.getDbName(), t.getTableName()));
+      return new MmContext(TableName.getDbTable(t.getDbName(), t.getTableName()));
     }
 
     public String getFqTableName() {

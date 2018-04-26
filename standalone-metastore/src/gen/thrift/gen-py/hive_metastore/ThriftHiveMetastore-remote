@@ -173,6 +173,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  void commit_txn(CommitTxnRequest rqst)')
   print('  void repl_tbl_writeid_state(ReplTblWriteIdStateRequest rqst)')
   print('  GetValidWriteIdsResponse get_valid_write_ids(GetValidWriteIdsRequest rqst)')
+  print('  GetValidWriteIdsResponse2 get_valid_write_ids2(GetValidWriteIdsRequest2 rqst)')
   print('  AllocateTableWriteIdsResponse allocate_table_write_ids(AllocateTableWriteIdsRequest rqst)')
   print('  LockResponse lock(LockRequest rqst)')
   print('  LockResponse check_lock(CheckLockRequest rqst)')
@@ -1193,6 +1194,12 @@ elif cmd == 'get_valid_write_ids':
     print('get_valid_write_ids requires 1 args')
     sys.exit(1)
   pp.pprint(client.get_valid_write_ids(eval(args[0]),))
+
+elif cmd == 'get_valid_write_ids2':
+  if len(args) != 1:
+    print('get_valid_write_ids2 requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_valid_write_ids2(eval(args[0]),))
 
 elif cmd == 'allocate_table_write_ids':
   if len(args) != 1:

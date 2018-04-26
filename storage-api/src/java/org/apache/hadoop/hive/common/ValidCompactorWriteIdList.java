@@ -39,19 +39,19 @@ public class ValidCompactorWriteIdList extends ValidReaderWriteIdList {
   public ValidCompactorWriteIdList() {
     super();
   }
-  public ValidCompactorWriteIdList(String tableName, long[] abortedWriteIdList, BitSet abortedBits,
+  public ValidCompactorWriteIdList(TableName tableName, long[] abortedWriteIdList, BitSet abortedBits,
                                    long highWatermark) {
     this(tableName, abortedWriteIdList, abortedBits, highWatermark, Long.MAX_VALUE);
   }
   /**
-   * @param tableName table which is under compaction. Full name of format &lt;db_name&gt;.&lt;table_name&gt;
+   * @param tableName table which is under compaction.
    * @param abortedWriteIdList list of all aborted write ids
    * @param abortedBits bitset marking whether the corresponding write id is aborted
    * @param highWatermark highest committed write id to be considered for compaction,
    *                      equivalently (lowest_open_write_id - 1).
    * @param minOpenWriteId minimum write ID which maps to a open transaction
    */
-  public ValidCompactorWriteIdList(String tableName, long[] abortedWriteIdList, BitSet abortedBits,
+  public ValidCompactorWriteIdList(TableName tableName, long[] abortedWriteIdList, BitSet abortedBits,
                                    long highWatermark, long minOpenWriteId) {
     // abortedBits should be all true as everything in exceptions are aborted txns
     super(tableName, abortedWriteIdList, abortedBits, highWatermark, minOpenWriteId);

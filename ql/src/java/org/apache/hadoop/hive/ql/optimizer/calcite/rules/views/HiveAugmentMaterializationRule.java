@@ -27,6 +27,7 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.tools.RelBuilder;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
@@ -74,12 +75,12 @@ public class HiveAugmentMaterializationRule extends RelOptRule {
       // Already visited
       return;
     }
-    final String tableQName =
-        ((RelOptHiveTable)tableScan.getTable()).getHiveTableMD().getFullyQualifiedName();
+    final TableName fullTableName =
+        ((RelOptHiveTable)tableScan.getTable()).getHiveTableMD().getFullTableName();
     final ValidWriteIdList tableCurrentTxnList =
-        currentTxnList.getTableValidWriteIdList(tableQName);
+        currentTxnList.getTableValidWriteIdList(fullTableName);
     final ValidWriteIdList tableMaterializationTxnList =
-        materializationTxnList.getTableValidWriteIdList(tableQName);
+        materializationTxnList.getTableValidWriteIdList(fullTableName);
     if (TxnIdUtils.checkEquivalentWriteIds(tableCurrentTxnList, tableMaterializationTxnList)) {
       // This table has not been modified since materialization was created,
       // nothing to do
