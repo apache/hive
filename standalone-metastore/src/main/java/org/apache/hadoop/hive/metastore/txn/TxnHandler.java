@@ -1122,6 +1122,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     String dbName = rqst.getDbName().toLowerCase();
     String tblName = rqst.getTableName().toLowerCase();
     ValidWriteIdList validWriteIdList = new ValidReaderWriteIdList(rqst.getValidWriteIdlist());
+
+    // Get the abortedWriteIds which are already sorted in ascending order.
+    List<Long> abortedWriteIds = getAbortedWriteIds(validWriteIdList);
+    int numAbortedWrites = abortedWriteIds.size();
     try {
       Connection dbConn = null;
       Statement stmt = null;
@@ -1138,14 +1142,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         LOG.debug("Going to execute delete <" + sql + ">");
         stmt.executeUpdate(sql);
 
-        sql = "delete from TXN_COMPONENTS where tc_database = " + quoteString(dbName)
-                + " and tc_table = " + quoteString(tblName);
-        LOG.debug("Going to execute delete <" + sql + ">");
-        stmt.executeUpdate(sql);
-
-        // Get the abortedWriteIds which are already sorted in ascending order.
-        List<Long> abortedWriteIds = getAbortedWriteIds(validWriteIdList);
-        int numAbortedWrites = abortedWriteIds.size();
         if (numAbortedWrites > 0) {
           // Allocate/Map one txn per aborted writeId and abort the txn to mark writeid as aborted.
           List<Long> txnIds = openTxns(dbConn, stmt,
@@ -1164,35 +1160,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           // Insert entries to TXN_TO_WRITE_ID for aborted write ids
           List<String> inserts = sqlGenerator.createInsertValuesStmt(
                   "TXN_TO_WRITE_ID (t2w_txnid, t2w_database, t2w_table, t2w_writeid)", rows);
-          for (String insert : inserts) {
-            LOG.debug("Going to execute insert <" + insert + ">");
-            stmt.execute(insert);
-          }
-
-          // Insert one entry per partition or table(unpartitioned table) to make sure auto compaction
-          // is triggered on them.
-          rows.clear();
-          if (rqst.isSetPartNames()) {
-            for (String partName : rqst.getPartNames()) {
-              rows.add(txnIds.get(numAbortedWrites - 1) + ", "
-                      + quoteString(dbName) + ", "
-                      + quoteString(tblName) + ", "
-                      + quoteString(partName) + ", "
-                      + quoteString(OpertaionType.INSERT.toString()) + ", "
-                      + abortedWriteIds.get(numAbortedWrites - 1));
-            }
-          } else {
-            rows.add(txnIds.get(numAbortedWrites - 1) + ", "
-                    + quoteString(dbName) + ", "
-                    + quoteString(tblName) + ", "
-                    + "null, "
-                    + quoteString(OpertaionType.INSERT.toString()) + ", "
-                    + abortedWriteIds.get(numAbortedWrites - 1));
-          }
-
-          inserts = sqlGenerator.createInsertValuesStmt(
-                  "TXN_COMPONENTS (tc_txnid, tc_database, tc_table, tc_partition, tc_operation_type, tc_writeid)",
-                  rows);
           for (String insert : inserts) {
             LOG.debug("Going to execute insert <" + insert + ">");
             stmt.execute(insert);
@@ -1232,7 +1199,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
         LOG.debug("Going to commit");
         dbConn.commit();
-        return;
       } catch (SQLException e) {
         LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);
@@ -1248,6 +1214,20 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       }
     } catch (RetryException e) {
       replTableWriteIdState(rqst);
+    }
+
+    // Schedule Major compaction on all the partitions/table to clean aborted data
+    if (numAbortedWrites > 0) {
+      CompactionRequest compactRqst = new CompactionRequest(rqst.getDbName(), rqst.getTableName(),
+              CompactionType.MAJOR);
+      if (rqst.isSetPartNames()) {
+        for (String partName : rqst.getPartNames()) {
+          compactRqst.setPartitionname(partName);
+          compact(compactRqst);
+        }
+      } else {
+        compact(compactRqst);
+      }
     }
   }
 

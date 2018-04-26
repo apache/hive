@@ -126,11 +126,9 @@ public class TestReplicationScenariosAcidTables {
             .run("insert into t3 values(11)")
             .run("insert into t3 values(22)")
             .run("create table t4 (id int)")
-            .run("insert into t4 values(111)")
-            .run("insert into t4 values(222)")
+            .run("insert into t4 values(111), (222)")
             .run("create table t5 (id int) stored as orc ")
-            .run("insert into t5 values(1111)")
-            .run("insert into t5 values(2222)")
+            .run("insert into t5 values(1111), (2222)")
             .run("alter table t5 set tblproperties (\"transactional\"=\"true\")")
             .run("insert into t5 values(3333)")
             .dump(primaryDbName, null);
@@ -248,15 +246,16 @@ public class TestReplicationScenariosAcidTables {
                     "select count(*) from TXN_TO_WRITE_ID where t2w_database = '" + replicatedDbName.toLowerCase()
                             + "' and t2w_table = 't2'"));
 
-    // Verify if entries added in TXN_COMPONENTS for each table/partition
-    Assert.assertEquals(TxnDbUtil.queryToString(replicaConf, "select * from TXN_COMPONENTS"),
+    // Verify if entries added in COMPACTION_QUEUE for each table/partition
+    // t1-> 1 entry and t2-> 2 entries (1 per partition)
+    Assert.assertEquals(TxnDbUtil.queryToString(replicaConf, "select * from COMPACTION_QUEUE"),
             1, TxnDbUtil.countQueryAgent(replicaConf,
-                    "select count(*) from TXN_COMPONENTS where tc_database = '" + replicatedDbName.toLowerCase()
-                            + "' and tc_table = 't1'"));
-    Assert.assertEquals(TxnDbUtil.queryToString(replicaConf, "select * from TXN_COMPONENTS"),
+                    "select count(*) from COMPACTION_QUEUE where cq_database = '" + replicatedDbName
+                            + "' and cq_table = 't1'"));
+    Assert.assertEquals(TxnDbUtil.queryToString(replicaConf, "select * from COMPACTION_QUEUE"),
             2, TxnDbUtil.countQueryAgent(replicaConf,
-                    "select count(*) from TXN_COMPONENTS where tc_database = '" + replicatedDbName.toLowerCase()
-                            + "' and tc_table = 't2'"));
+                    "select count(*) from COMPACTION_QUEUE where cq_database = '" + replicatedDbName
+                            + "' and cq_table = 't2'"));
   }
 
   @Test
