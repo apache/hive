@@ -47,7 +47,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
@@ -95,7 +94,7 @@ public class TestSchemaToolCatalogOps {
     String catName = "my_test_catalog";
     String location = "file:///tmp/my_test_catalog";
     String description = "very descriptive";
-    schemaTool.createCatalog(catName, location, description);
+    schemaTool.createCatalog(catName, location, description, false);
 
     Catalog cat = client.getCatalog(catName);
     Assert.assertEquals(location, cat.getLocationUri());
@@ -104,7 +103,17 @@ public class TestSchemaToolCatalogOps {
 
   @Test(expected = HiveMetaException.class)
   public void createExistingCatalog() throws HiveMetaException {
-    schemaTool.createCatalog("hive", "somewhere", "");
+    schemaTool.createCatalog("hive", "somewhere", "", false);
+  }
+
+  @Test
+  public void createExistingCatalogWithIfNotExists() throws HiveMetaException, TException {
+    String catName = "my_existing_test_catalog";
+    String location = "file:///tmp/my_test_catalog";
+    String description = "very descriptive";
+    schemaTool.createCatalog(catName, location, description, false);
+
+    schemaTool.createCatalog(catName, location, description, true);
   }
 
   @Test

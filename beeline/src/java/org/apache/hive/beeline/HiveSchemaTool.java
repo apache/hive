@@ -34,6 +34,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.IMetaStoreSchemaInfo;
 import org.apache.hadoop.hive.metastore.MetaStoreSchemaInfoFactory;
@@ -43,6 +44,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.tools.HiveSchemaHelper;
 import org.apache.hadoop.hive.metastore.tools.HiveSchemaHelper.MetaStoreConnectionInfo;
 import org.apache.hadoop.hive.metastore.tools.HiveSchemaHelper.NestedScriptParser;
+import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -885,14 +887,29 @@ public class HiveSchemaTool {
   }
 
   @VisibleForTesting
-  void createCatalog(String catName, String location, String description) throws
-      HiveMetaException {
+  void createCatalog(String catName, String location, String description, boolean ifNotExists)
+      throws HiveMetaException {
     catName = normalizeIdentifier(catName);
     System.out.println("Create catalog " + catName + " at location " + location);
     try (Connection conn = getConnectionToMetastore(false)) {
       try (Statement stmt = conn.createStatement()) {
-        String query = "select max(" + quoteIf("CTLG_ID") + ") " +
-            "from " + quoteIf("CTLGS");
+        // If they set ifNotExists check for existence first, and bail if it exists.  This is
+        // more reliable then attempting to parse the error message from the SQLException.
+        if (ifNotExists) {
+          String query = "select " + quoteIf("NAME") + " from " + quoteIf("CTLGS") +
+              " where " + quoteIf("NAME") + " = '" + catName + "'";
+          ResultSet rs = stmt.executeQuery(query);
+          if (rs.next()) {
+            System.out.println("Catalog " + catName + " already exists");
+            return;
+          }
+        }
+        SQLGenerator sqlGenerator = new SQLGenerator(
+            DatabaseProduct.determineDatabaseProduct(
+                conn.getMetaData().getDatabaseProductName()
+            ), hiveConf);
+        String query = sqlGenerator.addForUpdateClause("select max(" + quoteIf("CTLG_ID") + ") " +
+            "from " + quoteIf("CTLGS"));
         ResultSet rs = stmt.executeQuery(query);
         if (!rs.next()) {
           throw new HiveMetaException("No catalogs found, have you upgraded the database?");
@@ -905,7 +922,7 @@ public class HiveSchemaTool {
         stmt.execute(update);
         conn.commit();
       }
-    } catch (SQLException e) {
+    } catch (MetaException|SQLException e) {
       throw new HiveMetaException("Failed to add catalog", e);
     }
   }
@@ -1259,6 +1276,9 @@ public class HiveSchemaTool {
         .hasArg()
         .withDescription("Description of new catalog")
         .create("catalogDescription");
+    Option ifNotExists = OptionBuilder
+        .withDescription("If passed then it is not an error to create an existing catalog")
+        .create("ifNotExists");
     Option toCatalog = OptionBuilder
         .hasArg()
         .withDescription("Catalog a moving database or table is going to.  This is " +
@@ -1292,6 +1312,7 @@ public class HiveSchemaTool {
     cmdLineOptions.addOption(serversOpt);
     cmdLineOptions.addOption(catalogLocation);
     cmdLineOptions.addOption(catalogDescription);
+    cmdLineOptions.addOption(ifNotExists);
     cmdLineOptions.addOption(toCatalog);
     cmdLineOptions.addOption(fromCatalog);
     cmdLineOptions.addOption(toDatabase);
@@ -1414,7 +1435,8 @@ public class HiveSchemaTool {
         schemaTool.doValidate();
       } else if (line.hasOption("createCatalog")) {
         schemaTool.createCatalog(line.getOptionValue("createCatalog"),
-            line.getOptionValue("catalogLocation"), line.getOptionValue("catalogDescription"));
+            line.getOptionValue("catalogLocation"), line.getOptionValue("catalogDescription"),
+            line.hasOption("ifNotExists"));
       } else if (line.hasOption("moveDatabase")) {
         schemaTool.moveDatabase(line.getOptionValue("fromCatalog"),
             line.getOptionValue("toCatalog"), line.getOptionValue("moveDatabase"));
