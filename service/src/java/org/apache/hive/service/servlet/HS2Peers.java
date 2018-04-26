@@ -26,7 +26,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.security.authentication.client.KerberosAuthenticator;
+import org.apache.hive.http.HttpConstants;
 import org.apache.hive.http.HttpServer;
 import org.apache.hive.service.server.HS2ActivePassiveHARegistry;
 import org.apache.hive.service.server.HS2ActivePassiveHARegistryClient;
@@ -42,6 +42,7 @@ import org.slf4j.LoggerFactory;
  */
 public class HS2Peers extends HttpServlet {
   private static final Logger LOG = LoggerFactory.getLogger(HS2Peers.class);
+
   public static class HS2Instances {
     private Collection<HiveServer2Instance> hiveServer2Instances;
 
@@ -80,6 +81,10 @@ public class HS2Peers extends HttpServlet {
       LOG.warn("Unauthorized to perform GET action. remoteUser: {}", request.getRemoteUser());
       return;
     }
+
+    response.setContentType(HttpConstants.CONTENT_TYPE_JSON);
+    response.setHeader(HttpConstants.ACCESS_CONTROL_ALLOW_METHODS, HttpConstants.METHOD_GET);
+    response.setHeader(HttpConstants.ACCESS_CONTROL_ALLOW_ORIGIN, HttpConstants.WILDCARD);
 
     ServletContext ctx = getServletContext();
     HiveConf hiveConf = (HiveConf) ctx.getAttribute("hiveconf");
