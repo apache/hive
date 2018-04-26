@@ -35,8 +35,6 @@ import org.apache.hadoop.hive.llap.cli.LlapStatusServiceDriver;
 public class LlapServlet extends HttpServlet {
 
   private static final Log LOG = LogFactory.getLog(JMXJsonServlet.class);
-  static final String ACCESS_CONTROL_ALLOW_METHODS = "Access-Control-Allow-Methods";
-  static final String ACCESS_CONTROL_ALLOW_ORIGIN = "Access-Control-Allow-Origin";
 
   /**
    * Initialize this servlet.
@@ -75,10 +73,10 @@ public class LlapServlet extends HttpServlet {
           HiveConf.getVar(getConfFromContext(), HiveConf.ConfVars.LLAP_DAEMON_SERVICE_HOSTS);
 
       try {
-        response.setContentType("application/json; charset=utf8");
-        response.setHeader(ACCESS_CONTROL_ALLOW_METHODS, "GET");
-        response.setHeader(ACCESS_CONTROL_ALLOW_ORIGIN, "*");
-        response.setHeader("Cache-Control", "no-transform,public,max-age=60,s-maxage=60");
+        response.setContentType(HttpConstants.CONTENT_TYPE_JSON);
+        response.setHeader(HttpConstants.ACCESS_CONTROL_ALLOW_METHODS, HttpConstants.METHOD_GET);
+        response.setHeader(HttpConstants.ACCESS_CONTROL_ALLOW_ORIGIN, HttpConstants.WILDCARD);
+        response.setHeader(HttpConstants.CACHE_CONTROL, "no-transform,public,max-age=60,s-maxage=60");
 
         writer = response.getWriter();
 
