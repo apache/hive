@@ -17,8 +17,6 @@
  */
 package org.apache.hive.service.servlet;
 
-import static org.apache.hive.http.HttpServer.CONF_CONTEXT_ATTRIBUTE;
-
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -27,9 +25,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.CommonConfigurationKeys;
-import org.apache.hadoop.security.authentication.client.KerberosAuthenticator;
+import org.apache.hive.http.HttpConstants;
 import org.apache.hive.http.HttpServer;
 import org.apache.hive.service.server.HiveServer2;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -57,6 +53,8 @@ public class HS2LeadershipStatus extends HttpServlet {
       return;
     }
 
+    setResponseHeaders(response);
+
     ServletContext ctx = getServletContext();
     AtomicBoolean isLeader = (AtomicBoolean) ctx.getAttribute("hs2.isLeader");
     LOG.info("Returning isLeader: {}", isLeader);
@@ -66,11 +64,19 @@ public class HS2LeadershipStatus extends HttpServlet {
     response.flushBuffer();
   }
 
+  private void setResponseHeaders(final HttpServletResponse response) {
+    response.setContentType(HttpConstants.CONTENT_TYPE_JSON);
+    response.setHeader(HttpConstants.ACCESS_CONTROL_ALLOW_METHODS,
+      HttpConstants.METHOD_GET + "," + HttpConstants.METHOD_DELETE);
+    response.setHeader(HttpConstants.ACCESS_CONTROL_ALLOW_ORIGIN, HttpConstants.WILDCARD);
+  }
+
   private class FailoverResponse {
     private boolean success;
     private String message;
 
-    FailoverResponse() { }
+    FailoverResponse() {
+    }
 
     public boolean isSuccess() {
       return success;
@@ -100,6 +106,8 @@ public class HS2LeadershipStatus extends HttpServlet {
       LOG.warn("Unauthorized to perform DELETE action. remoteUser: {}", request.getRemoteUser());
       return;
     }
+
+    setResponseHeaders(response);
 
     LOG.info("DELETE handler invoked for failover..");
     ObjectMapper mapper = new ObjectMapper();
