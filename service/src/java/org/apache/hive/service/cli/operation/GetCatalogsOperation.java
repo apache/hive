@@ -30,12 +30,17 @@ import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.RowSetFactory;
 import org.apache.hive.service.cli.TableSchema;
 import org.apache.hive.service.cli.session.HiveSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * GetCatalogsOperation.
  *
  */
 public class GetCatalogsOperation extends MetadataOperation {
+
+  private static final Logger LOG = LoggerFactory.getLogger(GetCatalogsOperation.class.getName());
+
   private static final TableSchema RESULT_SET_SCHEMA = new TableSchema()
   .addStringColumn("TABLE_CAT", "Catalog name. NULL if not applicable.");
 
@@ -44,6 +49,7 @@ public class GetCatalogsOperation extends MetadataOperation {
   protected GetCatalogsOperation(HiveSession parentSession) {
     super(parentSession, OperationType.GET_CATALOGS);
     rowSet = RowSetFactory.create(RESULT_SET_SCHEMA, getProtocolVersion(), false);
+    LOG.info("Starting GetCatalogsOperation");
   }
 
   @Override
@@ -54,11 +60,11 @@ public class GetCatalogsOperation extends MetadataOperation {
         authorizeMetaGets(HiveOperationType.GET_CATALOGS, null);
       }
       setState(OperationState.FINISHED);
+      LOG.info("Fetching catalog metadata has been successfully finished");
     } catch (HiveSQLException e) {
       setState(OperationState.ERROR);
       throw e;
     }
-
   }
 
   /* (non-Javadoc)

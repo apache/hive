@@ -50,12 +50,16 @@ import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.RowSetFactory;
 import org.apache.hive.service.cli.TableSchema;
 import org.apache.hive.service.cli.session.HiveSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * GetColumnsOperation.
  *
  */
 public class GetColumnsOperation extends MetadataOperation {
+
+  private static final Logger LOG = LoggerFactory.getLogger(GetColumnsOperation.class.getName());
 
   private static final TableSchema RESULT_SET_SCHEMA = new TableSchema()
   .addPrimitiveColumn("TABLE_CAT", Type.STRING_TYPE,
@@ -127,11 +131,15 @@ public class GetColumnsOperation extends MetadataOperation {
     this.tableName = tableName;
     this.columnName = columnName;
     this.rowSet = RowSetFactory.create(RESULT_SET_SCHEMA, getProtocolVersion(), false);
+    LOG.info("Starting GetColumnsOperation with the following parameters: "
+        + "catalogName={}, schemaName={}, tableName={}, columnName={}",
+        catalogName, schemaName, tableName, columnName);
   }
 
   @Override
   public void runInternal() throws HiveSQLException {
     setState(OperationState.RUNNING);
+    LOG.info("Fetching column metadata");
     try {
       IMetaStoreClient metastoreClient = getParentSession().getMetaStoreClient();
       String schemaPattern = convertSchemaPattern(schemaName);
@@ -204,17 +212,24 @@ public class GetColumnsOperation extends MetadataOperation {
                 "NO", // IS_AUTO_INCREMENT
             };
             rowSet.addRow(rowData);
+
+            if (LOG.isDebugEnabled()) {
+              String debugMessage = getDebugMessage("column", RESULT_SET_SCHEMA);
+              LOG.debug(debugMessage, rowData);
+            }
           }
         }
       }
+      if (LOG.isDebugEnabled() && rowSet.numRows() == 0) {
+        LOG.debug("No column metadata has been returned.");
+      }
       setState(OperationState.FINISHED);
+      LOG.info("Fetching column metadata has been successfully finished");
     } catch (Exception e) {
       setState(OperationState.ERROR);
       throw new HiveSQLException(e);
     }
-
   }
-
 
   private List<HivePrivilegeObject> getPrivObjs(Map<String, List<String>> db2Tabs) {
     List<HivePrivilegeObject> privObjs = new ArrayList<>();

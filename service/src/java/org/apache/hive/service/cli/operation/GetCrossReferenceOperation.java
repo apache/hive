@@ -117,11 +117,16 @@ public class GetCrossReferenceOperation extends MetadataOperation {
     this.foreignSchemaName = foreignSchema;
     this.foreignTableName = foreignTable;
     this.rowSet = RowSetFactory.create(RESULT_SET_SCHEMA, getProtocolVersion(), false);
+    LOG.info("Starting GetCrossReferenceOperation with the following parameters:"
+        + " parentCatalogName={}, parentSchemaName={}, parentTableName={}, foreignCatalog={}, "
+        + "foreignSchema={}, foreignTable={}", parentCatalogName, parentSchemaName,
+        parentTableName, foreignCatalog, foreignSchema, foreignTable);
   }
 
   @Override
   public void runInternal() throws HiveSQLException {
     setState(OperationState.RUNNING);
+    LOG.info("Fetching cross reference metadata");
     try {
        IMetaStoreClient metastoreClient = getParentSession().getMetaStoreClient();
      ForeignKeysRequest fkReq = new ForeignKeysRequest(parentSchemaName, parentTableName, foreignSchemaName, foreignTableName);
@@ -130,20 +135,28 @@ public class GetCrossReferenceOperation extends MetadataOperation {
         return;
       }
       for (SQLForeignKey fk : fks) {
-        rowSet.addRow(new Object[] {parentCatalogName,
-        fk.getPktable_db(), fk.getPktable_name(), fk.getPkcolumn_name(),
-        foreignCatalogName,
-        fk.getFktable_db(), fk.getFktable_name(), fk.getFkcolumn_name(),
-        fk.getKey_seq(), fk.getUpdate_rule(), fk.getDelete_rule(), fk.getFk_name(),
-        fk.getPk_name(), 0});
+        Object[] rowData = new Object[] {parentCatalogName,
+            fk.getPktable_db(), fk.getPktable_name(), fk.getPkcolumn_name(),
+            foreignCatalogName,
+            fk.getFktable_db(), fk.getFktable_name(), fk.getFkcolumn_name(),
+            fk.getKey_seq(), fk.getUpdate_rule(), fk.getDelete_rule(), fk.getFk_name(),
+            fk.getPk_name(), 0};
+        rowSet.addRow(rowData);
+        if (LOG.isDebugEnabled()) {
+          String debugMessage = getDebugMessage("cross reference", RESULT_SET_SCHEMA);
+          LOG.debug(debugMessage, rowData);
+        }
+      }
+      if (LOG.isDebugEnabled() && rowSet.numRows() == 0) {
+        LOG.debug("No cross reference metadata has been returned.");
       }
       setState(OperationState.FINISHED);
+      LOG.info("Fetching cross reference metadata has been successfully finished");
     } catch (Exception e) {
       setState(OperationState.ERROR);
       throw new HiveSQLException(e);
     }
   }
-
 
   /* (non-Javadoc)
    * @see org.apache.hive.service.cli.Operation#getResultSetSchema()

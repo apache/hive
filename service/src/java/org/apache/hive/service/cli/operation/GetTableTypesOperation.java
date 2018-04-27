@@ -32,12 +32,16 @@ import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.RowSetFactory;
 import org.apache.hive.service.cli.TableSchema;
 import org.apache.hive.service.cli.session.HiveSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * GetTableTypesOperation.
  *
  */
 public class GetTableTypesOperation extends MetadataOperation {
+
+  private static final Logger LOG = LoggerFactory.getLogger(GetTableTypesOperation.class.getName());
 
   protected static TableSchema RESULT_SET_SCHEMA = new TableSchema()
   .addStringColumn("TABLE_TYPE", "Table type name.");
@@ -51,19 +55,30 @@ public class GetTableTypesOperation extends MetadataOperation {
         getParentSession().getHiveConf().getVar(HiveConf.ConfVars.HIVE_SERVER2_TABLE_TYPE_MAPPING);
     tableTypeMapping = TableTypeMappingFactory.getTableTypeMapping(tableMappingStr);
     rowSet = RowSetFactory.create(RESULT_SET_SCHEMA, getProtocolVersion(), false);
+    LOG.info("Starting GetTableTypesOperation");
   }
 
   @Override
   public void runInternal() throws HiveSQLException {
     setState(OperationState.RUNNING);
+    LOG.info("Fetching table type metadata");
     if (isAuthV2Enabled()) {
       authorizeMetaGets(HiveOperationType.GET_TABLETYPES, null);
     }
     try {
       for (TableType type : TableType.values()) {
-        rowSet.addRow(new String[] {tableTypeMapping.mapToClientType(type.toString())});
+        String tableType = tableTypeMapping.mapToClientType(type.toString());
+        rowSet.addRow(new String[] {tableType});
+        if (LOG.isDebugEnabled()) {
+          String debugMessage = getDebugMessage("table type", RESULT_SET_SCHEMA);
+          LOG.debug(debugMessage, tableType);
+        }
+      }
+      if (LOG.isDebugEnabled() && rowSet.numRows() == 0) {
+        LOG.debug("No table type metadata has been returned.");
       }
       setState(OperationState.FINISHED);
+      LOG.info("Fetching table type metadata has been successfully finished");
     } catch (Exception e) {
       setState(OperationState.ERROR);
       throw new HiveSQLException(e);
