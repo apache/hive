@@ -2140,10 +2140,10 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
-  public ValidTxnWriteIdList getValidWriteIds(Long currentTxnId, List<String> tablesList, String validTxnList)
+  public List<TableValidWriteIds> getValidWriteIds(List<String> tablesList, String validTxnList)
           throws TException {
     GetValidWriteIdsRequest rqst = new GetValidWriteIdsRequest(tablesList, validTxnList);
-    return TxnUtils.createValidTxnWriteIdList(currentTxnId, client.get_valid_write_ids(rqst));
+    return client.get_valid_write_ids(rqst).getTblValidWriteIds();
   }
 
   @Override

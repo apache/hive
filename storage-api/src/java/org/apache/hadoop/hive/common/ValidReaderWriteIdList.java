@@ -250,5 +250,9 @@ public class ValidReaderWriteIdList implements ValidWriteIdList {
       return RangeResponse.SOME;
     }
   }
+
+  public ValidReaderWriteIdList updateHighWatermark(long value) {
+    return new ValidReaderWriteIdList(tableName, exceptions, abortedBits, value, minOpenWriteId);
+  }
 }
 
