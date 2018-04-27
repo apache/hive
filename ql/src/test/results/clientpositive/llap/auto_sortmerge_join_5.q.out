@@ -231,7 +231,7 @@ STAGE PLANS:
             Truncated Path -> Alias:
               /bucket_big [b]
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -448,7 +448,7 @@ STAGE PLANS:
             Truncated Path -> Alias:
               /bucket_big [a]
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -665,7 +665,7 @@ STAGE PLANS:
             Truncated Path -> Alias:
               /bucket_big [a]
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator

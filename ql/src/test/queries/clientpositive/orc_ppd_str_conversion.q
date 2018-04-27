@@ -1,3 +1,4 @@
+set hive.vectorized.execution.enabled=false;
 set hive.cbo.enable=false;
 
 create table orc_test( col1 varchar(15), col2 char(10)) stored as orc;

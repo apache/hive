@@ -70,6 +70,7 @@ STAGE PLANS:
                         keys:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 
@@ -93,6 +94,7 @@ STAGE PLANS:
                         keys:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 
@@ -116,6 +118,7 @@ STAGE PLANS:
                         keys:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 
@@ -160,6 +163,7 @@ STAGE PLANS:
                           Map-reduce partition columns: _col1 (type: int)
                           Statistics: Num rows: 633595212 Data size: 55895953508 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col3 (type: string)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
         Map 12 
@@ -180,6 +184,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 80000000 Data size: 68801615852 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: string), _col2 (type: string)
+            Execution mode: vectorized
         Map 13 
             Map Operator Tree:
                 TableScan
@@ -208,6 +213,7 @@ STAGE PLANS:
                           Map-reduce partition columns: _col1 (type: int)
                           Statistics: Num rows: 158402938 Data size: 21538218500 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col3 (type: string)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
         Map 17 
@@ -228,6 +234,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 80000000 Data size: 68801615852 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: string), _col2 (type: string)
+            Execution mode: vectorized
         Map 8 
             Map Operator Tree:
                 TableScan
@@ -256,9 +263,11 @@ STAGE PLANS:
                           Map-reduce partition columns: _col1 (type: int)
                           Statistics: Num rows: 316788826 Data size: 42899570777 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col3 (type: string)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
         Reducer 10 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: string)
@@ -308,6 +317,7 @@ STAGE PLANS:
                     Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: string)
                     Statistics: Num rows: 174243235 Data size: 23692040863 Basic stats: COMPLETE Column stats: NONE
         Reducer 15 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: string)
@@ -357,6 +367,7 @@ STAGE PLANS:
                     Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: string)
                     Statistics: Num rows: 696954748 Data size: 61485550191 Basic stats: COMPLETE Column stats: NONE
         Reducer 3 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: string)
@@ -386,6 +397,7 @@ STAGE PLANS:
                         Statistics: Num rows: 304916424 Data size: 33091779879 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col3 (type: bigint)
         Reducer 4 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -413,6 +425,7 @@ STAGE PLANS:
                           TopN Hash Memory Usage: 0.1
                           value expressions: _col0 (type: bigint)
         Reducer 5 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)

@@ -77,7 +77,7 @@ STAGE PLANS:
                           tag: 0
                           value expressions: _col1 (type: string), _col2 (type: string)
                           auto parallelism: true
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
@@ -153,7 +153,7 @@ STAGE PLANS:
                         tag: 1
                         value expressions: _col1 (type: string)
                         auto parallelism: true
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
@@ -228,7 +228,7 @@ STAGE PLANS:
                         Statistics: Num rows: 500 Data size: 184500 Basic stats: COMPLETE Column stats: COMPLETE
                         tag: 1
                         auto parallelism: true
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
@@ -603,7 +603,7 @@ STAGE PLANS:
                           tag: 0
                           value expressions: _col0 (type: string), _col3 (type: string)
                           auto parallelism: true
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
@@ -679,7 +679,7 @@ STAGE PLANS:
                         tag: 1
                         value expressions: _col1 (type: string)
                         auto parallelism: true
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
@@ -754,7 +754,7 @@ STAGE PLANS:
                         Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
                         tag: 1
                         auto parallelism: true
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
@@ -830,7 +830,7 @@ STAGE PLANS:
                         tag: 1
                         value expressions: _col1 (type: string)
                         auto parallelism: true
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
@@ -1207,7 +1207,7 @@ STAGE PLANS:
                         Statistics: Num rows: 500 Data size: 184500 Basic stats: COMPLETE Column stats: COMPLETE
                         tag: 0
                         auto parallelism: true
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
@@ -1301,7 +1301,7 @@ STAGE PLANS:
                             tag: 1
                             value expressions: _col0 (type: string)
                             auto parallelism: true
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
@@ -1377,7 +1377,7 @@ STAGE PLANS:
                         tag: 1
                         value expressions: _col1 (type: string)
                         auto parallelism: true
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
@@ -1734,7 +1734,7 @@ STAGE PLANS:
                         Statistics: Num rows: 500 Data size: 184500 Basic stats: COMPLETE Column stats: COMPLETE
                         tag: 0
                         auto parallelism: true
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
@@ -1807,7 +1807,7 @@ STAGE PLANS:
                       Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                       tag: 0
                       auto parallelism: true
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
@@ -1883,7 +1883,7 @@ STAGE PLANS:
                         tag: 1
                         value expressions: _col1 (type: string)
                         auto parallelism: true
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
@@ -2273,7 +2273,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 184500 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 4 
             Map Operator Tree:
@@ -2307,7 +2307,7 @@ STAGE PLANS:
                             Map-reduce partition columns: _col1 (type: string)
                             Statistics: Num rows: 40 Data size: 7000 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col0 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 5 
             Map Operator Tree:
@@ -2327,7 +2327,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -2563,7 +2563,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 184500 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 4 
             Map Operator Tree:
@@ -2597,7 +2597,7 @@ STAGE PLANS:
                             Map-reduce partition columns: _col1 (type: string)
                             Statistics: Num rows: 40 Data size: 7000 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col0 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 5 
             Map Operator Tree:
@@ -2617,7 +2617,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap

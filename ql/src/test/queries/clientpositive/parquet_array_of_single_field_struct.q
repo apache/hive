@@ -1,3 +1,5 @@
+set hive.vectorized.execution.enabled=false;
+
 -- this test creates a Parquet table with an array of single-field structs
 -- that has an ambiguous Parquet schema that is assumed to be a list of bigints
 -- This is verifies compliance with the spec for this case.

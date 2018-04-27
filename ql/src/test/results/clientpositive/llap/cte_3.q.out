@@ -13,12 +13,12 @@ Plan optimized by CBO.
 Stage-2
   Dependency Collection{}
     Stage-1
-      Map 1 llap
-      File Output Operator [FS_3]
+      Map 1 vectorized, llap
+      File Output Operator [FS_7]
         table:{"name:":"default.q1"}
-        Select Operator [SEL_2] (rows=2 width=85)
+        Select Operator [SEL_6] (rows=2 width=85)
           Output:["_col0"]
-          Filter Operator [FIL_4] (rows=2 width=87)
+          Filter Operator [FIL_5] (rows=2 width=87)
             predicate:(key = '5')
             TableScan [TS_0] (rows=500 width=87)
               default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
@@ -28,9 +28,9 @@ Stage-0
 Stage-3
   Fetch Operator
     limit:-1
-    Select Operator [SEL_6]
+    Select Operator [SEL_9]
       Output:["_col0"]
-      TableScan [TS_5]
+      TableScan [TS_8]
         Output:["key"]
 
 PREHOOK: query: with q1 as ( select key from src where key = '5')
@@ -67,12 +67,12 @@ Plan optimized by CBO.
 Stage-2
   Dependency Collection{}
     Stage-1
-      Map 1 llap
-      File Output Operator [FS_3]
+      Map 1 vectorized, llap
+      File Output Operator [FS_7]
         table:{"name:":"default.q1"}
-        Select Operator [SEL_2] (rows=2 width=85)
+        Select Operator [SEL_6] (rows=2 width=85)
           Output:["_col0"]
-          Filter Operator [FIL_4] (rows=2 width=87)
+          Filter Operator [FIL_5] (rows=2 width=87)
             predicate:(key = '5')
             TableScan [TS_0] (rows=500 width=87)
               default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
@@ -82,9 +82,9 @@ Stage-0
 Stage-3
   Fetch Operator
     limit:-1
-    Select Operator [SEL_6]
+    Select Operator [SEL_9]
       Output:["_col0"]
-      TableScan [TS_5]
+      TableScan [TS_8]
         Output:["key"]
 
 PREHOOK: query: with q1 as ( select key from src where key = '5')
@@ -121,24 +121,24 @@ Plan optimized by CBO.
 Stage-5
   Dependency Collection{}
     Stage-4
-      Map 2 llap
-      File Output Operator [FS_8]
+      Map 2 vectorized, llap
+      File Output Operator [FS_15]
         table:{"name:":"default.q1"}
-        Select Operator [SEL_7] (rows=1 width=184)
+        Select Operator [SEL_14] (rows=1 width=184)
           Output:["_col0"]
-          Filter Operator [FIL_9] (rows=1 width=184)
+          Filter Operator [FIL_13] (rows=1 width=184)
             predicate:(key = '5')
-            TableScan [TS_5] (rows=1 width=184)
+            TableScan [TS_8] (rows=1 width=184)
               default@q2,q2,Tbl:COMPLETE,Col:NONE,Output:["key"]
         Stage-2
           Dependency Collection{}
             Stage-1
-              Map 1 llap
-              File Output Operator [FS_3]
+              Map 1 vectorized, llap
+              File Output Operator [FS_7]
                 table:{"name:":"default.q2"}
-                Select Operator [SEL_2] (rows=2 width=85)
+                Select Operator [SEL_6] (rows=2 width=85)
                   Output:["_col0"]
-                  Filter Operator [FIL_4] (rows=2 width=87)
+                  Filter Operator [FIL_5] (rows=2 width=87)
                     predicate:(key = '5')
                     TableScan [TS_0] (rows=500 width=87)
                       default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
@@ -151,9 +151,9 @@ Stage-3
 Stage-6
   Fetch Operator
     limit:-1
-    Select Operator [SEL_11]
+    Select Operator [SEL_17]
       Output:["_col0"]
-      TableScan [TS_10]
+      TableScan [TS_16]
         Output:["key"]
 
 PREHOOK: query: with q1 as ( select key from q2 where key = '5'),

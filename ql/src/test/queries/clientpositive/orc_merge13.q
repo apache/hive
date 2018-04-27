@@ -1,3 +1,4 @@
+set hive.vectorized.execution.enabled=false;
 drop table aa;
 create table aa (a string, b int) stored as orc;
 insert into table aa values("b",2);

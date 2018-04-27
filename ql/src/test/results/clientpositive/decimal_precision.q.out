@@ -550,6 +550,7 @@ STAGE PLANS:
                   sort order: 
                   Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: decimal(30,10)), _col1 (type: bigint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: sum(VALUE._col0), count(VALUE._col1)

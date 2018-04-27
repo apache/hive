@@ -44,10 +44,10 @@ STAGE PLANS:
                         tag: -1
                         value expressions: _col0 (type: string)
                         auto parallelism: false
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: unknown
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -138,7 +138,7 @@ STAGE PLANS:
                         tag: -1
                         value expressions: _col0 (type: string)
                         auto parallelism: false
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
               nullscan://null/default.test1/part_ds=1_ [test1]
@@ -192,7 +192,7 @@ STAGE PLANS:
             Truncated Path -> Alias:
               nullscan://null/default.test1/part_ds=1_ [test1]
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -419,7 +419,7 @@ STAGE PLANS:
                         tag: -1
                         value expressions: _col0 (type: bigint)
                         auto parallelism: false
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
@@ -474,7 +474,7 @@ STAGE PLANS:
             Truncated Path -> Alias:
               /test1/ds=1 [test1]
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -567,7 +567,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 184 Basic stats: PARTIAL Column stats: COMPLETE
                       tag: 0
                       auto parallelism: true
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
@@ -691,7 +691,7 @@ STAGE PLANS:
                         tag: -1
                         value expressions: _col0 (type: string)
                         auto parallelism: false
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
@@ -818,7 +818,7 @@ STAGE PLANS:
                     value expressions: _col0 (type: bigint)
                     auto parallelism: false
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -849,7 +849,7 @@ STAGE PLANS:
                   GatherStats: false
                   MultiFileSpray: false
         Reducer 5 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -1219,7 +1219,7 @@ STAGE PLANS:
                         tag: -1
                         value expressions: _col1 (type: bigint)
                         auto parallelism: true
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
@@ -1373,7 +1373,7 @@ STAGE PLANS:
               /test2/ds=1/hr=2 [test2]
               /test2/ds=1/hr=3 [test2]
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -1463,7 +1463,7 @@ STAGE PLANS:
                         tag: -1
                         value expressions: _col0 (type: string)
                         auto parallelism: false
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
               nullscan://null/default.test1/part_ds=1_ [test1]
@@ -1565,7 +1565,7 @@ STAGE PLANS:
               nullscan://null/default.test1/part_ds=1_ [test1]
               nullscan://null/default.test1/part_ds=2_ [test1]
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator

@@ -48,6 +48,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: db1.table_db1
+      Execution mode: vectorized
 
   Stage: Stage-7
     Conditional Operator

@@ -71,6 +71,7 @@ STAGE PLANS:
                         TotalFiles: 1
                         GatherStats: true
                         MultiFileSpray: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -468,6 +469,7 @@ STAGE PLANS:
                         Statistics: Num rows: 500 Data size: 5301 Basic stats: COMPLETE Column stats: NONE
                         tag: -1
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -522,6 +524,7 @@ STAGE PLANS:
             Truncated Path -> Alias:
               /srcbucket/000001_0 [s]
         Reducer 2 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
@@ -845,6 +848,7 @@ STAGE PLANS:
                         Statistics: Num rows: 500 Data size: 5301 Basic stats: COMPLETE Column stats: NONE
                         tag: -1
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -899,6 +903,7 @@ STAGE PLANS:
             Truncated Path -> Alias:
               /srcbucket/000000_0 [s]
         Reducer 2 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
@@ -1475,6 +1480,7 @@ STAGE PLANS:
                         Statistics: Num rows: 500 Data size: 5301 Basic stats: COMPLETE Column stats: NONE
                         tag: -1
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -1529,6 +1535,7 @@ STAGE PLANS:
             Truncated Path -> Alias:
               /srcbucket [s]
         Reducer 2 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
@@ -1948,6 +1955,7 @@ STAGE PLANS:
                         Statistics: Num rows: 500 Data size: 5301 Basic stats: COMPLETE Column stats: NONE
                         tag: -1
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -2002,6 +2010,7 @@ STAGE PLANS:
             Truncated Path -> Alias:
               /srcbucket [s]
         Reducer 2 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
@@ -2408,6 +2417,7 @@ STAGE PLANS:
                         Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                         tag: -1
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -2511,6 +2521,7 @@ STAGE PLANS:
               /srcbucket2/000000_0 [s]
               /srcbucket2/000002_0 [s]
         Reducer 2 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
@@ -2842,6 +2853,7 @@ STAGE PLANS:
                         Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                         tag: -1
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -2896,6 +2908,7 @@ STAGE PLANS:
             Truncated Path -> Alias:
               /srcbucket2/000001_0 [s]
         Reducer 2 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
@@ -3126,7 +3139,9 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                         tag: -1
                         auto parallelism: false
+            Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator

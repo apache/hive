@@ -212,6 +212,7 @@ STAGE PLANS:
                       TotalFiles: 1
                       GatherStats: false
                       MultiFileSpray: false
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
       Path -> Alias:

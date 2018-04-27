@@ -58,6 +58,7 @@ STAGE PLANS:
                         Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                         tag: 0
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -134,6 +135,7 @@ STAGE PLANS:
                         tag: -1
                         value expressions: _col1 (type: string)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -223,6 +225,7 @@ STAGE PLANS:
                     GatherStats: false
                     MultiFileSpray: false
         Reducer 4 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -349,6 +352,7 @@ STAGE PLANS:
                         Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                         tag: 0
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -425,6 +429,7 @@ STAGE PLANS:
                         tag: -1
                         value expressions: _col1 (type: string)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -514,6 +519,7 @@ STAGE PLANS:
                     GatherStats: false
                     MultiFileSpray: false
         Reducer 4 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -640,6 +646,7 @@ STAGE PLANS:
                         Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                         tag: 0
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -716,6 +723,7 @@ STAGE PLANS:
                         tag: -1
                         value expressions: _col1 (type: string)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -805,6 +813,7 @@ STAGE PLANS:
                     GatherStats: false
                     MultiFileSpray: false
         Reducer 4 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -931,6 +940,7 @@ STAGE PLANS:
                         Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                         tag: 0
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -1007,6 +1017,7 @@ STAGE PLANS:
                         tag: -1
                         value expressions: _col1 (type: string)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -1096,6 +1107,7 @@ STAGE PLANS:
                     GatherStats: false
                     MultiFileSpray: false
         Reducer 4 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator

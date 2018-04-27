@@ -72,6 +72,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
                     serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
                     name: default.outputtbl1
+      Execution mode: vectorized
 
   Stage: Stage-6
     Conditional Operator
@@ -168,6 +169,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
                           name: default.outputtbl1
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
 

@@ -44,6 +44,7 @@ STAGE PLANS:
                         0 _col0 (type: string)
                         1 _col0 (type: string)
                         2 _col0 (type: string)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
         Map 4 
@@ -60,6 +61,7 @@ STAGE PLANS:
                         0 _col0 (type: string)
                         1 _col0 (type: string)
                         2 _col0 (type: string)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 
@@ -100,9 +102,11 @@ STAGE PLANS:
                           sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: bigint)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
         Reducer 3 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)

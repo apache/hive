@@ -1,3 +1,5 @@
+set hive.vectorized.execution.enabled=false;
+
 -- SORT_QUERY_RESULTS
 
 create table orc_split_elim (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc;

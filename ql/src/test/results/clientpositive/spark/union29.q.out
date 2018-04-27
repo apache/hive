@@ -63,6 +63,7 @@ STAGE PLANS:
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.union_subq_union
+            Execution mode: vectorized
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -84,6 +85,7 @@ STAGE PLANS:
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.union_subq_union
+            Execution mode: vectorized
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -105,6 +107,7 @@ STAGE PLANS:
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.union_subq_union
+            Execution mode: vectorized
 
   Stage: Stage-0
     Move Operator

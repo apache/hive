@@ -84,6 +84,7 @@ STAGE PLANS:
                 TotalFiles: 1
                 GatherStats: false
                 MultiFileSpray: false
+      Execution mode: vectorized
       Split Sample:
         a 
             percentage: 1.0
@@ -212,6 +213,7 @@ STAGE PLANS:
                 TotalFiles: 1
                 GatherStats: false
                 MultiFileSpray: false
+      Execution mode: vectorized
       Split Sample:
         src 
             percentage: 1.0
@@ -342,6 +344,7 @@ STAGE PLANS:
                 TotalFiles: 1
                 GatherStats: false
                 MultiFileSpray: false
+      Execution mode: vectorized
       Split Sample:
         a 
             percentage: 1.0

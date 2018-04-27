@@ -68,6 +68,7 @@ STAGE PLANS:
               Statistics: Num rows: 5 Data size: 50 Basic stats: COMPLETE Column stats: NONE
               TopN Hash Memory Usage: 0.1
               value expressions: _col0 (type: string), _col1 (type: double)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: string), VALUE._col1 (type: double)

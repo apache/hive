@@ -77,6 +77,7 @@ STAGE PLANS:
                         keys:
                           0 _col2 (type: int)
                           1 _col0 (type: int)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 
@@ -100,6 +101,7 @@ STAGE PLANS:
                         keys:
                           0 _col2 (type: int)
                           1 _col0 (type: int)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 
@@ -134,6 +136,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 37584000 Data size: 593821104 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: int), _col2 (type: int), _col3 (type: int)
+            Execution mode: vectorized
         Map 10 
             Map Operator Tree:
                 TableScan
@@ -152,6 +155,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 37584000 Data size: 593821104 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: int), _col2 (type: int), _col3 (type: int)
+            Execution mode: vectorized
         Map 14 
             Map Operator Tree:
                 TableScan
@@ -169,6 +173,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 15 
             Map Operator Tree:
                 TableScan
@@ -186,6 +191,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 7 
             Map Operator Tree:
                 TableScan
@@ -203,6 +209,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 8 
             Map Operator Tree:
                 TableScan
@@ -220,6 +227,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Reducer 11 
             Reduce Operator Tree:
               Join Operator
@@ -275,6 +283,7 @@ STAGE PLANS:
                         Statistics: Num rows: 50024305 Data size: 790375939 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col3 (type: bigint), _col4 (type: bigint), _col5 (type: double), _col6 (type: double)
         Reducer 13 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0), count(VALUE._col1), sum(VALUE._col2), sum(VALUE._col3)
@@ -354,6 +363,7 @@ STAGE PLANS:
                         Statistics: Num rows: 50024305 Data size: 790375939 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col3 (type: bigint), _col4 (type: bigint), _col5 (type: double), _col6 (type: double)
         Reducer 4 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0), count(VALUE._col1), sum(VALUE._col2), sum(VALUE._col3)
@@ -394,6 +404,7 @@ STAGE PLANS:
                   Statistics: Num rows: 13756683 Data size: 217353382 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col4 (type: int), _col5 (type: int)
         Reducer 6 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: int), 4 (type: int), KEY.reducesinkkey2 (type: double), KEY.reducesinkkey3 (type: double), VALUE._col0 (type: int), VALUE._col1 (type: int), 5 (type: int), KEY.reducesinkkey4 (type: double), KEY.reducesinkkey5 (type: double)
