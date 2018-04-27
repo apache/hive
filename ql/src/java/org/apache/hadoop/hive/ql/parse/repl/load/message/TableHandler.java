@@ -32,6 +32,7 @@ public class TableHandler extends AbstractMessageHandler {
     try {
       List<Task<? extends Serializable>> importTasks = new ArrayList<>();
 
+      context.nestedContext.setConf(context.hiveConf);
       EximUtil.SemanticAnalyzerWrapperContext x =
           new EximUtil.SemanticAnalyzerWrapperContext(
               context.hiveConf, context.db, readEntitySet, writeEntitySet, importTasks, context.log,

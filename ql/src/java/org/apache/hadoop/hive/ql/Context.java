@@ -98,7 +98,7 @@ public class Context {
   // Keeps track of scratch directories created for different scheme/authority
   private final Map<String, Path> fsScratchDirs = new HashMap<String, Path>();
 
-  private final Configuration conf;
+  private Configuration conf;
   protected int pathid = 10000;
   protected ExplainConfiguration explainConfig = null;
   protected String cboInfo;
@@ -1066,5 +1066,9 @@ public class Context {
 
   public void setExecutionIndex(int executionIndex) {
     this.executionIndex = executionIndex;
+  }
+
+  public void setConf(HiveConf conf) {
+    this.conf = conf;
   }
 }
