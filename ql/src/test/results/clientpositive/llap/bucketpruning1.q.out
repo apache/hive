@@ -67,7 +67,7 @@ STAGE PLANS:
                         TotalFiles: 1
                         GatherStats: false
                         MultiFileSpray: false
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: unknown
 
   Stage: Stage-0
@@ -129,7 +129,7 @@ STAGE PLANS:
                         TotalFiles: 1
                         GatherStats: false
                         MultiFileSpray: false
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: unknown
 
   Stage: Stage-0
@@ -191,7 +191,7 @@ STAGE PLANS:
                         TotalFiles: 1
                         GatherStats: false
                         MultiFileSpray: false
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: unknown
 
   Stage: Stage-0
@@ -253,7 +253,7 @@ STAGE PLANS:
                         TotalFiles: 1
                         GatherStats: false
                         MultiFileSpray: false
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: unknown
 
   Stage: Stage-0
@@ -315,7 +315,7 @@ STAGE PLANS:
                         TotalFiles: 1
                         GatherStats: false
                         MultiFileSpray: false
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: unknown
 
   Stage: Stage-0
@@ -377,7 +377,7 @@ STAGE PLANS:
                         TotalFiles: 1
                         GatherStats: false
                         MultiFileSpray: false
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: unknown
 
   Stage: Stage-0
@@ -439,7 +439,7 @@ STAGE PLANS:
                         TotalFiles: 1
                         GatherStats: false
                         MultiFileSpray: false
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: unknown
 
   Stage: Stage-0
@@ -501,7 +501,7 @@ STAGE PLANS:
                         TotalFiles: 1
                         GatherStats: false
                         MultiFileSpray: false
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: unknown
 
   Stage: Stage-0
@@ -563,7 +563,7 @@ STAGE PLANS:
                         TotalFiles: 1
                         GatherStats: false
                         MultiFileSpray: false
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: unknown
 
   Stage: Stage-0
@@ -625,7 +625,7 @@ STAGE PLANS:
                         TotalFiles: 1
                         GatherStats: false
                         MultiFileSpray: false
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: unknown
 
   Stage: Stage-0
@@ -687,7 +687,7 @@ STAGE PLANS:
                         TotalFiles: 1
                         GatherStats: false
                         MultiFileSpray: false
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: unknown
 
   Stage: Stage-0
@@ -749,7 +749,7 @@ STAGE PLANS:
                         TotalFiles: 1
                         GatherStats: false
                         MultiFileSpray: false
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: unknown
 
   Stage: Stage-0
@@ -810,7 +810,7 @@ STAGE PLANS:
                         TotalFiles: 1
                         GatherStats: false
                         MultiFileSpray: false
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: unknown
 
   Stage: Stage-0
@@ -871,7 +871,7 @@ STAGE PLANS:
                         TotalFiles: 1
                         GatherStats: false
                         MultiFileSpray: false
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: unknown
 
   Stage: Stage-0
@@ -933,7 +933,7 @@ STAGE PLANS:
                         TotalFiles: 1
                         GatherStats: false
                         MultiFileSpray: false
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: unknown
 
   Stage: Stage-0
@@ -994,7 +994,7 @@ STAGE PLANS:
                         TotalFiles: 1
                         GatherStats: false
                         MultiFileSpray: false
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: unknown
 
   Stage: Stage-0
@@ -1055,7 +1055,7 @@ STAGE PLANS:
                         TotalFiles: 1
                         GatherStats: false
                         MultiFileSpray: false
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: unknown
 
   Stage: Stage-0
@@ -1116,7 +1116,7 @@ STAGE PLANS:
                         TotalFiles: 1
                         GatherStats: false
                         MultiFileSpray: false
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: unknown
 
   Stage: Stage-0
@@ -1177,7 +1177,7 @@ STAGE PLANS:
                         TotalFiles: 1
                         GatherStats: false
                         MultiFileSpray: false
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: unknown
 
   Stage: Stage-0
@@ -1238,7 +1238,7 @@ STAGE PLANS:
                         TotalFiles: 1
                         GatherStats: false
                         MultiFileSpray: false
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: unknown
 
   Stage: Stage-0
@@ -1299,7 +1299,7 @@ STAGE PLANS:
                         TotalFiles: 1
                         GatherStats: false
                         MultiFileSpray: false
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: unknown
 
   Stage: Stage-0
@@ -1360,7 +1360,7 @@ STAGE PLANS:
                         TotalFiles: 1
                         GatherStats: false
                         MultiFileSpray: false
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: unknown
 
   Stage: Stage-0
@@ -1420,7 +1420,7 @@ STAGE PLANS:
                         TotalFiles: 1
                         GatherStats: false
                         MultiFileSpray: false
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: unknown
 
   Stage: Stage-0
@@ -1481,7 +1481,7 @@ STAGE PLANS:
                         TotalFiles: 1
                         GatherStats: false
                         MultiFileSpray: false
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: unknown
 
   Stage: Stage-0
@@ -1542,7 +1542,7 @@ STAGE PLANS:
                         TotalFiles: 1
                         GatherStats: false
                         MultiFileSpray: false
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: unknown
 
   Stage: Stage-0
@@ -1603,7 +1603,7 @@ STAGE PLANS:
                         TotalFiles: 1
                         GatherStats: false
                         MultiFileSpray: false
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: unknown
 
   Stage: Stage-0
@@ -1664,7 +1664,7 @@ STAGE PLANS:
                         TotalFiles: 1
                         GatherStats: false
                         MultiFileSpray: false
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: unknown
 
   Stage: Stage-0

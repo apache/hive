@@ -1,3 +1,5 @@
+set hive.vectorized.execution.enabled=false;
+
 DROP TABLE part_seq;
 
 CREATE TABLE part_seq( 

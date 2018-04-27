@@ -1,3 +1,4 @@
+SET hive.vectorized.execution.enabled=false;
 CREATE TABLE druid_kafka_test(`__time` timestamp, page string, `user` string, language string, added int, deleted int)
         STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
         TBLPROPERTIES (

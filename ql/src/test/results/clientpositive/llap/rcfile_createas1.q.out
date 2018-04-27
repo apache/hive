@@ -81,7 +81,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
                           name: default.rcfile_createas1b
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
 
   Stage: Stage-2

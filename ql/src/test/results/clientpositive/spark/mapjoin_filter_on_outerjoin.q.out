@@ -75,6 +75,7 @@ STAGE PLANS:
                         0 key (type: string)
                         1 key (type: string)
                         2 key (type: string)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
         Map 2 
@@ -94,6 +95,7 @@ STAGE PLANS:
                         0 key (type: string)
                         1 key (type: string)
                         2 key (type: string)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 
@@ -137,9 +139,11 @@ STAGE PLANS:
                           sort order: +++
                           Statistics: Num rows: 365 Data size: 3878 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col1 (type: string), _col3 (type: string), _col5 (type: string)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
         Reducer 4 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string), KEY.reducesinkkey1 (type: string), VALUE._col1 (type: string), KEY.reducesinkkey2 (type: string), VALUE._col2 (type: string)
@@ -236,6 +240,7 @@ STAGE PLANS:
                         0 key (type: string)
                         1 key (type: string)
                         2 key (type: string)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
         Map 2 
@@ -255,6 +260,7 @@ STAGE PLANS:
                         0 key (type: string)
                         1 key (type: string)
                         2 key (type: string)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 
@@ -298,9 +304,11 @@ STAGE PLANS:
                           sort order: +++
                           Statistics: Num rows: 365 Data size: 3878 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col1 (type: string), _col3 (type: string), _col5 (type: string)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
         Reducer 4 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string), KEY.reducesinkkey1 (type: string), VALUE._col1 (type: string), KEY.reducesinkkey2 (type: string), VALUE._col2 (type: string)

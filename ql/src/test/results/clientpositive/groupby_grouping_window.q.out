@@ -59,6 +59,7 @@ STAGE PLANS:
                   Map-reduce partition columns: _col0 (type: int), _col1 (type: bigint)
                   Statistics: Num rows: 6 Data size: 40 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col2 (type: int), _col3 (type: int)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: max(VALUE._col0), max(VALUE._col1)
@@ -87,6 +88,7 @@ STAGE PLANS:
               Map-reduce partition columns: _col0 (type: int)
               Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col2 (type: int)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), VALUE._col1 (type: int), KEY.reducesinkkey1 (type: int)

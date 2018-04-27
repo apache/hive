@@ -137,11 +137,11 @@ POSTHOOK: query: select * from test_alter
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_alter
 #### A masked pattern was here ####
-5	100
 1	NULL
 2	NULL
 3	NULL
 4	NULL
+5	100
 PREHOOK: query: alter table test_alter replace columns (id string, id2 string)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@test_alter
@@ -158,11 +158,11 @@ POSTHOOK: query: select * from test_alter
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_alter
 #### A masked pattern was here ####
-5	100
 1	NULL
 2	NULL
 3	NULL
 4	NULL
+5	100
 PREHOOK: query: alter table test_alter replace columns (id char(10), id2 string)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@test_alter
@@ -179,11 +179,11 @@ POSTHOOK: query: select * from test_alter
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_alter
 #### A masked pattern was here ####
-5         	100
 1         	NULL
 2         	NULL
 3         	NULL
 4         	NULL
+5         	100
 PREHOOK: query: alter table test_alter replace columns (id string, id2 string)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@test_alter
@@ -208,11 +208,11 @@ POSTHOOK: query: select * from test_alter
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_alter
 #### A masked pattern was here ####
-5	100
 1	NULL
 2	NULL
 3	NULL
 4	NULL
+5	100
 PREHOOK: query: alter table test_alter replace columns (id string, id2 string)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@test_alter

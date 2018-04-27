@@ -101,6 +101,7 @@ STAGE PLANS:
                         0 key (type: int)
                         1 key (type: int)
                       Position of Big Table: 0
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
             Path -> Alias:
@@ -218,6 +219,7 @@ STAGE PLANS:
                           TotalFiles: 1
                           GatherStats: true
                           MultiFileSpray: false
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
             Path -> Alias:

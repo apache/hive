@@ -47,6 +47,7 @@ STAGE PLANS:
                         1 key (type: string)
                         2 key (type: string)
                       Position of Big Table: 2
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
             Path -> Alias:
@@ -116,6 +117,7 @@ STAGE PLANS:
                         1 key (type: string)
                         2 key (type: string)
                       Position of Big Table: 2
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
             Path -> Alias:
@@ -234,6 +236,7 @@ STAGE PLANS:
                           TotalFiles: 1
                           GatherStats: true
                           MultiFileSpray: false
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
             Path -> Alias:
@@ -540,6 +543,7 @@ STAGE PLANS:
                         1 UDFToDouble(key) (type: double)
                         2 UDFToDouble(key) (type: double)
                       Position of Big Table: 2
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
             Path -> Alias:
@@ -609,6 +613,7 @@ STAGE PLANS:
                         1 UDFToDouble(key) (type: double)
                         2 UDFToDouble(key) (type: double)
                       Position of Big Table: 2
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
             Path -> Alias:
@@ -727,6 +732,7 @@ STAGE PLANS:
                           TotalFiles: 1
                           GatherStats: true
                           MultiFileSpray: false
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
             Path -> Alias:

@@ -1,3 +1,5 @@
+set hive.vectorized.execution.enabled=false;
+
 DROP TABLE part_rc;
 
 CREATE TABLE part_rc( 

@@ -202,6 +202,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: bigint)
                       Statistics: Num rows: 5 Data size: 46 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: string)
+            Execution mode: vectorized
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -217,6 +218,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: bigint)
                       Statistics: Num rows: 236 Data size: 2244 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: string)
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Join Operator

@@ -1,3 +1,5 @@
+set hive.vectorized.execution.enabled=false;
+
 -- This test attempts to write a parquet table from an avro table that contains map null values
 
 DROP TABLE IF EXISTS avro_table;

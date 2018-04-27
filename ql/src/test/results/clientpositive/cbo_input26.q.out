@@ -35,6 +35,7 @@ STAGE PLANS:
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 TopN Hash Memory Usage: 0.1
                 value expressions: _col1 (type: string)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
@@ -107,6 +108,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     TopN Hash Memory Usage: 0.1
                     value expressions: _col0 (type: string), _col1 (type: string)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: string), VALUE._col1 (type: string)
@@ -191,6 +193,7 @@ STAGE PLANS:
                 sort order: +
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 TopN Hash Memory Usage: 0.1
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string)
@@ -263,6 +266,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     TopN Hash Memory Usage: 0.1
                     value expressions: _col0 (type: string)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: string)
@@ -347,6 +351,7 @@ STAGE PLANS:
                 sort order: +
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 TopN Hash Memory Usage: 0.1
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string)
@@ -419,6 +424,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     TopN Hash Memory Usage: 0.1
                     value expressions: _col0 (type: string)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: string)
@@ -506,6 +512,7 @@ STAGE PLANS:
                   Statistics: Num rows: 5 Data size: 50 Basic stats: COMPLETE Column stats: NONE
                   TopN Hash Memory Usage: 0.1
                   value expressions: _col0 (type: string), _col1 (type: string)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: string), VALUE._col1 (type: string)
@@ -574,6 +581,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     TopN Hash Memory Usage: 0.1
                     value expressions: _col0 (type: string), _col1 (type: string)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: string), VALUE._col1 (type: string)

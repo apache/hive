@@ -1,3 +1,4 @@
+set hive.vectorized.execution.enabled=false;
 SET hive.exec.schema.evolution = false;
 
 CREATE TABLE avro_orc_partitioned_uniontype (a uniontype<boolean, string>) PARTITIONED BY (b int) STORED AS ORC;

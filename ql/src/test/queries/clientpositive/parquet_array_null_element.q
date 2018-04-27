@@ -1,3 +1,5 @@
+set hive.vectorized.execution.enabled=false;
+
 DROP TABLE parquet_array_null_element_staging;
 DROP TABLE parquet_array_null_element;
 

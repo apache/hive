@@ -148,6 +148,7 @@ STAGE PLANS:
               Map-reduce partition columns: (_col7 + UDFToInteger(_col5)) (type: int)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               value expressions: _col3 (type: double), _col5 (type: smallint), _col7 (type: int)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col3 (type: double), VALUE._col5 (type: smallint), VALUE._col7 (type: int)

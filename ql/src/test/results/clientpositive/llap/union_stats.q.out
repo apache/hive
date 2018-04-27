@@ -49,7 +49,7 @@ STAGE PLANS:
                       TotalFiles: 1
                       GatherStats: true
                       MultiFileSpray: false
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
@@ -133,7 +133,7 @@ STAGE PLANS:
                       TotalFiles: 1
                       GatherStats: true
                       MultiFileSpray: false
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
@@ -232,7 +232,7 @@ POSTHOOK: query: select count(1) from t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t
 #### A masked pattern was here ####
-1000
+500
 PREHOOK: query: desc formatted t
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@t
@@ -252,8 +252,8 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	2                   
-	numRows             	1000                
-	rawDataSize         	10624               
+	numRows             	500                 
+	rawDataSize         	5312                
 	totalSize           	11624               
 #### A masked pattern was here ####
 	 	 
@@ -300,8 +300,8 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	2                   
-	numRows             	1500                
-	rawDataSize         	15936               
+	numRows             	1000                
+	rawDataSize         	10624               
 	totalSize           	17436               
 #### A masked pattern was here ####
 	 	 
@@ -356,8 +356,8 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	2                   
-	numRows             	1500                
-	rawDataSize         	15936               
+	numRows             	1000                
+	rawDataSize         	10624               
 	totalSize           	17436               
 #### A masked pattern was here ####
 	 	 

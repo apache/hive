@@ -907,7 +907,7 @@ STAGE PLANS:
                       sort order: ++
                       Map-reduce partition columns: key (type: string), value (type: string)
                       Statistics: Num rows: 221 Data size: 39338 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -1129,7 +1129,7 @@ STAGE PLANS:
                       sort order: ++
                       Map-reduce partition columns: key (type: string), value (type: string)
                       Statistics: Num rows: 221 Data size: 39338 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -1351,7 +1351,7 @@ STAGE PLANS:
                       sort order: ++
                       Map-reduce partition columns: key (type: string), value (type: string)
                       Statistics: Num rows: 221 Data size: 39338 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -1573,7 +1573,7 @@ STAGE PLANS:
                       sort order: ++
                       Map-reduce partition columns: key (type: string), value (type: string)
                       Statistics: Num rows: 221 Data size: 39338 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -2986,7 +2986,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
 
   Stage: Stage-4
@@ -3089,7 +3089,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
 
   Stage: Stage-4
@@ -3192,7 +3192,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
 
   Stage: Stage-4
@@ -3295,7 +3295,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
 
   Stage: Stage-4

@@ -146,6 +146,7 @@ STAGE PLANS:
             Truncated Path -> Alias:
               /test_table1/ds=1 [a]
         Reducer 2 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator

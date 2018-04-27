@@ -44,7 +44,9 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                         TopN Hash Memory Usage: 0.1
+            Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Limit
                 Number of rows: 1
@@ -61,6 +63,7 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 4 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Limit
                 Number of rows: 1
@@ -153,6 +156,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                         TopN Hash Memory Usage: 0.1
+            Execution mode: vectorized
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -167,7 +171,9 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                         TopN Hash Memory Usage: 0.1
+            Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Limit
                 Number of rows: 1
@@ -184,6 +190,7 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 4 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Limit
                 Number of rows: 1

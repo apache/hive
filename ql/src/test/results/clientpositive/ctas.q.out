@@ -41,6 +41,7 @@ STAGE PLANS:
                 sort order: ++
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 TopN Hash Memory Usage: 0.1
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
@@ -65,6 +66,7 @@ STAGE PLANS:
               sort order: ++
               Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
               TopN Hash Memory Usage: 0.1
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
@@ -192,6 +194,7 @@ STAGE PLANS:
                 sort order: ++
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 TopN Hash Memory Usage: 0.1
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
@@ -216,6 +219,7 @@ STAGE PLANS:
               sort order: ++
               Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
               TopN Hash Memory Usage: 0.1
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
@@ -343,6 +347,7 @@ STAGE PLANS:
                 sort order: ++
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 TopN Hash Memory Usage: 0.1
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: double), KEY.reducesinkkey1 (type: string)
@@ -367,6 +372,7 @@ STAGE PLANS:
               sort order: ++
               Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
               TopN Hash Memory Usage: 0.1
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: double), KEY.reducesinkkey1 (type: string)
@@ -557,6 +563,7 @@ STAGE PLANS:
                 sort order: ++
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 TopN Hash Memory Usage: 0.1
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
@@ -581,6 +588,7 @@ STAGE PLANS:
               sort order: ++
               Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
               TopN Hash Memory Usage: 0.1
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
@@ -710,6 +718,7 @@ STAGE PLANS:
                 sort order: ++
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 TopN Hash Memory Usage: 0.1
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
@@ -734,6 +743,7 @@ STAGE PLANS:
               sort order: ++
               Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
               TopN Hash Memory Usage: 0.1
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)

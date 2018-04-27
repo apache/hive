@@ -56,6 +56,7 @@ STAGE PLANS:
                         TotalFiles: 1
                         GatherStats: false
                         MultiFileSpray: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -140,6 +141,7 @@ STAGE PLANS:
                         TotalFiles: 1
                         GatherStats: false
                         MultiFileSpray: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -282,6 +284,7 @@ STAGE PLANS:
                         TotalFiles: 1
                         GatherStats: false
                         MultiFileSpray: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -366,6 +369,7 @@ STAGE PLANS:
                         TotalFiles: 1
                         GatherStats: false
                         MultiFileSpray: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:

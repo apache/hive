@@ -66,6 +66,7 @@ STAGE PLANS:
                         keys:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
         Map 6 
@@ -84,6 +85,7 @@ STAGE PLANS:
                         keys:
                           0 _col2 (type: int)
                           1 _col0 (type: int)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 
@@ -133,6 +135,7 @@ STAGE PLANS:
                             Map-reduce partition columns: _col1 (type: int)
                             Statistics: Num rows: 45476640 Data size: 718523566 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col3 (type: int)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
         Map 7 
@@ -153,6 +156,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string)
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -176,6 +180,7 @@ STAGE PLANS:
                     Statistics: Num rows: 250121525 Data size: 3951879695 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col5 (type: bigint), _col6 (type: bigint)
         Reducer 3 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0), count(VALUE._col1)
@@ -194,6 +199,7 @@ STAGE PLANS:
                     Statistics: Num rows: 125060762 Data size: 1975939839 Basic stats: COMPLETE Column stats: NONE
                     TopN Hash Memory Usage: 0.1
         Reducer 4 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey2 (type: string), KEY.reducesinkkey3 (type: string), KEY.reducesinkkey4 (type: string), KEY.reducesinkkey0 (type: double)

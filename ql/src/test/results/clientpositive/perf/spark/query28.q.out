@@ -148,6 +148,7 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: decimal(7,2))
                           Statistics: Num rows: 21333171 Data size: 1882018537 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col1 (type: decimal(17,2)), _col2 (type: bigint)
+            Execution mode: vectorized
         Map 13 
             Map Operator Tree:
                 TableScan
@@ -172,6 +173,7 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: decimal(7,2))
                           Statistics: Num rows: 21333171 Data size: 1882018537 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col1 (type: decimal(17,2)), _col2 (type: bigint)
+            Execution mode: vectorized
         Map 16 
             Map Operator Tree:
                 TableScan
@@ -196,6 +198,7 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: decimal(7,2))
                           Statistics: Num rows: 21333171 Data size: 1882018537 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col1 (type: decimal(17,2)), _col2 (type: bigint)
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -220,6 +223,7 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: decimal(7,2))
                           Statistics: Num rows: 21333171 Data size: 1882018537 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col1 (type: decimal(17,2)), _col2 (type: bigint)
+            Execution mode: vectorized
         Map 7 
             Map Operator Tree:
                 TableScan
@@ -244,7 +248,9 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: decimal(7,2))
                           Statistics: Num rows: 21333171 Data size: 1882018537 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col1 (type: decimal(17,2)), _col2 (type: bigint)
+            Execution mode: vectorized
         Reducer 11 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0), count(VALUE._col1)
@@ -262,6 +268,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 232 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: decimal(17,2)), _col1 (type: bigint), _col2 (type: bigint)
         Reducer 12 
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
             Reduce Operator Tree:
@@ -283,6 +290,7 @@ STAGE PLANS:
                       4 
                       5 
         Reducer 14 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0), count(VALUE._col1)
@@ -300,6 +308,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 232 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: decimal(17,2)), _col1 (type: bigint), _col2 (type: bigint)
         Reducer 15 
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
             Reduce Operator Tree:
@@ -321,6 +330,7 @@ STAGE PLANS:
                       4 
                       5 
         Reducer 17 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0), count(VALUE._col1)
@@ -338,6 +348,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 232 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: decimal(17,2)), _col1 (type: bigint), _col2 (type: bigint)
         Reducer 18 
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
             Reduce Operator Tree:
@@ -359,6 +370,7 @@ STAGE PLANS:
                       4 
                       5 
         Reducer 5 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0), count(VALUE._col1)
@@ -376,6 +388,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 232 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: decimal(17,2)), _col1 (type: bigint), _col2 (type: bigint)
         Reducer 6 
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
             Reduce Operator Tree:
@@ -397,6 +410,7 @@ STAGE PLANS:
                       4 
                       5 
         Reducer 8 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0), count(VALUE._col1)
@@ -414,6 +428,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 232 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: decimal(17,2)), _col1 (type: bigint), _col2 (type: bigint)
         Reducer 9 
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
             Reduce Operator Tree:
@@ -466,7 +481,9 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: decimal(7,2))
                           Statistics: Num rows: 21333171 Data size: 1882018537 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col1 (type: decimal(17,2)), _col2 (type: bigint)
+            Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0), count(VALUE._col1)
@@ -484,6 +501,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 232 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col0 (type: decimal(17,2)), _col1 (type: bigint), _col2 (type: bigint)
         Reducer 3 
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
             Reduce Operator Tree:

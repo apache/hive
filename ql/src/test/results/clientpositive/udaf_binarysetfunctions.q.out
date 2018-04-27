@@ -421,6 +421,7 @@ STAGE PLANS:
               sort order: +
               Statistics: Num rows: 14 Data size: 135 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col1 (type: double), _col2 (type: double), _col3 (type: double), _col4 (type: double), _col5 (type: double), _col6 (type: bigint), _col7 (type: double), _col8 (type: double), _col9 (type: double), _col10 (type: double), _col11 (type: double), _col12 (type: double), _col13 (type: decimal(14,4)), _col14 (type: decimal(14,4))
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: double), VALUE._col1 (type: double), VALUE._col2 (type: double), VALUE._col3 (type: double), VALUE._col4 (type: double), VALUE._col5 (type: bigint), VALUE._col6 (type: double), VALUE._col7 (type: double), VALUE._col8 (type: double), VALUE._col9 (type: double), VALUE._col10 (type: double), VALUE._col11 (type: double), VALUE._col12 (type: decimal(14,4)), VALUE._col13 (type: decimal(14,4)), VALUE._col5 (type: bigint)
