@@ -100,9 +100,9 @@ public class ReplTxnTask extends Task<ReplTxnWork> {
         return 0;
       case REPL_WRITEID_STATE:
         txnManager.replTableWriteIdState(work.getValidWriteIdList(),
-                work.getDbName(), work.getTableName(), work.getPartNames());
+                work.getDbName(), tableName, work.getPartNames());
         LOG.info("Replicated WriteId state for DbName: " + work.getDbName()
-                + " TableName: " + work.getTableName()
+                + " TableName: " + tableName
                 + " ValidWriteIdList: " + work.getValidWriteIdList());
         return 0;
       default:

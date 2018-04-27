@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.parse.repl.dump;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
@@ -29,8 +28,6 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -106,7 +103,8 @@ class PartitionExport {
         LOG.debug("Thread: {}, start partition dump {}", threadName, partitionName);
         try {
           // this the data copy
-          List<Path> dataPathList = getDataPathList(partition, forReplicationSpec);
+          List<Path> dataPathList = Utils.getDataPathList(partition.getDataLocation(),
+                  forReplicationSpec, hiveConf);
           Path rootDataDumpDir = paths.partitionExportDir(partitionName);
           new FileOperations(dataPathList, rootDataDumpDir, distCpDoAsUser, hiveConf)
                   .export(forReplicationSpec);
@@ -119,14 +117,5 @@ class PartitionExport {
     consumer.shutdown();
     // may be drive this via configuration as well.
     consumer.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
-  }
-
-  private List<Path> getDataPathList(Partition partition, ReplicationSpec replicationSpec) throws IOException {
-    Path fromPath = partition.getDataLocation();
-    if (replicationSpec.isTransactionalTableDump()) {
-      return AcidUtils.getValidDataPaths(fromPath, hiveConf, replicationSpec.getValidWriteIdList());
-    } else {
-      return Collections.singletonList(fromPath);
-    }
   }
 }

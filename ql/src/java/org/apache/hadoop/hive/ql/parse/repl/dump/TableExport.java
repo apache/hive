@@ -26,7 +26,6 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
-import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -150,22 +149,15 @@ public class TableExport {
         }
         new PartitionExport(paths, partitions, distCpDoAsUser, conf).write(replicationSpec);
       } else {
-        List<Path> dataPathList = getDataPathList();
+        List<Path> dataPathList = Utils.getDataPathList(tableSpec.tableHandle.getDataLocation(),
+                replicationSpec, conf);
+
         // this is the data copy
         new FileOperations(dataPathList, paths.dataExportDir(), distCpDoAsUser, conf)
             .export(replicationSpec);
       }
     } catch (Exception e) {
       throw new SemanticException(e);
-    }
-  }
-
-  private List<Path> getDataPathList() throws IOException {
-    Path fromPath = tableSpec.tableHandle.getDataLocation();
-    if (replicationSpec.isTransactionalTableDump()) {
-      return AcidUtils.getValidDataPaths(fromPath, conf, replicationSpec.getValidWriteIdList());
-    } else {
-      return Collections.singletonList(fromPath);
     }
   }
 
