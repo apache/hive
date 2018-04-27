@@ -110,6 +110,7 @@ import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
+import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.api.TxnOpenException;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
@@ -2749,14 +2750,13 @@ public interface IMetaStoreClient {
 
   /**
    * Get a structure that details valid write ids list for all tables read by current txn.
-   * @param currentTxnId current txn ID for which we try to get valid write ids list
    * @param tablesList list of tables (format: <db_name>.<table_name>) read from the current transaction
    *                   for which needs to populate the valid write ids
    * @param validTxnList snapshot of valid txns for the current txn
    * @return list of valid write ids for the given list of tables.
    * @throws TException
    */
-  ValidTxnWriteIdList getValidWriteIds(Long currentTxnId, List<String> tablesList, String validTxnList)
+  List<TableValidWriteIds> getValidWriteIds(List<String> tablesList, String validTxnList)
           throws TException;
 
   /**
