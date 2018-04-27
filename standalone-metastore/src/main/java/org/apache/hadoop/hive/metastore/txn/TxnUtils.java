@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsResponse;
@@ -80,13 +81,13 @@ public class TxnUtils {
    * {@link org.apache.hadoop.hive.common.ValidTxnWriteIdList}.  This assumes that the caller intends to
    * read the files, and thus treats both open and aborted transactions as invalid.
    * @param currentTxnId current txn ID for which we get the valid write ids list
-   * @param validWriteIds valid write ids list from the metastore
+   * @param list valid write ids list from the metastore
    * @return a valid write IDs list for the whole transaction.
    */
   public static ValidTxnWriteIdList createValidTxnWriteIdList(Long currentTxnId,
-                                                              GetValidWriteIdsResponse validWriteIds) {
+                                                              List<TableValidWriteIds> validIds) {
     ValidTxnWriteIdList validTxnWriteIdList = new ValidTxnWriteIdList(currentTxnId);
-    for (TableValidWriteIds tableWriteIds : validWriteIds.getTblValidWriteIds()) {
+    for (TableValidWriteIds tableWriteIds : validIds) {
       validTxnWriteIdList.addTableValidWriteIdList(createValidReaderWriteIdList(tableWriteIds));
     }
     return validTxnWriteIdList;
@@ -155,6 +156,17 @@ public class TxnUtils {
     }
   }
 
+  public static ValidReaderWriteIdList updateForCompactionQuery(ValidReaderWriteIdList ids) {
+    // This is based on the existing valid write ID list that was built for a select query;
+    // therefore we assume all the aborted txns, etc. were already accounted for.
+    // All we do is adjust the high watermark to only include contiguous txns.
+    Long minOpenWriteId = ids.getMinOpenWriteId();
+    if (minOpenWriteId != null && minOpenWriteId != Long.MAX_VALUE) {
+      return ids.updateHighWatermark(ids.getMinOpenWriteId() - 1);
+    }
+    return ids;
+  }
+
   /**
    * Get an instance of the TxnStore that is appropriate for this store
    * @param conf configuration
@@ -212,7 +224,7 @@ public class TxnUtils {
 
 
   /**
-   * Build a query (or queries if one query is too big but only for the case of 'IN' 
+   * Build a query (or queries if one query is too big but only for the case of 'IN'
    * composite clause. For the case of 'NOT IN' clauses, multiple queries change
    * the semantics of the intended query.
    * E.g., Let's assume that input "inList" parameter has [5, 6] and that

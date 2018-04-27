@@ -110,6 +110,9 @@ public final class PlanUtils {
 
   public static TableDesc getDefaultTableDesc(CreateTableDesc directoryDesc,
       String cols, String colTypes ) {
+    // TODO: this should have an option for directory to inherit from the parent table,
+    //       including bucketing and list bucketing, for the use in compaction when the
+    //       latter runs inside a transaction.
     TableDesc ret = getDefaultTableDesc(Integer.toString(Utilities.ctrlaCode), cols,
         colTypes, false);;
     if (directoryDesc == null) {

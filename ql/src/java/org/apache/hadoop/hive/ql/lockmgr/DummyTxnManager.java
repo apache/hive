@@ -394,6 +394,4 @@ class DummyTxnManager extends HiveTxnManagerImpl {
     }
     return locks;
   }
-
-
 }

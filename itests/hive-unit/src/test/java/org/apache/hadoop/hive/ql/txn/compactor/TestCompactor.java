@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.txn.compactor;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -30,11 +31,13 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.curator.shaded.com.google.common.collect.Lists;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -45,9 +48,11 @@ import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
+import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
@@ -704,16 +709,7 @@ public class TestCompactor {
       // it has an open txn in it
       writeBatch(connection, writer, true);
 
-      // Now, compact
-      TxnStore txnHandler = TxnUtils.getTxnStore(conf);
-      txnHandler.compact(new CompactionRequest(dbName, tblName, CompactionType.MAJOR));
-      Worker t = new Worker();
-      t.setThreadId((int) t.getId());
-      t.setConf(conf);
-      AtomicBoolean stop = new AtomicBoolean(true);
-      AtomicBoolean looped = new AtomicBoolean();
-      t.init(stop, looped);
-      t.run();
+      runMajorCompaction(dbName, tblName);
 
       // Find the location of the table
       IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
@@ -827,16 +823,7 @@ public class TestCompactor {
       txnBatch.abort();
 
 
-      // Now, compact
-      TxnStore txnHandler = TxnUtils.getTxnStore(conf);
-      txnHandler.compact(new CompactionRequest(dbName, tblName, CompactionType.MAJOR));
-      Worker t = new Worker();
-      t.setThreadId((int) t.getId());
-      t.setConf(conf);
-      AtomicBoolean stop = new AtomicBoolean(true);
-      AtomicBoolean looped = new AtomicBoolean();
-      t.init(stop, looped);
-      t.run();
+      runMajorCompaction(dbName, tblName);
 
       // Find the location of the table
       IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
@@ -857,6 +844,228 @@ public class TestCompactor {
       checkExpectedTxnsPresent(stat[0].getPath(), null, columnNamesProperty, columnTypesProperty, 0, 1L, 4L, 1);
     } finally {
       connection.close();
+    }
+  }
+
+
+  @Test
+  public void mmTable() throws Exception {
+    String dbName = "default";
+    String tblName = "mm_nonpart";
+    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) STORED AS ORC" +
+        " TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only')",
+        driver);
+    IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
+    Table table = msClient.getTable(dbName, tblName);
+    msClient.close();
+
+    executeStatementOnDriver("INSERT INTO " + tblName +"(a,b) VALUES(1, 'foo')", driver);
+    executeStatementOnDriver("INSERT INTO " + tblName +"(a,b) VALUES(2, 'bar')", driver);
+
+    verifyFooBarResult(tblName, 1);
+
+    // Check that we have two deltas.
+    FileSystem fs = FileSystem.get(conf);
+    verifyDeltaCount(table.getSd(), fs, 2);
+
+    runMajorCompaction(dbName, tblName);
+    verifyFooBarResult(tblName, 1);
+    verifyHasBase(table.getSd(), fs, "base_0000002");
+
+    // Make sure we don't compact if we don't need to compact.
+    runMajorCompaction(dbName, tblName);
+    verifyFooBarResult(tblName, 1);
+    verifyHasBase(table.getSd(), fs, "base_0000002");
+  }
+
+  @Test
+  public void mmTableBucketed() throws Exception {
+    String dbName = "default";
+    String tblName = "mm_nonpart";
+    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) CLUSTERED BY (a) " +
+        "INTO 64 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true', " +
+        "'transactional_properties'='insert_only')", driver);
+    IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
+    Table table = msClient.getTable(dbName, tblName);
+    msClient.close();
+
+    executeStatementOnDriver("INSERT INTO " + tblName +"(a,b) VALUES(1, 'foo')", driver);
+    executeStatementOnDriver("INSERT INTO " + tblName +"(a,b) VALUES(2, 'bar')", driver);
+
+    verifyFooBarResult(tblName, 1);
+
+    // Check that we have two deltas.
+    FileSystem fs = FileSystem.get(conf);
+    verifyDeltaCount(table.getSd(), fs, 2);
+
+    runMajorCompaction(dbName, tblName);
+    verifyFooBarResult(tblName, 1);
+    String baseDir = "base_0000002";
+    verifyHasBase(table.getSd(), fs, baseDir);
+
+    FileStatus[] files = fs.listStatus(new Path(table.getSd().getLocation(), baseDir),
+        AcidUtils.hiddenFileFilter);
+    Assert.assertEquals(Lists.newArrayList(files).toString(), 64, files.length);
+  }
+
+  @Test
+  public void mmTableOpenWriteId() throws Exception {
+    String dbName = "default";
+    String tblName = "mm_nonpart";
+    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) STORED AS TEXTFILE" +
+        " TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only')",
+        driver);
+    IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
+    Table table = msClient.getTable(dbName, tblName);
+    msClient.close();
+
+    executeStatementOnDriver("INSERT INTO " + tblName +"(a,b) VALUES(1, 'foo')", driver);
+    executeStatementOnDriver("INSERT INTO " + tblName +"(a,b) VALUES(2, 'bar')", driver);
+
+    verifyFooBarResult(tblName, 1);
+
+    long openTxnId = msClient.openTxn("test");
+    long openWriteId = msClient.allocateTableWriteId(openTxnId, dbName, tblName);
+    Assert.assertEquals(3, openWriteId); // Just check to make sure base_5 below is not new.
+
+    executeStatementOnDriver("INSERT INTO " + tblName +"(a,b) VALUES(1, 'foo')", driver);
+    executeStatementOnDriver("INSERT INTO " + tblName +"(a,b) VALUES(2, 'bar')", driver);
+
+    verifyFooBarResult(tblName, 2);
+
+    runMajorCompaction(dbName, tblName); // Don't compact 4 and 5; 3 is opened.
+    FileSystem fs = FileSystem.get(conf);
+    verifyHasBase(table.getSd(), fs, "base_0000002");
+    verifyDirCount(table.getSd(), fs, 1, AcidUtils.baseFileFilter);
+    verifyFooBarResult(tblName, 2);
+
+    runCleaner(conf);
+    verifyHasDir(table.getSd(), fs, "delta_0000004_0000004_0000", AcidUtils.deltaFileFilter);
+    verifyHasDir(table.getSd(), fs, "delta_0000005_0000005_0000", AcidUtils.deltaFileFilter);
+    verifyFooBarResult(tblName, 2);
+
+    msClient.abortTxns(Lists.newArrayList(openTxnId)); // Now abort 3.
+    runMajorCompaction(dbName, tblName); // Compact 4 and 5.
+    verifyFooBarResult(tblName, 2);
+    verifyHasBase(table.getSd(), fs, "base_0000005"); 
+    runCleaner(conf);
+    verifyDeltaCount(table.getSd(), fs, 0);
+  }
+
+  private void verifyHasBase(
+      StorageDescriptor sd, FileSystem fs, String baseName) throws Exception {
+    verifyHasDir(sd, fs, baseName, AcidUtils.baseFileFilter);
+  }
+
+  private void verifyHasDir(
+      StorageDescriptor sd, FileSystem fs, String name, PathFilter filter) throws Exception {
+    FileStatus[] stat = fs.listStatus(new Path(sd.getLocation()), filter);
+    for (FileStatus file : stat) {
+      if (name.equals(file.getPath().getName())) return;
+    }
+    Assert.fail("Cannot find " + name + ": " + Arrays.toString(stat));
+  }
+
+  private void verifyDeltaCount(
+      StorageDescriptor sd, FileSystem fs, int count) throws Exception {
+    verifyDirCount(sd, fs, count, AcidUtils.deltaFileFilter);
+  }
+
+  private void verifyDirCount(
+      StorageDescriptor sd, FileSystem fs, int count, PathFilter filter) throws Exception {
+    FileStatus[] stat = fs.listStatus(new Path(sd.getLocation()), filter);
+    Assert.assertEquals(Arrays.toString(stat), count, stat.length);
+  }
+
+  @Test
+  public void mmTablePartitioned() throws Exception {
+    String dbName = "default";
+    String tblName = "mm_part";
+    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
+        " PARTITIONED BY(ds int) STORED AS TEXTFILE" +
+        " TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only')",
+        driver);
+
+    executeStatementOnDriver("INSERT INTO " + tblName + " partition (ds) VALUES(1, 'foo', 1)", driver);
+    executeStatementOnDriver("INSERT INTO " + tblName + " partition (ds) VALUES(1, 'foo', 1)", driver);
+    executeStatementOnDriver("INSERT INTO " + tblName + " partition (ds) VALUES(2, 'bar', 1)", driver);
+    executeStatementOnDriver("INSERT INTO " + tblName + " partition (ds) VALUES(1, 'foo', 2)", driver);
+    executeStatementOnDriver("INSERT INTO " + tblName + " partition (ds) VALUES(2, 'bar', 2)", driver);
+    executeStatementOnDriver("INSERT INTO " + tblName + " partition (ds) VALUES(2, 'bar', 3)", driver);
+
+    verifyFooBarResult(tblName, 3);
+
+    IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
+    Partition p1 = msClient.getPartition(dbName, tblName, "ds=1"),
+        p2 = msClient.getPartition(dbName, tblName, "ds=2"),
+        p3 = msClient.getPartition(dbName, tblName, "ds=3");
+    msClient.close();
+ 
+    FileSystem fs = FileSystem.get(conf);
+    verifyDeltaCount(p1.getSd(), fs, 3);
+    verifyDeltaCount(p2.getSd(), fs, 2);
+    verifyDeltaCount(p3.getSd(), fs, 1);
+
+    runMajorCompaction(dbName, tblName, "ds=1", "ds=2", "ds=3");
+
+    verifyFooBarResult(tblName, 3);
+    verifyDeltaCount(p3.getSd(), fs, 1);
+    verifyHasBase(p1.getSd(), fs, "base_0000006");
+    verifyHasBase(p2.getSd(), fs, "base_0000006");
+
+    executeStatementOnDriver("INSERT INTO " + tblName + " partition (ds) VALUES(1, 'foo', 2)", driver);
+    executeStatementOnDriver("INSERT INTO " + tblName + " partition (ds) VALUES(2, 'bar', 2)", driver);
+
+    runMajorCompaction(dbName, tblName, "ds=1", "ds=2", "ds=3");
+
+    // Make sure we don't compact if we don't need to compact; but do if we do.
+    verifyFooBarResult(tblName, 4);
+    verifyDeltaCount(p3.getSd(), fs, 1);
+    verifyHasBase(p1.getSd(), fs, "base_0000006");
+    verifyHasBase(p2.getSd(), fs, "base_0000008");
+
+  }
+
+  private void verifyFooBarResult(String tblName, int count) throws Exception, IOException {
+    List<String> valuesReadFromHiveDriver = new ArrayList<String>();
+    executeStatementOnDriver("SELECT a,b FROM " + tblName, driver);
+    driver.getResults(valuesReadFromHiveDriver);
+    Assert.assertEquals(2 * count, valuesReadFromHiveDriver.size());
+    int fooCount = 0, barCount = 0;
+    for (String s : valuesReadFromHiveDriver) {
+      if ("1\tfoo".equals(s)) {
+        ++fooCount;
+      } else if ("2\tbar".equals(s)) {
+        ++barCount;
+      } else {
+        Assert.fail("Unexpected " + s);
+      }
+    }
+    Assert.assertEquals(fooCount, count);
+    Assert.assertEquals(barCount, count);
+  }
+
+  private void runMajorCompaction(
+      String dbName, String tblName, String... partNames) throws MetaException {
+    TxnStore txnHandler = TxnUtils.getTxnStore(conf);
+    Worker t = new Worker();
+    t.setThreadId((int) t.getId());
+    t.setConf(conf);
+    t.init(new AtomicBoolean(true), new AtomicBoolean());
+    if (partNames.length == 0) {
+      txnHandler.compact(new CompactionRequest(dbName, tblName, CompactionType.MAJOR));
+      t.run();
+    } else {
+      for (String partName : partNames) {
+        CompactionRequest cr = new CompactionRequest(dbName, tblName, CompactionType.MAJOR);
+        cr.setPartitionname(partName);
+        txnHandler.compact(cr);
+        t.run();
+      }
     }
   }
 
@@ -885,16 +1094,7 @@ public class TestCompactor {
       // Start a third batch, but don't close it.
       writeBatch(connection, writer, true);
 
-      // Now, compact
-      TxnStore txnHandler = TxnUtils.getTxnStore(conf);
-      txnHandler.compact(new CompactionRequest(dbName, tblName, CompactionType.MAJOR));
-      Worker t = new Worker();
-      t.setThreadId((int) t.getId());
-      t.setConf(conf);
-      AtomicBoolean stop = new AtomicBoolean(true);
-      AtomicBoolean looped = new AtomicBoolean();
-      t.init(stop, looped);
-      t.run();
+      runMajorCompaction(dbName, tblName);
 
       // Find the location of the table
       IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
@@ -1461,6 +1661,7 @@ public class TestCompactor {
       throw new IOException("Failed to execute \"" + cmd + "\". Driver returned: " + cpr);
     }
   }
+
   static void createTestDataFile(String filename, String[] lines) throws IOException {
     FileWriter writer = null;
     try {
