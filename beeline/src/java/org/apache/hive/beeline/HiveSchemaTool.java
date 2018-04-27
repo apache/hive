@@ -893,6 +893,7 @@ public class HiveSchemaTool {
     System.out.println("Create catalog " + catName + " at location " + location);
     try (Connection conn = getConnectionToMetastore(false)) {
       try (Statement stmt = conn.createStatement()) {
+        conn.setAutoCommit(false);
         // If they set ifNotExists check for existence first, and bail if it exists.  This is
         // more reliable then attempting to parse the error message from the SQLException.
         if (ifNotExists) {
