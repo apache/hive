@@ -85,6 +85,7 @@ STAGE PLANS:
                         tag: -1
                         value expressions: _col1 (type: string)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -186,6 +187,7 @@ STAGE PLANS:
               /pcr_t1/ds=2000-04-08 [pcr_t1]
               /pcr_t1/ds=2000-04-09 [pcr_t1]
         Reducer 2 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
@@ -280,6 +282,7 @@ STAGE PLANS:
                         tag: -1
                         value expressions: _col1 (type: string)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -429,6 +432,7 @@ STAGE PLANS:
               /pcr_t1/ds=2000-04-09 [pcr_t1]
               /pcr_t1/ds=2000-04-10 [pcr_t1]
         Reducer 2 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
@@ -560,6 +564,7 @@ STAGE PLANS:
                         tag: -1
                         value expressions: _col1 (type: string)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -661,6 +666,7 @@ STAGE PLANS:
               /pcr_t1/ds=2000-04-08 [pcr_t1]
               /pcr_t1/ds=2000-04-09 [pcr_t1]
         Reducer 2 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
@@ -757,6 +763,7 @@ STAGE PLANS:
                         tag: -1
                         value expressions: _col1 (type: string)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -858,6 +865,7 @@ STAGE PLANS:
               /pcr_t1/ds=2000-04-08 [pcr_t1]
               /pcr_t1/ds=2000-04-10 [pcr_t1]
         Reducer 2 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
@@ -956,6 +964,7 @@ STAGE PLANS:
                         tag: -1
                         value expressions: _col1 (type: string)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -1105,6 +1114,7 @@ STAGE PLANS:
               /pcr_t1/ds=2000-04-09 [pcr_t1]
               /pcr_t1/ds=2000-04-10 [pcr_t1]
         Reducer 2 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
@@ -1213,6 +1223,7 @@ STAGE PLANS:
                         tag: -1
                         value expressions: _col1 (type: string)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -1362,6 +1373,7 @@ STAGE PLANS:
               /pcr_t1/ds=2000-04-09 [pcr_t1]
               /pcr_t1/ds=2000-04-10 [pcr_t1]
         Reducer 2 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
@@ -1477,6 +1489,7 @@ STAGE PLANS:
                         Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
                         tag: -1
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -1578,6 +1591,7 @@ STAGE PLANS:
               /pcr_t1/ds=2000-04-08 [$hdt$_0:pcr_t1]
               /pcr_t1/ds=2000-04-09 [$hdt$_0:pcr_t1]
         Reducer 2 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
@@ -1657,6 +1671,7 @@ STAGE PLANS:
                       Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -1758,6 +1773,7 @@ STAGE PLANS:
               /pcr_t1/ds=2000-04-08 [pcr_t1]
               /pcr_t1/ds=2000-04-09 [pcr_t1]
         Reducer 2 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
@@ -1877,6 +1893,7 @@ STAGE PLANS:
                       Statistics: Num rows: 60 Data size: 480 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -2026,6 +2043,7 @@ STAGE PLANS:
               /pcr_t1/ds=2000-04-09 [pcr_t1]
               /pcr_t1/ds=2000-04-10 [pcr_t1]
         Reducer 2 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
@@ -2171,6 +2189,7 @@ STAGE PLANS:
                         Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
                         tag: -1
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -2272,6 +2291,7 @@ STAGE PLANS:
               /pcr_t1/ds=2000-04-08 [pcr_t1]
               /pcr_t1/ds=2000-04-09 [pcr_t1]
         Reducer 2 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
@@ -2359,6 +2379,7 @@ STAGE PLANS:
                         tag: 0
                         value expressions: _col1 (type: string)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -2434,6 +2455,7 @@ STAGE PLANS:
                         tag: 1
                         value expressions: _col1 (type: string)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -2510,6 +2532,7 @@ STAGE PLANS:
                     value expressions: _col1 (type: string), _col2 (type: int), _col3 (type: string)
                     auto parallelism: false
         Reducer 3 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
@@ -2632,6 +2655,7 @@ STAGE PLANS:
                         tag: 0
                         value expressions: _col1 (type: string)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -2707,6 +2731,7 @@ STAGE PLANS:
                         tag: 1
                         value expressions: _col1 (type: string)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -2783,6 +2808,7 @@ STAGE PLANS:
                     value expressions: _col1 (type: string), _col2 (type: int), _col3 (type: string)
                     auto parallelism: false
         Reducer 3 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
@@ -2914,6 +2940,7 @@ STAGE PLANS:
                         Statistics: Num rows: 48 Data size: 384 Basic stats: COMPLETE Column stats: NONE
                         tag: -1
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -3111,6 +3138,7 @@ STAGE PLANS:
               /pcr_t1/ds=2000-04-10 [pcr_t1]
               /pcr_t1/ds=2000-04-11 [pcr_t1]
         Reducer 2 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
@@ -3240,6 +3268,7 @@ STAGE PLANS:
                         Statistics: Num rows: 30 Data size: 240 Basic stats: COMPLETE Column stats: NONE
                         tag: -1
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -3389,6 +3418,7 @@ STAGE PLANS:
               /pcr_t1/ds=2000-04-09 [pcr_t1]
               /pcr_t1/ds=2000-04-10 [pcr_t1]
         Reducer 2 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
@@ -3595,6 +3625,7 @@ STAGE PLANS:
                       TotalFiles: 1
                       GatherStats: true
                       MultiFileSpray: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -3842,6 +3873,7 @@ STAGE PLANS:
                         TotalFiles: 1
                         GatherStats: true
                         MultiFileSpray: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -4016,6 +4048,7 @@ STAGE PLANS:
                       TopN Hash Memory Usage: 0.1
                       value expressions: _col1 (type: string)
                       auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -4070,6 +4103,7 @@ STAGE PLANS:
             Truncated Path -> Alias:
               /srcpart/ds=2008-04-08/hr=11 [srcpart]
         Reducer 2 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
@@ -4153,6 +4187,7 @@ STAGE PLANS:
                         tag: -1
                         value expressions: _col1 (type: string)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -4256,6 +4291,7 @@ STAGE PLANS:
               /srcpart/ds=2008-04-08/hr=11 [$hdt$_0:srcpart]
               /srcpart/ds=2008-04-08/hr=12 [$hdt$_0:srcpart]
         Reducer 2 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
@@ -4342,6 +4378,7 @@ STAGE PLANS:
                         tag: -1
                         value expressions: _col1 (type: string)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -4445,6 +4482,7 @@ STAGE PLANS:
               /srcpart/ds=2008-04-08/hr=11 [$hdt$_0:srcpart]
               /srcpart/ds=2008-04-09/hr=11 [$hdt$_0:srcpart]
         Reducer 2 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator

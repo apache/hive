@@ -236,6 +236,7 @@ STAGE PLANS:
               /bucket_big/ds=2008-04-08 [$hdt$_0:a]
               /bucket_big/ds=2008-04-09 [$hdt$_0:a]
         Reducer 2 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -444,6 +445,7 @@ STAGE PLANS:
               /bucket_big/ds=2008-04-08 [$hdt$_0:a]
               /bucket_big/ds=2008-04-09 [$hdt$_0:a]
         Reducer 2 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator

@@ -70,6 +70,7 @@ STAGE PLANS:
                 Reduce Output Operator
                   sort order: 
                   Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Limit
           Number of rows: 2
@@ -261,6 +262,7 @@ STAGE PLANS:
                 Reduce Output Operator
                   sort order: 
                   Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Limit
           Number of rows: 2
@@ -290,6 +292,7 @@ STAGE PLANS:
                 Reduce Output Operator
                   sort order: 
                   Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Limit
           Number of rows: 2

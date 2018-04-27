@@ -247,6 +247,7 @@ STAGE PLANS:
                     tag: -1
                     value expressions: _col0 (type: bigint)
                     auto parallelism: false
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
       Path -> Alias:

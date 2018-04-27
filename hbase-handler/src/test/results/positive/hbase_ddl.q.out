@@ -82,6 +82,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.hbase.HiveHBaseTableOutputFormat
                       serde: org.apache.hadoop.hive.hbase.HBaseSerDe
                       name: default.hbase_table_1
+      Execution mode: vectorized
 
 PREHOOK: query: FROM src INSERT OVERWRITE TABLE hbase_table_1 SELECT * WHERE (key%2)=0
 PREHOOK: type: QUERY

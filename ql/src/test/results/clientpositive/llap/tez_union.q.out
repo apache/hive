@@ -50,7 +50,7 @@ STAGE PLANS:
                               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
@@ -69,7 +69,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 4 
             Map Operator Tree:
@@ -87,7 +87,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Union 2 
             Vertex: Union 2
@@ -196,7 +196,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 5 
             Map Operator Tree:
@@ -215,7 +215,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 6 
             Map Operator Tree:
@@ -234,7 +234,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 8 
             Map Operator Tree:
@@ -253,7 +253,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 3 
             Execution mode: llap
@@ -275,7 +275,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: bigint)
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -377,7 +377,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 2 
             Map Operator Tree:
@@ -408,7 +408,7 @@ STAGE PLANS:
                               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 4 
             Map Operator Tree:
@@ -439,7 +439,7 @@ STAGE PLANS:
                               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Union 3 
             Vertex: Union 3
@@ -579,7 +579,7 @@ STAGE PLANS:
                               sort order: +
                               Statistics: Num rows: 6354 Data size: 1658394 Basic stats: COMPLETE Column stats: COMPLETE
                               value expressions: _col0 (type: string), _col1 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 10 
             Map Operator Tree:
@@ -608,7 +608,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 4 
             Map Operator Tree:
@@ -627,7 +627,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 5 
             Map Operator Tree:
@@ -673,7 +673,7 @@ STAGE PLANS:
                               sort order: +
                               Statistics: Num rows: 6354 Data size: 1658394 Basic stats: COMPLETE Column stats: COMPLETE
                               value expressions: _col0 (type: string), _col1 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 6 
             Map Operator Tree:
@@ -692,7 +692,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 7 
             Map Operator Tree:
@@ -738,7 +738,7 @@ STAGE PLANS:
                               sort order: +
                               Statistics: Num rows: 6354 Data size: 1658394 Basic stats: COMPLETE Column stats: COMPLETE
                               value expressions: _col0 (type: string), _col1 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 8 
             Map Operator Tree:
@@ -757,7 +757,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 9 
             Map Operator Tree:
@@ -786,10 +786,10 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), KEY.reducesinkkey0 (type: string)
@@ -1004,7 +1004,7 @@ STAGE PLANS:
                               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
@@ -1023,7 +1023,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 4 
             Map Operator Tree:
@@ -1054,7 +1054,7 @@ STAGE PLANS:
                               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 5 
             Map Operator Tree:
@@ -1073,7 +1073,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Union 2 
             Vertex: Union 2
@@ -1194,7 +1194,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
@@ -1222,7 +1222,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 4 
             Map Operator Tree:
@@ -1245,7 +1245,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Union 2 
             Vertex: Union 2
@@ -1294,7 +1294,7 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
@@ -1310,7 +1310,7 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 4 
             Map Operator Tree:
@@ -1338,7 +1338,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Union 2 
             Vertex: Union 2

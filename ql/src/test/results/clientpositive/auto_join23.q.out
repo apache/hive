@@ -55,6 +55,7 @@ STAGE PLANS:
                     key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
                     sort order: ++++
                     Statistics: Num rows: 27556 Data size: 612872 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
       Reduce Operator Tree:

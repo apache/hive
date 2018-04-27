@@ -57,6 +57,7 @@ public class TestTriggersMoveWorkloadManager extends AbstractJdbcTriggersTest {
     System.out.println("Setting hive-site: " + HiveConf.getHiveSiteLocation());
 
     conf = new HiveConf();
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
     conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     conf.setBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS, false);
     conf.setTimeVar(ConfVars.HIVE_TRIGGER_VALIDATION_INTERVAL, 50, TimeUnit.MILLISECONDS);

@@ -58,6 +58,7 @@ STAGE PLANS:
                       tag: -1
                       value expressions: _col0 (type: string), _col1 (type: string)
                       auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
               hdfs://### HDFS PATH ### [src]
             Path -> Partition:
@@ -130,6 +131,7 @@ STAGE PLANS:
                       tag: -1
                       value expressions: _col1 (type: string)
                       auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
               hdfs://### HDFS PATH ### [src]
             Path -> Partition:
@@ -184,6 +186,7 @@ STAGE PLANS:
             Truncated Path -> Alias:
               /src [src]
         Reducer 2 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
@@ -226,6 +229,7 @@ STAGE PLANS:
                   GatherStats: true
                   MultiFileSpray: false
         Reducer 3 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator

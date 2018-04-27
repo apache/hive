@@ -61,31 +61,31 @@ Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-      Map 1 llap
-      File Output Operator [FS_14]
-        Map Join Operator [MAPJOIN_22] (rows=2 width=4)
-          Conds:SEL_2._col0=RS_10._col0(Left Outer),SEL_2._col0=RS_11._col0(Inner),Output:["_col0","_col1","_col2"]
-        <-Map 2 [BROADCAST_EDGE] llap
-          BROADCAST [RS_10]
+      Map 1 vectorized, llap
+      File Output Operator [FS_34]
+        Map Join Operator [MAPJOIN_33] (rows=2 width=4)
+          Conds:SEL_32._col0=RS_27._col0(Left Outer),SEL_32._col0=RS_30._col0(Inner),Output:["_col0","_col1","_col2"]
+        <-Map 2 [BROADCAST_EDGE] vectorized, llap
+          BROADCAST [RS_27]
             PartitionCols:_col0
-            Select Operator [SEL_5] (rows=1 width=4)
+            Select Operator [SEL_26] (rows=1 width=4)
               Output:["_col0"]
-              Filter Operator [FIL_20] (rows=1 width=4)
+              Filter Operator [FIL_25] (rows=1 width=4)
                 predicate:id is not null
                 TableScan [TS_3] (rows=1 width=4)
                   default@test_2,t2,Tbl:COMPLETE,Col:NONE,Output:["id"]
-        <-Map 3 [BROADCAST_EDGE] llap
-          BROADCAST [RS_11]
+        <-Map 3 [BROADCAST_EDGE] vectorized, llap
+          BROADCAST [RS_30]
             PartitionCols:_col0
-            Select Operator [SEL_8] (rows=1 width=4)
+            Select Operator [SEL_29] (rows=1 width=4)
               Output:["_col0"]
-              Filter Operator [FIL_21] (rows=1 width=4)
+              Filter Operator [FIL_28] (rows=1 width=4)
                 predicate:id is not null
                 TableScan [TS_6] (rows=1 width=4)
                   default@test_3,t3,Tbl:COMPLETE,Col:NONE,Output:["id"]
-        <-Select Operator [SEL_2] (rows=1 width=4)
+        <-Select Operator [SEL_32] (rows=1 width=4)
             Output:["_col0"]
-            Filter Operator [FIL_19] (rows=1 width=4)
+            Filter Operator [FIL_31] (rows=1 width=4)
               predicate:id is not null
               TableScan [TS_0] (rows=1 width=4)
                 default@test_1,t1,Tbl:COMPLETE,Col:NONE,Output:["id"]

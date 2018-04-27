@@ -37,6 +37,7 @@ STAGE PLANS:
                   sort order: 
                   Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: int), _col3 (type: int)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0), sum(VALUE._col1), min(VALUE._col2), max(VALUE._col3)

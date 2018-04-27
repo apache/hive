@@ -271,6 +271,7 @@ STAGE PLANS:
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
               Statistics: Num rows: 11 Data size: 114 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: string)
@@ -391,6 +392,7 @@ STAGE PLANS:
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
               Statistics: Num rows: 100 Data size: 1540 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: string)
@@ -483,6 +485,7 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: string)
@@ -589,6 +592,7 @@ STAGE PLANS:
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
               Statistics: Num rows: 11 Data size: 114 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           keys: KEY._col0 (type: string)

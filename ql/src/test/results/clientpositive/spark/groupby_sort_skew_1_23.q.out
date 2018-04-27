@@ -104,6 +104,7 @@ STAGE PLANS:
                           TotalFiles: 1
                           GatherStats: true
                           MultiFileSpray: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -272,6 +273,7 @@ STAGE PLANS:
                         tag: -1
                         value expressions: _col2 (type: bigint)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -328,6 +330,7 @@ STAGE PLANS:
             Truncated Path -> Alias:
               /t1 [t1]
         Reducer 2 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -346,6 +349,7 @@ STAGE PLANS:
                   value expressions: _col2 (type: bigint)
                   auto parallelism: false
         Reducer 3 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -521,6 +525,7 @@ STAGE PLANS:
                           TotalFiles: 1
                           GatherStats: true
                           MultiFileSpray: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -705,6 +710,7 @@ STAGE PLANS:
                           TotalFiles: 1
                           GatherStats: true
                           MultiFileSpray: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -897,6 +903,7 @@ STAGE PLANS:
                           TotalFiles: 1
                           GatherStats: true
                           MultiFileSpray: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -1066,6 +1073,7 @@ STAGE PLANS:
                         tag: -1
                         value expressions: _col2 (type: bigint)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -1122,6 +1130,7 @@ STAGE PLANS:
             Truncated Path -> Alias:
               /t1 [t1]
         Reducer 2 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -1140,6 +1149,7 @@ STAGE PLANS:
                   value expressions: _col2 (type: bigint)
                   auto parallelism: false
         Reducer 3 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -1292,6 +1302,7 @@ STAGE PLANS:
                         tag: -1
                         value expressions: _col2 (type: bigint)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -1348,6 +1359,7 @@ STAGE PLANS:
             Truncated Path -> Alias:
               /t1 [$hdt$_0:t1]
         Reducer 2 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -1366,6 +1378,7 @@ STAGE PLANS:
                   value expressions: _col2 (type: bigint)
                   auto parallelism: false
         Reducer 3 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -1530,6 +1543,7 @@ STAGE PLANS:
                             tag: -1
                             value expressions: _col1 (type: bigint)
                             auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -1586,6 +1600,7 @@ STAGE PLANS:
             Truncated Path -> Alias:
               /t1 [$hdt$_0:t1]
         Reducer 2 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -1604,6 +1619,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: bigint)
                   auto parallelism: false
         Reducer 3 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -1789,6 +1805,7 @@ STAGE PLANS:
                           TotalFiles: 1
                           GatherStats: true
                           MultiFileSpray: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -1896,6 +1913,7 @@ STAGE PLANS:
                           TotalFiles: 1
                           GatherStats: true
                           MultiFileSpray: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -2104,6 +2122,7 @@ STAGE PLANS:
                           TotalFiles: 1
                           GatherStats: true
                           MultiFileSpray: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -2184,6 +2203,7 @@ STAGE PLANS:
                         tag: -1
                         value expressions: _col1 (type: bigint)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -2240,6 +2260,7 @@ STAGE PLANS:
             Truncated Path -> Alias:
               /t1 [null-subquery2:$hdt$_0-subquery2:$hdt$_0:t1]
         Reducer 3 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -2258,6 +2279,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: bigint)
                   auto parallelism: false
         Reducer 4 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -2431,6 +2453,7 @@ STAGE PLANS:
                         tag: 0
                         value expressions: _col1 (type: bigint)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -2511,6 +2534,7 @@ STAGE PLANS:
                         tag: 1
                         value expressions: _col1 (type: bigint)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -2732,6 +2756,7 @@ STAGE PLANS:
                         tag: 0
                         value expressions: _col1 (type: bigint)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -2812,6 +2837,7 @@ STAGE PLANS:
                         tag: -1
                         value expressions: _col2 (type: bigint)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -2901,6 +2927,7 @@ STAGE PLANS:
                   GatherStats: false
                   MultiFileSpray: false
         Reducer 4 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -2919,6 +2946,7 @@ STAGE PLANS:
                   value expressions: _col2 (type: bigint)
                   auto parallelism: false
         Reducer 5 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -3010,6 +3038,7 @@ STAGE PLANS:
                         tag: -1
                         value expressions: _col1 (type: bigint)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -3066,6 +3095,7 @@ STAGE PLANS:
             Truncated Path -> Alias:
               /t2 [t2]
         Reducer 2 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -3084,6 +3114,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: bigint)
                   auto parallelism: false
         Reducer 3 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -3257,6 +3288,7 @@ STAGE PLANS:
                           TotalFiles: 1
                           GatherStats: true
                           MultiFileSpray: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -3452,6 +3484,7 @@ STAGE PLANS:
                           TotalFiles: 1
                           GatherStats: true
                           MultiFileSpray: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -3646,6 +3679,7 @@ STAGE PLANS:
                           TotalFiles: 1
                           GatherStats: true
                           MultiFileSpray: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -3847,6 +3881,7 @@ STAGE PLANS:
                           TotalFiles: 1
                           GatherStats: true
                           MultiFileSpray: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -4059,7 +4094,9 @@ STAGE PLANS:
                               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                               name: default.dest2
+            Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -4074,6 +4111,7 @@ STAGE PLANS:
                   Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: bigint)
         Reducer 3 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -4240,7 +4278,9 @@ STAGE PLANS:
                                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                                 name: default.dest2
+            Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -4255,6 +4295,7 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: bigint)
         Reducer 3 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)

@@ -41,7 +41,7 @@ STAGE PLANS:
                     Map-reduce partition columns: key (type: int)
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: value (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
@@ -54,7 +54,7 @@ STAGE PLANS:
                     Map-reduce partition columns: value (type: int)
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: key (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -135,7 +135,7 @@ STAGE PLANS:
                       Map-reduce partition columns: key (type: int)
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                       value expressions: value (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
@@ -151,7 +151,7 @@ STAGE PLANS:
                       Map-reduce partition columns: value (type: int)
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                       value expressions: key (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 4 
             Map Operator Tree:
@@ -167,7 +167,7 @@ STAGE PLANS:
                       Map-reduce partition columns: key (type: int)
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                       value expressions: value (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -237,7 +237,7 @@ STAGE PLANS:
                     Map-reduce partition columns: key (type: int)
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: value (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
@@ -250,7 +250,7 @@ STAGE PLANS:
                     Map-reduce partition columns: value (type: int)
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: key (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 4 
             Map Operator Tree:
@@ -263,7 +263,7 @@ STAGE PLANS:
                     Map-reduce partition columns: key (type: int)
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     value expressions: value (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -363,7 +363,7 @@ STAGE PLANS:
                       sort order: ++
                       Map-reduce partition columns: key (type: int), value (type: int)
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
@@ -378,7 +378,7 @@ STAGE PLANS:
                       sort order: ++
                       Map-reduce partition columns: value (type: int), key (type: int)
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 4 
             Map Operator Tree:
@@ -393,7 +393,7 @@ STAGE PLANS:
                       sort order: ++
                       Map-reduce partition columns: key (type: int), value (type: int)
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -463,7 +463,7 @@ STAGE PLANS:
                     sort order: ++
                     Map-reduce partition columns: key (type: int), value (type: int)
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
@@ -475,7 +475,7 @@ STAGE PLANS:
                     sort order: ++
                     Map-reduce partition columns: value (type: int), key (type: int)
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 4 
             Map Operator Tree:
@@ -487,7 +487,7 @@ STAGE PLANS:
                     sort order: ++
                     Map-reduce partition columns: key (type: int), value (type: int)
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -1606,7 +1606,7 @@ STAGE PLANS:
                       Map-reduce partition columns: null (type: int)
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                       value expressions: value (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
@@ -1622,7 +1622,7 @@ STAGE PLANS:
                       Map-reduce partition columns: null (type: int)
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                       value expressions: key (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap

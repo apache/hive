@@ -3425,9 +3425,9 @@ public class HiveConf extends Configuration {
         "and use it to run queries."),
 
     // Vectorization enabled
-    HIVE_VECTORIZATION_ENABLED("hive.vectorized.execution.enabled", false,
+    HIVE_VECTORIZATION_ENABLED("hive.vectorized.execution.enabled", true,
         "This flag should be set to true to enable vectorized mode of query execution.\n" +
-        "The default value is false."),
+        "The default value is true to reflect that our most expected Hive deployment will be using vectorization."),
     HIVE_VECTORIZATION_REDUCE_ENABLED("hive.vectorized.execution.reduce.enabled", true,
         "This flag should be set to true to enable vectorized mode of the reduce-side of query execution.\n" +
         "The default value is true."),

@@ -101,6 +101,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.hbase.HiveHBaseTableOutputFormat
                     serde: org.apache.hadoop.hive.hbase.HBaseSerDe
                     name: default.users
+      Execution mode: vectorized
 
 PREHOOK: query: INSERT OVERWRITE TABLE users SELECT 'user1', 'IA', 'USA', 0 FROM src
 PREHOOK: type: QUERY
@@ -363,6 +364,7 @@ STAGE PLANS:
                   sort order: 
                   Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
                   value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)

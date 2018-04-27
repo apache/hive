@@ -101,6 +101,7 @@ STAGE PLANS:
                 TotalFiles: 1
                 GatherStats: true
                 MultiFileSpray: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -4881,6 +4882,7 @@ STAGE PLANS:
                 tag: -1
                 value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
                 auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:

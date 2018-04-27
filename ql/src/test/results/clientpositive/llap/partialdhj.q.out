@@ -53,7 +53,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 25 Data size: 2225 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 4 
             Map Operator Tree:
@@ -72,7 +72,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 25 Data size: 2225 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 5 
             Map Operator Tree:
@@ -92,10 +92,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col1 (type: string)
                         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Map Join Operator
                 condition map:
@@ -119,7 +119,7 @@ STAGE PLANS:
                     Map-reduce partition columns: _col0 (type: string)
                     Statistics: Num rows: 16 Data size: 1424 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string)
@@ -132,7 +132,7 @@ STAGE PLANS:
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 16 Data size: 1424 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 6 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Map Join Operator
                 condition map:
@@ -284,7 +284,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col1 (type: string)
                         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
@@ -303,7 +303,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 25 Data size: 2225 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 6 
             Map Operator Tree:
@@ -322,10 +322,10 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 25 Data size: 2225 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Map Join Operator
                 condition map:
@@ -346,7 +346,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Map Join Operator
                 condition map:
@@ -370,7 +370,7 @@ STAGE PLANS:
                     Map-reduce partition columns: _col0 (type: string)
                     Statistics: Num rows: 16 Data size: 1424 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 5 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string)

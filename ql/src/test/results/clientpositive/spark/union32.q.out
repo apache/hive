@@ -59,6 +59,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -75,6 +76,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -158,6 +160,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -175,6 +178,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -191,6 +195,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -303,6 +308,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -320,6 +326,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -337,6 +344,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Reducer 3 
             Reduce Operator Tree:
               Join Operator
@@ -450,6 +458,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -467,6 +476,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -483,6 +493,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -595,6 +606,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -612,6 +624,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -629,6 +642,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Reducer 3 
             Reduce Operator Tree:
               Join Operator

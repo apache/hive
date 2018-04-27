@@ -31,10 +31,10 @@ STAGE PLANS:
                       Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                       TopN Hash Memory Usage: 0.3
                       value expressions: _col1 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
@@ -118,10 +118,10 @@ STAGE PLANS:
                       Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                       TopN Hash Memory Usage: 0.3
                       value expressions: _col1 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
@@ -213,10 +213,10 @@ STAGE PLANS:
                         Statistics: Num rows: 250 Data size: 24750 Basic stats: COMPLETE Column stats: COMPLETE
                         TopN Hash Memory Usage: 0.3
                         value expressions: _col1 (type: double)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
@@ -231,7 +231,7 @@ STAGE PLANS:
                   TopN Hash Memory Usage: 0.3
                   value expressions: _col1 (type: double)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: double)
@@ -323,10 +323,10 @@ STAGE PLANS:
                         Statistics: Num rows: 250 Data size: 26750 Basic stats: COMPLETE Column stats: COMPLETE
                         TopN Hash Memory Usage: 0.3
                         value expressions: _col1 (type: double), _col2 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0), count(VALUE._col1)
@@ -345,7 +345,7 @@ STAGE PLANS:
                     TopN Hash Memory Usage: 0.3
                     value expressions: _col1 (type: double)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: double)
@@ -435,10 +435,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: double)
                         Statistics: Num rows: 5570 Data size: 33272 Basic stats: COMPLETE Column stats: COMPLETE
                         TopN Hash Memory Usage: 0.3
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: double)
@@ -451,7 +451,7 @@ STAGE PLANS:
                   Statistics: Num rows: 5570 Data size: 33272 Basic stats: COMPLETE Column stats: COMPLETE
                   TopN Hash Memory Usage: 0.3
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: double)
@@ -540,10 +540,10 @@ STAGE PLANS:
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: tinyint)
                         Statistics: Num rows: 6144 Data size: 55052 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: tinyint), KEY._col1 (type: double)
@@ -563,7 +563,7 @@ STAGE PLANS:
                     TopN Hash Memory Usage: 0.3
                     value expressions: _col1 (type: bigint)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: tinyint), VALUE._col0 (type: bigint)
@@ -652,10 +652,10 @@ STAGE PLANS:
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: tinyint)
                         Statistics: Num rows: 6144 Data size: 55052 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: tinyint), KEY._col1 (type: double)
@@ -675,7 +675,7 @@ STAGE PLANS:
                     TopN Hash Memory Usage: 0.3
                     value expressions: _col1 (type: bigint)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: tinyint), VALUE._col0 (type: bigint)
@@ -784,7 +784,7 @@ STAGE PLANS:
                   TopN Hash Memory Usage: 0.3
                   value expressions: _col1 (type: bigint), _col2 (type: bigint)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: tinyint), VALUE._col0 (type: bigint), VALUE._col1 (type: bigint)
@@ -902,7 +902,7 @@ STAGE PLANS:
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
@@ -917,7 +917,7 @@ STAGE PLANS:
                   TopN Hash Memory Usage: 0.3
                   value expressions: _col0 (type: string)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: double)
@@ -1003,7 +1003,7 @@ STAGE PLANS:
                       Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                       TopN Hash Memory Usage: 0.3
                       value expressions: key (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -1021,7 +1021,7 @@ STAGE PLANS:
                   TopN Hash Memory Usage: 0.3
                   value expressions: _col1 (type: double)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: double)
@@ -1105,10 +1105,10 @@ STAGE PLANS:
                       Statistics: Num rows: 500 Data size: 407500 Basic stats: COMPLETE Column stats: COMPLETE
                       TopN Hash Memory Usage: 2.0E-5
                       value expressions: _col1 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string), VALUE._col0 (type: string), VALUE._col0 (type: string), VALUE._col0 (type: string), VALUE._col0 (type: string), VALUE._col0 (type: string), VALUE._col0 (type: string), VALUE._col0 (type: string)
@@ -1273,7 +1273,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -1294,7 +1294,7 @@ STAGE PLANS:
                     Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
                     TopN Hash Memory Usage: 2.0E-5
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: double)

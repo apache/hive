@@ -281,6 +281,7 @@ STAGE PLANS:
                     TopN Hash Memory Usage: 0.1
                     value expressions: _col1 (type: string), _col2 (type: int), _col3 (type: string)
                     auto parallelism: false
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
       Path -> Alias:

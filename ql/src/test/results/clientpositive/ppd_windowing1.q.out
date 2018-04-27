@@ -21,6 +21,7 @@ STAGE PLANS:
                 sort order: +
                 Map-reduce partition columns: key (type: string)
                 Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string)
@@ -87,6 +88,7 @@ STAGE PLANS:
                 sort order: +
                 Map-reduce partition columns: key (type: string)
                 Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string)
@@ -153,6 +155,7 @@ STAGE PLANS:
                 sort order: +
                 Map-reduce partition columns: key (type: string)
                 Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string)
@@ -219,6 +222,7 @@ STAGE PLANS:
                 sort order: +
                 Map-reduce partition columns: key (type: string)
                 Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string)
@@ -285,6 +289,7 @@ STAGE PLANS:
                 sort order: +
                 Map-reduce partition columns: key (type: string)
                 Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string)
@@ -351,6 +356,7 @@ STAGE PLANS:
                 sort order: ++
                 Map-reduce partition columns: key (type: string), value (type: string)
                 Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
@@ -417,6 +423,7 @@ STAGE PLANS:
                 sort order: ++
                 Map-reduce partition columns: key (type: string), value (type: string)
                 Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
@@ -483,6 +490,7 @@ STAGE PLANS:
                 sort order: ++
                 Map-reduce partition columns: key (type: string), value (type: string)
                 Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
@@ -549,6 +557,7 @@ STAGE PLANS:
                 sort order: ++
                 Map-reduce partition columns: key (type: string), value (type: string)
                 Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
@@ -615,6 +624,7 @@ STAGE PLANS:
                 sort order: ++
                 Map-reduce partition columns: key (type: string), value (type: string)
                 Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
@@ -682,6 +692,7 @@ STAGE PLANS:
                 sort order: ++
                 Map-reduce partition columns: key (type: string), value (type: string)
                 Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
@@ -728,6 +739,7 @@ STAGE PLANS:
               Map-reduce partition columns: _col0 (type: string)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               value expressions: sum_window_0 (type: double)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: double), KEY.reducesinkkey0 (type: string)
@@ -795,6 +807,7 @@ STAGE PLANS:
                 sort order: ++
                 Map-reduce partition columns: key (type: string), value (type: string)
                 Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
@@ -841,6 +854,7 @@ STAGE PLANS:
               Map-reduce partition columns: _col0 (type: string)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               value expressions: sum_window_0 (type: double)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: double), KEY.reducesinkkey0 (type: string)
@@ -908,6 +922,7 @@ STAGE PLANS:
                 sort order: ++
                 Map-reduce partition columns: key (type: string), value (type: string)
                 Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
@@ -954,6 +969,7 @@ STAGE PLANS:
               Map-reduce partition columns: _col0 (type: string)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               value expressions: sum_window_0 (type: double)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: double), KEY.reducesinkkey0 (type: string)
@@ -1021,6 +1037,7 @@ STAGE PLANS:
                 sort order: ++
                 Map-reduce partition columns: key (type: string), value (type: string)
                 Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
@@ -1067,6 +1084,7 @@ STAGE PLANS:
               Map-reduce partition columns: _col0 (type: string)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               value expressions: sum_window_0 (type: double)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: double), KEY.reducesinkkey0 (type: string)
@@ -1134,6 +1152,7 @@ STAGE PLANS:
                 sort order: ++
                 Map-reduce partition columns: key (type: string), value (type: string)
                 Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
@@ -1180,6 +1199,7 @@ STAGE PLANS:
               Map-reduce partition columns: _col0 (type: string)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               value expressions: sum_window_0 (type: double), _col1 (type: string)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: double), KEY.reducesinkkey0 (type: string), VALUE._col1 (type: string)
@@ -1247,6 +1267,7 @@ STAGE PLANS:
                 sort order: ++
                 Map-reduce partition columns: key (type: string), value (type: string)
                 Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
@@ -1293,6 +1314,7 @@ STAGE PLANS:
               Map-reduce partition columns: _col0 (type: string)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               value expressions: sum_window_0 (type: double), _col1 (type: string)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: double), KEY.reducesinkkey0 (type: string), VALUE._col1 (type: string)
@@ -1360,6 +1382,7 @@ STAGE PLANS:
                 sort order: ++
                 Map-reduce partition columns: key (type: string), value (type: string)
                 Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
@@ -1406,6 +1429,7 @@ STAGE PLANS:
               Map-reduce partition columns: _col0 (type: string)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               value expressions: sum_window_0 (type: double), _col1 (type: string)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: double), KEY.reducesinkkey0 (type: string), VALUE._col1 (type: string)
@@ -1473,6 +1497,7 @@ STAGE PLANS:
                 sort order: ++
                 Map-reduce partition columns: key (type: string), value (type: string)
                 Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
@@ -1519,6 +1544,7 @@ STAGE PLANS:
               Map-reduce partition columns: _col0 (type: string)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               value expressions: sum_window_0 (type: double), _col1 (type: string)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: double), KEY.reducesinkkey0 (type: string), VALUE._col1 (type: string)
@@ -1583,6 +1609,7 @@ STAGE PLANS:
               sort order: ++
               Map-reduce partition columns: key (type: string), value (type: string)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
@@ -1629,6 +1656,7 @@ STAGE PLANS:
               Map-reduce partition columns: _col1 (type: string)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               value expressions: sum_window_0 (type: double), _col0 (type: string)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: double), VALUE._col1 (type: string), KEY.reducesinkkey0 (type: string)
@@ -1696,6 +1724,7 @@ STAGE PLANS:
               Map-reduce partition columns: (UDFToDouble(key) + UDFToDouble(2)) (type: double)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               value expressions: key (type: string)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: string)
@@ -1763,6 +1792,7 @@ STAGE PLANS:
               Map-reduce partition columns: (UDFToDouble(key) + UDFToDouble(value)) (type: double)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               value expressions: key (type: string), value (type: string)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: string), VALUE._col1 (type: string)
@@ -1829,6 +1859,7 @@ STAGE PLANS:
               sort order: ++
               Map-reduce partition columns: key (type: string), value (type: string)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
@@ -1896,6 +1927,7 @@ STAGE PLANS:
               Map-reduce partition columns: (UDFToDouble(key) + UDFToDouble(value)) (type: double)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               value expressions: key (type: string), value (type: string)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: string), VALUE._col1 (type: string)
@@ -1963,6 +1995,7 @@ STAGE PLANS:
               Map-reduce partition columns: key (type: string)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               value expressions: value (type: string)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)

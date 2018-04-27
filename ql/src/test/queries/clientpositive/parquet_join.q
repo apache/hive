@@ -1,4 +1,6 @@
 --! qt:dataset:src
+
+set hive.vectorized.execution.enabled=false;
 set hive.mapred.mode=nonstrict;
 
 drop table if exists staging;

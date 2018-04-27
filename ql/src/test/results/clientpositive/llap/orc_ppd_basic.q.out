@@ -2116,6 +2116,7 @@ PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@staging
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tmp_orcppd
+Stage-1 LLAP IO COUNTERS:
 PREHOOK: query: insert into table tmp_orcppd
                     values(null, null)
 PREHOOK: type: QUERY

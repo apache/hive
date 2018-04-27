@@ -29,6 +29,7 @@ STAGE PLANS:
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: bigint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -109,6 +110,7 @@ STAGE PLANS:
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: string)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: max(VALUE._col0)
@@ -477,6 +479,7 @@ STAGE PLANS:
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: string)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: max(VALUE._col0)
@@ -742,6 +745,7 @@ STAGE PLANS:
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: string)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: max(VALUE._col0)
@@ -934,6 +938,7 @@ STAGE PLANS:
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: string)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: max(VALUE._col0)
@@ -1196,6 +1201,7 @@ STAGE PLANS:
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: bigint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)

@@ -29,6 +29,7 @@ STAGE PLANS:
                 TopN: 410
                 TopN Hash Memory Usage: 0.1
                 auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -325,6 +326,7 @@ STAGE PLANS:
                 TopN: 500
                 TopN Hash Memory Usage: 0.1
                 auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -621,6 +623,7 @@ STAGE PLANS:
                 TopN: 510
                 TopN Hash Memory Usage: 0.1
                 auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -927,6 +930,7 @@ STAGE PLANS:
                 TopN: 1090
                 TopN Hash Memory Usage: 0.1
                 auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -1813,6 +1817,7 @@ STAGE PLANS:
                 TopN: 410
                 TopN Hash Memory Usage: 0.1
                 auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -2109,6 +2114,7 @@ STAGE PLANS:
                 TopN: 500
                 TopN Hash Memory Usage: 0.1
                 auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -2405,6 +2411,7 @@ STAGE PLANS:
                 TopN: 510
                 TopN Hash Memory Usage: 0.1
                 auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -2711,6 +2718,7 @@ STAGE PLANS:
                 TopN: 1090
                 TopN Hash Memory Usage: 0.1
                 auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:

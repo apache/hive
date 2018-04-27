@@ -1,3 +1,4 @@
+set hive.vectorized.execution.enabled=false;
 set hive.optimize.index.filter = true;
 set hive.auto.convert.join=false;
 

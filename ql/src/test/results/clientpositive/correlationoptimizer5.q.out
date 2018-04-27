@@ -580,6 +580,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
 
@@ -624,6 +625,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: default.dest_co3
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
 
@@ -679,6 +681,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: default.dest_co3
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
 
@@ -770,6 +773,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
 

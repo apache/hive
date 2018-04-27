@@ -296,6 +296,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 5333432 Data size: 725192506 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: decimal(7,2))
+            Execution mode: vectorized
         Map 10 
             Map Operator Tree:
                 TableScan
@@ -313,6 +314,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 18262 Data size: 20435178 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 11 
             Map Operator Tree:
                 TableScan
@@ -331,6 +333,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                         Statistics: Num rows: 4799489 Data size: 441731394 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: int), _col3 (type: decimal(7,2))
+            Execution mode: vectorized
         Map 12 
             Map Operator Tree:
                 TableScan
@@ -349,6 +352,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 10666290 Data size: 1444429931 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: decimal(7,2))
+            Execution mode: vectorized
         Map 19 
             Map Operator Tree:
                 TableScan
@@ -367,6 +371,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                         Statistics: Num rows: 9599627 Data size: 1019078226 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: int), _col3 (type: decimal(7,2))
+            Execution mode: vectorized
         Map 20 
             Map Operator Tree:
                 TableScan
@@ -385,6 +390,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 21333171 Data size: 1882018537 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: decimal(7,2))
+            Execution mode: vectorized
         Map 27 
             Map Operator Tree:
                 TableScan
@@ -403,6 +409,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                         Statistics: Num rows: 19197050 Data size: 1487398277 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: int), _col3 (type: decimal(7,2))
+            Execution mode: vectorized
         Reducer 13 
             Reduce Operator Tree:
               Join Operator
@@ -446,6 +453,7 @@ STAGE PLANS:
                       Statistics: Num rows: 12906211 Data size: 1747760291 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: bigint), _col2 (type: bigint), _col3 (type: decimal(22,2)), _col4 (type: decimal(22,2))
         Reducer 15 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0), sum(VALUE._col1), sum(VALUE._col2), sum(VALUE._col3)
@@ -460,6 +468,7 @@ STAGE PLANS:
                   Statistics: Num rows: 6453105 Data size: 873880077 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: int), _col1 (type: bigint), _col2 (type: bigint), _col3 (type: decimal(22,2)), _col4 (type: decimal(22,2))
         Reducer 16 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: int), VALUE._col1 (type: bigint), VALUE._col2 (type: bigint), VALUE._col3 (type: decimal(22,2)), VALUE._col4 (type: decimal(22,2))
@@ -497,6 +506,7 @@ STAGE PLANS:
                       Statistics: Num rows: 6453105 Data size: 873880077 Basic stats: COMPLETE Column stats: NONE
                       value expressions: rank_window_0 (type: int), _col0 (type: int), _col1 (type: bigint), _col2 (type: bigint), _col3 (type: decimal(22,2)), _col4 (type: decimal(22,2))
         Reducer 17 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: int), VALUE._col1 (type: int), VALUE._col2 (type: bigint), VALUE._col3 (type: bigint), VALUE._col4 (type: decimal(22,2)), VALUE._col5 (type: decimal(22,2))
@@ -598,6 +608,7 @@ STAGE PLANS:
                       Statistics: Num rows: 25813137 Data size: 2277242527 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: bigint), _col2 (type: bigint), _col3 (type: decimal(22,2)), _col4 (type: decimal(22,2))
         Reducer 23 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0), sum(VALUE._col1), sum(VALUE._col2), sum(VALUE._col3)
@@ -612,6 +623,7 @@ STAGE PLANS:
                   Statistics: Num rows: 12906568 Data size: 1138621219 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: int), _col1 (type: bigint), _col2 (type: bigint), _col3 (type: decimal(22,2)), _col4 (type: decimal(22,2))
         Reducer 24 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: int), VALUE._col1 (type: bigint), VALUE._col2 (type: bigint), VALUE._col3 (type: decimal(22,2)), VALUE._col4 (type: decimal(22,2))
@@ -649,6 +661,7 @@ STAGE PLANS:
                       Statistics: Num rows: 12906568 Data size: 1138621219 Basic stats: COMPLETE Column stats: NONE
                       value expressions: rank_window_0 (type: int), _col0 (type: int), _col1 (type: bigint), _col2 (type: bigint), _col3 (type: decimal(22,2)), _col4 (type: decimal(22,2))
         Reducer 25 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: int), VALUE._col1 (type: int), VALUE._col2 (type: bigint), VALUE._col3 (type: bigint), VALUE._col4 (type: decimal(22,2)), VALUE._col5 (type: decimal(22,2))
@@ -719,6 +732,7 @@ STAGE PLANS:
                       Statistics: Num rows: 6453452 Data size: 877482969 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: bigint), _col2 (type: bigint), _col3 (type: decimal(22,2)), _col4 (type: decimal(22,2))
         Reducer 4 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0), sum(VALUE._col1), sum(VALUE._col2), sum(VALUE._col3)
@@ -733,6 +747,7 @@ STAGE PLANS:
                   Statistics: Num rows: 3226726 Data size: 438741484 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: int), _col1 (type: bigint), _col2 (type: bigint), _col3 (type: decimal(22,2)), _col4 (type: decimal(22,2))
         Reducer 5 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: int), VALUE._col1 (type: bigint), VALUE._col2 (type: bigint), VALUE._col3 (type: decimal(22,2)), VALUE._col4 (type: decimal(22,2))
@@ -770,6 +785,7 @@ STAGE PLANS:
                       Statistics: Num rows: 3226726 Data size: 438741484 Basic stats: COMPLETE Column stats: NONE
                       value expressions: rank_window_0 (type: int), _col0 (type: int), _col1 (type: bigint), _col2 (type: bigint), _col3 (type: decimal(22,2)), _col4 (type: decimal(22,2))
         Reducer 6 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: int), VALUE._col1 (type: int), VALUE._col2 (type: bigint), VALUE._col3 (type: bigint), VALUE._col4 (type: decimal(22,2)), VALUE._col5 (type: decimal(22,2))
@@ -813,6 +829,7 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: decimal(35,20))
                           Statistics: Num rows: 6453220 Data size: 875080950 Basic stats: COMPLETE Column stats: NONE
         Reducer 7 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string), KEY._col1 (type: int), KEY._col2 (type: int), KEY._col3 (type: int), KEY._col4 (type: decimal(35,20))
@@ -835,6 +852,7 @@ STAGE PLANS:
                       Statistics: Num rows: 11830988 Data size: 1196621228 Basic stats: COMPLETE Column stats: NONE
                       TopN Hash Memory Usage: 0.1
         Reducer 8 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string), KEY._col1 (type: int), KEY._col2 (type: int), KEY._col3 (type: int), KEY._col4 (type: decimal(35,20))
@@ -852,6 +870,7 @@ STAGE PLANS:
                     TopN Hash Memory Usage: 0.1
                     value expressions: _col1 (type: int), _col2 (type: decimal(35,20))
         Reducer 9 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: int), VALUE._col1 (type: decimal(35,20)), KEY.reducesinkkey1 (type: int), KEY.reducesinkkey2 (type: int)

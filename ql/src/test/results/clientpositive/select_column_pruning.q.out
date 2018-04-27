@@ -108,6 +108,7 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 52 Basic stats: COMPLETE Column stats: NONE
               TopN Hash Memory Usage: 0.1
               value expressions: _col1 (type: array<int>), _col3 (type: char(1)), _col4 (type: string), _col5 (type: string), _col6 (type: string), _col7 (type: string), _col8 (type: string), _col9 (type: string), _col10 (type: string)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: array<int>), 100 (type: int), VALUE._col2 (type: char(1)), VALUE._col3 (type: string), VALUE._col4 (type: string), VALUE._col5 (type: string), VALUE._col6 (type: string), VALUE._col7 (type: string), VALUE._col8 (type: string), VALUE._col9 (type: string), KEY.reducesinkkey1 (type: int)

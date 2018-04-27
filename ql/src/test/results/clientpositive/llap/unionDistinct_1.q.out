@@ -61,6 +61,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
+            Execution mode: vectorized
         Map 9 
             Map Operator Tree:
                 TableScan
@@ -77,7 +78,9 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
+            Execution mode: vectorized
         Reducer 10 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -99,6 +102,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
                       Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -120,7 +124,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
                       Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string), KEY._col1 (type: bigint)
@@ -186,6 +190,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 8 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -322,6 +327,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
+            Execution mode: vectorized
         Map 10 
             Map Operator Tree:
                 TableScan
@@ -338,6 +344,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
+            Execution mode: vectorized
         Map 8 
             Map Operator Tree:
                 TableScan
@@ -354,7 +361,9 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
+            Execution mode: vectorized
         Reducer 11 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -376,6 +385,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
                       Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -397,7 +407,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
                       Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string), KEY._col1 (type: bigint)
@@ -463,6 +473,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 9 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -585,6 +596,7 @@ STAGE PLANS:
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -604,8 +616,9 @@ STAGE PLANS:
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string), KEY._col1 (type: string)
@@ -1014,6 +1027,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
+            Execution mode: vectorized
         Map 8 
             Map Operator Tree:
                 TableScan
@@ -1033,7 +1047,9 @@ STAGE PLANS:
                         sort order: +++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 250 Data size: 68000 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -1935,6 +1951,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
+            Execution mode: vectorized
         Map 7 
             Map Operator Tree:
                 TableScan
@@ -1954,7 +1971,9 @@ STAGE PLANS:
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 250 Data size: 68000 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -2826,6 +2845,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
+            Execution mode: vectorized
         Map 7 
             Map Operator Tree:
                 TableScan
@@ -2845,7 +2865,9 @@ STAGE PLANS:
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 250 Data size: 68000 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -3777,6 +3799,7 @@ STAGE PLANS:
                           Statistics: Num rows: 332 Data size: 104486 Basic stats: COMPLETE Column stats: COMPLETE
                           tag: -1
                           auto parallelism: true
+            Execution mode: vectorized
             Path -> Alias:
               hdfs://### HDFS PATH ### [dst_union22_delta]
             Path -> Partition:
@@ -3854,6 +3877,7 @@ STAGE PLANS:
                         tag: 0
                         value expressions: _col1 (type: string), _col2 (type: string)
                         auto parallelism: true
+            Execution mode: vectorized
             Path -> Alias:
               hdfs://### HDFS PATH ### [a]
             Path -> Partition:
@@ -3931,6 +3955,7 @@ STAGE PLANS:
                         tag: 1
                         value expressions: _col1 (type: string), _col2 (type: string)
                         auto parallelism: true
+            Execution mode: vectorized
             Path -> Alias:
               hdfs://### HDFS PATH ### [dst_union22_delta]
             Path -> Partition:
@@ -4604,8 +4629,9 @@ STAGE PLANS:
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string), KEY._col1 (type: string)
@@ -5070,6 +5096,7 @@ STAGE PLANS:
                           Statistics: Num rows: 206 Data size: 37760 Basic stats: COMPLETE Column stats: NONE
                           tag: -1
                           auto parallelism: true
+            Execution mode: vectorized
             Path -> Alias:
               hdfs://### HDFS PATH ### [src2]
             Path -> Partition:
@@ -5148,6 +5175,7 @@ STAGE PLANS:
                         tag: -1
                         value expressions: _col1 (type: bigint)
                         auto parallelism: true
+            Execution mode: vectorized
             Path -> Alias:
               hdfs://### HDFS PATH ### [src5]
             Path -> Partition:
@@ -5228,6 +5256,7 @@ STAGE PLANS:
                           Statistics: Num rows: 206 Data size: 37760 Basic stats: COMPLETE Column stats: NONE
                           tag: -1
                           auto parallelism: true
+            Execution mode: vectorized
             Path -> Alias:
               hdfs://### HDFS PATH ### [src3]
             Path -> Partition:
@@ -5308,6 +5337,7 @@ STAGE PLANS:
                           Statistics: Num rows: 206 Data size: 37760 Basic stats: COMPLETE Column stats: NONE
                           tag: -1
                           auto parallelism: true
+            Execution mode: vectorized
             Path -> Alias:
               hdfs://### HDFS PATH ### [src4]
             Path -> Partition:
@@ -5362,6 +5392,7 @@ STAGE PLANS:
             Truncated Path -> Alias:
               /src4 [src4]
         Reducer 11 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -5384,6 +5415,7 @@ STAGE PLANS:
                     tag: -1
                     auto parallelism: true
         Reducer 3 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -5405,6 +5437,7 @@ STAGE PLANS:
                     tag: -1
                     auto parallelism: true
         Reducer 5 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -5426,6 +5459,7 @@ STAGE PLANS:
                     tag: -1
                     auto parallelism: true
         Reducer 7 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -5567,6 +5601,7 @@ STAGE PLANS:
                           Statistics: Num rows: 206 Data size: 37760 Basic stats: COMPLETE Column stats: NONE
                           tag: -1
                           auto parallelism: true
+            Execution mode: vectorized
             Path -> Alias:
               hdfs://### HDFS PATH ### [src2]
             Path -> Partition:
@@ -5647,6 +5682,7 @@ STAGE PLANS:
                           Statistics: Num rows: 206 Data size: 37760 Basic stats: COMPLETE Column stats: NONE
                           tag: -1
                           auto parallelism: true
+            Execution mode: vectorized
             Path -> Alias:
               hdfs://### HDFS PATH ### [src3]
             Path -> Partition:
@@ -5722,6 +5758,7 @@ STAGE PLANS:
                         Statistics: Num rows: 103 Data size: 18093 Basic stats: COMPLETE Column stats: NONE
                         tag: 0
                         auto parallelism: true
+            Execution mode: vectorized
             Path -> Alias:
               hdfs://### HDFS PATH ### [a]
             Path -> Partition:
@@ -5798,6 +5835,7 @@ STAGE PLANS:
                         tag: 1
                         value expressions: _col1 (type: bigint)
                         auto parallelism: true
+            Execution mode: vectorized
             Path -> Alias:
               hdfs://### HDFS PATH ### [b]
             Path -> Partition:
@@ -5852,6 +5890,7 @@ STAGE PLANS:
             Truncated Path -> Alias:
               /src5 [b]
         Reducer 3 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -5873,6 +5912,7 @@ STAGE PLANS:
                     tag: -1
                     auto parallelism: true
         Reducer 5 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -6036,6 +6076,7 @@ STAGE PLANS:
                           Statistics: Num rows: 206 Data size: 37760 Basic stats: COMPLETE Column stats: NONE
                           tag: -1
                           auto parallelism: true
+            Execution mode: vectorized
             Path -> Alias:
               hdfs://### HDFS PATH ### [src2]
             Path -> Partition:
@@ -6111,6 +6152,7 @@ STAGE PLANS:
                         Statistics: Num rows: 103 Data size: 18093 Basic stats: COMPLETE Column stats: NONE
                         tag: 1
                         auto parallelism: true
+            Execution mode: vectorized
             Path -> Alias:
               hdfs://### HDFS PATH ### [b]
             Path -> Partition:
@@ -6191,6 +6233,7 @@ STAGE PLANS:
                           Statistics: Num rows: 206 Data size: 37760 Basic stats: COMPLETE Column stats: NONE
                           tag: -1
                           auto parallelism: true
+            Execution mode: vectorized
             Path -> Alias:
               hdfs://### HDFS PATH ### [src3]
             Path -> Partition:
@@ -6266,6 +6309,7 @@ STAGE PLANS:
                         Statistics: Num rows: 103 Data size: 18093 Basic stats: COMPLETE Column stats: NONE
                         tag: 0
                         auto parallelism: true
+            Execution mode: vectorized
             Path -> Alias:
               hdfs://### HDFS PATH ### [a]
             Path -> Partition:
@@ -6320,6 +6364,7 @@ STAGE PLANS:
             Truncated Path -> Alias:
               /src4 [a]
         Reducer 3 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -6341,6 +6386,7 @@ STAGE PLANS:
                     tag: -1
                     auto parallelism: true
         Reducer 5 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -6398,6 +6444,7 @@ STAGE PLANS:
                     value expressions: _col1 (type: bigint)
                     auto parallelism: true
         Reducer 9 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -6560,6 +6607,7 @@ STAGE PLANS:
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 404 Data size: 71912 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -6579,6 +6627,7 @@ STAGE PLANS:
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized
         Map 7 
             Map Operator Tree:
                 TableScan
@@ -6598,8 +6647,9 @@ STAGE PLANS:
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string), KEY._col1 (type: string)
@@ -6625,7 +6675,7 @@ STAGE PLANS:
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: default.tmp_unionall
         Reducer 6 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string), KEY._col1 (type: string)
@@ -6769,6 +6819,7 @@ STAGE PLANS:
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                           Statistics: Num rows: 1550 Data size: 16467 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -6782,6 +6833,7 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -6835,6 +6887,7 @@ STAGE PLANS:
                                 Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                                 Statistics: Num rows: 1550 Data size: 16467 Basic stats: COMPLETE Column stats: NONE
         Reducer 3 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string), KEY._col1 (type: string)
@@ -8016,6 +8069,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 250 Data size: 43792 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -8038,6 +8092,7 @@ STAGE PLANS:
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                           Statistics: Num rows: 500 Data size: 175168 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 6 
             Map Operator Tree:
                 TableScan
@@ -8060,6 +8115,7 @@ STAGE PLANS:
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                           Statistics: Num rows: 500 Data size: 175168 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Merge Join Operator
@@ -8082,6 +8138,7 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 5 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string), KEY._col1 (type: string)
@@ -8189,6 +8246,7 @@ STAGE PLANS:
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -8210,6 +8268,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 250 Data size: 46500 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: bigint)
+            Execution mode: vectorized
         Map 9 
             Map Operator Tree:
                 TableScan
@@ -8231,7 +8290,9 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 250 Data size: 46500 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: bigint)
+            Execution mode: vectorized
         Reducer 10 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -8298,6 +8359,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 6 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -8316,7 +8378,7 @@ STAGE PLANS:
                     Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
                     Statistics: Num rows: 500 Data size: 93000 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 8 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: bigint)
@@ -8493,6 +8555,7 @@ STAGE PLANS:
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -8512,6 +8575,7 @@ STAGE PLANS:
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized
         Map 8 
             Map Operator Tree:
                 TableScan
@@ -8531,6 +8595,7 @@ STAGE PLANS:
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
@@ -8580,7 +8645,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 7 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string), KEY._col1 (type: string)
@@ -8752,6 +8817,7 @@ STAGE PLANS:
                       Reduce Output Operator
                         sort order: 
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized
         Map 11 
             Map Operator Tree:
                 TableScan
@@ -8765,7 +8831,9 @@ STAGE PLANS:
                       Reduce Output Operator
                         sort order: 
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized
         Reducer 10 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Limit
                 Number of rows: 1
@@ -8785,6 +8853,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: int)
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 12 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Limit
                 Number of rows: 1
@@ -8804,6 +8873,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: int)
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Limit
                 Number of rows: 1
@@ -8823,7 +8893,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: int)
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: int)
@@ -8841,7 +8911,7 @@ STAGE PLANS:
                     Map-reduce partition columns: _col0 (type: int)
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 6 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: int)
@@ -8859,7 +8929,7 @@ STAGE PLANS:
                     Map-reduce partition columns: _col0 (type: int)
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 8 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: int)
@@ -8874,6 +8944,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 9 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Limit
                 Number of rows: 1
@@ -9052,6 +9123,7 @@ STAGE PLANS:
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized
         Map 11 
             Map Operator Tree:
                 TableScan
@@ -9073,6 +9145,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 250 Data size: 46500 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: bigint)
+            Execution mode: vectorized
         Map 13 
             Map Operator Tree:
                 TableScan
@@ -9092,6 +9165,7 @@ STAGE PLANS:
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized
         Map 7 
             Map Operator Tree:
                 TableScan
@@ -9113,8 +9187,9 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 250 Data size: 46500 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: bigint)
+            Execution mode: vectorized
         Reducer 10 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: bigint)
@@ -9136,6 +9211,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                       Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 12 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -9154,7 +9230,7 @@ STAGE PLANS:
                     Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
                     Statistics: Num rows: 500 Data size: 93000 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string), KEY._col1 (type: string)
@@ -9220,6 +9296,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 8 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -9447,6 +9524,7 @@ STAGE PLANS:
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 20 Data size: 7360 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 7 
             Map Operator Tree:
                 TableScan
@@ -9466,6 +9544,7 @@ STAGE PLANS:
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 20 Data size: 7360 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Reducer 3 
             Reduce Operator Tree:
               Group By Operator
@@ -9769,6 +9848,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: bigint)
+            Execution mode: vectorized
         Map 8 
             Map Operator Tree:
                 TableScan
@@ -9790,7 +9870,9 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: bigint)
+            Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -9809,6 +9891,7 @@ STAGE PLANS:
                     Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
                     Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
         Reducer 4 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string), KEY._col1 (type: bigint)
@@ -9916,6 +9999,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 9 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -10131,6 +10215,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: bigint)
+            Execution mode: vectorized
         Map 8 
             Map Operator Tree:
                 TableScan
@@ -10150,7 +10235,9 @@ STAGE PLANS:
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
                         Statistics: Num rows: 11 Data size: 2072 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -10169,6 +10256,7 @@ STAGE PLANS:
                     Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
                     Statistics: Num rows: 11 Data size: 2072 Basic stats: COMPLETE Column stats: NONE
         Reducer 4 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string), KEY._col1 (type: bigint)
@@ -10427,6 +10515,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: double)
                         Statistics: Num rows: 20 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -10446,7 +10535,9 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: double)
                         Statistics: Num rows: 20 Data size: 3680 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Reducer 3 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: double)
@@ -10554,6 +10645,7 @@ STAGE PLANS:
                               sort order: +
                               Map-reduce partition columns: _col0 (type: double)
                               Statistics: Num rows: 21 Data size: 3864 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -10571,6 +10663,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -10590,7 +10683,9 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: double)
                         Statistics: Num rows: 21 Data size: 3864 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Reducer 3 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: double)
@@ -10680,6 +10775,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: double)
                         Statistics: Num rows: 21 Data size: 3864 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -10717,6 +10813,7 @@ STAGE PLANS:
                               sort order: +
                               Map-reduce partition columns: _col0 (type: double)
                               Statistics: Num rows: 21 Data size: 3864 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -10734,7 +10831,9 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Reducer 3 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: double)
@@ -10842,6 +10941,7 @@ STAGE PLANS:
                               sort order: ++
                               Map-reduce partition columns: _col0 (type: double), _col1 (type: string)
                               Statistics: Num rows: 21 Data size: 3864 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -10859,6 +10959,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -10878,7 +10979,9 @@ STAGE PLANS:
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: double), _col1 (type: string)
                         Statistics: Num rows: 21 Data size: 3864 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Reducer 3 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: double), KEY._col1 (type: string)
@@ -10968,6 +11071,7 @@ STAGE PLANS:
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: double), _col1 (type: string)
                         Statistics: Num rows: 21 Data size: 3864 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -11005,6 +11109,7 @@ STAGE PLANS:
                               sort order: ++
                               Map-reduce partition columns: _col0 (type: double), _col1 (type: string)
                               Statistics: Num rows: 21 Data size: 3864 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -11022,7 +11127,9 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Reducer 3 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: double), KEY._col1 (type: string)
@@ -11136,6 +11243,7 @@ STAGE PLANS:
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                           Statistics: Num rows: 250 Data size: 67750 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -11157,6 +11265,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: bigint)
+            Execution mode: vectorized
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
@@ -11202,6 +11311,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 6 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -11336,6 +11446,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 250 Data size: 23750 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: bigint)
+            Execution mode: vectorized
         Map 6 
             Map Operator Tree:
                 TableScan
@@ -11358,7 +11469,9 @@ STAGE PLANS:
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                           Statistics: Num rows: 250 Data size: 67750 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -11642,6 +11755,7 @@ STAGE PLANS:
                             sort order: ++
                             Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                             Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -11659,6 +11773,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 10 Data size: 870 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -11678,6 +11793,7 @@ STAGE PLANS:
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized
         Map 8 
             Map Operator Tree:
                 TableScan
@@ -11697,8 +11813,9 @@ STAGE PLANS:
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string), KEY._col1 (type: string)
@@ -11713,7 +11830,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 7 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string), KEY._col1 (type: string)
@@ -11821,6 +11938,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string)
+            Execution mode: vectorized
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -11838,6 +11956,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 10 Data size: 870 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized
         Map 6 
             Map Operator Tree:
                 TableScan
@@ -11857,6 +11976,7 @@ STAGE PLANS:
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized
         Map 9 
             Map Operator Tree:
                 TableScan
@@ -11876,6 +11996,7 @@ STAGE PLANS:
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Merge Join Operator
@@ -11897,7 +12018,7 @@ STAGE PLANS:
                     Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                     Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string), KEY._col1 (type: string)
@@ -11912,7 +12033,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 8 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string), KEY._col1 (type: string)

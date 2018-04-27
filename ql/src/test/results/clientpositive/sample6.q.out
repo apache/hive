@@ -704,6 +704,7 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 5301 Basic stats: COMPLETE Column stats: NONE
                   tag: -1
                   auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -1075,6 +1076,7 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 5301 Basic stats: COMPLETE Column stats: NONE
                   tag: -1
                   auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -1699,6 +1701,7 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 5301 Basic stats: COMPLETE Column stats: NONE
                   tag: -1
                   auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -2166,6 +2169,7 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 5301 Basic stats: COMPLETE Column stats: NONE
                   tag: -1
                   auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -2620,6 +2624,7 @@ STAGE PLANS:
                   Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                   tag: -1
                   auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -3048,6 +3053,7 @@ STAGE PLANS:
                   Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                   tag: -1
                   auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -3326,6 +3332,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   tag: -1
                   auto parallelism: false
+      Execution mode: vectorized
       Needs Tagging: false
       Reduce Operator Tree:
         Select Operator

@@ -46,6 +46,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                 tag: -1
                 auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -265,6 +266,7 @@ STAGE PLANS:
               tag: -1
               value expressions: key (type: string), c1 (type: int), c2 (type: string), c3 (type: int), c4 (type: int)
               auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -405,6 +407,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                 tag: -1
                 auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -624,6 +627,7 @@ STAGE PLANS:
               tag: -1
               value expressions: key (type: string), c1 (type: int), c2 (type: string), c3 (type: int), c4 (type: int)
               auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:

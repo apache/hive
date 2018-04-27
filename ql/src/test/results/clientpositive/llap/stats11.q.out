@@ -333,7 +333,7 @@ STAGE PLANS:
                         tag: 0
                         value expressions: _col1 (type: string)
                         auto parallelism: true
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
@@ -409,7 +409,7 @@ STAGE PLANS:
                         tag: 1
                         value expressions: _col1 (type: string)
                         auto parallelism: true
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
@@ -753,7 +753,7 @@ STAGE PLANS:
                         tag: 0
                         value expressions: _col1 (type: string)
                         auto parallelism: true
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
@@ -829,7 +829,7 @@ STAGE PLANS:
                         tag: 1
                         value expressions: _col1 (type: string)
                         auto parallelism: true
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####

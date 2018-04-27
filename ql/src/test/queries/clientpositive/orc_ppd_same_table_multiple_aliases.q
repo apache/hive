@@ -1,4 +1,6 @@
 -- SORT_QUERY_RESULTS;
+
+set hive.vectorized.execution.enabled=false;
 set hive.optimize.index.filter=true;
 create table test_table(number int) stored as ORC;
 

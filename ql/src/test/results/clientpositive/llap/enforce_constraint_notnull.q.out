@@ -2634,7 +2634,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 250 Data size: 51750 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: int), _col1 (type: decimal(5,2)), _col2 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -2750,10 +2750,10 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 2 Data size: 414 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: int), _col1 (type: decimal(5,2)), _col2 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: int), VALUE._col1 (type: decimal(5,2)), VALUE._col2 (type: string)
@@ -2873,10 +2873,10 @@ STAGE PLANS:
                       sort order: +
                       Statistics: Num rows: 500 Data size: 103500 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: decimal(5,2)), _col2 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: decimal(5,2)), VALUE._col1 (type: string)
@@ -3001,10 +3001,10 @@ STAGE PLANS:
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 250 Data size: 44500 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string), KEY._col1 (type: string)
@@ -3131,7 +3131,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 250 Data size: 51750 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: int), _col1 (type: decimal(5,2)), _col2 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -3247,10 +3247,10 @@ STAGE PLANS:
                         Map-reduce partition columns: UDFToInteger(_col0) (type: int)
                         Statistics: Num rows: 5 Data size: 1571 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: int), _col3 (type: varchar(128))
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: int), 3.14 (type: decimal(5,2)), VALUE._col1 (type: varchar(128))
@@ -3326,7 +3326,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_uami
-                  Statistics: Num rows: 277 Data size: 86920 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 276 Data size: 86592 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((de = 3.14) and enforce_constraint((i is not null and vc is not null))) (type: boolean)
                     Statistics: Num rows: 2 Data size: 627 Basic stats: COMPLETE Column stats: NONE
@@ -3340,10 +3340,10 @@ STAGE PLANS:
                         Map-reduce partition columns: UDFToInteger(_col0) (type: int)
                         Statistics: Num rows: 2 Data size: 627 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: int), _col3 (type: varchar(128))
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: int), 3.14 (type: decimal(5,2)), VALUE._col1 (type: varchar(128))
@@ -3728,7 +3728,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 10 Data size: 3600 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -4158,7 +4158,7 @@ STAGE PLANS:
                     Map-reduce partition columns: key (type: int)
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                     value expressions: value (type: string), ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Map 7 
             Map Operator Tree:
@@ -4171,7 +4171,7 @@ STAGE PLANS:
                     Map-reduce partition columns: key (type: int)
                     Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: NONE
                     value expressions: a1 (type: string), value (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
@@ -4222,7 +4222,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
@@ -4238,7 +4238,7 @@ STAGE PLANS:
                       name: default.masking_test
                   Write Type: DELETE
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: int), '1' (type: string), VALUE._col1 (type: string)
@@ -4396,7 +4396,7 @@ STAGE PLANS:
                     Map-reduce partition columns: key (type: int)
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                     value expressions: value (type: string), ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Map 8 
             Map Operator Tree:
@@ -4409,7 +4409,7 @@ STAGE PLANS:
                     Map-reduce partition columns: key (type: int)
                     Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: NONE
                     value expressions: a1 (type: string), value (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
@@ -4479,7 +4479,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
@@ -4495,7 +4495,7 @@ STAGE PLANS:
                       name: default.masking_test
                   Write Type: DELETE
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: int), '1' (type: string), VALUE._col1 (type: string)
@@ -4710,7 +4710,7 @@ STAGE PLANS:
                     Map-reduce partition columns: key (type: int)
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                     value expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Map 7 
             Map Operator Tree:
@@ -4723,7 +4723,7 @@ STAGE PLANS:
                     Map-reduce partition columns: key (type: int)
                     Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: NONE
                     value expressions: a1 (type: string), value (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
@@ -4780,7 +4780,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
@@ -4980,7 +4980,7 @@ STAGE PLANS:
                     Map-reduce partition columns: key (type: int)
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                     value expressions: value (type: string), ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Map 7 
             Map Operator Tree:
@@ -4993,7 +4993,7 @@ STAGE PLANS:
                     Map-reduce partition columns: key (type: int)
                     Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: NONE
                     value expressions: a1 (type: string), value (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
@@ -5051,7 +5051,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: int), '1' (type: string), VALUE._col1 (type: string)
@@ -5248,7 +5248,7 @@ STAGE PLANS:
                       Map-reduce partition columns: key (type: int)
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                       value expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Map 5 
             Map Operator Tree:
@@ -5263,7 +5263,7 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: key (type: int)
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
@@ -5308,7 +5308,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: bigint)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
@@ -5878,7 +5878,7 @@ STAGE PLANS:
                       sort order: +
                       Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap

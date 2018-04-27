@@ -203,7 +203,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: bigint)
                       Statistics: Num rows: 5 Data size: 495 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
@@ -220,7 +220,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: bigint)
                       Statistics: Num rows: 236 Data size: 23364 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
