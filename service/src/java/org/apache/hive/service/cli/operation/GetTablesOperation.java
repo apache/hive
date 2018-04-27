@@ -36,12 +36,16 @@ import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.RowSetFactory;
 import org.apache.hive.service.cli.TableSchema;
 import org.apache.hive.service.cli.session.HiveSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * GetTablesOperation.
  *
  */
 public class GetTablesOperation extends MetadataOperation {
+
+  private static final Logger LOG = LoggerFactory.getLogger(GetTablesOperation.class.getName());
 
   private final String catalogName;
   private final String schemaName;
@@ -85,11 +89,16 @@ public class GetTablesOperation extends MetadataOperation {
       tableTypeList = null;
     }
     this.rowSet = RowSetFactory.create(RESULT_SET_SCHEMA, getProtocolVersion(), false);
+    LOG.info("Starting GetTablesOperation with the following parameters: "
+        + "catalogName={}, schemaName={}, tableName={}, tableTypes={}",
+        catalogName, schemaName, tableName,
+        tableTypeList != null ? tableTypeList.toString() : "null");
   }
 
   @Override
   public void runInternal() throws HiveSQLException {
     setState(OperationState.RUNNING);
+    LOG.info("Fetching table metadata");
     try {
       IMetaStoreClient metastoreClient = getParentSession().getMetaStoreClient();
       String schemaPattern = convertSchemaPattern(schemaName);
@@ -104,16 +113,27 @@ public class GetTablesOperation extends MetadataOperation {
 
       for (TableMeta tableMeta :
           metastoreClient.getTableMeta(schemaPattern, tablePattern, tableTypeList)) {
+        String tableType = tableTypeMapping.mapToClientType(tableMeta.getTableType());
         rowSet.addRow(new Object[] {
               DEFAULT_HIVE_CATALOG,
               tableMeta.getDbName(),
               tableMeta.getTableName(),
-              tableTypeMapping.mapToClientType(tableMeta.getTableType()),
+              tableType,
               tableMeta.getComments(),
               null, null, null, null, null
               });
+
+        if (LOG.isDebugEnabled()) {
+          String debugMessage = getDebugMessage("table", RESULT_SET_SCHEMA);
+          LOG.debug(debugMessage, DEFAULT_HIVE_CATALOG, tableMeta.getDbName(),
+              tableMeta.getTableName(), tableType, tableMeta.getComments());
+        }
+      }
+      if (LOG.isDebugEnabled() && rowSet.numRows() == 0) {
+        LOG.debug("No table metadata has been returned.");
       }
       setState(OperationState.FINISHED);
+      LOG.info("Fetching table metadata has been successfully finished");
     } catch (Exception e) {
       setState(OperationState.ERROR);
       throw new HiveSQLException(e);

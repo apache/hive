@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginEx
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hive.service.cli.ColumnDescriptor;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.OperationState;
 import org.apache.hive.service.cli.OperationType;
@@ -151,4 +152,20 @@ public abstract class MetadataOperation extends Operation {
     throw new UnsupportedOperationException("MetadataOperation.cancel()");
   }
 
+  protected String getDebugMessage(final String type, final TableSchema resultSetSchema) {
+    StringBuilder debugMessage = new StringBuilder();
+    debugMessage.append("Returning ");
+    debugMessage.append(type);
+    debugMessage.append(" metadata: ");
+    boolean firstColumn = true;
+    for (ColumnDescriptor column : resultSetSchema.getColumnDescriptors()) {
+      if (!firstColumn) {
+        debugMessage.append(", ");
+      }
+      debugMessage.append(column.getName());
+      debugMessage.append("={}");
+      firstColumn = false;
+    }
+    return debugMessage.toString();
+  }
 }
