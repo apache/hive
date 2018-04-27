@@ -84,6 +84,7 @@ public class Worker extends CompactorThread {
       // so wrap it in a big catch Throwable statement.
       try {
         final CompactionInfo ci = txnHandler.findNextToCompact(name);
+        LOG.debug("Processing compaction request " + ci);
 
         if (ci == null && !stop.get()) {
           try {
@@ -170,14 +171,15 @@ public class Worker extends CompactorThread {
         launchedJob = true;
         try {
           if (runJobAsSelf(runAs)) {
-            mr.run(conf, jobName.toString(), t, sd, tblValidWriteIds, ci, su, txnHandler);
+            mr.run(conf, jobName.toString(), t, p, sd, tblValidWriteIds, ci, su, txnHandler);
           } else {
             UserGroupInformation ugi = UserGroupInformation.createProxyUser(t.getOwner(),
               UserGroupInformation.getLoginUser());
+            final Partition fp = p;
             ugi.doAs(new PrivilegedExceptionAction<Object>() {
               @Override
               public Object run() throws Exception {
-                mr.run(conf, jobName.toString(), t, sd, tblValidWriteIds, ci, su, txnHandler);
+                mr.run(conf, jobName.toString(), t, fp, sd, tblValidWriteIds, ci, su, txnHandler);
                 return null;
               }
             });

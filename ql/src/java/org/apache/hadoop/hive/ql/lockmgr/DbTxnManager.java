@@ -18,6 +18,8 @@
 package org.apache.hadoop.hive.ql.lockmgr;
 
 import com.google.common.annotations.VisibleForTesting;
+
+import org.apache.curator.shaded.com.google.common.collect.Lists;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -31,12 +33,14 @@ import org.apache.hive.common.util.ShutdownHookManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.LockComponentBuilder;
 import org.apache.hadoop.hive.metastore.LockRequestBuilder;
 import org.apache.hadoop.hive.metastore.api.*;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryPlan;
@@ -69,7 +73,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * with a single thread accessing it at a time, with the exception of {@link #heartbeat()} method.
  * The later may (usually will) be called from a timer thread.
  * See {@link #getMS()} for more important concurrency/metastore access notes.
- * 
+ *
  * Each statement that the TM (transaction manager) should be aware of should belong to a transaction.
  * Effectively, that means any statement that has side effects.  Exceptions are statements like
  * Show Compactions, Show Tables, Use Database foo, etc.  The transaction is started either
@@ -111,9 +115,9 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   /**
    * if {@code true} it means current transaction is started via START TRANSACTION which means it cannot
    * include any Operations which cannot be rolled back (drop partition; write to  non-acid table).
-   * If false, it's a single statement transaction which can include any statement.  This is not a 
+   * If false, it's a single statement transaction which can include any statement.  This is not a
    * contradiction from the user point of view who doesn't know anything about the implicit txn
-   * and cannot call rollback (the statement of course can fail in which case there is nothing to 
+   * and cannot call rollback (the statement of course can fail in which case there is nothing to
    * rollback (assuming the statement is well implemented)).
    *
    * This is done so that all commands run in a transaction which simplifies implementation and
@@ -292,7 +296,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   /**
    * Ensures that the current SQL statement is appropriate for the current state of the
    * Transaction Manager (e.g. can call commit unless you called start transaction)
-   * 
+   *
    * Note that support for multi-statement txns is a work-in-progress so it's only supported in
    * HiveConf#HIVE_IN_TEST/HiveConf#TEZ_HIVE_IN_TEST.
    * @param queryPlan
@@ -300,7 +304,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
    */
   private void verifyState(QueryPlan queryPlan) throws LockException {
     if(!isTxnOpen()) {
-      throw new LockException("No transaction context for operation: " + queryPlan.getOperationName() + 
+      throw new LockException("No transaction context for operation: " + queryPlan.getOperationName() +
         " for " + getQueryIdWaterMark(queryPlan));
     }
     if(queryPlan.getOperation() == null) {
@@ -820,7 +824,8 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     assert isTxnOpen();
     assert validTxnList != null && !validTxnList.isEmpty();
     try {
-      return getMS().getValidWriteIds(txnId, tableList, validTxnList);
+      return TxnUtils.createValidTxnWriteIdList(
+          txnId, getMS().getValidWriteIds(tableList, validTxnList));
     } catch (TException e) {
       throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
     }
@@ -1013,7 +1018,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
     }
   }
-  
+
   public void replAllocateTableWriteIdsBatch(String dbName, String tableName, String replPolicy,
                                              List<TxnToWriteId> srcTxnToWriteIdList) throws LockException {
     try {

@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.curator.shaded.com.google.common.collect.Lists;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
@@ -200,32 +201,7 @@ public class TestTxnCommandsForMmTable extends TxnCommandsBaseForTests {
       Assert.assertTrue(status[i].getPath().getName().matches("delta_.*"));
     }
 
-    // 2. Perform a major compaction.
-    runStatementOnDriver("alter table "+ TableExtended.MMTBL + " compact 'MAJOR'");
-    runWorker(hiveConf);
-    status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
-        (TableExtended.MMTBL).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
-    // There should be 2 delta dirs.
-    Assert.assertEquals(2, status.length);
-    boolean sawBase = false;
-    int deltaCount = 0;
-    for (int i = 0; i < status.length; i++) {
-      String dirName = status[i].getPath().getName();
-      if (dirName.matches("delta_.*")) {
-        deltaCount++;
-      } else {
-        sawBase = true;
-        Assert.assertTrue(dirName.matches("base_.*"));
-      }
-    }
-    Assert.assertEquals(2, deltaCount);
-    Assert.assertFalse(sawBase);
-    // Verify query result
-    int [][] resultData = new int[][] {{1,2},{3,4}};
-    List<String> rs = runStatementOnDriver("select a,b from " + TableExtended.MMTBL + " order by a,b");
-    Assert.assertEquals(stringifyValues(resultData), rs);
-
-    // 3. INSERT OVERWRITE
+    // 2. INSERT OVERWRITE
     // Prepare data for the source table
     runStatementOnDriver("insert into " + Table.NONACIDORCTBL + "(a,b) values(5,6),(7,8)");
     // Insert overwrite MM table from source table
@@ -235,7 +211,7 @@ public class TestTxnCommandsForMmTable extends TxnCommandsBaseForTests {
     // There should be 2 delta dirs, plus 1 base dir in the location
     Assert.assertEquals(3, status.length);
     int baseCount = 0;
-    deltaCount = 0;
+    int deltaCount = 0;
     for (int i = 0; i < status.length; i++) {
       String dirName = status[i].getPath().getName();
       if (dirName.matches("delta_.*")) {
@@ -248,47 +224,8 @@ public class TestTxnCommandsForMmTable extends TxnCommandsBaseForTests {
     Assert.assertEquals(1, baseCount);
 
     // Verify query result
-    resultData = new int[][] {{5,6},{7,8}};
-    rs = runStatementOnDriver("select a,b from " + TableExtended.MMTBL + " order by a,b");
-    Assert.assertEquals(stringifyValues(resultData), rs);
-
-    // 4. Perform a minor compaction. Nothing should change.
-    // Both deltas and the base dir should have the same name.
-    // Re-verify directory layout and query result by using the same logic as above
-    runStatementOnDriver("alter table "+ TableExtended.MMTBL + " compact 'MINOR'");
-    runWorker(hiveConf);
-    status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
-        (TableExtended.MMTBL).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
-    // There should be 2 delta dirs, plus 1 base dir in the location
-    Assert.assertEquals(3, status.length);
-    baseCount = 0;
-    deltaCount = 0;
-    for (int i = 0; i < status.length; i++) {
-      String dirName = status[i].getPath().getName();
-      if (dirName.matches("delta_.*")) {
-        deltaCount++;
-      } else {
-        Assert.assertTrue(dirName.matches("base_.*"));
-        baseCount++;
-      }
-    }
-    Assert.assertEquals(2, deltaCount);
-    Assert.assertEquals(1, baseCount);
-
-    // Verify query result
-    rs = runStatementOnDriver("select a,b from " + TableExtended.MMTBL + " order by a,b");
-    Assert.assertEquals(stringifyValues(resultData), rs);
-
-    // 5. Run Cleaner. It should remove the 2 delta dirs.
-    runCleaner(hiveConf);
-    // There should be only 1 directory left: base_xxxxxxx.
-    // The delta dirs should have been cleaned up.
-    status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
-        (TableExtended.MMTBL).toString().toLowerCase()), FileUtils.STAGING_DIR_PATH_FILTER);
-    Assert.assertEquals(1, status.length);
-    Assert.assertTrue(status[0].getPath().getName().matches("base_.*"));
-    // Verify query result
-    rs = runStatementOnDriver("select a,b from " + TableExtended.MMTBL + " order by a,b");
+    int[][] resultData = new int[][] {{5,6},{7,8}};
+    List<String> rs = runStatementOnDriver("select a,b from " + TableExtended.MMTBL + " order by a,b");
     Assert.assertEquals(stringifyValues(resultData), rs);
   }
 
