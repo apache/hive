@@ -59,6 +59,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   TopN Hash Memory Usage: 0.1
                   value expressions: _col0 (type: int), _col1 (type: int)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: int), VALUE._col1 (type: int)
@@ -120,6 +121,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   TopN Hash Memory Usage: 0.1
                   value expressions: _col0 (type: int), _col1 (type: int)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: int), VALUE._col1 (type: int)

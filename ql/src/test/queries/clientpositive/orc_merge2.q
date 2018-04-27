@@ -1,3 +1,4 @@
+set hive.vectorized.execution.enabled=false;
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 set hive.merge.orcfile.stripe.level=true;

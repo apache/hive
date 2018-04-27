@@ -264,6 +264,7 @@ STAGE PLANS:
               /srcpart/ds=2008-04-09/hr=11 [tmap:src]
               /srcpart/ds=2008-04-09/hr=12 [tmap:src]
         Reducer 2 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator

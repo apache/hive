@@ -73,6 +73,7 @@ STAGE PLANS:
                         tag: 0
                         value expressions: _col1 (type: string)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -151,6 +152,7 @@ STAGE PLANS:
                         tag: 1
                         value expressions: _col1 (type: string)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -228,6 +230,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: string), _col2 (type: int), _col3 (type: string)
                   auto parallelism: false
         Reducer 3 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
@@ -379,6 +382,7 @@ STAGE PLANS:
                         tag: 0
                         value expressions: _col2 (type: string)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -457,6 +461,7 @@ STAGE PLANS:
                         tag: 1
                         value expressions: _col2 (type: string)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -534,6 +539,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: int), _col2 (type: string), _col3 (type: int), _col4 (type: int), _col5 (type: string)
                   auto parallelism: false
         Reducer 3 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
@@ -633,6 +639,7 @@ STAGE PLANS:
                         tag: 0
                         value expressions: _col2 (type: string)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -711,6 +718,7 @@ STAGE PLANS:
                         tag: 1
                         value expressions: _col2 (type: string)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -788,6 +796,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: int), _col2 (type: string), _col3 (type: int), _col4 (type: int), _col5 (type: string)
                   auto parallelism: false
         Reducer 3 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
@@ -887,6 +896,7 @@ STAGE PLANS:
                         tag: 0
                         value expressions: _col1 (type: int)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -965,6 +975,7 @@ STAGE PLANS:
                         tag: 1
                         value expressions: _col1 (type: int)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -1042,6 +1053,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: int), _col2 (type: string), _col3 (type: int), _col4 (type: int), _col5 (type: string)
                   auto parallelism: false
         Reducer 3 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator

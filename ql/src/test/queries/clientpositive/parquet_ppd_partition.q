@@ -1,3 +1,4 @@
+set hive.vectorized.execution.enabled=false;
 SET hive.optimize.index.filter=true;
 SET hive.optimize.ppd=true;
 

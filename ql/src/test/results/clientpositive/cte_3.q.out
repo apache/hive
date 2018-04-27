@@ -40,6 +40,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: default.q1
+      Execution mode: vectorized
 
   Stage: Stage-6
     Conditional Operator
@@ -160,6 +161,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: default.q1
+      Execution mode: vectorized
 
   Stage: Stage-6
     Conditional Operator
@@ -287,6 +289,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: default.q2
+      Execution mode: vectorized
 
   Stage: Stage-6
     Conditional Operator
@@ -324,6 +327,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: default.q1
+      Execution mode: vectorized
 
   Stage: Stage-13
     Conditional Operator

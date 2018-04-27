@@ -1,3 +1,4 @@
+set hive.vectorized.execution.enabled=false;
 set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 
 -- SORT_QUERY_RESULTS

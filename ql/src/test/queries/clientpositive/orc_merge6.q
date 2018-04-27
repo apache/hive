@@ -1,4 +1,6 @@
+set hive.vectorized.execution.enabled=false;
 set hive.explain.user=false;
+
 -- SORT_QUERY_RESULTS
 
 -- orc file merge tests for static partitions

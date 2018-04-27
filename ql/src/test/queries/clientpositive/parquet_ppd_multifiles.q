@@ -1,3 +1,5 @@
+set hive.vectorized.execution.enabled=false;
+
 CREATE TABLE parquet_ppd_multifiles (
   name string,
   `dec` decimal(5,0)

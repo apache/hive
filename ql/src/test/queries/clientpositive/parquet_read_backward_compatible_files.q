@@ -1,3 +1,5 @@
+set hive.vectorized.execution.enabled=false;
+
 -- This test makes sure that parquet can read older parquet files written by Hive <= 0.12
 -- alltypesparquet is a files written by older version of Hive
 

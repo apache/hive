@@ -1,3 +1,4 @@
+set hive.vectorized.execution.enabled=false;
 set hive.mapred.mode=nonstrict;
 SET hive.optimize.ppd=true;
 set hive.llap.cache.allow.synthetic.fileid=true;

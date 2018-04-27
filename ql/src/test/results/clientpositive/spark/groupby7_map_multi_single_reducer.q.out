@@ -53,6 +53,7 @@ STAGE PLANS:
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       value expressions: substr(value, 5) (type: string)
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Forward

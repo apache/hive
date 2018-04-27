@@ -1,3 +1,5 @@
+set hive.vectorized.execution.enabled=false;
+
 -- TaskLog retrieval upon Null Pointer Exception in Cluster
 
 CREATE TEMPORARY FUNCTION evaluate_npe AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFEvaluateNPE';

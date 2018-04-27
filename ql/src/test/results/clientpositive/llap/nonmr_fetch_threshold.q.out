@@ -118,9 +118,9 @@ Stage-0
   Fetch Operator
     limit:-1
     Stage-1
-      Map 1 llap
-      File Output Operator [FS_2]
-        Select Operator [SEL_1] (rows=500 width=184)
+      Map 1 vectorized, llap
+      File Output Operator [FS_4]
+        Select Operator [SEL_3] (rows=500 width=184)
           Output:["_col0"]
           TableScan [TS_0] (rows=500 width=178)
             default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]

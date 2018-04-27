@@ -1,3 +1,5 @@
+set hive.vectorized.execution.enabled=false;
+
 CREATE TABLE parquet_tbl(
   key int,
   ldate string)

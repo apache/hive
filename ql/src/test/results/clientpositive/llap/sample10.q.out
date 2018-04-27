@@ -82,7 +82,7 @@ STAGE PLANS:
                           tag: -1
                           value expressions: _col1 (type: bigint)
                           auto parallelism: true
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
@@ -293,7 +293,7 @@ STAGE PLANS:
               /srcpartbucket/ds=2008-04-09/hr=11/000000_0 [srcpartbucket]
               /srcpartbucket/ds=2008-04-09/hr=12/000000_0 [srcpartbucket]
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -311,7 +311,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: bigint)
                   auto parallelism: false
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator

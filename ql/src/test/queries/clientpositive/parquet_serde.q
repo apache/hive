@@ -1,3 +1,4 @@
+set hive.vectorized.execution.enabled=false;
 set hive.mapred.mode=nonstrict;
 DROP TABLE if exists parquet_mixed_fileformat;
 

@@ -1,3 +1,4 @@
+SET hive.vectorized.execution.enabled=false;
 
 create table tx(a int,u int);
 insert into tx values (1,1),(2,2),(3,3),(4,4),(5,5),(6,6),(7,7),(10,10);

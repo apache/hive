@@ -68,6 +68,7 @@ STAGE PLANS:
               sort order: ++
               Map-reduce partition columns: p_mfgr (type: string)
               Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string)
@@ -139,6 +140,7 @@ STAGE PLANS:
               Map-reduce partition columns: p_mfgr (type: string)
               Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
               TopN Hash Memory Usage: 0.8
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string)

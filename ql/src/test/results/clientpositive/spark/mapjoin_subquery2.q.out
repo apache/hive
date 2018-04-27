@@ -104,6 +104,7 @@ STAGE PLANS:
                         keys:
                           0 _col0 (type: int)
                           1 _col1 (type: int)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
         Map 3 
@@ -122,6 +123,7 @@ STAGE PLANS:
                         keys:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 
@@ -172,6 +174,7 @@ STAGE PLANS:
                                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 

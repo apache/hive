@@ -1,3 +1,5 @@
+set hive.vectorized.execution.enabled=false;
+
 DROP TABLE orcfile_merge1;
 DROP TABLE orc_split_elim;
 

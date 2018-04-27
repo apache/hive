@@ -59,6 +59,7 @@ STAGE PLANS:
                       sort order: ++
                       Map-reduce partition columns: value (type: string)
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 7 
             Map Operator Tree:
                 TableScan
@@ -73,6 +74,7 @@ STAGE PLANS:
                       sort order: ++
                       Map-reduce partition columns: substr(value, 5) (type: string)
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Group By Operator

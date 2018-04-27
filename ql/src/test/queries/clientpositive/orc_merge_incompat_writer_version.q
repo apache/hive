@@ -1,3 +1,5 @@
+set hive.vectorized.execution.enabled=false;
+
 DROP TABLE part_orc;
 CREATE TABLE part_orc(
   p_partkey int,

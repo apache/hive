@@ -1,3 +1,5 @@
+set hive.vectorized.execution.enabled=false;
+
 -- Sometimes, the user wants to create a table from just a portion of the file schema;
 -- This test makes sure that this scenario works;
 

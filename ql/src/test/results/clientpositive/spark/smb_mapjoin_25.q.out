@@ -81,6 +81,7 @@ STAGE PLANS:
                       Reduce Output Operator
                         sort order: 
                         Statistics: Num rows: 1 Data size: 2080 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -94,6 +95,7 @@ STAGE PLANS:
                       Reduce Output Operator
                         sort order: 
                         Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -107,6 +109,7 @@ STAGE PLANS:
                       Reduce Output Operator
                         sort order: 
                         Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 7 
             Map Operator Tree:
                 TableScan
@@ -120,6 +123,7 @@ STAGE PLANS:
                       Reduce Output Operator
                         sort order: 
                         Statistics: Num rows: 1 Data size: 2220 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -205,6 +209,7 @@ STAGE PLANS:
                         keys:
                           0 
                           1 
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 
@@ -235,6 +240,7 @@ STAGE PLANS:
                           keys:
                             0 
                             1 
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
         Map 3 
@@ -251,6 +257,7 @@ STAGE PLANS:
                         keys:
                           0 
                           1 
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 
@@ -297,6 +304,7 @@ STAGE PLANS:
                                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 
