@@ -81,6 +81,7 @@ STAGE PLANS:
                       Map-reduce partition columns: substr(key, 1, 1) (type: string)
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       value expressions: value (type: string)
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Forward
@@ -318,6 +319,7 @@ STAGE PLANS:
                       Map-reduce partition columns: substr(key, 1, 1) (type: string)
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       value expressions: value (type: string)
+            Execution mode: vectorized
         Map 6 
             Map Operator Tree:
                 TableScan
@@ -333,6 +335,7 @@ STAGE PLANS:
                       Map-reduce partition columns: substr(key, 1, 1) (type: string), substr(key, 2, 1) (type: string)
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       value expressions: value (type: string)
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Forward
@@ -439,6 +442,7 @@ STAGE PLANS:
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.dest_h3
         Reducer 4 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: bigint), VALUE._col0 (type: string), VALUE._col1 (type: double), VALUE._col2 (type: bigint)

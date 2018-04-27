@@ -122,6 +122,7 @@ STAGE PLANS:
                         TotalFiles: 1
                         GatherStats: true
                         MultiFileSpray: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:

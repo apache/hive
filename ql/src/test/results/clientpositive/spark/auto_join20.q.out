@@ -41,6 +41,7 @@ STAGE PLANS:
                         0 key (type: string)
                         1 key (type: string)
                         2 key (type: string)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
         Map 2 
@@ -60,6 +61,7 @@ STAGE PLANS:
                         0 key (type: string)
                         1 key (type: string)
                         2 key (type: string)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 
@@ -104,9 +106,11 @@ STAGE PLANS:
                           sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: bigint)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
         Reducer 4 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
@@ -189,6 +193,7 @@ STAGE PLANS:
                         0 key (type: string)
                         1 key (type: string)
                         2 key (type: string)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
         Map 2 
@@ -208,6 +213,7 @@ STAGE PLANS:
                         0 key (type: string)
                         1 key (type: string)
                         2 key (type: string)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 
@@ -252,9 +258,11 @@ STAGE PLANS:
                           sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: bigint)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
         Reducer 4 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)

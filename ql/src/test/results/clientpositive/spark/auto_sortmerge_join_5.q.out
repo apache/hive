@@ -166,6 +166,7 @@ STAGE PLANS:
             Truncated Path -> Alias:
               /bucket_big [$hdt$_1:b]
         Reducer 2 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -317,6 +318,7 @@ STAGE PLANS:
             Truncated Path -> Alias:
               /bucket_big [$hdt$_0:a]
         Reducer 2 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -468,6 +470,7 @@ STAGE PLANS:
             Truncated Path -> Alias:
               /bucket_big [$hdt$_0:a]
         Reducer 2 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator

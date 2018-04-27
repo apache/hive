@@ -304,6 +304,7 @@ STAGE PLANS:
               Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
               TopN Hash Memory Usage: 0.1
               value expressions: _col1 (type: double)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: sum(VALUE._col0)

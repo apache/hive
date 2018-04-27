@@ -1,3 +1,4 @@
+set hive.vectorized.execution.enabled=false;
 set hive.mapred.mode=nonstrict;
 set hive.exec.submitviachild=false;
 set hive.exec.submit.local.task.via.child=false;

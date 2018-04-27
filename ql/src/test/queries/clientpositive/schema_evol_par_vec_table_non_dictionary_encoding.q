@@ -2,6 +2,8 @@ set hive.fetch.task.conversion=none;
 set hive.vectorized.execution.enabled=true;
 set parquet.enable.dictionary=false;
 
+-- SORT_QUERY_RESULTS
+
 drop table test_alter;
 drop table test_alter2;
 drop table test_alter3;

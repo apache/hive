@@ -1,3 +1,4 @@
+set hive.vectorized.execution.enabled=false;
 set hive.cli.print.header=true;
 set hive.metastore.disallow.incompatible.col.type.changes=true;
 set hive.optimize.ppd=false;

@@ -183,6 +183,7 @@ STAGE PLANS:
                   sort order: 
                   Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: decimal(25,2))
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: sum(VALUE._col0)
@@ -206,6 +207,7 @@ STAGE PLANS:
               Map-reduce partition columns: 0 (type: int)
               Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: decimal(25,2))
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: decimal(25,2))
@@ -296,6 +298,7 @@ STAGE PLANS:
                   Map-reduce partition columns: _col0 (type: decimal(15,2)), _col1 (type: decimal(15,2))
                   Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col2 (type: decimal(25,2))
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: sum(VALUE._col0)
@@ -320,6 +323,7 @@ STAGE PLANS:
               Map-reduce partition columns: _col1 (type: decimal(15,2))
               Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col2 (type: decimal(25,2))
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey1 (type: decimal(15,2)), KEY.reducesinkkey0 (type: decimal(15,2)), VALUE._col0 (type: decimal(25,2))
@@ -466,6 +470,7 @@ STAGE PLANS:
               Map-reduce partition columns: _col0 (type: decimal(15,2)), _col1 (type: decimal(15,2))
               Statistics: Num rows: 4 Data size: 13 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col2 (type: decimal(25,2))
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: sum(VALUE._col0)
@@ -490,6 +495,7 @@ STAGE PLANS:
               Map-reduce partition columns: _col1 (type: decimal(15,2))
               Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col2 (type: decimal(25,2))
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey1 (type: decimal(15,2)), KEY.reducesinkkey0 (type: decimal(15,2)), VALUE._col0 (type: decimal(25,2))
@@ -640,6 +646,7 @@ STAGE PLANS:
               Map-reduce partition columns: _col0 (type: decimal(15,2)), _col1 (type: decimal(15,2))
               Statistics: Num rows: 4 Data size: 13 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col2 (type: decimal(25,2))
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: sum(VALUE._col0)
@@ -664,6 +671,7 @@ STAGE PLANS:
               Map-reduce partition columns: _col1 (type: decimal(15,2))
               Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col2 (type: decimal(25,2))
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey1 (type: decimal(15,2)), KEY.reducesinkkey0 (type: decimal(15,2)), VALUE._col0 (type: decimal(25,2))
@@ -814,6 +822,7 @@ STAGE PLANS:
               Map-reduce partition columns: _col0 (type: decimal(15,2))
               Statistics: Num rows: 4 Data size: 13 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col2 (type: struct<count:bigint,xavg:double,yavg:double,xvar:double,yvar:double,covar:double>)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: corr(VALUE._col0)

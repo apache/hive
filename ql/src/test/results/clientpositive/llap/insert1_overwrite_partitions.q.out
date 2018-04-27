@@ -66,7 +66,7 @@ STAGE PLANS:
                       key expressions: _col0 (type: string), _col1 (type: string)
                       sort order: --
                       Statistics: Num rows: 99 Data size: 93448 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -254,7 +254,7 @@ STAGE PLANS:
                       key expressions: _col0 (type: string), _col1 (type: string)
                       sort order: --
                       Statistics: Num rows: 99 Data size: 93448 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -411,7 +411,7 @@ STAGE PLANS:
                       key expressions: _col0 (type: string), _col1 (type: string)
                       sort order: --
                       Statistics: Num rows: 99 Data size: 93448 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap

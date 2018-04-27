@@ -73,6 +73,7 @@ STAGE PLANS:
                         keys:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 
@@ -96,6 +97,7 @@ STAGE PLANS:
                         keys:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 
@@ -140,6 +142,7 @@ STAGE PLANS:
                             sort order: ++
                             Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                             Statistics: Num rows: 633595212 Data size: 55895953508 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
         Map 6 
@@ -174,9 +177,11 @@ STAGE PLANS:
                             sort order: ++
                             Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
                             Statistics: Num rows: 316788826 Data size: 42899570777 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: int), KEY._col1 (type: int)
@@ -213,6 +218,7 @@ STAGE PLANS:
                       TopN Hash Memory Usage: 0.1
                       value expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: bigint)
         Reducer 4 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0), sum(VALUE._col1), sum(VALUE._col2)
@@ -230,6 +236,7 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 7 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: int), KEY._col1 (type: int)

@@ -63,6 +63,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: default.test_table2
+            Execution mode: vectorized
 
   Stage: Stage-0
     Move Operator
@@ -207,6 +208,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: default.test_table2
+            Execution mode: vectorized
 
   Stage: Stage-0
     Move Operator

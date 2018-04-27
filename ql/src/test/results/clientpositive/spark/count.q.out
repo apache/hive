@@ -198,6 +198,7 @@ STAGE PLANS:
                       Map-reduce partition columns: a (type: int)
                       Statistics: Num rows: 1 Data size: 780 Basic stats: COMPLETE Column stats: NONE
                       value expressions: d (type: int)
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Group By Operator
@@ -260,6 +261,7 @@ STAGE PLANS:
                       key expressions: a (type: int), b (type: int), c (type: int), d (type: int)
                       sort order: ++++
                       Statistics: Num rows: 1 Data size: 780 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Group By Operator
@@ -393,7 +395,9 @@ STAGE PLANS:
                       sort order: ++
                       Map-reduce partition columns: a (type: int), b (type: int)
                       Statistics: Num rows: 1 Data size: 780 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: int), KEY._col1 (type: int)
@@ -407,6 +411,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 780 Basic stats: COMPLETE Column stats: NONE
                   value expressions: b (type: int)
         Reducer 3 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -474,7 +479,9 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: b (type: int)
                       Statistics: Num rows: 1 Data size: 780 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: int)
@@ -487,6 +494,7 @@ STAGE PLANS:
                   Map-reduce partition columns: b (type: int)
                   Statistics: Num rows: 1 Data size: 780 Basic stats: COMPLETE Column stats: NONE
         Reducer 3 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(KEY._col0)
@@ -554,7 +562,9 @@ STAGE PLANS:
                       sort order: ++
                       Map-reduce partition columns: b (type: int), c (type: int)
                       Statistics: Num rows: 1 Data size: 780 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: int), KEY._col1 (type: int)
@@ -568,6 +578,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 780 Basic stats: COMPLETE Column stats: NONE
                   value expressions: b (type: int)
         Reducer 3 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -638,6 +649,7 @@ STAGE PLANS:
                       Map-reduce partition columns: d (type: int)
                       Statistics: Num rows: 1 Data size: 780 Basic stats: COMPLETE Column stats: NONE
                       value expressions: b (type: int)
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Group By Operator
@@ -709,6 +721,7 @@ STAGE PLANS:
                       Map-reduce partition columns: $f0 (type: int)
                       Statistics: Num rows: 1 Data size: 780 Basic stats: COMPLETE Column stats: NONE
                       value expressions: $f3 (type: int), $f4 (type: int), $f5 (type: int)
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Group By Operator
@@ -773,6 +786,7 @@ STAGE PLANS:
                       Map-reduce partition columns: a (type: int)
                       Statistics: Num rows: 1 Data size: 780 Basic stats: COMPLETE Column stats: NONE
                       value expressions: d (type: int)
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Group By Operator
@@ -835,6 +849,7 @@ STAGE PLANS:
                       key expressions: a (type: int), b (type: int), c (type: int), d (type: int)
                       sort order: ++++
                       Statistics: Num rows: 1 Data size: 780 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Group By Operator

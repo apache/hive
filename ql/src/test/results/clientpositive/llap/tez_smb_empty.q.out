@@ -175,7 +175,7 @@ STAGE PLANS:
                             value expressions: _col0 (type: bigint)
             Execution mode: llap
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -590,7 +590,7 @@ STAGE PLANS:
                             value expressions: _col0 (type: bigint)
             Execution mode: llap
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -696,7 +696,7 @@ STAGE PLANS:
                             value expressions: _col0 (type: bigint)
             Execution mode: llap
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -789,7 +789,7 @@ STAGE PLANS:
                             value expressions: _col0 (type: bigint)
             Execution mode: llap
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -878,7 +878,7 @@ STAGE PLANS:
                             value expressions: _col0 (type: bigint)
             Execution mode: llap
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
