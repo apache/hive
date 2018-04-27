@@ -46,6 +46,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
+import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
@@ -61,6 +63,8 @@ import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
+import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.cache.results.CacheUsage;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache.CacheEntry;
@@ -209,6 +213,7 @@ public class Driver implements IDriver {
 
   private CacheUsage cacheUsage;
   private CacheEntry usedCacheEntry;
+  private ValidWriteIdList compactionWriteIds = null;
 
   private enum DriverState {
     INITIALIZED,
@@ -541,8 +546,10 @@ public class Driver implements IDriver {
 
     conf.setQueryString(queryStr);
     // FIXME: sideeffect will leave the last query set at the session level
-    SessionState.get().getConf().setQueryString(queryStr);
-    SessionState.get().setupQueryCurrentTimestamp();
+    if (SessionState.get() != null) {
+      SessionState.get().getConf().setQueryString(queryStr);
+      SessionState.get().setupQueryCurrentTimestamp();
+    }
 
     // Whether any error occurred during query compilation. Used for query lifetime hook.
     boolean compileError = false;
@@ -1309,7 +1316,18 @@ public class Driver implements IDriver {
       throw new IllegalStateException("calling recordValidWritsIdss() without initializing ValidTxnList " +
               JavaUtils.txnIdToString(txnMgr.getCurrentTxnId()));
     }
-    ValidTxnWriteIdList txnWriteIds = txnMgr.getValidWriteIds(getTransactionalTableList(plan), txnString);
+    List<String> txnTables = getTransactionalTableList(plan);
+    ValidTxnWriteIdList txnWriteIds = null;
+    if (compactionWriteIds != null) {
+      if (txnTables.size() != 1) {
+        throw new LockException("Unexpected tables in compaction: " + txnTables);
+      }
+      String fullTableName = txnTables.get(0);
+      txnWriteIds = new ValidTxnWriteIdList(0L); // No transaction for the compaction for now.
+      txnWriteIds.addTableValidWriteIdList(compactionWriteIds);
+    } else {
+      txnWriteIds = txnMgr.getValidWriteIds(txnTables, txnString);
+    }
     String writeIdStr = txnWriteIds.toString();
     conf.set(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY, writeIdStr);
     if (plan.getFetchTask() != null) {
@@ -2772,5 +2790,9 @@ public class Driver implements IDriver {
     } else {
       return false;
     }
+  }
+
+  public void setCompactionWriteIds(ValidWriteIdList val) {
+    this.compactionWriteIds = val;
   }
 }

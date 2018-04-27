@@ -240,11 +240,6 @@ public class Initiator extends CompactorThread {
       return CompactionType.MAJOR;
     }
 
-    // If it is for insert-only transactional table, return null.
-    if (AcidUtils.isInsertOnlyTable(tblproperties)) {
-      return null;
-    }
-
     if (runJobAsSelf(runAs)) {
       return determineCompactionType(ci, writeIds, sd, tblproperties);
     } else {
@@ -333,14 +328,20 @@ public class Initiator extends CompactorThread {
         HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD) :
         Integer.parseInt(deltaNumProp);
     boolean enough = deltas.size() > deltaNumThreshold;
-    if (enough) {
-      LOG.debug("Found " + deltas.size() + " delta files, threshold is " + deltaNumThreshold +
-          (enough ? "" : "not") + " and no base, requesting " + (noBase ? "major" : "minor") +
-          " compaction");
-      // If there's no base file, do a major compaction
-      return noBase ? CompactionType.MAJOR : CompactionType.MINOR;
+    if (!enough) {
+      return null;
     }
-    return null;
+    if (AcidUtils.isInsertOnlyTable(tblproperties)) {
+      LOG.debug("Requesting a major compaction for a MM table; found " + deltas.size()
+          + " delta files, threshold is " + deltaNumThreshold);
+      return CompactionType.MAJOR;
+    }
+    // TODO: this log statement looks wrong
+    LOG.debug("Found " + deltas.size() + " delta files, threshold is " + deltaNumThreshold +
+        (enough ? "" : "not") + " and no base, requesting " + (noBase ? "major" : "minor") +
+        " compaction");
+    // If there's no base file, do a major compaction
+    return noBase ? CompactionType.MAJOR : CompactionType.MINOR;
   }
 
   private long sumDirSize(FileSystem fs, Path dir) throws IOException {
