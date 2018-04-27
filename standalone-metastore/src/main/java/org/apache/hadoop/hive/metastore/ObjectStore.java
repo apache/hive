@@ -392,7 +392,7 @@ public class ObjectStore implements RawStore, Configurable {
         throw new RuntimeException(
         "Unable to create persistence manager. Check dss.log for details");
       } else {
-        LOG.info("Initialized ObjectStore");
+        LOG.debug("Initialized ObjectStore");
       }
     } finally {
       pmfPropLock.unlock();
@@ -477,7 +477,7 @@ public class ObjectStore implements RawStore, Configurable {
    * @param dsProps
    */
   private void initializeHelper(Properties dsProps) {
-    LOG.info("ObjectStore, initialize called");
+    LOG.debug("ObjectStore, initialize called");
     prop = dsProps;
     pm = getPersistenceManager();
     try {
