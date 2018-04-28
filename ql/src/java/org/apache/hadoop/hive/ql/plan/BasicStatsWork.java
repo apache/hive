@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.ql.plan.LoadTableDesc.LoadFileType;
 public class BasicStatsWork implements Serializable {
   private static final long serialVersionUID = 1L;
 
+  private boolean isExplicitAnalyze;
   private TableSpec tableSpecs;         // source table spec -- for TableScanOperator
   private LoadTableDesc loadTableDesc;  // same as MoveWork.loadTableDesc -- for FileSinkOperator
   private LoadFileDesc loadFileDesc;    // same as MoveWork.loadFileDesc -- for FileSinkOperator
@@ -164,7 +165,7 @@ public class BasicStatsWork implements Serializable {
 
   public boolean isExplicitAnalyze() {
     // ANALYZE TABLE
-    return (getTableSpecs() != null);
+    return isExplicitAnalyze;
   }
   public boolean isTargetRewritten() {
     // ANALYZE TABLE
@@ -200,6 +201,10 @@ public class BasicStatsWork implements Serializable {
     } else {
       return getLoadFileDesc().getCreateViewDesc().getViewName();
     }
+  }
+
+  public void setIsExplicitAnalyze(boolean b) {
+    this.isExplicitAnalyze = b;
   }
 
 }
