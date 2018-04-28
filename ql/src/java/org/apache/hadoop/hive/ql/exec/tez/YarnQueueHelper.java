@@ -52,24 +52,30 @@ public class YarnQueueHelper {
     lastKnownGoodUrl = 0;
   }
 
-  public void checkQueueAccess(String queueName, String userName) throws IOException {
+  public void checkQueueAccess(
+      String queueName, String userName) throws IOException, HiveException {
     String urlSuffix = String.format(PERMISSION_PATH, queueName, userName);
     // TODO: if we ever use this endpoint for anything else, refactor cycling into a separate class.
     int urlIx = lastKnownGoodUrl, lastUrlIx = ((urlIx == 0) ? rmNodes.length : urlIx) - 1;
     Exception firstError = null;
     while (true) {
       String node = rmNodes[urlIx];
+      String error = null;
+      boolean isCallOk = false;
       try {
-        String error = checkQueueAccessFromSingleRm("http://" + node + urlSuffix);
-        lastKnownGoodUrl = urlIx;
-        if (error == null) return; // null error message here means the user has access.
-        throw new HiveException(error.isEmpty()
-            ? (userName + " has no access to " + queueName) : error);
+        error = checkQueueAccessFromSingleRm("http://" + node + urlSuffix);
+        isCallOk = true;
       } catch (Exception ex) {
         LOG.warn("Cannot check queue access against RM " + node, ex);
         if (firstError == null) {
           firstError = ex;
         }
+      }
+      if (isCallOk) {
+        lastKnownGoodUrl = urlIx;
+        if (error == null) return; // null error message here means the user has access.
+        throw new HiveException(error.isEmpty()
+            ? (userName + " has no access to " + queueName) : error);
       }
       if (urlIx == lastUrlIx) {
         throw new IOException("Cannot access any RM service; first error", firstError);
