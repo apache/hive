@@ -112,6 +112,7 @@ public class GenMRTableScan1 implements NodeProcessor {
             // The MR task is just a simple TableScanOperator
 
             BasicStatsWork statsWork = new BasicStatsWork(table.getTableSpec());
+            statsWork.setIsExplicitAnalyze(true);
 
             statsWork.setNoScanAnalyzeCommand(noScan);
             StatsWork columnStatsWork = new StatsWork(table, statsWork, parseCtx.getConf());

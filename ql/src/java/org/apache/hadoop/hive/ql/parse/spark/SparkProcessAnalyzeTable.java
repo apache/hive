@@ -123,6 +123,7 @@ public class SparkProcessAnalyzeTable implements NodeProcessor {
         // The Spark task is just a simple TableScanOperator
 
         BasicStatsWork basicStatsWork = new BasicStatsWork(table.getTableSpec());
+        basicStatsWork.setIsExplicitAnalyze(true);
         basicStatsWork.setNoScanAnalyzeCommand(parseContext.getQueryProperties().isNoScanAnalyzeCommand());
         StatsWork columnStatsWork = new StatsWork(table, basicStatsWork, parseContext.getConf());
         columnStatsWork.collectStatsFromAggregator(tableScan.getConf());
