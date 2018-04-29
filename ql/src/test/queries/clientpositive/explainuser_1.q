@@ -7,6 +7,7 @@
 --! qt:dataset:cbo_t3
 --! qt:dataset:cbo_t2
 --! qt:dataset:cbo_t1
+set hive.vectorized.execution.enabled=false;
 set hive.strict.checks.bucketing=false;
 
 set hive.mapred.mode=nonstrict;
