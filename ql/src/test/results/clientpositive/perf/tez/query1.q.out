@@ -73,9 +73,9 @@ Stage-0
               Select Operator [SEL_49] (rows=32266667 width=860)
                 Output:["_col0"]
                 Filter Operator [FIL_48] (rows=32266667 width=860)
-                  predicate:(_col2 > CASE WHEN (_col8 is null) THEN (null) ELSE (_col7) END)
+                  predicate:(_col2 > _col7)
                   Merge Join Operator [MERGEJOIN_81] (rows=96800003 width=860)
-                    Conds:RS_45._col1=RS_105._col2(Inner),Output:["_col2","_col6","_col7","_col8"]
+                    Conds:RS_45._col1=RS_105._col1(Inner),Output:["_col2","_col6","_col7"]
                   <-Reducer 5 [SIMPLE_EDGE]
                     SHUFFLE [RS_45]
                       PartitionCols:_col1
@@ -138,9 +138,9 @@ Stage-0
                                                 default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year"]
                   <-Reducer 9 [SIMPLE_EDGE] vectorized
                     SHUFFLE [RS_105]
-                      PartitionCols:_col2
+                      PartitionCols:_col1
                       Select Operator [SEL_104] (rows=15837566 width=77)
-                        Output:["_col0","_col1","_col2"]
+                        Output:["_col0","_col1"]
                         Group By Operator [GBY_103] (rows=15837566 width=77)
                           Output:["_col0","_col1","_col2"],aggregations:["sum(_col2)","count(_col2)"],keys:_col1
                           Select Operator [SEL_102] (rows=31675133 width=77)
