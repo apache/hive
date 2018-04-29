@@ -647,8 +647,8 @@ POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 98	val_98
 98	val_98
-Warning: Shuffle Join JOIN[28][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
-Warning: Shuffle Join JOIN[12][tables = [$hdt$_3, $hdt$_4]] in Stage 'Stage-6:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[30][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[14][tables = [$hdt$_3, $hdt$_4]] in Stage 'Stage-6:MAPRED' is a cross product
 PREHOOK: query: explain SELECT p1.p_name FROM part p1 LEFT JOIN (select p_type as p_col from part ) p2 WHERE NOT EXISTS
                 (select pp1.p_type as p_col from part pp1 where pp1.p_partkey = p2.p_col)
 PREHOOK: type: QUERY
@@ -761,18 +761,21 @@ STAGE PLANS:
           TableScan
             alias: part
             Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: p_type (type: string)
-              outputColumnNames: _col0
+            Filter Operator
+              predicate: p_type is not null (type: boolean)
               Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                sort order: 
+              Select Operator
+                expressions: p_type (type: string)
+                outputColumnNames: _col0
                 Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: string)
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: string)
       Reduce Operator Tree:
         Join Operator
           condition map:
-               Left Outer Join 0 to 1
+               Inner Join 0 to 1
           keys:
             0 
             1 
@@ -819,15 +822,18 @@ STAGE PLANS:
           TableScan
             alias: pp1
             Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: p_partkey (type: int)
-              outputColumnNames: _col0
+            Filter Operator
+              predicate: p_partkey is not null (type: boolean)
               Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: UDFToDouble(_col0) (type: double)
-                sort order: +
-                Map-reduce partition columns: UDFToDouble(_col0) (type: double)
+              Select Operator
+                expressions: p_partkey (type: int)
+                outputColumnNames: _col0
                 Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: UDFToDouble(_col0) (type: double)
+                  sort order: +
+                  Map-reduce partition columns: UDFToDouble(_col0) (type: double)
+                  Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
           TableScan
             Reduce Output Operator
               key expressions: UDFToDouble(_col0) (type: double)
@@ -889,8 +895,8 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join JOIN[28][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
-Warning: Shuffle Join JOIN[12][tables = [$hdt$_3, $hdt$_4]] in Stage 'Stage-6:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[30][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[14][tables = [$hdt$_3, $hdt$_4]] in Stage 'Stage-6:MAPRED' is a cross product
 PREHOOK: query: SELECT p1.p_name FROM part p1 LEFT JOIN (select p_type as p_col from part ) p2 WHERE NOT EXISTS
                 (select pp1.p_type as p_col from part pp1 where pp1.p_partkey = p2.p_col)
 PREHOOK: type: QUERY

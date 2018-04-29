@@ -97,7 +97,10 @@ public class HiveVolcanoPlanner extends VolcanoPlanner {
     if (rel instanceof RelSubset) {
       // Get cost of the subset, best rel may have been chosen or not
       RelSubset subset = (RelSubset) rel;
-      return getCost(Util.first(subset.getBest(), subset.getOriginal()), mq);
+      if (subset.getBest() != null) {
+        return getCost(subset.getBest(), mq);
+      }
+      return costFactory.makeInfiniteCost();
     }
     if (rel.getTraitSet().getTrait(ConventionTraitDef.INSTANCE)
         == Convention.NONE) {
