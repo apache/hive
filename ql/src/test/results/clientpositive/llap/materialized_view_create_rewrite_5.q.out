@@ -399,7 +399,7 @@ Retention:          	0
 Table Type:         	MATERIALIZED_VIEW   	 
 Table Parameters:	 	 
 	numFiles            	2                   
-	totalSize           	1055                
+	totalSize           	1053                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
