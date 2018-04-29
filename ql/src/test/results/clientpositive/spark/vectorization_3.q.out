@@ -68,7 +68,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
-                  Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -78,7 +78,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: FilterDoubleColLessEqualDoubleColumn(col 13:float, col 4:float)(children: CastLongToFloatViaLongToDouble(col 2:int) -> 13:float), FilterDecimalColNotEqualDecimalScalar(col 14:decimal(22,3), val 79.553)(children: CastLongToDecimal(col 3:bigint) -> 14:decimal(22,3)), FilterDoubleColEqualDoubleScalar(col 13:double, val -29071.0)(children: CastTimestampToDouble(col 9:timestamp) -> 13:double)), FilterExprAndExpr(children: FilterDoubleColGreaterDoubleColumn(col 13:double, col 5:double)(children: CastLongToDouble(col 3:bigint) -> 13:double), FilterDecimalColGreaterEqualDecimalScalar(col 15:decimal(8,3), val 79.553)(children: CastLongToDecimal(col 1:smallint) -> 15:decimal(8,3)), FilterTimestampColGreaterTimestampColumn(col 8:timestamp, col 9:timestamp)))
                     predicate: (((UDFToDouble(cbigint) > cdouble) and (CAST( csmallint AS decimal(8,3)) >= 79.553) and (ctimestamp1 > ctimestamp2)) or ((UDFToFloat(cint) <= cfloat) and (CAST( cbigint AS decimal(22,3)) <> 79.553) and (UDFToDouble(ctimestamp2) = -29071.0D))) (type: boolean)
-                    Statistics: Num rows: 2503 Data size: 538153 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2503 Data size: 592342 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: csmallint (type: smallint), ctinyint (type: tinyint), cfloat (type: float), cint (type: int), UDFToDouble(csmallint) (type: double), (UDFToDouble(csmallint) * UDFToDouble(csmallint)) (type: double), UDFToDouble(ctinyint) (type: double), (UDFToDouble(ctinyint) * UDFToDouble(ctinyint)) (type: double), UDFToDouble(cfloat) (type: double), (UDFToDouble(cfloat) * UDFToDouble(cfloat)) (type: double), UDFToDouble(cint) (type: double), (UDFToDouble(cint) * UDFToDouble(cint)) (type: double)
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
@@ -87,7 +87,7 @@ STAGE PLANS:
                           native: true
                           projectedOutputColumnNums: [1, 0, 4, 2, 13, 18, 16, 20, 4, 17, 19, 23]
                           selectExpressions: CastLongToDouble(col 1:smallint) -> 13:double, DoubleColMultiplyDoubleColumn(col 16:double, col 17:double)(children: CastLongToDouble(col 1:smallint) -> 16:double, CastLongToDouble(col 1:smallint) -> 17:double) -> 18:double, CastLongToDouble(col 0:tinyint) -> 16:double, DoubleColMultiplyDoubleColumn(col 17:double, col 19:double)(children: CastLongToDouble(col 0:tinyint) -> 17:double, CastLongToDouble(col 0:tinyint) -> 19:double) -> 20:double, DoubleColMultiplyDoubleColumn(col 4:double, col 4:double)(children: col 4:float, col 4:float) -> 17:double, CastLongToDouble(col 2:int) -> 19:double, DoubleColMultiplyDoubleColumn(col 21:double, col 22:double)(children: CastLongToDouble(col 2:int) -> 21:double, CastLongToDouble(col 2:int) -> 22:double) -> 23:double
-                      Statistics: Num rows: 2503 Data size: 538153 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2503 Data size: 592342 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: sum(_col5), sum(_col4), count(_col0), sum(_col7), sum(_col6), count(_col1), sum(_col9), sum(_col8), count(_col2), sum(_col2), sum(_col3), count(_col3), sum(_col11), sum(_col10)
                         Group By Vectorization:
