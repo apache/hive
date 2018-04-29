@@ -83,6 +83,7 @@ public class TestPrimaryToReplicaResourceFunction {
   public void createDestinationPath() throws IOException, SemanticException, URISyntaxException {
     mockStatic(FileSystem.class);
     when(FileSystem.get(any(Configuration.class))).thenReturn(mockFs);
+    when(FileSystem.get(any(URI.class), any(Configuration.class))).thenReturn(mockFs);
     when(mockFs.getScheme()).thenReturn("hdfs");
     when(mockFs.getUri()).thenReturn(new URI("hdfs", "somehost:9000", null, null, null));
     mockStatic(System.class);

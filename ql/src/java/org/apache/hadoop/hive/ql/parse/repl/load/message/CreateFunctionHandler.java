@@ -190,7 +190,7 @@ public class CreateFunctionHandler extends AbstractMessageHandler {
               .addDescendant(String.valueOf(System.nanoTime()))
               .addDescendant(ReplChangeManager.getFileWithChksumFromURI(split[split.length - 1])[0])
               .build(),
-          FileSystem.get(context.hiveConf)
+          new Path(functionsRootDir).getFileSystem(context.hiveConf)
       );
 
       Task<?> copyTask = ReplCopyTask.getLoadCopyTask(
