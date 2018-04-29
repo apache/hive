@@ -48,7 +48,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: alltypesorc
-            Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
             Filter Operator
@@ -57,7 +57,7 @@ STAGE PLANS:
                   native: true
                   predicateExpression: FilterLongColEqualLongScalar(col 13:bigint, val 0)(children: LongColModuloLongScalar(col 3:bigint, val 250) -> 13:bigint)
               predicate: ((cbigint % 250) = 0) (type: boolean)
-              Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 6144 Data size: 1453997 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: CAST( ctinyint AS TIMESTAMP) (type: timestamp), CAST( csmallint AS TIMESTAMP) (type: timestamp), CAST( cint AS TIMESTAMP) (type: timestamp), CAST( cbigint AS TIMESTAMP) (type: timestamp), CAST( cfloat AS TIMESTAMP) (type: timestamp), CAST( cdouble AS TIMESTAMP) (type: timestamp), CAST( cboolean1 AS TIMESTAMP) (type: timestamp), CAST( (cbigint * 0L) AS TIMESTAMP) (type: timestamp), ctimestamp1 (type: timestamp), CAST( cstring1 AS TIMESTAMP) (type: timestamp), CAST( substr(cstring1, 1, 1) AS TIMESTAMP) (type: timestamp)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
@@ -66,13 +66,13 @@ STAGE PLANS:
                     native: true
                     projectedOutputColumnNums: [15, 17, 19, 21, 22, 23, 25, 27, 8, 28, 30]
                     selectExpressions: CastMillisecondsLongToTimestamp(col 0:tinyint) -> 15:timestamp, CastMillisecondsLongToTimestamp(col 1:smallint) -> 17:timestamp, CastMillisecondsLongToTimestamp(col 2:int) -> 19:timestamp, CastMillisecondsLongToTimestamp(col 3:bigint) -> 21:timestamp, CastDoubleToTimestamp(col 4:float) -> 22:timestamp, CastDoubleToTimestamp(col 5:double) -> 23:timestamp, CastMillisecondsLongToTimestamp(col 10:boolean) -> 25:timestamp, CastMillisecondsLongToTimestamp(col 13:bigint)(children: LongColMultiplyLongScalar(col 3:bigint, val 0) -> 13:bigint) -> 27:timestamp, VectorUDFAdaptor(CAST( cstring1 AS TIMESTAMP)) -> 28:timestamp, VectorUDFAdaptor(CAST( substr(cstring1, 1, 1) AS TIMESTAMP))(children: StringSubstrColStartLen(col 6:string, start 0, length 1) -> 29:string) -> 30:timestamp
-                Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 6144 Data size: 1453997 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6144 Data size: 1453997 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -208,7 +208,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: alltypesorc
-            Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
             Filter Operator
@@ -217,7 +217,7 @@ STAGE PLANS:
                   native: true
                   predicateExpression: FilterLongColEqualLongScalar(col 13:bigint, val 0)(children: LongColModuloLongScalar(col 3:bigint, val 250) -> 13:bigint)
               predicate: ((cbigint % 250) = 0) (type: boolean)
-              Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 6144 Data size: 1453997 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: CAST( ctinyint AS TIMESTAMP) (type: timestamp), CAST( csmallint AS TIMESTAMP) (type: timestamp), CAST( cint AS TIMESTAMP) (type: timestamp), CAST( cbigint AS TIMESTAMP) (type: timestamp), CAST( cfloat AS TIMESTAMP) (type: timestamp), CAST( cdouble AS TIMESTAMP) (type: timestamp), CAST( cboolean1 AS TIMESTAMP) (type: timestamp), CAST( (cbigint * 0L) AS TIMESTAMP) (type: timestamp), ctimestamp1 (type: timestamp), CAST( cstring1 AS TIMESTAMP) (type: timestamp), CAST( substr(cstring1, 1, 1) AS TIMESTAMP) (type: timestamp)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
@@ -226,13 +226,13 @@ STAGE PLANS:
                     native: true
                     projectedOutputColumnNums: [14, 15, 16, 17, 18, 19, 20, 21, 8, 22, 24]
                     selectExpressions: CastLongToTimestamp(col 0:tinyint) -> 14:timestamp, CastLongToTimestamp(col 1:smallint) -> 15:timestamp, CastLongToTimestamp(col 2:int) -> 16:timestamp, CastLongToTimestamp(col 3:bigint) -> 17:timestamp, CastDoubleToTimestamp(col 4:float) -> 18:timestamp, CastDoubleToTimestamp(col 5:double) -> 19:timestamp, CastLongToTimestamp(col 10:boolean) -> 20:timestamp, CastLongToTimestamp(col 13:bigint)(children: LongColMultiplyLongScalar(col 3:bigint, val 0) -> 13:bigint) -> 21:timestamp, VectorUDFAdaptor(CAST( cstring1 AS TIMESTAMP)) -> 22:timestamp, VectorUDFAdaptor(CAST( substr(cstring1, 1, 1) AS TIMESTAMP))(children: StringSubstrColStartLen(col 6:string, start 0, length 1) -> 23:string) -> 24:timestamp
-                Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 6144 Data size: 1453997 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6144 Data size: 1453997 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

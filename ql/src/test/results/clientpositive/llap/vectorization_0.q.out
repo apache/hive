@@ -1021,7 +1021,7 @@ ORDER BY c1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
--1.8515862077935246E8	2.07689300543070106E18	2.07689300543070106E18	2.07711944383076992E18	1.441142951074147E9	1.441142951074147E9	1.441142951074147E9	1.441221511021387E9
+-1.8515862077935246E8	2.07689300543077965E18	2.07689300543077965E18	2.07711944383084851E18	1.4411429510741742E9	1.4411429510741742E9	1.4411429510741742E9	1.4412215110214143E9
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT MIN(cfloat) as c1,
        MAX(cfloat),
@@ -1779,7 +1779,7 @@ WHERE  (((cstring2 LIKE '%b%')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
--3.875652215945533E8	3.875652215945533E8	-3.875716535945533E8	1.4363874554593627E9	3.875716535945533E8	0.0	2.0634715172019392E18	3.875716535945533E8	3.875652215945533E8	3.875716535945533E8	1.0	10934	-37224.52399241924	1.0516820315185745E9	-2.0634715172019392E18	1.5020929380914048E17	-64	64
+-3.875652215945533E8	3.875652215945533E8	-3.875716535945533E8	1.4363874554593823E9	3.875716535945533E8	0.0	2.06347151720199526E18	3.875716535945533E8	3.875652215945533E8	3.875716535945533E8	1.0	10934	-37224.52399241924	1.0517100101050656E9	-2.06347151720199526E18	1.5020929380914048E17	-64	64
 PREHOOK: query: EXPLAIN extended
 select count(*) from alltypesorc
                      where (((cstring1 LIKE 'a%') or ((cstring1 like 'b%') or (cstring1 like 'c%'))) or
@@ -1848,11 +1848,11 @@ STAGE PLANS:
                     name default.alltypesorc
                     numFiles 1
                     numRows 12288
-                    rawDataSize 2641964
+                    rawDataSize 2907994
                     serialization.ddl struct alltypesorc { byte ctinyint, i16 csmallint, i32 cint, i64 cbigint, float cfloat, double cdouble, string cstring1, string cstring2, timestamp ctimestamp1, timestamp ctimestamp2, bool cboolean1, bool cboolean2}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 377237
+                    totalSize 295616
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -1870,11 +1870,11 @@ STAGE PLANS:
                       name default.alltypesorc
                       numFiles 1
                       numRows 12288
-                      rawDataSize 2641964
+                      rawDataSize 2907994
                       serialization.ddl struct alltypesorc { byte ctinyint, i16 csmallint, i32 cint, i64 cbigint, float cfloat, double cdouble, string cstring1, string cstring2, timestamp ctimestamp1, timestamp ctimestamp2, bool cboolean1, bool cboolean2}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 377237
+                      totalSize 295616
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.alltypesorc
@@ -30671,11 +30671,11 @@ STAGE PLANS:
                     name default.alltypesorc
                     numFiles 1
                     numRows 12288
-                    rawDataSize 2641964
+                    rawDataSize 2907994
                     serialization.ddl struct alltypesorc { byte ctinyint, i16 csmallint, i32 cint, i64 cbigint, float cfloat, double cdouble, string cstring1, string cstring2, timestamp ctimestamp1, timestamp ctimestamp2, bool cboolean1, bool cboolean2}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 377237
+                    totalSize 295616
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -30693,11 +30693,11 @@ STAGE PLANS:
                       name default.alltypesorc
                       numFiles 1
                       numRows 12288
-                      rawDataSize 2641964
+                      rawDataSize 2907994
                       serialization.ddl struct alltypesorc { byte ctinyint, i16 csmallint, i32 cint, i64 cbigint, float cfloat, double cdouble, string cstring1, string cstring2, timestamp ctimestamp1, timestamp ctimestamp2, bool cboolean1, bool cboolean2}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 377237
+                      totalSize 295616
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.alltypesorc
@@ -30788,11 +30788,11 @@ STAGE PLANS:
                     name default.alltypesorc
                     numFiles 1
                     numRows 12288
-                    rawDataSize 2641964
+                    rawDataSize 2907994
                     serialization.ddl struct alltypesorc { byte ctinyint, i16 csmallint, i32 cint, i64 cbigint, float cfloat, double cdouble, string cstring1, string cstring2, timestamp ctimestamp1, timestamp ctimestamp2, bool cboolean1, bool cboolean2}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 377237
+                    totalSize 295616
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -30810,11 +30810,11 @@ STAGE PLANS:
                       name default.alltypesorc
                       numFiles 1
                       numRows 12288
-                      rawDataSize 2641964
+                      rawDataSize 2907994
                       serialization.ddl struct alltypesorc { byte ctinyint, i16 csmallint, i32 cint, i64 cbigint, float cfloat, double cdouble, string cstring1, string cstring2, timestamp ctimestamp1, timestamp ctimestamp2, bool cboolean1, bool cboolean2}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 377237
+                      totalSize 295616
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.alltypesorc
@@ -30905,11 +30905,11 @@ STAGE PLANS:
                     name default.alltypesorc
                     numFiles 1
                     numRows 12288
-                    rawDataSize 2641964
+                    rawDataSize 2907994
                     serialization.ddl struct alltypesorc { byte ctinyint, i16 csmallint, i32 cint, i64 cbigint, float cfloat, double cdouble, string cstring1, string cstring2, timestamp ctimestamp1, timestamp ctimestamp2, bool cboolean1, bool cboolean2}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 377237
+                    totalSize 295616
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -30927,11 +30927,11 @@ STAGE PLANS:
                       name default.alltypesorc
                       numFiles 1
                       numRows 12288
-                      rawDataSize 2641964
+                      rawDataSize 2907994
                       serialization.ddl struct alltypesorc { byte ctinyint, i16 csmallint, i32 cint, i64 cbigint, float cfloat, double cdouble, string cstring1, string cstring2, timestamp ctimestamp1, timestamp ctimestamp2, bool cboolean1, bool cboolean2}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 377237
+                      totalSize 295616
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.alltypesorc
@@ -31013,11 +31013,11 @@ STAGE PLANS:
                     name default.alltypesorc
                     numFiles 1
                     numRows 12288
-                    rawDataSize 2641964
+                    rawDataSize 2907994
                     serialization.ddl struct alltypesorc { byte ctinyint, i16 csmallint, i32 cint, i64 cbigint, float cfloat, double cdouble, string cstring1, string cstring2, timestamp ctimestamp1, timestamp ctimestamp2, bool cboolean1, bool cboolean2}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 377237
+                    totalSize 295616
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 
@@ -31035,11 +31035,11 @@ STAGE PLANS:
                       name default.alltypesorc
                       numFiles 1
                       numRows 12288
-                      rawDataSize 2641964
+                      rawDataSize 2907994
                       serialization.ddl struct alltypesorc { byte ctinyint, i16 csmallint, i32 cint, i64 cbigint, float cfloat, double cdouble, string cstring1, string cstring2, timestamp ctimestamp1, timestamp ctimestamp2, bool cboolean1, bool cboolean2}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 377237
+                      totalSize 295616
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.alltypesorc
