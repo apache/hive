@@ -20,6 +20,7 @@ package org.apache.hive.minikdc;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.junit.BeforeClass;
 
@@ -46,5 +47,12 @@ public class TestJdbcWithDBTokenStoreNoDoAs extends TestJdbcWithMiniKdc{
     String hs2Principal = miniHS2.getConfProperty(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL.varname);
     String hs2KeyTab = miniHS2.getConfProperty(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB.varname);
     System.out.println("HS2 principal : " + hs2Principal + " HS2 keytab : " + hs2KeyTab + " Metastore principal : " + metastorePrincipal);
+    System.setProperty(HiveConf.ConfVars.METASTOREWAREHOUSE.varname,
+        MetastoreConf.getVar(hiveConf, MetastoreConf.ConfVars.WAREHOUSE));
+    System.setProperty(HiveConf.ConfVars.METASTORECONNECTURLKEY.varname,
+        MetastoreConf.getVar(hiveConf, MetastoreConf.ConfVars.CONNECT_URL_KEY));
+    System.setProperty(HiveConf.ConfVars.METASTOREURIS.varname,
+        MetastoreConf.getVar(hiveConf, MetastoreConf.ConfVars.THRIFT_URIS));
+    Thread.sleep(2000);
   }
 }
