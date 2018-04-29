@@ -1580,6 +1580,8 @@ public class TestJdbcDriver2 {
   public void testResultSetMetaData() throws SQLException {
     Statement stmt = con.createStatement();
 
+    stmt.execute("set " + HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED.varname + "=false");
+
     ResultSet res =
         stmt.executeQuery("select c1, c2, c3, c4, c5 as a, c6, c7, c8, c9, c10, c11, c12, "
             + "c1*2, sentences(null, null, null) as b, c17, c18, c20, c21, c22, c23, null as null_val from "
