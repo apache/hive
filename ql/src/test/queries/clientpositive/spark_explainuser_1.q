@@ -1,3 +1,4 @@
+set hive.vectorized.execution.enabled=false;
 set hive.strict.checks.bucketing=false;
 
 set hive.mapred.mode=nonstrict;
