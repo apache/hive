@@ -22,34 +22,34 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1
-            Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: cint is not null (type: boolean)
-              Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: cint (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: t2
-            Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: cint is not null (type: boolean)
-              Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: cint (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
       Map Vectorization:
           enabled: false
           enabledConditionsNotMet: Vectorized map work only works with 1 TableScanOperator IS false
@@ -65,11 +65,11 @@ STAGE PLANS:
             0 _col0 (type: int)
             1 _col0 (type: int)
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 13516 Data size: 2906160 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 13516 Data size: 3198793 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: _col0 (type: int), _col1 (type: int), (_col0 + _col1) (type: int)
             outputColumnNames: _col0, _col1, _col2
-            Statistics: Num rows: 13516 Data size: 2906160 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 13516 Data size: 3198793 Basic stats: COMPLETE Column stats: NONE
             Group By Operator
               aggregations: count(_col0), max(_col1), min(_col0), sum(_col2), count(_col2)
               mode: hash

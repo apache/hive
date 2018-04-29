@@ -20,14 +20,14 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: v1
-                  Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (csmallint is not null and ctinyint is not null) (type: boolean)
-                    Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ctinyint (type: tinyint), csmallint (type: smallint), cdouble (type: double)
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
                           0 _col0 (type: tinyint)
@@ -48,14 +48,14 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: v3
-                  Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: csmallint is not null (type: boolean)
-                    Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: csmallint (type: smallint)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
                           0 _col0 (type: smallint)
@@ -83,14 +83,14 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: v2
-                  Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ctinyint is not null (type: boolean)
-                    Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ctinyint (type: tinyint)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -100,11 +100,11 @@ STAGE PLANS:
                         outputColumnNames: _col2, _col3
                         input vertices:
                           1 Map 3
-                        Statistics: Num rows: 13516 Data size: 2906160 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 13516 Data size: 3198793 Basic stats: COMPLETE Column stats: NONE
                         Select Operator
                           expressions: _col2 (type: smallint), _col3 (type: double)
                           outputColumnNames: _col0, _col1
-                          Statistics: Num rows: 13516 Data size: 2906160 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 13516 Data size: 3198793 Basic stats: COMPLETE Column stats: NONE
                           Map Join Operator
                             condition map:
                                  Inner Join 0 to 1
@@ -114,7 +114,7 @@ STAGE PLANS:
                             outputColumnNames: _col1
                             input vertices:
                               1 Map 4
-                            Statistics: Num rows: 14867 Data size: 3196776 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 14867 Data size: 3518672 Basic stats: COMPLETE Column stats: NONE
                             Group By Operator
                               aggregations: sum(_col1)
                               mode: hash

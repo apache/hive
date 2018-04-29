@@ -442,19 +442,19 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: cint BETWEEN 1000000 AND 3000000 (type: boolean)
-                    Statistics: Num rows: 1365 Data size: 293479 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1365 Data size: 323031 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ctinyint (type: tinyint), csmallint (type: smallint), cint (type: int), cbigint (type: bigint), cfloat (type: float), cdouble (type: double), cstring1 (type: string), cstring2 (type: string), ctimestamp1 (type: timestamp), ctimestamp2 (type: timestamp), cboolean1 (type: boolean), cboolean2 (type: boolean)
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
-                      Statistics: Num rows: 1365 Data size: 293479 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1365 Data size: 323031 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col2 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col2 (type: int)
-                        Statistics: Num rows: 1365 Data size: 293479 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1365 Data size: 323031 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col3 (type: bigint), _col4 (type: float), _col5 (type: double), _col6 (type: string), _col7 (type: string), _col8 (type: timestamp), _col9 (type: timestamp), _col10 (type: boolean), _col11 (type: boolean)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -462,19 +462,19 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (cbigint is not null and cint BETWEEN 1000000 AND 3000000) (type: boolean)
-                    Statistics: Num rows: 1365 Data size: 293479 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1365 Data size: 323031 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ctinyint (type: tinyint), csmallint (type: smallint), cint (type: int), cbigint (type: bigint), cfloat (type: float), cdouble (type: double), cstring1 (type: string), cstring2 (type: string), ctimestamp1 (type: timestamp), ctimestamp2 (type: timestamp), cboolean1 (type: boolean), cboolean2 (type: boolean)
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
-                      Statistics: Num rows: 1365 Data size: 293479 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1365 Data size: 323031 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col2 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col2 (type: int)
-                        Statistics: Num rows: 1365 Data size: 293479 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1365 Data size: 323031 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col3 (type: bigint), _col4 (type: float), _col5 (type: double), _col6 (type: string), _col7 (type: string), _col8 (type: timestamp), _col9 (type: timestamp), _col10 (type: boolean), _col11 (type: boolean)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -490,12 +490,12 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23
                 input vertices:
                   1 Map 4
-                Statistics: Num rows: 1501 Data size: 322826 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1501 Data size: 355334 Basic stats: COMPLETE Column stats: NONE
                 HybridGraceHashJoin: true
                 Reduce Output Operator
                   key expressions: _col2 (type: int)
                   sort order: +
-                  Statistics: Num rows: 1501 Data size: 322826 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1501 Data size: 355334 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col3 (type: bigint), _col4 (type: float), _col5 (type: double), _col6 (type: string), _col7 (type: string), _col8 (type: timestamp), _col9 (type: timestamp), _col10 (type: boolean), _col11 (type: boolean), _col12 (type: tinyint), _col13 (type: smallint), _col14 (type: int), _col15 (type: bigint), _col16 (type: float), _col17 (type: double), _col18 (type: string), _col19 (type: string), _col20 (type: timestamp), _col21 (type: timestamp), _col22 (type: boolean), _col23 (type: boolean)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -503,10 +503,10 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: tinyint), VALUE._col1 (type: smallint), KEY.reducesinkkey0 (type: int), VALUE._col2 (type: bigint), VALUE._col3 (type: float), VALUE._col4 (type: double), VALUE._col5 (type: string), VALUE._col6 (type: string), VALUE._col7 (type: timestamp), VALUE._col8 (type: timestamp), VALUE._col9 (type: boolean), VALUE._col10 (type: boolean), VALUE._col11 (type: tinyint), VALUE._col12 (type: smallint), VALUE._col13 (type: int), VALUE._col14 (type: bigint), VALUE._col15 (type: float), VALUE._col16 (type: double), VALUE._col17 (type: string), VALUE._col18 (type: string), VALUE._col19 (type: timestamp), VALUE._col20 (type: timestamp), VALUE._col21 (type: boolean), VALUE._col22 (type: boolean)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23
-                Statistics: Num rows: 1501 Data size: 322826 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1501 Data size: 355334 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1501 Data size: 322826 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1501 Data size: 355334 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -577,38 +577,38 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: cint BETWEEN 1000000 AND 3000000 (type: boolean)
-                    Statistics: Num rows: 1365 Data size: 293479 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1365 Data size: 323031 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cint (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1365 Data size: 293479 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1365 Data size: 323031 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 1365 Data size: 293479 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1365 Data size: 323031 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (cbigint is not null and cint BETWEEN 1000000 AND 3000000) (type: boolean)
-                    Statistics: Num rows: 1365 Data size: 293479 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1365 Data size: 323031 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cint (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1365 Data size: 293479 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1365 Data size: 323031 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 1365 Data size: 293479 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1365 Data size: 323031 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
@@ -622,7 +622,7 @@ STAGE PLANS:
                   1 KEY.reducesinkkey0 (type: int)
                 input vertices:
                   1 Map 4
-                Statistics: Num rows: 1501 Data size: 322826 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1501 Data size: 355334 Basic stats: COMPLETE Column stats: NONE
                 HybridGraceHashJoin: true
                 Group By Operator
                   aggregations: count()
@@ -708,19 +708,19 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: cint BETWEEN 1000000 AND 3000000 (type: boolean)
-                    Statistics: Num rows: 1365 Data size: 293479 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1365 Data size: 323031 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: csmallint (type: smallint), cint (type: int)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1365 Data size: 293479 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1365 Data size: 323031 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col1 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col1 (type: int)
-                        Statistics: Num rows: 1365 Data size: 293479 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1365 Data size: 323031 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: smallint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -728,19 +728,19 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (cbigint is not null and cint BETWEEN 1000000 AND 3000000) (type: boolean)
-                    Statistics: Num rows: 1365 Data size: 293479 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1365 Data size: 323031 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cint (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1365 Data size: 293479 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1365 Data size: 323031 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 1365 Data size: 293479 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 1365 Data size: 323031 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
@@ -755,19 +755,19 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 input vertices:
                   1 Map 5
-                Statistics: Num rows: 1501 Data size: 322826 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1501 Data size: 355334 Basic stats: COMPLETE Column stats: NONE
                 HybridGraceHashJoin: true
                 Group By Operator
                   aggregations: count()
                   keys: _col0 (type: smallint)
                   mode: hash
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 1501 Data size: 322826 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1501 Data size: 355334 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: smallint)
                     sort order: +
                     Map-reduce partition columns: _col0 (type: smallint)
-                    Statistics: Num rows: 1501 Data size: 322826 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1501 Data size: 355334 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col1 (type: bigint)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -777,11 +777,11 @@ STAGE PLANS:
                 keys: KEY._col0 (type: smallint)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 750 Data size: 161305 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 750 Data size: 177548 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: smallint)
                   sort order: +
-                  Statistics: Num rows: 750 Data size: 161305 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 750 Data size: 177548 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: bigint)
         Reducer 4 
             Execution mode: vectorized, llap
@@ -789,10 +789,10 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: smallint), VALUE._col0 (type: bigint)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 750 Data size: 161305 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 750 Data size: 177548 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 750 Data size: 161305 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 750 Data size: 177548 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

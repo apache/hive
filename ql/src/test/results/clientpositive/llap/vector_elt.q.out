@@ -141,7 +141,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
-                  Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Select Operator

@@ -522,19 +522,19 @@ STAGE PLANS:
                   value expressions: _col1 (type: int), _col2 (type: boolean)
           TableScan
             alias: wr
-            Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: cstring1 is not null (type: boolean)
-              Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: cint (type: int), cstring1 (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col1 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col1 (type: string)
-                  Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: int)
       Reduce Operator Tree:
         Join Operator
@@ -544,13 +544,13 @@ STAGE PLANS:
             0 _col0 (type: string)
             1 _col1 (type: string)
           outputColumnNames: _col1, _col2, _col3
-          Statistics: Num rows: 13516 Data size: 2906160 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 13516 Data size: 3198793 Basic stats: COMPLETE Column stats: NONE
           Group By Operator
             aggregations: sum(_col3), sum(_col1)
             keys: _col2 (type: boolean)
             mode: hash
             outputColumnNames: _col0, _col1, _col2
-            Statistics: Num rows: 13516 Data size: 2906160 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 13516 Data size: 3198793 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
               table:
@@ -566,7 +566,7 @@ STAGE PLANS:
               key expressions: _col0 (type: boolean)
               sort order: +
               Map-reduce partition columns: _col0 (type: boolean)
-              Statistics: Num rows: 13516 Data size: 2906160 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 13516 Data size: 3198793 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col1 (type: bigint), _col2 (type: bigint)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -575,11 +575,11 @@ STAGE PLANS:
           keys: KEY._col0 (type: boolean)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
-          Statistics: Num rows: 6758 Data size: 1453080 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 6758 Data size: 1599396 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: _col1 (type: bigint), _col2 (type: bigint)
             outputColumnNames: _col1, _col2
-            Statistics: Num rows: 6758 Data size: 1453080 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 6758 Data size: 1599396 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
               table:
@@ -595,14 +595,14 @@ STAGE PLANS:
               key expressions: 0 (type: int), (UDFToDouble(_col1) / UDFToDouble(_col2)) (type: double)
               sort order: ++
               Map-reduce partition columns: 0 (type: int)
-              Statistics: Num rows: 6758 Data size: 1453080 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 6758 Data size: 1599396 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col1 (type: bigint), _col2 (type: bigint)
       Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col1 (type: bigint), VALUE._col2 (type: bigint)
           outputColumnNames: _col1, _col2
-          Statistics: Num rows: 6758 Data size: 1453080 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 6758 Data size: 1599396 Basic stats: COMPLETE Column stats: NONE
           PTF Operator
             Function definitions:
                 Input definition
@@ -623,14 +623,14 @@ STAGE PLANS:
                         window function: GenericUDAFRankEvaluator
                         window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                         isPivotResult: true
-            Statistics: Num rows: 6758 Data size: 1453080 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 6758 Data size: 1599396 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: rank_window_0 (type: int)
               outputColumnNames: _col0
-              Statistics: Num rows: 6758 Data size: 1453080 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 6758 Data size: 1599396 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 6758 Data size: 1453080 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 6758 Data size: 1599396 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
