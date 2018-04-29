@@ -2273,27 +2273,27 @@ Stage-0
     limit:-1
     Stage-1
       Reducer 3
-      File Output Operator [FS_26]
-        Select Operator [SEL_25] (rows=13 width=223)
+      File Output Operator [FS_24]
+        Select Operator [SEL_23] (rows=13 width=223)
           Output:["_col0","_col1","_col2"]
-          Filter Operator [FIL_24] (rows=13 width=231)
-            predicate:(not CASE WHEN ((_col4 = 0L)) THEN (false) WHEN (_col4 is null) THEN (false) WHEN (_col8 is not null) THEN (true) WHEN (_col0 is null) THEN (null) WHEN ((_col5 < _col4)) THEN (true) ELSE (false) END)
-            Join Operator [JOIN_23] (rows=26 width=230)
+          Filter Operator [FIL_22] (rows=13 width=231)
+            predicate:CASE WHEN ((_col4 = 0L)) THEN (true) WHEN (_col4 is null) THEN (true) WHEN (_col8 is not null) THEN (false) WHEN (_col0 is null) THEN (null) WHEN ((_col5 < _col4)) THEN (false) ELSE (true) END
+            Join Operator [JOIN_21] (rows=26 width=230)
               Output:["_col0","_col1","_col2","_col4","_col5","_col8"],condition map:[{"":"{\"type\":\"Left Outer\",\"left\":0,\"right\":1}"}],keys:{"0":"_col0, _col1","1":"_col0, _col1"}
             <-Reducer 2 [PARTITION-LEVEL SORT]
-              PARTITION-LEVEL SORT [RS_21]
+              PARTITION-LEVEL SORT [RS_19]
                 PartitionCols:_col0, _col1
-                Join Operator [JOIN_20] (rows=26 width=229)
+                Join Operator [JOIN_18] (rows=26 width=229)
                   Output:["_col0","_col1","_col2","_col4","_col5"],condition map:[{"":"{\"type\":\"Left Outer\",\"left\":0,\"right\":1}"}],keys:{"0":"_col1","1":"_col0"}
                 <-Map 1 [PARTITION-LEVEL SORT]
-                  PARTITION-LEVEL SORT [RS_18]
+                  PARTITION-LEVEL SORT [RS_16]
                     PartitionCols:_col1
                     Select Operator [SEL_1] (rows=26 width=223)
                       Output:["_col0","_col1","_col2"]
                       TableScan [TS_0] (rows=26 width=223)
                         default@part,b,Tbl:COMPLETE,Col:COMPLETE,Output:["p_name","p_mfgr","p_size"]
                 <-Reducer 5 [PARTITION-LEVEL SORT]
-                  PARTITION-LEVEL SORT [RS_19]
+                  PARTITION-LEVEL SORT [RS_17]
                     PartitionCols:_col0
                     Group By Operator [GBY_7] (rows=2 width=114)
                       Output:["_col0","_col1","_col2"],aggregations:["count(VALUE._col0)","count(VALUE._col1)"],keys:KEY._col0
@@ -2304,30 +2304,28 @@ Stage-0
                           Output:["_col0","_col1","_col2"],aggregations:["count()","count(p_name)"],keys:p_mfgr
                           Select Operator [SEL_4] (rows=8 width=223)
                             Output:["p_name","p_mfgr"]
-                            Filter Operator [FIL_27] (rows=8 width=223)
+                            Filter Operator [FIL_25] (rows=8 width=223)
                               predicate:((p_size < 10) and p_mfgr is not null)
                               TableScan [TS_2] (rows=26 width=223)
                                 default@part,part,Tbl:COMPLETE,Col:COMPLETE,Output:["p_name","p_mfgr","p_size"]
             <-Reducer 7 [PARTITION-LEVEL SORT]
-              PARTITION-LEVEL SORT [RS_22]
+              PARTITION-LEVEL SORT [RS_20]
                 PartitionCols:_col0, _col1
-                Select Operator [SEL_17] (rows=4 width=223)
+                Select Operator [SEL_15] (rows=4 width=223)
                   Output:["_col0","_col1","_col2"]
-                  Filter Operator [FIL_16] (rows=4 width=219)
-                    predicate:_col0 is not null
-                    Group By Operator [GBY_14] (rows=4 width=219)
-                      Output:["_col0","_col1"],keys:KEY._col0, KEY._col1
-                    <-Map 6 [GROUP]
-                      GROUP [RS_13]
-                        PartitionCols:_col0, _col1
-                        Group By Operator [GBY_12] (rows=4 width=219)
-                          Output:["_col0","_col1"],keys:p_name, p_mfgr
-                          Select Operator [SEL_11] (rows=8 width=223)
-                            Output:["p_name","p_mfgr"]
-                            Filter Operator [FIL_28] (rows=8 width=223)
-                              predicate:((p_size < 10) and p_mfgr is not null)
-                              TableScan [TS_9] (rows=26 width=223)
-                                default@part,part,Tbl:COMPLETE,Col:COMPLETE,Output:["p_name","p_mfgr","p_size"]
+                  Group By Operator [GBY_14] (rows=4 width=219)
+                    Output:["_col0","_col1"],keys:KEY._col0, KEY._col1
+                  <-Map 6 [GROUP]
+                    GROUP [RS_13]
+                      PartitionCols:_col0, _col1
+                      Group By Operator [GBY_12] (rows=4 width=219)
+                        Output:["_col0","_col1"],keys:p_name, p_mfgr
+                        Select Operator [SEL_11] (rows=8 width=223)
+                          Output:["p_name","p_mfgr"]
+                          Filter Operator [FIL_26] (rows=8 width=223)
+                            predicate:((p_size < 10) and p_mfgr is not null and p_name is not null)
+                            TableScan [TS_9] (rows=26 width=223)
+                              default@part,part,Tbl:COMPLETE,Col:COMPLETE,Output:["p_name","p_mfgr","p_size"]
 
 PREHOOK: query: explain select p_name, p_size
 from
@@ -2429,7 +2427,7 @@ POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
 Vertex dependency in root stage
-Reducer 10 <- Map 6 (GROUP)
+Reducer 10 <- Map 9 (GROUP)
 Reducer 2 <- Map 1 (GROUP)
 Reducer 3 <- Reducer 2 (PARTITION-LEVEL SORT), Reducer 8 (PARTITION-LEVEL SORT)
 Reducer 4 <- Reducer 10 (PARTITION-LEVEL SORT), Reducer 3 (PARTITION-LEVEL SORT)
@@ -2442,46 +2440,42 @@ Stage-0
     limit:-1
     Stage-1
       Reducer 5
-      File Output Operator [FS_37]
-        Select Operator [SEL_36] (rows=3 width=106)
+      File Output Operator [FS_36]
+        Select Operator [SEL_35] (rows=2 width=106)
           Output:["_col0","_col1"]
         <-Reducer 4 [SORT]
-          SORT [RS_35]
-            Select Operator [SEL_34] (rows=3 width=106)
+          SORT [RS_34]
+            Select Operator [SEL_33] (rows=2 width=106)
               Output:["_col0","_col1"]
-              Filter Operator [FIL_33] (rows=3 width=119)
-                predicate:(not CASE WHEN ((_col3 = 0L)) THEN (false) WHEN (_col3 is null) THEN (false) WHEN (_col7 is not null) THEN (true) WHEN (_col0 is null) THEN (null) WHEN ((_col4 < _col3)) THEN (true) ELSE (false) END)
-                Join Operator [JOIN_32] (rows=5 width=114)
+              Filter Operator [FIL_32] (rows=2 width=116)
+                predicate:CASE WHEN ((_col3 = 0L)) THEN (true) WHEN (_col3 is null) THEN (true) WHEN (_col7 is not null) THEN (false) WHEN (_col0 is null) THEN (null) WHEN ((_col4 < _col3)) THEN (false) ELSE (true) END
+                Join Operator [JOIN_31] (rows=5 width=114)
                   Output:["_col0","_col1","_col3","_col4","_col7"],condition map:[{"":"{\"type\":\"Left Outer\",\"left\":0,\"right\":1}"}],keys:{"0":"_col0, _col1","1":"_col0, _col1"}
                 <-Reducer 10 [PARTITION-LEVEL SORT]
-                  PARTITION-LEVEL SORT [RS_31]
-                    PartitionCols:_col0, _col1
-                    Select Operator [SEL_26] (rows=1 width=110)
-                      Output:["_col0","_col1","_col2"]
-                      Filter Operator [FIL_25] (rows=1 width=110)
-                        predicate:_col0 is not null
-                        Select Operator [SEL_24] (rows=1 width=110)
-                          Output:["_col0","_col1"]
-                          Filter Operator [FIL_23] (rows=1 width=114)
-                            predicate:(((_col2 - _col1) > 600.0D) and _col1 is not null)
-                            Group By Operator [GBY_22] (rows=5 width=114)
-                              Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)"],keys:KEY._col0
-                            <-Map 6 [GROUP]
-                              GROUP [RS_9]
-                                PartitionCols:_col0
-                                Group By Operator [GBY_8] (rows=5 width=114)
-                                  Output:["_col0","_col1","_col2"],aggregations:["min(p_retailprice)","max(p_retailprice)"],keys:p_mfgr
-                                  Select Operator [SEL_7] (rows=26 width=106)
-                                    Output:["p_mfgr","p_retailprice"]
-                                    TableScan [TS_6] (rows=26 width=106)
-                                      default@part,part,Tbl:COMPLETE,Col:COMPLETE,Output:["p_mfgr","p_retailprice"]
-                <-Reducer 3 [PARTITION-LEVEL SORT]
                   PARTITION-LEVEL SORT [RS_30]
                     PartitionCols:_col0, _col1
-                    Join Operator [JOIN_29] (rows=5 width=112)
+                    Select Operator [SEL_25] (rows=1 width=110)
+                      Output:["_col0","_col1","_col2"]
+                      Filter Operator [FIL_24] (rows=1 width=114)
+                        predicate:(((_col2 - _col1) > 600.0D) and _col1 is not null)
+                        Group By Operator [GBY_23] (rows=5 width=114)
+                          Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)"],keys:KEY._col0
+                        <-Map 9 [GROUP]
+                          GROUP [RS_22]
+                            PartitionCols:_col0
+                            Group By Operator [GBY_21] (rows=5 width=114)
+                              Output:["_col0","_col1","_col2"],aggregations:["min(p_retailprice)","max(p_retailprice)"],keys:p_mfgr
+                              Filter Operator [FIL_37] (rows=26 width=106)
+                                predicate:p_mfgr is not null
+                                TableScan [TS_18] (rows=26 width=106)
+                                  default@part,part,Tbl:COMPLETE,Col:COMPLETE,Output:["p_mfgr","p_retailprice"]
+                <-Reducer 3 [PARTITION-LEVEL SORT]
+                  PARTITION-LEVEL SORT [RS_29]
+                    PartitionCols:_col0, _col1
+                    Join Operator [JOIN_28] (rows=5 width=112)
                       Output:["_col0","_col1","_col3","_col4"],condition map:[{"":"{\"type\":\"Left Outer\",\"left\":0,\"right\":1}"}],keys:{"0":"_col1","1":"_col0"}
                     <-Reducer 2 [PARTITION-LEVEL SORT]
-                      PARTITION-LEVEL SORT [RS_27]
+                      PARTITION-LEVEL SORT [RS_26]
                         PartitionCols:_col1
                         Group By Operator [GBY_4] (rows=5 width=106)
                           Output:["_col0","_col1"],aggregations:["min(VALUE._col0)"],keys:KEY._col0
@@ -2495,7 +2489,7 @@ Stage-0
                                 TableScan [TS_0] (rows=26 width=106)
                                   default@part,b,Tbl:COMPLETE,Col:COMPLETE,Output:["p_mfgr","p_retailprice"]
                     <-Reducer 8 [PARTITION-LEVEL SORT]
-                      PARTITION-LEVEL SORT [RS_28]
+                      PARTITION-LEVEL SORT [RS_27]
                         PartitionCols:_col0
                         Group By Operator [GBY_16] (rows=1 width=24)
                           Output:["_col0","_col1","_col2"],aggregations:["count(VALUE._col0)","count(VALUE._col1)"],keys:KEY._col0
@@ -2510,7 +2504,15 @@ Stage-0
                                   predicate:(((_col2 - _col1) > 600.0D) and _col1 is not null)
                                   Group By Operator [GBY_10] (rows=5 width=114)
                                     Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)"],keys:KEY._col0
-                                  <- Please refer to the previous Map 6 [GROUP]
+                                  <-Map 6 [GROUP]
+                                    GROUP [RS_9]
+                                      PartitionCols:_col0
+                                      Group By Operator [GBY_8] (rows=5 width=114)
+                                        Output:["_col0","_col1","_col2"],aggregations:["min(p_retailprice)","max(p_retailprice)"],keys:p_mfgr
+                                        Select Operator [SEL_7] (rows=26 width=106)
+                                          Output:["p_mfgr","p_retailprice"]
+                                          TableScan [TS_6] (rows=26 width=106)
+                                            default@part,part,Tbl:COMPLETE,Col:COMPLETE,Output:["p_mfgr","p_retailprice"]
 
 PREHOOK: query: explain select count(c_int) over(), sum(c_float) over(), max(c_int) over(), min(c_int) over(), row_number() over(), rank() over(), dense_rank() over(), percent_rank() over(), lead(c_int, 2, c_int) over(), lag(c_float, 2, c_float) over() from cbo_t1
 PREHOOK: type: QUERY
