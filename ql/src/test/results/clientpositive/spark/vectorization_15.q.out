@@ -80,7 +80,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
-                  Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -90,7 +90,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterExprOrExpr(children: FilterStringColLikeStringScalar(col 7:string, pattern %ss%), FilterStringColLikeStringScalar(col 6:string, pattern 10%), FilterExprAndExpr(children: FilterLongColGreaterEqualLongScalar(col 2:int, val -75), FilterLongColEqualLongColumn(col 0:smallint, col 1:smallint)(children: col 0:tinyint), FilterDoubleColGreaterEqualDoubleScalar(col 5:double, val -3728.0)))
                     predicate: (((cint >= -75) and (UDFToShort(ctinyint) = csmallint) and (cdouble >= -3728.0D)) or (cstring1 like '10%') or (cstring2 like '%ss%')) (type: boolean)
-                    Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cfloat (type: float), cboolean1 (type: boolean), cdouble (type: double), cstring1 (type: string), ctinyint (type: tinyint), cint (type: int), ctimestamp1 (type: timestamp), UDFToDouble(cfloat) (type: double), (UDFToDouble(cfloat) * UDFToDouble(cfloat)) (type: double), UDFToDouble(ctinyint) (type: double), (UDFToDouble(ctinyint) * UDFToDouble(ctinyint)) (type: double), UDFToDouble(cint) (type: double), (UDFToDouble(cint) * UDFToDouble(cint)) (type: double)
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
@@ -99,7 +99,7 @@ STAGE PLANS:
                           native: true
                           projectedOutputColumnNums: [4, 10, 5, 6, 0, 2, 8, 4, 13, 14, 17, 15, 19]
                           selectExpressions: DoubleColMultiplyDoubleColumn(col 4:double, col 4:double)(children: col 4:float, col 4:float) -> 13:double, CastLongToDouble(col 0:tinyint) -> 14:double, DoubleColMultiplyDoubleColumn(col 15:double, col 16:double)(children: CastLongToDouble(col 0:tinyint) -> 15:double, CastLongToDouble(col 0:tinyint) -> 16:double) -> 17:double, CastLongToDouble(col 2:int) -> 15:double, DoubleColMultiplyDoubleColumn(col 16:double, col 18:double)(children: CastLongToDouble(col 2:int) -> 16:double, CastLongToDouble(col 2:int) -> 18:double) -> 19:double
-                      Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: sum(_col8), sum(_col7), count(_col0), min(_col2), sum(_col10), sum(_col9), count(_col4), sum(_col12), sum(_col11), count(_col5)
                         Group By Vectorization:
@@ -113,7 +113,7 @@ STAGE PLANS:
                         keys: _col0 (type: float), _col1 (type: boolean), _col2 (type: double), _col3 (type: string), _col4 (type: tinyint), _col5 (type: int), _col6 (type: timestamp)
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16
-                        Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: float), _col1 (type: boolean), _col2 (type: double), _col3 (type: string), _col4 (type: tinyint), _col5 (type: int), _col6 (type: timestamp)
                           sort order: +++++++
@@ -124,7 +124,7 @@ STAGE PLANS:
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                               valueColumnNums: [7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
-                          Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col7 (type: double), _col8 (type: double), _col9 (type: bigint), _col10 (type: double), _col11 (type: double), _col12 (type: double), _col13 (type: bigint), _col14 (type: double), _col15 (type: double), _col16 (type: bigint)
             Execution mode: vectorized
             Map Vectorization:
@@ -153,15 +153,15 @@ STAGE PLANS:
                 keys: KEY._col0 (type: float), KEY._col1 (type: boolean), KEY._col2 (type: double), KEY._col3 (type: string), KEY._col4 (type: tinyint), KEY._col5 (type: int), KEY._col6 (type: timestamp)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16
-                Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 6144 Data size: 1453997 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col0 (type: float), _col1 (type: boolean), _col2 (type: double), _col3 (type: string), _col4 (type: tinyint), _col5 (type: int), _col6 (type: timestamp), power(((_col7 - ((_col8 * _col8) / _col9)) / CASE WHEN ((_col9 = 1L)) THEN (null) ELSE ((_col9 - 1)) END), 0.5) (type: double), (-26.28 - CAST( _col5 AS decimal(10,0))) (type: decimal(13,2)), _col10 (type: double), (_col2 * 79.553D) (type: double), (33.0 % _col0) (type: float), power(((_col11 - ((_col12 * _col12) / _col13)) / CASE WHEN ((_col13 = 1L)) THEN (null) ELSE ((_col13 - 1)) END), 0.5) (type: double), ((_col11 - ((_col12 * _col12) / _col13)) / _col13) (type: double), (-23.0D % _col2) (type: double), (- _col4) (type: tinyint), ((_col14 - ((_col15 * _col15) / _col16)) / CASE WHEN ((_col16 = 1L)) THEN (null) ELSE ((_col16 - 1)) END) (type: double), (UDFToFloat(_col5) - _col0) (type: float), (-23 % UDFToInteger(_col4)) (type: int), (- (-26.28 - CAST( _col5 AS decimal(10,0)))) (type: decimal(13,2)), power(((_col14 - ((_col15 * _col15) / _col16)) / _col16), 0.5) (type: double)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20
-                  Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6144 Data size: 1453997 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: float), _col1 (type: boolean), _col2 (type: double), _col3 (type: string), _col4 (type: tinyint), _col5 (type: int), _col6 (type: timestamp)
                     sort order: +++++++
-                    Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 6144 Data size: 1453997 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col7 (type: double), _col8 (type: decimal(13,2)), _col9 (type: double), _col10 (type: double), _col11 (type: float), _col12 (type: double), _col13 (type: double), _col14 (type: double), _col15 (type: tinyint), _col16 (type: double), _col17 (type: float), _col18 (type: int), _col19 (type: decimal(13,2)), _col20 (type: double)
         Reducer 3 
             Reduce Vectorization:
@@ -172,10 +172,10 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: float), KEY.reducesinkkey1 (type: boolean), KEY.reducesinkkey2 (type: double), KEY.reducesinkkey3 (type: string), KEY.reducesinkkey4 (type: tinyint), KEY.reducesinkkey5 (type: int), KEY.reducesinkkey6 (type: timestamp), VALUE._col0 (type: double), VALUE._col1 (type: decimal(13,2)), VALUE._col2 (type: double), VALUE._col3 (type: double), VALUE._col4 (type: float), VALUE._col5 (type: double), VALUE._col6 (type: double), VALUE._col7 (type: double), VALUE._col8 (type: tinyint), VALUE._col9 (type: double), VALUE._col10 (type: float), VALUE._col11 (type: int), VALUE._col12 (type: decimal(13,2)), VALUE._col13 (type: double)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20
-                Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 6144 Data size: 1453997 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 6144 Data size: 1453997 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

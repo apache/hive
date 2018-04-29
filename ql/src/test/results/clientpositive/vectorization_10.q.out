@@ -60,7 +60,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: alltypesorc
-            Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
                 vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
@@ -70,7 +70,7 @@ STAGE PLANS:
                   native: true
                   predicateExpression: FilterExprOrExpr(children: FilterStringGroupColLessEqualStringScalar(col 7:string, val 10), FilterExprAndExpr(children: FilterDoubleColGreaterDoubleColumn(col 13:double, col 5:double)(children: CastLongToDouble(col 0:tinyint) -> 13:double), FilterDecimalColLessEqualDecimalScalar(col 14:decimal(6,2), val -5638.15)(children: CastLongToDecimal(col 0:tinyint) -> 14:decimal(6,2))), FilterExprAndExpr(children: FilterDoubleColGreaterDoubleScalar(col 5:double, val 6981.0), FilterExprOrExpr(children: FilterDecimalColEqualDecimalScalar(col 15:decimal(11,4), val 9763215.5639)(children: CastLongToDecimal(col 1:smallint) -> 15:decimal(11,4)), FilterStringColLikeStringScalar(col 6:string, pattern %a))))
               predicate: (((UDFToDouble(ctinyint) > cdouble) and (CAST( ctinyint AS decimal(6,2)) <= -5638.15)) or ((cdouble > 6981.0D) and ((CAST( csmallint AS decimal(11,4)) = 9763215.5639) or (cstring1 like '%a'))) or (cstring2 <= '10')) (type: boolean)
-              Statistics: Num rows: 9557 Data size: 2054789 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 9557 Data size: 2261694 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: cdouble (type: double), ctimestamp1 (type: timestamp), ctinyint (type: tinyint), cboolean1 (type: boolean), cstring1 (type: string), (- cdouble) (type: double), (cdouble + UDFToDouble(csmallint)) (type: double), ((cdouble + UDFToDouble(csmallint)) % 33.0D) (type: double), (- cdouble) (type: double), (UDFToDouble(ctinyint) % cdouble) (type: double), (UDFToShort(ctinyint) % csmallint) (type: smallint), (- cdouble) (type: double), (cbigint * UDFToLong((UDFToShort(ctinyint) % csmallint))) (type: bigint), (9763215.5639D - (cdouble + UDFToDouble(csmallint))) (type: double), (- (- cdouble)) (type: double)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14
@@ -79,13 +79,13 @@ STAGE PLANS:
                     native: true
                     projectedOutputColumnNums: [5, 8, 0, 10, 6, 13, 17, 16, 18, 20, 21, 19, 23, 24, 26]
                     selectExpressions: DoubleColUnaryMinus(col 5:double) -> 13:double, DoubleColAddDoubleColumn(col 5:double, col 16:double)(children: CastLongToDouble(col 1:smallint) -> 16:double) -> 17:double, DoubleColModuloDoubleScalar(col 18:double, val 33.0)(children: DoubleColAddDoubleColumn(col 5:double, col 16:double)(children: CastLongToDouble(col 1:smallint) -> 16:double) -> 18:double) -> 16:double, DoubleColUnaryMinus(col 5:double) -> 18:double, DoubleColModuloDoubleColumn(col 19:double, col 5:double)(children: CastLongToDouble(col 0:tinyint) -> 19:double) -> 20:double, LongColModuloLongColumn(col 0:smallint, col 1:smallint)(children: col 0:tinyint) -> 21:smallint, DoubleColUnaryMinus(col 5:double) -> 19:double, LongColMultiplyLongColumn(col 3:bigint, col 22:bigint)(children: col 22:smallint) -> 23:bigint, DoubleScalarSubtractDoubleColumn(val 9763215.5639, col 25:double)(children: DoubleColAddDoubleColumn(col 5:double, col 24:double)(children: CastLongToDouble(col 1:smallint) -> 24:double) -> 25:double) -> 24:double, DoubleColUnaryMinus(col 25:double)(children: DoubleColUnaryMinus(col 5:double) -> 25:double) -> 26:double
-                Statistics: Num rows: 9557 Data size: 2054789 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 9557 Data size: 2261694 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 9557 Data size: 2054789 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 9557 Data size: 2261694 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

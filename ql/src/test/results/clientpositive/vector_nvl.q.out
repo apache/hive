@@ -22,7 +22,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: alltypesorc
-            Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
             Filter Operator
@@ -31,7 +31,7 @@ STAGE PLANS:
                   native: true
                   predicateExpression: SelectColumnIsNull(col 5:double)
               predicate: cdouble is null (type: boolean)
-              Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 6144 Data size: 1453997 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: null (type: double), 100.0D (type: double)
                 outputColumnNames: _col0, _col1
@@ -40,19 +40,19 @@ STAGE PLANS:
                     native: true
                     projectedOutputColumnNums: [13, 14]
                     selectExpressions: ConstantVectorExpression(val null) -> 13:double, ConstantVectorExpression(val 100.0) -> 14:double
-                Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 6144 Data size: 1453997 Basic stats: COMPLETE Column stats: NONE
                 Limit
                   Number of rows: 10
                   Limit Vectorization:
                       className: VectorLimitOperator
                       native: true
-                  Statistics: Num rows: 10 Data size: 2150 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 10 Data size: 2360 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
                     File Sink Vectorization:
                         className: VectorFileSinkOperator
                         native: false
-                    Statistics: Num rows: 10 Data size: 2150 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 10 Data size: 2360 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -120,7 +120,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: alltypesorc
-            Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
             Select Operator
@@ -131,19 +131,19 @@ STAGE PLANS:
                   native: true
                   projectedOutputColumnNums: [4, 14]
                   selectExpressions: VectorCoalesce(columns [4, 13])(children: col 4:float, ConstantVectorExpression(val 1.0) -> 13:float) -> 14:float
-              Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
               Limit
                 Number of rows: 10
                 Limit Vectorization:
                     className: VectorLimitOperator
                     native: true
-                Statistics: Num rows: 10 Data size: 2150 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 10 Data size: 2360 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 10 Data size: 2150 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 10 Data size: 2360 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -209,7 +209,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: alltypesorc
-            Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: COMPLETE
             TableScan Vectorization:
                 native: true
             Select Operator
@@ -298,7 +298,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: alltypesorc
-            Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: COMPLETE
+            Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: COMPLETE
             TableScan Vectorization:
                 native: true
             Select Operator
