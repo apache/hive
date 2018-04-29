@@ -285,7 +285,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: alltypesorc
-            Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
             Select Operator
@@ -295,13 +295,13 @@ STAGE PLANS:
                   className: VectorSelectOperator
                   native: true
                   projectedOutputColumnNums: [2]
-              Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
               Limit
                 Number of rows: 10
                 Limit Vectorization:
                     className: VectorLimitOperator
                     native: true
-                Statistics: Num rows: 10 Data size: 2150 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 10 Data size: 2360 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   sort order: 
                   Reduce Sink Vectorization:
@@ -309,7 +309,7 @@ STAGE PLANS:
                       native: false
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
-                  Statistics: Num rows: 10 Data size: 2150 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 10 Data size: 2360 Basic stats: COMPLETE Column stats: NONE
                   TopN Hash Memory Usage: 0.1
                   value expressions: _col0 (type: int)
       Execution mode: vectorized
@@ -330,17 +330,17 @@ STAGE PLANS:
         Select Operator
           expressions: VALUE._col0 (type: int)
           outputColumnNames: _col0
-          Statistics: Num rows: 10 Data size: 2150 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 10 Data size: 2360 Basic stats: COMPLETE Column stats: NONE
           Limit
             Number of rows: 10
-            Statistics: Num rows: 10 Data size: 2150 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 10 Data size: 2360 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: CAST( _col0 AS varchar(25)) (type: varchar(25))
               outputColumnNames: _col0
-              Statistics: Num rows: 10 Data size: 2150 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 10 Data size: 2360 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 10 Data size: 2150 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 10 Data size: 2360 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                     output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat

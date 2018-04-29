@@ -2057,7 +2057,7 @@ PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tmp_orcppd
 Stage-1 LLAP IO COUNTERS:
-   SELECTED_ROWGROUPS: 3
+   SELECTED_ROWGROUPS: 2
 PREHOOK: query: insert into table tmp_orcppd
                     values(null, null, null, null, null,
                            null, null, null, null, null)
@@ -2089,7 +2089,7 @@ PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tmp_orcppd
 Stage-1 LLAP IO COUNTERS:
-   SELECTED_ROWGROUPS: 3
+   SELECTED_ROWGROUPS: 2
 PREHOOK: query: insert into table tmp_orcppd
                     values(null,  null)
 PREHOOK: type: QUERY
@@ -2134,4 +2134,4 @@ PREHOOK: Input: default@tmp_orcppd
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl_orcppd_3_1
 Stage-1 LLAP IO COUNTERS:
-   SELECTED_ROWGROUPS: 4
+   SELECTED_ROWGROUPS: 3

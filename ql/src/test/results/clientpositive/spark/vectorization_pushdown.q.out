@@ -23,14 +23,14 @@ STAGE PLANS:
                 TableScan
                   alias: alltypesorc
                   filterExpr: (UDFToDouble(cbigint) < cdouble) (type: boolean)
-                  Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (UDFToDouble(cbigint) < cdouble) (type: boolean)
-                    Statistics: Num rows: 4096 Data size: 880654 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 4096 Data size: 969331 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cbigint (type: bigint)
                       outputColumnNames: cbigint
-                      Statistics: Num rows: 4096 Data size: 880654 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 4096 Data size: 969331 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: sum(cbigint), count(cbigint)
                         mode: hash

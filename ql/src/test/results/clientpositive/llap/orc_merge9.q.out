@@ -128,7 +128,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a_merge
 #### A masked pattern was here ####
 24576
-Found 2 items
+Found 1 items
 #### A masked pattern was here ####
 PREHOOK: query: insert into table a_merge select * from alltypesorc
 PREHOOK: type: QUERY
@@ -150,7 +150,7 @@ POSTHOOK: Lineage: a_merge.cstring2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema
 POSTHOOK: Lineage: a_merge.ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: a_merge.ctimestamp2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: a_merge.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
-Found 3 items
+Found 2 items
 #### A masked pattern was here ####
 PREHOOK: query: select count(*) from a_merge
 PREHOOK: type: QUERY
@@ -178,5 +178,5 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a_merge
 #### A masked pattern was here ####
 36864
-Found 2 items
+Found 1 items
 #### A masked pattern was here ####

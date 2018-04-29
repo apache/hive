@@ -103,7 +103,7 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@a_merge
 Found 2 items
 -rw-r--r--   3 ### USER ### ### GROUP ###     295616 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-r--r--   3 ### USER ### ### GROUP ###     377237 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###     295616 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: select count(*) from a_merge
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a_merge
@@ -130,9 +130,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a_merge
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 24576
-Found 2 items
--rw-r--r--   3 ### USER ### ### GROUP ###     295616 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-r--r--   3 ### USER ### ### GROUP ###     377237 ### HDFS DATE ### hdfs://### HDFS PATH ###
+Found 1 items
+-rw-r--r--   3 ### USER ### ### GROUP ###     590506 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: insert into table a_merge select * from alltypesorc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
@@ -153,9 +152,8 @@ POSTHOOK: Lineage: a_merge.cstring2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema
 POSTHOOK: Lineage: a_merge.ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: a_merge.ctimestamp2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: a_merge.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
-Found 3 items
--rw-r--r--   3 ### USER ### ### GROUP ###     295616 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-r--r--   3 ### USER ### ### GROUP ###     377237 ### HDFS DATE ### hdfs://### HDFS PATH ###
+Found 2 items
+-rw-r--r--   3 ### USER ### ### GROUP ###     590506 ### HDFS DATE ### hdfs://### HDFS PATH ###
 -rw-r--r--   3 ### USER ### ### GROUP ###     295616 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: select count(*) from a_merge
 PREHOOK: type: QUERY
@@ -183,6 +181,5 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a_merge
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 36864
-Found 2 items
--rw-r--r--   3 ### USER ### ### GROUP ###     590506 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-r--r--   3 ### USER ### ### GROUP ###     377237 ### HDFS DATE ### hdfs://### HDFS PATH ###
+Found 1 items
+-rw-r--r--   3 ### USER ### ### GROUP ###     885395 ### HDFS DATE ### hdfs://### HDFS PATH ###
