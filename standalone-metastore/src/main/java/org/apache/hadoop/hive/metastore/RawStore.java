@@ -1630,8 +1630,9 @@ public interface RawStore extends Configurable {
   void addRuntimeStat(RuntimeStat stat) throws MetaException;
 
   /** Reads runtime statistic entries. */
-  List<RuntimeStat> getRuntimeStats() throws MetaException;
+  List<RuntimeStat> getRuntimeStats(int maxEntries, int maxCreateTime) throws MetaException;
 
   /** Removes outdated statistics. */
-  int deleteRuntimeStats(int maxRetained, int maxRetainSecs) throws MetaException;
+  int deleteRuntimeStats(int maxRetainSecs) throws MetaException;
+
 }

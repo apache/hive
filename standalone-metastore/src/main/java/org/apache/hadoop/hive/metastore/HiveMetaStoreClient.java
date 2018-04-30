@@ -55,7 +55,6 @@ import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.ValidTxnList;
-import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -3249,7 +3248,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public List<RuntimeStat> getRuntimeStats() throws TException {
-    return client.get_runtime_stats(new GetRuntimeStatsRequest());
+  public List<RuntimeStat> getRuntimeStats(int maxWeight, int maxCreateTime) throws TException {
+    GetRuntimeStatsRequest req = new GetRuntimeStatsRequest();
+    req.setMaxWeight(maxWeight);
+    req.setMaxCreateTime(maxCreateTime);
+    return client.get_runtime_stats(req);
   }
 }

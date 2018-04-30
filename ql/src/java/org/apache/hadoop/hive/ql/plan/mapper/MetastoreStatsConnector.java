@@ -50,7 +50,7 @@ class MetastoreStatsConnector implements StatsSource {
 
   private ExecutorService executor;
 
-  MetastoreStatsConnector(StatsSource ss) {
+  MetastoreStatsConnector(int cacheSize, int batchSize, StatsSource ss) {
     this.ss = ss;
     executor = Executors.newSingleThreadExecutor(
         new BasicThreadFactory.Builder()
@@ -58,22 +58,43 @@ class MetastoreStatsConnector implements StatsSource {
             .daemon(true)
             .build());
 
-    executor.submit(new RuntimeStatsLoader());
+    executor.submit(new RuntimeStatsLoader(cacheSize, batchSize));
   }
 
   private class RuntimeStatsLoader implements Runnable {
 
+    private int maxEntriesToLoad;
+    private int batchSize;
+
+    public RuntimeStatsLoader(int maxEntriesToLoad, int batchSize) {
+      this.maxEntriesToLoad = maxEntriesToLoad;
+      if (batchSize <= 0) {
+        this.batchSize = -1;
+      } else {
+        this.batchSize = batchSize;
+      }
+    }
+
     @Override
     public void run() {
+      int lastCreateTime = Integer.MAX_VALUE;
+      int loadedEntries = 0;
       try {
-        List<RuntimeStat> rs = Hive.get().getMSC().getRuntimeStats();
-        for (RuntimeStat thriftStat : rs) {
-          try {
-            ss.putAll(decode(thriftStat));
-          } catch (IOException e) {
-            logException("Exception while loading runtime stats", e);
+        do {
+          List<RuntimeStat> rs = Hive.get().getMSC().getRuntimeStats(batchSize, lastCreateTime);
+          if (rs.size() == 0) {
+            break;
           }
-        }
+          for (RuntimeStat thriftStat : rs) {
+            loadedEntries += thriftStat.getWeight();
+            lastCreateTime = Math.min(lastCreateTime, thriftStat.getCreateTime() - 1);
+            try {
+              ss.putAll(decode(thriftStat));
+            } catch (IOException e) {
+              logException("Exception while loading runtime stats", e);
+            }
+          }
+        } while (batchSize > 0 && loadedEntries < maxEntriesToLoad);
       } catch (TException | HiveException e) {
         logException("Exception while reading metastore runtime stats", e);
       }
@@ -92,6 +113,9 @@ class MetastoreStatsConnector implements StatsSource {
 
   @Override
   public void putAll(Map<OpTreeSignature, OperatorStats> map) {
+    if (map.size() == 0) {
+      return;
+    }
     ss.putAll(map);
     executor.submit(new RuntimeStatsSubmitter(map));
   }

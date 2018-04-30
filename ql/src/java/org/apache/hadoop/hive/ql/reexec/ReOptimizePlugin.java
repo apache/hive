@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.reexec;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -30,7 +29,6 @@ import org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.hooks.HookContext.HookType;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
-import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSources;
 import org.apache.hadoop.hive.ql.stats.OperatorStatsReaderHook;
 import org.slf4j.Logger;
@@ -96,8 +94,10 @@ public class ReOptimizePlugin implements IReExecutionPlugin {
   public void prepareToReExecute() {
     statsReaderHook.setCollectOnSuccess(true);
     retryPossible = false;
-    coreDriver.setStatsSource(
-        StatsSources.getStatsSourceContaining(coreDriver.getStatsSource(), coreDriver.getPlanMapper()));
+    if (!alwaysCollectStats) {
+      coreDriver.setStatsSource(
+          StatsSources.getStatsSourceContaining(coreDriver.getStatsSource(), coreDriver.getPlanMapper()));
+    }
   }
 
   @Override
