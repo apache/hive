@@ -1171,12 +1171,12 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public List<RuntimeStat> getRuntimeStats() throws MetaException {
-    return objectStore.getRuntimeStats();
+  public List<RuntimeStat> getRuntimeStats(int maxEntries, int maxCreateTime) throws MetaException {
+    return objectStore.getRuntimeStats(maxEntries, maxCreateTime);
   }
 
   @Override
-  public int deleteRuntimeStats(int maxRetained, int maxRetainSecs) throws MetaException {
-    return objectStore.deleteRuntimeStats(maxRetained, maxRetainSecs);
+  public int deleteRuntimeStats(int maxRetainSecs) throws MetaException {
+    return objectStore.deleteRuntimeStats(maxRetainSecs);
   }
 }

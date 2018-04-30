@@ -583,9 +583,6 @@ public class MetastoreConf {
         TimeUnit.SECONDS, "Frequency at which timer task runs to remove outdated runtime stat entries."),
     RUNTIME_STATS_MAX_AGE("runtime.stats.max.age", "hive.metastore.runtime.stats.max.age", 86400 * 3, TimeUnit.SECONDS,
         "Stat entries which are older than this are removed."),
-    RUNTIME_STATS_MAX_ENTRIES("runtime.stats.max.entries", "hive.metastore.runtime.stats.max.entries", 100_000,
-        "Maximum number of runtime stats to keep; unit is operator stat infos - a complicated query has ~100 of these."
-            + "See also: hive.query.reexecution.stats.cache.size"),
 
     // Parameters for exporting metadata on table drop (requires the use of the)
     // org.apache.hadoop.hive.ql.parse.MetaDataExportListener preevent listener

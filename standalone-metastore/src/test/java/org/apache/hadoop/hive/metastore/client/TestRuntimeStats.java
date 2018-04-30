@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore.client;
 
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.RuntimeStat;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
@@ -40,8 +41,10 @@ import static org.junit.Assert.assertNotNull;
 public class TestRuntimeStats extends MetaStoreClientTest {
   private final AbstractMetaStoreService metaStore;
   private IMetaStoreClient client;
+  private String metastoreName;
 
   public TestRuntimeStats(String name, AbstractMetaStoreService metaStore) throws Exception {
+    this.metastoreName = name;
     this.metaStore = metaStore;
     this.metaStore.start();
   }
@@ -60,14 +63,14 @@ public class TestRuntimeStats extends MetaStoreClientTest {
 
   @Test
   public void testRuntimeStatHandling() throws Exception {
-    List<RuntimeStat> rs0 = client.getRuntimeStats();
+    List<RuntimeStat> rs0 = getRuntimeStats();
     assertNotNull(rs0);
     assertEquals(0, rs0.size());
 
     RuntimeStat stat = createStat(1);
     client.addRuntimeStat(stat);
 
-    List<RuntimeStat> rs1 = client.getRuntimeStats();
+    List<RuntimeStat> rs1 = getRuntimeStats();
     assertNotNull(rs1);
     assertEquals(1, rs1.size());
     assertArrayEquals(stat.getPayload(), rs1.get(0).getPayload());
@@ -79,9 +82,57 @@ public class TestRuntimeStats extends MetaStoreClientTest {
     client.addRuntimeStat(createStat(3));
     client.addRuntimeStat(createStat(4));
 
-    List<RuntimeStat> rs2 = client.getRuntimeStats();
+    List<RuntimeStat> rs2 = getRuntimeStats();
     assertEquals(4, rs2.size());
 
+  }
+
+  @Test
+  public void testCleanup() throws Exception {
+    ObjectStore objStore = new ObjectStore();
+    objStore.setConf(metaStore.getConf());
+    objStore.deleteRuntimeStats(0);
+    objStore.addRuntimeStat(createStat(1));
+    Thread.sleep(2000);
+    objStore.addRuntimeStat(createStat(2));
+    int deleted = objStore.deleteRuntimeStats(1);
+    assertEquals(1, deleted);
+
+    List<RuntimeStat> all = getRuntimeStats();
+    assertEquals(1, all.size());
+    assertEquals(2, all.get(0).getWeight());
+
+  }
+
+  @Test
+  public void testReading() throws Exception {
+    ObjectStore objStore = new ObjectStore();
+    objStore.setConf(metaStore.getConf());
+    objStore.deleteRuntimeStats(0);
+    objStore.addRuntimeStat(createStat(1));
+    Thread.sleep(1000);
+    objStore.addRuntimeStat(createStat(2));
+    Thread.sleep(1000);
+    objStore.addRuntimeStat(createStat(3));
+
+    List<RuntimeStat> g0 = client.getRuntimeStats(3, -1);
+    assertEquals(1, g0.size());
+    assertEquals(3, g0.get(0).getWeight());
+    int ct = g0.get(0).getCreateTime();
+    List<RuntimeStat> g1 = client.getRuntimeStats(3, ct);
+
+    assertEquals(2, g1.size());
+    assertEquals(2, g1.get(0).getWeight());
+    assertEquals(1, g1.get(1).getWeight());
+    int ct1 = g1.get(1).getCreateTime();
+    List<RuntimeStat> g2 = client.getRuntimeStats(3, ct1);
+
+    assertEquals(0, g2.size());
+
+  }
+
+  private List<RuntimeStat> getRuntimeStats() throws Exception {
+    return client.getRuntimeStats(-1, -1);
   }
 
   private RuntimeStat createStat(int w) {
@@ -96,5 +147,6 @@ public class TestRuntimeStats extends MetaStoreClientTest {
     stat.setPayload(payload);
     return stat;
   }
+
 
 }

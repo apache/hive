@@ -13002,13 +13002,23 @@ class GetRuntimeStatsRequest {
 
   GetRuntimeStatsRequest(const GetRuntimeStatsRequest&);
   GetRuntimeStatsRequest& operator=(const GetRuntimeStatsRequest&);
-  GetRuntimeStatsRequest() {
+  GetRuntimeStatsRequest() : maxWeight(0), maxCreateTime(0) {
   }
 
   virtual ~GetRuntimeStatsRequest() throw();
+  int32_t maxWeight;
+  int32_t maxCreateTime;
 
-  bool operator == (const GetRuntimeStatsRequest & /* rhs */) const
+  void __set_maxWeight(const int32_t val);
+
+  void __set_maxCreateTime(const int32_t val);
+
+  bool operator == (const GetRuntimeStatsRequest & rhs) const
   {
+    if (!(maxWeight == rhs.maxWeight))
+      return false;
+    if (!(maxCreateTime == rhs.maxCreateTime))
+      return false;
     return true;
   }
   bool operator != (const GetRuntimeStatsRequest &rhs) const {
