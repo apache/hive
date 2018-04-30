@@ -1205,13 +1205,13 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   }
 
   @Override
-  public List<RuntimeStat> getRuntimeStats() throws MetaException {
-    return objectStore.getRuntimeStats();
+  public List<RuntimeStat> getRuntimeStats(int maxEntries, int maxCreateTime) throws MetaException {
+    return objectStore.getRuntimeStats(maxEntries, maxCreateTime);
   }
 
   @Override
-  public int deleteRuntimeStats(int maxRetained, int maxRetainSecs) {
-    return 0;
+  public int deleteRuntimeStats(int maxRetainSecs) throws MetaException {
+    return objectStore.deleteRuntimeStats(maxRetainSecs);
   }
 
 }

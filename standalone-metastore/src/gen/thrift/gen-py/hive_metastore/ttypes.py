@@ -21332,9 +21332,21 @@ class RuntimeStat:
     return not (self == other)
 
 class GetRuntimeStatsRequest:
+  """
+  Attributes:
+   - maxWeight
+   - maxCreateTime
+  """
 
   thrift_spec = (
+    None, # 0
+    (1, TType.I32, 'maxWeight', None, None, ), # 1
+    (2, TType.I32, 'maxCreateTime', None, None, ), # 2
   )
+
+  def __init__(self, maxWeight=None, maxCreateTime=None,):
+    self.maxWeight = maxWeight
+    self.maxCreateTime = maxCreateTime
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -21345,6 +21357,16 @@ class GetRuntimeStatsRequest:
       (fname, ftype, fid) = iprot.readFieldBegin()
       if ftype == TType.STOP:
         break
+      if fid == 1:
+        if ftype == TType.I32:
+          self.maxWeight = iprot.readI32()
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.I32:
+          self.maxCreateTime = iprot.readI32()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -21355,15 +21377,29 @@ class GetRuntimeStatsRequest:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('GetRuntimeStatsRequest')
+    if self.maxWeight is not None:
+      oprot.writeFieldBegin('maxWeight', TType.I32, 1)
+      oprot.writeI32(self.maxWeight)
+      oprot.writeFieldEnd()
+    if self.maxCreateTime is not None:
+      oprot.writeFieldBegin('maxCreateTime', TType.I32, 2)
+      oprot.writeI32(self.maxCreateTime)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
   def validate(self):
+    if self.maxWeight is None:
+      raise TProtocol.TProtocolException(message='Required field maxWeight is unset!')
+    if self.maxCreateTime is None:
+      raise TProtocol.TProtocolException(message='Required field maxCreateTime is unset!')
     return
 
 
   def __hash__(self):
     value = 17
+    value = (value * 31) ^ hash(self.maxWeight)
+    value = (value * 31) ^ hash(self.maxCreateTime)
     return value
 
   def __repr__(self):

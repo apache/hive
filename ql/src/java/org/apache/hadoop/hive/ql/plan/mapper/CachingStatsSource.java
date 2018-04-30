@@ -49,7 +49,7 @@ public class CachingStatsSource implements StatsSource {
 
   @Override
   public boolean canProvideStatsFor(Class<?> clazz) {
-    if (Operator.class.isAssignableFrom(clazz)) {
+    if (cache.size() > 0 && Operator.class.isAssignableFrom(clazz)) {
       return true;
     }
     return false;
