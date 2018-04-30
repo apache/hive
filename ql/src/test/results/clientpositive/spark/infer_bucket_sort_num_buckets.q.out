@@ -131,7 +131,7 @@ Table:              	test_table
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
-	numFiles            	2                   
+	numFiles            	1                   
 	numRows             	670                 
 	rawDataSize         	5888                
 	totalSize           	6558                

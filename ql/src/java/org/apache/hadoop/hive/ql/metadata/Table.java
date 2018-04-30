@@ -188,6 +188,9 @@ public class Table implements Serializable {
       // set create time
       t.setCreateTime((int) (System.currentTimeMillis() / 1000));
     }
+    // Explictly set the bucketing version
+    t.getParameters().put(hive_metastoreConstants.TABLE_BUCKETING_VERSION,
+        "2");
     return t;
   }
 
@@ -399,6 +402,9 @@ public class Table implements Serializable {
     tTable.getParameters().put(name, value);
   }
 
+  // Please note : Be very careful in using this function. If not used carefully,
+  // you may end up overwriting all the existing properties. If the usecase is to
+  // add or update certain properties use setProperty() instead.
   public void setParameters(Map<String, String> params) {
     tTable.setParameters(params);
   }
@@ -448,6 +454,11 @@ public class Table implements Serializable {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public int getBucketingVersion() {
+    return Utilities.getBucketingVersion(
+        getProperty(hive_metastoreConstants.TABLE_BUCKETING_VERSION));
   }
 
    @Override

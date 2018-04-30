@@ -150,9 +150,9 @@ public class TestObjectInspectorUtils extends TestCase {
     struct.add("two");
     struct.add(true);
 
-    int hashCode = ObjectInspectorUtils.getBucketHashCode(struct.toArray(), fieldObjectInspectors.toArray(new ObjectInspector[fieldObjectInspectors.size()]));
+    int hashCode = ObjectInspectorUtils.getBucketHashCodeOld(struct.toArray(), fieldObjectInspectors.toArray(new ObjectInspector[fieldObjectInspectors.size()]));
     assertEquals("", 3574518, hashCode);
-    int bucketId = ObjectInspectorUtils.getBucketNumber(struct.toArray(), fieldObjectInspectors.toArray(new ObjectInspector[fieldObjectInspectors.size()]), 16);
+    int bucketId = ObjectInspectorUtils.getBucketNumberOld(struct.toArray(), fieldObjectInspectors.toArray(new ObjectInspector[fieldObjectInspectors.size()]), 16);
     assertEquals("", 6, bucketId);
     assertEquals("", bucketId, ObjectInspectorUtils.getBucketNumber(hashCode, 16));
   }

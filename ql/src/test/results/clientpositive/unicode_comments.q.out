@@ -62,6 +62,7 @@ OUTPUTFORMAT
 LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
+  'bucketing_version'='2', 
 #### A masked pattern was here ####
 PREHOOK: query: describe formatted unicode_comments_tbl1
 PREHOOK: type: DESCTABLE
@@ -84,6 +85,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
 	comment             	表格                  
 	numFiles            	0                   
 	numPartitions       	0                   
@@ -124,6 +126,7 @@ Database:           	unicode_comments_db
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 	comment             	视图                  
 #### A masked pattern was here ####
 	 	 

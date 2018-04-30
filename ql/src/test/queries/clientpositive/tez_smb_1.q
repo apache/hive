@@ -34,7 +34,7 @@ select key,value from srcbucket_mapjoin;
 set hive.convert.join.bucket.mapjoin.tez = true;
 set hive.auto.convert.sortmerge.join = true;
 
-set hive.auto.convert.join.noconditionaltask.size=500;
+set hive.auto.convert.join.noconditionaltask.size=50;
 
 explain
 select count(*) from tab s1 join tab s3 on s1.key=s3.key;

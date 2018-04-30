@@ -164,6 +164,7 @@ minute
 mod
 month
 months_between
+murmur_hash
 named_struct
 negative
 next_day
@@ -422,6 +423,7 @@ minute
 mod
 month
 months_between
+murmur_hash
 xpath
 xpath_boolean
 xpath_double

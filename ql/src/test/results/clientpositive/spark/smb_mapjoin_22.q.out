@@ -108,7 +108,7 @@ POSTHOOK: query: select count(*) from test_table1 tablesample (bucket 2 out of 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table1
 #### A masked pattern was here ####
-253
+257
 PREHOOK: query: select count(*) from test_table2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_table2
@@ -126,7 +126,7 @@ POSTHOOK: query: select count(*) from test_table2 tablesample (bucket 2 out of 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table2
 #### A masked pattern was here ####
-253
+257
 PREHOOK: query: drop table test_table1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_table1
@@ -253,7 +253,7 @@ POSTHOOK: query: select count(*) from test_table1 tablesample (bucket 2 out of 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table1
 #### A masked pattern was here ####
-253
+257
 PREHOOK: query: select count(*) from test_table2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_table2
@@ -271,4 +271,4 @@ POSTHOOK: query: select count(*) from test_table2 tablesample (bucket 2 out of 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table2
 #### A masked pattern was here ####
-253
+257

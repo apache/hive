@@ -31,6 +31,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -301,6 +302,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -530,6 +532,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -788,6 +791,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -1059,6 +1063,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1336,6 +1341,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -1490,8 +1496,9 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 	numFiles            	1                   
-	totalSize           	1062                
+	totalSize           	1070                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -1658,9 +1665,10 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	numFiles            	2                   
-	totalSize           	2124                
+	totalSize           	2140                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -1737,9 +1745,10 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	numFiles            	2                   
-	totalSize           	2124                
+	totalSize           	2140                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -1913,9 +1922,10 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	numFiles            	3                   
-	totalSize           	3188                
+	totalSize           	3199                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -1991,9 +2001,10 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	numFiles            	3                   
-	totalSize           	3188                
+	totalSize           	3199                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -2070,9 +2081,10 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	numFiles            	3                   
-	totalSize           	3188                
+	totalSize           	3199                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -2259,6 +2271,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -2490,6 +2503,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -2644,8 +2658,9 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 	numFiles            	1                   
-	totalSize           	1062                
+	totalSize           	1070                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####

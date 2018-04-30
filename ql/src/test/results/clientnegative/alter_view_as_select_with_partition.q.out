@@ -51,6 +51,7 @@ Retention:          	0
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
 	numFiles            	0                   
 	numPartitions       	2                   
 	numRows             	0                   

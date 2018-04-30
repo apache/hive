@@ -309,46 +309,46 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 p_mfgr	p_name	p_retailprice	rn	r	dr	fv	lv	c	cs
-Manufacturer#4	almond azure aquamarine papaya violet	1290.35	1	1	1	1290.35	1206.26	4	6
-Manufacturer#4	almond antique violet mint lemon	1375.42	2	1	1	1290.35	1206.26	4	6
-Manufacturer#4	almond aquamarine floral ivory bisque	NULL	3	1	1	1290.35	1206.26	4	6
-Manufacturer#4	almond antique gainsboro frosted violet	NULL	4	1	1	1290.35	1206.26	4	6
-Manufacturer#4	almond aquamarine yellow dodger mint	1844.92	5	1	1	1290.35	1206.26	4	6
-Manufacturer#4	almond aquamarine floral ivory bisque	1206.26	6	1	1	1290.35	1206.26	4	6
-Manufacturer#5	almond azure blanched chiffon midnight	1464.48	1	1	1	1464.48	1788.73	6	6
-Manufacturer#5	almond aquamarine dodger light gainsboro	1018.1	2	1	1	1464.48	1788.73	6	6
-Manufacturer#5	almond antique medium spring khaki	1611.66	3	1	1	1464.48	1788.73	6	6
-Manufacturer#5	almond antique blue firebrick mint	1789.69	4	1	1	1464.48	1788.73	6	6
-Manufacturer#5	almond antique medium spring khaki	1611.66	5	1	1	1464.48	1788.73	6	6
-Manufacturer#5	almond antique sky peru orange	1788.73	6	1	1	1464.48	1788.73	6	6
-Manufacturer#2	almond aquamarine rose maroon antique	900.66	1	1	1	900.66	1800.7	8	8
-Manufacturer#2	almond aquamarine rose maroon antique	1698.66	2	1	1	900.66	1800.7	8	8
-Manufacturer#2	almond antique violet turquoise frosted	1800.7	3	1	1	900.66	1800.7	8	8
-Manufacturer#2	almond antique violet chocolate turquoise	1690.68	4	1	1	900.66	1800.7	8	8
-Manufacturer#2	almond antique violet turquoise frosted	1800.7	5	1	1	900.66	1800.7	8	8
-Manufacturer#2	almond aquamarine sandy cyan gainsboro	1000.6	6	1	1	900.66	1800.7	8	8
-Manufacturer#2	almond aquamarine midnight light salmon	2031.98	7	1	1	900.66	1800.7	8	8
-Manufacturer#2	almond antique violet turquoise frosted	1800.7	8	1	1	900.66	1800.7	8	8
-Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	1	1	1	1753.76	1632.66	11	12
-Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	2	1	1	1753.76	1632.66	11	12
-Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	3	1	1	1753.76	1632.66	11	12
-Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	4	1	1	1753.76	1632.66	11	12
-Manufacturer#1	almond aquamarine burnished black steel	1414.42	5	1	1	1753.76	1632.66	11	12
-Manufacturer#1	almond antique burnished rose metallic	1173.15	6	1	1	1753.76	1632.66	11	12
-Manufacturer#1	almond antique salmon chartreuse burlywood	1602.59	7	1	1	1753.76	1632.66	11	12
-Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	8	1	1	1753.76	1632.66	11	12
-Manufacturer#1	almond antique burnished rose metallic	1173.15	9	1	1	1753.76	1632.66	11	12
-Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	10	1	1	1753.76	1632.66	11	12
-Manufacturer#1	almond aquamarine pink moccasin thistle	NULL	11	1	1	1753.76	1632.66	11	12
-Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	12	1	1	1753.76	1632.66	11	12
-Manufacturer#3	almond antique forest lavender goldenrod	590.27	1	1	1	590.27	99.68	7	8
-Manufacturer#3	almond antique metallic orange dim	55.39	2	1	1	590.27	99.68	7	8
-Manufacturer#3	almond antique forest lavender goldenrod	1190.27	3	1	1	590.27	99.68	7	8
-Manufacturer#3	almond antique olive coral navajo	1337.29	4	1	1	590.27	99.68	7	8
-Manufacturer#3	almond antique misty red olive	1922.98	5	1	1	590.27	99.68	7	8
-Manufacturer#3	almond antique forest lavender goldenrod	1190.27	6	1	1	590.27	99.68	7	8
-Manufacturer#3	almond antique forest lavender goldenrod	NULL	7	1	1	590.27	99.68	7	8
-Manufacturer#3	almond antique chartreuse khaki white	99.68	8	1	1	590.27	99.68	7	8
+Manufacturer#2	almond aquamarine rose maroon antique	900.66	1	1	1	900.66	2031.98	8	8
+Manufacturer#2	almond aquamarine rose maroon antique	1698.66	2	1	1	900.66	2031.98	8	8
+Manufacturer#2	almond antique violet turquoise frosted	1800.7	3	1	1	900.66	2031.98	8	8
+Manufacturer#2	almond antique violet chocolate turquoise	1690.68	4	1	1	900.66	2031.98	8	8
+Manufacturer#2	almond antique violet turquoise frosted	1800.7	5	1	1	900.66	2031.98	8	8
+Manufacturer#2	almond antique violet turquoise frosted	1800.7	6	1	1	900.66	2031.98	8	8
+Manufacturer#2	almond aquamarine sandy cyan gainsboro	1000.6	7	1	1	900.66	2031.98	8	8
+Manufacturer#2	almond aquamarine midnight light salmon	2031.98	8	1	1	900.66	2031.98	8	8
+Manufacturer#3	almond antique forest lavender goldenrod	NULL	1	1	1	NULL	1922.98	7	8
+Manufacturer#3	almond antique forest lavender goldenrod	1190.27	2	1	1	NULL	1922.98	7	8
+Manufacturer#3	almond antique forest lavender goldenrod	590.27	3	1	1	NULL	1922.98	7	8
+Manufacturer#3	almond antique forest lavender goldenrod	1190.27	4	1	1	NULL	1922.98	7	8
+Manufacturer#3	almond antique metallic orange dim	55.39	5	1	1	NULL	1922.98	7	8
+Manufacturer#3	almond antique olive coral navajo	1337.29	6	1	1	NULL	1922.98	7	8
+Manufacturer#3	almond antique chartreuse khaki white	99.68	7	1	1	NULL	1922.98	7	8
+Manufacturer#3	almond antique misty red olive	1922.98	8	1	1	NULL	1922.98	7	8
+Manufacturer#4	almond aquamarine floral ivory bisque	NULL	1	1	1	NULL	1375.42	4	6
+Manufacturer#4	almond antique gainsboro frosted violet	NULL	2	1	1	NULL	1375.42	4	6
+Manufacturer#4	almond aquamarine floral ivory bisque	1206.26	3	1	1	NULL	1375.42	4	6
+Manufacturer#4	almond aquamarine yellow dodger mint	1844.92	4	1	1	NULL	1375.42	4	6
+Manufacturer#4	almond azure aquamarine papaya violet	1290.35	5	1	1	NULL	1375.42	4	6
+Manufacturer#4	almond antique violet mint lemon	1375.42	6	1	1	NULL	1375.42	4	6
+Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	1	1	1	1632.66	1173.15	11	12
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	2	1	1	1632.66	1173.15	11	12
+Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	3	1	1	1632.66	1173.15	11	12
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	4	1	1	1632.66	1173.15	11	12
+Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	5	1	1	1632.66	1173.15	11	12
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	6	1	1	1632.66	1173.15	11	12
+Manufacturer#1	almond antique salmon chartreuse burlywood	1602.59	7	1	1	1632.66	1173.15	11	12
+Manufacturer#1	almond antique burnished rose metallic	1173.15	8	1	1	1632.66	1173.15	11	12
+Manufacturer#1	almond aquamarine burnished black steel	1414.42	9	1	1	1632.66	1173.15	11	12
+Manufacturer#1	almond aquamarine pink moccasin thistle	NULL	10	1	1	1632.66	1173.15	11	12
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	11	1	1	1632.66	1173.15	11	12
+Manufacturer#1	almond antique burnished rose metallic	1173.15	12	1	1	1632.66	1173.15	11	12
+Manufacturer#5	almond antique medium spring khaki	1611.66	1	1	1	1611.66	1789.69	6	6
+Manufacturer#5	almond aquamarine dodger light gainsboro	1018.1	2	1	1	1611.66	1789.69	6	6
+Manufacturer#5	almond antique sky peru orange	1788.73	3	1	1	1611.66	1789.69	6	6
+Manufacturer#5	almond antique medium spring khaki	1611.66	4	1	1	1611.66	1789.69	6	6
+Manufacturer#5	almond azure blanched chiffon midnight	1464.48	5	1	1	1611.66	1789.69	6	6
+Manufacturer#5	almond antique blue firebrick mint	1789.69	6	1	1	1611.66	1789.69	6	6
 PREHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_retailprice,
 row_number() over(partition by p_mfgr range between unbounded preceding and unbounded following) as rn,
@@ -538,46 +538,46 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 p_mfgr	p_name	p_retailprice	rn	r	dr	fv	lv	c	cs
-Manufacturer#4	almond azure aquamarine papaya violet	1290.35	1	1	1	1290.35	1206.26	4	6
-Manufacturer#4	almond antique violet mint lemon	1375.42	2	1	1	1290.35	1206.26	4	6
-Manufacturer#4	almond aquamarine floral ivory bisque	NULL	3	1	1	1290.35	1206.26	4	6
-Manufacturer#4	almond antique gainsboro frosted violet	NULL	4	1	1	1290.35	1206.26	4	6
-Manufacturer#4	almond aquamarine yellow dodger mint	1844.92	5	1	1	1290.35	1206.26	4	6
-Manufacturer#4	almond aquamarine floral ivory bisque	1206.26	6	1	1	1290.35	1206.26	4	6
-Manufacturer#5	almond azure blanched chiffon midnight	1464.48	1	1	1	1464.48	1788.73	6	6
-Manufacturer#5	almond aquamarine dodger light gainsboro	1018.1	2	1	1	1464.48	1788.73	6	6
-Manufacturer#5	almond antique medium spring khaki	1611.66	3	1	1	1464.48	1788.73	6	6
-Manufacturer#5	almond antique blue firebrick mint	1789.69	4	1	1	1464.48	1788.73	6	6
-Manufacturer#5	almond antique medium spring khaki	1611.66	5	1	1	1464.48	1788.73	6	6
-Manufacturer#5	almond antique sky peru orange	1788.73	6	1	1	1464.48	1788.73	6	6
-Manufacturer#2	almond aquamarine rose maroon antique	900.66	1	1	1	900.66	1800.7	8	8
-Manufacturer#2	almond aquamarine rose maroon antique	1698.66	2	1	1	900.66	1800.7	8	8
-Manufacturer#2	almond antique violet turquoise frosted	1800.7	3	1	1	900.66	1800.7	8	8
-Manufacturer#2	almond antique violet chocolate turquoise	1690.68	4	1	1	900.66	1800.7	8	8
-Manufacturer#2	almond antique violet turquoise frosted	1800.7	5	1	1	900.66	1800.7	8	8
-Manufacturer#2	almond aquamarine sandy cyan gainsboro	1000.6	6	1	1	900.66	1800.7	8	8
-Manufacturer#2	almond aquamarine midnight light salmon	2031.98	7	1	1	900.66	1800.7	8	8
-Manufacturer#2	almond antique violet turquoise frosted	1800.7	8	1	1	900.66	1800.7	8	8
-Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	1	1	1	1753.76	1632.66	11	12
-Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	2	1	1	1753.76	1632.66	11	12
-Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	3	1	1	1753.76	1632.66	11	12
-Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	4	1	1	1753.76	1632.66	11	12
-Manufacturer#1	almond aquamarine burnished black steel	1414.42	5	1	1	1753.76	1632.66	11	12
-Manufacturer#1	almond antique burnished rose metallic	1173.15	6	1	1	1753.76	1632.66	11	12
-Manufacturer#1	almond antique salmon chartreuse burlywood	1602.59	7	1	1	1753.76	1632.66	11	12
-Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	8	1	1	1753.76	1632.66	11	12
-Manufacturer#1	almond antique burnished rose metallic	1173.15	9	1	1	1753.76	1632.66	11	12
-Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	10	1	1	1753.76	1632.66	11	12
-Manufacturer#1	almond aquamarine pink moccasin thistle	NULL	11	1	1	1753.76	1632.66	11	12
-Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	12	1	1	1753.76	1632.66	11	12
-Manufacturer#3	almond antique forest lavender goldenrod	590.27	1	1	1	590.27	99.68	7	8
-Manufacturer#3	almond antique metallic orange dim	55.39	2	1	1	590.27	99.68	7	8
-Manufacturer#3	almond antique forest lavender goldenrod	1190.27	3	1	1	590.27	99.68	7	8
-Manufacturer#3	almond antique olive coral navajo	1337.29	4	1	1	590.27	99.68	7	8
-Manufacturer#3	almond antique misty red olive	1922.98	5	1	1	590.27	99.68	7	8
-Manufacturer#3	almond antique forest lavender goldenrod	1190.27	6	1	1	590.27	99.68	7	8
-Manufacturer#3	almond antique forest lavender goldenrod	NULL	7	1	1	590.27	99.68	7	8
-Manufacturer#3	almond antique chartreuse khaki white	99.68	8	1	1	590.27	99.68	7	8
+Manufacturer#2	almond aquamarine rose maroon antique	900.66	1	1	1	900.66	2031.98	8	8
+Manufacturer#2	almond aquamarine rose maroon antique	1698.66	2	1	1	900.66	2031.98	8	8
+Manufacturer#2	almond antique violet turquoise frosted	1800.7	3	1	1	900.66	2031.98	8	8
+Manufacturer#2	almond antique violet chocolate turquoise	1690.68	4	1	1	900.66	2031.98	8	8
+Manufacturer#2	almond antique violet turquoise frosted	1800.7	5	1	1	900.66	2031.98	8	8
+Manufacturer#2	almond antique violet turquoise frosted	1800.7	6	1	1	900.66	2031.98	8	8
+Manufacturer#2	almond aquamarine sandy cyan gainsboro	1000.6	7	1	1	900.66	2031.98	8	8
+Manufacturer#2	almond aquamarine midnight light salmon	2031.98	8	1	1	900.66	2031.98	8	8
+Manufacturer#3	almond antique forest lavender goldenrod	NULL	1	1	1	NULL	1922.98	7	8
+Manufacturer#3	almond antique forest lavender goldenrod	1190.27	2	1	1	NULL	1922.98	7	8
+Manufacturer#3	almond antique forest lavender goldenrod	590.27	3	1	1	NULL	1922.98	7	8
+Manufacturer#3	almond antique forest lavender goldenrod	1190.27	4	1	1	NULL	1922.98	7	8
+Manufacturer#3	almond antique metallic orange dim	55.39	5	1	1	NULL	1922.98	7	8
+Manufacturer#3	almond antique olive coral navajo	1337.29	6	1	1	NULL	1922.98	7	8
+Manufacturer#3	almond antique chartreuse khaki white	99.68	7	1	1	NULL	1922.98	7	8
+Manufacturer#3	almond antique misty red olive	1922.98	8	1	1	NULL	1922.98	7	8
+Manufacturer#4	almond aquamarine floral ivory bisque	NULL	1	1	1	NULL	1375.42	4	6
+Manufacturer#4	almond antique gainsboro frosted violet	NULL	2	1	1	NULL	1375.42	4	6
+Manufacturer#4	almond aquamarine floral ivory bisque	1206.26	3	1	1	NULL	1375.42	4	6
+Manufacturer#4	almond aquamarine yellow dodger mint	1844.92	4	1	1	NULL	1375.42	4	6
+Manufacturer#4	almond azure aquamarine papaya violet	1290.35	5	1	1	NULL	1375.42	4	6
+Manufacturer#4	almond antique violet mint lemon	1375.42	6	1	1	NULL	1375.42	4	6
+Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	1	1	1	1632.66	1173.15	11	12
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	2	1	1	1632.66	1173.15	11	12
+Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	3	1	1	1632.66	1173.15	11	12
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	4	1	1	1632.66	1173.15	11	12
+Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	5	1	1	1632.66	1173.15	11	12
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	6	1	1	1632.66	1173.15	11	12
+Manufacturer#1	almond antique salmon chartreuse burlywood	1602.59	7	1	1	1632.66	1173.15	11	12
+Manufacturer#1	almond antique burnished rose metallic	1173.15	8	1	1	1632.66	1173.15	11	12
+Manufacturer#1	almond aquamarine burnished black steel	1414.42	9	1	1	1632.66	1173.15	11	12
+Manufacturer#1	almond aquamarine pink moccasin thistle	NULL	10	1	1	1632.66	1173.15	11	12
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	11	1	1	1632.66	1173.15	11	12
+Manufacturer#1	almond antique burnished rose metallic	1173.15	12	1	1	1632.66	1173.15	11	12
+Manufacturer#5	almond antique medium spring khaki	1611.66	1	1	1	1611.66	1789.69	6	6
+Manufacturer#5	almond aquamarine dodger light gainsboro	1018.1	2	1	1	1611.66	1789.69	6	6
+Manufacturer#5	almond antique sky peru orange	1788.73	3	1	1	1611.66	1789.69	6	6
+Manufacturer#5	almond antique medium spring khaki	1611.66	4	1	1	1611.66	1789.69	6	6
+Manufacturer#5	almond azure blanched chiffon midnight	1464.48	5	1	1	1611.66	1789.69	6	6
+Manufacturer#5	almond antique blue firebrick mint	1789.69	6	1	1	1611.66	1789.69	6	6
 PREHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_retailprice,
 row_number() over(partition by p_mfgr rows between unbounded preceding and unbounded following) as rn,
@@ -767,46 +767,46 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 p_mfgr	p_name	p_retailprice	rn	r	dr	fv	lv	c	cs
-Manufacturer#4	almond azure aquamarine papaya violet	1290.35	1	1	1	1290.35	1290.35	1	1
-Manufacturer#4	almond antique violet mint lemon	1375.42	2	1	1	1290.35	1375.42	2	2
-Manufacturer#4	almond aquamarine floral ivory bisque	NULL	3	1	1	1290.35	NULL	2	3
-Manufacturer#4	almond antique gainsboro frosted violet	NULL	4	1	1	1290.35	NULL	2	4
-Manufacturer#4	almond aquamarine yellow dodger mint	1844.92	5	1	1	1290.35	1844.92	3	5
-Manufacturer#4	almond aquamarine floral ivory bisque	1206.26	6	1	1	1290.35	1206.26	4	6
-Manufacturer#5	almond azure blanched chiffon midnight	1464.48	1	1	1	1464.48	1464.48	1	1
-Manufacturer#5	almond aquamarine dodger light gainsboro	1018.1	2	1	1	1464.48	1018.1	2	2
-Manufacturer#5	almond antique medium spring khaki	1611.66	3	1	1	1464.48	1611.66	3	3
-Manufacturer#5	almond antique blue firebrick mint	1789.69	4	1	1	1464.48	1789.69	4	4
-Manufacturer#5	almond antique medium spring khaki	1611.66	5	1	1	1464.48	1611.66	5	5
-Manufacturer#5	almond antique sky peru orange	1788.73	6	1	1	1464.48	1788.73	6	6
 Manufacturer#2	almond aquamarine rose maroon antique	900.66	1	1	1	900.66	900.66	1	1
 Manufacturer#2	almond aquamarine rose maroon antique	1698.66	2	1	1	900.66	1698.66	2	2
 Manufacturer#2	almond antique violet turquoise frosted	1800.7	3	1	1	900.66	1800.7	3	3
 Manufacturer#2	almond antique violet chocolate turquoise	1690.68	4	1	1	900.66	1690.68	4	4
 Manufacturer#2	almond antique violet turquoise frosted	1800.7	5	1	1	900.66	1800.7	5	5
-Manufacturer#2	almond aquamarine sandy cyan gainsboro	1000.6	6	1	1	900.66	1000.6	6	6
-Manufacturer#2	almond aquamarine midnight light salmon	2031.98	7	1	1	900.66	2031.98	7	7
-Manufacturer#2	almond antique violet turquoise frosted	1800.7	8	1	1	900.66	1800.7	8	8
-Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	1	1	1	1753.76	1753.76	1	1
-Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	2	1	1	1753.76	1632.66	2	2
-Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	3	1	1	1753.76	1632.66	3	3
-Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	4	1	1	1753.76	1753.76	4	4
-Manufacturer#1	almond aquamarine burnished black steel	1414.42	5	1	1	1753.76	1414.42	5	5
-Manufacturer#1	almond antique burnished rose metallic	1173.15	6	1	1	1753.76	1173.15	6	6
-Manufacturer#1	almond antique salmon chartreuse burlywood	1602.59	7	1	1	1753.76	1602.59	7	7
-Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	8	1	1	1753.76	1753.76	8	8
-Manufacturer#1	almond antique burnished rose metallic	1173.15	9	1	1	1753.76	1173.15	9	9
-Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	10	1	1	1753.76	1753.76	10	10
-Manufacturer#1	almond aquamarine pink moccasin thistle	NULL	11	1	1	1753.76	NULL	10	11
-Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	12	1	1	1753.76	1632.66	11	12
-Manufacturer#3	almond antique forest lavender goldenrod	590.27	1	1	1	590.27	590.27	1	1
-Manufacturer#3	almond antique metallic orange dim	55.39	2	1	1	590.27	55.39	2	2
-Manufacturer#3	almond antique forest lavender goldenrod	1190.27	3	1	1	590.27	1190.27	3	3
-Manufacturer#3	almond antique olive coral navajo	1337.29	4	1	1	590.27	1337.29	4	4
-Manufacturer#3	almond antique misty red olive	1922.98	5	1	1	590.27	1922.98	5	5
-Manufacturer#3	almond antique forest lavender goldenrod	1190.27	6	1	1	590.27	1190.27	6	6
-Manufacturer#3	almond antique forest lavender goldenrod	NULL	7	1	1	590.27	NULL	6	7
-Manufacturer#3	almond antique chartreuse khaki white	99.68	8	1	1	590.27	99.68	7	8
+Manufacturer#2	almond antique violet turquoise frosted	1800.7	6	1	1	900.66	1800.7	6	6
+Manufacturer#2	almond aquamarine sandy cyan gainsboro	1000.6	7	1	1	900.66	1000.6	7	7
+Manufacturer#2	almond aquamarine midnight light salmon	2031.98	8	1	1	900.66	2031.98	8	8
+Manufacturer#3	almond antique forest lavender goldenrod	NULL	1	1	1	NULL	NULL	0	1
+Manufacturer#3	almond antique forest lavender goldenrod	1190.27	2	1	1	NULL	1190.27	1	2
+Manufacturer#3	almond antique forest lavender goldenrod	590.27	3	1	1	NULL	590.27	2	3
+Manufacturer#3	almond antique forest lavender goldenrod	1190.27	4	1	1	NULL	1190.27	3	4
+Manufacturer#3	almond antique metallic orange dim	55.39	5	1	1	NULL	55.39	4	5
+Manufacturer#3	almond antique olive coral navajo	1337.29	6	1	1	NULL	1337.29	5	6
+Manufacturer#3	almond antique chartreuse khaki white	99.68	7	1	1	NULL	99.68	6	7
+Manufacturer#3	almond antique misty red olive	1922.98	8	1	1	NULL	1922.98	7	8
+Manufacturer#4	almond aquamarine floral ivory bisque	NULL	1	1	1	NULL	NULL	0	1
+Manufacturer#4	almond antique gainsboro frosted violet	NULL	2	1	1	NULL	NULL	0	2
+Manufacturer#4	almond aquamarine floral ivory bisque	1206.26	3	1	1	NULL	1206.26	1	3
+Manufacturer#4	almond aquamarine yellow dodger mint	1844.92	4	1	1	NULL	1844.92	2	4
+Manufacturer#4	almond azure aquamarine papaya violet	1290.35	5	1	1	NULL	1290.35	3	5
+Manufacturer#4	almond antique violet mint lemon	1375.42	6	1	1	NULL	1375.42	4	6
+Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	1	1	1	1632.66	1632.66	1	1
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	2	1	1	1632.66	1753.76	2	2
+Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	3	1	1	1632.66	1632.66	3	3
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	4	1	1	1632.66	1753.76	4	4
+Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	5	1	1	1632.66	1632.66	5	5
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	6	1	1	1632.66	1753.76	6	6
+Manufacturer#1	almond antique salmon chartreuse burlywood	1602.59	7	1	1	1632.66	1602.59	7	7
+Manufacturer#1	almond antique burnished rose metallic	1173.15	8	1	1	1632.66	1173.15	8	8
+Manufacturer#1	almond aquamarine burnished black steel	1414.42	9	1	1	1632.66	1414.42	9	9
+Manufacturer#1	almond aquamarine pink moccasin thistle	NULL	10	1	1	1632.66	NULL	9	10
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	11	1	1	1632.66	1753.76	10	11
+Manufacturer#1	almond antique burnished rose metallic	1173.15	12	1	1	1632.66	1173.15	11	12
+Manufacturer#5	almond antique medium spring khaki	1611.66	1	1	1	1611.66	1611.66	1	1
+Manufacturer#5	almond aquamarine dodger light gainsboro	1018.1	2	1	1	1611.66	1018.1	2	2
+Manufacturer#5	almond antique sky peru orange	1788.73	3	1	1	1611.66	1788.73	3	3
+Manufacturer#5	almond antique medium spring khaki	1611.66	4	1	1	1611.66	1611.66	4	4
+Manufacturer#5	almond azure blanched chiffon midnight	1464.48	5	1	1	1611.66	1464.48	5	5
+Manufacturer#5	almond antique blue firebrick mint	1789.69	6	1	1	1611.66	1789.69	6	6
 PREHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_retailprice,
 row_number() over(partition by p_mfgr order by p_name) as rn,
@@ -2442,46 +2442,46 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 p_mfgr	p_name	p_retailprice	s	mi	ma	av
-Manufacturer#4	almond azure aquamarine papaya violet	1290.35	5716.950000000001	1206.26	1844.92	1429.2375000000002
-Manufacturer#4	almond antique violet mint lemon	1375.42	5716.950000000001	1206.26	1844.92	1429.2375000000002
-Manufacturer#4	almond aquamarine floral ivory bisque	NULL	5716.950000000001	1206.26	1844.92	1429.2375000000002
-Manufacturer#4	almond antique gainsboro frosted violet	NULL	5716.950000000001	1206.26	1844.92	1429.2375000000002
-Manufacturer#4	almond aquamarine yellow dodger mint	1844.92	5716.950000000001	1206.26	1844.92	1429.2375000000002
-Manufacturer#4	almond aquamarine floral ivory bisque	1206.26	5716.950000000001	1206.26	1844.92	1429.2375000000002
-Manufacturer#5	almond azure blanched chiffon midnight	1464.48	9284.32	1018.1	1789.69	1547.3866666666665
-Manufacturer#5	almond aquamarine dodger light gainsboro	1018.1	9284.32	1018.1	1789.69	1547.3866666666665
-Manufacturer#5	almond antique medium spring khaki	1611.66	9284.32	1018.1	1789.69	1547.3866666666665
-Manufacturer#5	almond antique blue firebrick mint	1789.69	9284.32	1018.1	1789.69	1547.3866666666665
-Manufacturer#5	almond antique medium spring khaki	1611.66	9284.32	1018.1	1789.69	1547.3866666666665
-Manufacturer#5	almond antique sky peru orange	1788.73	9284.32	1018.1	1789.69	1547.3866666666665
 Manufacturer#2	almond aquamarine rose maroon antique	900.66	12724.68	900.66	2031.98	1590.585
 Manufacturer#2	almond aquamarine rose maroon antique	1698.66	12724.68	900.66	2031.98	1590.585
 Manufacturer#2	almond antique violet turquoise frosted	1800.7	12724.68	900.66	2031.98	1590.585
 Manufacturer#2	almond antique violet chocolate turquoise	1690.68	12724.68	900.66	2031.98	1590.585
 Manufacturer#2	almond antique violet turquoise frosted	1800.7	12724.68	900.66	2031.98	1590.585
+Manufacturer#2	almond antique violet turquoise frosted	1800.7	12724.68	900.66	2031.98	1590.585
 Manufacturer#2	almond aquamarine sandy cyan gainsboro	1000.6	12724.68	900.66	2031.98	1590.585
 Manufacturer#2	almond aquamarine midnight light salmon	2031.98	12724.68	900.66	2031.98	1590.585
-Manufacturer#2	almond antique violet turquoise frosted	1800.7	12724.68	900.66	2031.98	1590.585
-Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	17276.33	1173.15	1753.76	1570.5754545454547
-Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	17276.33	1173.15	1753.76	1570.5754545454547
-Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	17276.33	1173.15	1753.76	1570.5754545454547
-Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	17276.33	1173.15	1753.76	1570.5754545454547
-Manufacturer#1	almond aquamarine burnished black steel	1414.42	17276.33	1173.15	1753.76	1570.5754545454547
-Manufacturer#1	almond antique burnished rose metallic	1173.15	17276.33	1173.15	1753.76	1570.5754545454547
-Manufacturer#1	almond antique salmon chartreuse burlywood	1602.59	17276.33	1173.15	1753.76	1570.5754545454547
-Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	17276.33	1173.15	1753.76	1570.5754545454547
-Manufacturer#1	almond antique burnished rose metallic	1173.15	17276.33	1173.15	1753.76	1570.5754545454547
-Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	17276.33	1173.15	1753.76	1570.5754545454547
-Manufacturer#1	almond aquamarine pink moccasin thistle	NULL	17276.33	1173.15	1753.76	1570.5754545454547
-Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	17276.33	1173.15	1753.76	1570.5754545454547
-Manufacturer#3	almond antique forest lavender goldenrod	590.27	6386.15	55.39	1922.98	912.3071428571428
-Manufacturer#3	almond antique metallic orange dim	55.39	6386.15	55.39	1922.98	912.3071428571428
-Manufacturer#3	almond antique forest lavender goldenrod	1190.27	6386.15	55.39	1922.98	912.3071428571428
-Manufacturer#3	almond antique olive coral navajo	1337.29	6386.15	55.39	1922.98	912.3071428571428
-Manufacturer#3	almond antique misty red olive	1922.98	6386.15	55.39	1922.98	912.3071428571428
-Manufacturer#3	almond antique forest lavender goldenrod	1190.27	6386.15	55.39	1922.98	912.3071428571428
 Manufacturer#3	almond antique forest lavender goldenrod	NULL	6386.15	55.39	1922.98	912.3071428571428
+Manufacturer#3	almond antique forest lavender goldenrod	1190.27	6386.15	55.39	1922.98	912.3071428571428
+Manufacturer#3	almond antique forest lavender goldenrod	590.27	6386.15	55.39	1922.98	912.3071428571428
+Manufacturer#3	almond antique forest lavender goldenrod	1190.27	6386.15	55.39	1922.98	912.3071428571428
+Manufacturer#3	almond antique metallic orange dim	55.39	6386.15	55.39	1922.98	912.3071428571428
+Manufacturer#3	almond antique olive coral navajo	1337.29	6386.15	55.39	1922.98	912.3071428571428
 Manufacturer#3	almond antique chartreuse khaki white	99.68	6386.15	55.39	1922.98	912.3071428571428
+Manufacturer#3	almond antique misty red olive	1922.98	6386.15	55.39	1922.98	912.3071428571428
+Manufacturer#4	almond aquamarine floral ivory bisque	NULL	5716.950000000001	1206.26	1844.92	1429.2375000000002
+Manufacturer#4	almond antique gainsboro frosted violet	NULL	5716.950000000001	1206.26	1844.92	1429.2375000000002
+Manufacturer#4	almond aquamarine floral ivory bisque	1206.26	5716.950000000001	1206.26	1844.92	1429.2375000000002
+Manufacturer#4	almond aquamarine yellow dodger mint	1844.92	5716.950000000001	1206.26	1844.92	1429.2375000000002
+Manufacturer#4	almond azure aquamarine papaya violet	1290.35	5716.950000000001	1206.26	1844.92	1429.2375000000002
+Manufacturer#4	almond antique violet mint lemon	1375.42	5716.950000000001	1206.26	1844.92	1429.2375000000002
+Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	17276.33	1173.15	1753.76	1570.5754545454547
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	17276.33	1173.15	1753.76	1570.5754545454547
+Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	17276.33	1173.15	1753.76	1570.5754545454547
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	17276.33	1173.15	1753.76	1570.5754545454547
+Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	17276.33	1173.15	1753.76	1570.5754545454547
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	17276.33	1173.15	1753.76	1570.5754545454547
+Manufacturer#1	almond antique salmon chartreuse burlywood	1602.59	17276.33	1173.15	1753.76	1570.5754545454547
+Manufacturer#1	almond antique burnished rose metallic	1173.15	17276.33	1173.15	1753.76	1570.5754545454547
+Manufacturer#1	almond aquamarine burnished black steel	1414.42	17276.33	1173.15	1753.76	1570.5754545454547
+Manufacturer#1	almond aquamarine pink moccasin thistle	NULL	17276.33	1173.15	1753.76	1570.5754545454547
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	17276.33	1173.15	1753.76	1570.5754545454547
+Manufacturer#1	almond antique burnished rose metallic	1173.15	17276.33	1173.15	1753.76	1570.5754545454547
+Manufacturer#5	almond antique medium spring khaki	1611.66	9284.32	1018.1	1789.69	1547.3866666666665
+Manufacturer#5	almond aquamarine dodger light gainsboro	1018.1	9284.32	1018.1	1789.69	1547.3866666666665
+Manufacturer#5	almond antique sky peru orange	1788.73	9284.32	1018.1	1789.69	1547.3866666666665
+Manufacturer#5	almond antique medium spring khaki	1611.66	9284.32	1018.1	1789.69	1547.3866666666665
+Manufacturer#5	almond azure blanched chiffon midnight	1464.48	9284.32	1018.1	1789.69	1547.3866666666665
+Manufacturer#5	almond antique blue firebrick mint	1789.69	9284.32	1018.1	1789.69	1547.3866666666665
 PREHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_retailprice,
 sum(p_retailprice) over(partition by p_mfgr range between unbounded preceding and current row) as s,
@@ -2670,46 +2670,46 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 p_mfgr	p_name	p_retailprice	s	mi	ma	av
-Manufacturer#4	almond azure aquamarine papaya violet	1290.35	5716.950000000001	1206.26	1844.92	1429.2375000000002
-Manufacturer#4	almond antique violet mint lemon	1375.42	5716.950000000001	1206.26	1844.92	1429.2375000000002
-Manufacturer#4	almond aquamarine floral ivory bisque	NULL	5716.950000000001	1206.26	1844.92	1429.2375000000002
-Manufacturer#4	almond antique gainsboro frosted violet	NULL	5716.950000000001	1206.26	1844.92	1429.2375000000002
-Manufacturer#4	almond aquamarine yellow dodger mint	1844.92	5716.950000000001	1206.26	1844.92	1429.2375000000002
-Manufacturer#4	almond aquamarine floral ivory bisque	1206.26	5716.950000000001	1206.26	1844.92	1429.2375000000002
-Manufacturer#5	almond azure blanched chiffon midnight	1464.48	9284.32	1018.1	1789.69	1547.3866666666665
-Manufacturer#5	almond aquamarine dodger light gainsboro	1018.1	9284.32	1018.1	1789.69	1547.3866666666665
-Manufacturer#5	almond antique medium spring khaki	1611.66	9284.32	1018.1	1789.69	1547.3866666666665
-Manufacturer#5	almond antique blue firebrick mint	1789.69	9284.32	1018.1	1789.69	1547.3866666666665
-Manufacturer#5	almond antique medium spring khaki	1611.66	9284.32	1018.1	1789.69	1547.3866666666665
-Manufacturer#5	almond antique sky peru orange	1788.73	9284.32	1018.1	1789.69	1547.3866666666665
 Manufacturer#2	almond aquamarine rose maroon antique	900.66	12724.68	900.66	2031.98	1590.585
 Manufacturer#2	almond aquamarine rose maroon antique	1698.66	12724.68	900.66	2031.98	1590.585
 Manufacturer#2	almond antique violet turquoise frosted	1800.7	12724.68	900.66	2031.98	1590.585
 Manufacturer#2	almond antique violet chocolate turquoise	1690.68	12724.68	900.66	2031.98	1590.585
 Manufacturer#2	almond antique violet turquoise frosted	1800.7	12724.68	900.66	2031.98	1590.585
+Manufacturer#2	almond antique violet turquoise frosted	1800.7	12724.68	900.66	2031.98	1590.585
 Manufacturer#2	almond aquamarine sandy cyan gainsboro	1000.6	12724.68	900.66	2031.98	1590.585
 Manufacturer#2	almond aquamarine midnight light salmon	2031.98	12724.68	900.66	2031.98	1590.585
-Manufacturer#2	almond antique violet turquoise frosted	1800.7	12724.68	900.66	2031.98	1590.585
-Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	17276.33	1173.15	1753.76	1570.5754545454547
-Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	17276.33	1173.15	1753.76	1570.5754545454547
-Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	17276.33	1173.15	1753.76	1570.5754545454547
-Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	17276.33	1173.15	1753.76	1570.5754545454547
-Manufacturer#1	almond aquamarine burnished black steel	1414.42	17276.33	1173.15	1753.76	1570.5754545454547
-Manufacturer#1	almond antique burnished rose metallic	1173.15	17276.33	1173.15	1753.76	1570.5754545454547
-Manufacturer#1	almond antique salmon chartreuse burlywood	1602.59	17276.33	1173.15	1753.76	1570.5754545454547
-Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	17276.33	1173.15	1753.76	1570.5754545454547
-Manufacturer#1	almond antique burnished rose metallic	1173.15	17276.33	1173.15	1753.76	1570.5754545454547
-Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	17276.33	1173.15	1753.76	1570.5754545454547
-Manufacturer#1	almond aquamarine pink moccasin thistle	NULL	17276.33	1173.15	1753.76	1570.5754545454547
-Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	17276.33	1173.15	1753.76	1570.5754545454547
-Manufacturer#3	almond antique forest lavender goldenrod	590.27	6386.15	55.39	1922.98	912.3071428571428
-Manufacturer#3	almond antique metallic orange dim	55.39	6386.15	55.39	1922.98	912.3071428571428
-Manufacturer#3	almond antique forest lavender goldenrod	1190.27	6386.15	55.39	1922.98	912.3071428571428
-Manufacturer#3	almond antique olive coral navajo	1337.29	6386.15	55.39	1922.98	912.3071428571428
-Manufacturer#3	almond antique misty red olive	1922.98	6386.15	55.39	1922.98	912.3071428571428
-Manufacturer#3	almond antique forest lavender goldenrod	1190.27	6386.15	55.39	1922.98	912.3071428571428
 Manufacturer#3	almond antique forest lavender goldenrod	NULL	6386.15	55.39	1922.98	912.3071428571428
+Manufacturer#3	almond antique forest lavender goldenrod	1190.27	6386.15	55.39	1922.98	912.3071428571428
+Manufacturer#3	almond antique forest lavender goldenrod	590.27	6386.15	55.39	1922.98	912.3071428571428
+Manufacturer#3	almond antique forest lavender goldenrod	1190.27	6386.15	55.39	1922.98	912.3071428571428
+Manufacturer#3	almond antique metallic orange dim	55.39	6386.15	55.39	1922.98	912.3071428571428
+Manufacturer#3	almond antique olive coral navajo	1337.29	6386.15	55.39	1922.98	912.3071428571428
 Manufacturer#3	almond antique chartreuse khaki white	99.68	6386.15	55.39	1922.98	912.3071428571428
+Manufacturer#3	almond antique misty red olive	1922.98	6386.15	55.39	1922.98	912.3071428571428
+Manufacturer#4	almond aquamarine floral ivory bisque	NULL	5716.950000000001	1206.26	1844.92	1429.2375000000002
+Manufacturer#4	almond antique gainsboro frosted violet	NULL	5716.950000000001	1206.26	1844.92	1429.2375000000002
+Manufacturer#4	almond aquamarine floral ivory bisque	1206.26	5716.950000000001	1206.26	1844.92	1429.2375000000002
+Manufacturer#4	almond aquamarine yellow dodger mint	1844.92	5716.950000000001	1206.26	1844.92	1429.2375000000002
+Manufacturer#4	almond azure aquamarine papaya violet	1290.35	5716.950000000001	1206.26	1844.92	1429.2375000000002
+Manufacturer#4	almond antique violet mint lemon	1375.42	5716.950000000001	1206.26	1844.92	1429.2375000000002
+Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	17276.33	1173.15	1753.76	1570.5754545454547
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	17276.33	1173.15	1753.76	1570.5754545454547
+Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	17276.33	1173.15	1753.76	1570.5754545454547
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	17276.33	1173.15	1753.76	1570.5754545454547
+Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	17276.33	1173.15	1753.76	1570.5754545454547
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	17276.33	1173.15	1753.76	1570.5754545454547
+Manufacturer#1	almond antique salmon chartreuse burlywood	1602.59	17276.33	1173.15	1753.76	1570.5754545454547
+Manufacturer#1	almond antique burnished rose metallic	1173.15	17276.33	1173.15	1753.76	1570.5754545454547
+Manufacturer#1	almond aquamarine burnished black steel	1414.42	17276.33	1173.15	1753.76	1570.5754545454547
+Manufacturer#1	almond aquamarine pink moccasin thistle	NULL	17276.33	1173.15	1753.76	1570.5754545454547
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	17276.33	1173.15	1753.76	1570.5754545454547
+Manufacturer#1	almond antique burnished rose metallic	1173.15	17276.33	1173.15	1753.76	1570.5754545454547
+Manufacturer#5	almond antique medium spring khaki	1611.66	9284.32	1018.1	1789.69	1547.3866666666665
+Manufacturer#5	almond aquamarine dodger light gainsboro	1018.1	9284.32	1018.1	1789.69	1547.3866666666665
+Manufacturer#5	almond antique sky peru orange	1788.73	9284.32	1018.1	1789.69	1547.3866666666665
+Manufacturer#5	almond antique medium spring khaki	1611.66	9284.32	1018.1	1789.69	1547.3866666666665
+Manufacturer#5	almond azure blanched chiffon midnight	1464.48	9284.32	1018.1	1789.69	1547.3866666666665
+Manufacturer#5	almond antique blue firebrick mint	1789.69	9284.32	1018.1	1789.69	1547.3866666666665
 PREHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_retailprice,
 sum(p_retailprice) over(partition by p_mfgr rows between unbounded preceding and current row) as s,
@@ -2867,46 +2867,46 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 p_mfgr	p_name	p_retailprice	s	mi	ma	av
-Manufacturer#4	almond azure aquamarine papaya violet	1290.35	1290.35	1290.35	1290.35	1290.35
-Manufacturer#4	almond antique violet mint lemon	1375.42	2665.77	1290.35	1375.42	1332.885
-Manufacturer#4	almond aquamarine floral ivory bisque	NULL	2665.77	1290.35	1375.42	1332.885
-Manufacturer#4	almond antique gainsboro frosted violet	NULL	2665.77	1290.35	1375.42	1332.885
-Manufacturer#4	almond aquamarine yellow dodger mint	1844.92	4510.6900000000005	1290.35	1844.92	1503.5633333333335
-Manufacturer#4	almond aquamarine floral ivory bisque	1206.26	5716.950000000001	1206.26	1844.92	1429.2375000000002
-Manufacturer#5	almond azure blanched chiffon midnight	1464.48	1464.48	1464.48	1464.48	1464.48
-Manufacturer#5	almond aquamarine dodger light gainsboro	1018.1	2482.58	1018.1	1464.48	1241.29
-Manufacturer#5	almond antique medium spring khaki	1611.66	4094.24	1018.1	1611.66	1364.7466666666667
-Manufacturer#5	almond antique blue firebrick mint	1789.69	5883.93	1018.1	1789.69	1470.9825
-Manufacturer#5	almond antique medium spring khaki	1611.66	7495.59	1018.1	1789.69	1499.118
-Manufacturer#5	almond antique sky peru orange	1788.73	9284.32	1018.1	1789.69	1547.3866666666665
 Manufacturer#2	almond aquamarine rose maroon antique	900.66	900.66	900.66	900.66	900.66
 Manufacturer#2	almond aquamarine rose maroon antique	1698.66	2599.32	900.66	1698.66	1299.66
 Manufacturer#2	almond antique violet turquoise frosted	1800.7	4400.02	900.66	1800.7	1466.6733333333334
 Manufacturer#2	almond antique violet chocolate turquoise	1690.68	6090.700000000001	900.66	1800.7	1522.6750000000002
 Manufacturer#2	almond antique violet turquoise frosted	1800.7	7891.400000000001	900.66	1800.7	1578.2800000000002
-Manufacturer#2	almond aquamarine sandy cyan gainsboro	1000.6	8892.0	900.66	1800.7	1482.0
-Manufacturer#2	almond aquamarine midnight light salmon	2031.98	10923.98	900.66	2031.98	1560.5685714285714
-Manufacturer#2	almond antique violet turquoise frosted	1800.7	12724.68	900.66	2031.98	1590.585
-Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	1753.76	1753.76	1753.76	1753.76
-Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	3386.42	1632.66	1753.76	1693.21
+Manufacturer#2	almond antique violet turquoise frosted	1800.7	9692.1	900.66	1800.7	1615.3500000000001
+Manufacturer#2	almond aquamarine sandy cyan gainsboro	1000.6	10692.7	900.66	1800.7	1527.5285714285715
+Manufacturer#2	almond aquamarine midnight light salmon	2031.98	12724.68	900.66	2031.98	1590.585
+Manufacturer#3	almond antique forest lavender goldenrod	NULL	NULL	NULL	NULL	NULL
+Manufacturer#3	almond antique forest lavender goldenrod	1190.27	1190.27	1190.27	1190.27	1190.27
+Manufacturer#3	almond antique forest lavender goldenrod	590.27	1780.54	590.27	1190.27	890.27
+Manufacturer#3	almond antique forest lavender goldenrod	1190.27	2970.81	590.27	1190.27	990.27
+Manufacturer#3	almond antique metallic orange dim	55.39	3026.2	55.39	1190.27	756.55
+Manufacturer#3	almond antique olive coral navajo	1337.29	4363.49	55.39	1337.29	872.698
+Manufacturer#3	almond antique chartreuse khaki white	99.68	4463.17	55.39	1337.29	743.8616666666667
+Manufacturer#3	almond antique misty red olive	1922.98	6386.15	55.39	1922.98	912.3071428571428
+Manufacturer#4	almond aquamarine floral ivory bisque	NULL	NULL	NULL	NULL	NULL
+Manufacturer#4	almond antique gainsboro frosted violet	NULL	NULL	NULL	NULL	NULL
+Manufacturer#4	almond aquamarine floral ivory bisque	1206.26	1206.26	1206.26	1206.26	1206.26
+Manufacturer#4	almond aquamarine yellow dodger mint	1844.92	3051.1800000000003	1206.26	1844.92	1525.5900000000001
+Manufacturer#4	almond azure aquamarine papaya violet	1290.35	4341.530000000001	1206.26	1844.92	1447.176666666667
+Manufacturer#4	almond antique violet mint lemon	1375.42	5716.950000000001	1206.26	1844.92	1429.2375000000002
+Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	1632.66	1632.66	1632.66	1632.66
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	3386.42	1632.66	1753.76	1693.21
 Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	5019.08	1632.66	1753.76	1673.0266666666666
 Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	6772.84	1632.66	1753.76	1693.21
-Manufacturer#1	almond aquamarine burnished black steel	1414.42	8187.26	1414.42	1753.76	1637.452
-Manufacturer#1	almond antique burnished rose metallic	1173.15	9360.41	1173.15	1753.76	1560.0683333333334
-Manufacturer#1	almond antique salmon chartreuse burlywood	1602.59	10963.0	1173.15	1753.76	1566.142857142857
-Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	12716.76	1173.15	1753.76	1589.595
-Manufacturer#1	almond antique burnished rose metallic	1173.15	13889.91	1173.15	1753.76	1543.3233333333333
-Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	15643.67	1173.15	1753.76	1564.367
-Manufacturer#1	almond aquamarine pink moccasin thistle	NULL	15643.67	1173.15	1753.76	1564.367
-Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	17276.33	1173.15	1753.76	1570.5754545454547
-Manufacturer#3	almond antique forest lavender goldenrod	590.27	590.27	590.27	590.27	590.27
-Manufacturer#3	almond antique metallic orange dim	55.39	645.66	55.39	590.27	322.83
-Manufacturer#3	almond antique forest lavender goldenrod	1190.27	1835.9299999999998	55.39	1190.27	611.9766666666666
-Manufacturer#3	almond antique olive coral navajo	1337.29	3173.22	55.39	1337.29	793.305
-Manufacturer#3	almond antique misty red olive	1922.98	5096.2	55.39	1922.98	1019.24
-Manufacturer#3	almond antique forest lavender goldenrod	1190.27	6286.469999999999	55.39	1922.98	1047.745
-Manufacturer#3	almond antique forest lavender goldenrod	NULL	6286.469999999999	55.39	1922.98	1047.745
-Manufacturer#3	almond antique chartreuse khaki white	99.68	6386.15	55.39	1922.98	912.3071428571428
+Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	8405.5	1632.66	1753.76	1681.1
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	10159.26	1632.66	1753.76	1693.21
+Manufacturer#1	almond antique salmon chartreuse burlywood	1602.59	11761.85	1602.59	1753.76	1680.2642857142857
+Manufacturer#1	almond antique burnished rose metallic	1173.15	12935.0	1173.15	1753.76	1616.875
+Manufacturer#1	almond aquamarine burnished black steel	1414.42	14349.42	1173.15	1753.76	1594.38
+Manufacturer#1	almond aquamarine pink moccasin thistle	NULL	14349.42	1173.15	1753.76	1594.38
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	16103.18	1173.15	1753.76	1610.318
+Manufacturer#1	almond antique burnished rose metallic	1173.15	17276.33	1173.15	1753.76	1570.5754545454547
+Manufacturer#5	almond antique medium spring khaki	1611.66	1611.66	1611.66	1611.66	1611.66
+Manufacturer#5	almond aquamarine dodger light gainsboro	1018.1	2629.76	1018.1	1611.66	1314.88
+Manufacturer#5	almond antique sky peru orange	1788.73	4418.49	1018.1	1788.73	1472.83
+Manufacturer#5	almond antique medium spring khaki	1611.66	6030.15	1018.1	1788.73	1507.5375
+Manufacturer#5	almond azure blanched chiffon midnight	1464.48	7494.629999999999	1018.1	1788.73	1498.926
+Manufacturer#5	almond antique blue firebrick mint	1789.69	9284.32	1018.1	1789.69	1547.3866666666665
 PREHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_retailprice,
 sum(p_retailprice) over(partition by p_mfgr order by p_name) as s,
@@ -4456,46 +4456,46 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_ptf_part_simple_orc_decimal
 #### A masked pattern was here ####
 p_mfgr	p_name	p_retailprice	s	mi	ma	av
-Manufacturer#4	almond azure aquamarine papaya violet	1290.350000000000000000	5716.950000000000000000	1206.260000000000000000	1844.920000000000000000	1429.237500000000000000
-Manufacturer#4	almond antique violet mint lemon	1375.420000000000000000	5716.950000000000000000	1206.260000000000000000	1844.920000000000000000	1429.237500000000000000
-Manufacturer#4	almond aquamarine floral ivory bisque	NULL	5716.950000000000000000	1206.260000000000000000	1844.920000000000000000	1429.237500000000000000
-Manufacturer#4	almond antique gainsboro frosted violet	NULL	5716.950000000000000000	1206.260000000000000000	1844.920000000000000000	1429.237500000000000000
-Manufacturer#4	almond aquamarine yellow dodger mint	1844.920000000000000000	5716.950000000000000000	1206.260000000000000000	1844.920000000000000000	1429.237500000000000000
-Manufacturer#4	almond aquamarine floral ivory bisque	1206.260000000000000000	5716.950000000000000000	1206.260000000000000000	1844.920000000000000000	1429.237500000000000000
-Manufacturer#5	almond azure blanched chiffon midnight	1464.480000000000000000	9284.320000000000000000	1018.100000000000000000	1789.690000000000000000	1547.386666666666666667
-Manufacturer#5	almond aquamarine dodger light gainsboro	1018.100000000000000000	9284.320000000000000000	1018.100000000000000000	1789.690000000000000000	1547.386666666666666667
-Manufacturer#5	almond antique medium spring khaki	1611.660000000000000000	9284.320000000000000000	1018.100000000000000000	1789.690000000000000000	1547.386666666666666667
-Manufacturer#5	almond antique blue firebrick mint	1789.690000000000000000	9284.320000000000000000	1018.100000000000000000	1789.690000000000000000	1547.386666666666666667
-Manufacturer#5	almond antique medium spring khaki	1611.660000000000000000	9284.320000000000000000	1018.100000000000000000	1789.690000000000000000	1547.386666666666666667
-Manufacturer#5	almond antique sky peru orange	1788.730000000000000000	9284.320000000000000000	1018.100000000000000000	1789.690000000000000000	1547.386666666666666667
 Manufacturer#2	almond aquamarine rose maroon antique	900.660000000000000000	12724.680000000000000000	900.660000000000000000	2031.980000000000000000	1590.585000000000000000
 Manufacturer#2	almond aquamarine rose maroon antique	1698.660000000000000000	12724.680000000000000000	900.660000000000000000	2031.980000000000000000	1590.585000000000000000
 Manufacturer#2	almond antique violet turquoise frosted	1800.700000000000000000	12724.680000000000000000	900.660000000000000000	2031.980000000000000000	1590.585000000000000000
 Manufacturer#2	almond antique violet chocolate turquoise	1690.680000000000000000	12724.680000000000000000	900.660000000000000000	2031.980000000000000000	1590.585000000000000000
 Manufacturer#2	almond antique violet turquoise frosted	1800.700000000000000000	12724.680000000000000000	900.660000000000000000	2031.980000000000000000	1590.585000000000000000
+Manufacturer#2	almond antique violet turquoise frosted	1800.700000000000000000	12724.680000000000000000	900.660000000000000000	2031.980000000000000000	1590.585000000000000000
 Manufacturer#2	almond aquamarine sandy cyan gainsboro	1000.600000000000000000	12724.680000000000000000	900.660000000000000000	2031.980000000000000000	1590.585000000000000000
 Manufacturer#2	almond aquamarine midnight light salmon	2031.980000000000000000	12724.680000000000000000	900.660000000000000000	2031.980000000000000000	1590.585000000000000000
-Manufacturer#2	almond antique violet turquoise frosted	1800.700000000000000000	12724.680000000000000000	900.660000000000000000	2031.980000000000000000	1590.585000000000000000
-Manufacturer#1	almond antique chartreuse lavender yellow	1753.760000000000000000	17276.330000000000000000	1173.150000000000000000	1753.760000000000000000	1570.575454545454545455
-Manufacturer#1	almond aquamarine pink moccasin thistle	1632.660000000000000000	17276.330000000000000000	1173.150000000000000000	1753.760000000000000000	1570.575454545454545455
-Manufacturer#1	almond aquamarine pink moccasin thistle	1632.660000000000000000	17276.330000000000000000	1173.150000000000000000	1753.760000000000000000	1570.575454545454545455
-Manufacturer#1	almond antique chartreuse lavender yellow	1753.760000000000000000	17276.330000000000000000	1173.150000000000000000	1753.760000000000000000	1570.575454545454545455
-Manufacturer#1	almond aquamarine burnished black steel	1414.420000000000000000	17276.330000000000000000	1173.150000000000000000	1753.760000000000000000	1570.575454545454545455
-Manufacturer#1	almond antique burnished rose metallic	1173.150000000000000000	17276.330000000000000000	1173.150000000000000000	1753.760000000000000000	1570.575454545454545455
-Manufacturer#1	almond antique salmon chartreuse burlywood	1602.590000000000000000	17276.330000000000000000	1173.150000000000000000	1753.760000000000000000	1570.575454545454545455
-Manufacturer#1	almond antique chartreuse lavender yellow	1753.760000000000000000	17276.330000000000000000	1173.150000000000000000	1753.760000000000000000	1570.575454545454545455
-Manufacturer#1	almond antique burnished rose metallic	1173.150000000000000000	17276.330000000000000000	1173.150000000000000000	1753.760000000000000000	1570.575454545454545455
-Manufacturer#1	almond antique chartreuse lavender yellow	1753.760000000000000000	17276.330000000000000000	1173.150000000000000000	1753.760000000000000000	1570.575454545454545455
-Manufacturer#1	almond aquamarine pink moccasin thistle	NULL	17276.330000000000000000	1173.150000000000000000	1753.760000000000000000	1570.575454545454545455
-Manufacturer#1	almond aquamarine pink moccasin thistle	1632.660000000000000000	17276.330000000000000000	1173.150000000000000000	1753.760000000000000000	1570.575454545454545455
-Manufacturer#3	almond antique forest lavender goldenrod	590.270000000000000000	6386.150000000000000000	55.390000000000000000	1922.980000000000000000	912.307142857142857143
-Manufacturer#3	almond antique metallic orange dim	55.390000000000000000	6386.150000000000000000	55.390000000000000000	1922.980000000000000000	912.307142857142857143
-Manufacturer#3	almond antique forest lavender goldenrod	1190.270000000000000000	6386.150000000000000000	55.390000000000000000	1922.980000000000000000	912.307142857142857143
-Manufacturer#3	almond antique olive coral navajo	1337.290000000000000000	6386.150000000000000000	55.390000000000000000	1922.980000000000000000	912.307142857142857143
-Manufacturer#3	almond antique misty red olive	1922.980000000000000000	6386.150000000000000000	55.390000000000000000	1922.980000000000000000	912.307142857142857143
-Manufacturer#3	almond antique forest lavender goldenrod	1190.270000000000000000	6386.150000000000000000	55.390000000000000000	1922.980000000000000000	912.307142857142857143
 Manufacturer#3	almond antique forest lavender goldenrod	NULL	6386.150000000000000000	55.390000000000000000	1922.980000000000000000	912.307142857142857143
+Manufacturer#3	almond antique forest lavender goldenrod	1190.270000000000000000	6386.150000000000000000	55.390000000000000000	1922.980000000000000000	912.307142857142857143
+Manufacturer#3	almond antique forest lavender goldenrod	590.270000000000000000	6386.150000000000000000	55.390000000000000000	1922.980000000000000000	912.307142857142857143
+Manufacturer#3	almond antique forest lavender goldenrod	1190.270000000000000000	6386.150000000000000000	55.390000000000000000	1922.980000000000000000	912.307142857142857143
+Manufacturer#3	almond antique metallic orange dim	55.390000000000000000	6386.150000000000000000	55.390000000000000000	1922.980000000000000000	912.307142857142857143
+Manufacturer#3	almond antique olive coral navajo	1337.290000000000000000	6386.150000000000000000	55.390000000000000000	1922.980000000000000000	912.307142857142857143
 Manufacturer#3	almond antique chartreuse khaki white	99.680000000000000000	6386.150000000000000000	55.390000000000000000	1922.980000000000000000	912.307142857142857143
+Manufacturer#3	almond antique misty red olive	1922.980000000000000000	6386.150000000000000000	55.390000000000000000	1922.980000000000000000	912.307142857142857143
+Manufacturer#4	almond aquamarine floral ivory bisque	NULL	5716.950000000000000000	1206.260000000000000000	1844.920000000000000000	1429.237500000000000000
+Manufacturer#4	almond antique gainsboro frosted violet	NULL	5716.950000000000000000	1206.260000000000000000	1844.920000000000000000	1429.237500000000000000
+Manufacturer#4	almond aquamarine floral ivory bisque	1206.260000000000000000	5716.950000000000000000	1206.260000000000000000	1844.920000000000000000	1429.237500000000000000
+Manufacturer#4	almond aquamarine yellow dodger mint	1844.920000000000000000	5716.950000000000000000	1206.260000000000000000	1844.920000000000000000	1429.237500000000000000
+Manufacturer#4	almond azure aquamarine papaya violet	1290.350000000000000000	5716.950000000000000000	1206.260000000000000000	1844.920000000000000000	1429.237500000000000000
+Manufacturer#4	almond antique violet mint lemon	1375.420000000000000000	5716.950000000000000000	1206.260000000000000000	1844.920000000000000000	1429.237500000000000000
+Manufacturer#1	almond aquamarine pink moccasin thistle	1632.660000000000000000	17276.330000000000000000	1173.150000000000000000	1753.760000000000000000	1570.575454545454545455
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.760000000000000000	17276.330000000000000000	1173.150000000000000000	1753.760000000000000000	1570.575454545454545455
+Manufacturer#1	almond aquamarine pink moccasin thistle	1632.660000000000000000	17276.330000000000000000	1173.150000000000000000	1753.760000000000000000	1570.575454545454545455
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.760000000000000000	17276.330000000000000000	1173.150000000000000000	1753.760000000000000000	1570.575454545454545455
+Manufacturer#1	almond aquamarine pink moccasin thistle	1632.660000000000000000	17276.330000000000000000	1173.150000000000000000	1753.760000000000000000	1570.575454545454545455
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.760000000000000000	17276.330000000000000000	1173.150000000000000000	1753.760000000000000000	1570.575454545454545455
+Manufacturer#1	almond antique salmon chartreuse burlywood	1602.590000000000000000	17276.330000000000000000	1173.150000000000000000	1753.760000000000000000	1570.575454545454545455
+Manufacturer#1	almond antique burnished rose metallic	1173.150000000000000000	17276.330000000000000000	1173.150000000000000000	1753.760000000000000000	1570.575454545454545455
+Manufacturer#1	almond aquamarine burnished black steel	1414.420000000000000000	17276.330000000000000000	1173.150000000000000000	1753.760000000000000000	1570.575454545454545455
+Manufacturer#1	almond aquamarine pink moccasin thistle	NULL	17276.330000000000000000	1173.150000000000000000	1753.760000000000000000	1570.575454545454545455
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.760000000000000000	17276.330000000000000000	1173.150000000000000000	1753.760000000000000000	1570.575454545454545455
+Manufacturer#1	almond antique burnished rose metallic	1173.150000000000000000	17276.330000000000000000	1173.150000000000000000	1753.760000000000000000	1570.575454545454545455
+Manufacturer#5	almond antique medium spring khaki	1611.660000000000000000	9284.320000000000000000	1018.100000000000000000	1789.690000000000000000	1547.386666666666666667
+Manufacturer#5	almond aquamarine dodger light gainsboro	1018.100000000000000000	9284.320000000000000000	1018.100000000000000000	1789.690000000000000000	1547.386666666666666667
+Manufacturer#5	almond antique sky peru orange	1788.730000000000000000	9284.320000000000000000	1018.100000000000000000	1789.690000000000000000	1547.386666666666666667
+Manufacturer#5	almond antique medium spring khaki	1611.660000000000000000	9284.320000000000000000	1018.100000000000000000	1789.690000000000000000	1547.386666666666666667
+Manufacturer#5	almond azure blanched chiffon midnight	1464.480000000000000000	9284.320000000000000000	1018.100000000000000000	1789.690000000000000000	1547.386666666666666667
+Manufacturer#5	almond antique blue firebrick mint	1789.690000000000000000	9284.320000000000000000	1018.100000000000000000	1789.690000000000000000	1547.386666666666666667
 PREHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_retailprice,
 sum(p_retailprice) over(partition by p_mfgr order by p_name) as s,
@@ -4934,46 +4934,46 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_ptf_part_simple_orc_long
 #### A masked pattern was here ####
 p_mfgr	p_name	p_bigint	s	mi	ma	av
-Manufacturer#4	almond azure aquamarine papaya violet	129035	571695	120626	184492	142923.75
-Manufacturer#4	almond antique violet mint lemon	137542	571695	120626	184492	142923.75
-Manufacturer#4	almond aquamarine floral ivory bisque	NULL	571695	120626	184492	142923.75
-Manufacturer#4	almond antique gainsboro frosted violet	NULL	571695	120626	184492	142923.75
-Manufacturer#4	almond aquamarine yellow dodger mint	184492	571695	120626	184492	142923.75
-Manufacturer#4	almond aquamarine floral ivory bisque	120626	571695	120626	184492	142923.75
-Manufacturer#5	almond azure blanched chiffon midnight	146448	928432	101810	178969	154738.66666666666
-Manufacturer#5	almond aquamarine dodger light gainsboro	101810	928432	101810	178969	154738.66666666666
-Manufacturer#5	almond antique medium spring khaki	161166	928432	101810	178969	154738.66666666666
-Manufacturer#5	almond antique blue firebrick mint	178969	928432	101810	178969	154738.66666666666
-Manufacturer#5	almond antique medium spring khaki	161166	928432	101810	178969	154738.66666666666
-Manufacturer#5	almond antique sky peru orange	178873	928432	101810	178969	154738.66666666666
 Manufacturer#2	almond aquamarine rose maroon antique	90066	1272468	90066	203198	159058.5
 Manufacturer#2	almond aquamarine rose maroon antique	169866	1272468	90066	203198	159058.5
 Manufacturer#2	almond antique violet turquoise frosted	180070	1272468	90066	203198	159058.5
 Manufacturer#2	almond antique violet chocolate turquoise	169068	1272468	90066	203198	159058.5
 Manufacturer#2	almond antique violet turquoise frosted	180070	1272468	90066	203198	159058.5
+Manufacturer#2	almond antique violet turquoise frosted	180070	1272468	90066	203198	159058.5
 Manufacturer#2	almond aquamarine sandy cyan gainsboro	100060	1272468	90066	203198	159058.5
 Manufacturer#2	almond aquamarine midnight light salmon	203198	1272468	90066	203198	159058.5
-Manufacturer#2	almond antique violet turquoise frosted	180070	1272468	90066	203198	159058.5
-Manufacturer#1	almond antique chartreuse lavender yellow	175376	1727633	117315	175376	157057.54545454544
-Manufacturer#1	almond aquamarine pink moccasin thistle	163266	1727633	117315	175376	157057.54545454544
-Manufacturer#1	almond aquamarine pink moccasin thistle	163266	1727633	117315	175376	157057.54545454544
-Manufacturer#1	almond antique chartreuse lavender yellow	175376	1727633	117315	175376	157057.54545454544
-Manufacturer#1	almond aquamarine burnished black steel	141442	1727633	117315	175376	157057.54545454544
-Manufacturer#1	almond antique burnished rose metallic	117315	1727633	117315	175376	157057.54545454544
-Manufacturer#1	almond antique salmon chartreuse burlywood	160259	1727633	117315	175376	157057.54545454544
-Manufacturer#1	almond antique chartreuse lavender yellow	175376	1727633	117315	175376	157057.54545454544
-Manufacturer#1	almond antique burnished rose metallic	117315	1727633	117315	175376	157057.54545454544
-Manufacturer#1	almond antique chartreuse lavender yellow	175376	1727633	117315	175376	157057.54545454544
-Manufacturer#1	almond aquamarine pink moccasin thistle	NULL	1727633	117315	175376	157057.54545454544
-Manufacturer#1	almond aquamarine pink moccasin thistle	163266	1727633	117315	175376	157057.54545454544
-Manufacturer#3	almond antique forest lavender goldenrod	59027	638615	5539	192298	91230.71428571429
-Manufacturer#3	almond antique metallic orange dim	5539	638615	5539	192298	91230.71428571429
-Manufacturer#3	almond antique forest lavender goldenrod	119027	638615	5539	192298	91230.71428571429
-Manufacturer#3	almond antique olive coral navajo	133729	638615	5539	192298	91230.71428571429
-Manufacturer#3	almond antique misty red olive	192298	638615	5539	192298	91230.71428571429
-Manufacturer#3	almond antique forest lavender goldenrod	119027	638615	5539	192298	91230.71428571429
 Manufacturer#3	almond antique forest lavender goldenrod	NULL	638615	5539	192298	91230.71428571429
+Manufacturer#3	almond antique forest lavender goldenrod	119027	638615	5539	192298	91230.71428571429
+Manufacturer#3	almond antique forest lavender goldenrod	59027	638615	5539	192298	91230.71428571429
+Manufacturer#3	almond antique forest lavender goldenrod	119027	638615	5539	192298	91230.71428571429
+Manufacturer#3	almond antique metallic orange dim	5539	638615	5539	192298	91230.71428571429
+Manufacturer#3	almond antique olive coral navajo	133729	638615	5539	192298	91230.71428571429
 Manufacturer#3	almond antique chartreuse khaki white	9968	638615	5539	192298	91230.71428571429
+Manufacturer#3	almond antique misty red olive	192298	638615	5539	192298	91230.71428571429
+Manufacturer#4	almond aquamarine floral ivory bisque	NULL	571695	120626	184492	142923.75
+Manufacturer#4	almond antique gainsboro frosted violet	NULL	571695	120626	184492	142923.75
+Manufacturer#4	almond aquamarine floral ivory bisque	120626	571695	120626	184492	142923.75
+Manufacturer#4	almond aquamarine yellow dodger mint	184492	571695	120626	184492	142923.75
+Manufacturer#4	almond azure aquamarine papaya violet	129035	571695	120626	184492	142923.75
+Manufacturer#4	almond antique violet mint lemon	137542	571695	120626	184492	142923.75
+Manufacturer#1	almond aquamarine pink moccasin thistle	163266	1727633	117315	175376	157057.54545454544
+Manufacturer#1	almond antique chartreuse lavender yellow	175376	1727633	117315	175376	157057.54545454544
+Manufacturer#1	almond aquamarine pink moccasin thistle	163266	1727633	117315	175376	157057.54545454544
+Manufacturer#1	almond antique chartreuse lavender yellow	175376	1727633	117315	175376	157057.54545454544
+Manufacturer#1	almond aquamarine pink moccasin thistle	163266	1727633	117315	175376	157057.54545454544
+Manufacturer#1	almond antique chartreuse lavender yellow	175376	1727633	117315	175376	157057.54545454544
+Manufacturer#1	almond antique salmon chartreuse burlywood	160259	1727633	117315	175376	157057.54545454544
+Manufacturer#1	almond antique burnished rose metallic	117315	1727633	117315	175376	157057.54545454544
+Manufacturer#1	almond aquamarine burnished black steel	141442	1727633	117315	175376	157057.54545454544
+Manufacturer#1	almond aquamarine pink moccasin thistle	NULL	1727633	117315	175376	157057.54545454544
+Manufacturer#1	almond antique chartreuse lavender yellow	175376	1727633	117315	175376	157057.54545454544
+Manufacturer#1	almond antique burnished rose metallic	117315	1727633	117315	175376	157057.54545454544
+Manufacturer#5	almond antique medium spring khaki	161166	928432	101810	178969	154738.66666666666
+Manufacturer#5	almond aquamarine dodger light gainsboro	101810	928432	101810	178969	154738.66666666666
+Manufacturer#5	almond antique sky peru orange	178873	928432	101810	178969	154738.66666666666
+Manufacturer#5	almond antique medium spring khaki	161166	928432	101810	178969	154738.66666666666
+Manufacturer#5	almond azure blanched chiffon midnight	146448	928432	101810	178969	154738.66666666666
+Manufacturer#5	almond antique blue firebrick mint	178969	928432	101810	178969	154738.66666666666
 PREHOOK: query: explain vectorization detail
 select p_mfgr,p_name, p_bigint,
 sum(p_bigint) over(partition by p_mfgr order by p_name) as s,
@@ -5363,46 +5363,46 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 p_mfgr	p_retailprice	r
-Manufacturer#4	1290.35	1
-Manufacturer#4	1375.42	1
-Manufacturer#4	NULL	1
-Manufacturer#4	NULL	1
-Manufacturer#4	1844.92	1
-Manufacturer#4	1206.26	1
-Manufacturer#5	1464.48	1
-Manufacturer#5	1018.1	1
-Manufacturer#5	1611.66	1
-Manufacturer#5	1789.69	1
-Manufacturer#5	1611.66	1
-Manufacturer#5	1788.73	1
 Manufacturer#2	900.66	1
 Manufacturer#2	1698.66	1
 Manufacturer#2	1800.7	1
 Manufacturer#2	1690.68	1
 Manufacturer#2	1800.7	1
+Manufacturer#2	1800.7	1
 Manufacturer#2	1000.6	1
 Manufacturer#2	2031.98	1
-Manufacturer#2	1800.7	1
-Manufacturer#1	1753.76	1
-Manufacturer#1	1632.66	1
-Manufacturer#1	1632.66	1
-Manufacturer#1	1753.76	1
-Manufacturer#1	1414.42	1
-Manufacturer#1	1173.15	1
-Manufacturer#1	1602.59	1
-Manufacturer#1	1753.76	1
-Manufacturer#1	1173.15	1
-Manufacturer#1	1753.76	1
-Manufacturer#1	NULL	1
-Manufacturer#1	1632.66	1
-Manufacturer#3	590.27	1
-Manufacturer#3	55.39	1
-Manufacturer#3	1190.27	1
-Manufacturer#3	1337.29	1
-Manufacturer#3	1922.98	1
-Manufacturer#3	1190.27	1
 Manufacturer#3	NULL	1
+Manufacturer#3	1190.27	1
+Manufacturer#3	590.27	1
+Manufacturer#3	1190.27	1
+Manufacturer#3	55.39	1
+Manufacturer#3	1337.29	1
 Manufacturer#3	99.68	1
+Manufacturer#3	1922.98	1
+Manufacturer#4	NULL	1
+Manufacturer#4	NULL	1
+Manufacturer#4	1206.26	1
+Manufacturer#4	1844.92	1
+Manufacturer#4	1290.35	1
+Manufacturer#4	1375.42	1
+Manufacturer#1	1632.66	1
+Manufacturer#1	1753.76	1
+Manufacturer#1	1632.66	1
+Manufacturer#1	1753.76	1
+Manufacturer#1	1632.66	1
+Manufacturer#1	1753.76	1
+Manufacturer#1	1602.59	1
+Manufacturer#1	1173.15	1
+Manufacturer#1	1414.42	1
+Manufacturer#1	NULL	1
+Manufacturer#1	1753.76	1
+Manufacturer#1	1173.15	1
+Manufacturer#5	1611.66	1
+Manufacturer#5	1018.1	1
+Manufacturer#5	1788.73	1
+Manufacturer#5	1611.66	1
+Manufacturer#5	1464.48	1
+Manufacturer#5	1789.69	1
 PREHOOK: query: explain vectorization detail
 select p_mfgr, p_retailprice,
 rank() over(partition by p_mfgr order by p_name) as r
@@ -5733,18 +5733,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 p_mfgr	p_name	p_retailprice	r
-Manufacturer#1	almond aquamarine burnished black steel	1414.42	1
-Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	1
-Manufacturer#1	almond aquamarine pink moccasin thistle	NULL	1
-Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	1
-Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	1
-Manufacturer#1	almond antique burnished rose metallic	1173.15	1
-Manufacturer#1	almond antique salmon chartreuse burlywood	1602.59	1
-Manufacturer#1	almond antique burnished rose metallic	1173.15	1
-Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	1
-Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	1
-Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	1
-Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	1
 Manufacturer#2	almond aquamarine rose maroon antique	900.66	1
 Manufacturer#2	almond aquamarine rose maroon antique	1698.66	1
 Manufacturer#2	almond antique violet turquoise frosted	1800.7	1
@@ -5753,26 +5741,38 @@ Manufacturer#2	almond antique violet turquoise frosted	1800.7	1
 Manufacturer#2	almond antique violet turquoise frosted	1800.7	1
 Manufacturer#2	almond aquamarine sandy cyan gainsboro	1000.6	1
 Manufacturer#2	almond aquamarine midnight light salmon	2031.98	1
-Manufacturer#4	almond antique violet mint lemon	1375.42	1
-Manufacturer#4	almond antique gainsboro frosted violet	NULL	1
-Manufacturer#4	almond aquamarine floral ivory bisque	NULL	1
-Manufacturer#4	almond aquamarine floral ivory bisque	1206.26	1
+Manufacturer#5	almond antique sky peru orange	1788.73	1
+Manufacturer#5	almond antique medium spring khaki	1611.66	1
+Manufacturer#5	almond antique medium spring khaki	1611.66	1
+Manufacturer#5	almond aquamarine dodger light gainsboro	1018.1	1
+Manufacturer#5	almond azure blanched chiffon midnight	1464.48	1
+Manufacturer#5	almond antique blue firebrick mint	1789.69	1
 Manufacturer#4	almond azure aquamarine papaya violet	1290.35	1
+Manufacturer#4	almond aquamarine floral ivory bisque	NULL	1
+Manufacturer#4	almond antique gainsboro frosted violet	NULL	1
+Manufacturer#4	almond antique violet mint lemon	1375.42	1
 Manufacturer#4	almond aquamarine yellow dodger mint	1844.92	1
-Manufacturer#3	almond antique misty red olive	1922.98	1
-Manufacturer#3	almond antique chartreuse khaki white	99.68	1
+Manufacturer#4	almond aquamarine floral ivory bisque	1206.26	1
+Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	1
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	1
+Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	1
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	1
+Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	1
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	1
+Manufacturer#1	almond antique salmon chartreuse burlywood	1602.59	1
+Manufacturer#1	almond antique burnished rose metallic	1173.15	1
+Manufacturer#1	almond aquamarine burnished black steel	1414.42	1
+Manufacturer#1	almond aquamarine pink moccasin thistle	NULL	1
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	1
+Manufacturer#1	almond antique burnished rose metallic	1173.15	1
+Manufacturer#3	almond antique forest lavender goldenrod	1190.27	1
 Manufacturer#3	almond antique forest lavender goldenrod	1190.27	1
 Manufacturer#3	almond antique metallic orange dim	55.39	1
 Manufacturer#3	almond antique olive coral navajo	1337.29	1
-Manufacturer#3	almond antique forest lavender goldenrod	1190.27	1
+Manufacturer#3	almond antique chartreuse khaki white	99.68	1
 Manufacturer#3	almond antique forest lavender goldenrod	590.27	1
+Manufacturer#3	almond antique misty red olive	1922.98	1
 Manufacturer#3	almond antique forest lavender goldenrod	NULL	1
-Manufacturer#5	almond antique medium spring khaki	1611.66	1
-Manufacturer#5	almond aquamarine dodger light gainsboro	1018.1	1
-Manufacturer#5	almond antique sky peru orange	1788.73	1
-Manufacturer#5	almond antique medium spring khaki	1611.66	1
-Manufacturer#5	almond azure blanched chiffon midnight	1464.48	1
-Manufacturer#5	almond antique blue firebrick mint	1789.69	1
 PREHOOK: query: explain vectorization detail
 select p_mfgr, p_name, p_retailprice,
 rank() over(partition by p_mfgr, case when p_mfgr == "Manufacturer#2" then timestamp "2000-01-01 00:00:00" end order by p_name) as r
@@ -6000,46 +6000,46 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 p_mfgr	p_name	p_retailprice	rn	r	dr	fv	lv	c	cs
-Manufacturer#4	almond azure aquamarine papaya violet	1290.35	1	1	1	1290.35	1206.26	4	6
-Manufacturer#4	almond antique violet mint lemon	1375.42	2	1	1	1290.35	1206.26	4	6
-Manufacturer#4	almond aquamarine floral ivory bisque	NULL	3	1	1	1290.35	1206.26	4	6
-Manufacturer#4	almond antique gainsboro frosted violet	NULL	4	1	1	1290.35	1206.26	4	6
-Manufacturer#4	almond aquamarine yellow dodger mint	1844.92	5	1	1	1290.35	1206.26	4	6
-Manufacturer#4	almond aquamarine floral ivory bisque	1206.26	6	1	1	1290.35	1206.26	4	6
-Manufacturer#5	almond azure blanched chiffon midnight	1464.48	1	1	1	1464.48	1788.73	6	6
-Manufacturer#5	almond aquamarine dodger light gainsboro	1018.1	2	1	1	1464.48	1788.73	6	6
-Manufacturer#5	almond antique medium spring khaki	1611.66	3	1	1	1464.48	1788.73	6	6
-Manufacturer#5	almond antique blue firebrick mint	1789.69	4	1	1	1464.48	1788.73	6	6
-Manufacturer#5	almond antique medium spring khaki	1611.66	5	1	1	1464.48	1788.73	6	6
-Manufacturer#5	almond antique sky peru orange	1788.73	6	1	1	1464.48	1788.73	6	6
-Manufacturer#2	almond aquamarine rose maroon antique	900.66	1	1	1	900.66	1800.7	8	8
-Manufacturer#2	almond aquamarine rose maroon antique	1698.66	2	1	1	900.66	1800.7	8	8
-Manufacturer#2	almond antique violet turquoise frosted	1800.7	3	1	1	900.66	1800.7	8	8
-Manufacturer#2	almond antique violet chocolate turquoise	1690.68	4	1	1	900.66	1800.7	8	8
-Manufacturer#2	almond antique violet turquoise frosted	1800.7	5	1	1	900.66	1800.7	8	8
-Manufacturer#2	almond aquamarine sandy cyan gainsboro	1000.6	6	1	1	900.66	1800.7	8	8
-Manufacturer#2	almond aquamarine midnight light salmon	2031.98	7	1	1	900.66	1800.7	8	8
-Manufacturer#2	almond antique violet turquoise frosted	1800.7	8	1	1	900.66	1800.7	8	8
-Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	1	1	1	1753.76	1632.66	11	12
-Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	2	1	1	1753.76	1632.66	11	12
-Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	3	1	1	1753.76	1632.66	11	12
-Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	4	1	1	1753.76	1632.66	11	12
-Manufacturer#1	almond aquamarine burnished black steel	1414.42	5	1	1	1753.76	1632.66	11	12
-Manufacturer#1	almond antique burnished rose metallic	1173.15	6	1	1	1753.76	1632.66	11	12
-Manufacturer#1	almond antique salmon chartreuse burlywood	1602.59	7	1	1	1753.76	1632.66	11	12
-Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	8	1	1	1753.76	1632.66	11	12
-Manufacturer#1	almond antique burnished rose metallic	1173.15	9	1	1	1753.76	1632.66	11	12
-Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	10	1	1	1753.76	1632.66	11	12
-Manufacturer#1	almond aquamarine pink moccasin thistle	NULL	11	1	1	1753.76	1632.66	11	12
-Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	12	1	1	1753.76	1632.66	11	12
-Manufacturer#3	almond antique forest lavender goldenrod	590.27	1	1	1	590.27	99.68	7	8
-Manufacturer#3	almond antique metallic orange dim	55.39	2	1	1	590.27	99.68	7	8
-Manufacturer#3	almond antique forest lavender goldenrod	1190.27	3	1	1	590.27	99.68	7	8
-Manufacturer#3	almond antique olive coral navajo	1337.29	4	1	1	590.27	99.68	7	8
-Manufacturer#3	almond antique misty red olive	1922.98	5	1	1	590.27	99.68	7	8
-Manufacturer#3	almond antique forest lavender goldenrod	1190.27	6	1	1	590.27	99.68	7	8
-Manufacturer#3	almond antique forest lavender goldenrod	NULL	7	1	1	590.27	99.68	7	8
-Manufacturer#3	almond antique chartreuse khaki white	99.68	8	1	1	590.27	99.68	7	8
+Manufacturer#2	almond aquamarine rose maroon antique	900.66	1	1	1	900.66	2031.98	8	8
+Manufacturer#2	almond aquamarine rose maroon antique	1698.66	2	1	1	900.66	2031.98	8	8
+Manufacturer#2	almond antique violet turquoise frosted	1800.7	3	1	1	900.66	2031.98	8	8
+Manufacturer#2	almond antique violet chocolate turquoise	1690.68	4	1	1	900.66	2031.98	8	8
+Manufacturer#2	almond antique violet turquoise frosted	1800.7	5	1	1	900.66	2031.98	8	8
+Manufacturer#2	almond antique violet turquoise frosted	1800.7	6	1	1	900.66	2031.98	8	8
+Manufacturer#2	almond aquamarine sandy cyan gainsboro	1000.6	7	1	1	900.66	2031.98	8	8
+Manufacturer#2	almond aquamarine midnight light salmon	2031.98	8	1	1	900.66	2031.98	8	8
+Manufacturer#3	almond antique forest lavender goldenrod	NULL	1	1	1	NULL	1922.98	7	8
+Manufacturer#3	almond antique forest lavender goldenrod	1190.27	2	1	1	NULL	1922.98	7	8
+Manufacturer#3	almond antique forest lavender goldenrod	590.27	3	1	1	NULL	1922.98	7	8
+Manufacturer#3	almond antique forest lavender goldenrod	1190.27	4	1	1	NULL	1922.98	7	8
+Manufacturer#3	almond antique metallic orange dim	55.39	5	1	1	NULL	1922.98	7	8
+Manufacturer#3	almond antique olive coral navajo	1337.29	6	1	1	NULL	1922.98	7	8
+Manufacturer#3	almond antique chartreuse khaki white	99.68	7	1	1	NULL	1922.98	7	8
+Manufacturer#3	almond antique misty red olive	1922.98	8	1	1	NULL	1922.98	7	8
+Manufacturer#4	almond aquamarine floral ivory bisque	NULL	1	1	1	NULL	1375.42	4	6
+Manufacturer#4	almond antique gainsboro frosted violet	NULL	2	1	1	NULL	1375.42	4	6
+Manufacturer#4	almond aquamarine floral ivory bisque	1206.26	3	1	1	NULL	1375.42	4	6
+Manufacturer#4	almond aquamarine yellow dodger mint	1844.92	4	1	1	NULL	1375.42	4	6
+Manufacturer#4	almond azure aquamarine papaya violet	1290.35	5	1	1	NULL	1375.42	4	6
+Manufacturer#4	almond antique violet mint lemon	1375.42	6	1	1	NULL	1375.42	4	6
+Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	1	1	1	1632.66	1173.15	11	12
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	2	1	1	1632.66	1173.15	11	12
+Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	3	1	1	1632.66	1173.15	11	12
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	4	1	1	1632.66	1173.15	11	12
+Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	5	1	1	1632.66	1173.15	11	12
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	6	1	1	1632.66	1173.15	11	12
+Manufacturer#1	almond antique salmon chartreuse burlywood	1602.59	7	1	1	1632.66	1173.15	11	12
+Manufacturer#1	almond antique burnished rose metallic	1173.15	8	1	1	1632.66	1173.15	11	12
+Manufacturer#1	almond aquamarine burnished black steel	1414.42	9	1	1	1632.66	1173.15	11	12
+Manufacturer#1	almond aquamarine pink moccasin thistle	NULL	10	1	1	1632.66	1173.15	11	12
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	11	1	1	1632.66	1173.15	11	12
+Manufacturer#1	almond antique burnished rose metallic	1173.15	12	1	1	1632.66	1173.15	11	12
+Manufacturer#5	almond antique medium spring khaki	1611.66	1	1	1	1611.66	1789.69	6	6
+Manufacturer#5	almond aquamarine dodger light gainsboro	1018.1	2	1	1	1611.66	1789.69	6	6
+Manufacturer#5	almond antique sky peru orange	1788.73	3	1	1	1611.66	1789.69	6	6
+Manufacturer#5	almond antique medium spring khaki	1611.66	4	1	1	1611.66	1789.69	6	6
+Manufacturer#5	almond azure blanched chiffon midnight	1464.48	5	1	1	1611.66	1789.69	6	6
+Manufacturer#5	almond antique blue firebrick mint	1789.69	6	1	1	1611.66	1789.69	6	6
 PREHOOK: query: select p_mfgr,p_name, p_retailprice,
 row_number() over(partition by p_mfgr order by p_name) as rn,
 rank() over(partition by p_mfgr order by p_name) as r,
@@ -6264,46 +6264,46 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 p_mfgr	p_retailprice	r
-Manufacturer#4	1290.35	1
-Manufacturer#4	1375.42	1
-Manufacturer#4	NULL	1
-Manufacturer#4	NULL	1
-Manufacturer#4	1844.92	1
-Manufacturer#4	1206.26	1
-Manufacturer#5	1464.48	1
-Manufacturer#5	1018.1	1
-Manufacturer#5	1611.66	1
-Manufacturer#5	1789.69	1
-Manufacturer#5	1611.66	1
-Manufacturer#5	1788.73	1
 Manufacturer#2	900.66	1
 Manufacturer#2	1698.66	1
 Manufacturer#2	1800.7	1
 Manufacturer#2	1690.68	1
 Manufacturer#2	1800.7	1
+Manufacturer#2	1800.7	1
 Manufacturer#2	1000.6	1
 Manufacturer#2	2031.98	1
-Manufacturer#2	1800.7	1
-Manufacturer#1	1753.76	1
-Manufacturer#1	1632.66	1
-Manufacturer#1	1632.66	1
-Manufacturer#1	1753.76	1
-Manufacturer#1	1414.42	1
-Manufacturer#1	1173.15	1
-Manufacturer#1	1602.59	1
-Manufacturer#1	1753.76	1
-Manufacturer#1	1173.15	1
-Manufacturer#1	1753.76	1
-Manufacturer#1	NULL	1
-Manufacturer#1	1632.66	1
-Manufacturer#3	590.27	1
-Manufacturer#3	55.39	1
-Manufacturer#3	1190.27	1
-Manufacturer#3	1337.29	1
-Manufacturer#3	1922.98	1
-Manufacturer#3	1190.27	1
 Manufacturer#3	NULL	1
+Manufacturer#3	1190.27	1
+Manufacturer#3	590.27	1
+Manufacturer#3	1190.27	1
+Manufacturer#3	55.39	1
+Manufacturer#3	1337.29	1
 Manufacturer#3	99.68	1
+Manufacturer#3	1922.98	1
+Manufacturer#4	NULL	1
+Manufacturer#4	NULL	1
+Manufacturer#4	1206.26	1
+Manufacturer#4	1844.92	1
+Manufacturer#4	1290.35	1
+Manufacturer#4	1375.42	1
+Manufacturer#1	1632.66	1
+Manufacturer#1	1753.76	1
+Manufacturer#1	1632.66	1
+Manufacturer#1	1753.76	1
+Manufacturer#1	1632.66	1
+Manufacturer#1	1753.76	1
+Manufacturer#1	1602.59	1
+Manufacturer#1	1173.15	1
+Manufacturer#1	1414.42	1
+Manufacturer#1	NULL	1
+Manufacturer#1	1753.76	1
+Manufacturer#1	1173.15	1
+Manufacturer#5	1611.66	1
+Manufacturer#5	1018.1	1
+Manufacturer#5	1788.73	1
+Manufacturer#5	1611.66	1
+Manufacturer#5	1464.48	1
+Manufacturer#5	1789.69	1
 PREHOOK: query: explain vectorization detail
 select p_mfgr, p_retailprice,
 rank() over(partition by p_mfgr order by p_name) as r
@@ -6836,18 +6836,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 p_mfgr	p_name	p_retailprice	r
-Manufacturer#1	almond aquamarine burnished black steel	1414.42	1
-Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	1
-Manufacturer#1	almond aquamarine pink moccasin thistle	NULL	1
-Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	1
-Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	1
-Manufacturer#1	almond antique burnished rose metallic	1173.15	1
-Manufacturer#1	almond antique salmon chartreuse burlywood	1602.59	1
-Manufacturer#1	almond antique burnished rose metallic	1173.15	1
-Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	1
-Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	1
-Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	1
-Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	1
 Manufacturer#2	almond aquamarine rose maroon antique	900.66	1
 Manufacturer#2	almond aquamarine rose maroon antique	1698.66	1
 Manufacturer#2	almond antique violet turquoise frosted	1800.7	1
@@ -6856,23 +6844,35 @@ Manufacturer#2	almond antique violet turquoise frosted	1800.7	1
 Manufacturer#2	almond antique violet turquoise frosted	1800.7	1
 Manufacturer#2	almond aquamarine sandy cyan gainsboro	1000.6	1
 Manufacturer#2	almond aquamarine midnight light salmon	2031.98	1
-Manufacturer#4	almond antique violet mint lemon	1375.42	1
-Manufacturer#4	almond antique gainsboro frosted violet	NULL	1
-Manufacturer#4	almond aquamarine floral ivory bisque	NULL	1
-Manufacturer#4	almond aquamarine floral ivory bisque	1206.26	1
+Manufacturer#5	almond antique sky peru orange	1788.73	1
+Manufacturer#5	almond antique medium spring khaki	1611.66	1
+Manufacturer#5	almond antique medium spring khaki	1611.66	1
+Manufacturer#5	almond aquamarine dodger light gainsboro	1018.1	1
+Manufacturer#5	almond azure blanched chiffon midnight	1464.48	1
+Manufacturer#5	almond antique blue firebrick mint	1789.69	1
 Manufacturer#4	almond azure aquamarine papaya violet	1290.35	1
+Manufacturer#4	almond aquamarine floral ivory bisque	NULL	1
+Manufacturer#4	almond antique gainsboro frosted violet	NULL	1
+Manufacturer#4	almond antique violet mint lemon	1375.42	1
 Manufacturer#4	almond aquamarine yellow dodger mint	1844.92	1
-Manufacturer#3	almond antique misty red olive	1922.98	1
-Manufacturer#3	almond antique chartreuse khaki white	99.68	1
+Manufacturer#4	almond aquamarine floral ivory bisque	1206.26	1
+Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	1
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	1
+Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	1
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	1
+Manufacturer#1	almond aquamarine pink moccasin thistle	1632.66	1
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	1
+Manufacturer#1	almond antique salmon chartreuse burlywood	1602.59	1
+Manufacturer#1	almond antique burnished rose metallic	1173.15	1
+Manufacturer#1	almond aquamarine burnished black steel	1414.42	1
+Manufacturer#1	almond aquamarine pink moccasin thistle	NULL	1
+Manufacturer#1	almond antique chartreuse lavender yellow	1753.76	1
+Manufacturer#1	almond antique burnished rose metallic	1173.15	1
+Manufacturer#3	almond antique forest lavender goldenrod	1190.27	1
 Manufacturer#3	almond antique forest lavender goldenrod	1190.27	1
 Manufacturer#3	almond antique metallic orange dim	55.39	1
 Manufacturer#3	almond antique olive coral navajo	1337.29	1
-Manufacturer#3	almond antique forest lavender goldenrod	1190.27	1
+Manufacturer#3	almond antique chartreuse khaki white	99.68	1
 Manufacturer#3	almond antique forest lavender goldenrod	590.27	1
+Manufacturer#3	almond antique misty red olive	1922.98	1
 Manufacturer#3	almond antique forest lavender goldenrod	NULL	1
-Manufacturer#5	almond antique medium spring khaki	1611.66	1
-Manufacturer#5	almond aquamarine dodger light gainsboro	1018.1	1
-Manufacturer#5	almond antique sky peru orange	1788.73	1
-Manufacturer#5	almond antique medium spring khaki	1611.66	1
-Manufacturer#5	almond azure blanched chiffon midnight	1464.48	1
-Manufacturer#5	almond antique blue firebrick mint	1789.69	1

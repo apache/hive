@@ -85,6 +85,7 @@ PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES cmv_mat_view
 POSTHOOK: type: SHOW_TBLPROPERTIES
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true"}
+bucketing_version	2
 druid.datasource	default.cmv_mat_view
 druid.segment.granularity	HOUR
 numFiles	0
@@ -131,6 +132,7 @@ PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES cmv_mat_view2
 POSTHOOK: type: SHOW_TBLPROPERTIES
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true"}
+bucketing_version	2
 druid.datasource	default.cmv_mat_view2
 druid.segment.granularity	HOUR
 numFiles	0
@@ -502,6 +504,7 @@ PREHOOK: query: SHOW TBLPROPERTIES cmv_mat_view2
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES cmv_mat_view2
 POSTHOOK: type: SHOW_TBLPROPERTIES
+bucketing_version	2
 druid.datasource	default.cmv_mat_view2
 druid.segment.granularity	HOUR
 #### A masked pattern was here ####
