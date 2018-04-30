@@ -66,6 +66,21 @@
       <version>${commons-lang.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.apache.arrow</groupId>
+      <artifactId>arrow-vector</artifactId>
+      <version>${arrow.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.carrotsearch</groupId>
+      <artifactId>hppc</artifactId>
+      <version>${hppc.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.vlkan</groupId>
+      <artifactId>flatbuffers</artifactId>
+      <version>${flatbuffers.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.apache.avro</groupId>
       <artifactId>avro</artifactId>
       <version>${avro.version}</version>
