@@ -891,14 +891,18 @@ public class HiveSchemaTool {
       throws HiveMetaException {
     catName = normalizeIdentifier(catName);
     System.out.println("Create catalog " + catName + " at location " + location);
-    try (Connection conn = getConnectionToMetastore(false)) {
+
+    Connection conn = getConnectionToMetastore(true);
+    boolean success = false;
+    try {
+      conn.setAutoCommit(false);
       try (Statement stmt = conn.createStatement()) {
-        conn.setAutoCommit(false);
         // If they set ifNotExists check for existence first, and bail if it exists.  This is
         // more reliable then attempting to parse the error message from the SQLException.
         if (ifNotExists) {
           String query = "select " + quoteIf("NAME") + " from " + quoteIf("CTLGS") +
               " where " + quoteIf("NAME") + " = '" + catName + "'";
+          LOG.debug("Going to run " + query);
           ResultSet rs = stmt.executeQuery(query);
           if (rs.next()) {
             System.out.println("Catalog " + catName + " already exists");
@@ -911,6 +915,7 @@ public class HiveSchemaTool {
             ), hiveConf);
         String query = sqlGenerator.addForUpdateClause("select max(" + quoteIf("CTLG_ID") + ") " +
             "from " + quoteIf("CTLGS"));
+        LOG.debug("Going to run " + query);
         ResultSet rs = stmt.executeQuery(query);
         if (!rs.next()) {
           throw new HiveMetaException("No catalogs found, have you upgraded the database?");
@@ -920,11 +925,20 @@ public class HiveSchemaTool {
         String update = "insert into " + quoteIf("CTLGS") +
             "(" + quoteIf("CTLG_ID") + ", " + quoteIf("NAME") + ", " + quoteAlways("DESC") + ", " + quoteIf( "LOCATION_URI") + ") " +
             " values (" + catNum + ", '" + catName + "', '" + description + "', '" + location + "')";
+        LOG.debug("Going to run " + update);
         stmt.execute(update);
         conn.commit();
+        success = true;
       }
     } catch (MetaException|SQLException e) {
       throw new HiveMetaException("Failed to add catalog", e);
+    } finally {
+      try {
+        if (!success) conn.rollback();
+      } catch (SQLException e) {
+        // Not really much we can do here.
+        LOG.error("Failed to rollback, everything will probably go bad from here.");
+      }
     }
   }
 
@@ -935,39 +949,43 @@ public class HiveSchemaTool {
     dbName = normalizeIdentifier(dbName);
     System.out.println("Moving database " + dbName + " from catalog " + fromCatName +
         " to catalog " + toCatName);
-    try (Connection conn = getConnectionToMetastore(false)) {
+    Connection conn = getConnectionToMetastore(true);
+    boolean success = false;
+    try {
+      conn.setAutoCommit(false);
       try (Statement stmt = conn.createStatement()) {
-        conn.setAutoCommit(false);
-        updateCatalogNameInTable(conn, stmt, "DBS", "CTLG_NAME", "NAME", fromCatName, toCatName, dbName, false);
-        updateCatalogNameInTable(conn, stmt, "TAB_COL_STATS", "CAT_NAME", "DB_NAME", fromCatName, toCatName, dbName, true);
-        updateCatalogNameInTable(conn, stmt, "PART_COL_STATS", "CAT_NAME", "DB_NAME", fromCatName, toCatName, dbName, true);
-        updateCatalogNameInTable(conn, stmt, "PARTITION_EVENTS", "CAT_NAME", "DB_NAME", fromCatName, toCatName, dbName, true);
-        updateCatalogNameInTable(conn, stmt, "NOTIFICATION_LOG", "CAT_NAME", "DB_NAME", fromCatName, toCatName, dbName, true);
+        updateCatalogNameInTable(stmt, "DBS", "CTLG_NAME", "NAME", fromCatName, toCatName, dbName, false);
+        updateCatalogNameInTable(stmt, "TAB_COL_STATS", "CAT_NAME", "DB_NAME", fromCatName, toCatName, dbName, true);
+        updateCatalogNameInTable(stmt, "PART_COL_STATS", "CAT_NAME", "DB_NAME", fromCatName, toCatName, dbName, true);
+        updateCatalogNameInTable(stmt, "PARTITION_EVENTS", "CAT_NAME", "DB_NAME", fromCatName, toCatName, dbName, true);
+        updateCatalogNameInTable(stmt, "NOTIFICATION_LOG", "CAT_NAME", "DB_NAME", fromCatName, toCatName, dbName, true);
         conn.commit();
+        success = true;
       }
     } catch (SQLException e) {
       throw new HiveMetaException("Failed to move database", e);
+    } finally {
+      try {
+        if (!success) conn.rollback();
+      } catch (SQLException e) {
+        // Not really much we can do here.
+        LOG.error("Failed to rollback, everything will probably go bad from here.");
+      }
     }
   }
 
-  private void updateCatalogNameInTable(Connection conn, Statement stmt, String tableName,
-                                        String catColName, String dbColName, String fromCatName,
+  private void updateCatalogNameInTable(Statement stmt, String tableName, String catColName,
+                                        String dbColName, String fromCatName,
                                         String toCatName, String dbName, boolean zeroUpdatesOk)
       throws HiveMetaException, SQLException {
     String update = "update " + quoteIf(tableName) + " " +
         "set " + quoteIf(catColName) + " = '" + toCatName + "' " +
         "where " + quoteIf(catColName) + " = '" + fromCatName + "' and " + quoteIf(dbColName) + " = '" + dbName + "'";
     LOG.debug("Going to run " + update);
-    try {
-      int numUpdated = stmt.executeUpdate(update);
-      if (numUpdated != 1 && !(zeroUpdatesOk && numUpdated == 0)) {
-        conn.rollback();
-        throw new HiveMetaException("Failed to properly update the " + tableName +
-            " table.  Expected to update 1 row but instead updated " + numUpdated);
-      }
-    } catch (SQLException e) {
-      conn.rollback();
-      throw e;
+    int numUpdated = stmt.executeUpdate(update);
+    if (numUpdated != 1 && !(zeroUpdatesOk && numUpdated == 0)) {
+      throw new HiveMetaException("Failed to properly update the " + tableName +
+          " table.  Expected to update 1 row but instead updated " + numUpdated);
     }
   }
 
@@ -979,9 +997,11 @@ public class HiveSchemaTool {
     fromDb = normalizeIdentifier(fromDb);
     toDb = normalizeIdentifier(toDb);
     tableName = normalizeIdentifier(tableName);
-    try (Connection conn = getConnectionToMetastore(false)) {
+    Connection conn = getConnectionToMetastore(true);
+    boolean success = false;
+    try {
+      conn.setAutoCommit(false);
       try (Statement stmt = conn.createStatement()) {
-        conn.setAutoCommit(false);
         // Find the old database id
         String query = "select " + quoteIf("DB_ID") +
             " from " + quoteIf("DBS") +
@@ -990,7 +1010,6 @@ public class HiveSchemaTool {
         LOG.debug("Going to run " + query);
         ResultSet rs = stmt.executeQuery(query);
         if (!rs.next()) {
-          conn.rollback();
           throw new HiveMetaException("Unable to find database " + fromDb);
         }
         long oldDbId = rs.getLong(1);
@@ -1003,41 +1022,42 @@ public class HiveSchemaTool {
         LOG.debug("Going to run " + query);
         rs = stmt.executeQuery(query);
         if (!rs.next()) {
-          conn.rollback();
           throw new HiveMetaException("Unable to find database " + toDb);
         }
         long newDbId = rs.getLong(1);
 
-        try {
-          String update = "update " + quoteIf("TBLS") + " " +
-              "set " + quoteIf("DB_ID") + " = " + newDbId + " " +
-              "where " + quoteIf("DB_ID") + " = " + oldDbId +
-                  " and " + quoteIf("TBL_NAME") + " = '" + tableName + "'";
-          LOG.debug("Going to run " + update);
-          int numUpdated = stmt.executeUpdate(update);
-          if (numUpdated != 1) {
-            conn.rollback();
-            throw new HiveMetaException(
-                "Failed to properly update TBLS table.  Expected to update " +
-                    "1 row but instead updated " + numUpdated);
-          }
-        } catch (SQLException e) {
-          conn.rollback();
-          throw e;
+        String update = "update " + quoteIf("TBLS") + " " +
+            "set " + quoteIf("DB_ID") + " = " + newDbId + " " +
+            "where " + quoteIf("DB_ID") + " = " + oldDbId +
+                " and " + quoteIf("TBL_NAME") + " = '" + tableName + "'";
+        LOG.debug("Going to run " + update);
+        int numUpdated = stmt.executeUpdate(update);
+        if (numUpdated != 1) {
+          throw new HiveMetaException(
+              "Failed to properly update TBLS table.  Expected to update " +
+                  "1 row but instead updated " + numUpdated);
         }
-        updateDbNameForTable(conn, stmt, "TAB_COL_STATS", "TABLE_NAME", fromCat, toCat, fromDb, toDb, tableName);
-        updateDbNameForTable(conn, stmt, "PART_COL_STATS", "TABLE_NAME", fromCat, toCat, fromDb, toDb, tableName);
-        updateDbNameForTable(conn, stmt, "PARTITION_EVENTS", "TBL_NAME", fromCat, toCat, fromDb, toDb, tableName);
-        updateDbNameForTable(conn, stmt, "NOTIFICATION_LOG", "TBL_NAME", fromCat, toCat, fromDb, toDb, tableName);
+        updateDbNameForTable(stmt, "TAB_COL_STATS", "TABLE_NAME", fromCat, toCat, fromDb, toDb, tableName);
+        updateDbNameForTable(stmt, "PART_COL_STATS", "TABLE_NAME", fromCat, toCat, fromDb, toDb, tableName);
+        updateDbNameForTable(stmt, "PARTITION_EVENTS", "TBL_NAME", fromCat, toCat, fromDb, toDb, tableName);
+        updateDbNameForTable(stmt, "NOTIFICATION_LOG", "TBL_NAME", fromCat, toCat, fromDb, toDb, tableName);
         conn.commit();
-
+        success = true;
       }
     } catch (SQLException se) {
       throw new HiveMetaException("Failed to move table", se);
+    } finally {
+      try {
+        if (!success) conn.rollback();
+      } catch (SQLException e) {
+        // Not really much we can do here.
+        LOG.error("Failed to rollback, everything will probably go bad from here.");
+      }
+
     }
   }
 
-  private void updateDbNameForTable(Connection conn, Statement stmt, String tableName,
+  private void updateDbNameForTable(Statement stmt, String tableName,
                                     String tableColumnName, String fromCat, String toCat,
                                     String fromDb, String toDb, String hiveTblName)
       throws HiveMetaException, SQLException {
@@ -1047,16 +1067,10 @@ public class HiveSchemaTool {
                 "and " + quoteIf("DB_NAME") + " = '" + fromDb + "' " +
                 "and " + quoteIf(tableColumnName) + " = '" + hiveTblName + "'";
     LOG.debug("Going to run " + update);
-    try {
-      int numUpdated = stmt.executeUpdate(update);
-      if (numUpdated > 1 || numUpdated < 0) {
-        conn.rollback();
-        throw new HiveMetaException("Failed to properly update the " + tableName +
-            " table.  Expected to update 1 row but instead updated " + numUpdated);
-      }
-    } catch (SQLException e) {
-      conn.rollback();
-      throw e;
+    int numUpdated = stmt.executeUpdate(update);
+    if (numUpdated > 1 || numUpdated < 0) {
+      throw new HiveMetaException("Failed to properly update the " + tableName +
+          " table.  Expected to update 1 row but instead updated " + numUpdated);
     }
   }
 

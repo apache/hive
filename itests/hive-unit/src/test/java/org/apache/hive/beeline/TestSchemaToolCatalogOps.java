@@ -64,6 +64,7 @@ public class TestSchemaToolCatalogOps {
     conf = new HiveConf();
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.AUTO_CREATE_ALL, false);
     MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.HMS_HANDLER_ATTEMPTS, 1);
+    MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.THRIFT_CONNECTION_RETRIES, 1);
     testMetastoreDB = System.getProperty("java.io.tmpdir") +
         File.separator + "testschematoolcatopsdb";
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CONNECT_URL_KEY,
