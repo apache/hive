@@ -4849,14 +4849,19 @@ end
 
 class GetRuntimeStatsRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
+  MAXWEIGHT = 1
+  MAXCREATETIME = 2
 
   FIELDS = {
-
+    MAXWEIGHT => {:type => ::Thrift::Types::I32, :name => 'maxWeight'},
+    MAXCREATETIME => {:type => ::Thrift::Types::I32, :name => 'maxCreateTime'}
   }
 
   def struct_fields; FIELDS; end
 
   def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field maxWeight is unset!') unless @maxWeight
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field maxCreateTime is unset!') unless @maxCreateTime
   end
 
   ::Thrift::Struct.generate_accessors self

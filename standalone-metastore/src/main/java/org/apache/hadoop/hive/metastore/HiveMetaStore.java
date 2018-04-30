@@ -8489,7 +8489,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       startFunction("get_runtime_stats");
       Exception ex = null;
       try {
-        List<RuntimeStat> res = getMS().getRuntimeStats();
+        List<RuntimeStat> res = getMS().getRuntimeStats(rqst.getMaxWeight(), rqst.getMaxCreateTime());
         return res;
       } catch (MetaException e) {
         LOG.error("Caught exception", e);

@@ -29846,11 +29846,35 @@ class RuntimeStat {
 class GetRuntimeStatsRequest {
   static $_TSPEC;
 
+  /**
+   * @var int
+   */
+  public $maxWeight = null;
+  /**
+   * @var int
+   */
+  public $maxCreateTime = null;
 
-  public function __construct() {
+  public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
       self::$_TSPEC = array(
+        1 => array(
+          'var' => 'maxWeight',
+          'type' => TType::I32,
+          ),
+        2 => array(
+          'var' => 'maxCreateTime',
+          'type' => TType::I32,
+          ),
         );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['maxWeight'])) {
+        $this->maxWeight = $vals['maxWeight'];
+      }
+      if (isset($vals['maxCreateTime'])) {
+        $this->maxCreateTime = $vals['maxCreateTime'];
+      }
     }
   }
 
@@ -29873,6 +29897,20 @@ class GetRuntimeStatsRequest {
       }
       switch ($fid)
       {
+        case 1:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->maxWeight);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->maxCreateTime);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -29886,6 +29924,16 @@ class GetRuntimeStatsRequest {
   public function write($output) {
     $xfer = 0;
     $xfer += $output->writeStructBegin('GetRuntimeStatsRequest');
+    if ($this->maxWeight !== null) {
+      $xfer += $output->writeFieldBegin('maxWeight', TType::I32, 1);
+      $xfer += $output->writeI32($this->maxWeight);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->maxCreateTime !== null) {
+      $xfer += $output->writeFieldBegin('maxCreateTime', TType::I32, 2);
+      $xfer += $output->writeI32($this->maxCreateTime);
+      $xfer += $output->writeFieldEnd();
+    }
     $xfer += $output->writeFieldStop();
     $xfer += $output->writeStructEnd();
     return $xfer;

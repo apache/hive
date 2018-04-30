@@ -38,6 +38,8 @@ import org.slf4j.LoggerFactory;
 @org.apache.hadoop.classification.InterfaceAudience.Public @org.apache.hadoop.classification.InterfaceStability.Stable public class GetRuntimeStatsRequest implements org.apache.thrift.TBase<GetRuntimeStatsRequest, GetRuntimeStatsRequest._Fields>, java.io.Serializable, Cloneable, Comparable<GetRuntimeStatsRequest> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("GetRuntimeStatsRequest");
 
+  private static final org.apache.thrift.protocol.TField MAX_WEIGHT_FIELD_DESC = new org.apache.thrift.protocol.TField("maxWeight", org.apache.thrift.protocol.TType.I32, (short)1);
+  private static final org.apache.thrift.protocol.TField MAX_CREATE_TIME_FIELD_DESC = new org.apache.thrift.protocol.TField("maxCreateTime", org.apache.thrift.protocol.TType.I32, (short)2);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -45,10 +47,13 @@ import org.slf4j.LoggerFactory;
     schemes.put(TupleScheme.class, new GetRuntimeStatsRequestTupleSchemeFactory());
   }
 
+  private int maxWeight; // required
+  private int maxCreateTime; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-;
+    MAX_WEIGHT((short)1, "maxWeight"),
+    MAX_CREATE_TIME((short)2, "maxCreateTime");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -63,6 +68,10 @@ import org.slf4j.LoggerFactory;
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
+        case 1: // MAX_WEIGHT
+          return MAX_WEIGHT;
+        case 2: // MAX_CREATE_TIME
+          return MAX_CREATE_TIME;
         default:
           return null;
       }
@@ -101,9 +110,18 @@ import org.slf4j.LoggerFactory;
       return _fieldName;
     }
   }
+
+  // isset id assignments
+  private static final int __MAXWEIGHT_ISSET_ID = 0;
+  private static final int __MAXCREATETIME_ISSET_ID = 1;
+  private byte __isset_bitfield = 0;
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+    tmpMap.put(_Fields.MAX_WEIGHT, new org.apache.thrift.meta_data.FieldMetaData("maxWeight", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+    tmpMap.put(_Fields.MAX_CREATE_TIME, new org.apache.thrift.meta_data.FieldMetaData("maxCreateTime", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(GetRuntimeStatsRequest.class, metaDataMap);
   }
@@ -111,10 +129,24 @@ import org.slf4j.LoggerFactory;
   public GetRuntimeStatsRequest() {
   }
 
+  public GetRuntimeStatsRequest(
+    int maxWeight,
+    int maxCreateTime)
+  {
+    this();
+    this.maxWeight = maxWeight;
+    setMaxWeightIsSet(true);
+    this.maxCreateTime = maxCreateTime;
+    setMaxCreateTimeIsSet(true);
+  }
+
   /**
    * Performs a deep copy on <i>other</i>.
    */
   public GetRuntimeStatsRequest(GetRuntimeStatsRequest other) {
+    __isset_bitfield = other.__isset_bitfield;
+    this.maxWeight = other.maxWeight;
+    this.maxCreateTime = other.maxCreateTime;
   }
 
   public GetRuntimeStatsRequest deepCopy() {
@@ -123,15 +155,85 @@ import org.slf4j.LoggerFactory;
 
   @Override
   public void clear() {
+    setMaxWeightIsSet(false);
+    this.maxWeight = 0;
+    setMaxCreateTimeIsSet(false);
+    this.maxCreateTime = 0;
+  }
+
+  public int getMaxWeight() {
+    return this.maxWeight;
+  }
+
+  public void setMaxWeight(int maxWeight) {
+    this.maxWeight = maxWeight;
+    setMaxWeightIsSet(true);
+  }
+
+  public void unsetMaxWeight() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __MAXWEIGHT_ISSET_ID);
+  }
+
+  /** Returns true if field maxWeight is set (has been assigned a value) and false otherwise */
+  public boolean isSetMaxWeight() {
+    return EncodingUtils.testBit(__isset_bitfield, __MAXWEIGHT_ISSET_ID);
+  }
+
+  public void setMaxWeightIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __MAXWEIGHT_ISSET_ID, value);
+  }
+
+  public int getMaxCreateTime() {
+    return this.maxCreateTime;
+  }
+
+  public void setMaxCreateTime(int maxCreateTime) {
+    this.maxCreateTime = maxCreateTime;
+    setMaxCreateTimeIsSet(true);
+  }
+
+  public void unsetMaxCreateTime() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __MAXCREATETIME_ISSET_ID);
+  }
+
+  /** Returns true if field maxCreateTime is set (has been assigned a value) and false otherwise */
+  public boolean isSetMaxCreateTime() {
+    return EncodingUtils.testBit(__isset_bitfield, __MAXCREATETIME_ISSET_ID);
+  }
+
+  public void setMaxCreateTimeIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __MAXCREATETIME_ISSET_ID, value);
   }
 
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
+    case MAX_WEIGHT:
+      if (value == null) {
+        unsetMaxWeight();
+      } else {
+        setMaxWeight((Integer)value);
+      }
+      break;
+
+    case MAX_CREATE_TIME:
+      if (value == null) {
+        unsetMaxCreateTime();
+      } else {
+        setMaxCreateTime((Integer)value);
+      }
+      break;
+
     }
   }
 
   public Object getFieldValue(_Fields field) {
     switch (field) {
+    case MAX_WEIGHT:
+      return getMaxWeight();
+
+    case MAX_CREATE_TIME:
+      return getMaxCreateTime();
+
     }
     throw new IllegalStateException();
   }
@@ -143,6 +245,10 @@ import org.slf4j.LoggerFactory;
     }
 
     switch (field) {
+    case MAX_WEIGHT:
+      return isSetMaxWeight();
+    case MAX_CREATE_TIME:
+      return isSetMaxCreateTime();
     }
     throw new IllegalStateException();
   }
@@ -160,12 +266,40 @@ import org.slf4j.LoggerFactory;
     if (that == null)
       return false;
 
+    boolean this_present_maxWeight = true;
+    boolean that_present_maxWeight = true;
+    if (this_present_maxWeight || that_present_maxWeight) {
+      if (!(this_present_maxWeight && that_present_maxWeight))
+        return false;
+      if (this.maxWeight != that.maxWeight)
+        return false;
+    }
+
+    boolean this_present_maxCreateTime = true;
+    boolean that_present_maxCreateTime = true;
+    if (this_present_maxCreateTime || that_present_maxCreateTime) {
+      if (!(this_present_maxCreateTime && that_present_maxCreateTime))
+        return false;
+      if (this.maxCreateTime != that.maxCreateTime)
+        return false;
+    }
+
     return true;
   }
 
   @Override
   public int hashCode() {
     List<Object> list = new ArrayList<Object>();
+
+    boolean present_maxWeight = true;
+    list.add(present_maxWeight);
+    if (present_maxWeight)
+      list.add(maxWeight);
+
+    boolean present_maxCreateTime = true;
+    list.add(present_maxCreateTime);
+    if (present_maxCreateTime)
+      list.add(maxCreateTime);
 
     return list.hashCode();
   }
@@ -178,6 +312,26 @@ import org.slf4j.LoggerFactory;
 
     int lastComparison = 0;
 
+    lastComparison = Boolean.valueOf(isSetMaxWeight()).compareTo(other.isSetMaxWeight());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetMaxWeight()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.maxWeight, other.maxWeight);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetMaxCreateTime()).compareTo(other.isSetMaxCreateTime());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetMaxCreateTime()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.maxCreateTime, other.maxCreateTime);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -198,12 +352,27 @@ import org.slf4j.LoggerFactory;
     StringBuilder sb = new StringBuilder("GetRuntimeStatsRequest(");
     boolean first = true;
 
+    sb.append("maxWeight:");
+    sb.append(this.maxWeight);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("maxCreateTime:");
+    sb.append(this.maxCreateTime);
+    first = false;
     sb.append(")");
     return sb.toString();
   }
 
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
+    if (!isSetMaxWeight()) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'maxWeight' is unset! Struct:" + toString());
+    }
+
+    if (!isSetMaxCreateTime()) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'maxCreateTime' is unset! Struct:" + toString());
+    }
+
     // check for sub-struct validity
   }
 
@@ -217,6 +386,8 @@ import org.slf4j.LoggerFactory;
 
   private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
     try {
+      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+      __isset_bitfield = 0;
       read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
     } catch (org.apache.thrift.TException te) {
       throw new java.io.IOException(te);
@@ -241,6 +412,22 @@ import org.slf4j.LoggerFactory;
           break;
         }
         switch (schemeField.id) {
+          case 1: // MAX_WEIGHT
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.maxWeight = iprot.readI32();
+              struct.setMaxWeightIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 2: // MAX_CREATE_TIME
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.maxCreateTime = iprot.readI32();
+              struct.setMaxCreateTimeIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -254,6 +441,12 @@ import org.slf4j.LoggerFactory;
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
+      oprot.writeFieldBegin(MAX_WEIGHT_FIELD_DESC);
+      oprot.writeI32(struct.maxWeight);
+      oprot.writeFieldEnd();
+      oprot.writeFieldBegin(MAX_CREATE_TIME_FIELD_DESC);
+      oprot.writeI32(struct.maxCreateTime);
+      oprot.writeFieldEnd();
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -271,11 +464,17 @@ import org.slf4j.LoggerFactory;
     @Override
     public void write(org.apache.thrift.protocol.TProtocol prot, GetRuntimeStatsRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
+      oprot.writeI32(struct.maxWeight);
+      oprot.writeI32(struct.maxCreateTime);
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, GetRuntimeStatsRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
+      struct.maxWeight = iprot.readI32();
+      struct.setMaxWeightIsSet(true);
+      struct.maxCreateTime = iprot.readI32();
+      struct.setMaxCreateTimeIsSet(true);
     }
   }
 
