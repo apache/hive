@@ -18,6 +18,8 @@
 
 package org.apache.hive.jdbc;
 
+import org.apache.commons.lang.math.NumberUtils;
+import org.apache.http.HttpHost;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.KeyStore;
@@ -39,12 +41,8 @@ import java.sql.SQLXML;
 import java.sql.Savepoint;
 import java.sql.Statement;
 import java.sql.Struct;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Properties;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
@@ -54,6 +52,7 @@ import javax.net.ssl.TrustManagerFactory;
 import javax.security.sasl.Sasl;
 import javax.security.sasl.SaslException;
 
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.protocol.HttpContext;
 import org.apache.commons.logging.Log;
@@ -104,6 +103,8 @@ public class HiveConnection implements java.sql.Connection {
   private static final String HIVE_VAR_PREFIX = "hivevar:";
   private static final String HIVE_CONF_PREFIX = "hiveconf:";
 
+  private static final String HTTP = "http";
+  private static final String HTTP_PROXY = "HTTP_PROXY";
   private String jdbcUriString;
   private String host;
   private int port;
@@ -392,10 +393,18 @@ public class HiveConnection implements java.sql.Connection {
         }
         socketFactory.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
 
-        final Registry<ConnectionSocketFactory> registry =
-          RegistryBuilder.<ConnectionSocketFactory>create()
-          .register("https", socketFactory)
-          .build();
+        HttpHost proxy = getProxySettings();
+        httpClientBuilder.setProxy(proxy);
+
+        RegistryBuilder registryBuilder = RegistryBuilder.<ConnectionSocketFactory> create()
+                .register("https", socketFactory);
+
+        if (proxy != null && HTTP.equalsIgnoreCase(proxy.getSchemeName())) {
+          registryBuilder.register("http", PlainConnectionSocketFactory.INSTANCE);
+        }
+
+        final Registry<ConnectionSocketFactory> registry = registryBuilder.build();
+
 
         httpClientBuilder.setConnectionManager(new BasicHttpClientConnectionManager(registry));
       }
@@ -407,6 +416,50 @@ public class HiveConnection implements java.sql.Connection {
     }
     return httpClientBuilder.build();
   }
+
+  private HttpHost getProxySettings() {
+
+    String httpProxyFromEnv = System.getenv(HTTP_PROXY);
+
+    if (httpProxyFromEnv != null) {
+      return HttpHost.create(httpProxyFromEnv);
+    }
+
+    String http = System.getProperty(HTTP + ".proxyHost");
+
+    if (http != null) {
+      return getProxySettings(HTTP);
+    }
+
+    LOG.warn("Proxy not settings");
+
+    return null;
+  }
+
+  private HttpHost getProxySettings(String protocol) {
+    if (HTTP.equalsIgnoreCase(protocol)) {
+      String host = System.getProperty(protocol + ".proxyHost", "");
+      Integer port = getPortFromProxy(protocol);
+      return new HttpHost(host, port, protocol );
+    }
+
+    LOG.warn("Proxy not settings");
+
+    return null;
+
+  }
+
+  private Integer getPortFromProxy(String protocol) {
+    String port = System.getProperty(protocol + ".proxyPort");
+    if (port != null && NumberUtils.isNumber(port)) {
+      return Integer.valueOf(port);
+    }
+
+    LOG.warn("Proxy Port not defined or not a number");
+
+    return -1;
+  }
+
 
   /**
    * Create transport per the connection options
