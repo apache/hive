@@ -25,7 +25,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.net.URISyntaxException;
 import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.Collection;
@@ -52,17 +51,12 @@ import org.apache.hadoop.yarn.api.records.ApplicationReport;
 import org.apache.hadoop.yarn.api.records.ContainerExitStatus;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.exceptions.YarnException;
+import org.apache.hadoop.yarn.service.api.records.Container;
+import org.apache.hadoop.yarn.service.api.records.Service;
+import org.apache.hadoop.yarn.service.api.records.ServiceState;
+import org.apache.hadoop.yarn.service.client.ServiceClient;
 import org.apache.hadoop.yarn.util.Clock;
 import org.apache.hadoop.yarn.util.SystemClock;
-import org.apache.slider.api.ClusterDescription;
-import org.apache.slider.api.ClusterDescriptionKeys;
-import org.apache.slider.api.StateValues;
-import org.apache.slider.api.StatusKeys;
-import org.apache.slider.api.types.ApplicationDiagnostics;
-import org.apache.slider.api.types.ContainerInformation;
-import org.apache.slider.client.SliderClient;
-import org.apache.slider.common.params.ActionDiagnosticArgs;
-import org.apache.slider.core.exceptions.SliderException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
@@ -71,7 +65,7 @@ import org.slf4j.LoggerFactory;
 
 public class LlapStatusServiceDriver {
 
-  private static final EnumSet<State> NO_SLIDER_INFO_STATES = EnumSet.of(
+  private static final EnumSet<State> NO_YARN_SERVICE_INFO_STATES = EnumSet.of(
       State.APP_NOT_FOUND, State.COMPLETE, State.LAUNCHING);
   private static final EnumSet<State> LAUNCHING_STATES = EnumSet.of(
       State.LAUNCHING, State.RUNNING_PARTIAL, State.RUNNING_ALL);
@@ -119,11 +113,11 @@ public class LlapStatusServiceDriver {
 
   private static final long LOG_SUMMARY_INTERVAL = 15000L; // Log summary every ~15 seconds.
 
-  private static final String LLAP_KEY = "LLAP";
+  private static final String LLAP_KEY = "llap";
   private final Configuration conf;
   private final Clock clock = new SystemClock();
   private String appName = null;
-  private SliderClient sliderClient = null;
+  private ServiceClient serviceClient = null;
   private Configuration llapRegistryConf = null;
   private LlapRegistryService llapRegistry = null;
 
@@ -203,7 +197,7 @@ public class LlapStatusServiceDriver {
         if (StringUtils.isEmpty(appName)) {
           appName = HiveConf.getVar(conf, HiveConf.ConfVars.LLAP_DAEMON_SERVICE_HOSTS);
           if (appName.startsWith("@") && appName.length() > 1) {
-            // This is a valid slider app name. Parse it out.
+            // This is a valid YARN Service name. Parse it out.
             appName = appName.substring(1);
           } else {
             // Invalid app name. Checked later.
@@ -213,7 +207,7 @@ public class LlapStatusServiceDriver {
         if (StringUtils.isEmpty(appName)) {
           String message =
             "Invalid app name. This must be setup via config or passed in as a parameter." +
-              " This tool works with clusters deployed by Slider/YARN";
+              " This tool works with clusters deployed by YARN Service";
           LOG.info(message);
           return ExitCode.INCORRECT_USAGE.getInt();
         }
@@ -225,13 +219,13 @@ public class LlapStatusServiceDriver {
       }
 
       try {
-        if (sliderClient == null) {
-          sliderClient = LlapSliderUtils.createSliderClient(conf);
+        if (serviceClient == null) {
+          serviceClient = LlapSliderUtils.createServiceClient(conf);
         }
       } catch (Exception e) {
         LlapStatusCliException le = new LlapStatusCliException(
-            LlapStatusServiceDriver.ExitCode.SLIDER_CLIENT_ERROR_CREATE_FAILED,
-            "Failed to create slider client", e);
+            LlapStatusServiceDriver.ExitCode.SERVICE_CLIENT_ERROR_CREATE_FAILED,
+            "Failed to create service client", e);
         logError(le);
         return le.getExitCode().getInt();
       }
@@ -239,13 +233,14 @@ public class LlapStatusServiceDriver {
       // Get the App report from YARN
       ApplicationReport appReport;
       try {
-        appReport = LlapSliderUtils.getAppReport(appName, sliderClient, options.getFindAppTimeoutMs());
+        appReport = LlapSliderUtils.getAppReport(appName, serviceClient,
+            options.getFindAppTimeoutMs());
       } catch (LlapStatusCliException e) {
         logError(e);
         return e.getExitCode().getInt();
       }
 
-      // Process the report to decide whether to go to slider.
+      // Process the report
       ExitCode ret;
       try {
         ret = processAppReport(appReport, appStatusBuilder);
@@ -256,26 +251,16 @@ public class LlapStatusServiceDriver {
 
       if (ret != ExitCode.SUCCESS) {
         return ret.getInt();
-      } else if (NO_SLIDER_INFO_STATES.contains(appStatusBuilder.getState())) {
+      } else if (NO_YARN_SERVICE_INFO_STATES.contains(appStatusBuilder.getState())) {
         return ExitCode.SUCCESS.getInt();
       } else {
-        // Get information from slider.
+        // Get information from YARN Service
         try {
-          ret = populateAppStatusFromSliderStatus(appName, sliderClient, appStatusBuilder);
+          ret = populateAppStatusFromServiceStatus(appName, serviceClient,
+              appStatusBuilder);
         } catch (LlapStatusCliException e) {
-          // In case of failure, send back whatever is constructed sop far - which wouldbe from the AppReport
-          logError(e);
-          return e.getExitCode().getInt();
-        }
-      }
-
-
-      if (ret != ExitCode.SUCCESS) {
-        return ret.getInt();
-      } else {
-        try {
-          ret = populateAppStatusFromSliderDiagnostics(appName, sliderClient, appStatusBuilder);
-        } catch (LlapStatusCliException e) {
+          // In case of failure, send back whatever is constructed so far -
+          // which would be from the AppReport
           logError(e);
           return e.getExitCode().getInt();
         }
@@ -315,57 +300,6 @@ public class LlapStatusServiceDriver {
     }
   }
 
-  private SliderClient createSliderClient() throws LlapStatusCliException {
-    if (sliderClient != null) {
-      return sliderClient;
-    }
-
-    try {
-      sliderClient = LlapSliderUtils.createSliderClient(conf);
-    } catch (Exception e) {
-      throw new LlapStatusCliException(ExitCode.SLIDER_CLIENT_ERROR_CREATE_FAILED,
-        "Failed to create slider client", e);
-    }
-    return sliderClient;
-  }
-
-  private ApplicationReport getAppReport(String appName, SliderClient sliderClient,
-                                         long timeoutMs) throws LlapStatusCliException {
-
-    long startTime = clock.getTime();
-    long timeoutTime = timeoutMs < 0 ? Long.MAX_VALUE : (startTime + timeoutMs);
-    ApplicationReport appReport = null;
-
-    // TODO HIVE-13454 Maybe add an option to wait for a certain amount of time for the app to
-    // move to running state. Potentially even wait for the containers to be launched.
-
-//    while (clock.getTime() < timeoutTime && appReport == null) {
-
-    while (appReport == null) {
-      try {
-        appReport = sliderClient.getYarnAppListClient().findInstance(appName);
-        if (timeoutMs == 0) {
-          // break immediately if timeout is 0
-          break;
-        }
-        // Otherwise sleep, and try again.
-        if (appReport == null) {
-          long remainingTime = Math.min(timeoutTime - clock.getTime(), 500l);
-          if (remainingTime > 0) {
-            Thread.sleep(remainingTime);
-          } else {
-            break;
-          }
-        }
-      } catch (Exception e) { // No point separating IOException vs YarnException vs others
-        throw new LlapStatusCliException(ExitCode.YARN_ERROR,
-            "Failed to get Yarn AppReport", e);
-      }
-    }
-    return appReport;
-  }
-
-
   /**
    * Populates parts of the AppStatus
    *
@@ -399,7 +333,7 @@ public class LlapStatusServiceDriver {
         return ExitCode.SUCCESS;
       case RUNNING:
         appStatusBuilder.maybeCreateAndGetAmInfo().setAppId(appReport.getApplicationId().toString());
-        // If the app state is running, get additional information from Slider itself.
+        // If the app state is running, get additional information from YARN Service
         return ExitCode.SUCCESS;
       case FINISHED:
       case FAILED:
@@ -407,14 +341,7 @@ public class LlapStatusServiceDriver {
         appStatusBuilder.maybeCreateAndGetAmInfo().setAppId(appReport.getApplicationId().toString());
         appStatusBuilder.setAppFinishTime(appReport.getFinishTime());
         appStatusBuilder.setState(State.COMPLETE);
-        ApplicationDiagnostics appDiagnostics =
-            LlapSliderUtils.getApplicationDiagnosticsFromYarnDiagnostics(
-                appReport, appStatusBuilder, LOG);
-        if (appDiagnostics == null) {
-          LOG.warn("AppDiagnostics not available for YARN application report");
-        } else {
-          processAppDiagnostics(appStatusBuilder, appDiagnostics, true);
-        }
+        // add log links and other diagnostics from YARN Service
         return ExitCode.SUCCESS;
       default:
         throw new LlapStatusCliException(ExitCode.INTERNAL_ERROR,
@@ -422,135 +349,57 @@ public class LlapStatusServiceDriver {
     }
   }
 
-
-
-
-
   /**
-   * Populates information from SliderStatus.
+   * Populates information from YARN Service Status.
    *
    * @param appName
-   * @param sliderClient
+   * @param serviceClient
    * @param appStatusBuilder
-   * @return an ExitCode. An ExitCode other than ExitCode.SUCCESS implies future progress not possible
+   * @return an ExitCode. An ExitCode other than ExitCode.SUCCESS implies future
+   *         progress not possible
    * @throws LlapStatusCliException
    */
-  private ExitCode populateAppStatusFromSliderStatus(String appName, SliderClient sliderClient, AppStatusBuilder appStatusBuilder) throws
-      LlapStatusCliException {
-
-    ClusterDescription clusterDescription;
+  private ExitCode populateAppStatusFromServiceStatus(String appName,
+      ServiceClient serviceClient, AppStatusBuilder appStatusBuilder)
+      throws LlapStatusCliException {
+    ExitCode exitCode = ExitCode.YARN_ERROR;
     try {
-      clusterDescription = sliderClient.getClusterDescription(appName);
-    } catch (SliderException e) {
-      throw new LlapStatusCliException(ExitCode.SLIDER_CLIENT_ERROR_OTHER,
-          "Failed to get cluster description from slider. SliderErrorCode=" + (e).getExitCode(), e);
-    } catch (Exception e) {
-      throw new LlapStatusCliException(ExitCode.SLIDER_CLIENT_ERROR_OTHER,
-          "Failed to get cluster description from slider", e);
-    }
-
-    if (clusterDescription == null) {
-      LOG.info("Slider ClusterDescription not available");
-      return ExitCode.SLIDER_CLIENT_ERROR_OTHER; // ClusterDescription should always be present.
-    } else {
-      // Process the Cluster Status returned by slider.
-      appStatusBuilder.setOriginalConfigurationPath(clusterDescription.originConfigurationPath);
-      appStatusBuilder.setGeneratedConfigurationPath(clusterDescription.generatedConfigurationPath);
-      appStatusBuilder.setAppStartTime(clusterDescription.createTime);
-
-      // Finish populating AMInfo
-      appStatusBuilder.maybeCreateAndGetAmInfo().setAmWebUrl(clusterDescription.getInfo(StatusKeys.INFO_AM_WEB_URL));
-      appStatusBuilder.maybeCreateAndGetAmInfo().setHostname(clusterDescription.getInfo(StatusKeys.INFO_AM_HOSTNAME));
-      appStatusBuilder.maybeCreateAndGetAmInfo().setContainerId(clusterDescription.getInfo(StatusKeys.INFO_AM_CONTAINER_ID));
-
-
-      if (clusterDescription.statistics != null) {
-        Map<String, Integer> llapStats = clusterDescription.statistics.get(LLAP_KEY);
-        if (llapStats != null) {
-          int desiredContainers = llapStats.get(StatusKeys.STATISTICS_CONTAINERS_DESIRED);
-          int liveContainers = llapStats.get(StatusKeys.STATISTICS_CONTAINERS_LIVE);
-          appStatusBuilder.setDesiredInstances(desiredContainers);
-          appStatusBuilder.setLiveInstances(liveContainers);
-        } else {
-          throw new LlapStatusCliException(ExitCode.SLIDER_CLIENT_ERROR_OTHER,
-              "Failed to get statistics for LLAP"); // Error since LLAP should always exist.
+      Service service = serviceClient.getStatus(appName);
+      if (service != null) {
+        // How to get config paths and AmInfo
+        ServiceState state = service.getState();
+        appStatusBuilder.setAppStartTime(service.getLaunchTime() == null ? 0
+            : service.getLaunchTime().getTime());
+        appStatusBuilder.setDesiredInstances(
+            service.getComponent(LLAP_KEY).getNumberOfContainers() == null ? 0
+                : service.getComponent(LLAP_KEY).getNumberOfContainers()
+                    .intValue());
+        appStatusBuilder.setLiveInstances(
+            service.getComponent(LLAP_KEY).getContainers().size());
+        for (Container cont : service.getComponent(LLAP_KEY).getContainers()) {
+          LlapInstance llapInstance = new LlapInstance(cont.getHostname(),
+              cont.getId());
+          appStatusBuilder.addNewRunningLlapInstance(llapInstance);
         }
-        // TODO HIVE-13454 Use some information from here such as containers.start.failed
-        // and containers.failed.recently to provide an estimate of whether this app is healthy or not.
+        if (state == ServiceState.STABLE) {
+          exitCode = ExitCode.SUCCESS;
+        }
       } else {
-        throw new LlapStatusCliException(ExitCode.SLIDER_CLIENT_ERROR_OTHER,
-            "Failed to get statistics"); // Error since statistics should always exist.
+        exitCode = ExitCode.SERVICE_CLIENT_ERROR_OTHER;
       }
-
-      // Code to locate container status via slider. Not using this at the moment.
-      if (clusterDescription.status != null) {
-        Object liveObject = clusterDescription.status.get(ClusterDescriptionKeys.KEY_CLUSTER_LIVE);
-        if (liveObject != null) {
-          Map<String, Map<String, Map<String, Object>>> liveEntity =
-              (Map<String, Map<String, Map<String, Object>>>) liveObject;
-          Map<String, Map<String, Object>> llapEntity = liveEntity.get(LLAP_KEY);
-
-          if (llapEntity != null) { // Not a problem. Nothing has come up yet.
-            for (Map.Entry<String, Map<String, Object>> containerEntry : llapEntity.entrySet()) {
-              String containerIdString = containerEntry.getKey();
-              Map<String, Object> containerParams = containerEntry.getValue();
-
-              String host = (String) containerParams.get("host");
-
-              LlapInstance
-                  llapInstance = new LlapInstance(host, containerIdString);
-
-              appStatusBuilder.addNewRunningLlapInstance(llapInstance);
-            }
-          }
-
-        }
-      }
-
-      return ExitCode.SUCCESS;
-
+    } catch (IOException | YarnException e) {
+      LlapStatusCliException le = new LlapStatusCliException(
+          LlapStatusServiceDriver.ExitCode.SERVICE_CLIENT_ERROR_OTHER,
+          "Failed to get service status", e);
+      logError(le);
+      exitCode = le.getExitCode();
     }
-  }
-
-  /**
-   * Populates information based on the slider diagnostics call. Must be invoked
-   * after populating status from slider status.
-   * @param appName
-   * @param sliderClient
-   * @param appStatusBuilder
-   * @return
-   * @throws LlapStatusCliException
-   */
-  private ExitCode populateAppStatusFromSliderDiagnostics(String appName,
-                                                          SliderClient sliderClient,
-                                                          AppStatusBuilder appStatusBuilder) throws
-      LlapStatusCliException {
-
-    ApplicationDiagnostics appDiagnostics;
-    try {
-      ActionDiagnosticArgs args = new ActionDiagnosticArgs();
-      args.containers = true;
-      args.name = appName;
-      appDiagnostics =
-          sliderClient.actionDiagnosticContainers(args);
-    } catch (YarnException | IOException | URISyntaxException e) {
-      throw new LlapStatusCliException(
-          ExitCode.SLIDER_CLIENT_ERROR_OTHER,
-          "Failed to get container diagnostics from slider", e);
-    }
-    if (appDiagnostics == null) {
-      LOG.info("Slider container diagnostics not available");
-      return ExitCode.SLIDER_CLIENT_ERROR_OTHER;
-    }
-
-    processAppDiagnostics(appStatusBuilder, appDiagnostics, false);
-
-    return ExitCode.SUCCESS;
+    return exitCode;
   }
 
   /**
    * Populate additional information for containers from the LLAP registry. Must be invoked
-   * after Slider status. Also after slider-diagnostics.
+   * after YARN Service status and diagnostics.
    * @param appStatusBuilder
    * @return an ExitCode. An ExitCode other than ExitCode.SUCCESS implies future progress not possible
    * @throws LlapStatusCliException
@@ -584,7 +433,7 @@ public class LlapStatusServiceDriver {
       appStatusBuilder.clearRunningLlapInstances();
       return ExitCode.SUCCESS;
     } else {
-      // Tracks instances known by both slider and llap.
+      // Tracks instances known by both YARN Service and llap.
       List<LlapInstance> validatedInstances = new LinkedList<>();
       List<String> llapExtraInstances = new LinkedList<>();
 
@@ -612,7 +461,8 @@ public class LlapStatusServiceDriver {
 
       appStatusBuilder.setLiveInstances(validatedInstances.size());
       appStatusBuilder.setLaunchingInstances(llapExtraInstances.size());
-      if (validatedInstances.size() >= appStatusBuilder.getDesiredInstances()) {
+      if (appStatusBuilder.getDesiredInstances() != null && validatedInstances
+          .size() >= appStatusBuilder.getDesiredInstances()) {
         appStatusBuilder.setState(State.RUNNING_ALL);
         if (validatedInstances.size() > appStatusBuilder.getDesiredInstances()) {
           LOG.warn("Found more entries in LLAP registry, as compared to desired entries");
@@ -633,7 +483,7 @@ public class LlapStatusServiceDriver {
       }
       if (llapExtraInstances.size() > 0) {
         // Old containers which are likely shutting down, or new containers which
-        // launched between slider-status/slider-diagnostics. Skip for this iteration.
+        // launched between YARN Service status/diagnostics. Skip for this iteration.
         LOG.debug("Instances likely to shutdown soon: {}", llapExtraInstances);
       }
 
@@ -641,52 +491,6 @@ public class LlapStatusServiceDriver {
 
     }
     return ExitCode.SUCCESS;
-  }
-
-
-  private static void processAppDiagnostics(AppStatusBuilder appStatusBuilder,
-                                            ApplicationDiagnostics appDiagnostics, boolean appComplete) {
-    // For a running app this should be empty.
-    String finalMessage = appDiagnostics.getFinalMessage();
-    Collection<ContainerInformation> containerInfos =
-        appDiagnostics.getContainers();
-    appStatusBuilder.setDiagnostics(finalMessage);
-    if (containerInfos != null) {
-      for (ContainerInformation containerInformation : containerInfos) {
-        if (containerInformation.getState() == StateValues.STATE_LIVE && !appComplete) {
-          LlapInstance instance = appStatusBuilder
-              .removeAndGetCompletedLlapInstanceForContainer(
-                  containerInformation.getContainerId());
-          if (instance ==
-              null) { // New launch. Not available during slider status, but available now.
-            instance = new LlapInstance(containerInformation.getHost(),
-                containerInformation.getContainerId());
-          }
-          instance.setLogUrl(containerInformation.getLogLink());
-          appStatusBuilder.addNewRunningLlapInstance(instance);
-        } else if (containerInformation.getState() ==
-            StateValues.STATE_STOPPED || appComplete) {
-          LlapInstance instance =
-              new LlapInstance(containerInformation.getHost(),
-                  containerInformation.getContainerId());
-          instance.setLogUrl(containerInformation.getLogLink());
-          if (appComplete && containerInformation.getExitCode() !=
-              ContainerExitStatus.INVALID) {
-            instance
-                .setYarnContainerExitStatus(containerInformation.getExitCode());
-          }
-          instance.setDiagnostics(containerInformation.getDiagnostics());
-          appStatusBuilder.addNewCompleteLlapInstance(instance);
-        } else {
-          LOG.warn("Unexpected containerstate={}, for container={}",
-              containerInformation.getState(), containerInformation);
-        }
-      }
-    } else {
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("ContainerInfos is null");
-      }
-    }
   }
 
   private static String constructCompletedContainerDiagnostics(List<LlapInstance> completedInstances) {
@@ -709,7 +513,7 @@ public class LlapStatusServiceDriver {
                 ContainerExitStatus.KILLED_EXCEEDED_VMEM) {
           sb.append("\tKILLED container (by YARN for exceeding memory limits): ");
         } else {
-          // TODO HIVE-15865 Handle additional reasons like OS launch failed (Slider needs to give this info)
+          // TODO HIVE-15865 Handle additional reasons like OS launch failed
           sb.append("\tFAILED container: ");
         }
         sb.append(" ").append(instance.getContainerId());
@@ -763,8 +567,8 @@ public class LlapStatusServiceDriver {
           sb.append("\n").append(containerDiagnostics);
         }
 
-        // TODO HIVE-15865: Include information about pending requests, and last allocation time
-        // once Slider provides this information.
+        // TODO HIVE-15865: Include information about pending requests, and last
+        // allocation time once YARN Service provides this information.
         break;
       case RUNNING_ALL:
         sb.append("LLAP Application running with ApplicationId=")
@@ -796,8 +600,8 @@ public class LlapStatusServiceDriver {
     SUCCESS(0),
     INCORRECT_USAGE(10),
     YARN_ERROR(20),
-    SLIDER_CLIENT_ERROR_CREATE_FAILED(30),
-    SLIDER_CLIENT_ERROR_OTHER(31),
+    SERVICE_CLIENT_ERROR_CREATE_FAILED(30),
+    SERVICE_CLIENT_ERROR_OTHER(31),
     LLAP_REGISTRY_ERROR(40),
     LLAP_JSON_GENERATION_ERROR(50),
     // Error in the script itself - likely caused by an incompatible change, or new functionality / states added.
@@ -844,7 +648,7 @@ public class LlapStatusServiceDriver {
   public static void main(String[] args) {
     LOG.info("LLAP status invoked with arguments = {}", Arrays.toString(args));
     int ret = ExitCode.SUCCESS.getInt();
-    Clock clock = new SystemClock();
+    Clock clock = SystemClock.getInstance();
     long startTime = clock.getTime();
     long lastSummaryLogTime = -1;
 
@@ -918,7 +722,8 @@ public class LlapStatusServiceDriver {
         if (ret == ExitCode.SUCCESS.getInt()) {
           if (watchMode) {
 
-            // slider has started llap application, now if for some reason state changes to COMPLETE then fail fast
+            // YARN Service has started llap application, now if for some reason
+            // state changes to COMPLETE then fail fast
             if (launchingState == null && LAUNCHING_STATES.contains(currentState)) {
               launchingState = currentState;
             }
@@ -984,12 +789,12 @@ public class LlapStatusServiceDriver {
           LOG.warn("Watch mode enabled and got YARN error. Retrying..");
           numAttempts--;
           continue;
-        } else if (ret == ExitCode.SLIDER_CLIENT_ERROR_CREATE_FAILED.getInt() && watchMode) {
-          LOG.warn("Watch mode enabled and slider client creation failed. Retrying..");
+        } else if (ret == ExitCode.SERVICE_CLIENT_ERROR_CREATE_FAILED.getInt() && watchMode) {
+          LOG.warn("Watch mode enabled and YARN Service client creation failed. Retrying..");
           numAttempts--;
           continue;
-        } else if (ret == ExitCode.SLIDER_CLIENT_ERROR_OTHER.getInt() && watchMode) {
-          LOG.warn("Watch mode enabled and got slider client error. Retrying..");
+        } else if (ret == ExitCode.SERVICE_CLIENT_ERROR_OTHER.getInt() && watchMode) {
+          LOG.warn("Watch mode enabled and got YARN Service client error. Retrying..");
           numAttempts--;
           continue;
         } else if (ret == ExitCode.LLAP_REGISTRY_ERROR.getInt() && watchMode) {
@@ -1066,8 +871,8 @@ public class LlapStatusServiceDriver {
   }
 
   private void close() {
-    if (sliderClient != null) {
-      sliderClient.stop();
+    if (serviceClient != null) {
+      serviceClient.stop();
     }
     if (llapRegistry != null) {
       llapRegistry.stop();
