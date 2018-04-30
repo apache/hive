@@ -53,9 +53,8 @@ public class RuntimeStatsCleanerTask implements MetastoreTaskThread {
 
     try {
       RawStore ms = HiveMetaStore.HMSHandler.getMSForConf(conf);
-      int maxRetained = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.RUNTIME_STATS_MAX_ENTRIES);
       int maxRetainSecs=(int) MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.RUNTIME_STATS_MAX_AGE, TimeUnit.SECONDS);
-      int deleteCnt = ms.deleteRuntimeStats(maxRetained, maxRetainSecs);
+      int deleteCnt = ms.deleteRuntimeStats(maxRetainSecs);
 
       if (deleteCnt > 0L){
         LOG.info("Number of deleted entries: " + deleteCnt);

@@ -55,8 +55,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
 import javax.jdo.JDOCanRetryException;
 import javax.jdo.JDODataStoreException;
 import javax.jdo.JDOException;
@@ -11605,41 +11603,47 @@ public class ObjectStore implements RawStore, Configurable {
   public void addRuntimeStat(RuntimeStat stat) throws MetaException {
     LOG.debug("runtimeStat: " + stat);
     MRuntimeStat mStat = MRuntimeStat.fromThrift(stat);
-    pm.makePersistent(mStat);
-  }
-
-  @Override
-  public int deleteRuntimeStats(int maxRetainedWeight, int maxRetainSecs) throws MetaException {
-    List<MRuntimeStat> all = getMRuntimeStats();
-    int retentionTime = 0;
-    if (maxRetainSecs >= 0) {
-      retentionTime = (int) (System.currentTimeMillis() / 1000) - maxRetainSecs;
-    }
-    if (maxRetainedWeight < 0) {
-      maxRetainedWeight = Integer.MAX_VALUE;
-    }
-
-    Object maxIdToRemove = null;
-    long totalWeight = 0;
-    int deleted = 0;
-    for (MRuntimeStat mRuntimeStat : all) {
-      totalWeight += mRuntimeStat.getWeight();
-      if (totalWeight > maxRetainedWeight || mRuntimeStat.getCreatedTime() < retentionTime) {
-        LOG.debug("removing runtime stat: " + mRuntimeStat);
-        pm.deletePersistent(mRuntimeStat);
-        deleted++;
+    boolean committed = false;
+    openTransaction();
+    try {
+      pm.makePersistent(mStat);
+      committed = commitTransaction();
+    } finally {
+      if (!committed) {
+        rollbackTransaction();
       }
     }
-    return deleted;
   }
 
   @Override
-  public List<RuntimeStat> getRuntimeStats() throws MetaException {
+  public int deleteRuntimeStats(int maxRetainSecs) throws MetaException {
+    if (maxRetainSecs < 0) {
+      LOG.warn("runtime stats retention is disabled");
+      return 0;
+    }
     boolean committed = false;
     try {
       openTransaction();
-      List<MRuntimeStat> mStats = getMRuntimeStats();
-      List<RuntimeStat> stats = mStats.stream().map(MRuntimeStat::toThrift).collect(Collectors.toList());
+      int maxCreateTime = (int) (System.currentTimeMillis() / 1000) - maxRetainSecs;
+      Query q = pm.newQuery(MRuntimeStat.class);
+      q.setFilter("createTime <= maxCreateTime");
+      q.declareParameters("int maxCreateTime");
+      long deleted = q.deletePersistentAll(maxCreateTime);
+      committed = commitTransaction();
+      return (int) deleted;
+    } finally {
+      if (!committed) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  @Override
+  public List<RuntimeStat> getRuntimeStats(int maxEntries, int maxCreateTime) throws MetaException {
+    boolean committed = false;
+    try {
+      openTransaction();
+      List<RuntimeStat> stats = getMRuntimeStats(maxEntries, maxCreateTime);
       committed = commitTransaction();
       return stats;
     } finally {
@@ -11649,12 +11653,27 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
-  private List<MRuntimeStat> getMRuntimeStats() {
+  private List<RuntimeStat> getMRuntimeStats(int maxEntries, int maxCreateTime) {
     Query<MRuntimeStat> query = pm.newQuery(MRuntimeStat.class);
     query.setOrdering("createTime descending");
+    if (maxCreateTime > 0) {
+      query.setFilter("createTime < "+maxCreateTime);
+    }
+    if (maxEntries < 0) {
+      maxEntries = Integer.MAX_VALUE;
+    }
+    List<RuntimeStat> ret = new ArrayList<>();
     List<MRuntimeStat> res = (List<MRuntimeStat>) query.execute();
-    pm.retrieveAll(res);
-    return res;
+    int totalEntries = 0;
+    for (MRuntimeStat mRuntimeStat : res) {
+      pm.retrieve(mRuntimeStat);
+      totalEntries += mRuntimeStat.getWeight();
+      ret.add(MRuntimeStat.toThrift(mRuntimeStat));
+      if (totalEntries >= maxEntries) {
+        break;
+      }
+    }
+    return ret;
   }
 
 }
