@@ -297,6 +297,8 @@ public class TestHCatClient {
     assertNotNull(inner);
     assertNotNull(outer);
     for ( Map.Entry<String,String> e : inner.entrySet()){
+      // If it is bucketing version, skip it
+      if (e.getKey().equals("bucketing_version")) continue;
       assertTrue(outer.containsKey(e.getKey()));
       assertEquals(outer.get(e.getKey()), e.getValue());
     }

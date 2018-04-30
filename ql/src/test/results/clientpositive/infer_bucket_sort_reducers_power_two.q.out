@@ -236,9 +236,9 @@ Table:              	test_table
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	16                  
-	numRows             	2654                
-	rawDataSize         	28466               
-	totalSize           	31120               
+	numRows             	257                 
+	rawDataSize         	2823                
+	totalSize           	3080                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

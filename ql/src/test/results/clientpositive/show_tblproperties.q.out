@@ -38,6 +38,7 @@ POSTHOOK: query: show tblproperties tmpfoo
 POSTHOOK: type: SHOW_TBLPROPERTIES
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"a":"true"}}
 bar	bar value
+bucketing_version	2
 #### A masked pattern was here ####
 numFiles	0
 numRows	0
@@ -56,6 +57,7 @@ POSTHOOK: query: show tblproperties default.tmpfoo
 POSTHOOK: type: SHOW_TBLPROPERTIES
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"a":"true"}}
 bar	bar value
+bucketing_version	2
 #### A masked pattern was here ####
 numFiles	0
 numRows	0
@@ -110,6 +112,7 @@ POSTHOOK: query: show tblproperties default.tmpfoo
 POSTHOOK: type: SHOW_TBLPROPERTIES
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"a":"true"}}
 bar	bar value
+bucketing_version	2
 #### A masked pattern was here ####
 numFiles	0
 numRows	0
@@ -128,6 +131,7 @@ POSTHOOK: query: show tblproperties tmpfoo
 POSTHOOK: type: SHOW_TBLPROPERTIES
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"b":"true"}}
 bar	bar value1
+bucketing_version	2
 #### A masked pattern was here ####
 numFiles	0
 numRows	0
@@ -152,6 +156,7 @@ POSTHOOK: query: show tblproperties db1.tmpfoo
 POSTHOOK: type: SHOW_TBLPROPERTIES
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"b":"true"}}
 bar	bar value1
+bucketing_version	2
 #### A masked pattern was here ####
 numFiles	0
 numRows	0

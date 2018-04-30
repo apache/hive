@@ -143,6 +143,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns k0,k1,k2,k3,k4,k5
                       columns.comments 
@@ -192,6 +193,7 @@ STAGE PLANS:
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             properties:
                               bucket_count -1
+                              bucketing_version 2
                               column.name.delimiter ,
                               columns k1,k2,k3,k4
                               columns.comments 
@@ -245,6 +247,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns k0,k1,k2,k3,k4,k5
                       columns.comments 
@@ -309,6 +312,7 @@ STAGE PLANS:
                                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                                 properties:
                                   bucket_count -1
+                                  bucketing_version 2
                                   column.name.delimiter ,
                                   columns k1,k2,k3,k4
                                   columns.comments 
@@ -364,6 +368,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns k1,k2,k3,k4
                       columns.comments 
@@ -394,6 +399,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns k1,k2,k3,k4
                 columns.comments 

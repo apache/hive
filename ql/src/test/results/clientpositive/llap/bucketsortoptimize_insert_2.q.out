@@ -252,18 +252,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table3
 POSTHOOK: Input: default@test_table3@ds=1
 #### A masked pattern was here ####
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
 2	val_2val_2	1
-4	val_4val_4	1
-8	val_8val_8	1
 PREHOOK: query: select * from test_table3 tablesample (bucket 2 out of 2) s where ds = '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_table3
@@ -274,6 +263,16 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table3
 POSTHOOK: Input: default@test_table3@ds=1
 #### A masked pattern was here ####
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+4	val_4val_4	1
 5	val_5val_5	1
 5	val_5val_5	1
 5	val_5val_5	1
@@ -283,6 +282,7 @@ POSTHOOK: Input: default@test_table3@ds=1
 5	val_5val_5	1
 5	val_5val_5	1
 5	val_5val_5	1
+8	val_8val_8	1
 9	val_9val_9	1
 PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
@@ -462,30 +462,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table3
 POSTHOOK: Input: default@test_table3@ds=1
 #### A masked pattern was here ####
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
 2	val_2val_2	1
 2	val_2val_2	1
-4	val_4val_4	1
-4	val_4val_4	1
-8	val_8val_8	1
-8	val_8val_8	1
 PREHOOK: query: select * from test_table3 tablesample (bucket 2 out of 2) s where ds = '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_table3
@@ -496,6 +474,26 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table3
 POSTHOOK: Input: default@test_table3@ds=1
 #### A masked pattern was here ####
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+4	val_4val_4	1
+4	val_4val_4	1
 5	val_5val_5	1
 5	val_5val_5	1
 5	val_5val_5	1
@@ -514,6 +512,8 @@ POSTHOOK: Input: default@test_table3@ds=1
 5	val_5val_5	1
 5	val_5val_5	1
 5	val_5val_5	1
+8	val_8val_8	1
+8	val_8val_8	1
 9	val_9val_9	1
 9	val_9val_9	1
 PREHOOK: query: EXPLAIN
@@ -694,30 +694,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table3
 POSTHOOK: Input: default@test_table3@ds=1
 #### A masked pattern was here ####
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
 2	val_2val_2	1
 2	val_2val_2	1
-4	val_4val_4	1
-4	val_4val_4	1
-8	val_8val_8	1
-8	val_8val_8	1
 PREHOOK: query: select * from test_table3 tablesample (bucket 2 out of 2) s where ds = '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_table3
@@ -728,6 +706,26 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table3
 POSTHOOK: Input: default@test_table3@ds=1
 #### A masked pattern was here ####
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+4	val_4val_4	1
+4	val_4val_4	1
 5	val_5val_5	1
 5	val_5val_5	1
 5	val_5val_5	1
@@ -746,6 +744,8 @@ POSTHOOK: Input: default@test_table3@ds=1
 5	val_5val_5	1
 5	val_5val_5	1
 5	val_5val_5	1
+8	val_8val_8	1
+8	val_8val_8	1
 9	val_9val_9	1
 9	val_9val_9	1
 PREHOOK: query: EXPLAIN
@@ -936,18 +936,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table3
 POSTHOOK: Input: default@test_table3@ds=1
 #### A masked pattern was here ####
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
 2	val_2val_2	1
-4	val_4val_4	1
-8	val_8val_8	1
 PREHOOK: query: select * from test_table3 tablesample (bucket 2 out of 2) s where ds = '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_table3
@@ -958,6 +947,16 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table3
 POSTHOOK: Input: default@test_table3@ds=1
 #### A masked pattern was here ####
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+4	val_4val_4	1
 5	val_5val_5	1
 5	val_5val_5	1
 5	val_5val_5	1
@@ -967,6 +966,7 @@ POSTHOOK: Input: default@test_table3@ds=1
 5	val_5val_5	1
 5	val_5val_5	1
 5	val_5val_5	1
+8	val_8val_8	1
 9	val_9val_9	1
 PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
@@ -1156,18 +1156,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table3
 POSTHOOK: Input: default@test_table3@ds=1
 #### A masked pattern was here ####
-0	val_0val_0val_0val_0	1
-0	val_0val_0val_0val_0	1
-0	val_0val_0val_0val_0	1
-0	val_0val_0val_0val_0	1
-0	val_0val_0val_0val_0	1
-0	val_0val_0val_0val_0	1
-0	val_0val_0val_0val_0	1
-0	val_0val_0val_0val_0	1
-0	val_0val_0val_0val_0	1
 2	val_2val_2val_2val_2	1
-4	val_4val_4val_4val_4	1
-8	val_8val_8val_8val_8	1
 PREHOOK: query: select * from test_table3 tablesample (bucket 2 out of 2) s where ds = '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_table3
@@ -1178,6 +1167,16 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table3
 POSTHOOK: Input: default@test_table3@ds=1
 #### A masked pattern was here ####
+0	val_0val_0val_0val_0	1
+0	val_0val_0val_0val_0	1
+0	val_0val_0val_0val_0	1
+0	val_0val_0val_0val_0	1
+0	val_0val_0val_0val_0	1
+0	val_0val_0val_0val_0	1
+0	val_0val_0val_0val_0	1
+0	val_0val_0val_0val_0	1
+0	val_0val_0val_0val_0	1
+4	val_4val_4val_4val_4	1
 5	val_5val_5val_5val_5	1
 5	val_5val_5val_5val_5	1
 5	val_5val_5val_5val_5	1
@@ -1187,6 +1186,7 @@ POSTHOOK: Input: default@test_table3@ds=1
 5	val_5val_5val_5val_5	1
 5	val_5val_5val_5val_5	1
 5	val_5val_5val_5val_5	1
+8	val_8val_8val_8val_8	1
 9	val_9val_9val_9val_9	1
 PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
@@ -1376,6 +1376,25 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table3
 POSTHOOK: Input: default@test_table3@ds=1
 #### A masked pattern was here ####
+10	val_5val_5	1
+10	val_5val_5	1
+10	val_5val_5	1
+10	val_5val_5	1
+10	val_5val_5	1
+10	val_5val_5	1
+10	val_5val_5	1
+10	val_5val_5	1
+10	val_5val_5	1
+PREHOOK: query: select * from test_table3 tablesample (bucket 2 out of 2) s where ds = '1'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table3
+PREHOOK: Input: default@test_table3@ds=1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_table3 tablesample (bucket 2 out of 2) s where ds = '1'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table3
+POSTHOOK: Input: default@test_table3@ds=1
+#### A masked pattern was here ####
 0	val_0val_0	1
 0	val_0val_0	1
 0	val_0val_0	1
@@ -1387,24 +1406,5 @@ POSTHOOK: Input: default@test_table3@ds=1
 0	val_0val_0	1
 4	val_2val_2	1
 8	val_4val_4	1
-10	val_5val_5	1
-10	val_5val_5	1
-10	val_5val_5	1
-10	val_5val_5	1
-10	val_5val_5	1
-10	val_5val_5	1
-10	val_5val_5	1
-10	val_5val_5	1
-10	val_5val_5	1
 16	val_8val_8	1
 18	val_9val_9	1
-PREHOOK: query: select * from test_table3 tablesample (bucket 2 out of 2) s where ds = '1'
-PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table3
-PREHOOK: Input: default@test_table3@ds=1
-#### A masked pattern was here ####
-POSTHOOK: query: select * from test_table3 tablesample (bucket 2 out of 2) s where ds = '1'
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table3
-POSTHOOK: Input: default@test_table3@ds=1
-#### A masked pattern was here ####

@@ -73,6 +73,7 @@ public class VectorReduceSinkDesc extends AbstractVectorDesc  {
   private boolean isKeyBinarySortable;
   private boolean isValueLazyBinary;
   private boolean isUnexpectedCondition;
+  private boolean isAcidChange;
 
   /*
    * The following conditions are for native Vector ReduceSink.
@@ -142,5 +143,13 @@ public class VectorReduceSinkDesc extends AbstractVectorDesc  {
   }
   public boolean getIsUnexpectedCondition() {
     return isUnexpectedCondition;
+  }
+
+  public void setIsAcidChange(boolean isAcidChange) {
+    this.isAcidChange = isAcidChange;
+  }
+
+  public boolean getIsAcidChange() {
+    return isAcidChange;
   }
 }

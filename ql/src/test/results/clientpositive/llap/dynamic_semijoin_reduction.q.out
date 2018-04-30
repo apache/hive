@@ -1608,6 +1608,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                     properties:
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -1651,6 +1652,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                     properties:
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -1742,6 +1744,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                     properties:
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key1,value1
                       columns.comments 
@@ -1785,6 +1788,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                     properties:
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key1,value1
                       columns.comments 

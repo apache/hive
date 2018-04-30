@@ -91,10 +91,9 @@ POSTHOOK: query: select * from bucket0_mm tablesample (bucket 1 out of 2) s
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucket0_mm
 #### A masked pattern was here ####
-100	100
 10	10
-0	0
 98	98
+97	97
 PREHOOK: query: select * from bucket0_mm tablesample (bucket 2 out of 2) s
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucket0_mm
@@ -103,8 +102,9 @@ POSTHOOK: query: select * from bucket0_mm tablesample (bucket 2 out of 2) s
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucket0_mm
 #### A masked pattern was here ####
+100	100
+0	0
 103	103
-97	97
 PREHOOK: query: insert into table bucket0_mm select key, key from intermediate
 PREHOOK: type: QUERY
 PREHOOK: Input: default@intermediate
@@ -149,14 +149,12 @@ POSTHOOK: query: select * from bucket0_mm tablesample (bucket 1 out of 2) s
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucket0_mm
 #### A masked pattern was here ####
-100	100
 10	10
-0	0
 98	98
-100	100
 10	10
-0	0
 98	98
+97	97
+97	97
 PREHOOK: query: select * from bucket0_mm tablesample (bucket 2 out of 2) s
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucket0_mm
@@ -165,10 +163,12 @@ POSTHOOK: query: select * from bucket0_mm tablesample (bucket 2 out of 2) s
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucket0_mm
 #### A masked pattern was here ####
+100	100
+0	0
+100	100
+0	0
 103	103
-97	97
 103	103
-97	97
 PREHOOK: query: drop table bucket0_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@bucket0_mm
@@ -318,9 +318,11 @@ POSTHOOK: Input: default@bucket1_mm@key2=98
 POSTHOOK: Input: default@bucket1_mm@key2=99
 #### A masked pattern was here ####
 96	97	98
+97	98	99
 98	97	96
-102	103	104
-104	103	102
+99	98	97
+99	100	101
+101	100	99
 PREHOOK: query: select * from bucket1_mm tablesample (bucket 2 out of 2) s  order by key, id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucket1_mm
@@ -355,10 +357,8 @@ POSTHOOK: Input: default@bucket1_mm@key2=99
 1	0	-1
 9	10	11
 11	10	9
-97	98	99
-99	98	97
-99	100	101
-101	100	99
+102	103	104
+104	103	102
 PREHOOK: query: drop table bucket1_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@bucket1_mm
@@ -416,7 +416,6 @@ POSTHOOK: query: select * from bucket2_mm tablesample (bucket 1 out of 10) s ord
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucket2_mm
 #### A masked pattern was here ####
-0	0
 PREHOOK: query: select * from bucket2_mm tablesample (bucket 4 out of 10) s order by key, id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucket2_mm
@@ -460,8 +459,6 @@ POSTHOOK: query: select * from bucket2_mm tablesample (bucket 1 out of 10) s ord
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucket2_mm
 #### A masked pattern was here ####
-0	0
-0	0
 PREHOOK: query: select * from bucket2_mm tablesample (bucket 4 out of 10) s order by key, id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucket2_mm
@@ -470,7 +467,6 @@ POSTHOOK: query: select * from bucket2_mm tablesample (bucket 4 out of 10) s ord
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucket2_mm
 #### A masked pattern was here ####
-103	103
 PREHOOK: query: drop table bucket2_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@bucket2_mm

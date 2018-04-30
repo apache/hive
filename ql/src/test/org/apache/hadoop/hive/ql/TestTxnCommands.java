@@ -765,13 +765,13 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
       BucketCodec.V1.encode(new AcidOutputFormat.Options(hiveConf).bucket(1)));
     Assert.assertEquals("", 4, rs.size());
     Assert.assertTrue(rs.get(0),
-            rs.get(0).startsWith("{\"writeid\":0,\"bucketid\":536870912,\"rowid\":0}\t0\t12"));
-    Assert.assertTrue(rs.get(0), rs.get(0).endsWith("nonacidorctbl/000000_0_copy_1"));
+            rs.get(0).startsWith("{\"writeid\":0,\"bucketid\":536936448,\"rowid\":0}\t1\t2"));
+    Assert.assertTrue(rs.get(0), rs.get(0).endsWith("nonacidorctbl/000001_0"));
     Assert.assertTrue(rs.get(1),
-            rs.get(1).startsWith("{\"writeid\":0,\"bucketid\":536936448,\"rowid\":0}\t1\t2"));
-    Assert.assertTrue(rs.get(1), rs.get(1).endsWith("nonacidorctbl/000001_0"));
+            rs.get(1).startsWith("{\"writeid\":0,\"bucketid\":536936448,\"rowid\":1}\t1\t5"));
+    Assert.assertTrue(rs.get(1), rs.get(1).endsWith("nonacidorctbl/000001_0_copy_1"));
     Assert.assertTrue(rs.get(2),
-            rs.get(2).startsWith("{\"writeid\":0,\"bucketid\":536936448,\"rowid\":1}\t1\t5"));
+            rs.get(2).startsWith("{\"writeid\":0,\"bucketid\":536936448,\"rowid\":2}\t0\t12"));
     Assert.assertTrue(rs.get(2), rs.get(2).endsWith("nonacidorctbl/000001_0_copy_1"));
     Assert.assertTrue(rs.get(3),
             rs.get(3).startsWith("{\"writeid\":1,\"bucketid\":536936448,\"rowid\":0}\t1\t17"));
@@ -786,13 +786,13 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     }
     Assert.assertEquals("", 4, rs.size());
     Assert.assertTrue(rs.get(0),
-            rs.get(0).startsWith("{\"writeid\":0,\"bucketid\":536870912,\"rowid\":0}\t0\t12"));
-    Assert.assertTrue(rs.get(0), rs.get(0).endsWith("nonacidorctbl/base_0000001/bucket_00000"));
+            rs.get(0).startsWith("{\"writeid\":0,\"bucketid\":536936448,\"rowid\":0}\t1\t2"));
+    Assert.assertTrue(rs.get(0), rs.get(0).endsWith("nonacidorctbl/base_0000001/bucket_00001"));
     Assert.assertTrue(rs.get(1),
-            rs.get(1).startsWith("{\"writeid\":0,\"bucketid\":536936448,\"rowid\":0}\t1\t2"));
+            rs.get(1).startsWith("{\"writeid\":0,\"bucketid\":536936448,\"rowid\":1}\t1\t5"));
     Assert.assertTrue(rs.get(1), rs.get(1).endsWith("nonacidorctbl/base_0000001/bucket_00001"));
     Assert.assertTrue(rs.get(2),
-            rs.get(2).startsWith("{\"writeid\":0,\"bucketid\":536936448,\"rowid\":1}\t1\t5"));
+            rs.get(2).startsWith("{\"writeid\":0,\"bucketid\":536936448,\"rowid\":2}\t0\t12"));
     Assert.assertTrue(rs.get(2), rs.get(2).endsWith("nonacidorctbl/base_0000001/bucket_00001"));
     Assert.assertTrue(rs.get(3),
             rs.get(3).startsWith("{\"writeid\":1,\"bucketid\":536936448,\"rowid\":0}\t1\t17"));
@@ -820,7 +820,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     int[][] expected = {{0, -1}, {1, -1}, {3, -1}};
     Assert.assertEquals(stringifyValues(expected), r);
   }
-  //@Ignore("see bucket_num_reducers_acid2.q")
+  @Ignore("Moved to Tez")
   @Test
   public void testMoreBucketsThanReducers2() throws Exception {
     //todo: try using set VerifyNumReducersHook.num.reducers=10;

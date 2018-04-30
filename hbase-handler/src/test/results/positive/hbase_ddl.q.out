@@ -117,6 +117,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 	hbase.mapred.output.outputtable	kkk                 
 	hbase.table.name    	hbase_table_0       
 #### A masked pattern was here ####
@@ -163,6 +164,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 	hbase.table.name    	hbase_table_0       
 #### A masked pattern was here ####
 	numFiles            	0                   

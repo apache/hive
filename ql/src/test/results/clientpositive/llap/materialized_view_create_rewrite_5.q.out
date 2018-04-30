@@ -398,6 +398,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MATERIALIZED_VIEW   	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 	numFiles            	2                   
 	totalSize           	1053                
 	transactional       	true                

@@ -305,8 +305,8 @@ select * from emps where (empno,deptno) in ((1,2),(3,2))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@emps
 #### A masked pattern was here ####
-2	5	22
 1	2	11
+2	5	22
 PREHOOK: query: drop view v
 PREHOOK: type: DROPVIEW
 POSTHOOK: query: drop view v
@@ -342,8 +342,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@emps
 POSTHOOK: Input: default@v
 #### A masked pattern was here ####
-2	5	22
 1	2	11
+2	5	22
 PREHOOK: query: select subq.e1 from 
 (select (empno*2)|1 as e1, substr(empname,1,1) as n1 from emps)subq
 join

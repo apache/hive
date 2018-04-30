@@ -29,6 +29,7 @@ import org.apache.hadoop.io.IntWritable;
 /**
  * GenericUDF Class for computing hash values.
  */
+@Deprecated
 @Description(name = "hash", value = "_FUNC_(a1, a2, ...) - Returns a hash value of the arguments")
 public class GenericUDFHash extends GenericUDF {
   private transient ObjectInspector[] argumentOIs;
@@ -48,7 +49,7 @@ public class GenericUDFHash extends GenericUDF {
     for(int i = 0; i < arguments.length; i++) {
       fieldValues[i] = arguments[i].get();
     }
-    int r = ObjectInspectorUtils.getBucketHashCode(fieldValues, argumentOIs);
+    int r = ObjectInspectorUtils.getBucketHashCodeOld(fieldValues, argumentOIs);
     result.set(r);
     return result;
   }

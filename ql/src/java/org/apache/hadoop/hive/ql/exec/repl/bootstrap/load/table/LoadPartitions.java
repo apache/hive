@@ -142,7 +142,8 @@ public class LoadPartitions {
       if (table == null) {
         //new table
 
-        table = new Table(tableDesc.getDatabaseName(), tableDesc.getTableName());
+        table = new Table(tableDesc.getDatabaseName(),
+            tableDesc.getTableName());
         if (isPartitioned(tableDesc)) {
           updateReplicationState(initialReplicationState());
           if (!forNewTable().hasReplicationState()) {
