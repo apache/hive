@@ -52,8 +52,8 @@ public class LlapOptionsProcessor {
   public static final String OPTION_AUXHBASE = "auxhbase"; // used to localize jars
   public static final String OPTION_JAVA_HOME = "javaHome"; // forward via config.json
   public static final String OPTION_HIVECONF = "hiveconf"; // llap-daemon-site if relevant parameter
-  public static final String OPTION_SLIDER_AM_CONTAINER_MB = "slider-am-container-mb"; // forward as arg
-  public static final String OPTION_SLIDER_APPCONFIG_GLOBAL = "slider-appconfig-global"; // forward as arg
+  public static final String OPTION_SERVICE_AM_CONTAINER_MB = "service-am-container-mb"; // forward as arg
+  public static final String OPTION_SERVICE_APPCONFIG_GLOBAL = "service-appconfig-global"; // forward as arg
   public static final String OPTION_LLAP_QUEUE = "queue"; // forward via config.json
   public static final String OPTION_IO_THREADS = "iothreads"; // llap-daemon-site
 
@@ -61,12 +61,11 @@ public class LlapOptionsProcessor {
   public static final String OPTION_ARGS = "args"; // forward as arg
   public static final String OPTION_LOGLEVEL = "loglevel"; // forward as arg
   public static final String OPTION_LOGGER = "logger"; // forward as arg
-  public static final String OPTION_CHAOS_MONKEY = "chaosmonkey"; // forward as arg
-  public static final String OPTION_SLIDER_KEYTAB_DIR = "slider-keytab-dir";
-  public static final String OPTION_SLIDER_KEYTAB = "slider-keytab";
-  public static final String OPTION_SLIDER_PRINCIPAL = "slider-principal";
-  public static final String OPTION_SLIDER_PLACEMENT = "slider-placement";
-  public static final String OPTION_SLIDER_DEFAULT_KEYTAB = "slider-default-keytab";
+  public static final String OPTION_SERVICE_KEYTAB_DIR = "service-keytab-dir";
+  public static final String OPTION_SERVICE_KEYTAB = "service-keytab";
+  public static final String OPTION_SERVICE_PRINCIPAL = "service-principal";
+  public static final String OPTION_SERVICE_PLACEMENT = "service-placement";
+  public static final String OPTION_SERVICE_DEFAULT_KEYTAB = "service-default-keytab";
   public static final String OPTION_OUTPUT_DIR = "output";
   public static final String OPTION_START = "startImmediately";
   public static final String OPTION_HEALTH_PERCENT = "health-percent";
@@ -217,24 +216,21 @@ public class LlapOptionsProcessor {
                 LogHelpers.LLAP_LOGGER_NAME_QUERY_ROUTING + ", " + LogHelpers.LLAP_LOGGER_NAME_CONSOLE)
         .create());
 
-    options.addOption(OptionBuilder.hasArg().withArgName(OPTION_CHAOS_MONKEY).withLongOpt(OPTION_CHAOS_MONKEY)
-        .withDescription("chaosmonkey interval").create('m'));
+    options.addOption(OptionBuilder.hasArg(false).withArgName(OPTION_SERVICE_DEFAULT_KEYTAB).withLongOpt(OPTION_SERVICE_DEFAULT_KEYTAB)
+        .withDescription("try to set default settings for Service AM keytab; mostly for dev testing").create());
 
-    options.addOption(OptionBuilder.hasArg(false).withArgName(OPTION_SLIDER_DEFAULT_KEYTAB).withLongOpt(OPTION_SLIDER_DEFAULT_KEYTAB)
-        .withDescription("try to set default settings for Slider AM keytab; mostly for dev testing").create());
+    options.addOption(OptionBuilder.hasArg().withArgName(OPTION_SERVICE_KEYTAB_DIR).withLongOpt(OPTION_SERVICE_KEYTAB_DIR)
+        .withDescription("Service AM keytab directory on HDFS (where the headless user keytab is stored by Service keytab installation, e.g. .yarn/keytabs/llap)").create());
 
-    options.addOption(OptionBuilder.hasArg().withArgName(OPTION_SLIDER_KEYTAB_DIR).withLongOpt(OPTION_SLIDER_KEYTAB_DIR)
-        .withDescription("Slider AM keytab directory on HDFS (where the headless user keytab is stored by Slider keytab installation, e.g. .slider/keytabs/llap)").create());
+    options.addOption(OptionBuilder.hasArg().withArgName(OPTION_SERVICE_KEYTAB).withLongOpt(OPTION_SERVICE_KEYTAB)
+        .withDescription("Service AM keytab file name inside " + OPTION_SERVICE_KEYTAB_DIR).create());
 
-    options.addOption(OptionBuilder.hasArg().withArgName(OPTION_SLIDER_KEYTAB).withLongOpt(OPTION_SLIDER_KEYTAB)
-        .withDescription("Slider AM keytab file name inside " + OPTION_SLIDER_KEYTAB_DIR).create());
+    options.addOption(OptionBuilder.hasArg().withArgName(OPTION_SERVICE_PRINCIPAL).withLongOpt(OPTION_SERVICE_PRINCIPAL)
+        .withDescription("Service AM principal; should be the user running the cluster, e.g. hive@EXAMPLE.COM").create());
 
-    options.addOption(OptionBuilder.hasArg().withArgName(OPTION_SLIDER_PRINCIPAL).withLongOpt(OPTION_SLIDER_PRINCIPAL)
-        .withDescription("Slider AM principal; should be the user running the cluster, e.g. hive@EXAMPLE.COM").create());
-
-    options.addOption(OptionBuilder.hasArg().withArgName(OPTION_SLIDER_PLACEMENT).withLongOpt(OPTION_SLIDER_PLACEMENT)
-        .withDescription("Slider placement policy; see slider documentation at https://slider.incubator.apache.org/docs/placement.html."
-          + " 4 means anti-affinity (the default; unnecessary if LLAP is going to take more than half of the YARN capacity of a node), 0 is normal.").create());
+    options.addOption(OptionBuilder.hasArg().withArgName(OPTION_SERVICE_PLACEMENT).withLongOpt(OPTION_SERVICE_PLACEMENT)
+        .withDescription("Service placement policy; see YARN documentation at https://issues.apache.org/jira/browse/YARN-1042."
+          + " This is unnecessary if LLAP is going to take more than half of the YARN capacity of a node.").create());
 
     options.addOption(OptionBuilder.hasArg().withArgName(OPTION_HEALTH_PERCENT).withLongOpt(OPTION_HEALTH_PERCENT)
       .withDescription("Percentage of running containers after which LLAP application is considered healthy" +
@@ -291,12 +287,12 @@ public class LlapOptionsProcessor {
         .create());
 
     options.addOption(OptionBuilder.hasArg().withArgName("b")
-        .withLongOpt(OPTION_SLIDER_AM_CONTAINER_MB)
-        .withDescription("The size of the slider AppMaster container in MB").create('b'));
+        .withLongOpt(OPTION_SERVICE_AM_CONTAINER_MB)
+        .withDescription("The size of the service AppMaster container in MB").create('b'));
 
     options.addOption(OptionBuilder.withValueSeparator().hasArgs(2).withArgName("property=value")
-        .withLongOpt(OPTION_SLIDER_APPCONFIG_GLOBAL)
-        .withDescription("Property (key=value) to be set in the global section of the Slider appConfig")
+        .withLongOpt(OPTION_SERVICE_APPCONFIG_GLOBAL)
+        .withDescription("Property (key=value) to be set in the global section of the Service appConfig")
         .create());
 
     options.addOption(OptionBuilder.hasArg().withArgName(OPTION_IO_THREADS)
@@ -366,7 +362,7 @@ public class LlapOptionsProcessor {
               logger.equalsIgnoreCase(LogHelpers.LLAP_LOGGER_NAME_RFA));
     }
 
-    // loglevel, chaosmonkey & args are parsed by the python processor
+    // loglevel & args are parsed by the python processor
 
     return new LlapOptions(name, instances, directory, executors, ioThreads, cache, size, xmx,
         jars, isHbase, hiveconf, javaHome, queueName, logger, doStart, output, isHiveAux);
