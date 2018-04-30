@@ -192,6 +192,7 @@ public class TestOperatorCmp {
     HiveConf conf = env_setup.getTestCtx().hiveConf;
 
     conf.setBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ENABLED, true);
+    conf.setBoolVar(ConfVars.HIVE_VECTORIZATION_ENABLED, false);
     conf.setBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ALWAYS_COLLECT_OPERATOR_STATS, true);
     conf.setVar(ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES, "reoptimize");
     conf.set("zzz", "1");
