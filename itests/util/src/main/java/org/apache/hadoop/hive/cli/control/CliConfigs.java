@@ -579,7 +579,7 @@ public class CliConfigs {
         setInitScript("q_test_init.sql");
         setCleanupScript("q_test_cleanup.sql");
 
-        setHiveConfDir("data/conf/spark/yarn-client");
+        setHiveConfDir("data/conf/spark/yarn-cluster");
         setClusterType(MiniClusterType.miniSparkOnYarn);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
