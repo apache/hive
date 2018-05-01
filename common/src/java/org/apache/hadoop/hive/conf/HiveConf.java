@@ -2782,6 +2782,11 @@ public class HiveConf extends Configuration {
     HIVE_CLI_TEZ_SESSION_ASYNC("hive.cli.tez.session.async", true, "Whether to start Tez\n" +
         "session in background when running CLI with Tez, allowing CLI to be available earlier."),
 
+    HIVE_DISABLE_UNSAFE_EXTERNALTABLE_OPERATIONS("hive.disable.unsafe.external.table.operations", true,
+        "Whether to disable certain optimizations and operations on external tables," +
+        " on the assumption that data changes by external applications may have negative effects" +
+        " on these operations."),
+
     HIVE_ERROR_ON_EMPTY_PARTITION("hive.error.on.empty.partition", false,
         "Whether to throw an exception if dynamic partition insert generates empty results."),
 
