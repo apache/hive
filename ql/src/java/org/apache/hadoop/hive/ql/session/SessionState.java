@@ -41,6 +41,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.lang.StringUtils;
@@ -117,10 +118,14 @@ public class SessionState {
   static final String LOCK_FILE_NAME = "inuse.lck";
   static final String INFO_FILE_NAME = "inuse.info";
 
-  private final Map<String, Map<String, Table>> tempTables = new HashMap<>();
+  /**
+   * Concurrent since SessionState is often propagated to workers in thread pools
+   */
+  private final Map<String, Map<String, Table>> tempTables = new ConcurrentHashMap<>();
   private final Map<String, Map<String, ColumnStatisticsObj>> tempTableColStats =
-      new HashMap<String, Map<String, ColumnStatisticsObj>>();
-  private final Map<String, SessionHiveMetaStoreClient.TempTable> tempPartitions = new HashMap<>();
+      new ConcurrentHashMap<>();
+  private final Map<String, SessionHiveMetaStoreClient.TempTable> tempPartitions =
+      new ConcurrentHashMap<>();
 
   protected ClassLoader parentLoader;
 
@@ -537,8 +542,7 @@ public class SessionState {
    * Singleton Session object per thread.
    *
    **/
-  private static InheritableThreadLocal<SessionStates> tss =
-      new InheritableThreadLocal<SessionStates>() {
+  private static ThreadLocal<SessionStates> tss = new ThreadLocal<SessionStates>() {
     @Override
     protected SessionStates initialValue() {
       return new SessionStates();
