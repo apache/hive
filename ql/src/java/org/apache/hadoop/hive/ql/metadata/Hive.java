@@ -2074,12 +2074,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
         Utilities.FILE_OP_LOGGER.trace(
             "Looking for dynamic partitions in {} ({} levels)", loadPath, numDP);
         Path[] leafStatus = Utilities.getMmDirectoryCandidates(
-            fs, loadPath, numDP, numLB, null, writeId, -1, conf, isInsertOverwrite);
+            fs, loadPath, numDP, null, writeId, -1, conf, isInsertOverwrite);
         for (Path p : leafStatus) {
           Path dpPath = p.getParent(); // Skip the MM directory that we have found.
-          for (int i = 0; i < numLB; ++i) {
-            dpPath = dpPath.getParent(); // Now skip the LB directories, if any...
-          }
           if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
             Utilities.FILE_OP_LOGGER.trace("Found DP " + dpPath);
           }
