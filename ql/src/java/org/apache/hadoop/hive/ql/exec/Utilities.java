@@ -4072,9 +4072,9 @@ public final class Utilities {
   }
 
   public static Path[] getMmDirectoryCandidates(FileSystem fs, Path path, int dpLevels,
-      int lbLevels, PathFilter filter, long writeId, int stmtId, Configuration conf,
+      PathFilter filter, long writeId, int stmtId, Configuration conf,
       Boolean isBaseDir) throws IOException {
-    int skipLevels = dpLevels + lbLevels;
+    int skipLevels = dpLevels;
     if (filter == null) {
       filter = new AcidUtils.IdPathFilter(writeId, stmtId);
     }
@@ -4186,7 +4186,7 @@ public final class Utilities {
       int dpLevels, int lbLevels, AcidUtils.IdPathFilter filter, long writeId, int stmtId,
       Configuration conf) throws IOException {
     Path[] files = getMmDirectoryCandidates(
-        fs, specPath, dpLevels, lbLevels, filter, writeId, stmtId, conf, null);
+        fs, specPath, dpLevels, filter, writeId, stmtId, conf, null);
     if (files != null) {
       for (Path path : files) {
         Utilities.FILE_OP_LOGGER.info("Deleting {} on failure", path);
@@ -4281,7 +4281,7 @@ public final class Utilities {
       FileUtils.mkdir(fs, specPath, hconf);
     }
     Path[] files = getMmDirectoryCandidates(
-        fs, specPath, dpLevels, lbLevels, filter, writeId, stmtId, hconf, isInsertOverwrite);
+        fs, specPath, dpLevels, filter, writeId, stmtId, hconf, isInsertOverwrite);
     ArrayList<Path> mmDirectories = new ArrayList<>();
     if (files != null) {
       for (Path path : files) {
@@ -4296,6 +4296,7 @@ public final class Utilities {
         int fileCount = mdis.readInt();
         for (int i = 0; i < fileCount; ++i) {
           String nextFile = mdis.readUTF();
+          Utilities.FILE_OP_LOGGER.trace("Looking at committed file: {}", nextFile);
           if (!committed.add(nextFile)) {
             throw new HiveException(nextFile + " was specified in multiple manifests");
           }
@@ -4318,7 +4319,7 @@ public final class Utilities {
     }
 
     for (Path path : mmDirectories) {
-      cleanMmDirectory(path, fs, unionSuffix, committed);
+      cleanMmDirectory(path, fs, unionSuffix, lbLevels, committed);
     }
 
     if (!committed.isEmpty()) {
@@ -4356,10 +4357,28 @@ public final class Utilities {
     }
   }
 
-  private static void cleanMmDirectory(Path dir, FileSystem fs,
-      String unionSuffix, HashSet<String> committed) throws IOException, HiveException {
+  private static void cleanMmDirectory(Path dir, FileSystem fs, String unionSuffix,
+      int lbLevels, HashSet<String> committed) throws IOException, HiveException {
     for (FileStatus child : fs.listStatus(dir)) {
       Path childPath = child.getPath();
+      if (lbLevels > 0) {
+        // We need to recurse into some LB directories. We don't check the directories themselves
+        // for matches; if they are empty they don't matter, and we do will delete bad files.
+        // This recursion is not the most efficient way to do this but LB is rarely used.
+        if (child.isDirectory()) {
+          Utilities.FILE_OP_LOGGER.trace(
+              "Recursion into LB directory {}; levels remaining ", childPath, lbLevels - 1);
+          cleanMmDirectory(childPath, fs, unionSuffix, lbLevels - 1, committed);
+        } else {
+          if (committed.contains(childPath.toString())) {
+            throw new HiveException("LB FSOP has commited "
+                + childPath + " outside of LB directory levels " + lbLevels);
+          }
+          deleteUncommitedFile(childPath, fs);
+        }
+        continue;
+      }
+      // No more LB directories expected.
       if (unionSuffix == null) {
         if (committed.remove(childPath.toString())) {
           continue; // A good file.
@@ -4368,15 +4387,21 @@ public final class Utilities {
       } else if (!child.isDirectory()) {
         if (committed.contains(childPath.toString())) {
           throw new HiveException("Union FSOP has commited "
-              + childPath + " outside of union directory" + unionSuffix);
+              + childPath + " outside of union directory " + unionSuffix);
         }
         deleteUncommitedFile(childPath, fs);
       } else if (childPath.getName().equals(unionSuffix)) {
         // Found the right union directory; treat it as "our" MM directory.
-        cleanMmDirectory(childPath, fs, null, committed);
+        cleanMmDirectory(childPath, fs, null, 0, committed);
       } else {
-        Utilities.FILE_OP_LOGGER.trace("FSOP for {} is ignoring the other side of the union {}",
-          unionSuffix, childPath);
+        String childName = childPath.getName();
+        if (!childName.startsWith(AbstractFileMergeOperator.UNION_SUDBIR_PREFIX)
+            && !childName.startsWith(".") && !childName.startsWith("_")) {
+          throw new HiveException("Union FSOP has an unknown directory "
+              + childPath + " outside of union directory " + unionSuffix);
+        }
+        Utilities.FILE_OP_LOGGER.trace(
+            "FSOP for {} is ignoring the other side of the union {}", unionSuffix, childPath);
       }
     }
   }
@@ -4395,13 +4420,12 @@ public final class Utilities {
    * if the entire directory is valid (has no uncommitted/temporary files).
    */
   public static List<Path> getValidMmDirectoriesFromTableOrPart(Path path, Configuration conf,
-      ValidWriteIdList validWriteIdList, int lbLevels) throws IOException {
+      ValidWriteIdList validWriteIdList) throws IOException {
     Utilities.FILE_OP_LOGGER.trace("Looking for valid MM paths under {}", path);
     // NULL means this directory is entirely valid.
     List<Path> result = null;
     FileSystem fs = path.getFileSystem(conf);
-    FileStatus[] children = (lbLevels == 0) ? fs.listStatus(path)
-        : fs.globStatus(new Path(path, StringUtils.repeat("*" + Path.SEPARATOR, lbLevels) + "*"));
+    FileStatus[] children = fs.listStatus(path);
     for (int i = 0; i < children.length; ++i) {
       FileStatus file = children[i];
       Path childPath = file.getPath();
