@@ -516,37 +516,48 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
 
     Path[] finalDirs = processPathsForMmRead(dirs, conf, validMmWriteIdList);
     if (finalDirs == null) {
-      return; // No valid inputs.
-    }
-    FileInputFormat.setInputPaths(conf, finalDirs);
-    conf.setInputFormat(inputFormat.getClass());
-
-    int headerCount = 0;
-    int footerCount = 0;
-    if (table != null) {
-      headerCount = Utilities.getHeaderCount(table);
-      footerCount = Utilities.getFooterCount(table, conf);
-      if (headerCount != 0 || footerCount != 0) {
-        // Input file has header or footer, cannot be splitted.
-        HiveConf.setLongVar(conf, ConfVars.MAPREDMINSPLITSIZE, Long.MAX_VALUE);
+      // This is for transactional tables.
+      if (!conf.getBoolean(Utilities.ENSURE_OPERATORS_EXECUTED, false)) {
+        LOG.warn("No valid inputs found in " + dirs);
+        return; // No valid inputs.
+      } else if (validMmWriteIdList != null) {
+        // AcidUtils.getAcidState() is already called to verify there is no input split.
+        // Thus for a GroupByOperator summary row, set finalDirs and add a Dummy split here.
+        finalDirs = dirs.toArray(new Path[dirs.size()]);
+        result.add(new HiveInputSplit(new NullRowsInputFormat.DummyInputSplit(finalDirs[0].toString()),
+            ZeroRowsInputFormat.class.getName()));
       }
-    }
+    } else {
+      FileInputFormat.setInputPaths(conf, finalDirs);
+      conf.setInputFormat(inputFormat.getClass());
 
-    InputSplit[] iss = inputFormat.getSplits(conf, splits);
-    for (InputSplit is : iss) {
-      result.add(new HiveInputSplit(is, inputFormatClass.getName()));
-    }
-    if (iss.length == 0 && finalDirs.length > 0 && conf.getBoolean(Utilities.ENSURE_OPERATORS_EXECUTED, false)) {
-      // If there are no inputs; the Execution engine skips the operator tree.
-      // To prevent it from happening; an opaque  ZeroRows input is added here - when needed.
-      result.add(new HiveInputSplit(new NullRowsInputFormat.DummyInputSplit(finalDirs[0].toString()),
-          ZeroRowsInputFormat.class.getName()));
+      int headerCount = 0;
+      int footerCount = 0;
+      if (table != null) {
+        headerCount = Utilities.getHeaderCount(table);
+        footerCount = Utilities.getFooterCount(table, conf);
+        if (headerCount != 0 || footerCount != 0) {
+          // Input file has header or footer, cannot be splitted.
+          HiveConf.setLongVar(conf, ConfVars.MAPREDMINSPLITSIZE, Long.MAX_VALUE);
+        }
+      }
+
+      InputSplit[] iss = inputFormat.getSplits(conf, splits);
+      for (InputSplit is : iss) {
+        result.add(new HiveInputSplit(is, inputFormatClass.getName()));
+      }
+      if (iss.length == 0 && finalDirs.length > 0 && conf.getBoolean(Utilities.ENSURE_OPERATORS_EXECUTED, false)) {
+        // If there are no inputs; the Execution engine skips the operator tree.
+        // To prevent it from happening; an opaque  ZeroRows input is added here - when needed.
+        result.add(new HiveInputSplit(new NullRowsInputFormat.DummyInputSplit(finalDirs[0].toString()),
+                ZeroRowsInputFormat.class.getName()));
+      }
     }
   }
 
   public static Path[] processPathsForMmRead(List<Path> dirs, JobConf conf,
       ValidWriteIdList validWriteIdList) throws IOException {
-    if (validWriteIdList == null) {
+     if (validWriteIdList == null) {
       return dirs.toArray(new Path[dirs.size()]);
     } else {
       List<Path> finalPaths = new ArrayList<>(dirs.size());
@@ -554,7 +565,6 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         processForWriteIds(dir, conf, validWriteIdList, finalPaths);
       }
       if (finalPaths.isEmpty()) {
-        LOG.warn("No valid inputs found in " + dirs);
         return null;
       }
       return finalPaths.toArray(new Path[finalPaths.size()]);
