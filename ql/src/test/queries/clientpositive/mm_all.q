@@ -7,7 +7,6 @@ set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 
-
 -- Force multiple writers when reading
 drop table intermediate;
 create table intermediate(key int) partitioned by (p int) stored as orc;
@@ -116,6 +115,8 @@ select * from partunion_mm order by id;
 drop table partunion_mm;
 
 
+
+set mapreduce.input.fileinputformat.input.dir.recursive=true;
 
 create table skew_mm(k1 int, k2 int, k4 int) skewed by (k1, k4) on ((0,0),(1,1),(2,2),(3,3))
  stored as directories tblproperties ("transactional"="true", "transactional_properties"="insert_only");
