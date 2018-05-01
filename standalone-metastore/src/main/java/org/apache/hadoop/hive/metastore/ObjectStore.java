@@ -9034,6 +9034,7 @@ public class ObjectStore implements RawStore, Configurable {
     Query query = null;
     try {
       openTransaction();
+      catName = normalizeIdentifier(catName);
       db = normalizeIdentifier(db);
       function = normalizeIdentifier(function);
       query = pm.newQuery(MFunction.class,
