@@ -41,7 +41,6 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Writable;
-import org.apache.hive.spark.client.rpc.RpcConfiguration;
 import org.apache.spark.SparkConf;
 
 import com.google.common.base.Joiner;
@@ -199,13 +198,6 @@ public class HiveSparkClientFactory {
           "Pass Oozie configuration (%s -> %s).", propertyName, LogUtils.maskIfPassword(propertyName,value)));
       }
 
-      if (RpcConfiguration.HIVE_SPARK_RSC_CONFIGS.contains(propertyName)) {
-        String value = RpcConfiguration.getValue(hiveConf, propertyName);
-        sparkConf.put(propertyName, value);
-        LOG.debug(String.format(
-          "load RPC property from hive configuration (%s -> %s).",
-          propertyName, LogUtils.maskIfPassword(propertyName,value)));
-      }
     }
 
     final boolean optShuffleSerDe = hiveConf.getBoolVar(

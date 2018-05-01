@@ -430,16 +430,17 @@ class SparkClientImpl implements SparkClient {
     }
     argv.add(jar);
 
-    argv.add("--remote-host");
+    argv.add(RemoteDriver.REMOTE_DRIVER_HOST_CONF);
     argv.add(serverAddress);
-    argv.add("--remote-port");
+    argv.add(RemoteDriver.REMOTE_DRIVER_PORT_CONF);
     argv.add(serverPort);
 
-    //hive.spark.* keys are passed down to the RemoteDriver via --conf,
+    //hive.spark.* keys are passed down to the RemoteDriver via REMOTE_DRIVER_CONF
+    // so that they are not used in sparkContext but only in remote driver,
     //as --properties-file contains the spark.* keys that are meant for SparkConf object.
     for (String hiveSparkConfKey : RpcConfiguration.HIVE_SPARK_RSC_CONFIGS) {
       String value = RpcConfiguration.getValue(hiveConf, hiveSparkConfKey);
-      argv.add("--conf");
+      argv.add(RemoteDriver.REMOTE_DRIVER_CONF);
       argv.add(String.format("%s=%s", hiveSparkConfKey, value));
     }
 

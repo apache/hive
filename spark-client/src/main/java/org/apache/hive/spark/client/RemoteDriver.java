@@ -90,6 +90,10 @@ public class RemoteDriver {
   private volatile JobContextImpl jc;
   private volatile boolean running;
 
+  public static final String REMOTE_DRIVER_HOST_CONF = "--remote-host";
+  public static final String REMOTE_DRIVER_PORT_CONF = "--remote-port";
+  public static final String REMOTE_DRIVER_CONF = "--remote-driver-conf";
+
   private RemoteDriver(String[] args) throws Exception {
     this.activeJobs = Maps.newConcurrentMap();
     this.jcLock = new Object();
@@ -101,22 +105,20 @@ public class RemoteDriver {
     SparkConf conf = new SparkConf();
     String serverAddress = null;
     int serverPort = -1;
+    Map<String, String> mapConf = Maps.newHashMap();
     for (int idx = 0; idx < args.length; idx += 2) {
       String key = args[idx];
-      if (key.equals("--remote-host")) {
+      if (REMOTE_DRIVER_HOST_CONF.equals(key)) {
         serverAddress = getArg(args, idx);
-      } else if (key.equals("--remote-port")) {
+      } else if (REMOTE_DRIVER_PORT_CONF.equals(key)) {
         serverPort = Integer.parseInt(getArg(args, idx));
-      } else if (key.equals("--client-id")) {
-        conf.set(SparkClientFactory.CONF_CLIENT_ID, getArg(args, idx));
-      } else if (key.equals("--secret")) {
-        conf.set(SparkClientFactory.CONF_KEY_SECRET, getArg(args, idx));
-      } else if (key.equals("--conf")) {
+      } else if (REMOTE_DRIVER_CONF.equals(key)) {
         String[] val = getArg(args, idx).split("[=]", 2);
-        conf.set(val[0], val[1]);
+        //set these only in mapConf and not in SparkConf,
+        // as these are non-spark specific configs used by the remote driver
+        mapConf.put(val[0], val[1]);
       } else {
-        throw new IllegalArgumentException("Invalid command line: "
-          + Joiner.on(" ").join(args));
+        throw new IllegalArgumentException("Invalid command line: " + Joiner.on(" ").join(args));
       }
     }
 
@@ -124,7 +126,6 @@ public class RemoteDriver {
 
     LOG.info("Connecting to: {}:{}", serverAddress, serverPort);
 
-    Map<String, String> mapConf = Maps.newHashMap();
     for (Tuple2<String, String> e : conf.getAll()) {
       mapConf.put(e._1(), e._2());
       LOG.debug("Remote Driver configured with: " + e._1() + "=" + e._2());
