@@ -28,6 +28,7 @@ import java.util.Stack;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -189,6 +190,7 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
           }
         } else {
           LOG.debug("Column " + column + " is not a partition column");
+          semiJoin = semiJoin && !disableSemiJoinOptDueToExternalTable(parseContext.getConf(), ts, ctx);
           if (semiJoin && ts.getConf().getFilterExpr() != null) {
             LOG.debug("Initiate semijoin reduction for " + column + " ("
                 + ts.getConf().getFilterExpr().getExprString());
@@ -277,6 +279,39 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
     cleanTableScanFilters(ts);
 
     return false;
+  }
+
+  private boolean disableSemiJoinOptDueToExternalTable(HiveConf conf, TableScanOperator ts, DynamicListContext ctx) {
+    boolean disableSemiJoin = false;
+    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_DISABLE_UNSAFE_EXTERNALTABLE_OPERATIONS)) {
+      // We already have the TableScan for one side of the join. Check this now.
+      if (MetaStoreUtils.isExternalTable(ts.getConf().getTableMetadata().getTTable())) {
+        LOG.debug("Disabling semijoin optimzation on {} since it is an external table.",
+            ts.getConf().getTableMetadata().getFullyQualifiedName());
+        disableSemiJoin = true;
+      } else {
+        // Check the other side of the join, using the DynamicListContext
+        ExprNodeDesc exprNodeDesc = ctx.generator.getConf().getKeyCols().get(ctx.desc.getKeyIndex());
+        ExprNodeColumnDesc colExpr = ExprNodeDescUtils.getColumnExpr(exprNodeDesc);
+
+        if (colExpr != null) {
+          // fetch table alias
+          ExprNodeDescUtils.ColumnOrigin columnOrigin =
+                  ExprNodeDescUtils.findColumnOrigin(exprNodeDesc, ctx.generator);
+          if (columnOrigin != null && columnOrigin.op instanceof TableScanOperator) {
+            // Join key origin has been traced to a table column. Check if the table is external.
+            TableScanOperator joinKeyTs = (TableScanOperator) columnOrigin.op;
+            if (MetaStoreUtils.isExternalTable(joinKeyTs.getConf().getTableMetadata().getTTable())) {
+              LOG.debug("Join key {} is from {} which is an external table. Disabling semijoin optimization.",
+                  columnOrigin.col,
+                  joinKeyTs.getConf().getTableMetadata().getFullyQualifiedName());
+              disableSemiJoin = true;
+            }
+          }
+        }
+      }
+    }
+    return disableSemiJoin;
   }
 
   // Given a key, find the corresponding column name.
