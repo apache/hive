@@ -264,9 +264,13 @@ CREATE INDEX `PCS_STATS_IDX` ON `PART_COL_STATS` (`CAT_NAME`, `DB_NAME`, `TABLE_
 
 -- Add column to partition events
 ALTER TABLE `PARTITION_EVENTS` ADD COLUMN `CAT_NAME` varchar(256);
+UPDATE `PARTITION_EVENTS`
+  SET `CAT_NAME` = 'hive' WHERE `DB_NAME` IS NOT NULL;
 
 -- Add column to notification log
 ALTER TABLE `NOTIFICATION_LOG` ADD COLUMN `CAT_NAME` varchar(256);
+UPDATE `NOTIFICATION_LOG`
+  SET `CAT_NAME` = 'hive' WHERE `DB_NAME` IS NOT NULL;
 
 INSERT INTO `SEQUENCE_TABLE` (`SEQUENCE_NAME`, `NEXT_VAL`) SELECT * from (select 'org.apache.hadoop.hive.metastore.model.MNotificationLog' as `SEQUENCE_NAME`, 1 as `NEXT_VAL`) a WHERE (SELECT COUNT(*) FROM `SEQUENCE_TABLE` where SEQUENCE_NAME = 'org.apache.hadoop.hive.metastore.model.MNotificationLog') = 0;
 
