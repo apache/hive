@@ -27,6 +27,8 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.HashSet;
 
 import org.antlr.runtime.tree.Tree;
 import org.apache.commons.httpclient.util.URIUtil;
@@ -38,6 +40,7 @@ import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -56,16 +59,25 @@ import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc.LoadFileType;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.BasicStatsWork;
-import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.mapred.InputFormat;
 
 import com.google.common.collect.Lists;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * LoadSemanticAnalyzer.
  *
  */
-public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
+public class LoadSemanticAnalyzer extends SemanticAnalyzer {
+  private static final Logger LOG = LoggerFactory.getLogger(LoadSemanticAnalyzer.class);
+  private boolean queryReWritten = false;
+
+  private final String tempTblNameSuffix = "__TEMP_TABLE_FOR_LOAD_DATA__";
+
+  // AST specific data
+  private Tree fromTree, tableTree;
+  private boolean isLocal = false, isOverWrite = false;
 
   public LoadSemanticAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
@@ -77,7 +89,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
       @Override
       public boolean accept(Path p) {
         String name = p.getName();
-        return name.equals(EximUtil.METADATA_NAME) ? true : !name.startsWith("_") && !name.startsWith(".");
+        return name.equals(EximUtil.METADATA_NAME) || (!name.startsWith("_") && !name.startsWith("."));
       }
     });
     if ((srcs != null) && srcs.length == 1) {
@@ -137,15 +149,14 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     return new URI(fromScheme, fromAuthority, path, null, null);
   }
 
-  private List<FileStatus> applyConstraintsAndGetFiles(URI fromURI, Tree ast,
-      boolean isLocal, Table table) throws SemanticException {
+  private List<FileStatus> applyConstraintsAndGetFiles(URI fromURI, Table table) throws SemanticException {
 
     FileStatus[] srcs = null;
 
     // local mode implies that scheme should be "file"
     // we can change this going forward
     if (isLocal && !fromURI.getScheme().equals("file")) {
-      throw new SemanticException(ErrorMsg.ILLEGAL_PATH.getMsg(ast,
+      throw new SemanticException(ErrorMsg.ILLEGAL_PATH.getMsg(fromTree,
           "Source file system should be \"file\" if \"local\" is specified"));
     }
 
@@ -153,14 +164,16 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
       FileSystem fileSystem = FileSystem.get(fromURI, conf);
       srcs = matchFilesOrDir(fileSystem, new Path(fromURI));
       if (srcs == null || srcs.length == 0) {
-        throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(ast,
+        throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(fromTree,
             "No files matching path " + fromURI));
       }
 
       for (FileStatus oneSrc : srcs) {
         if (oneSrc.isDir()) {
-          throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(ast,
-              "source contains directory: " + oneSrc.getPath().toString()));
+          reparseAndSuperAnalyze(table, fromURI);
+          return null;
+/*          throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(fromTree,
+              "source contains directory: " + oneSrc.getPath().toString()));*/
         }
       }
       validateAcidFiles(table, srcs, fileSystem);
@@ -184,44 +197,17 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
           int bucketId = Utilities.getBucketIdFromFile(bucketIdStr);
           LOG.debug("bucket ID for file " + oneSrc.getPath() + " = " + bucketId
           + " for table " + table.getFullyQualifiedName());
-          if (bucketId == -1) {
-            throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(
-                    "The file name is invalid : "
-                            + oneSrc.getPath().toString() + " for table "
-            + table.getFullyQualifiedName()));
-          }
-          if (bucketId >= numBuckets) {
-            throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(
-                    "The file name corresponds to invalid bucketId : "
-                            + oneSrc.getPath().toString())
-                    + ". Maximum number of buckets can be " + numBuckets
-            + " for table " + table.getFullyQualifiedName());
-          }
-          if (bucketArray[bucketId]) {
-            throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(
-                    "Multiple files for same bucket : " + bucketId
-                            + ". Only 1 file per bucket allowed in single load command. To load " +
-                        "multiple files for same bucket, use multiple statements for table "
-            + table.getFullyQualifiedName()));
+          if (bucketId == -1 || bucketId >= numBuckets || bucketArray[bucketId]) {
+            reparseAndSuperAnalyze(table, fromURI);
+            return null;
           }
           bucketArray[bucketId] = true;
         }
       }
-      else {
-        /**
-         * for loading into un-bucketed acid table, files can be named arbitrarily but they will
-         * be renamed during load.
-         * {@link Hive#mvFile(HiveConf, FileSystem, Path, FileSystem, Path, boolean, boolean,
-         * boolean, int)}
-         * and
-         * {@link Hive#copyFiles(HiveConf, FileSystem, FileStatus[], FileSystem, Path, boolean,
-         * boolean, List, boolean)}
-         */
-      }
     } catch (IOException e) {
       // Has to use full name to make sure it does not conflict with
       // org.apache.commons.lang.StringUtils
-      throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(ast), e);
+      throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(fromTree), e);
     }
 
     return Lists.newArrayList(srcs);
@@ -250,11 +236,27 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   @Override
+  public void init(boolean clearPartsCache) {
+    Table tempTable = ctx.getTempTableForLoad();
+    if (tempTable != null) {
+      // tempTable is only set when load is rewritten.
+      super.init(clearPartsCache);
+      tabNameToTabObject.put(tempTable.getTableName().toLowerCase(), tempTable);
+    }
+  }
+
+  @Override
   public void analyzeInternal(ASTNode ast) throws SemanticException {
-    boolean isLocal = false;
-    boolean isOverWrite = false;
-    Tree fromTree = ast.getChild(0);
-    Tree tableTree = ast.getChild(1);
+    if (ctx.getTempTableForLoad() != null) {
+      super.analyzeInternal(ast);
+    } else {
+      analyzeLoad(ast);
+    }
+  }
+
+  private void analyzeLoad(ASTNode ast) throws SemanticException {
+    fromTree = ast.getChild(0);
+    tableTree = ast.getChild(1);
 
     if (ast.getChildCount() == 4) {
       isLocal = true;
@@ -274,10 +276,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     try {
       String fromPath = stripQuotes(fromTree.getText());
       fromURI = initializeFromURI(fromPath, isLocal);
-    } catch (IOException e) {
-      throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(fromTree, e
-          .getMessage()), e);
-    } catch (URISyntaxException e) {
+    } catch (IOException | URISyntaxException e) {
       throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(fromTree, e
           .getMessage()), e);
     }
@@ -298,20 +297,24 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     List<FieldSchema> parts = ts.tableHandle.getPartitionKeys();
     if ((parts != null && parts.size() > 0)
         && (ts.partSpec == null || ts.partSpec.size() == 0)) {
-      throw new SemanticException(ErrorMsg.NEED_PARTITION_ERROR.getMsg());
+      // launch a tez job
+      reparseAndSuperAnalyze(ts.tableHandle, fromURI);
+      return;
     }
 
     List<String> bucketCols = ts.tableHandle.getBucketCols();
     if (bucketCols != null && !bucketCols.isEmpty()) {
       String error = StrictChecks.checkBucketing(conf);
       if (error != null) {
-        throw new SemanticException("Please load into an intermediate table"
-            + " and use 'insert... select' to allow Hive to enforce bucketing. " + error);
+        // launch a tez job
+        reparseAndSuperAnalyze(ts.tableHandle, fromURI);
+        return;
       }
     }
 
     // make sure the arguments make sense
-    List<FileStatus> files = applyConstraintsAndGetFiles(fromURI, fromTree, isLocal, ts.tableHandle);
+    List<FileStatus> files = applyConstraintsAndGetFiles(fromURI, ts.tableHandle);
+    if (queryReWritten) return;
 
     // for managed tables, make sure the file formats match
     if (TableType.MANAGED_TABLE.equals(ts.tableHandle.getTableType())
@@ -429,5 +432,70 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException("Unable to load data to destination table." +
           " Error: " + e.getMessage());
     }
+  }
+
+  // Rewrite the load to launch an insert job.
+  private void reparseAndSuperAnalyze(Table table, URI fromURI) throws SemanticException {
+    LOG.info("Load data triggered a Tez job instead of usual file operation");
+    // Step 1 : Create a temp table object
+    // Create a Table object
+    Table tempTableObj = new Table(new org.apache.hadoop.hive.metastore.api.Table(table.getTTable()));
+    // Construct a temp table name
+    String tempTblName = table.getTableName() + tempTblNameSuffix;
+    tempTableObj.setTableName(tempTblName);
+
+    // Move all the partition columns at the end of table columns
+    tempTableObj.setFields(table.getAllCols());
+    // wipe out partition columns
+    tempTableObj.setPartCols(new ArrayList<>());
+
+    // Set data location
+    tempTableObj.setDataLocation(new Path(fromURI));
+
+    // Step 2 : create the Insert query
+    StringBuilder rewrittenQueryStr = new StringBuilder();
+
+    rewrittenQueryStr.append("insert into table ");
+    rewrittenQueryStr.append(getFullTableNameForSQL((ASTNode)(tableTree.getChild(0))));
+    addPartitionColsToInsert(table.getPartCols(), rewrittenQueryStr);
+    rewrittenQueryStr.append(" select * from ");
+    rewrittenQueryStr.append(tempTblName);
+
+    // Step 3 : parse the query
+    // Set dynamic partitioning to nonstrict so that queries do not need any partition
+    // references.
+    HiveConf.setVar(conf, HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
+    // Parse the rewritten query string
+    Context rewrittenCtx;
+    try {
+      rewrittenCtx = new Context(conf);
+      // We keep track of all the contexts that are created by this query
+      // so we can clear them when we finish execution
+      ctx.addRewrittenStatementContext(rewrittenCtx);
+    } catch (IOException e) {
+      throw new SemanticException(ErrorMsg.LOAD_DATA_LAUNCH_JOB_IO_ERROR.getMsg());
+    }
+    rewrittenCtx.setExplainConfig(ctx.getExplainConfig());
+    rewrittenCtx.setExplainPlan(ctx.isExplainPlan());
+    rewrittenCtx.setCmd(rewrittenQueryStr.toString());
+    rewrittenCtx.setTempTableForLoad(tempTableObj);
+
+    ASTNode rewrittenTree;
+    try {
+      LOG.info("Going to reparse <" + ctx.getCmd() + "> as \n<" + rewrittenQueryStr.toString() + ">");
+      rewrittenTree = ParseUtils.parse(rewrittenQueryStr.toString(), rewrittenCtx);
+    } catch (ParseException e) {
+      throw new SemanticException(ErrorMsg.LOAD_DATA_LAUNCH_JOB_PARSE_ERROR.getMsg(), e);
+    }
+
+    // Step 4 : Reanalyze
+    super.analyze(rewrittenTree, rewrittenCtx);
+
+    queryReWritten = true;
+  }
+
+  @Override
+  public HashSet<WriteEntity> getAllOutputs() {
+    return outputs;
   }
 }
