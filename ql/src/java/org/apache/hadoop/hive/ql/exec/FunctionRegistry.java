@@ -478,6 +478,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("when", GenericUDFWhen.class);
     system.registerGenericUDF("nullif", GenericUDFNullif.class);
     system.registerGenericUDF("hash", GenericUDFHash.class);
+    system.registerGenericUDF("murmur_hash", GenericUDFMurmurHash.class);
     system.registerGenericUDF("coalesce", GenericUDFCoalesce.class);
     system.registerGenericUDF("index", GenericUDFIndex.class);
     system.registerGenericUDF("in_file", GenericUDFInFile.class);

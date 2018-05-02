@@ -173,6 +173,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 	numFiles            	2                   
 	totalSize           	178                 
 #### A masked pattern was here ####

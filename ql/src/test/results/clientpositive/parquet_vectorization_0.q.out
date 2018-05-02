@@ -1726,6 +1726,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cbigint":"true","cboolean1":"true","cboolean2":"true","cdouble":"true","cfloat":"true","cint":"true","csmallint":"true","cstring1":"true","cstring2":"true","ctimestamp1":"true","ctimestamp2":"true","ctinyint":"true"}}
               bucket_count -1
+              bucketing_version 2
               column.name.delimiter ,
               columns ctinyint,csmallint,cint,cbigint,cfloat,cdouble,cstring1,cstring2,ctimestamp1,ctimestamp2,cboolean1,cboolean2
               columns.comments 
@@ -1747,6 +1748,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cbigint":"true","cboolean1":"true","cboolean2":"true","cdouble":"true","cfloat":"true","cint":"true","csmallint":"true","cstring1":"true","cstring2":"true","ctimestamp1":"true","ctimestamp2":"true","ctinyint":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns ctinyint,csmallint,cint,cbigint,cfloat,cdouble,cstring1,cstring2,ctimestamp1,ctimestamp2,cboolean1,cboolean2
                 columns.comments 
@@ -30541,6 +30543,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cbigint":"true","cboolean1":"true","cboolean2":"true","cdouble":"true","cfloat":"true","cint":"true","csmallint":"true","cstring1":"true","cstring2":"true","ctimestamp1":"true","ctimestamp2":"true","ctinyint":"true"}}
               bucket_count -1
+              bucketing_version 2
               column.name.delimiter ,
               columns ctinyint,csmallint,cint,cbigint,cfloat,cdouble,cstring1,cstring2,ctimestamp1,ctimestamp2,cboolean1,cboolean2
               columns.comments 
@@ -30562,6 +30565,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cbigint":"true","cboolean1":"true","cboolean2":"true","cdouble":"true","cfloat":"true","cint":"true","csmallint":"true","cstring1":"true","cstring2":"true","ctimestamp1":"true","ctimestamp2":"true","ctinyint":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns ctinyint,csmallint,cint,cbigint,cfloat,cdouble,cstring1,cstring2,ctimestamp1,ctimestamp2,cboolean1,cboolean2
                 columns.comments 
@@ -30651,6 +30655,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cbigint":"true","cboolean1":"true","cboolean2":"true","cdouble":"true","cfloat":"true","cint":"true","csmallint":"true","cstring1":"true","cstring2":"true","ctimestamp1":"true","ctimestamp2":"true","ctinyint":"true"}}
               bucket_count -1
+              bucketing_version 2
               column.name.delimiter ,
               columns ctinyint,csmallint,cint,cbigint,cfloat,cdouble,cstring1,cstring2,ctimestamp1,ctimestamp2,cboolean1,cboolean2
               columns.comments 
@@ -30672,6 +30677,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cbigint":"true","cboolean1":"true","cboolean2":"true","cdouble":"true","cfloat":"true","cint":"true","csmallint":"true","cstring1":"true","cstring2":"true","ctimestamp1":"true","ctimestamp2":"true","ctinyint":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns ctinyint,csmallint,cint,cbigint,cfloat,cdouble,cstring1,cstring2,ctimestamp1,ctimestamp2,cboolean1,cboolean2
                 columns.comments 
@@ -30762,6 +30768,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cbigint":"true","cboolean1":"true","cboolean2":"true","cdouble":"true","cfloat":"true","cint":"true","csmallint":"true","cstring1":"true","cstring2":"true","ctimestamp1":"true","ctimestamp2":"true","ctinyint":"true"}}
               bucket_count -1
+              bucketing_version 2
               column.name.delimiter ,
               columns ctinyint,csmallint,cint,cbigint,cfloat,cdouble,cstring1,cstring2,ctimestamp1,ctimestamp2,cboolean1,cboolean2
               columns.comments 
@@ -30783,6 +30790,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cbigint":"true","cboolean1":"true","cboolean2":"true","cdouble":"true","cfloat":"true","cint":"true","csmallint":"true","cstring1":"true","cstring2":"true","ctimestamp1":"true","ctimestamp2":"true","ctinyint":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns ctinyint,csmallint,cint,cbigint,cfloat,cdouble,cstring1,cstring2,ctimestamp1,ctimestamp2,cboolean1,cboolean2
                 columns.comments 
@@ -30861,6 +30869,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cbigint":"true","cboolean1":"true","cboolean2":"true","cdouble":"true","cfloat":"true","cint":"true","csmallint":"true","cstring1":"true","cstring2":"true","ctimestamp1":"true","ctimestamp2":"true","ctinyint":"true"}}
               bucket_count -1
+              bucketing_version 2
               column.name.delimiter ,
               columns ctinyint,csmallint,cint,cbigint,cfloat,cdouble,cstring1,cstring2,ctimestamp1,ctimestamp2,cboolean1,cboolean2
               columns.comments 
@@ -30882,6 +30891,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cbigint":"true","cboolean1":"true","cboolean2":"true","cdouble":"true","cfloat":"true","cint":"true","csmallint":"true","cstring1":"true","cstring2":"true","ctimestamp1":"true","ctimestamp2":"true","ctinyint":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns ctinyint,csmallint,cint,cbigint,cfloat,cdouble,cstring1,cstring2,ctimestamp1,ctimestamp2,cboolean1,cboolean2
                 columns.comments 

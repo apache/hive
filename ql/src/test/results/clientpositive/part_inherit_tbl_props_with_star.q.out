@@ -35,6 +35,7 @@ Partition Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c1\":\"true\"}}
 	a                   	myval               
 	b                   	yourval             
+	bucketing_version   	2                   
 	c                   	noval               
 	numFiles            	0                   
 	numRows             	0                   

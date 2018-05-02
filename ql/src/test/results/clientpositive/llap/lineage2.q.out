@@ -143,18 +143,18 @@ PREHOOK: Input: default@dest1
 {"version":"1.0","engine":"tez","database":"default","hash":"f74475552dc79e09d4e75116c0cc9f37","queryText":"select key, count(1) a from dest1 group by key","edges":[{"sources":[2],"targets":[0],"edgeType":"PROJECTION"},{"sources":[3],"targets":[1],"expression":"count(*)","edgeType":"PROJECTION"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"key"},{"id":1,"vertexType":"COLUMN","vertexId":"a"},{"id":2,"vertexType":"COLUMN","vertexId":"default.dest1.key"},{"id":3,"vertexType":"TABLE","vertexId":"default.dest1"}]}
 128	2
 213	2
-278	2
-369	2
-	20
-150	2
-238	2
+401	2
 66	2
 146	2
 224	2
-255	2
+238	2
 273	2
+	20
+150	2
+255	2
+278	2
 311	2
-401	2
+369	2
 406	2
 98	2
 PREHOOK: query: select key k, count(*) from dest1 group by key
@@ -164,18 +164,18 @@ PREHOOK: Input: default@dest1
 {"version":"1.0","engine":"tez","database":"default","hash":"3a519d9badc7e8b87b42ba96a6f922ef","queryText":"select key k, count(*) from dest1 group by key","edges":[{"sources":[2],"targets":[0],"edgeType":"PROJECTION"},{"sources":[3],"targets":[1],"expression":"count(*)","edgeType":"PROJECTION"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"k"},{"id":1,"vertexType":"COLUMN","vertexId":"_c1"},{"id":2,"vertexType":"COLUMN","vertexId":"default.dest1.key"},{"id":3,"vertexType":"TABLE","vertexId":"default.dest1"}]}
 128	2
 213	2
-278	2
-369	2
-	20
-150	2
-238	2
+401	2
 66	2
 146	2
 224	2
-255	2
+238	2
 273	2
+	20
+150	2
+255	2
+278	2
 311	2
-401	2
+369	2
 406	2
 98	2
 PREHOOK: query: select key k, count(value) from dest1 group by key
@@ -185,18 +185,18 @@ PREHOOK: Input: default@dest1
 {"version":"1.0","engine":"tez","database":"default","hash":"1253b0d8b57dc384abbcaa0fb30dff88","queryText":"select key k, count(value) from dest1 group by key","edges":[{"sources":[2],"targets":[0],"edgeType":"PROJECTION"},{"sources":[3],"targets":[1],"expression":"count(default.dest1.value)","edgeType":"PROJECTION"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"k"},{"id":1,"vertexType":"COLUMN","vertexId":"_c1"},{"id":2,"vertexType":"COLUMN","vertexId":"default.dest1.key"},{"id":3,"vertexType":"COLUMN","vertexId":"default.dest1.value"}]}
 128	2
 213	2
-278	2
-369	2
-	20
-150	2
-238	2
+401	2
 66	2
 146	2
 224	2
-255	2
+238	2
 273	2
+	20
+150	2
+255	2
+278	2
 311	2
-401	2
+369	2
 406	2
 98	2
 PREHOOK: query: select value, max(length(key)) from dest1 group by value
@@ -205,23 +205,23 @@ PREHOOK: Input: default@dest1
 #### A masked pattern was here ####
 {"version":"1.0","engine":"tez","database":"default","hash":"eb9155fd36ab5b8c92dc3c8c21be2378","queryText":"select value, max(length(key)) from dest1 group by value","edges":[{"sources":[2],"targets":[0],"edgeType":"PROJECTION"},{"sources":[3],"targets":[1],"expression":"max(length(dest1.key))","edgeType":"PROJECTION"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"value"},{"id":1,"vertexType":"COLUMN","vertexId":"_c1"},{"id":2,"vertexType":"COLUMN","vertexId":"default.dest1.value"},{"id":3,"vertexType":"COLUMN","vertexId":"default.dest1.key"}]}
 val_146	3
-val_27	0
-val_409	0
-val_484	0
-val_66	2
-	3
-val_165	0
-val_238	3
-val_193	0
 val_213	3
-val_255	3
-val_265	0
-val_273	3
+val_238	3
 val_278	3
-val_401	3
-val_150	3
-val_311	3
 val_406	3
+val_409	0
+val_66	2
+val_265	0
+val_27	0
+	3
+val_150	3
+val_165	0
+val_193	0
+val_255	3
+val_273	3
+val_311	3
+val_401	3
+val_484	0
 val_98	2
 PREHOOK: query: select value, max(length(key)) from dest1 group by value order by value limit 5
 PREHOOK: type: QUERY

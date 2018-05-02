@@ -190,6 +190,7 @@ STAGE PLANS:
               properties:
                 EXTERNAL TRUE
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns x,y,z
                 columns.comments 

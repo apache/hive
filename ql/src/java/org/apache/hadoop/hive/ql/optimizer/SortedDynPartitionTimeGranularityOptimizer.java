@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.Utilities.ReduceField;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
@@ -209,7 +210,7 @@ public class SortedDynPartitionTimeGranularityOptimizer extends Transform {
         sortNullOrder = Lists.newArrayList(0); // nulls first
       }
       ReduceSinkOperator rsOp = getReduceSinkOp(keyPositions, sortOrder,
-          sortNullOrder, allRSCols, granularitySelOp);
+          sortNullOrder, allRSCols, granularitySelOp, fsOp.getConf().getWriteType());
 
       // Create backtrack SelectOp
       final List<ExprNodeDesc> descs = new ArrayList<>(allRSCols.size());
@@ -393,8 +394,8 @@ public class SortedDynPartitionTimeGranularityOptimizer extends Transform {
     }
 
     private ReduceSinkOperator getReduceSinkOp(List<Integer> keyPositions, List<Integer> sortOrder,
-        List<Integer> sortNullOrder, ArrayList<ExprNodeDesc> allCols, Operator<? extends OperatorDesc> parent
-    ) {
+        List<Integer> sortNullOrder, ArrayList<ExprNodeDesc> allCols, Operator<? extends OperatorDesc> parent,
+        AcidUtils.Operation writeType) {
       // we will clone here as RS will update bucket column key with its
       // corresponding with bucket number and hence their OIs
       final ArrayList<ExprNodeDesc> keyCols = keyPositions.stream()
@@ -452,7 +453,7 @@ public class SortedDynPartitionTimeGranularityOptimizer extends Transform {
       // Number of reducers is set to default (-1)
       final ReduceSinkDesc rsConf = new ReduceSinkDesc(keyCols, keyCols.size(), valCols,
           keyColNames, distinctColumnIndices, valColNames, -1, partCols, -1, keyTable,
-          valueTable);
+          valueTable, writeType);
 
       final ArrayList<ColumnInfo> signature =
           parent.getSchema().getSignature()

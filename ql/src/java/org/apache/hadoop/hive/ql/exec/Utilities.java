@@ -4499,4 +4499,17 @@ public final class Utilities {
           + " on HDFS should be writable. Current permissions are: " + currentHDFSDirPermission);
     }
   }
+
+  // Get the bucketing version stored in the string format
+  public static int getBucketingVersion(final String versionStr) {
+    int bucketingVersion = 1;
+    if (versionStr != null) {
+      try {
+        bucketingVersion = Integer.parseInt(versionStr);
+      } catch (NumberFormatException e) {
+        // Do nothing
+      }
+    }
+    return bucketingVersion;
+  }
 }

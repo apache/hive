@@ -61,7 +61,18 @@ public class Murmur3 {
    * @return - hashcode
    */
   public static int hash32(byte[] data) {
-    return hash32(data, data.length, DEFAULT_SEED);
+    return hash32(data, 0, data.length, DEFAULT_SEED);
+  }
+
+  /**
+   * Murmur3 32-bit variant.
+   *
+   * @param data - input byte array
+   * @param length - length of array
+   * @return - hashcode
+   */
+  public static int hash32(byte[] data, int length) {
+    return hash32(data, 0, length, DEFAULT_SEED);
   }
 
   /**
@@ -73,16 +84,29 @@ public class Murmur3 {
    * @return - hashcode
    */
   public static int hash32(byte[] data, int length, int seed) {
+    return hash32(data, 0, length, seed);
+  }
+
+  /**
+   * Murmur3 32-bit variant.
+   *
+   * @param data   - input byte array
+   * @param offset - offset of data
+   * @param length - length of array
+   * @param seed   - seed. (default 0)
+   * @return - hashcode
+   */
+  public static int hash32(byte[] data, int offset, int length, int seed) {
     int hash = seed;
     final int nblocks = length >> 2;
 
     // body
     for (int i = 0; i < nblocks; i++) {
       int i_4 = i << 2;
-      int k = (data[i_4] & 0xff)
-          | ((data[i_4 + 1] & 0xff) << 8)
-          | ((data[i_4 + 2] & 0xff) << 16)
-          | ((data[i_4 + 3] & 0xff) << 24);
+      int k = (data[offset + i_4] & 0xff)
+          | ((data[offset + i_4 + 1] & 0xff) << 8)
+          | ((data[offset + i_4 + 2] & 0xff) << 16)
+          | ((data[offset + i_4 + 3] & 0xff) << 24);
 
       // mix functions
       k *= C1_32;
@@ -97,11 +121,11 @@ public class Murmur3 {
     int k1 = 0;
     switch (length - idx) {
       case 3:
-        k1 ^= data[idx + 2] << 16;
+        k1 ^= data[offset + idx + 2] << 16;
       case 2:
-        k1 ^= data[idx + 1] << 8;
+        k1 ^= data[offset + idx + 1] << 8;
       case 1:
-        k1 ^= data[idx];
+        k1 ^= data[offset + idx];
 
         // mix functions
         k1 *= C1_32;

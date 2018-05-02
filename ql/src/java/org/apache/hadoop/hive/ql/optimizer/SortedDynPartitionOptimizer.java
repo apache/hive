@@ -245,7 +245,7 @@ public class SortedDynPartitionOptimizer extends Transform {
 
       // Create ReduceSink operator
       ReduceSinkOperator rsOp = getReduceSinkOp(partitionPositions, sortPositions, sortOrder, sortNullOrder,
-          allRSCols, bucketColumns, numBuckets, fsParent);
+          allRSCols, bucketColumns, numBuckets, fsParent, fsOp.getConf().getWriteType());
 
       List<ExprNodeDesc> descs = new ArrayList<ExprNodeDesc>(allRSCols.size());
       List<String> colNames = new ArrayList<String>();
@@ -442,7 +442,7 @@ public class SortedDynPartitionOptimizer extends Transform {
     public ReduceSinkOperator getReduceSinkOp(List<Integer> partitionPositions,
         List<Integer> sortPositions, List<Integer> sortOrder, List<Integer> sortNullOrder,
         ArrayList<ExprNodeDesc> allCols, ArrayList<ExprNodeDesc> bucketColumns, int numBuckets,
-        Operator<? extends OperatorDesc> parent) throws SemanticException {
+        Operator<? extends OperatorDesc> parent, AcidUtils.Operation writeType) throws SemanticException {
 
       // Order of KEY columns
       // 1) Partition columns
@@ -577,7 +577,7 @@ public class SortedDynPartitionOptimizer extends Transform {
       // Number of reducers is set to default (-1)
       ReduceSinkDesc rsConf = new ReduceSinkDesc(keyCols, keyCols.size(), valCols,
           keyColNames, distinctColumnIndices, valColNames, -1, partCols, -1, keyTable,
-          valueTable);
+          valueTable, writeType);
       rsConf.setBucketCols(bucketColumns);
       rsConf.setNumBuckets(numBuckets);
 

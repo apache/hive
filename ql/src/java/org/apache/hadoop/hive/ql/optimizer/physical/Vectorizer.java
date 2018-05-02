@@ -40,6 +40,8 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.hadoop.hive.ql.exec.vector.reducesink.*;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.parse.spark.SparkPartitionPruningSinkOperator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,11 +70,6 @@ import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinOuterLongOpera
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinOuterMultiKeyOperator;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinOuterStringOperator;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFOperator;
-import org.apache.hadoop.hive.ql.exec.vector.reducesink.VectorReduceSinkEmptyKeyOperator;
-import org.apache.hadoop.hive.ql.exec.vector.reducesink.VectorReduceSinkLongOperator;
-import org.apache.hadoop.hive.ql.exec.vector.reducesink.VectorReduceSinkMultiKeyOperator;
-import org.apache.hadoop.hive.ql.exec.vector.reducesink.VectorReduceSinkObjectHashOperator;
-import org.apache.hadoop.hive.ql.exec.vector.reducesink.VectorReduceSinkStringOperator;
 import org.apache.hadoop.hive.ql.exec.vector.udf.VectorUDFAdaptor;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
@@ -3808,6 +3805,9 @@ public class Vectorizer implements PhysicalPlanResolver {
 
     LOG.info("Vectorizer vectorizeOperator reduce sink class " + opClass.getSimpleName());
 
+    // Get the bucketing version
+    int bucketingVersion = ((ReduceSinkOperator)op).getBucketingVersion();
+
     Operator<? extends OperatorDesc> vectorOp = null;
     try {
       vectorOp = OperatorFactory.getVectorOperator(
@@ -3818,6 +3818,10 @@ public class Vectorizer implements PhysicalPlanResolver {
           " exception " + e);
       throw new HiveException(e);
     }
+
+    // Set the bucketing version
+    Preconditions.checkArgument(vectorOp instanceof VectorReduceSinkCommonOperator);
+    vectorOp.setBucketingVersion(bucketingVersion);
 
     return vectorOp;
   }
@@ -4026,6 +4030,8 @@ public class Vectorizer implements PhysicalPlanResolver {
     vectorDesc.setHasDistinctColumns(hasDistinctColumns);
     vectorDesc.setIsKeyBinarySortable(isKeyBinarySortable);
     vectorDesc.setIsValueLazyBinary(isValueLazyBinary);
+    vectorDesc.setIsAcidChange(desc.getWriteType() == AcidUtils.Operation.DELETE ||
+                               desc.getWriteType() == AcidUtils.Operation.UPDATE);
 
     // This indicates we logged an inconsistency (from our point-of-view) and will not make this
     // operator native...

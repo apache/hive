@@ -170,6 +170,7 @@ STAGE PLANS:
                   properties:
                     bucket_count 2
                     bucket_field_name key
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -191,6 +192,7 @@ STAGE PLANS:
                     properties:
                       bucket_count 2
                       bucket_field_name key
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -244,6 +246,7 @@ STAGE PLANS:
                   properties:
                     bucket_count 2
                     bucket_field_name key
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -265,6 +268,7 @@ STAGE PLANS:
                     properties:
                       bucket_count 2
                       bucket_field_name key
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -312,6 +316,7 @@ STAGE PLANS:
                         properties:
                           COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value1":"true","value2":"true"}}
                           bucket_count -1
+                          bucketing_version 2
                           column.name.delimiter ,
                           columns key,value1,value2
                           columns.comments 
@@ -343,6 +348,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value1":"true","value2":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value1,value2
                 columns.comments 
@@ -516,6 +522,7 @@ STAGE PLANS:
                   properties:
                     bucket_count 2
                     bucket_field_name key
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -537,6 +544,7 @@ STAGE PLANS:
                     properties:
                       bucket_count 2
                       bucket_field_name key
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -590,6 +598,7 @@ STAGE PLANS:
                   properties:
                     bucket_count 2
                     bucket_field_name key
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -611,6 +620,7 @@ STAGE PLANS:
                     properties:
                       bucket_count 2
                       bucket_field_name key
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -658,6 +668,7 @@ STAGE PLANS:
                         properties:
                           COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                           bucket_count -1
+                          bucketing_version 2
                           column.name.delimiter ,
                           columns key,value1,value2
                           columns.comments 
@@ -689,6 +700,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value1,value2
                 columns.comments 

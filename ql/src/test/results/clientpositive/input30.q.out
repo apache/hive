@@ -123,7 +123,7 @@ POSTHOOK: query: select * from tst_dest30
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tst_dest30
 #### A masked pattern was here ####
-18
+15
 PREHOOK: query: explain
 insert overwrite table dest30
 select count(1) from src
@@ -232,4 +232,4 @@ POSTHOOK: query: select * from tst_dest30
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tst_dest30
 #### A masked pattern was here ####
-18
+15
