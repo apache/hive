@@ -843,7 +843,7 @@ POSTHOOK: query: SELECT hex(cbinary), count(*) FROM parquet_types GROUP BY cbina
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_types
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-68692CCAC0BDE7	10
+B4F3CAFDBEDD	10
 	1
 68656C6C6F	1
-B4F3CAFDBEDD	10
+68692CCAC0BDE7	10

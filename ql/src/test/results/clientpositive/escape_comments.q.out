@@ -70,6 +70,7 @@ OUTPUTFORMAT
 LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
+  'bucketing_version'='2', 
 #### A masked pattern was here ####
 PREHOOK: query: describe formatted escape_comments_tbl1
 PREHOOK: type: DESCTABLE
@@ -94,6 +95,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
 	comment             	a                   
 	                    	b                   
 	numFiles            	0                   
@@ -151,6 +153,7 @@ Database:           	escape_comments_db
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 	comment             	a                   
 	                    	b                   
 #### A masked pattern was here ####

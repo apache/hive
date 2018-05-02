@@ -444,6 +444,7 @@ STAGE PLANS:
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 198 Data size: 116240 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: bigint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -540,6 +541,7 @@ STAGE PLANS:
               Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
               Statistics: Num rows: 99 Data size: 58120 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)

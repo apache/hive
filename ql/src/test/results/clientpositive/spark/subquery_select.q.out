@@ -146,16 +146,13 @@ FROM part
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
+1	false
 10	false
 12	false
-14	false
-14	false
-23	false
+19	false
 28	false
-31	false
+34	false
 42	false
-45	false
-1	false
 2	false
 2	false
 2	false
@@ -163,14 +160,17 @@ POSTHOOK: Input: default@part
 6	false
 6	false
 7	false
+14	false
+14	false
 17	false
 18	false
-19	false
+23	false
 25	false
 27	false
-34	false
+31	false
 39	false
 40	false
+45	false
 46	true
 PREHOOK: query: EXPLAIN SELECT p_size, p_size IN (
         SELECT MAX(p_size) FROM part p where p.p_type = part.p_type)
@@ -334,32 +334,32 @@ FROM part
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-7	true
 1	true
 40	true
-23	true
+34	true
+42	true
 14	true
 19	true
 2	true
-17	false
 6	true
-10	true
-12	true
-6	true
-46	true
-34	true
-42	true
-31	true
-14	true
 2	true
 2	true
 39	true
-2	true
+10	true
 27	true
-25	true
-28	true
+6	true
 18	true
 45	true
+7	true
+46	true
+23	true
+17	false
+31	true
+14	true
+2	true
+25	true
+28	true
+12	true
 Warning: Shuffle Join JOIN[21][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 2' is a cross product
 PREHOOK: query: explain SELECT p_size, p_size NOT IN (
         SELECT MAX(p_size) FROM part)
@@ -508,16 +508,13 @@ FROM part
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
+1	true
 10	true
 12	true
-14	true
-14	true
-23	true
+19	true
 28	true
-31	true
+34	true
 42	true
-45	true
-1	true
 2	true
 2	true
 2	true
@@ -525,14 +522,17 @@ POSTHOOK: Input: default@part
 6	true
 6	true
 7	true
+14	true
+14	true
 17	true
 18	true
-19	true
+23	true
 25	true
 27	true
-34	true
+31	true
 39	true
 40	true
+45	true
 46	false
 PREHOOK: query: EXPLAIN SELECT p_size, p_size NOT IN (
         SELECT MAX(p_size) FROM part p where p.p_type = part.p_type)
@@ -760,32 +760,32 @@ FROM part
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-7	false
 1	false
 40	false
-23	false
+34	false
+42	false
 14	false
 19	false
 2	false
-17	true
 6	false
-10	false
-12	false
-6	false
-46	false
-34	false
-42	false
-31	false
-14	false
 2	false
 2	false
 39	false
-2	false
+10	false
 27	false
-25	false
-28	false
+6	false
 18	false
 45	false
+7	false
+46	false
+23	false
+17	true
+31	false
+14	false
+2	false
+25	false
+28	false
+12	false
 Warning: Shuffle Join JOIN[11][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 2' is a cross product
 PREHOOK: query: explain SELECT p_size, EXISTS(SELECT p_size FROM part)
 FROM part
@@ -1023,31 +1023,31 @@ FROM part
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
+46	true
 1	true
-23	true
+34	true
 42	true
+19	true
+2	true
 14	true
-2	true
 6	true
+39	true
 2	true
-2	true
-10	true
-2	true
-12	true
+27	true
 6	true
 18	true
 7	true
-46	true
 40	true
-34	true
-19	true
+23	true
+14	true
 17	true
 31	true
-14	true
-39	true
-27	true
+2	true
+2	true
+10	true
 25	true
 28	true
+12	true
 45	true
 Warning: Shuffle Join JOIN[11][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 2' is a cross product
 PREHOOK: query: explain SELECT p_size, NOT EXISTS(SELECT p_size FROM part)
@@ -1286,31 +1286,31 @@ FROM part
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
+46	false
 1	false
-23	false
+34	false
 42	false
+19	false
+2	false
 14	false
-2	false
 6	false
+39	false
 2	false
-2	false
-10	false
-2	false
-12	false
+27	false
 6	false
 18	false
 7	false
-46	false
 40	false
-34	false
-19	false
+23	false
+14	false
 17	false
 31	false
-14	false
-39	false
-27	false
+2	false
+2	false
+10	false
 25	false
 28	false
+12	false
 45	false
 PREHOOK: query: explain select p_size, (select count(p_name) from part p where p.p_type = part.p_name) from part
 PREHOOK: type: QUERY
@@ -1421,31 +1421,31 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 31	0
+2	0
+2	0
 17	0
-34	0
+10	0
 6	0
-14	0
+19	0
+6	0
+2	0
 39	0
 28	0
 46	0
-27	0
-42	0
-25	0
 18	0
-7	0
 12	0
 23	0
-2	0
-2	0
+34	0
 14	0
-10	0
-19	0
 1	0
 45	0
-6	0
-2	0
+14	0
 40	0
+27	0
 2	0
+42	0
+25	0
+7	0
 PREHOOK: query: explain select p_size, (select max(p_name) from part p where p.p_type = part.p_name) from part
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select p_size, (select max(p_name) from part p where p.p_type = part.p_name) from part
@@ -1555,31 +1555,31 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 31	NULL
+2	NULL
+2	NULL
 17	NULL
-34	NULL
+10	NULL
 6	NULL
-14	NULL
+19	NULL
+6	NULL
+2	NULL
 39	NULL
 28	NULL
 46	NULL
-27	NULL
-42	NULL
-25	NULL
 18	NULL
-7	NULL
 12	NULL
 23	NULL
-2	NULL
-2	NULL
+34	NULL
 14	NULL
-10	NULL
-19	NULL
 1	NULL
 45	NULL
-6	NULL
-2	NULL
+14	NULL
 40	NULL
+27	NULL
 2	NULL
+42	NULL
+25	NULL
+7	NULL
 Warning: Shuffle Join JOIN[10][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 2' is a cross product
 PREHOOK: query: explain SELECT p_size, (SELECT max(p_size) FROM part)
     FROM part
@@ -2053,17 +2053,17 @@ where b.key in
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
+90	val_90
+90	val_90
+90	val_90
+97	val_97
+97	val_97
+98	val_98
+98	val_98
 92	val_92
 95	val_95
 95	val_95
 96	val_96
-90	val_90
-90	val_90
-90	val_90
-97	val_97
-97	val_97
-98	val_98
-98	val_98
 PREHOOK: query: CREATE table tnull(i int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -2238,16 +2238,13 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 POSTHOOK: Input: default@tnull
 #### A masked pattern was here ####
+1	NULL
 10	NULL
 12	NULL
-14	NULL
-14	NULL
-23	NULL
+19	NULL
 28	NULL
-31	NULL
+34	NULL
 42	NULL
-45	NULL
-1	NULL
 2	NULL
 2	NULL
 2	NULL
@@ -2255,14 +2252,17 @@ POSTHOOK: Input: default@tnull
 6	NULL
 6	NULL
 7	NULL
+14	NULL
+14	NULL
 17	NULL
 18	NULL
-19	NULL
+23	NULL
 25	NULL
 27	NULL
-34	NULL
+31	NULL
 39	NULL
 40	NULL
+45	NULL
 46	NULL
 PREHOOK: query: CREATE TABLE tempty(i int)
 PREHOOK: type: CREATETABLE
@@ -2644,31 +2644,31 @@ POSTHOOK: query: SELECT p_size, 1+(SELECT max(p_size) FROM part p
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
+46	47
 1	2
-23	24
+34	35
 42	43
+19	20
+2	3
 14	15
-2	3
 6	7
+39	40
 2	3
-2	3
-10	11
-2	3
-12	13
+27	28
 6	7
 18	19
 7	8
-46	47
 40	41
-34	35
-19	20
+23	24
+14	15
 17	32
 31	32
-14	15
-39	40
-27	28
+2	3
+2	3
+10	11
 25	26
 28	29
+12	13
 45	46
 PREHOOK: query: explain SELECT p_size, (SELECT count(p_size) FROM part p
     WHERE p.p_type = part.p_type) IS NULL from part
@@ -2782,31 +2782,31 @@ POSTHOOK: query: SELECT p_size, (SELECT count(p_size) FROM part p
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
+46	false
 1	false
-23	false
+34	false
 42	false
+19	false
+2	false
 14	false
-2	false
 6	false
+39	false
 2	false
-2	false
-10	false
-2	false
-12	false
+27	false
 6	false
 18	false
 7	false
-46	false
 40	false
-34	false
-19	false
+23	false
+14	false
 17	false
 31	false
-14	false
-39	false
-27	false
+2	false
+2	false
+10	false
 25	false
 28	false
+12	false
 45	false
 Warning: Shuffle Join JOIN[23][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 2' is a cross product
 Warning: Shuffle Join JOIN[26][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Work 'Reducer 3' is a cross product
@@ -3267,31 +3267,31 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 31	true
+2	false
+2	false
 17	false
-34	false
+10	false
 6	false
-14	false
+19	false
+6	false
+2	false
 39	false
 28	false
 46	false
-27	false
-42	false
-25	false
 18	false
-7	false
 12	false
 23	false
-2	false
-2	false
+34	false
 14	false
-10	false
-19	false
 1	false
 45	false
-6	false
-2	false
+14	false
 40	false
+27	false
 2	false
+42	false
+25	false
+7	false
 PREHOOK: query: explain SELECT p_size, NOT EXISTS(SELECT p_size FROM part pp where pp.p_type = part.p_type)
 FROM part
 PREHOOK: type: QUERY
@@ -3401,31 +3401,31 @@ FROM part
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
+46	false
 1	false
-23	false
+34	false
 42	false
+19	false
+2	false
 14	false
-2	false
 6	false
+39	false
 2	false
-2	false
-10	false
-2	false
-12	false
+27	false
 6	false
 18	false
 7	false
-46	false
 40	false
-34	false
-19	false
+23	false
+14	false
 17	false
 31	false
-14	false
-39	false
-27	false
+2	false
+2	false
+10	false
 25	false
 28	false
+12	false
 45	false
 Warning: Shuffle Join JOIN[12][tables = [$hdt$_1, $hdt$_2]] in Work 'Reducer 5' is a cross product
 Warning: Shuffle Join JOIN[41][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 2' is a cross product
@@ -3672,16 +3672,13 @@ POSTHOOK: query: select p_size, (p_size IN
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
+1	false
 10	false
 12	false
-14	false
-14	false
-23	false
+19	false
 28	false
-31	false
+34	false
 42	false
-45	false
-1	false
 2	false
 2	false
 2	false
@@ -3689,14 +3686,17 @@ POSTHOOK: Input: default@part
 6	false
 6	false
 7	false
+14	false
+14	false
 17	false
 18	false
-19	false
+23	false
 25	false
 27	false
-34	false
+31	false
 39	false
 40	false
+45	false
 46	true
 Warning: Shuffle Join JOIN[25][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 2' is a cross product
 Warning: Shuffle Join JOIN[28][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Work 'Reducer 3' is a cross product
@@ -4273,17 +4273,17 @@ POSTHOOK: query: select o.p_size, (select count(distinct p_type) from part p whe
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
+46	1
+27	1
 39	1
 23	1
 28	1
-25	1
-31	1
-46	1
-27	1
-42	1
-34	1
 45	1
 40	1
+31	1
+42	1
+34	1
+25	1
 Warning: Shuffle Join JOIN[28][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 2' is a cross product
 Warning: Shuffle Join JOIN[31][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Work 'Reducer 3' is a cross product
 Warning: Shuffle Join JOIN[34][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Work 'Reducer 4' is a cross product
@@ -5388,31 +5388,31 @@ POSTHOOK: query: select t1.p_size,
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
+46	1	28
+14	1	28
+1	1	28
+6	1	28
+27	1	28
 39	1	28
 10	1	28
 23	1	28
 28	1	28
-14	1	28
-6	1	28
-2	2	28
-2	2	28
-25	1	28
-2	1	28
-31	1	28
-46	1	28
-14	1	28
-7	1	28
-12	1	28
-1	1	28
-6	1	28
-27	1	28
-42	1	28
-34	1	28
 17	1	28
+14	1	28
+6	1	28
 19	1	28
 45	1	28
 2	1	28
 40	1	28
+31	1	28
+7	1	28
+12	1	28
+42	1	28
+34	1	28
+2	2	28
+2	2	28
+25	1	28
+2	1	28
 18	1	28
 PREHOOK: query: explain SELECT p_size, exp((SELECT max(p_size) FROM part p WHERE p.p_type = part.p_type)) from part
 PREHOOK: type: QUERY
@@ -5522,29 +5522,29 @@ POSTHOOK: query: SELECT p_size, exp((SELECT max(p_size) FROM part p WHERE p.p_ty
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
+46	9.496119420602448E19
 1	2.718281828459045
-23	9.744803446248903E9
+34	5.834617425274549E14
 42	1.73927494152050099E18
+19	1.7848230096318725E8
+2	7.38905609893065
 14	1202604.2841647768
-2	7.38905609893065
 6	403.4287934927351
+39	8.6593400423993744E16
 2	7.38905609893065
-2	7.38905609893065
-10	22026.465794806718
-2	7.38905609893065
-12	162754.79141900392
+27	5.3204824060179865E11
 6	403.4287934927351
 18	6.565996913733051E7
 7	1096.6331584284585
-46	9.496119420602448E19
 40	2.3538526683702E17
-34	5.834617425274549E14
-19	1.7848230096318725E8
+23	9.744803446248903E9
+14	1202604.2841647768
 17	2.9048849665247426E13
 31	2.9048849665247426E13
-14	1202604.2841647768
-39	8.6593400423993744E16
-27	5.3204824060179865E11
+2	7.38905609893065
+2	7.38905609893065
+10	22026.465794806718
 25	7.200489933738588E10
 28	1.446257064291475E12
+12	162754.79141900392
 45	3.4934271057485095E19

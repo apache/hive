@@ -184,6 +184,11 @@ public class TableDesc implements Serializable, Cloneable {
     return (properties.getProperty(hive_metastoreConstants.META_TABLE_STORAGE) != null);
   }
 
+  public int getBucketingVersion() {
+    return Utilities.getBucketingVersion(
+        properties.getProperty(hive_metastoreConstants.TABLE_BUCKETING_VERSION));
+  }
+
   @Override
   public Object clone() {
     TableDesc ret = new TableDesc();

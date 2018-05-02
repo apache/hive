@@ -46,6 +46,7 @@ Retention:          	0
 Table Type:         	MATERIALIZED_VIEW   	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	5                   
 	rawDataSize         	1025                
@@ -106,6 +107,7 @@ Retention:          	0
 Table Type:         	MATERIALIZED_VIEW   	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	5                   
 	rawDataSize         	580                 
@@ -179,8 +181,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cmv_mat_view4
 #### A masked pattern was here ####
 1	10.30
-2	172345.34
 3	988.56
+2	172345.34
 PREHOOK: query: describe extended cmv_mat_view4
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@cmv_mat_view4
@@ -240,6 +242,7 @@ PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: show tblproperties cmv_mat_view5
 POSTHOOK: type: SHOW_TBLPROPERTIES
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true"}
+bucketing_version	2
 key	value
 numFiles	1
 numRows	5

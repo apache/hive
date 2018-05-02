@@ -264,6 +264,7 @@ Retention:          	0
 Table Type:         	MATERIALIZED_VIEW   	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"_c2\":\"true\",\"a\":\"true\",\"c\":\"true\"}}
+	bucketing_version   	2                   
 	numFiles            	2                   
 	numRows             	2                   
 	rawDataSize         	248                 
@@ -421,8 +422,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cmv_basetable
 POSTHOOK: Input: default@cmv_basetable_2
 #### A masked pattern was here ####
-3	6
 1	2
+3	6
 PREHOOK: query: insert into cmv_basetable_2 values
  (3, 'charlie', 15.8, 1)
 PREHOOK: type: QUERY
@@ -490,6 +491,7 @@ Retention:          	0
 Table Type:         	MATERIALIZED_VIEW   	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"_c2\":\"true\",\"a\":\"true\",\"c\":\"true\"}}
+	bucketing_version   	2                   
 	numFiles            	2                   
 	numRows             	2                   
 	rawDataSize         	248                 
@@ -647,9 +649,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cmv_basetable
 POSTHOOK: Input: default@cmv_basetable_2
 #### A masked pattern was here ####
+1	2
 3	2
 3	6
-1	2
 PREHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view REBUILD
 PREHOOK: type: QUERY
@@ -933,6 +935,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MATERIALIZED_VIEW   	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 	numFiles            	3                   
 	totalSize           	1451                
 	transactional       	true                
@@ -1005,8 +1008,8 @@ POSTHOOK: Input: default@cmv_basetable
 POSTHOOK: Input: default@cmv_basetable_2
 POSTHOOK: Input: default@cmv_mat_view
 #### A masked pattern was here ####
-3	6
 1	2
+3	6
 3	2
 PREHOOK: query: UPDATE cmv_basetable_2 SET a=2 WHERE a=1
 PREHOOK: type: QUERY

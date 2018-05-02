@@ -229,7 +229,7 @@ public class TestMurmur3 {
     final int seed = 123, arraySize = 1023;
     byte[] bytes = new byte[arraySize];
     new Random(seed).nextBytes(bytes);
-    int expected = Murmur3.hash32(bytes);
+    int expected = Murmur3.hash32(bytes, arraySize);
     Murmur3.IncrementalHash32 same = new IncrementalHash32(), diff = new IncrementalHash32();
     for (int blockSize = 1; blockSize <= arraySize; ++blockSize) {
       byte[] block = new byte[blockSize];

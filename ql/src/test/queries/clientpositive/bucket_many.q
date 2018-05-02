@@ -11,6 +11,6 @@ insert overwrite table bucket_many
 select * from src;
 
 explain
-select * from bucket_many tablesample (bucket 1 out of 256) s;
+select * from bucket_many tablesample (bucket 2 out of 256) s;
 
-select * from bucket_many tablesample (bucket 1 out of 256) s;
+select * from bucket_many tablesample (bucket 2 out of 256) s;

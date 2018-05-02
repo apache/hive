@@ -30,8 +30,8 @@ test_tab GROUP BY INPUT__FILE__NAME
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_tab
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-258
-242
+248
+252
 PREHOOK: query: TRUNCATE TABLE test_tab COLUMNS (value)
 PREHOOK: type: TRUNCATETABLE
 PREHOOK: Input: default@test_tab
@@ -54,5 +54,5 @@ test_tab GROUP BY INPUT__FILE__NAME
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_tab
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-258
-242
+248
+252

@@ -217,11 +217,12 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 	numFiles            	4                   
 	numPartitions       	2                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	332                 
+	totalSize           	336                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

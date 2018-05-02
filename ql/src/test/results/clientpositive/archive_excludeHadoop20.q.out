@@ -196,11 +196,11 @@ CLUSTERED BY (key) INTO 10 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@harbucket
-PREHOOK: query: INSERT OVERWRITE TABLE harbucket PARTITION(ds='1') SELECT CAST(key AS INT) AS a FROM tstsrc WHERE key < 50
+PREHOOK: query: INSERT OVERWRITE TABLE harbucket PARTITION(ds='1') SELECT CAST(key AS INT) AS a FROM tstsrc WHERE key > 50
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tstsrc
 PREHOOK: Output: default@harbucket@ds=1
-POSTHOOK: query: INSERT OVERWRITE TABLE harbucket PARTITION(ds='1') SELECT CAST(key AS INT) AS a FROM tstsrc WHERE key < 50
+POSTHOOK: query: INSERT OVERWRITE TABLE harbucket PARTITION(ds='1') SELECT CAST(key AS INT) AS a FROM tstsrc WHERE key > 50
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tstsrc
 POSTHOOK: Output: default@harbucket@ds=1
@@ -215,12 +215,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@harbucket
 POSTHOOK: Input: default@harbucket@ds=1
 #### A masked pattern was here ####
-0
-0
-0
-10
-20
-30
+260
 PREHOOK: query: ALTER TABLE tstsrcpart ARCHIVE PARTITION (ds='2008-04-08', hr='12')
 PREHOOK: type: ALTERTABLE_ARCHIVE
 PREHOOK: Input: default@tstsrcpart
@@ -239,12 +234,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@harbucket
 POSTHOOK: Input: default@harbucket@ds=1
 #### A masked pattern was here ####
-0
-0
-0
-10
-20
-30
+260
 PREHOOK: query: ALTER TABLE tstsrcpart UNARCHIVE PARTITION (ds='2008-04-08', hr='12')
 PREHOOK: type: ALTERTABLE_UNARCHIVE
 PREHOOK: Input: default@tstsrcpart
@@ -263,12 +253,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@harbucket
 POSTHOOK: Input: default@harbucket@ds=1
 #### A masked pattern was here ####
-0
-0
-0
-10
-20
-30
+260
 PREHOOK: query: CREATE TABLE old_name(key INT)
 PARTITIONED by (ds STRING)
 PREHOOK: type: CREATETABLE
@@ -279,11 +264,11 @@ PARTITIONED by (ds STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@old_name
-PREHOOK: query: INSERT OVERWRITE TABLE old_name PARTITION(ds='1') SELECT CAST(key AS INT) AS a FROM tstsrc WHERE key < 50
+PREHOOK: query: INSERT OVERWRITE TABLE old_name PARTITION(ds='1') SELECT CAST(key AS INT) AS a FROM tstsrc WHERE key > 50
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tstsrc
 PREHOOK: Output: default@old_name@ds=1
-POSTHOOK: query: INSERT OVERWRITE TABLE old_name PARTITION(ds='1') SELECT CAST(key AS INT) AS a FROM tstsrc WHERE key < 50
+POSTHOOK: query: INSERT OVERWRITE TABLE old_name PARTITION(ds='1') SELECT CAST(key AS INT) AS a FROM tstsrc WHERE key > 50
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tstsrc
 POSTHOOK: Output: default@old_name@ds=1
@@ -308,7 +293,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@old_name
 POSTHOOK: Input: default@old_name@ds=1
 #### A masked pattern was here ####
-48656137
+20158186837
 PREHOOK: query: ALTER TABLE old_name RENAME TO new_name
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: default@old_name
@@ -330,7 +315,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@new_name
 POSTHOOK: Input: default@new_name@ds=1
 #### A masked pattern was here ####
-48656137
+20158186837
 PREHOOK: query: drop table tstsrc
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tstsrc

@@ -58,6 +58,7 @@ OUTPUTFORMAT
 LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
+  'bucketing_version'='2', 
 #### A masked pattern was here ####
 PREHOOK: query: SHOW CREATE TABLE tmp_feng.tmp_showcrt2
 PREHOOK: type: SHOW_CREATETABLE
@@ -79,6 +80,7 @@ OUTPUTFORMAT
 LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
+  'bucketing_version'='2', 
 #### A masked pattern was here ####
 PREHOOK: query: SHOW CREATE TABLE tmp_feng.tmp_showcrt3
 PREHOOK: type: SHOW_CREATETABLE
@@ -101,6 +103,7 @@ OUTPUTFORMAT
 LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
+  'bucketing_version'='2', 
 #### A masked pattern was here ####
 PREHOOK: query: DROP TABLE tmp_feng.tmp_showcrt1
 PREHOOK: type: DROPTABLE

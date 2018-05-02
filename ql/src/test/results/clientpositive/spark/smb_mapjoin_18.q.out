@@ -138,7 +138,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table1
 POSTHOOK: Input: default@test_table1@ds=1
 #### A masked pattern was here ####
-247
+243
 PREHOOK: query: select count(*) from test_table1 tablesample (bucket 2 out of 2) s where ds = '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_table1
@@ -149,7 +149,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table1
 POSTHOOK: Input: default@test_table1@ds=1
 #### A masked pattern was here ####
-253
+257
 PREHOOK: query: select count(*) from test_table2 where ds = '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_table2
@@ -191,7 +191,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table2
 POSTHOOK: Input: default@test_table2@ds=1
 #### A masked pattern was here ####
-247
+243
 PREHOOK: query: select count(*) from test_table2 tablesample (bucket 2 out of 2) s where ds = '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_table2
@@ -202,7 +202,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table2
 POSTHOOK: Input: default@test_table2@ds=1
 #### A masked pattern was here ####
-253
+257
 PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '2')
 SELECT a.key, a.value FROM test_table1 a WHERE a.ds = '1' and a.key = 238
