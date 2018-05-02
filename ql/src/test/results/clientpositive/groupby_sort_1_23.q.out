@@ -87,6 +87,7 @@ STAGE PLANS:
                         properties:
                           COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
                           bucket_count -1
+                          bucketing_version 2
                           column.name.delimiter ,
                           columns key,cnt
                           columns.comments 
@@ -135,6 +136,7 @@ STAGE PLANS:
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 2
               bucket_field_name key
+              bucketing_version 2
               column.name.delimiter ,
               columns key,val
               columns.comments 
@@ -158,6 +160,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 2
                 bucket_field_name key
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,val
                 columns.comments 
@@ -227,6 +230,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,cnt
                 columns.comments 
@@ -270,6 +274,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,cnt
                     columns.comments 
@@ -300,6 +305,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
               bucket_count -1
+              bucketing_version 2
               column.name.delimiter ,
               columns key,cnt
               columns.comments 
@@ -321,6 +327,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,cnt
                 columns.comments 
@@ -357,6 +364,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,cnt
                     columns.comments 
@@ -387,6 +395,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
               bucket_count -1
+              bucketing_version 2
               column.name.delimiter ,
               columns key,cnt
               columns.comments 
@@ -408,6 +417,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,cnt
                 columns.comments 
@@ -521,6 +531,7 @@ STAGE PLANS:
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 2
               bucket_field_name key
+              bucketing_version 2
               column.name.delimiter ,
               columns key,val
               columns.comments 
@@ -544,6 +555,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 2
                 bucket_field_name key
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,val
                 columns.comments 
@@ -588,6 +600,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key1":"true","key2":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key1,key2,cnt
                     columns.comments 
@@ -646,6 +659,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key1":"true","key2":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key1,key2,cnt
                 columns.comments 
@@ -822,6 +836,7 @@ STAGE PLANS:
                         properties:
                           COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
                           bucket_count -1
+                          bucketing_version 2
                           column.name.delimiter ,
                           columns key,cnt
                           columns.comments 
@@ -870,6 +885,7 @@ STAGE PLANS:
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 2
               bucket_field_name key
+              bucketing_version 2
               column.name.delimiter ,
               columns key,val
               columns.comments 
@@ -893,6 +909,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 2
                 bucket_field_name key
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,val
                 columns.comments 
@@ -962,6 +979,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,cnt
                 columns.comments 
@@ -1005,6 +1023,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,cnt
                     columns.comments 
@@ -1035,6 +1054,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
               bucket_count -1
+              bucketing_version 2
               column.name.delimiter ,
               columns key,cnt
               columns.comments 
@@ -1056,6 +1076,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,cnt
                 columns.comments 
@@ -1092,6 +1113,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,cnt
                     columns.comments 
@@ -1122,6 +1144,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
               bucket_count -1
+              bucketing_version 2
               column.name.delimiter ,
               columns key,cnt
               columns.comments 
@@ -1143,6 +1166,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,cnt
                 columns.comments 
@@ -1247,6 +1271,7 @@ STAGE PLANS:
                         properties:
                           COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
                           bucket_count -1
+                          bucketing_version 2
                           column.name.delimiter ,
                           columns key,cnt
                           columns.comments 
@@ -1295,6 +1320,7 @@ STAGE PLANS:
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 2
               bucket_field_name key
+              bucketing_version 2
               column.name.delimiter ,
               columns key,val
               columns.comments 
@@ -1318,6 +1344,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 2
                 bucket_field_name key
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,val
                 columns.comments 
@@ -1387,6 +1414,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,cnt
                 columns.comments 
@@ -1430,6 +1458,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,cnt
                     columns.comments 
@@ -1460,6 +1489,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
               bucket_count -1
+              bucketing_version 2
               column.name.delimiter ,
               columns key,cnt
               columns.comments 
@@ -1481,6 +1511,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,cnt
                 columns.comments 
@@ -1517,6 +1548,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,cnt
                     columns.comments 
@@ -1547,6 +1579,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
               bucket_count -1
+              bucketing_version 2
               column.name.delimiter ,
               columns key,cnt
               columns.comments 
@@ -1568,6 +1601,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,cnt
                 columns.comments 
@@ -1680,6 +1714,7 @@ STAGE PLANS:
                         properties:
                           COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key1":"true","key2":"true"}}
                           bucket_count -1
+                          bucketing_version 2
                           column.name.delimiter ,
                           columns key1,key2,cnt
                           columns.comments 
@@ -1728,6 +1763,7 @@ STAGE PLANS:
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 2
               bucket_field_name key
+              bucketing_version 2
               column.name.delimiter ,
               columns key,val
               columns.comments 
@@ -1751,6 +1787,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 2
                 bucket_field_name key
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,val
                 columns.comments 
@@ -1820,6 +1857,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key1":"true","key2":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key1,key2,cnt
                 columns.comments 
@@ -1863,6 +1901,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key1":"true","key2":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key1,key2,cnt
                     columns.comments 
@@ -1893,6 +1932,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key1":"true","key2":"true"}}
               bucket_count -1
+              bucketing_version 2
               column.name.delimiter ,
               columns key1,key2,cnt
               columns.comments 
@@ -1914,6 +1954,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key1":"true","key2":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key1,key2,cnt
                 columns.comments 
@@ -1950,6 +1991,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key1":"true","key2":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key1,key2,cnt
                     columns.comments 
@@ -1980,6 +2022,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key1":"true","key2":"true"}}
               bucket_count -1
+              bucketing_version 2
               column.name.delimiter ,
               columns key1,key2,cnt
               columns.comments 
@@ -2001,6 +2044,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key1":"true","key2":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key1,key2,cnt
                 columns.comments 
@@ -2115,6 +2159,7 @@ STAGE PLANS:
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 2
               bucket_field_name key
+              bucketing_version 2
               column.name.delimiter ,
               columns key,val
               columns.comments 
@@ -2138,6 +2183,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 2
                 bucket_field_name key
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,val
                 columns.comments 
@@ -2182,6 +2228,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key1":"true","key2":"true","key3":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key1,key2,key3,cnt
                     columns.comments 
@@ -2240,6 +2287,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key1":"true","key2":"true","key3":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key1,key2,key3,cnt
                 columns.comments 
@@ -2418,6 +2466,7 @@ STAGE PLANS:
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 2
               bucket_field_name key
+              bucketing_version 2
               column.name.delimiter ,
               columns key,val
               columns.comments 
@@ -2441,6 +2490,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 2
                 bucket_field_name key
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,val
                 columns.comments 
@@ -2485,6 +2535,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key1":"true","key2":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key1,key2,cnt
                     columns.comments 
@@ -2543,6 +2594,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key1":"true","key2":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key1,key2,cnt
                 columns.comments 
@@ -2733,6 +2785,7 @@ STAGE PLANS:
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 2
               bucket_field_name key
+              bucketing_version 2
               column.name.delimiter ,
               columns key,val
               columns.comments 
@@ -2756,6 +2809,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 2
                 bucket_field_name key
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,val
                 columns.comments 
@@ -2800,6 +2854,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,cnt
                     columns.comments 
@@ -2858,6 +2913,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,cnt
                 columns.comments 
@@ -3046,6 +3102,7 @@ STAGE PLANS:
                           properties:
                             COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
                             bucket_count -1
+                            bucketing_version 2
                             column.name.delimiter ,
                             columns key,cnt
                             columns.comments 
@@ -3114,6 +3171,7 @@ STAGE PLANS:
                           properties:
                             COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
                             bucket_count -1
+                            bucketing_version 2
                             column.name.delimiter ,
                             columns key,cnt
                             columns.comments 
@@ -3162,6 +3220,7 @@ STAGE PLANS:
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 2
               bucket_field_name key
+              bucketing_version 2
               column.name.delimiter ,
               columns key,val
               columns.comments 
@@ -3185,6 +3244,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 2
                 bucket_field_name key
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,val
                 columns.comments 
@@ -3254,6 +3314,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,cnt
                 columns.comments 
@@ -3297,6 +3358,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,cnt
                     columns.comments 
@@ -3327,6 +3389,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
               bucket_count -1
+              bucketing_version 2
               column.name.delimiter ,
               columns key,cnt
               columns.comments 
@@ -3348,6 +3411,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,cnt
                 columns.comments 
@@ -3384,6 +3448,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,cnt
                     columns.comments 
@@ -3414,6 +3479,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
               bucket_count -1
+              bucketing_version 2
               column.name.delimiter ,
               columns key,cnt
               columns.comments 
@@ -3435,6 +3501,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,cnt
                 columns.comments 
@@ -3566,6 +3633,7 @@ STAGE PLANS:
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 2
               bucket_field_name key
+              bucketing_version 2
               column.name.delimiter ,
               columns key,val
               columns.comments 
@@ -3589,6 +3657,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 2
                 bucket_field_name key
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,val
                 columns.comments 
@@ -3675,6 +3744,7 @@ STAGE PLANS:
                           properties:
                             COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
                             bucket_count -1
+                            bucketing_version 2
                             column.name.delimiter ,
                             columns key,cnt
                             columns.comments 
@@ -3731,6 +3801,7 @@ STAGE PLANS:
                       properties:
                         COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
                         bucket_count -1
+                        bucketing_version 2
                         column.name.delimiter ,
                         columns key,cnt
                         columns.comments 
@@ -3801,6 +3872,7 @@ STAGE PLANS:
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 2
               bucket_field_name key
+              bucketing_version 2
               column.name.delimiter ,
               columns key,val
               columns.comments 
@@ -3824,6 +3896,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 2
                 bucket_field_name key
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,val
                 columns.comments 
@@ -3894,6 +3967,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,cnt
                 columns.comments 
@@ -3937,6 +4011,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,cnt
                     columns.comments 
@@ -3967,6 +4042,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
               bucket_count -1
+              bucketing_version 2
               column.name.delimiter ,
               columns key,cnt
               columns.comments 
@@ -3988,6 +4064,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,cnt
                 columns.comments 
@@ -4024,6 +4101,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,cnt
                     columns.comments 
@@ -4054,6 +4132,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
               bucket_count -1
+              bucketing_version 2
               column.name.delimiter ,
               columns key,cnt
               columns.comments 
@@ -4075,6 +4154,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,cnt
                 columns.comments 
@@ -4224,6 +4304,7 @@ STAGE PLANS:
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 2
               bucket_field_name key
+              bucketing_version 2
               column.name.delimiter ,
               columns key,val
               columns.comments 
@@ -4247,6 +4328,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 2
                 bucket_field_name key
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,val
                 columns.comments 
@@ -4293,6 +4375,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,cnt
                     columns.comments 
@@ -4351,6 +4434,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,cnt
                 columns.comments 
@@ -4539,6 +4623,7 @@ STAGE PLANS:
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 2
               bucket_field_name key
+              bucketing_version 2
               column.name.delimiter ,
               columns key,val
               columns.comments 
@@ -4562,6 +4647,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 2
                 bucket_field_name key
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,val
                 columns.comments 
@@ -4680,6 +4766,7 @@ STAGE PLANS:
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 2
               bucket_field_name key
+              bucketing_version 2
               column.name.delimiter ,
               columns key,val
               columns.comments 
@@ -4703,6 +4790,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 2
                 bucket_field_name key
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,val
                 columns.comments 
@@ -4837,6 +4925,7 @@ STAGE PLANS:
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 2
               bucket_field_name key
+              bucketing_version 2
               column.name.delimiter ,
               columns key,val
               columns.comments 
@@ -4860,6 +4949,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 2
                 bucket_field_name key
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,val
                 columns.comments 
@@ -4904,6 +4994,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,cnt
                     columns.comments 
@@ -4962,6 +5053,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,cnt
                 columns.comments 
@@ -5136,6 +5228,7 @@ STAGE PLANS:
                         properties:
                           COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key1":"true","key2":"true","key3":"true"}}
                           bucket_count -1
+                          bucketing_version 2
                           column.name.delimiter ,
                           columns key1,key2,key3,cnt
                           columns.comments 
@@ -5184,6 +5277,7 @@ STAGE PLANS:
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 2
               bucket_field_name key
+              bucketing_version 2
               column.name.delimiter ,
               columns key,val
               columns.comments 
@@ -5207,6 +5301,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 2
                 bucket_field_name key
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,val
                 columns.comments 
@@ -5276,6 +5371,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key1":"true","key2":"true","key3":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key1,key2,key3,cnt
                 columns.comments 
@@ -5319,6 +5415,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key1":"true","key2":"true","key3":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key1,key2,key3,cnt
                     columns.comments 
@@ -5349,6 +5446,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key1":"true","key2":"true","key3":"true"}}
               bucket_count -1
+              bucketing_version 2
               column.name.delimiter ,
               columns key1,key2,key3,cnt
               columns.comments 
@@ -5370,6 +5468,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key1":"true","key2":"true","key3":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key1,key2,key3,cnt
                 columns.comments 
@@ -5406,6 +5505,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key1":"true","key2":"true","key3":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key1,key2,key3,cnt
                     columns.comments 
@@ -5436,6 +5536,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key1":"true","key2":"true","key3":"true"}}
               bucket_count -1
+              bucketing_version 2
               column.name.delimiter ,
               columns key1,key2,key3,cnt
               columns.comments 
@@ -5457,6 +5558,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key1":"true","key2":"true","key3":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key1,key2,key3,cnt
                 columns.comments 
@@ -5572,6 +5674,7 @@ STAGE PLANS:
                         properties:
                           COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key1":"true","key2":"true","key3":"true","key4":"true"}}
                           bucket_count -1
+                          bucketing_version 2
                           column.name.delimiter ,
                           columns key1,key2,key3,key4,cnt
                           columns.comments 
@@ -5620,6 +5723,7 @@ STAGE PLANS:
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 2
               bucket_field_name key
+              bucketing_version 2
               column.name.delimiter ,
               columns key,val
               columns.comments 
@@ -5643,6 +5747,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 2
                 bucket_field_name key
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,val
                 columns.comments 
@@ -5712,6 +5817,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key1":"true","key2":"true","key3":"true","key4":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key1,key2,key3,key4,cnt
                 columns.comments 
@@ -5755,6 +5861,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key1":"true","key2":"true","key3":"true","key4":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key1,key2,key3,key4,cnt
                     columns.comments 
@@ -5785,6 +5892,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key1":"true","key2":"true","key3":"true","key4":"true"}}
               bucket_count -1
+              bucketing_version 2
               column.name.delimiter ,
               columns key1,key2,key3,key4,cnt
               columns.comments 
@@ -5806,6 +5914,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key1":"true","key2":"true","key3":"true","key4":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key1,key2,key3,key4,cnt
                 columns.comments 
@@ -5842,6 +5951,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key1":"true","key2":"true","key3":"true","key4":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key1,key2,key3,key4,cnt
                     columns.comments 
@@ -5872,6 +5982,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key1":"true","key2":"true","key3":"true","key4":"true"}}
               bucket_count -1
+              bucketing_version 2
               column.name.delimiter ,
               columns key1,key2,key3,key4,cnt
               columns.comments 
@@ -5893,6 +6004,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key1":"true","key2":"true","key3":"true","key4":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key1,key2,key3,key4,cnt
                 columns.comments 
@@ -6007,6 +6119,7 @@ STAGE PLANS:
                         properties:
                           COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key1":"true","key2":"true","key3":"true"}}
                           bucket_count -1
+                          bucketing_version 2
                           column.name.delimiter ,
                           columns key1,key2,key3,cnt
                           columns.comments 
@@ -6055,6 +6168,7 @@ STAGE PLANS:
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 2
               bucket_field_name key
+              bucketing_version 2
               column.name.delimiter ,
               columns key,val
               columns.comments 
@@ -6078,6 +6192,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 2
                 bucket_field_name key
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,val
                 columns.comments 
@@ -6147,6 +6262,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key1":"true","key2":"true","key3":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key1,key2,key3,cnt
                 columns.comments 
@@ -6190,6 +6306,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key1":"true","key2":"true","key3":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key1,key2,key3,cnt
                     columns.comments 
@@ -6220,6 +6337,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key1":"true","key2":"true","key3":"true"}}
               bucket_count -1
+              bucketing_version 2
               column.name.delimiter ,
               columns key1,key2,key3,cnt
               columns.comments 
@@ -6241,6 +6359,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key1":"true","key2":"true","key3":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key1,key2,key3,cnt
                 columns.comments 
@@ -6277,6 +6396,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key1":"true","key2":"true","key3":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key1,key2,key3,cnt
                     columns.comments 
@@ -6307,6 +6427,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key1":"true","key2":"true","key3":"true"}}
               bucket_count -1
+              bucketing_version 2
               column.name.delimiter ,
               columns key1,key2,key3,cnt
               columns.comments 
@@ -6328,6 +6449,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key1":"true","key2":"true","key3":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key1,key2,key3,cnt
                 columns.comments 
@@ -6449,6 +6571,7 @@ STAGE PLANS:
                         properties:
                           COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key1":"true","key2":"true","key3":"true"}}
                           bucket_count -1
+                          bucketing_version 2
                           column.name.delimiter ,
                           columns key1,key2,key3,cnt
                           columns.comments 
@@ -6497,6 +6620,7 @@ STAGE PLANS:
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 2
               bucket_field_name key
+              bucketing_version 2
               column.name.delimiter ,
               columns key,val
               columns.comments 
@@ -6520,6 +6644,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 2
                 bucket_field_name key
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,val
                 columns.comments 
@@ -6589,6 +6714,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key1":"true","key2":"true","key3":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key1,key2,key3,cnt
                 columns.comments 
@@ -6632,6 +6758,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key1":"true","key2":"true","key3":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key1,key2,key3,cnt
                     columns.comments 
@@ -6662,6 +6789,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key1":"true","key2":"true","key3":"true"}}
               bucket_count -1
+              bucketing_version 2
               column.name.delimiter ,
               columns key1,key2,key3,cnt
               columns.comments 
@@ -6683,6 +6811,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key1":"true","key2":"true","key3":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key1,key2,key3,cnt
                 columns.comments 
@@ -6719,6 +6848,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key1":"true","key2":"true","key3":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key1,key2,key3,cnt
                     columns.comments 
@@ -6749,6 +6879,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key1":"true","key2":"true","key3":"true"}}
               bucket_count -1
+              bucketing_version 2
               column.name.delimiter ,
               columns key1,key2,key3,cnt
               columns.comments 
@@ -6770,6 +6901,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","key1":"true","key2":"true","key3":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key1,key2,key3,cnt
                 columns.comments 

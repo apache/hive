@@ -81,10 +81,10 @@ POSTHOOK: query: select key, count(*) from masking_test group by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@masking_test
 #### A masked pattern was here ####
-4	1
-0	3
-2	1
 8	1
+0	3
+4	1
+2	1
 PREHOOK: query: explain
 select key, count(*) from masking_test group by key
 PREHOOK: type: QUERY
@@ -110,7 +110,7 @@ POSTHOOK: query: select key, count(*) from masking_test group by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@masking_test
 #### A masked pattern was here ####
-4	1
-0	3
-2	1
 8	1
+0	3
+4	1
+2	1

@@ -41,6 +41,7 @@ Table Type:         	EXTERNAL_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"__time\":\"true\",\"added\":\"true\",\"anonymous\":\"true\",\"count\":\"true\",\"deleted\":\"true\",\"delta\":\"true\",\"language\":\"true\",\"namespace\":\"true\",\"newpage\":\"true\",\"page\":\"true\",\"robot\":\"true\",\"unpatrolled\":\"true\",\"user\":\"true\",\"variation\":\"true\"}}
 	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
 	druid.datasource    	wikipedia           
 	numFiles            	0                   
 	numRows             	0                   
@@ -266,6 +267,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"__time":"true","added":"true","anonymous":"true","count":"true","deleted":"true","delta":"true","language":"true","namespace":"true","newpage":"true","page":"true","robot":"true","unpatrolled":"true","user":"true","variation":"true"}}
               EXTERNAL TRUE
               bucket_count -1
+              bucketing_version 2
               column.name.delimiter ,
               columns __time,robot,namespace,anonymous,unpatrolled,page,language,newpage,user,count,added,delta,variation,deleted
               columns.comments 'from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer'
@@ -294,6 +296,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"__time":"true","added":"true","anonymous":"true","count":"true","deleted":"true","delta":"true","language":"true","namespace":"true","newpage":"true","page":"true","robot":"true","unpatrolled":"true","user":"true","variation":"true"}}
                 EXTERNAL TRUE
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns __time,robot,namespace,anonymous,unpatrolled,page,language,newpage,user,count,added,delta,variation,deleted
                 columns.comments 'from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer'
@@ -444,6 +447,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"__time":"true","added":"true","anonymous":"true","count":"true","deleted":"true","delta":"true","language":"true","namespace":"true","newpage":"true","page":"true","robot":"true","unpatrolled":"true","user":"true","variation":"true"}}
               EXTERNAL TRUE
               bucket_count -1
+              bucketing_version 2
               column.name.delimiter ,
               columns __time,robot,namespace,anonymous,unpatrolled,page,language,newpage,user,count,added,delta,variation,deleted
               columns.comments 'from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer'
@@ -472,6 +476,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"__time":"true","added":"true","anonymous":"true","count":"true","deleted":"true","delta":"true","language":"true","namespace":"true","newpage":"true","page":"true","robot":"true","unpatrolled":"true","user":"true","variation":"true"}}
                 EXTERNAL TRUE
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns __time,robot,namespace,anonymous,unpatrolled,page,language,newpage,user,count,added,delta,variation,deleted
                 columns.comments 'from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer'
@@ -779,6 +784,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"__time":"true","added":"true","anonymous":"true","count":"true","deleted":"true","delta":"true","language":"true","namespace":"true","newpage":"true","page":"true","robot":"true","unpatrolled":"true","user":"true","variation":"true"}}
               EXTERNAL TRUE
               bucket_count -1
+              bucketing_version 2
               column.name.delimiter ,
               columns __time,robot,namespace,anonymous,unpatrolled,page,language,newpage,user,count,added,delta,variation,deleted
               columns.comments 'from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer'
@@ -803,6 +809,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"__time":"true","added":"true","anonymous":"true","count":"true","deleted":"true","delta":"true","language":"true","namespace":"true","newpage":"true","page":"true","robot":"true","unpatrolled":"true","user":"true","variation":"true"}}
                 EXTERNAL TRUE
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns __time,robot,namespace,anonymous,unpatrolled,page,language,newpage,user,count,added,delta,variation,deleted
                 columns.comments 'from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer'

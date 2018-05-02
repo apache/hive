@@ -30,7 +30,7 @@ OUTPUTFORMAT
 LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
-)
+  'bucketing_version'='2')
 PREHOOK: query: drop table tmp1
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table tmp1

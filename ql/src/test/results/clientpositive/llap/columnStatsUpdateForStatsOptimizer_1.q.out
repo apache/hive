@@ -38,6 +38,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	3                   
 	rawDataSize         	21                  
@@ -80,6 +81,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	3                   
 	rawDataSize         	21                  
@@ -214,6 +216,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"month\":\"true\",\"year\":\"true\"}}
+	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	3                   
 	rawDataSize         	21                  
@@ -281,6 +284,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
 	numFiles            	2                   
 	numRows             	4                   
 	rawDataSize         	28                  
@@ -459,6 +463,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"year\":\"true\"}}
+	bucketing_version   	2                   
 	numFiles            	2                   
 	numRows             	4                   
 	rawDataSize         	28                  
@@ -593,6 +598,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"month\":\"true\",\"year\":\"true\"}}
+	bucketing_version   	2                   
 	numFiles            	2                   
 	numRows             	4                   
 	rawDataSize         	28                  
@@ -965,6 +971,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	0                   
 	rawDataSize         	0                   
@@ -1007,6 +1014,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	5312                

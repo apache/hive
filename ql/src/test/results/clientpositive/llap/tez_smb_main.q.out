@@ -839,7 +839,7 @@ POSTHOOK: Input: default@tab@ds=2008-04-08
 POSTHOOK: Input: default@tab_part
 POSTHOOK: Input: default@tab_part@ds=2008-04-08
 #### A masked pattern was here ####
-19
+9
 PREHOOK: query: explain select count(*) from tab a join tab_part b on a.value = b.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select count(*) from tab a join tab_part b on a.value = b.value
@@ -1643,7 +1643,7 @@ POSTHOOK: Input: default@tab@ds=2008-04-08
 POSTHOOK: Input: default@tab_part
 POSTHOOK: Input: default@tab_part@ds=2008-04-08
 #### A masked pattern was here ####
-19
+9
 PREHOOK: query: explain
 select count(*) from (select s1.key as key, s1.value as value from tab s1 join tab s3 on s1.key=s3.key
 UNION  ALL

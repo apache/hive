@@ -41,9 +41,9 @@ public class TestPrivilegesV1 extends PrivilegesTestBase{
   public void setup() throws Exception {
     queryState = new QueryState.Builder().build();
     db = Mockito.mock(Hive.class);
+    HiveConf hiveConf = queryState.getConf();
     table = new Table(DB, TABLE);
     partition = new Partition(table);
-    HiveConf hiveConf = queryState.getConf();
     hiveConf
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");

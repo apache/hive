@@ -1491,9 +1491,9 @@ public class TestStreaming {
 
     // assert bucket listing is as expected
     Assert.assertEquals("number of buckets does not match expectation", actual1.values().size(), 3);
-    Assert.assertEquals("records in bucket does not match expectation", actual1.get(0).size(), 2);
+    Assert.assertTrue("bucket 0 shouldn't have been created", actual1.get(0) == null);
     Assert.assertEquals("records in bucket does not match expectation", actual1.get(1).size(), 1);
-    Assert.assertTrue("bucket 2 shouldn't have been created", actual1.get(2) == null);
+    Assert.assertEquals("records in bucket does not match expectation", actual1.get(2).size(), 2);
     Assert.assertEquals("records in bucket does not match expectation", actual1.get(3).size(), 1);
   }
   private void runCmdOnDriver(String cmd) throws QueryFailedException {
@@ -1696,7 +1696,7 @@ public class TestStreaming {
       } else if (file.contains("bucket_00001")) {
         corruptDataFile(file, conf, -1);
       } else if (file.contains("bucket_00002")) {
-        Assert.assertFalse("bucket 2 shouldn't have been created", true);
+        corruptDataFile(file, conf, 100);
       } else if (file.contains("bucket_00003")) {
         corruptDataFile(file, conf, 100);
       }
@@ -1726,9 +1726,9 @@ public class TestStreaming {
     System.setErr(origErr);
 
     errDump = new String(myErr.toByteArray());
-    Assert.assertEquals(true, errDump.contains("bucket_00000 recovered successfully!"));
-    Assert.assertEquals(true, errDump.contains("No readable footers found. Creating empty orc file."));
     Assert.assertEquals(true, errDump.contains("bucket_00001 recovered successfully!"));
+    Assert.assertEquals(true, errDump.contains("No readable footers found. Creating empty orc file."));
+    Assert.assertEquals(true, errDump.contains("bucket_00002 recovered successfully!"));
     Assert.assertEquals(true, errDump.contains("bucket_00003 recovered successfully!"));
     Assert.assertEquals(false, errDump.contains("Exception"));
     Assert.assertEquals(false, errDump.contains("is still open for writes."));

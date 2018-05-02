@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import com.google.common.base.Preconditions;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -153,15 +154,16 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       }
     }
 
-    if (context.conf.getBoolVar(HiveConf.ConfVars.HIVE_CONVERT_JOIN_BUCKET_MAPJOIN_TEZ)) {
-      // Check if we are in LLAP, if so it needs to be determined if we should use BMJ or DPHJ
-      if (llapInfo != null) {
-        if (selectJoinForLlap(context, joinOp, tezBucketJoinProcCtx, llapInfo, mapJoinConversionPos, numBuckets)) {
+    if (numBuckets > 1) {
+      if (context.conf.getBoolVar(HiveConf.ConfVars.HIVE_CONVERT_JOIN_BUCKET_MAPJOIN_TEZ)) {
+        // Check if we are in LLAP, if so it needs to be determined if we should use BMJ or DPHJ
+        if (llapInfo != null) {
+          if (selectJoinForLlap(context, joinOp, tezBucketJoinProcCtx, llapInfo, mapJoinConversionPos, numBuckets)) {
+            return null;
+          }
+        } else if (convertJoinBucketMapJoin(joinOp, context, mapJoinConversionPos, tezBucketJoinProcCtx)) {
           return null;
         }
-      } else if (numBuckets > 1 &&
-              convertJoinBucketMapJoin(joinOp, context, mapJoinConversionPos, tezBucketJoinProcCtx)) {
-        return null;
       }
     }
 
@@ -180,7 +182,8 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     MapJoinOperator mapJoinOp = convertJoinMapJoin(joinOp, context, mapJoinConversionPos, true);
     // map join operator by default has no bucket cols and num of reduce sinks
     // reduced by 1
-    mapJoinOp.setOpTraits(new OpTraits(null, -1, null, joinOp.getOpTraits().getNumReduceSinks()));
+    mapJoinOp.setOpTraits(new OpTraits(null, -1, null,
+        joinOp.getOpTraits().getNumReduceSinks(), joinOp.getOpTraits().getBucketingVersion()));
     preserveOperatorInfos(mapJoinOp, joinOp, context);
     // propagate this change till the next RS
     for (Operator<? extends OperatorDesc> childOp : mapJoinOp.getChildOperators()) {
@@ -381,7 +384,8 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     context.parseContext.getContext().getPlanMapper().link(joinOp, mergeJoinOp);
     int numReduceSinks = joinOp.getOpTraits().getNumReduceSinks();
     OpTraits opTraits = new OpTraits(joinOp.getOpTraits().getBucketColNames(), numBuckets,
-      joinOp.getOpTraits().getSortCols(), numReduceSinks);
+      joinOp.getOpTraits().getSortCols(), numReduceSinks,
+      joinOp.getOpTraits().getBucketingVersion());
     mergeJoinOp.setOpTraits(opTraits);
     preserveOperatorInfos(mergeJoinOp, joinOp, context);
 
@@ -448,7 +452,8 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       return;
     }
     currentOp.setOpTraits(new OpTraits(opTraits.getBucketColNames(),
-      opTraits.getNumBuckets(), opTraits.getSortCols(), opTraits.getNumReduceSinks()));
+      opTraits.getNumBuckets(), opTraits.getSortCols(), opTraits.getNumReduceSinks(),
+            opTraits.getBucketingVersion()));
     for (Operator<? extends OperatorDesc> childOp : currentOp.getChildOperators()) {
       if ((childOp instanceof ReduceSinkOperator) || (childOp instanceof GroupByOperator)) {
         break;
@@ -501,7 +506,8 @@ public class ConvertJoinMapJoin implements NodeProcessor {
 
     // we can set the traits for this join operator
     opTraits = new OpTraits(joinOp.getOpTraits().getBucketColNames(),
-        tezBucketJoinProcCtx.getNumBuckets(), null, joinOp.getOpTraits().getNumReduceSinks());
+        tezBucketJoinProcCtx.getNumBuckets(), null, joinOp.getOpTraits().getNumReduceSinks(),
+        joinOp.getOpTraits().getBucketingVersion());
     mapJoinOp.setOpTraits(opTraits);
     preserveOperatorInfos(mapJoinOp, joinOp, context);
     setNumberOfBucketsOnChildren(mapJoinOp);
@@ -612,6 +618,38 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       numBuckets = bigTableRS.getConf().getNumReducers();
     }
     tezBucketJoinProcCtx.setNumBuckets(numBuckets);
+
+    // With bucketing using two different versions. Version 1 for exiting
+    // tables and version 2 for new tables. All the inputs to the SMB must be
+    // from same version. This only applies to tables read directly and not
+    // intermediate outputs of joins/groupbys
+    int bucketingVersion = -1;
+    for (Operator<? extends OperatorDesc> parentOp : joinOp.getParentOperators()) {
+      // Check if the parent is coming from a table scan, if so, what is the version of it.
+      assert parentOp.getParentOperators() != null && parentOp.getParentOperators().size() == 1;
+      Operator<?> op = parentOp.getParentOperators().get(0);
+      while(op != null && !(op instanceof TableScanOperator
+              || op instanceof ReduceSinkOperator
+              || op instanceof CommonJoinOperator)) {
+        // If op has parents it is guaranteed to be 1.
+        List<Operator<?>> parents = op.getParentOperators();
+        Preconditions.checkState(parents.size() == 0 || parents.size() == 1);
+        op = parents.size() == 1 ? parents.get(0) : null;
+      }
+
+      if (op instanceof TableScanOperator) {
+        int localVersion = ((TableScanOperator)op).getConf().
+                getTableMetadata().getBucketingVersion();
+        if (bucketingVersion == -1) {
+          bucketingVersion = localVersion;
+        } else if (bucketingVersion != localVersion) {
+          // versions dont match, return false.
+          LOG.debug("SMB Join can't be performed due to bucketing version mismatch");
+          return false;
+        }
+      }
+    }
+
     LOG.info("We can convert the join to an SMB join.");
     return true;
   }
@@ -1189,7 +1227,8 @@ public class ConvertJoinMapJoin implements NodeProcessor {
             joinOp.getOpTraits().getBucketColNames(),
             numReducers,
             null,
-            joinOp.getOpTraits().getNumReduceSinks());
+            joinOp.getOpTraits().getNumReduceSinks(),
+            joinOp.getOpTraits().getBucketingVersion());
         mapJoinOp.setOpTraits(opTraits);
         preserveOperatorInfos(mapJoinOp, joinOp, context);
         // propagate this change till the next RS

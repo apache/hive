@@ -102,6 +102,7 @@ Table Type:         	EXTERNAL_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
 	numFiles            	1                   
 	numPartitions       	1                   
 	numRows             	10                  
@@ -264,6 +265,7 @@ Table Type:         	EXTERNAL_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
 	numFiles            	1                   
 	numPartitions       	1                   
 	numRows             	10                  

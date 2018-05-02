@@ -359,4 +359,4 @@ POSTHOOK: query: select sum(distinct cint), count(distinct cint), avg(distinct c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
--3482841611	6082	-572647.4204209142	6.153814687328984E8
+-3482841611	6082	-572647.4204209142	6.153814687328981E8

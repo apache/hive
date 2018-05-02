@@ -55,6 +55,7 @@ STAGE PLANS:
                       properties:
                         COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                         bucket_count -1
+                        bucketing_version 2
                         column.name.delimiter ,
                         columns key,value
                         columns.comments 
@@ -102,6 +103,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count 2
               bucket_field_name key
+              bucketing_version 2
               column.name.delimiter ,
               columns key,value
               columns.comments 
@@ -124,6 +126,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                 bucket_count 2
                 bucket_field_name key
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -193,6 +196,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -236,6 +240,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -266,6 +271,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
+              bucketing_version 2
               column.name.delimiter ,
               columns key,value
               columns.comments 
@@ -287,6 +293,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -323,6 +330,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -353,6 +361,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
+              bucketing_version 2
               column.name.delimiter ,
               columns key,value
               columns.comments 
@@ -374,6 +383,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -424,107 +434,48 @@ order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
-104	val_104
-104	val_104
-104	val_105
-104	val_105
-104	val_105
+110	val_111
 116	val_116
 116	val_117
-120	val_120
-120	val_120
-120	val_121
-128	val_128
-128	val_128
-128	val_128
-128	val_129
-128	val_129
-132	val_133
-132	val_133
-136	val_136
-136	val_137
-140	val_141
-144	val_145
-152	val_152
-152	val_152
-152	val_153
-152	val_153
-152	val_153
+126	val_126
+126	val_127
+126	val_127
+134	val_134
+134	val_134
+134	val_135
 156	val_156
 156	val_157
 156	val_157
-160	val_160
-160	val_161
-164	val_164
-164	val_164
-164	val_165
-164	val_165
-168	val_168
-168	val_169
-172	val_172
-172	val_172
-172	val_173
-176	val_176
-176	val_176
-180	val_180
+158	val_158
+178	val_178
+178	val_179
+178	val_179
 184	val_185
-192	val_192
-192	val_193
-196	val_196
-196	val_197
-196	val_197
-196	val_197
-200	val_200
-200	val_200
-204	val_205
+206	val_207
+206	val_207
+206	val_207
 208	val_208
 208	val_208
 208	val_208
-212	val_213
-216	val_216
-216	val_216
-216	val_217
-224	val_224
-224	val_224
-224	val_225
-228	val_228
-228	val_229
-240	val_241
 244	val_244
 244	val_245
 244	val_245
 244	val_245
-248	val_248
-248	val_249
 252	val_252
 252	val_253
+254	val_255
 256	val_256
 256	val_256
 256	val_257
-260	val_260
-260	val_261
-260	val_261
-264	val_265
-264	val_265
-268	val_269
+266	val_266
 272	val_272
 272	val_272
 272	val_273
-276	val_277
-280	val_280
-280	val_280
-284	val_284
-284	val_285
-284	val_285
-288	val_288
-288	val_288
+286	val_286
+286	val_287
 292	val_292
 292	val_293
 292	val_293
-296	val_296
-296	val_297
-300	val_301
-300	val_301
 304	val_305
 308	val_308
 308	val_309
@@ -532,13 +483,15 @@ POSTHOOK: Input: default@dest1
 316	val_316
 316	val_316
 316	val_316
-324	val_325
-328	val_329
-328	val_329
-332	val_332
+326	val_327
+334	val_335
 336	val_336
 336	val_337
-340	val_341
+338	val_338
+338	val_339
+342	val_342
+342	val_342
+342	val_343
 344	val_344
 344	val_344
 344	val_345
@@ -550,29 +503,23 @@ POSTHOOK: Input: default@dest1
 348	val_349
 352	val_353
 352	val_353
-356	val_356
-356	val_357
-356	val_357
 360	val_360
 360	val_361
+362	val_362
 364	val_364
 364	val_365
-368	val_368
-376	val_377
-384	val_384
-384	val_384
-384	val_384
-384	val_385
-384	val_385
-384	val_385
-388	val_389
+378	val_378
+378	val_379
 392	val_392
 392	val_393
 392	val_393
 396	val_396
 396	val_396
 396	val_396
-400	val_400
+402	val_402
+402	val_403
+402	val_403
+402	val_403
 404	val_404
 404	val_404
 404	val_405
@@ -580,45 +527,24 @@ POSTHOOK: Input: default@dest1
 404	val_405
 408	val_409
 408	val_409
-412	val_413
-412	val_413
-416	val_417
-424	val_424
-424	val_424
-424	val_425
-428	val_429
-432	val_432
-432	val_433
-436	val_436
-436	val_437
+410	val_411
+426	val_427
 440	val_441
 440	val_441
-444	val_444
-448	val_448
-448	val_449
 452	val_452
-460	val_460
-468	val_468
-468	val_468
-468	val_468
-468	val_468
-468	val_469
-468	val_469
-468	val_469
+458	val_458
+458	val_458
+466	val_466
+466	val_466
+466	val_466
 472	val_472
 476	val_477
 476	val_477
-480	val_480
-480	val_480
-480	val_480
-480	val_481
-480	val_481
+478	val_478
+478	val_478
+478	val_479
+478	val_479
+482	val_482
+482	val_483
 484	val_484
 484	val_485
-488	val_489
-492	val_492
-492	val_492
-492	val_493
-492	val_493
-496	val_496
-496	val_497

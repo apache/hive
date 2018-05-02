@@ -170,6 +170,7 @@ STAGE PLANS:
               properties:
                 EXTERNAL TRUE
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns x,y
                 columns.comments 
@@ -251,6 +252,7 @@ STAGE PLANS:
               properties:
                 EXTERNAL TRUE
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns x,y
                 columns.comments 
@@ -364,6 +366,7 @@ STAGE PLANS:
               properties:
                 EXTERNAL TRUE
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns x,y
                 columns.comments 
@@ -499,6 +502,7 @@ STAGE PLANS:
               properties:
                 EXTERNAL TRUE
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns x,y
                 columns.comments 

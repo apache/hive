@@ -28,7 +28,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
-import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.ExpressionTree;
 import org.apache.hadoop.hive.ql.io.sarg.ExpressionTree.Operator;
@@ -84,8 +83,7 @@ public class FixedBucketPruningOptimizer extends Transform {
 
     @Override
     protected void generatePredicate(NodeProcessorCtx procCtx,
-        FilterOperator fop, TableScanOperator top) throws SemanticException,
-        UDFArgumentException {
+        FilterOperator fop, TableScanOperator top) throws SemanticException {
       FixedBucketPruningOptimizerCtxt ctxt = ((FixedBucketPruningOptimizerCtxt) procCtx);
       Table tbl = top.getConf().getTableMetadata();
       if (tbl.getNumBuckets() > 0) {
@@ -122,8 +120,7 @@ public class FixedBucketPruningOptimizer extends Transform {
 
     @Override
     protected void generatePredicate(NodeProcessorCtx procCtx,
-        FilterOperator fop, TableScanOperator top) throws SemanticException,
-        UDFArgumentException {
+        FilterOperator fop, TableScanOperator top) throws SemanticException {
       FixedBucketPruningOptimizerCtxt ctxt = ((FixedBucketPruningOptimizerCtxt) procCtx);
       if (ctxt.getNumBuckets() <= 0 || ctxt.getBucketCols().size() != 1) {
         // bucketing isn't consistent or there are >1 bucket columns
@@ -225,6 +222,9 @@ public class FixedBucketPruningOptimizer extends Transform {
       bs.clear();
       PrimitiveObjectInspector bucketOI = (PrimitiveObjectInspector)bucketField.getFieldObjectInspector();
       PrimitiveObjectInspector constOI = PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(bucketOI.getPrimitiveCategory());
+      // Fetch the bucketing version from table scan operator
+      int bucketingVersion = top.getConf().getTableMetadata().getBucketingVersion();
+
       for (Object literal: literals) {
         PrimitiveObjectInspector origOI = PrimitiveObjectInspectorFactory.getPrimitiveObjectInspectorFromClass(literal.getClass());
         Converter conv = ObjectInspectorConverters.getConverter(origOI, constOI);
@@ -233,10 +233,12 @@ public class FixedBucketPruningOptimizer extends Transform {
           return;
         }
         Object convCols[] = new Object[] {conv.convert(literal)};
-        int n = ObjectInspectorUtils.getBucketNumber(convCols, new ObjectInspector[]{constOI}, ctxt.getNumBuckets());
+        int n = bucketingVersion == 2 ?
+            ObjectInspectorUtils.getBucketNumber(convCols, new ObjectInspector[]{constOI}, ctxt.getNumBuckets()) :
+            ObjectInspectorUtils.getBucketNumberOld(convCols, new ObjectInspector[]{constOI}, ctxt.getNumBuckets());
         bs.set(n);
-        if (ctxt.isCompat()) {
-          int h = ObjectInspectorUtils.getBucketHashCode(convCols, new ObjectInspector[]{constOI});
+        if (bucketingVersion == 1 && ctxt.isCompat()) {
+          int h = ObjectInspectorUtils.getBucketHashCodeOld(convCols, new ObjectInspector[]{constOI});
           // -ve hashcodes had conversion to positive done in different ways in the past
           // abs() is now obsolete and all inserts now use & Integer.MAX_VALUE 
           // the compat mode assumes that old data could've been loaded using the other conversion

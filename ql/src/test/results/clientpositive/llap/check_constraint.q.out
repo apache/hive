@@ -39,6 +39,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -206,6 +207,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -423,6 +425,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -573,6 +576,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
 	numFiles            	0                   
 	totalSize           	0                   
 #### A masked pattern was here ####
@@ -732,6 +736,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -877,6 +882,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1101,6 +1107,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1256,6 +1263,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -1611,16 +1619,16 @@ POSTHOOK: query: select * from acid_uami
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid_uami
 #### A masked pattern was here ####
-8	8.00	val_8
-4	4.00	val_4
 2	2.00	val_2
-0	0.00	val_0
-0	0.00	val_0
-0	0.00	val_0
 9	9.00	val_9
+8	8.00	val_8
 5	5.00	val_5
 5	5.00	val_5
 5	5.00	val_5
+4	4.00	val_4
+0	0.00	val_0
+0	0.00	val_0
+0	0.00	val_0
 10	10.00	val_10
 0	0.00	val_0
 0	0.00	val_0
@@ -1757,16 +1765,16 @@ POSTHOOK: query: select * from acid_uami
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid_uami
 #### A masked pattern was here ####
-114	114.00	val_114
-104	104.00	val_104
-100	100.00	val_100
-10	10.00	val_10
-0	0.00	val_0
 113	113.00	val_113
+105	105.00	val_105
+10	10.00	val_10
+114	114.00	val_114
 111	111.00	val_111
 11	11.00	val_11
-105	105.00	val_105
+104	104.00	val_104
 103	103.00	val_103
+100	100.00	val_100
+0	0.00	val_0
 PREHOOK: query: truncate table acid_uami
 PREHOOK: type: TRUNCATETABLE
 PREHOOK: Output: default@acid_uami
@@ -2109,6 +2117,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -2817,6 +2826,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -2866,6 +2876,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -3014,6 +3025,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -3373,6 +3385,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	transactional       	true                
 	transactional_properties	insert_only         
@@ -3429,6 +3442,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 	transactional       	true                
 	transactional_properties	insert_only         
 #### A masked pattern was here ####
@@ -3551,6 +3565,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 	numFiles            	1                   
 	totalSize           	5                   
 	transactional       	true                

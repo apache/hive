@@ -143,6 +143,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cityid":"true","date":"true","dealid":"true","time":"true","userid":"true"}}
               bucket_count -1
+              bucketing_version 2
               column.name.delimiter ,
               columns dealid,date,time,cityid,userid
               columns.comments 
@@ -164,6 +165,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cityid":"true","date":"true","dealid":"true","time":"true","userid":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns dealid,date,time,cityid,userid
                 columns.comments 
@@ -279,6 +281,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cityid":"true","date":"true","dealid":"true","time":"true","userid":"true"}}
               bucket_count -1
+              bucketing_version 2
               column.name.delimiter ,
               columns dealid,date,time,cityid,userid
               columns.comments 
@@ -300,6 +303,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cityid":"true","date":"true","dealid":"true","time":"true","userid":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns dealid,date,time,cityid,userid
                 columns.comments 
@@ -416,6 +420,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cityid":"true","date":"true","dealid":"true","time":"true","userid":"true"}}
               bucket_count -1
+              bucketing_version 2
               column.name.delimiter ,
               columns dealid,date,time,cityid,userid
               columns.comments 
@@ -437,6 +442,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cityid":"true","date":"true","dealid":"true","time":"true","userid":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns dealid,date,time,cityid,userid
                 columns.comments 
@@ -553,6 +559,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"userid":"true"}}
               bucket_count -1
+              bucketing_version 2
               column.name.delimiter ,
               columns userid
               columns.comments 
@@ -574,6 +581,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"userid":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns userid
                 columns.comments 
