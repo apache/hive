@@ -231,8 +231,7 @@ public class OrcRecordUpdater implements RecordUpdater {
       fs = partitionRoot.getFileSystem(options.getConfiguration());
     }
     this.fs = fs;
-    if (options.getMinimumWriteId() != options.getMaximumWriteId()
-        && !options.isWritingBase()) {
+    if (options.getMinimumWriteId() != options.getMaximumWriteId() && !options.isWritingBase()) {
       //throw if file already exists as that should never happen
       flushLengths = fs.create(OrcAcidUtils.getSideFile(this.path), false, 8,
           options.getReporter());
@@ -468,17 +467,20 @@ public class OrcRecordUpdater implements RecordUpdater {
 
   @Override
   public void flush() throws IOException {
-    // We only support flushes on files with multiple transactions, because
-    // flushes create significant overhead in HDFS. Record updaters with a
-    // single transaction should be closed rather than flushed.
-    if (flushLengths == null) {
-      throw new IllegalStateException("Attempting to flush a RecordUpdater on "
-         + path + " with a single transaction.");
-    }
     initWriter();
-    long len = writer.writeIntermediateFooter();
-    flushLengths.writeLong(len);
-    OrcInputFormat.SHIMS.hflush(flushLengths);
+    // streaming ingest writer with single transaction batch size, in which case the transaction is
+    // either committed or aborted. In either cases we don't need flush length file but we need to
+    // flush intermediate footer to reduce memory pressure. Also with HIVE-19206, streaming writer does
+    // automatic memory management which would require flush of open files without actually closing it.
+    if (flushLengths == null) {
+      // transaction batch size = 1 case
+      writer.writeIntermediateFooter();
+    } else {
+      // transaction batch size > 1 case
+      long len = writer.writeIntermediateFooter();
+      flushLengths.writeLong(len);
+      OrcInputFormat.SHIMS.hflush(flushLengths);
+    }
     //multiple transactions only happen for streaming ingest which only allows inserts
     assert deleteEventWriter == null : "unexpected delete writer for " + path;
   }

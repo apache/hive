@@ -18,131 +18,45 @@
 
 package org.apache.hive.streaming;
 
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.Table;
+import java.util.Properties;
+
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
-import org.apache.hadoop.hive.serde2.AbstractSerDe;
+import org.apache.hadoop.hive.serde2.JsonSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.io.Text;
-import org.apache.hive.hcatalog.data.HCatRecordObjectInspector;
-import org.apache.hive.hcatalog.data.JsonSerDe;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Properties;
 
 /**
  * Streaming Writer handles utf8 encoded Json (Strict syntax).
- * Uses org.apache.hive.hcatalog.data.JsonSerDe to process Json input
+ * Uses org.apache.hadoop.hive.serde2.JsonSerDe to process Json input
+ *
+ * NOTE: This record writer is NOT thread-safe. Use one record writer per streaming connection.
  */
 public class StrictJsonWriter extends AbstractRecordWriter {
   private JsonSerDe serde;
 
-  private final HCatRecordObjectInspector recordObjInspector;
-  private final ObjectInspector[] bucketObjInspectors;
-  private final StructField[] bucketStructFields;
-
-  /**
-   * @deprecated As of release 1.3/2.1.  Replaced by {@link #StrictJsonWriter(HiveEndPoint, HiveConf, StreamingConnection)}
-   */
-  public StrictJsonWriter(HiveEndPoint endPoint)
-    throws ConnectionError, SerializationError, StreamingException {
-    this(endPoint, null, null);
+  public static Builder newBuilder() {
+    return new Builder();
   }
 
-  /**
-   * @deprecated As of release 1.3/2.1.  Replaced by {@link #StrictJsonWriter(HiveEndPoint, HiveConf, StreamingConnection)}
-   */
-  public StrictJsonWriter(HiveEndPoint endPoint, HiveConf conf) throws StreamingException {
-    this(endPoint, conf, null);
-  }
-  /**
-   * @param endPoint the end point to write to
-   * @throws ConnectionError
-   * @throws SerializationError
-   * @throws StreamingException
-   */
-  public StrictJsonWriter(HiveEndPoint endPoint, StreamingConnection conn)
-          throws ConnectionError, SerializationError, StreamingException {
-    this(endPoint, null, conn);
-  }
-  /**
-   * @param endPoint the end point to write to
-   * @param conf a Hive conf object. Should be null if not using advanced Hive settings.
-   * @param conn connection this Writer is to be used with
-   * @throws ConnectionError
-   * @throws SerializationError
-   * @throws StreamingException
-   */
-  public StrictJsonWriter(HiveEndPoint endPoint, HiveConf conf, StreamingConnection conn)
-          throws ConnectionError, SerializationError, StreamingException {
-    super(endPoint, conf, conn);
-    this.serde = createSerde(tbl, conf);
-    // get ObjInspectors for entire record and bucketed cols
-    try {
-      recordObjInspector = ( HCatRecordObjectInspector ) serde.getObjectInspector();
-      this.bucketObjInspectors = getObjectInspectorsForBucketedCols(bucketIds, recordObjInspector);
-    } catch (SerDeException e) {
-      throw new SerializationError("Unable to get ObjectInspector for bucket columns", e);
+  public static class Builder {
+    public StrictJsonWriter build() {
+      return new StrictJsonWriter();
     }
-
-    // get StructFields for bucketed cols
-    bucketStructFields = new StructField[bucketIds.size()];
-    List<? extends StructField> allFields = recordObjInspector.getAllStructFieldRefs();
-    for (int i = 0; i < bucketIds.size(); i++) {
-      bucketStructFields[i] = allFields.get(bucketIds.get(i));
-    }
-  }
-
-  @Override
-  public AbstractSerDe getSerde() {
-    return serde;
-  }
-
-  protected HCatRecordObjectInspector getRecordObjectInspector() {
-    return recordObjInspector;
-  }
-
-  @Override
-  protected StructField[] getBucketStructFields() {
-    return bucketStructFields;
-  }
-
-  protected ObjectInspector[] getBucketObjectInspectors() {
-    return bucketObjInspectors;
-  }
-
-
-  @Override
-  public void write(long writeId, byte[] record)
-          throws StreamingIOFailure, SerializationError {
-    try {
-      Object encodedRow = encode(record);
-      int bucket = getBucket(encodedRow);
-      getRecordUpdater(bucket).insert(writeId, encodedRow);
-    } catch (IOException e) {
-      throw new StreamingIOFailure("Error writing record in transaction write id("
-              + writeId + ")", e);
-    }
-
   }
 
   /**
    * Creates JsonSerDe
-   * @param tbl   used to create serde
-   * @param conf  used to create serde
-   * @return
+   *
    * @throws SerializationError if serde could not be initialized
    */
-  private static JsonSerDe createSerde(Table tbl, HiveConf conf)
-          throws SerializationError {
+  @Override
+  public JsonSerDe createSerde() throws SerializationError {
     try {
       Properties tableProps = MetaStoreUtils.getTableMetadata(tbl);
       JsonSerDe serde = new JsonSerDe();
       SerDeUtils.initializeSerDe(serde, conf, tableProps, null);
+      this.serde = serde;
       return serde;
     } catch (SerDeException e) {
       throw new SerializationError("Error initializing serde " + JsonSerDe.class.getName(), e);
@@ -158,5 +72,4 @@ public class StrictJsonWriter extends AbstractRecordWriter {
       throw new SerializationError("Unable to convert byte[] record into Object", e);
     }
   }
-
 }

@@ -20,15 +20,15 @@ package org.apache.hive.streaming;
 
 public class ConnectionError extends StreamingException {
 
-  public ConnectionError(String msg) {
+  ConnectionError(String msg) {
     super(msg);
   }
 
-  public ConnectionError(String msg, Exception innerEx) {
+  ConnectionError(String msg, Exception innerEx) {
     super(msg, innerEx);
   }
 
-  public ConnectionError(HiveEndPoint endPoint, Exception innerEx) {
+  ConnectionError(StreamingConnection endPoint, Exception innerEx) {
     super("Error connecting to " + endPoint +
         (innerEx == null ? "" : ": " + innerEx.getMessage()), innerEx);
   }

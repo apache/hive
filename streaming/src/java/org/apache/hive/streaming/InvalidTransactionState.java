@@ -18,8 +18,8 @@
 
 package org.apache.hive.streaming;
 
-public class ImpersonationFailed extends StreamingException {
-  public ImpersonationFailed(String username, Exception e) {
-    super("Failed to impersonate user " + username, e);
+public class InvalidTransactionState extends TransactionError {
+  InvalidTransactionState(String msg) {
+    super(msg);
   }
 }

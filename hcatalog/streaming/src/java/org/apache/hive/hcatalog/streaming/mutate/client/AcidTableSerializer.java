@@ -37,7 +37,9 @@ import org.slf4j.LoggerFactory;
 /**
  * Utility to serialize/deserialize {@link AcidTable AcidTables} into strings so that they can be easily transported as
  * {@link Configuration} properties.
+ * @deprecated as of Hive 3.0.0
  */
+@Deprecated
 public class AcidTableSerializer {
 
   private static final Logger LOG = LoggerFactory.getLogger(AcidTableSerializer.class);

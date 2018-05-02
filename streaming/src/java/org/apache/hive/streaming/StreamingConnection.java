@@ -18,40 +18,47 @@
 
 package org.apache.hive.streaming;
 
-import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.hive.conf.HiveConf;
 
-/**
- * Represents a connection to a HiveEndPoint. Used to acquire transaction batches.
- * Note: the expectation is that there is at most 1 TransactionBatch outstanding for any given
- * StreamingConnection.  Violating this may result in "out of sequence response".
- */
-public interface StreamingConnection {
+public interface StreamingConnection extends ConnectionInfo, PartitionHandler {
+  /**
+   * Returns hive configuration object used during connection creation.
+   *
+   * @return - hive conf
+   */
+  HiveConf getHiveConf();
 
   /**
-   * Acquires a new batch of transactions from Hive.
-
-   * @param numTransactionsHint is a hint from client indicating how many transactions client needs.
-   * @param writer  Used to write record. The same writer instance can
-   *                      be shared with another TransactionBatch (to the same endpoint)
-   *                      only after the first TransactionBatch has been closed.
-   *                      Writer will be closed when the TransactionBatch is closed.
-   * @return
-   * @throws ConnectionError
-   * @throws InvalidPartition
-   * @throws StreamingException
-   * @return a batch of transactions
+   * Begin a transaction for writing.
+   *
+   * @throws StreamingException - if there are errors when beginning transaction
    */
-  public TransactionBatch fetchTransactionBatch(int numTransactionsHint,
-                                                RecordWriter writer)
-          throws ConnectionError, StreamingException, InterruptedException;
+  void beginTransaction() throws StreamingException;
 
   /**
-   * Close connection
+   * Write record using RecordWriter.
+   *
+   * @param record - the data to be written
+   * @throws StreamingException - if there are errors when writing
    */
-  public void close();
+  void write(byte[] record) throws StreamingException;
 
   /**
-   * @return UserGroupInformation associated with this connection or {@code null} if there is none
+   * Commit a transaction to make the writes visible for readers.
+   *
+   * @throws StreamingException - if there are errors when committing the open transaction
    */
-  UserGroupInformation getUserGroupInformation();
+  void commitTransaction() throws StreamingException;
+
+  /**
+   * Manually abort the opened transaction.
+   *
+   * @throws StreamingException - if there are errors when aborting the transaction
+   */
+  void abortTransaction() throws StreamingException;
+
+  /**
+   * Closes streaming connection.
+   */
+  void close();
 }

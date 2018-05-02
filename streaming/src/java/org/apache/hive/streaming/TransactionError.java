@@ -19,11 +19,11 @@
 package org.apache.hive.streaming;
 
 public class TransactionError extends StreamingException {
-  public TransactionError(String msg, Exception e) {
+  TransactionError(String msg, Exception e) {
     super(msg + (e == null ? "" : ": " + e.getMessage()), e);
   }
 
-  public TransactionError(String msg) {
+  TransactionError(String msg) {
     super(msg);
   }
 }
