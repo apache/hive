@@ -71,6 +71,7 @@ STAGE PLANS:
             properties:
               bucket_count 2
               bucket_field_name a
+              bucketing_version 2
               column.name.delimiter ,
               columns a,b
               columns.comments 
@@ -92,6 +93,7 @@ STAGE PLANS:
               properties:
                 bucket_count 2
                 bucket_field_name a
+                bucketing_version 2
                 column.name.delimiter ,
                 columns a,b
                 columns.comments 

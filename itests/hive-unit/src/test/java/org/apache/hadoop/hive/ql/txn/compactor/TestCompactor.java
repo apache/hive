@@ -1107,7 +1107,7 @@ public class TestCompactor {
       }
       String name = stat[0].getPath().getName();
       Assert.assertEquals(name, "base_0000004");
-      checkExpectedTxnsPresent(stat[0].getPath(), null, columnNamesProperty, columnTypesProperty, 0, 1L, 4L, 2);
+      checkExpectedTxnsPresent(stat[0].getPath(), null, columnNamesProperty, columnTypesProperty, 1, 1L, 4L, 2);
     } finally {
       connection.close();
     }

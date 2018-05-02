@@ -90,6 +90,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"address\":\"true\",\"first_name\":\"true\",\"id\":\"true\",\"last_name\":\"true\",\"salary\":\"true\",\"start_date\":\"true\",\"state\":\"true\"}}
+	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	100                 
 	rawDataSize         	700                 
@@ -137,6 +138,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"address\":\"true\",\"first_name\":\"true\",\"id\":\"true\",\"last_name\":\"true\",\"salary\":\"true\",\"start_date\":\"true\",\"state\":\"true\"}}
+	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	100                 
 	rawDataSize         	5952                

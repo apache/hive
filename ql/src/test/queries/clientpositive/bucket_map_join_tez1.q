@@ -227,7 +227,7 @@ from tab1 a join tab_part b on a.key = b.key;
 
 -- No map joins should be created.
 set hive.convert.join.bucket.mapjoin.tez = false;
-set hive.auto.convert.join.noconditionaltask.size=1500;
+set hive.auto.convert.join.noconditionaltask.size=15000;
 explain select a.key, b.key from tab_part a join tab_part c on a.key = c.key join tab_part b on a.value = b.value;
 set hive.convert.join.bucket.mapjoin.tez = true;
 explain select a.key, b.key from tab_part a join tab_part c on a.key = c.key join tab_part b on a.value = b.value;

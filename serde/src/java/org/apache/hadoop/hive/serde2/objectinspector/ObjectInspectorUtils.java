@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.serde2.objectinspector;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -28,9 +29,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.serde2.ByteStream;
+import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe;
 import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableTimestampLocalTZObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampLocalTZObjectInspector;
+import org.apache.hive.common.util.Murmur3;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -154,7 +158,7 @@ public final class ObjectInspectorUtils {
 
     @Override
     public int hashCode() {
-      return ObjectInspectorUtils.getBucketHashCode(objects, oi);
+      return ObjectInspectorUtils.getBucketHashCodeOld(objects, oi);
     }
   }
 
@@ -618,10 +622,22 @@ public final class ObjectInspectorUtils {
    * @param bucketFields  the bucketed fields of the row
    * @param bucketFieldInspectors  the ObjectInpsectors for each of the bucketed fields
    * @param totalBuckets the number of buckets in the table
-   * @return the bucket number
+   * @return the bucket number using Murmur hash
    */
   public static int getBucketNumber(Object[] bucketFields, ObjectInspector[] bucketFieldInspectors, int totalBuckets) {
     return getBucketNumber(getBucketHashCode(bucketFields, bucketFieldInspectors), totalBuckets);
+  }
+
+  /**
+   * Computes the bucket number to which the bucketFields belong to
+   * @param bucketFields  the bucketed fields of the row
+   * @param bucketFieldInspectors  the ObjectInpsectors for each of the bucketed fields
+   * @param totalBuckets the number of buckets in the table
+   * @return the bucket number
+   */
+  @Deprecated
+  public static int getBucketNumberOld(Object[] bucketFields, ObjectInspector[] bucketFieldInspectors, int totalBuckets) {
+    return getBucketNumber(getBucketHashCodeOld(bucketFields, bucketFieldInspectors), totalBuckets);
   }
 
   /**
@@ -636,13 +652,15 @@ public final class ObjectInspectorUtils {
     }
     return (hashCode & Integer.MAX_VALUE) % numberOfBuckets;
   }
+
   /**
    * Computes the hash code for the given bucketed fields
    * @param bucketFields
    * @param bucketFieldInspectors
    * @return
    */
-  public static int getBucketHashCode(Object[] bucketFields, ObjectInspector[] bucketFieldInspectors) {
+  @Deprecated
+  public static int getBucketHashCodeOld(Object[] bucketFields, ObjectInspector[] bucketFieldInspectors) {
     int hashCode = 0;
     for (int i = 0; i < bucketFields.length; i++) {
       int fieldHash = ObjectInspectorUtils.hashCode(bucketFields[i], bucketFieldInspectors[i]);
@@ -650,7 +668,6 @@ public final class ObjectInspectorUtils {
     }
     return hashCode;
   }
-
 
   public static int hashCode(Object o, ObjectInspector objIns) {
     if (o == null) {
@@ -766,6 +783,144 @@ public final class ObjectInspectorUtils {
 
     default:
       throw new RuntimeException("Unknown type: "+ objIns.getTypeName());
+    }
+  }
+
+  public static int getBucketHashCode(Object[] bucketFields, ObjectInspector[] bucketFieldInspectors) {
+    int hashCode = 0;
+    ByteBuffer b = ByteBuffer.allocate(8); // To be used with primitive types
+    for (int i = 0; i < bucketFields.length; i++) {
+      int fieldHash = ObjectInspectorUtils.hashCodeMurmur(
+          bucketFields[i], bucketFieldInspectors[i], b);
+      hashCode = 31 * hashCode + fieldHash;
+    }
+    return hashCode;
+  }
+
+  public static int hashCodeMurmur(Object o, ObjectInspector objIns, ByteBuffer byteBuffer) {
+    if (o == null) {
+      return 0;
+    }
+    // Reset the bytebuffer
+    byteBuffer.clear();
+    switch (objIns.getCategory()) {
+      case PRIMITIVE: {
+        PrimitiveObjectInspector poi = ((PrimitiveObjectInspector) objIns);
+        switch (poi.getPrimitiveCategory()) {
+          case VOID:
+            return 0;
+          case BOOLEAN:
+            return (((BooleanObjectInspector) poi).get(o) ? 1 : 0);
+          case BYTE:
+            return ((ByteObjectInspector) poi).get(o);
+          case SHORT: {
+            byteBuffer.putShort(((ShortObjectInspector) poi).get(o));
+            return Murmur3.hash32(byteBuffer.array(), 2);
+          }
+          case INT: {
+            byteBuffer.putInt(((IntObjectInspector) poi).get(o));
+            return Murmur3.hash32(byteBuffer.array(), 4);
+          }
+          case LONG: {
+            byteBuffer.putLong(((LongObjectInspector) poi).get(o));
+            return Murmur3.hash32(byteBuffer.array(), 8);
+          }
+          case FLOAT: {
+            byteBuffer.putFloat(Float.floatToIntBits(((FloatObjectInspector) poi).get(o)));
+            return Murmur3.hash32(byteBuffer.array(), 4);
+          }
+          case DOUBLE: {
+            // This hash function returns the same result as Double.hashCode()
+            // while DoubleWritable.hashCode returns a different result.
+            byteBuffer.putDouble(Double.doubleToLongBits(((DoubleObjectInspector) poi).get(o)));
+            return Murmur3.hash32(byteBuffer.array(), 8);
+          }
+          case STRING: {
+            // This hash function returns the same result as String.hashCode() when
+            // all characters are ASCII, while Text.hashCode() always returns a
+            // different result.
+            Text text = ((StringObjectInspector) poi).getPrimitiveWritableObject(o);
+            return Murmur3.hash32(text.getBytes(), text.getLength());
+          }
+          case CHAR: {
+            Text text = ((HiveCharObjectInspector) poi).getPrimitiveWritableObject(o).getStrippedValue();
+            return Murmur3.hash32(text.getBytes(), text.getLength());
+          }
+          case VARCHAR: {
+            Text text = ((HiveVarcharObjectInspector)poi).getPrimitiveWritableObject(o).getTextValue();
+            return Murmur3.hash32(text.getBytes(), text.getLength());
+          }
+          case BINARY:
+            return Murmur3.hash32(((BinaryObjectInspector) poi).getPrimitiveWritableObject(o).getBytes());
+
+          case DATE:
+            byteBuffer.putInt(((DateObjectInspector) poi).getPrimitiveWritableObject(o).getDays());
+            return Murmur3.hash32(byteBuffer.array(), 4);
+          case TIMESTAMP: {
+            TimestampWritable t = ((TimestampObjectInspector) poi)
+                    .getPrimitiveWritableObject(o);
+            return Murmur3.hash32(t.getBytes());
+          }
+          case TIMESTAMPLOCALTZ:
+            return Murmur3.hash32((((TimestampLocalTZObjectInspector) poi).getPrimitiveWritableObject(o)).getBytes());
+          case INTERVAL_YEAR_MONTH:
+            byteBuffer.putInt(((HiveIntervalYearMonthObjectInspector) poi)
+                    .getPrimitiveWritableObject(o).hashCode());
+            return Murmur3.hash32(byteBuffer.array(), 4);
+          case INTERVAL_DAY_TIME:
+            byteBuffer.putInt(((HiveIntervalDayTimeObjectInspector) poi)
+                    .getPrimitiveWritableObject(o).hashCode());
+            return Murmur3.hash32(byteBuffer.array(), 4);
+          case DECIMAL:
+            // Since getBucketHashCode uses this, HiveDecimal return the old (much slower) but
+            // compatible hash code.
+            return Murmur3.hash32(((HiveDecimalObjectInspector) poi).getPrimitiveWritableObject(o).getInternalStorage());
+
+          default: {
+            throw new RuntimeException("Unknown type: "
+                    + poi.getPrimitiveCategory());
+          }
+        }
+      }
+      case LIST: {
+        int r = 0;
+        ListObjectInspector listOI = (ListObjectInspector)objIns;
+        ObjectInspector elemOI = listOI.getListElementObjectInspector();
+        for (int ii = 0; ii < listOI.getListLength(o); ++ii) {
+          //r = 31 * r + hashCode(listOI.getListElement(o, ii), elemOI);
+          r = 31 * r + hashCodeMurmur(listOI.getListElement(o, ii), elemOI, byteBuffer);
+        }
+        return r;
+      }
+      case MAP: {
+        int r = 0;
+        MapObjectInspector mapOI = (MapObjectInspector)objIns;
+        ObjectInspector keyOI = mapOI.getMapKeyObjectInspector();
+        ObjectInspector valueOI = mapOI.getMapValueObjectInspector();
+        Map<?, ?> map = mapOI.getMap(o);
+        for (Map.Entry<?,?> entry : map.entrySet()) {
+          r += hashCodeMurmur(entry.getKey(), keyOI, byteBuffer) ^
+                  hashCode(entry.getValue(), valueOI);
+        }
+        return r;
+      }
+      case STRUCT:
+        int r = 0;
+        StructObjectInspector structOI = (StructObjectInspector)objIns;
+        List<? extends StructField> fields = structOI.getAllStructFieldRefs();
+        for (StructField field : fields) {
+          r = 31 * r + hashCodeMurmur(structOI.getStructFieldData(o, field),
+                  field.getFieldObjectInspector(), byteBuffer);
+        }
+        return r;
+
+      case UNION:
+        UnionObjectInspector uOI = (UnionObjectInspector)objIns;
+        byte tag = uOI.getTag(o);
+        return hashCodeMurmur(uOI.getField(o), uOI.getObjectInspectors().get(tag), byteBuffer);
+
+      default:
+        throw new RuntimeException("Unknown type: "+ objIns.getTypeName());
     }
   }
 

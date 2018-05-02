@@ -185,8 +185,3 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@masking_test
 #### A masked pattern was here ####
 2	2_lav
-0	0_lav
-0	0_lav
-8	8_lav
-4	4_lav
-0	0_lav

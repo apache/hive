@@ -67,6 +67,7 @@ Retention:          	0
 Table Type:         	MATERIALIZED_VIEW   	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
 	comment             	this is the first view
 	key                 	foo                 
 	numFiles            	1                   
@@ -93,6 +94,7 @@ PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: show tblproperties cmv_mat_view
 POSTHOOK: type: SHOW_TBLPROPERTIES
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true"}
+bucketing_version	2
 comment	this is the first view
 key	foo
 numFiles	1
@@ -154,6 +156,7 @@ Retention:          	0
 Table Type:         	MATERIALIZED_VIEW   	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
 	comment             	this is the second view
 	key                 	alice               
 	key2                	bob                 
@@ -234,6 +237,7 @@ Retention:          	0
 Table Type:         	MATERIALIZED_VIEW   	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
 	comment             	this is the third view
 	numFiles            	1                   
 	numRows             	5                   
@@ -276,8 +280,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cmv_mat_view3
 #### A masked pattern was here ####
 1
-2
 3
+2
 PREHOOK: query: drop materialized view cmv_mat_view3
 PREHOOK: type: DROP_MATERIALIZED_VIEW
 PREHOOK: Input: default@cmv_mat_view3
@@ -323,6 +327,7 @@ Retention:          	0
 Table Type:         	MATERIALIZED_VIEW   	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
 	comment             	this is the last view
 	numFiles            	1                   
 	numRows             	5                   

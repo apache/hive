@@ -368,14 +368,14 @@ public class TestTxnCommands2 {
      * Note: order of rows in a file ends up being the reverse of order in values clause (why?!)
      */
     String[][] expected = {
-        {"{\"writeid\":0,\"bucketid\":536870912,\"rowid\":0}\t0\t13",  "bucket_00000"},
-        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t0\t15", "bucket_00000"},
-        {"{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\t0\t17", "bucket_00000"},
-        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t0\t120", "bucket_00000"},
+        {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":4}\t0\t13",  "bucket_00001"},
+        {"{\"writeid\":1,\"bucketid\":536936448,\"rowid\":1}\t0\t15", "bucket_00001"},
+        {"{\"writeid\":3,\"bucketid\":536936448,\"rowid\":0}\t0\t17", "bucket_00001"},
+        {"{\"writeid\":2,\"bucketid\":536936448,\"rowid\":0}\t0\t120", "bucket_00001"},
         {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":1}\t1\t2",   "bucket_00001"},
         {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":3}\t1\t4",   "bucket_00001"},
         {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":2}\t1\t5",   "bucket_00001"},
-        {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":4}\t1\t6",   "bucket_00001"},
+        {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":6}\t1\t6",   "bucket_00001"},
         {"{\"writeid\":1,\"bucketid\":536936448,\"rowid\":0}\t1\t16", "bucket_00001"}
     };
     Assert.assertEquals("Unexpected row count before compaction", expected.length, rs.size());
@@ -469,7 +469,7 @@ public class TestTxnCommands2 {
         sawNewDelta = true;
         FileStatus[] buckets = fs.listStatus(status[i].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
         Assert.assertEquals(1, buckets.length); // only one bucket file
-        Assert.assertTrue(buckets[0].getPath().getName().matches("bucket_00001"));
+        Assert.assertTrue(buckets[0].getPath().getName().matches("bucket_00000"));
       } else {
         Assert.assertTrue(status[i].getPath().getName().matches("00000[01]_0"));
       }
@@ -495,14 +495,14 @@ public class TestTxnCommands2 {
       if (status[i].getPath().getName().matches("base_.*")) {
         sawNewBase = true;
         FileStatus[] buckets = fs.listStatus(status[i].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
-        Assert.assertEquals(1, buckets.length);
+        Assert.assertEquals(2, buckets.length);
         Assert.assertTrue(buckets[0].getPath().getName().matches("bucket_00001"));
       }
     }
     Assert.assertTrue(sawNewBase);
     rs = runStatementOnDriver("select a,b from " + Table.NONACIDORCTBL);
-    resultData = new int[][] {{1, 2}, {3, 4}};
-    Assert.assertEquals(stringifyValues(resultData), rs);
+    resultData = new int[][] {{3, 4}, {1, 2}};
+    Assert.assertEquals(stringifyValuesNoSort(resultData), rs);
     rs = runStatementOnDriver("select count(*) from " + Table.NONACIDORCTBL);
     resultCount = 2;
     Assert.assertEquals(resultCount, Integer.parseInt(rs.get(0)));
@@ -528,11 +528,11 @@ public class TestTxnCommands2 {
     Assert.assertEquals(1, status.length);
     Assert.assertTrue(status[0].getPath().getName().matches("base_.*"));
     FileStatus[] buckets = fs.listStatus(status[0].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
-    Assert.assertEquals(1, buckets.length);
+    Assert.assertEquals(2, buckets.length);
     Assert.assertTrue(buckets[0].getPath().getName().matches("bucket_00001"));
     rs = runStatementOnDriver("select a,b from " + Table.NONACIDORCTBL);
-    resultData = new int[][] {{1, 2}, {3, 4}};
-    Assert.assertEquals(stringifyValues(resultData), rs);
+    resultData = new int[][] {{3, 4}, {1, 2}};
+    Assert.assertEquals(stringifyValuesNoSort(resultData), rs);
     rs = runStatementOnDriver("select count(*) from " + Table.NONACIDORCTBL);
     resultCount = 2;
     Assert.assertEquals(resultCount, Integer.parseInt(rs.get(0)));
@@ -767,7 +767,7 @@ public class TestTxnCommands2 {
         } else if (numDelta == 2) {
           Assert.assertEquals("delta_0000002_0000002_0000", status[i].getPath().getName());
           Assert.assertEquals(1, buckets.length);
-          Assert.assertEquals("bucket_00001", buckets[0].getPath().getName());
+          Assert.assertEquals("bucket_00000", buckets[0].getPath().getName());
         }
       } else if (status[i].getPath().getName().matches("delete_delta_.*")) {
         numDeleteDelta++;
@@ -822,15 +822,15 @@ public class TestTxnCommands2 {
         } else if (numBase == 2) {
           // The new base dir now has two bucket files, since the delta dir has two bucket files
           Assert.assertEquals("base_0000002", status[i].getPath().getName());
-          Assert.assertEquals(1, buckets.length);
-          Assert.assertEquals("bucket_00001", buckets[0].getPath().getName());
+          Assert.assertEquals(2, buckets.length);
+          Assert.assertEquals("bucket_00000", buckets[0].getPath().getName());
         }
       }
     }
     Assert.assertEquals(2, numBase);
     rs = runStatementOnDriver("select a,b from " + Table.NONACIDORCTBL);
-    resultData = new int[][] {{1, 3}, {3, 4}};
-    Assert.assertEquals(stringifyValues(resultData), rs);
+    resultData = new int[][] {{3, 4}, {1, 3}};
+    Assert.assertEquals(stringifyValuesNoSort(resultData), rs);
     rs = runStatementOnDriver("select count(*) from " + Table.NONACIDORCTBL);
     resultCount = 2;
     Assert.assertEquals(resultCount, Integer.parseInt(rs.get(0)));
@@ -850,11 +850,11 @@ public class TestTxnCommands2 {
     Assert.assertEquals("base_0000002", status[0].getPath().getName());
     FileStatus[] buckets = fs.listStatus(status[0].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
     Arrays.sort(buckets);
-    Assert.assertEquals(1, buckets.length);
-    Assert.assertEquals("bucket_00001", buckets[0].getPath().getName());
+    Assert.assertEquals(2, buckets.length);
+    Assert.assertEquals("bucket_00000", buckets[0].getPath().getName());
     rs = runStatementOnDriver("select a,b from " + Table.NONACIDORCTBL);
-    resultData = new int[][] {{1, 3}, {3, 4}};
-    Assert.assertEquals(stringifyValues(resultData), rs);
+    resultData = new int[][] {{3, 4}, {1, 3}};
+    Assert.assertEquals(stringifyValuesNoSort(resultData), rs);
     rs = runStatementOnDriver("select count(*) from " + Table.NONACIDORCTBL);
     resultCount = 2;
     Assert.assertEquals(resultCount, Integer.parseInt(rs.get(0)));
@@ -2176,6 +2176,27 @@ public class TestTxnCommands2 {
     }
     return rs;
   }
+
+  /**
+   * takes raw data and turns it into a string as if from Driver.getResults()
+   * sorts rows in dictionary order
+   */
+  static List<String> stringifyValuesNoSort(int[][] rowsIn) {
+    assert rowsIn.length > 0;
+    int[][] rows = rowsIn.clone();
+    List<String> rs = new ArrayList<String>();
+    for(int[] row : rows) {
+      assert row.length > 0;
+      StringBuilder sb = new StringBuilder();
+      for(int value : row) {
+        sb.append(value).append("\t");
+      }
+      sb.setLength(sb.length() - 1);
+      rs.add(sb.toString());
+    }
+    return rs;
+  }
+
   static class RowComp implements Comparator<int[]> {
     @Override
     public int compare(int[] row1, int[] row2) {

@@ -126,8 +126,8 @@ POSTHOOK: query: select b from cmv_basetable where c > 20.0 group by a, b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cmv_basetable
 #### A masked pattern was here ####
-bonnie
 calvin
+bonnie
 PREHOOK: query: create materialized view cmv_mat_view_2 enable rewrite
 as select b, c from cmv_basetable where c > 10.0 group by a, b, c
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
@@ -216,8 +216,8 @@ POSTHOOK: query: select b from cmv_basetable where c > 20.0 group by a, b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cmv_basetable
 #### A masked pattern was here ####
-bonnie
 calvin
+bonnie
 PREHOOK: query: create materialized view cmv_mat_view_3 enable rewrite
 as select a, b, c from cmv_basetable where c > 10.0 group by a, b, c
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
@@ -308,8 +308,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cmv_basetable
 POSTHOOK: Input: default@cmv_mat_view_3
 #### A masked pattern was here ####
-bonnie
 calvin
+bonnie
 PREHOOK: query: create materialized view cmv_mat_view_4 enable rewrite
 as select a, b from cmv_basetable group by a, b
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
@@ -393,8 +393,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cmv_basetable
 POSTHOOK: Input: default@cmv_mat_view_4
 #### A masked pattern was here ####
-bob
 alfred
+bob
 bonnie
 charlie
 calvin
@@ -499,8 +499,8 @@ POSTHOOK: Input: default@cmv_basetable
 POSTHOOK: Input: default@cmv_basetable_2
 POSTHOOK: Input: default@cmv_mat_view_5
 #### A masked pattern was here ####
-3
 1
+3
 PREHOOK: query: explain
 select cmv_basetable.a
 from cmv_basetable join cmv_basetable_2 on (cmv_basetable.a = cmv_basetable_2.a)

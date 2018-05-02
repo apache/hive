@@ -49,6 +49,7 @@ STAGE PLANS:
                 key expressions: _col0 (type: string), _col1 (type: string)
                 sort order: ++
                 Statistics: Num rows: 1 Data size: 5600 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
@@ -87,6 +88,7 @@ PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src5
 PREHOOK: Output: database:default
 PREHOOK: Output: default@total_ordered
+java.lang.ClassCastException: org.apache.hadoop.hive.serde2.lazy.LazyStruct cannot be cast to org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch
 POSTHOOK: query: create table total_ordered as select * from src5 order by key, value
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src5
@@ -112,7 +114,8 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
-	numFiles            	4                   
+	bucketing_version   	2                   
+	numFiles            	1                   
 	numRows             	48                  
 	rawDataSize         	512                 
 	totalSize           	560                 
@@ -222,6 +225,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	48                  
 	rawDataSize         	512                 

@@ -116,6 +116,7 @@ OUTPUTFORMAT
 LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
+  'bucketing_version'='2', 
   'repl.last.id'='0', 
 #### A masked pattern was here ####
 PREHOOK: query: select * from repldst
@@ -190,6 +191,7 @@ OUTPUTFORMAT
 LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
+  'bucketing_version'='2', 
   'repl.last.id'='0', 
 #### A masked pattern was here ####
 PREHOOK: query: select * from repldst_md

@@ -44,6 +44,7 @@ STAGE PLANS:
                 Map-reduce partition columns: _col0 (type: int)
                 Statistics: Num rows: 234 Data size: 116240 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: int)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: int), VALUE._col1 (type: string), VALUE._col2 (type: int)
@@ -105,6 +106,7 @@ STAGE PLANS:
               Map-reduce partition columns: '2008-04-08' (type: string), _col1 (type: string)
               Statistics: Num rows: 234 Data size: 116240 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col2 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col3 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)

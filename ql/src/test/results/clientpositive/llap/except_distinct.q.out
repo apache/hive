@@ -199,8 +199,8 @@ POSTHOOK: Input: default@a
 POSTHOOK: Input: default@b
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 2	3
-2	20
 1	2
+2	20
 PREHOOK: query: explain select * from src except distinct select * from src
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from src except distinct select * from src

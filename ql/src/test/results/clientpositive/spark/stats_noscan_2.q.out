@@ -48,6 +48,7 @@ Table Type:         	EXTERNAL_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
 	numFiles            	1                   
 	totalSize           	11                  
 #### A masked pattern was here ####
@@ -88,6 +89,7 @@ Table Type:         	EXTERNAL_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	6                   
 	rawDataSize         	6                   

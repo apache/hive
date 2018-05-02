@@ -127,11 +127,11 @@ POSTHOOK: query: select *, regexp_extract(INPUT__FILE__NAME, '.*/(.*)', 1) from 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@foo
 #### A masked pattern was here ####
-4	000000_0
+2	000000_0
 9	000001_0
+4	000001_0
 1	000001_0
-2	000002_0
-3	000003_0
+3	000002_0
 PREHOOK: query: drop table foo
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@foo
