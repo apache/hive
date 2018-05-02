@@ -421,7 +421,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     listMapJoinOpsNoReducer = new ArrayList<AbstractMapJoinOperator<? extends MapJoinDesc>>();
     groupOpToInputTables = new HashMap<GroupByOperator, Set<String>>();
     prunedPartitions = new HashMap<String, PrunedPartitionList>();
-    tabNameToTabObject = new HashMap<String, Table>();
     unparseTranslator = new UnparseTranslator(conf);
     autogenColAliasPrfxLbl = HiveConf.getVar(conf,
         HiveConf.ConfVars.HIVE_AUTOGEN_COLUMNALIAS_PREFIX_LABEL);
@@ -14778,5 +14777,47 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     INSERT_OVERWRITE_REBUILD,
     AGGREGATE_REBUILD,
     NO_AGGREGATE_REBUILD
+  }
+
+  /**
+   * @return table name in db.table form with proper quoting/escaping to be used in a SQL statement
+   */
+  protected String getFullTableNameForSQL(ASTNode n) throws SemanticException {
+    switch (n.getType()) {
+      case HiveParser.TOK_TABNAME:
+        String[] tableName = getQualifiedTableName(n);
+        return getDotName(new String[] {
+            HiveUtils.unparseIdentifier(tableName[0], this.conf),
+            HiveUtils.unparseIdentifier(tableName[1], this.conf) });
+      case HiveParser.TOK_TABREF:
+        return getFullTableNameForSQL((ASTNode) n.getChild(0));
+      default:
+        throw raiseWrongType("TOK_TABNAME", n);
+    }
+  }
+
+  protected static IllegalArgumentException raiseWrongType(String expectedTokName, ASTNode n) {
+    return new IllegalArgumentException("Expected " + expectedTokName + "; got " + n.getType());
+  }
+
+  /**
+   * Append list of partition columns to Insert statement, i.e. the 1st set of partCol1,partCol2
+   * INSERT INTO T PARTITION(partCol1,partCol2...) SELECT col1, ... partCol1,partCol2...
+   */
+  protected void addPartitionColsToInsert(List<FieldSchema> partCols, StringBuilder rewrittenQueryStr) {
+    // If the table is partitioned we have to put the partition() clause in
+    if (partCols != null && partCols.size() > 0) {
+      rewrittenQueryStr.append(" partition (");
+      boolean first = true;
+      for (FieldSchema fschema : partCols) {
+        if (first)
+          first = false;
+        else
+          rewrittenQueryStr.append(", ");
+        //would be nice if there was a way to determine if quotes are needed
+        rewrittenQueryStr.append(HiveUtils.unparseIdentifier(fschema.getName(), this.conf));
+      }
+      rewrittenQueryStr.append(")");
+    }
   }
 }

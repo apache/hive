@@ -530,7 +530,7 @@ public class Table implements Serializable {
   }
 
   public boolean isPartitionKey(String colName) {
-    return getPartColByName(colName) == null ? false : true;
+    return getPartColByName(colName) != null;
   }
 
   // TODO merge this with getBucketCols function
@@ -1020,8 +1020,8 @@ public class Table implements Serializable {
   public static void validateColumns(List<FieldSchema> columns, List<FieldSchema> partCols)
       throws HiveException {
     Set<String> colNames = new HashSet<>();
-    for (FieldSchema partCol: columns) {
-      String colName = normalize(partCol.getName());
+    for (FieldSchema col: columns) {
+      String colName = normalize(col.getName());
       if (colNames.contains(colName)) {
         throw new HiveException("Duplicate column name " + colName
             + " in the table definition.");

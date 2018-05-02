@@ -352,6 +352,8 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
    * if loaded data is not bucketed properly.  This test is to capture that this is still the default.
    * If the default is changed, Load Data should probably do more validation to ensure data is
    * properly distributed into files and files are named correctly.
+   * With the availability of new feature to rewrite such "load data" commands into insert-as-select,
+   * the test should let the load data pass.
    */
   @Test
   public void testValidations() throws Exception {
@@ -364,7 +366,8 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
     //this creates an ORC data file with correct schema under table root
     runStatementOnDriver("insert into Tstage values(1,2),(3,4)");
     CommandProcessorResponse cpr = runStatementOnDriverNegative("load data local inpath '" + getWarehouseDir() + "' into table T");
-    Assert.assertTrue(cpr.getErrorMessage().contains("Load into bucketed tables are disabled"));
+    // This condition should not occur with the new support of rewriting load into IAS.
+    Assert.assertFalse(cpr.getErrorMessage().contains("Load into bucketed tables are disabled"));
   }
   private void checkExpected(List<String> rs, String[][] expected, String msg) {
     super.checkExpected(rs, expected, msg, LOG, true);

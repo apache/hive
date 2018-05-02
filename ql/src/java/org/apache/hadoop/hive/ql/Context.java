@@ -162,6 +162,9 @@ public class Context {
   private StatsSource statsSource;
   private int executionIndex;
 
+  // Load data rewrite
+  private Table tempTableForLoad;
+
   public void setOperation(Operation operation) {
     this.operation = operation;
   }
@@ -516,7 +519,6 @@ public class Context {
    * - If path is on HDFS, then create a staging directory inside the path
    *
    * @param path Path used to verify the Filesystem to use for temporary directory
-   * @param isFinalJob true if the required {@link Path} will be used for the final job (e.g. the final FSOP)
    *
    * @return A path to the new temporary directory
    */
@@ -1070,5 +1072,13 @@ public class Context {
 
   public void setConf(HiveConf conf) {
     this.conf = conf;
+  }
+
+  public Table getTempTableForLoad() {
+    return tempTableForLoad;
+  }
+
+  public void setTempTableForLoad(Table tempTableForLoad) {
+    this.tempTableForLoad = tempTableForLoad;
   }
 }
