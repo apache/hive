@@ -36,9 +36,13 @@ public class HiveWrapper {
   private final Tuple.Function<ReplicationSpec> functionForSpec;
 
   public HiveWrapper(Hive db, String dbName) {
+    this(db, dbName, 0);
+  }
+
+  public HiveWrapper(Hive db, String dbName, long lastReplId) {
     this.dbName = dbName;
     this.db = db;
-    this.functionForSpec = new BootStrapReplicationSpecFunction(db);
+    this.functionForSpec = new BootStrapReplicationSpecFunction(db, lastReplId);
   }
 
   public Tuple<org.apache.hadoop.hive.metastore.api.Function> function(final String name)

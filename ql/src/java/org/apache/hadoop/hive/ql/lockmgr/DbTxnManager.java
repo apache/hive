@@ -690,6 +690,16 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   }
 
   @Override
+  public void replTableWriteIdState(String validWriteIdList, String dbName, String tableName, List<String> partNames)
+          throws LockException {
+    try {
+      getMS().replTableWriteIdState(validWriteIdList, dbName, tableName, partNames);
+    } catch (TException e) {
+      throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
+    }
+  }
+
+  @Override
   public void heartbeat() throws LockException {
     List<HiveLock> locks;
     if(isTxnOpen()) {
