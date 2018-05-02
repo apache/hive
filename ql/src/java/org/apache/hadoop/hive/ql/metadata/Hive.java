@@ -2378,7 +2378,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     List<org.apache.hadoop.hive.metastore.api.Partition> in =
         new ArrayList<org.apache.hadoop.hive.metastore.api.Partition>(size);
     for (int i = 0; i < size; ++i) {
-      in.add(convertAddSpecToMetaPartition(tbl, addPartitionDesc.getPartition(i)));
+      in.add(convertAddSpecToMetaPartition(tbl, addPartitionDesc.getPartition(i), conf));
     }
     List<Partition> out = new ArrayList<Partition>();
     try {
@@ -2428,8 +2428,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
     return out;
   }
 
-  private org.apache.hadoop.hive.metastore.api.Partition convertAddSpecToMetaPartition(
-      Table tbl, AddPartitionDesc.OnePartitionDesc addSpec) throws HiveException {
+  public static org.apache.hadoop.hive.metastore.api.Partition convertAddSpecToMetaPartition(
+    Table tbl, AddPartitionDesc.OnePartitionDesc addSpec, final HiveConf conf) throws HiveException {
     Path location = addSpec.getLocation() != null
         ? new Path(tbl.getPath(), addSpec.getLocation()) : null;
     if (location != null) {

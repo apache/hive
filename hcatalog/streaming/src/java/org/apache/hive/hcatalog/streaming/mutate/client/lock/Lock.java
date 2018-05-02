@@ -43,7 +43,9 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Manages the state required to safely read/write from/to an ACID table.
+ * @deprecated as of Hive 3.0.0
  */
+@Deprecated
 public class Lock {
 
   private static final Logger LOG = LoggerFactory.getLogger(Lock.class);

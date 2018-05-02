@@ -19,25 +19,44 @@
 package org.apache.hive.streaming;
 
 
+import java.util.Set;
+
 public interface RecordWriter {
 
-  /** Writes using a hive RecordUpdater
+  /**
+   * Initialize record writer.
+   *
+   * @param connection - streaming connection
+   * @param minWriteId - min write id
+   * @param maxWriteID - max write id
+   * @throws StreamingException - thrown when initialization failed
+   */
+  void init(StreamingConnection connection, long minWriteId, long maxWriteID) throws StreamingException;
+
+  /**
+   * Writes using a hive RecordUpdater
    *
    * @param writeId the write ID of the table mapping to Txn in which the write occurs
-   * @param record the record to be written
+   * @param record  the record to be written
    */
   void write(long writeId, byte[] record) throws StreamingException;
 
-  /** Flush records from buffer. Invoked by TransactionBatch.commit() */
+  /**
+   * Flush records from buffer. Invoked by TransactionBatch.commitTransaction()
+   */
   void flush() throws StreamingException;
 
-  /** Clear bufferred writes. Invoked by TransactionBatch.abort() */
-  void clear() throws StreamingException;
+  /**
+   * Close the RecordUpdater. Invoked by TransactionBatch.close()
+   *
+   * @throws StreamingException - thrown when record writer cannot be closed.
+   */
+  void close() throws StreamingException;
 
-  /** Acquire a new RecordUpdater. Invoked when
-   * StreamingConnection.fetchTransactionBatch() is called */
-  void newBatch(Long minWriteId, Long maxWriteID) throws StreamingException;
-
-  /** Close the RecordUpdater. Invoked by TransactionBatch.close() */
-  void closeBatch() throws StreamingException;
+  /**
+   * Get the set of partitions that were added by the record writer.
+   *
+   * @return - set of partitions
+   */
+  Set<String> getPartitions();
 }

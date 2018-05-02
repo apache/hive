@@ -665,6 +665,16 @@ public class HiveConf extends Configuration {
     @Deprecated
     METASTORE_CAPABILITY_CHECK("hive.metastore.client.capability.check", true,
         "Whether to check client capabilities for potentially breaking API usage."),
+    METASTORE_CLIENT_CACHE_ENABLED("hive.metastore.client.cache.enabled", false,
+      "Whether to enable metastore client cache"),
+    METASTORE_CLIENT_CACHE_EXPIRY_TIME("hive.metastore.client.cache.expiry.time", "120s",
+      new TimeValidator(TimeUnit.SECONDS), "Expiry time for metastore client cache"),
+    METASTORE_CLIENT_CACHE_INITIAL_CAPACITY("hive.metastore.client.cache.initial.capacity", 50,
+      "Initial capacity for metastore client cache"),
+    METASTORE_CLIENT_CACHE_MAX_CAPACITY("hive.metastore.client.cache.max.capacity", 50,
+      "Max capacity for metastore client cache"),
+    METASTORE_CLIENT_CACHE_STATS_ENABLED("hive.metastore.client.cache.stats.enabled", false,
+      "Whether to enable metastore client cache stats"),
     METASTORE_FASTPATH("hive.metastore.fastpath", false,
         "Used to avoid all of the proxies and object copies in the metastore.  Note, if this is " +
             "set, you MUST use a local metastore (hive.metastore.uris must be empty) otherwise " +

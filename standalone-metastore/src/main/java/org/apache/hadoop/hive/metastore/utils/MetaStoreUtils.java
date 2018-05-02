@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.metastore.utils;
 
 import org.apache.hadoop.hive.metastore.api.WMPoolSchedulingPolicy;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -90,6 +91,7 @@ import java.util.Properties;
 import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.StringJoiner;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
@@ -1264,7 +1266,7 @@ public class MetaStoreUtils {
 
     if (sd.getBucketCols() != null && sd.getBucketCols().size() > 0) {
       schema.setProperty(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.BUCKET_FIELD_NAME,
-          sd.getBucketCols().get(0));
+        Joiner.on(",").join(sd.getBucketCols()));
     }
 
     // SerdeInfo
@@ -1371,8 +1373,8 @@ public class MetaStoreUtils {
             .toString(sd.getNumBuckets()));
     if (sd.getBucketCols() != null && sd.getBucketCols().size() > 0) {
       schema.setProperty(
-          org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.BUCKET_FIELD_NAME, sd
-              .getBucketCols().get(0));
+          org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.BUCKET_FIELD_NAME,
+        Joiner.on(",").join(sd.getBucketCols()));
     }
     if (sd.getSerdeInfo() != null) {
       for (Map.Entry<String,String> param : sd.getSerdeInfo().getParameters().entrySet()) {

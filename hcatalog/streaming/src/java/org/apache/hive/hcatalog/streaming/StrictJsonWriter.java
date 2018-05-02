@@ -37,7 +37,9 @@ import java.util.Properties;
 /**
  * Streaming Writer handles utf8 encoded Json (Strict syntax).
  * Uses org.apache.hive.hcatalog.data.JsonSerDe to process Json input
+ * @deprecated as of Hive 3.0.0, replaced by {@link org.apache.hive.streaming.StrictJsonWriter}
  */
+@Deprecated
 public class StrictJsonWriter extends AbstractRecordWriter {
   private JsonSerDe serde;
 

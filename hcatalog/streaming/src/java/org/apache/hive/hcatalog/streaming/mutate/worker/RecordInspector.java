@@ -19,7 +19,10 @@ package org.apache.hive.hcatalog.streaming.mutate.worker;
 
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 
-/** Provide a means to extract {@link RecordIdentifier} from record objects. */
+/** Provide a means to extract {@link RecordIdentifier} from record objects.
+ * @deprecated as of Hive 3.0.0
+ */
+@Deprecated
 public interface RecordInspector {
 
   /** Get the {@link RecordIdentifier} from the record - to be used for updates and deletes only. */

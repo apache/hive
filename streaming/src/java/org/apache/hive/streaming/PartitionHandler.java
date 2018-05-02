@@ -18,9 +18,16 @@
 
 package org.apache.hive.streaming;
 
-public class InvalidColumn extends StreamingException {
+import java.util.List;
 
-  public InvalidColumn(String msg) {
-    super(msg);
-  }
+public interface PartitionHandler {
+
+  /**
+   * Creates a partition if it does not exist.
+   *
+   * @param partitionValues - partition values
+   * @return partition location
+   * @throws StreamingException - any metastore related exceptions
+   */
+  PartitionInfo createPartitionIfNotExists(List<String> partitionValues) throws StreamingException;
 }
