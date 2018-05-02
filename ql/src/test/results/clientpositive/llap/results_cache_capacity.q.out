@@ -187,12 +187,12 @@ POSTHOOK: query: select key, count(*) from src where key < 10 group by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-8	1
-9	1
-4	1
-2	1
-0	3
 5	3
+9	1
+0	3
+2	1
+4	1
+8	1
 PREHOOK: query: explain
 select key, count(*) from src where key < 10 group by key
 PREHOOK: type: QUERY

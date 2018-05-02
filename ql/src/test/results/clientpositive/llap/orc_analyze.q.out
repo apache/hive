@@ -98,6 +98,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	100                 
 	rawDataSize         	52600               
@@ -145,6 +146,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	100                 
 	rawDataSize         	52600               
@@ -231,6 +233,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"address\":\"true\",\"first_name\":\"true\",\"id\":\"true\",\"last_name\":\"true\",\"salary\":\"true\",\"start_date\":\"true\",\"state\":\"true\"}}
+	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	100                 
 	rawDataSize         	52600               
@@ -727,8 +730,8 @@ Partition Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	4                   
 	numRows             	50                  
-	rawDataSize         	21975               
-	totalSize           	5260                
+	rawDataSize         	21955               
+	totalSize           	5322                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -769,7 +772,7 @@ Partition Parameters:
 	numFiles            	4                   
 	numRows             	50                  
 	rawDataSize         	22043               
-	totalSize           	5331                
+	totalSize           	5314                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -821,8 +824,8 @@ Partition Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	4                   
 	numRows             	50                  
-	rawDataSize         	21975               
-	totalSize           	5260                
+	rawDataSize         	21955               
+	totalSize           	5322                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -863,7 +866,7 @@ Partition Parameters:
 	numFiles            	4                   
 	numRows             	50                  
 	rawDataSize         	22043               
-	totalSize           	5331                
+	totalSize           	5314                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -964,8 +967,8 @@ Partition Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"address\":\"true\",\"first_name\":\"true\",\"id\":\"true\",\"last_name\":\"true\",\"salary\":\"true\",\"start_date\":\"true\"}}
 	numFiles            	4                   
 	numRows             	50                  
-	rawDataSize         	21975               
-	totalSize           	5260                
+	rawDataSize         	21955               
+	totalSize           	5322                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1006,7 +1009,7 @@ Partition Parameters:
 	numFiles            	4                   
 	numRows             	50                  
 	rawDataSize         	22043               
-	totalSize           	5331                
+	totalSize           	5314                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

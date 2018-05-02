@@ -34,7 +34,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcbucket_pruned
                   filterExpr: (key = 1) (type: boolean)
-                  buckets included: [1,] of 16
+                  buckets included: [13,] of 16
                   Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
                   GatherStats: false
                   Filter Operator
@@ -96,7 +96,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcbucket_pruned
                   filterExpr: (key = 16) (type: boolean)
-                  buckets included: [0,] of 16
+                  buckets included: [3,] of 16
                   Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
                   GatherStats: false
                   Filter Operator
@@ -158,7 +158,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcbucket_pruned
                   filterExpr: (key = 17) (type: boolean)
-                  buckets included: [1,] of 16
+                  buckets included: [12,] of 16
                   Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
                   GatherStats: false
                   Filter Operator
@@ -220,7 +220,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcbucket_pruned
                   filterExpr: (key = 17) (type: boolean)
-                  buckets included: [1,] of 16
+                  buckets included: [12,] of 16
                   Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
                   GatherStats: false
                   Filter Operator
@@ -282,7 +282,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcbucket_pruned
                   filterExpr: (key = 11) (type: boolean)
-                  buckets included: [11,] of 16
+                  buckets included: [5,] of 16
                   Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
                   GatherStats: false
                   Filter Operator
@@ -344,7 +344,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcbucket_pruned
                   filterExpr: ((key = 1) and (ds = '2008-04-08')) (type: boolean)
-                  buckets included: [1,] of 16
+                  buckets included: [13,] of 16
                   Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
                   GatherStats: false
                   Filter Operator
@@ -406,7 +406,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcbucket_pruned
                   filterExpr: ((key = 1) and (ds = '2008-04-08') and (value = 'One')) (type: boolean)
-                  buckets included: [1,] of 16
+                  buckets included: [13,] of 16
                   Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
                   GatherStats: false
                   Filter Operator
@@ -468,7 +468,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcbucket_pruned
                   filterExpr: ((value = 'One') and (key = 1) and (ds = '2008-04-08')) (type: boolean)
-                  buckets included: [1,] of 16
+                  buckets included: [13,] of 16
                   Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
                   GatherStats: false
                   Filter Operator
@@ -530,7 +530,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcbucket_pruned
                   filterExpr: (key) IN (2, 3) (type: boolean)
-                  buckets included: [2,3,] of 16
+                  buckets included: [4,6,] of 16
                   Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
                   GatherStats: false
                   Filter Operator
@@ -592,7 +592,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcbucket_pruned
                   filterExpr: ((key) IN (2, 3) and (ds = '2008-04-08')) (type: boolean)
-                  buckets included: [2,3,] of 16
+                  buckets included: [4,6,] of 16
                   Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
                   GatherStats: false
                   Filter Operator
@@ -654,7 +654,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcbucket_pruned
                   filterExpr: ((key) IN (2, 3) and (ds = '2008-04-08') and (value = 'One')) (type: boolean)
-                  buckets included: [2,3,] of 16
+                  buckets included: [4,6,] of 16
                   Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
                   GatherStats: false
                   Filter Operator
@@ -716,7 +716,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcbucket_pruned
                   filterExpr: ((key) IN (2, 3) and (value = 'One') and (ds = '2008-04-08')) (type: boolean)
-                  buckets included: [2,3,] of 16
+                  buckets included: [4,6,] of 16
                   Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
                   GatherStats: false
                   Filter Operator
@@ -900,7 +900,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcbucket_pruned
                   filterExpr: (key = -15) (type: boolean)
-                  buckets included: [1,15,] of 16
+                  buckets included: [6,] of 16
                   Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
                   GatherStats: false
                   Filter Operator
@@ -962,6 +962,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcbucket_pruned
                   filterExpr: (key) IN (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17) (type: boolean)
+                  buckets included: [1,3,4,5,6,8,11,12,13,15,] of 16
                   Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
                   GatherStats: false
                   Filter Operator
@@ -1023,6 +1024,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcbucket_pruned
                   filterExpr: ((key) IN (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17) and (ds = '2008-04-08')) (type: boolean)
+                  buckets included: [1,3,4,5,6,8,11,12,13,15,] of 16
                   Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
                   GatherStats: false
                   Filter Operator
@@ -1084,6 +1086,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcbucket_pruned
                   filterExpr: ((key) IN (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17) and (ds = '2008-04-08') and (value = 'One')) (type: boolean)
+                  buckets included: [1,3,4,5,6,8,11,12,13,15,] of 16
                   Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
                   GatherStats: false
                   Filter Operator
@@ -1145,6 +1148,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcbucket_pruned
                   filterExpr: ((key) IN (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17) and (value = 'One') and (ds = '2008-04-08')) (type: boolean)
+                  buckets included: [1,3,4,5,6,8,11,12,13,15,] of 16
                   Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: PARTIAL
                   GatherStats: false
                   Filter Operator

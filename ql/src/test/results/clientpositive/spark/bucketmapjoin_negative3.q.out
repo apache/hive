@@ -190,6 +190,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 3
                     bucket_field_name key
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -212,6 +213,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 3
                       bucket_field_name key
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -303,6 +305,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 3
                     bucket_field_name key
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -325,6 +328,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 3
                       bucket_field_name key
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -399,6 +403,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 3
                     bucket_field_name value
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -421,6 +426,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 3
                       bucket_field_name value
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -512,6 +518,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 3
                     bucket_field_name value
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -534,6 +541,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 3
                       bucket_field_name value
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -603,6 +611,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 3
                     bucket_field_name key
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -625,6 +634,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 3
                       bucket_field_name key
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -710,6 +720,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 3
                     bucket_field_name key
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -732,6 +743,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 3
                       bucket_field_name key
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -801,6 +813,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 3
                     bucket_field_name value
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -823,6 +836,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 3
                       bucket_field_name value
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -908,6 +922,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 3
                     bucket_field_name key
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -930,6 +945,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 3
                       bucket_field_name key
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -999,6 +1015,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 3
                     bucket_field_name key
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -1021,6 +1038,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 3
                       bucket_field_name key
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -1106,6 +1124,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 3
                     bucket_field_name key
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -1128,6 +1147,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 3
                       bucket_field_name key
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -1197,6 +1217,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 3
                     bucket_field_name value
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -1219,6 +1240,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 3
                       bucket_field_name value
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -1304,6 +1326,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 3
                     bucket_field_name key
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -1326,6 +1349,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 3
                       bucket_field_name key
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -1395,6 +1419,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 3
                     bucket_field_name key
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -1417,6 +1442,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 3
                       bucket_field_name key
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -1502,6 +1528,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 3
                     bucket_field_name value
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -1524,6 +1551,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 3
                       bucket_field_name value
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -1593,6 +1621,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 3
                     bucket_field_name value
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -1615,6 +1644,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 3
                       bucket_field_name value
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -1700,6 +1730,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 3
                     bucket_field_name value
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -1722,6 +1753,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 3
                       bucket_field_name value
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -1791,6 +1823,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 3
                     bucket_field_name value
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -1813,6 +1846,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 3
                       bucket_field_name value
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -1898,6 +1932,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 3
                     bucket_field_name key
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -1920,6 +1955,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 3
                       bucket_field_name key
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 

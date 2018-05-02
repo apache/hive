@@ -168,9 +168,9 @@ GROUP BY str2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@str_str_orc
 #### A masked pattern was here ####
-y	0.0
-NULL	0.0
 X	0.02
+NULL	0.0
+y	0.0
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT COALESCE(str1, 0) as result
 from str_str_orc
@@ -393,9 +393,9 @@ GROUP BY str2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@str_str_orc
 #### A masked pattern was here ####
-y	0.0
-NULL	0.0
 X	0.02
+NULL	0.0
+y	0.0
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT COALESCE(str1, 0) as result
 from str_str_orc

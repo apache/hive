@@ -173,15 +173,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table3
 POSTHOOK: Input: default@test_table3@ds=1
 #### A masked pattern was here ####
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
 PREHOOK: query: select * from test_table3 tablesample (bucket 2 out of 2) s where ds = '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_table3
@@ -192,6 +183,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table3
 POSTHOOK: Input: default@test_table3@ds=1
 #### A masked pattern was here ####
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
 5	val_5val_5	1
 5	val_5val_5	1
 5	val_5val_5	1
@@ -330,15 +330,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table3
 POSTHOOK: Input: default@test_table3@ds=1
 #### A masked pattern was here ####
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
 PREHOOK: query: select * from test_table3 tablesample (bucket 2 out of 2) s where ds = '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_table3
@@ -349,6 +340,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table3
 POSTHOOK: Input: default@test_table3@ds=1
 #### A masked pattern was here ####
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
 5	val_5val_5	1
 5	val_5val_5	1
 5	val_5val_5	1
@@ -491,15 +491,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table3
 POSTHOOK: Input: default@test_table3@ds=1
 #### A masked pattern was here ####
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
-0	val_0val_0	1
 PREHOOK: query: select * from test_table3 tablesample (bucket 2 out of 2) s where ds = '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_table3
@@ -510,6 +501,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table3
 POSTHOOK: Input: default@test_table3@ds=1
 #### A masked pattern was here ####
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
+0	val_0val_0	1
 5	val_5val_5	1
 5	val_5val_5	1
 5	val_5val_5	1
