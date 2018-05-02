@@ -55,3 +55,5 @@ TABLE_NO_AUTO_COMPACT = %q"no_auto_compaction"
 
 TABLE_TRANSACTIONAL_PROPERTIES = %q"transactional_properties"
 
+TABLE_BUCKETING_VERSION = %q"bucketing_version"
+

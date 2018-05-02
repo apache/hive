@@ -59,6 +59,8 @@ hive_metastoreConstants::hive_metastoreConstants() {
 
   TABLE_TRANSACTIONAL_PROPERTIES = "transactional_properties";
 
+  TABLE_BUCKETING_VERSION = "bucketing_version";
+
 }
 
 }}} // namespace
