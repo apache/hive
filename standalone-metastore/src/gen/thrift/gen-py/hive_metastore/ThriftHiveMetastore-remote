@@ -169,6 +169,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  void abort_txn(AbortTxnRequest rqst)')
   print('  void abort_txns(AbortTxnsRequest rqst)')
   print('  void commit_txn(CommitTxnRequest rqst)')
+  print('  void repl_tbl_writeid_state(ReplTblWriteIdStateRequest rqst)')
   print('  GetValidWriteIdsResponse get_valid_write_ids(GetValidWriteIdsRequest rqst)')
   print('  AllocateTableWriteIdsResponse allocate_table_write_ids(AllocateTableWriteIdsRequest rqst)')
   print('  LockResponse lock(LockRequest rqst)')
@@ -1166,6 +1167,12 @@ elif cmd == 'commit_txn':
     print('commit_txn requires 1 args')
     sys.exit(1)
   pp.pprint(client.commit_txn(eval(args[0]),))
+
+elif cmd == 'repl_tbl_writeid_state':
+  if len(args) != 1:
+    print('repl_tbl_writeid_state requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.repl_tbl_writeid_state(eval(args[0]),))
 
 elif cmd == 'get_valid_write_ids':
   if len(args) != 1:

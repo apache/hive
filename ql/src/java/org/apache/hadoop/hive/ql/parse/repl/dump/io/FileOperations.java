@@ -22,6 +22,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.LoadSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
@@ -39,19 +40,23 @@ import java.util.List;
 
 public class FileOperations {
   private static Logger logger = LoggerFactory.getLogger(FileOperations.class);
-  private final Path dataFileListPath;
+  private final List<Path> dataPathList;
   private final Path exportRootDataDir;
   private final String distCpDoAsUser;
   private HiveConf hiveConf;
   private final FileSystem dataFileSystem, exportFileSystem;
 
-  public FileOperations(Path dataFileListPath, Path exportRootDataDir,
+  public FileOperations(List<Path> dataPathList, Path exportRootDataDir,
                         String distCpDoAsUser, HiveConf hiveConf) throws IOException {
-    this.dataFileListPath = dataFileListPath;
+    this.dataPathList = dataPathList;
     this.exportRootDataDir = exportRootDataDir;
     this.distCpDoAsUser = distCpDoAsUser;
     this.hiveConf = hiveConf;
-    dataFileSystem = dataFileListPath.getFileSystem(hiveConf);
+    if ((dataPathList != null) && !dataPathList.isEmpty()) {
+      dataFileSystem = dataPathList.get(0).getFileSystem(hiveConf);
+    } else {
+      dataFileSystem = null;
+    }
     exportFileSystem = exportRootDataDir.getFileSystem(hiveConf);
   }
 
@@ -67,13 +72,15 @@ public class FileOperations {
    * This writes the actual data in the exportRootDataDir from the source.
    */
   private void copyFiles() throws IOException, LoginException {
-    FileStatus[] fileStatuses =
-        LoadSemanticAnalyzer.matchFilesOrDir(dataFileSystem, dataFileListPath);
-    List<Path> srcPaths = new ArrayList<>();
-    for (FileStatus fileStatus : fileStatuses) {
-      srcPaths.add(fileStatus.getPath());
+    for (Path dataPath : dataPathList) {
+      FileStatus[] fileStatuses =
+              LoadSemanticAnalyzer.matchFilesOrDir(dataFileSystem, dataPath);
+      List<Path> srcPaths = new ArrayList<>();
+      for (FileStatus fileStatus : fileStatuses) {
+        srcPaths.add(fileStatus.getPath());
+      }
+      new CopyUtils(distCpDoAsUser, hiveConf).doCopy(exportRootDataDir, srcPaths);
     }
-    new CopyUtils(distCpDoAsUser, hiveConf).doCopy(exportRootDataDir, srcPaths);
   }
 
   /**
@@ -83,13 +90,31 @@ public class FileOperations {
    */
   private void exportFilesAsList() throws SemanticException, IOException {
     try (BufferedWriter writer = writer()) {
-      FileStatus[] fileStatuses =
-          LoadSemanticAnalyzer.matchFilesOrDir(dataFileSystem, dataFileListPath);
-      for (FileStatus fileStatus : fileStatuses) {
-        writer.write(encodedUri(fileStatus));
+      for (Path dataPath : dataPathList) {
+        writeFilesList(listFilesInDir(dataPath), writer, AcidUtils.getAcidSubDir(dataPath));
+      }
+    }
+  }
+
+  private void writeFilesList(FileStatus[] fileStatuses, BufferedWriter writer, String encodedSubDirs)
+          throws IOException {
+    for (FileStatus fileStatus : fileStatuses) {
+      if (fileStatus.isDirectory()) {
+        // Write files inside the sub-directory.
+        Path subDir = fileStatus.getPath();
+        writeFilesList(listFilesInDir(subDir), writer, encodedSubDir(encodedSubDirs, subDir));
+      } else {
+        writer.write(encodedUri(fileStatus, encodedSubDirs));
         writer.newLine();
       }
     }
+  }
+
+  private FileStatus[] listFilesInDir(Path path) throws IOException {
+    return dataFileSystem.listStatus(path, p -> {
+      String name = p.getName();
+      return !name.startsWith("_") && !name.startsWith(".");
+    });
   }
 
   private BufferedWriter writer() throws IOException {
@@ -97,17 +122,25 @@ public class FileOperations {
     if (exportFileSystem.exists(exportToFile)) {
       throw new IllegalArgumentException(
           exportToFile.toString() + " already exists and cant export data from path(dir) "
-              + dataFileListPath);
+              + dataPathList);
     }
-    logger.debug("exporting data files in dir : " + dataFileListPath + " to " + exportToFile);
+    logger.debug("exporting data files in dir : " + dataPathList + " to " + exportToFile);
     return new BufferedWriter(
         new OutputStreamWriter(exportFileSystem.create(exportToFile))
     );
   }
 
-  private String encodedUri(FileStatus fileStatus) throws IOException {
+  private String encodedSubDir(String encodedParentDirs, Path subDir) {
+    if (null == encodedParentDirs) {
+      return subDir.getName();
+    } else {
+      return encodedParentDirs + Path.SEPARATOR + subDir.getName();
+    }
+  }
+
+  private String encodedUri(FileStatus fileStatus, String encodedSubDir) throws IOException {
     Path currentDataFilePath = fileStatus.getPath();
     String checkSum = ReplChangeManager.checksumFor(currentDataFilePath, dataFileSystem);
-    return ReplChangeManager.encodeFileUri(currentDataFilePath.toString(), checkSum);
+    return ReplChangeManager.encodeFileUri(currentDataFilePath.toString(), checkSum, encodedSubDir);
   }
 }

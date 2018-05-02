@@ -348,4 +348,15 @@ public class ImportTableDesc {
     }
     return TableType.MANAGED_TABLE;
   }
+
+  public Table toTable(HiveConf conf) throws Exception {
+    switch (getDescType()) {
+      case TABLE:
+        return createTblDesc.toTable(conf);
+      case VIEW:
+        return createViewDesc.toTable(conf);
+      default:
+        return null;
+    }
+  }
 }

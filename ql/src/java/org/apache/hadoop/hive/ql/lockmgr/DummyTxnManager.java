@@ -235,6 +235,12 @@ class DummyTxnManager extends HiveTxnManagerImpl {
   }
 
   @Override
+  public void replTableWriteIdState(String validWriteIdList, String dbName, String tableName, List<String> partNames)
+          throws LockException {
+    // No-op
+  }
+
+  @Override
   public void heartbeat() throws LockException {
     // No-op
   }

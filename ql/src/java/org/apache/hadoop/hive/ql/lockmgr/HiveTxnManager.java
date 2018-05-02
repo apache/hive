@@ -57,7 +57,7 @@ public interface HiveTxnManager {
    * @return The new transaction id.
    * @throws LockException in case of failure to start the transaction.
    */
-  List<Long> replOpenTxn(String replPolicy, List<Long> srcTxnIds, String user)  throws LockException;
+  List<Long> replOpenTxn(String replPolicy, List<Long> srcTxnIds, String user) throws LockException;
 
   /**
    * Commit the transaction in target cluster.
@@ -65,7 +65,7 @@ public interface HiveTxnManager {
    * @param srcTxnId The id of the transaction at the source cluster
    * @throws LockException in case of failure to commit the transaction.
    */
-  void replCommitTxn(String replPolicy, long srcTxnId)  throws LockException;
+  void replCommitTxn(String replPolicy, long srcTxnId) throws LockException;
 
  /**
    * Abort the transaction in target cluster.
@@ -73,7 +73,18 @@ public interface HiveTxnManager {
    * @param srcTxnId The id of the transaction at the source cluster
    * @throws LockException in case of failure to abort the transaction.
    */
-  void replRollbackTxn(String replPolicy, long srcTxnId)  throws LockException;
+  void replRollbackTxn(String replPolicy, long srcTxnId) throws LockException;
+
+ /**
+  * Replicate Table Write Ids state to mark aborted write ids and writeid high water mark.
+  * @param validWriteIdList Snapshot of writeid list when the table/partition is dumped.
+  * @param dbName Database name
+  * @param tableName Table which is written.
+  * @param partNames List of partitions being written.
+  * @throws LockException in case of failure.
+  */
+  void replTableWriteIdState(String validWriteIdList, String dbName, String tableName, List<String> partNames)
+          throws LockException;
 
   /**
    * Get the lock manager.  This must be used rather than instantiating an

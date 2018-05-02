@@ -44,22 +44,20 @@ public class ReplLoadWork implements Serializable {
   taken care when using other methods.
   */
   final LineageState sessionStateLineageState;
-  public final long currentTransactionId;
 
   public ReplLoadWork(HiveConf hiveConf, String dumpDirectory, String dbNameToLoadIn,
-      String tableNameToLoadIn, LineageState lineageState, long currentTransactionId)
+      String tableNameToLoadIn, LineageState lineageState)
       throws IOException {
     this.tableNameToLoadIn = tableNameToLoadIn;
     sessionStateLineageState = lineageState;
-    this.currentTransactionId = currentTransactionId;
     this.iterator = new BootstrapEventsIterator(dumpDirectory, dbNameToLoadIn, hiveConf);
     this.constraintsIterator = new ConstraintEventsIterator(dumpDirectory, hiveConf);
     this.dbNameToLoadIn = dbNameToLoadIn;
   }
 
   public ReplLoadWork(HiveConf hiveConf, String dumpDirectory, String dbNameOrPattern,
-      LineageState lineageState, long currentTransactionId) throws IOException {
-    this(hiveConf, dumpDirectory, dbNameOrPattern, null, lineageState, currentTransactionId);
+      LineageState lineageState) throws IOException {
+    this(hiveConf, dumpDirectory, dbNameOrPattern, null, lineageState);
   }
 
   public BootstrapEventsIterator iterator() {

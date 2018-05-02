@@ -41,9 +41,6 @@ public class ValidReadTxnList implements ValidTxnList {
   /**
    * Used if there are no open transactions in the snapshot
    */
-  public ValidReadTxnList(long[] exceptions, BitSet abortedBits, long highWatermark) {
-    this(exceptions, abortedBits, highWatermark, Long.MAX_VALUE);
-  }
   public ValidReadTxnList(long[] exceptions, BitSet abortedBits, long highWatermark, long minOpenTxn) {
     if (exceptions.length > 0) {
       this.minOpenTxn = minOpenTxn;

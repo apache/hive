@@ -39,8 +39,8 @@ public class ReplDumpWork implements Serializable {
   }
 
   public ReplDumpWork(String dbNameOrPattern, String tableNameOrPattern,
-      Long eventFrom, Long eventTo, String astRepresentationForErrorMsg, Integer maxEventLimit,
-      String resultTempPath) {
+                      Long eventFrom, Long eventTo, String astRepresentationForErrorMsg, Integer maxEventLimit,
+                      String resultTempPath) {
     this.dbNameOrPattern = dbNameOrPattern;
     this.tableNameOrPattern = tableNameOrPattern;
     this.eventFrom = eventFrom;

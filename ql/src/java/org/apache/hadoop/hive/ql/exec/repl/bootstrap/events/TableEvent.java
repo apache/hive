@@ -31,6 +31,9 @@ public interface TableEvent extends BootstrapEvent {
   List<AddPartitionDesc> partitionDescriptions(ImportTableDesc tblDesc)
       throws SemanticException;
 
+  List<String> partitions(ImportTableDesc tblDesc)
+          throws SemanticException;
+
   ReplicationSpec replicationSpec();
 
   boolean shouldNotReplicate();
