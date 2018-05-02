@@ -18,11 +18,15 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.Partition;
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.util.Arrays;
 
 public class TestMetaStoreUtils {
 
@@ -38,4 +42,83 @@ public class TestMetaStoreUtils {
     Assert.assertTrue(MetaStoreUtils.columnsIncluded(Arrays.asList(col1, col2), Arrays.asList(col3, col2, col1)));
     Assert.assertFalse(MetaStoreUtils.columnsIncluded(Arrays.asList(col1, col2), Arrays.asList(col1)));
   }
+
+  @Test
+  public void isFastStatsSameWithNullPartitions() {
+    Partition partition = new Partition();
+    Assert.assertFalse(MetaStoreUtils.isFastStatsSame(null, null));
+    Assert.assertFalse(MetaStoreUtils.isFastStatsSame(null, partition));
+    Assert.assertFalse(MetaStoreUtils.isFastStatsSame(partition, null));
+  }
+
+  @Test
+  public void isFastStatsSameWithNoMatchingStats() {
+    Partition oldPartition = new Partition();
+    Map<String, String> stats = new HashMap<>();
+    oldPartition.setParameters(stats);
+    Assert.assertFalse(MetaStoreUtils.isFastStatsSame(oldPartition, null));
+    stats.put("someKeyThatIsNotInFastStats","value");
+    oldPartition.setParameters(stats);
+    Assert.assertFalse(MetaStoreUtils.isFastStatsSame(oldPartition, null));
+  }
+
+  @Test
+  public void isFastStatsSameMatchingButOnlyOneStat() {
+    Partition oldPartition = new Partition();
+    Partition newPartition = new Partition();
+    Map<String, String> stats = new HashMap<>();
+    stats.put(StatsSetupConst.fastStats[0], "1");
+    oldPartition.setParameters(stats);
+    newPartition.setParameters(stats);
+    Assert.assertFalse(MetaStoreUtils.isFastStatsSame(oldPartition, newPartition));
+  }
+
+  @Test
+  public void isFastStatsSameMatching() {
+    Partition oldPartition = new Partition();
+    Partition newPartition = new Partition();
+    Map<String, String> stats = new HashMap<>();
+    for (int i=0; i<StatsSetupConst.fastStats.length; i++) {
+      stats.put(StatsSetupConst.fastStats[i], String.valueOf(i));
+    }
+    oldPartition.setParameters(stats);
+    newPartition.setParameters(stats);
+    Assert.assertTrue(MetaStoreUtils.isFastStatsSame(oldPartition, newPartition));
+  }
+
+  @Test
+  public void isFastStatsSameDifferent() {
+    Partition oldPartition = new Partition();
+    Partition newPartition = new Partition();
+    Map<String, String> oldStats = new HashMap<>();
+    for (int i=0; i<StatsSetupConst.fastStats.length; i++) {
+      oldStats.put(StatsSetupConst.fastStats[i], String.valueOf(i));
+    }
+    oldPartition.setParameters(oldStats);
+    Map<String, String> newStats = new HashMap<>();
+    for (int i=0; i<StatsSetupConst.fastStats.length; i++) {
+      //set the values to i+1 so they are different in the new stats
+      newStats.put(StatsSetupConst.fastStats[i], String.valueOf(i+1));
+    }
+    newPartition.setParameters(newStats);
+    Assert.assertFalse(MetaStoreUtils.isFastStatsSame(oldPartition, newPartition));
+  }
+
+  @Test
+  public void isFastStatsSameNullStatsInNew() {
+    Partition oldPartition = new Partition();
+    Partition newPartition = new Partition();
+    Map<String, String> oldStats = new HashMap<>();
+    for (int i=0; i<StatsSetupConst.fastStats.length; i++) {
+      oldStats.put(StatsSetupConst.fastStats[i], String.valueOf(i));
+    }
+    oldPartition.setParameters(oldStats);
+    Map<String, String> newStats = new HashMap<>();
+    for (int i=0; i<StatsSetupConst.fastStats.length; i++) {
+      newStats.put(StatsSetupConst.fastStats[i], null);
+    }
+    newPartition.setParameters(newStats);
+    Assert.assertFalse(MetaStoreUtils.isFastStatsSame(oldPartition, newPartition));
+  }
+
 }

@@ -306,14 +306,21 @@ public class MetaStoreUtils {
     return !isFastStatsSame(oldPart, newPart);
   }
 
+  /**
+   * Determines whether the "fast stats" for the passed partitions are the same.
+   *
+   * @param oldPart Old partition to compare.
+   * @param newPart New partition to compare.
+   * @return true if the partitions are not null, contain all the "fast stats" and have the same values for these stats, otherwise false.
+   */
   static boolean isFastStatsSame(Partition oldPart, Partition newPart) {
     // requires to calculate stats if new and old have different fast stats
     if ((oldPart != null) && (oldPart.getParameters() != null)) {
       for (String stat : StatsSetupConst.fastStats) {
         if (oldPart.getParameters().containsKey(stat)) {
           Long oldStat = Long.parseLong(oldPart.getParameters().get(stat));
-          Long newStat = Long.parseLong(newPart.getParameters().get(stat));
-          if (!oldStat.equals(newStat)) {
+          String newStat = newPart.getParameters().get(stat);
+          if (newStat == null || !oldStat.equals(Long.parseLong(newStat))) {
             return false;
           }
         } else {
