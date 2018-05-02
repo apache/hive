@@ -39,6 +39,7 @@ import org.slf4j.LoggerFactory;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -197,5 +198,14 @@ public class Utils {
       return false;
     }
     return shouldReplicate(replicationSpec, table, hiveConf);
+  }
+
+  static List<Path> getDataPathList(Path fromPath, ReplicationSpec replicationSpec, HiveConf conf)
+          throws IOException {
+    if (replicationSpec.isTransactionalTableDump()) {
+      return AcidUtils.getValidDataPaths(fromPath, conf, replicationSpec.getValidWriteIdList());
+    } else {
+      return Collections.singletonList(fromPath);
+    }
   }
 }

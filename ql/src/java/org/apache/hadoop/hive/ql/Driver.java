@@ -591,6 +591,7 @@ public class Driver implements IDriver {
         setTriggerContext(queryId);
       }
 
+      ctx.setHiveTxnManager(queryTxnMgr);
       ctx.setStatsSource(statsSource);
       ctx.setCmd(command);
       ctx.setHDFSCleanup(true);
