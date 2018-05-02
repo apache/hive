@@ -25,7 +25,9 @@ import org.apache.hadoop.hive.metastore.api.Table;
 /**
  * Describes an ACID table that can receive mutation events. Used to encode the information required by workers to write
  * ACID events without requiring them to once more retrieve the data from the meta store db.
+ * @deprecated as of Hive 3.0.0
  */
+@Deprecated
 public class AcidTable implements Serializable {
 
   private static final long serialVersionUID = 1L;

@@ -39,7 +39,9 @@ import org.slf4j.LoggerFactory;
 /**
  * Responsible for orchestrating {@link Transaction Transactions} within which ACID table mutation events can occur.
  * Typically this will be a large batch of delta operations.
+ * @deprecated as of Hive 3.0.0
  */
+@Deprecated
 public class MutatorClient implements Closeable {
 
   private static final Logger LOG = LoggerFactory.getLogger(MutatorClient.class);

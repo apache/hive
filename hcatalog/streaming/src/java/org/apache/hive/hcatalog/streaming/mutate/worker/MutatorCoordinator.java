@@ -52,7 +52,9 @@ import org.slf4j.LoggerFactory;
  * grouping phase so that they are grouped correctly. Note that any write id or row id assigned to the
  * {@link RecordIdentifier RecordIdentifier} of such events will be ignored by both the coordinator and the underlying
  * {@link RecordUpdater}.
+ * @deprecated as of Hive 3.0.0
  */
+@Deprecated
 public class MutatorCoordinator implements Closeable, Flushable {
 
   private static final Logger LOG = LoggerFactory.getLogger(MutatorCoordinator.class);

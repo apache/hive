@@ -30,8 +30,9 @@ import java.util.Collection;
  * Note on thread safety: At most 2 threads can run through a given TransactionBatch at the same
  * time.  One thread may call {@link #heartbeat()} and the other all other methods.
  * Violating this may result in "out of sequence response".
- *
+ * @deprecated as of Hive 3.0.0, replaced by {@link org.apache.hive.streaming.HiveStreamingConnection}
  */
+@Deprecated
 public interface TransactionBatch  {
   enum TxnState {
     INACTIVE("I"), OPEN("O"), COMMITTED("C"), ABORTED("A");

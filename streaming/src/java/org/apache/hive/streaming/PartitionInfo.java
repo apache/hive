@@ -18,14 +18,41 @@
 
 package org.apache.hive.streaming;
 
+/**
+ * Simple wrapper class for minimal partition related information used by streaming ingest.
+ */
+public class PartitionInfo {
+  private String name;
+  private String partitionLocation;
+  private boolean exists;
 
-public class StreamingIOFailure extends StreamingException {
-
-  StreamingIOFailure(String msg, Exception cause) {
-    super(msg, cause);
+  public PartitionInfo(final String name, final String partitionLocation, final boolean exists) {
+    this.name = name;
+    this.partitionLocation = partitionLocation;
+    this.exists = exists;
   }
 
-  StreamingIOFailure(String msg) {
-    super(msg);
+  public String getName() {
+    return name;
+  }
+
+  public void setName(final String name) {
+    this.name = name;
+  }
+
+  public String getPartitionLocation() {
+    return partitionLocation;
+  }
+
+  public void setPartitionLocation(final String partitionLocation) {
+    this.partitionLocation = partitionLocation;
+  }
+
+  public boolean isExists() {
+    return exists;
+  }
+
+  public void setExists(final boolean exists) {
+    this.exists = exists;
   }
 }
