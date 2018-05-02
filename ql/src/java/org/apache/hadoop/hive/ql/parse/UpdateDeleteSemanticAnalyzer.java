@@ -350,26 +350,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     currentOperation = Context.Operation.DELETE;
     reparseAndSuperAnalyze(tree);
   }
-  /**
-   * Append list of partition columns to Insert statement, i.e. the 1st set of partCol1,partCol2
-   * INSERT INTO T PARTITION(partCol1,partCol2...) SELECT col1, ... partCol1,partCol2...
-   */
-  private void addPartitionColsToInsert(List<FieldSchema> partCols, StringBuilder rewrittenQueryStr) {
-    // If the table is partitioned we have to put the partition() clause in
-    if (partCols != null && partCols.size() > 0) {
-      rewrittenQueryStr.append(" partition (");
-      boolean first = true;
-      for (FieldSchema fschema : partCols) {
-        if (first)
-          first = false;
-        else
-          rewrittenQueryStr.append(", ");
-        //would be nice if there was a way to determine if quotes are needed
-        rewrittenQueryStr.append(HiveUtils.unparseIdentifier(fschema.getName(), this.conf));
-      }
-      rewrittenQueryStr.append(")");
-    }
-  }
+
   /**
    * Append list of partition columns to Insert statement, i.e. the 2nd set of partCol1,partCol2
    * INSERT INTO T PARTITION(partCol1,partCol2...) SELECT col1, ... partCol1,partCol2...
@@ -1261,22 +1242,8 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
         throw raiseWrongType("TOK_TABREF|TOK_TABNAME|TOK_SUBQUERY", n);
     }
   }
-  /**
-   * @return table name in db.table form with proper quoting/escaping to be used in a SQL statement
-   */
-  private String getFullTableNameForSQL(ASTNode n) throws SemanticException {
-    switch (n.getType()) {
-      case HiveParser.TOK_TABNAME:
-        String[] tableName = getQualifiedTableName(n);
-        return getDotName(new String[] {
-          HiveUtils.unparseIdentifier(tableName[0], this.conf),
-          HiveUtils.unparseIdentifier(tableName[1], this.conf) });
-      case HiveParser.TOK_TABREF:
-        return getFullTableNameForSQL((ASTNode) n.getChild(0));
-      default:
-        throw raiseWrongType("TOK_TABNAME", n);
-    }
-  }  private static final class ReparseResult {
+
+  private static final class ReparseResult {
     private final ASTNode rewrittenTree;
     private final Context rewrittenCtx;
     ReparseResult(ASTNode n, Context c) {
@@ -1284,9 +1251,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
       rewrittenCtx = c;
     }
   }
-  private static IllegalArgumentException raiseWrongType(String expectedTokName, ASTNode n) {
-    return new IllegalArgumentException("Expected " + expectedTokName + "; got " + n.getType());
-  }
+
   private boolean isAliased(ASTNode n) {
     switch (n.getType()) {
       case HiveParser.TOK_TABREF:
