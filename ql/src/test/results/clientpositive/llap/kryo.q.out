@@ -1,0 +1,104 @@
+PREHOOK: query: CREATE TABLE `DateTime` (
+      ID INT,
+      `Time` STRING,
+      Date_ STRING,
+      `DateTime` STRING,
+      Random_ DOUBLE,
+      Diagonal DOUBLE,
+      Curved DOUBLE
+      )
+STORED AS orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@DateTime
+POSTHOOK: query: CREATE TABLE `DateTime` (
+      ID INT,
+      `Time` STRING,
+      Date_ STRING,
+      `DateTime` STRING,
+      Random_ DOUBLE,
+      Diagonal DOUBLE,
+      Curved DOUBLE
+      )
+STORED AS orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@DateTime
+PREHOOK: query: explain SELECT IF(((`DateTime_`.`id` = 1) OR (`DateTime_`.`id` = 2)),IF((`DateTime_`.`id` = 1),(CASE WHEN true THEN `DateTime_`.`date_` WHEN NOT true THEN TO_DATE(`DateTime_`.`datetime`) ELSE NULL END),(CASE WHEN true THEN `DateTime_`.`date_` WHEN NOT true THEN TO_DATE(`DateTime_`.`datetime`) ELSE TO_DATE(`DateTime_`.`time`) END)),IF((`DateTime_`.`id` = 3),(CASE    WHEN (`DateTime_`.`date_` IS NULL) OR (TO_DATE(`DateTime_`.`datetime`) IS NULL) THEN NULL       WHEN `DateTime_`.`date_` > TO_DATE(`DateTime_`.`datetime`) THEN `DateTime_`.`date_`     ELSE TO_DATE(`DateTime_`.`datetime`) END),NULL)) AS `none_calculation2_ok`,   `DateTime_`.`id` AS `none_id_ok`,   (CASE WHEN (`DateTime_`.`id` = 6) THEN (CASE  WHEN (CONCAT(`DateTime_`.`date_`, ' 00:00:00') IS NULL) OR (`DateTime_`.`datetime` IS NULL) THEN NULL   WHEN CONCAT(`DateTime_`.`date_`, ' 00:00:00') > `DateTime_`.`datetime` THEN CONCAT(`DateTime_`.`date_`, ' 00:00:00')    ELSE `DateTime_`.`datetime` END) WHEN (`DateTime_`.`id` = 5) THEN (CASE         WHEN (`DateTime_`.`date_` IS NULL) OR (`DateTime_`.`datetime` IS NULL) THEN NULL        WHEN `DateTime_`.`date_` > `DateTime_`.`datetime` THEN `DateTime_`.`date_`      ELSE `DateTime_`.`datetime` END) WHEN (`DateTime_`.`id` = 3) THEN (CASE WHEN true THEN CONCAT(`DateTime_`.`date_`, ' 00:00:00') WHEN NOT true THEN `DateTime_`.`datetime` ELSE NULL END) WHEN (`DateTime_`.`id` = 4) THEN (CASE WHEN true THEN CONCAT(`DateTime_`.`date_`, ' 00:00:00') WHEN NOT true THEN `DateTime_`.`datetime` ELSE `DateTime_`.`time` END) WHEN (`DateTime_`.`id` = 1) THEN (CASE WHEN true THEN `DateTime_`.`date_` WHEN NOT true THEN `DateTime_`.`datetime` ELSE NULL END) WHEN (`DateTime_`.`id` = 2) THEN (CASE WHEN true THEN `DateTime_`.`date_` WHEN NOT true THEN `DateTime_`.`datetime` ELSE `DateTime_`.`time` END) ELSE NULL END) AS `none_mixed_type_calcs_ok` FROM `DateTime` `DateTime_` WHERE (`DateTime_`.`id` = 1 OR `DateTime_`.`id` = 2 OR `DateTime_`.`id` = 3 OR `DateTime_`.`id` = 4 OR `DateTime_`.`id` = 5 OR `DateTime_`.`id` = 6) GROUP BY IF(((`DateTime_`.`id` = 1) OR (`DateTime_`.`id` = 2)),IF((`DateTime_`.`id` = 1),(CASE WHEN true THEN `DateTime_`.`date_` WHEN NOT true THEN TO_DATE(`DateTime_`.`datetime`) ELSE NULL END),(CASE WHEN true THEN `DateTime_`.`date_` WHEN NOT true THEN TO_DATE(`DateTime_`.`datetime`) ELSE TO_DATE(`DateTime_`.`time`) END)),IF((`DateTime_`.`id` = 3),(CASE       WHEN (`DateTime_`.`date_` IS NULL) OR (TO_DATE(`DateTime_`.`datetime`) IS NULL) THEN NULL       WHEN `DateTime_`.`date_` > TO_DATE(`DateTime_`.`datetime`) THEN `DateTime_`.`date_`     ELSE TO_DATE(`DateTime_`.`datetime`) END),NULL)),   `DateTime_`.`id`,   (CASE WHEN (`DateTime_`.`id` = 6) THEN (CASE    WHEN (CONCAT(`DateTime_`.`date_`, ' 00:00:00') IS NULL) OR (`DateTime_`.`datetime` IS NULL) THEN NULL   WHEN CONCAT(`DateTime_`.`date_`, ' 00:00:00') > `DateTime_`.`datetime` THEN CONCAT(`DateTime_`.`date_`, ' 00:00:00')    ELSE `DateTime_`.`datetime` END) WHEN (`DateTime_`.`id` = 5) THEN (CASE         WHEN (`DateTime_`.`date_` IS NULL) OR (`DateTime_`.`datetime` IS NULL) THEN NULL        WHEN `DateTime_`.`date_` > `DateTime_`.`datetime` THEN `DateTime_`.`date_`      ELSE `DateTime_`.`datetime` END) WHEN (`DateTime_`.`id` = 3) THEN (CASE WHEN true THEN CONCAT(`DateTime_`.`date_`, ' 00:00:00') WHEN NOT true THEN `DateTime_`.`datetime` ELSE NULL END) WHEN (`DateTime_`.`id` = 4) THEN (CASE WHEN true THEN CONCAT(`DateTime_`.`date_`, ' 00:00:00') WHEN NOT true THEN `DateTime_`.`datetime` ELSE `DateTime_`.`time` END) WHEN (`DateTime_`.`id` = 1) THEN (CASE WHEN true THEN `DateTime_`.`date_` WHEN NOT true THEN `DateTime_`.`datetime` ELSE NULL END) WHEN (`DateTime_`.`id` = 2) THEN (CASE WHEN true THEN `DateTime_`.`date_` WHEN NOT true THEN `DateTime_`.`datetime` ELSE `DateTime_`.`time` END) ELSE NULL END)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain SELECT IF(((`DateTime_`.`id` = 1) OR (`DateTime_`.`id` = 2)),IF((`DateTime_`.`id` = 1),(CASE WHEN true THEN `DateTime_`.`date_` WHEN NOT true THEN TO_DATE(`DateTime_`.`datetime`) ELSE NULL END),(CASE WHEN true THEN `DateTime_`.`date_` WHEN NOT true THEN TO_DATE(`DateTime_`.`datetime`) ELSE TO_DATE(`DateTime_`.`time`) END)),IF((`DateTime_`.`id` = 3),(CASE    WHEN (`DateTime_`.`date_` IS NULL) OR (TO_DATE(`DateTime_`.`datetime`) IS NULL) THEN NULL       WHEN `DateTime_`.`date_` > TO_DATE(`DateTime_`.`datetime`) THEN `DateTime_`.`date_`     ELSE TO_DATE(`DateTime_`.`datetime`) END),NULL)) AS `none_calculation2_ok`,   `DateTime_`.`id` AS `none_id_ok`,   (CASE WHEN (`DateTime_`.`id` = 6) THEN (CASE  WHEN (CONCAT(`DateTime_`.`date_`, ' 00:00:00') IS NULL) OR (`DateTime_`.`datetime` IS NULL) THEN NULL   WHEN CONCAT(`DateTime_`.`date_`, ' 00:00:00') > `DateTime_`.`datetime` THEN CONCAT(`DateTime_`.`date_`, ' 00:00:00')    ELSE `DateTime_`.`datetime` END) WHEN (`DateTime_`.`id` = 5) THEN (CASE         WHEN (`DateTime_`.`date_` IS NULL) OR (`DateTime_`.`datetime` IS NULL) THEN NULL        WHEN `DateTime_`.`date_` > `DateTime_`.`datetime` THEN `DateTime_`.`date_`      ELSE `DateTime_`.`datetime` END) WHEN (`DateTime_`.`id` = 3) THEN (CASE WHEN true THEN CONCAT(`DateTime_`.`date_`, ' 00:00:00') WHEN NOT true THEN `DateTime_`.`datetime` ELSE NULL END) WHEN (`DateTime_`.`id` = 4) THEN (CASE WHEN true THEN CONCAT(`DateTime_`.`date_`, ' 00:00:00') WHEN NOT true THEN `DateTime_`.`datetime` ELSE `DateTime_`.`time` END) WHEN (`DateTime_`.`id` = 1) THEN (CASE WHEN true THEN `DateTime_`.`date_` WHEN NOT true THEN `DateTime_`.`datetime` ELSE NULL END) WHEN (`DateTime_`.`id` = 2) THEN (CASE WHEN true THEN `DateTime_`.`date_` WHEN NOT true THEN `DateTime_`.`datetime` ELSE `DateTime_`.`time` END) ELSE NULL END) AS `none_mixed_type_calcs_ok` FROM `DateTime` `DateTime_` WHERE (`DateTime_`.`id` = 1 OR `DateTime_`.`id` = 2 OR `DateTime_`.`id` = 3 OR `DateTime_`.`id` = 4 OR `DateTime_`.`id` = 5 OR `DateTime_`.`id` = 6) GROUP BY IF(((`DateTime_`.`id` = 1) OR (`DateTime_`.`id` = 2)),IF((`DateTime_`.`id` = 1),(CASE WHEN true THEN `DateTime_`.`date_` WHEN NOT true THEN TO_DATE(`DateTime_`.`datetime`) ELSE NULL END),(CASE WHEN true THEN `DateTime_`.`date_` WHEN NOT true THEN TO_DATE(`DateTime_`.`datetime`) ELSE TO_DATE(`DateTime_`.`time`) END)),IF((`DateTime_`.`id` = 3),(CASE       WHEN (`DateTime_`.`date_` IS NULL) OR (TO_DATE(`DateTime_`.`datetime`) IS NULL) THEN NULL       WHEN `DateTime_`.`date_` > TO_DATE(`DateTime_`.`datetime`) THEN `DateTime_`.`date_`     ELSE TO_DATE(`DateTime_`.`datetime`) END),NULL)),   `DateTime_`.`id`,   (CASE WHEN (`DateTime_`.`id` = 6) THEN (CASE    WHEN (CONCAT(`DateTime_`.`date_`, ' 00:00:00') IS NULL) OR (`DateTime_`.`datetime` IS NULL) THEN NULL   WHEN CONCAT(`DateTime_`.`date_`, ' 00:00:00') > `DateTime_`.`datetime` THEN CONCAT(`DateTime_`.`date_`, ' 00:00:00')    ELSE `DateTime_`.`datetime` END) WHEN (`DateTime_`.`id` = 5) THEN (CASE         WHEN (`DateTime_`.`date_` IS NULL) OR (`DateTime_`.`datetime` IS NULL) THEN NULL        WHEN `DateTime_`.`date_` > `DateTime_`.`datetime` THEN `DateTime_`.`date_`      ELSE `DateTime_`.`datetime` END) WHEN (`DateTime_`.`id` = 3) THEN (CASE WHEN true THEN CONCAT(`DateTime_`.`date_`, ' 00:00:00') WHEN NOT true THEN `DateTime_`.`datetime` ELSE NULL END) WHEN (`DateTime_`.`id` = 4) THEN (CASE WHEN true THEN CONCAT(`DateTime_`.`date_`, ' 00:00:00') WHEN NOT true THEN `DateTime_`.`datetime` ELSE `DateTime_`.`time` END) WHEN (`DateTime_`.`id` = 1) THEN (CASE WHEN true THEN `DateTime_`.`date_` WHEN NOT true THEN `DateTime_`.`datetime` ELSE NULL END) WHEN (`DateTime_`.`id` = 2) THEN (CASE WHEN true THEN `DateTime_`.`date_` WHEN NOT true THEN `DateTime_`.`datetime` ELSE `DateTime_`.`time` END) ELSE NULL END)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: datetime_
+                  Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((id = 1) or (id = 2) or (id = 3) or (id = 4) or (id = 5) or (id = 6)) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: if(((id = 1) or (id = 2)), if((id = 1), date_, date_), if((id = 3), CASE WHEN ((date_ is null or to_date(datetime) is null)) THEN (null) WHEN ((CAST( date_ AS DATE) > to_date(datetime))) THEN (date_) ELSE (to_date(datetime)) END, null)) (type: string), id (type: int), CASE WHEN ((id = 6)) THEN (CASE WHEN ((concat(date_, ' 00:00:00') is null or datetime is null)) THEN (null) WHEN ((concat(date_, ' 00:00:00') > datetime)) THEN (concat(date_, ' 00:00:00')) ELSE (datetime) END) WHEN ((id = 5)) THEN (CASE WHEN ((date_ is null or datetime is null)) THEN (null) WHEN ((date_ > datetime)) THEN (date_) ELSE (datetime) END) WHEN ((id = 3)) THEN (concat(date_, ' 00:00:00')) WHEN ((id = 4)) THEN (concat(date_, ' 00:00:00')) WHEN ((id = 1)) THEN (date_) WHEN ((id = 2)) THEN (date_) ELSE (null) END (type: string)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        keys: _col0 (type: string), _col1 (type: int), _col2 (type: string)
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2
+                        Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string)
+                          sort order: +++
+                          Map-reduce partition columns: _col0 (type: string), _col1 (type: int), _col2 (type: string)
+                          Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string), KEY._col1 (type: int), KEY._col2 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT IF(((`DateTime_`.`id` = 1) OR (`DateTime_`.`id` = 2)),IF((`DateTime_`.`id` = 1),(CASE WHEN true THEN `DateTime_`.`date_` WHEN NOT true THEN TO_DATE(`DateTime_`.`datetime`) ELSE NULL END),(CASE WHEN true THEN `DateTime_`.`date_` WHEN NOT true THEN TO_DATE(`DateTime_`.`datetime`) ELSE TO_DATE(`DateTime_`.`time`) END)),IF((`DateTime_`.`id` = 3),(CASE    WHEN (`DateTime_`.`date_` IS NULL) OR (TO_DATE(`DateTime_`.`datetime`) IS NULL) THEN NULL       WHEN `DateTime_`.`date_` > TO_DATE(`DateTime_`.`datetime`) THEN `DateTime_`.`date_`     ELSE TO_DATE(`DateTime_`.`datetime`) END),NULL)) AS `none_calculation2_ok`,   `DateTime_`.`id` AS `none_id_ok`,   (CASE WHEN (`DateTime_`.`id` = 6) THEN (CASE  WHEN (CONCAT(`DateTime_`.`date_`, ' 00:00:00') IS NULL) OR (`DateTime_`.`datetime` IS NULL) THEN NULL   WHEN CONCAT(`DateTime_`.`date_`, ' 00:00:00') > `DateTime_`.`datetime` THEN CONCAT(`DateTime_`.`date_`, ' 00:00:00')    ELSE `DateTime_`.`datetime` END) WHEN (`DateTime_`.`id` = 5) THEN (CASE         WHEN (`DateTime_`.`date_` IS NULL) OR (`DateTime_`.`datetime` IS NULL) THEN NULL        WHEN `DateTime_`.`date_` > `DateTime_`.`datetime` THEN `DateTime_`.`date_`      ELSE `DateTime_`.`datetime` END) WHEN (`DateTime_`.`id` = 3) THEN (CASE WHEN true THEN CONCAT(`DateTime_`.`date_`, ' 00:00:00') WHEN NOT true THEN `DateTime_`.`datetime` ELSE NULL END) WHEN (`DateTime_`.`id` = 4) THEN (CASE WHEN true THEN CONCAT(`DateTime_`.`date_`, ' 00:00:00') WHEN NOT true THEN `DateTime_`.`datetime` ELSE `DateTime_`.`time` END) WHEN (`DateTime_`.`id` = 1) THEN (CASE WHEN true THEN `DateTime_`.`date_` WHEN NOT true THEN `DateTime_`.`datetime` ELSE NULL END) WHEN (`DateTime_`.`id` = 2) THEN (CASE WHEN true THEN `DateTime_`.`date_` WHEN NOT true THEN `DateTime_`.`datetime` ELSE `DateTime_`.`time` END) ELSE NULL END) AS `none_mixed_type_calcs_ok` FROM `DateTime` `DateTime_` WHERE (`DateTime_`.`id` = 1 OR `DateTime_`.`id` = 2 OR `DateTime_`.`id` = 3 OR `DateTime_`.`id` = 4 OR `DateTime_`.`id` = 5 OR `DateTime_`.`id` = 6) GROUP BY IF(((`DateTime_`.`id` = 1) OR (`DateTime_`.`id` = 2)),IF((`DateTime_`.`id` = 1),(CASE WHEN true THEN `DateTime_`.`date_` WHEN NOT true THEN TO_DATE(`DateTime_`.`datetime`) ELSE NULL END),(CASE WHEN true THEN `DateTime_`.`date_` WHEN NOT true THEN TO_DATE(`DateTime_`.`datetime`) ELSE TO_DATE(`DateTime_`.`time`) END)),IF((`DateTime_`.`id` = 3),(CASE       WHEN (`DateTime_`.`date_` IS NULL) OR (TO_DATE(`DateTime_`.`datetime`) IS NULL) THEN NULL       WHEN `DateTime_`.`date_` > TO_DATE(`DateTime_`.`datetime`) THEN `DateTime_`.`date_`     ELSE TO_DATE(`DateTime_`.`datetime`) END),NULL)),   `DateTime_`.`id`,   (CASE WHEN (`DateTime_`.`id` = 6) THEN (CASE    WHEN (CONCAT(`DateTime_`.`date_`, ' 00:00:00') IS NULL) OR (`DateTime_`.`datetime` IS NULL) THEN NULL   WHEN CONCAT(`DateTime_`.`date_`, ' 00:00:00') > `DateTime_`.`datetime` THEN CONCAT(`DateTime_`.`date_`, ' 00:00:00')    ELSE `DateTime_`.`datetime` END) WHEN (`DateTime_`.`id` = 5) THEN (CASE         WHEN (`DateTime_`.`date_` IS NULL) OR (`DateTime_`.`datetime` IS NULL) THEN NULL        WHEN `DateTime_`.`date_` > `DateTime_`.`datetime` THEN `DateTime_`.`date_`      ELSE `DateTime_`.`datetime` END) WHEN (`DateTime_`.`id` = 3) THEN (CASE WHEN true THEN CONCAT(`DateTime_`.`date_`, ' 00:00:00') WHEN NOT true THEN `DateTime_`.`datetime` ELSE NULL END) WHEN (`DateTime_`.`id` = 4) THEN (CASE WHEN true THEN CONCAT(`DateTime_`.`date_`, ' 00:00:00') WHEN NOT true THEN `DateTime_`.`datetime` ELSE `DateTime_`.`time` END) WHEN (`DateTime_`.`id` = 1) THEN (CASE WHEN true THEN `DateTime_`.`date_` WHEN NOT true THEN `DateTime_`.`datetime` ELSE NULL END) WHEN (`DateTime_`.`id` = 2) THEN (CASE WHEN true THEN `DateTime_`.`date_` WHEN NOT true THEN `DateTime_`.`datetime` ELSE `DateTime_`.`time` END) ELSE NULL END)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@datetime
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT IF(((`DateTime_`.`id` = 1) OR (`DateTime_`.`id` = 2)),IF((`DateTime_`.`id` = 1),(CASE WHEN true THEN `DateTime_`.`date_` WHEN NOT true THEN TO_DATE(`DateTime_`.`datetime`) ELSE NULL END),(CASE WHEN true THEN `DateTime_`.`date_` WHEN NOT true THEN TO_DATE(`DateTime_`.`datetime`) ELSE TO_DATE(`DateTime_`.`time`) END)),IF((`DateTime_`.`id` = 3),(CASE    WHEN (`DateTime_`.`date_` IS NULL) OR (TO_DATE(`DateTime_`.`datetime`) IS NULL) THEN NULL       WHEN `DateTime_`.`date_` > TO_DATE(`DateTime_`.`datetime`) THEN `DateTime_`.`date_`     ELSE TO_DATE(`DateTime_`.`datetime`) END),NULL)) AS `none_calculation2_ok`,   `DateTime_`.`id` AS `none_id_ok`,   (CASE WHEN (`DateTime_`.`id` = 6) THEN (CASE  WHEN (CONCAT(`DateTime_`.`date_`, ' 00:00:00') IS NULL) OR (`DateTime_`.`datetime` IS NULL) THEN NULL   WHEN CONCAT(`DateTime_`.`date_`, ' 00:00:00') > `DateTime_`.`datetime` THEN CONCAT(`DateTime_`.`date_`, ' 00:00:00')    ELSE `DateTime_`.`datetime` END) WHEN (`DateTime_`.`id` = 5) THEN (CASE         WHEN (`DateTime_`.`date_` IS NULL) OR (`DateTime_`.`datetime` IS NULL) THEN NULL        WHEN `DateTime_`.`date_` > `DateTime_`.`datetime` THEN `DateTime_`.`date_`      ELSE `DateTime_`.`datetime` END) WHEN (`DateTime_`.`id` = 3) THEN (CASE WHEN true THEN CONCAT(`DateTime_`.`date_`, ' 00:00:00') WHEN NOT true THEN `DateTime_`.`datetime` ELSE NULL END) WHEN (`DateTime_`.`id` = 4) THEN (CASE WHEN true THEN CONCAT(`DateTime_`.`date_`, ' 00:00:00') WHEN NOT true THEN `DateTime_`.`datetime` ELSE `DateTime_`.`time` END) WHEN (`DateTime_`.`id` = 1) THEN (CASE WHEN true THEN `DateTime_`.`date_` WHEN NOT true THEN `DateTime_`.`datetime` ELSE NULL END) WHEN (`DateTime_`.`id` = 2) THEN (CASE WHEN true THEN `DateTime_`.`date_` WHEN NOT true THEN `DateTime_`.`datetime` ELSE `DateTime_`.`time` END) ELSE NULL END) AS `none_mixed_type_calcs_ok` FROM `DateTime` `DateTime_` WHERE (`DateTime_`.`id` = 1 OR `DateTime_`.`id` = 2 OR `DateTime_`.`id` = 3 OR `DateTime_`.`id` = 4 OR `DateTime_`.`id` = 5 OR `DateTime_`.`id` = 6) GROUP BY IF(((`DateTime_`.`id` = 1) OR (`DateTime_`.`id` = 2)),IF((`DateTime_`.`id` = 1),(CASE WHEN true THEN `DateTime_`.`date_` WHEN NOT true THEN TO_DATE(`DateTime_`.`datetime`) ELSE NULL END),(CASE WHEN true THEN `DateTime_`.`date_` WHEN NOT true THEN TO_DATE(`DateTime_`.`datetime`) ELSE TO_DATE(`DateTime_`.`time`) END)),IF((`DateTime_`.`id` = 3),(CASE       WHEN (`DateTime_`.`date_` IS NULL) OR (TO_DATE(`DateTime_`.`datetime`) IS NULL) THEN NULL       WHEN `DateTime_`.`date_` > TO_DATE(`DateTime_`.`datetime`) THEN `DateTime_`.`date_`     ELSE TO_DATE(`DateTime_`.`datetime`) END),NULL)),   `DateTime_`.`id`,   (CASE WHEN (`DateTime_`.`id` = 6) THEN (CASE    WHEN (CONCAT(`DateTime_`.`date_`, ' 00:00:00') IS NULL) OR (`DateTime_`.`datetime` IS NULL) THEN NULL   WHEN CONCAT(`DateTime_`.`date_`, ' 00:00:00') > `DateTime_`.`datetime` THEN CONCAT(`DateTime_`.`date_`, ' 00:00:00')    ELSE `DateTime_`.`datetime` END) WHEN (`DateTime_`.`id` = 5) THEN (CASE         WHEN (`DateTime_`.`date_` IS NULL) OR (`DateTime_`.`datetime` IS NULL) THEN NULL        WHEN `DateTime_`.`date_` > `DateTime_`.`datetime` THEN `DateTime_`.`date_`      ELSE `DateTime_`.`datetime` END) WHEN (`DateTime_`.`id` = 3) THEN (CASE WHEN true THEN CONCAT(`DateTime_`.`date_`, ' 00:00:00') WHEN NOT true THEN `DateTime_`.`datetime` ELSE NULL END) WHEN (`DateTime_`.`id` = 4) THEN (CASE WHEN true THEN CONCAT(`DateTime_`.`date_`, ' 00:00:00') WHEN NOT true THEN `DateTime_`.`datetime` ELSE `DateTime_`.`time` END) WHEN (`DateTime_`.`id` = 1) THEN (CASE WHEN true THEN `DateTime_`.`date_` WHEN NOT true THEN `DateTime_`.`datetime` ELSE NULL END) WHEN (`DateTime_`.`id` = 2) THEN (CASE WHEN true THEN `DateTime_`.`date_` WHEN NOT true THEN `DateTime_`.`datetime` ELSE `DateTime_`.`time` END) ELSE NULL END)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@datetime
+#### A masked pattern was here ####
+PREHOOK: query: drop table DateTime
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@datetime
+PREHOOK: Output: default@datetime
+POSTHOOK: query: drop table DateTime
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@datetime
+POSTHOOK: Output: default@datetime

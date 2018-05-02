@@ -222,6 +222,8 @@ public class SerializationUtilities {
     }
   }
 
+  private static final Object FAKE_REFERENCE = new Object();
+
   private static KryoFactory factory = new KryoFactory() {
     public Kryo create() {
       KryoWithHooks kryo = new KryoWithHooks();
@@ -230,6 +232,7 @@ public class SerializationUtilities {
       kryo.register(TimestampTZ.class, new TimestampTZSerializer());
       kryo.register(Path.class, new PathSerializer());
       kryo.register(Arrays.asList("").getClass(), new ArraysAsListSerializer());
+      kryo.register(new java.util.ArrayList().subList(0,0).getClass(), new ArrayListSubListSerializer());
       kryo.register(CopyOnFirstWriteProperties.class, new CopyOnFirstWritePropertiesSerializer());
 
       ((Kryo.DefaultInstantiatorStrategy) kryo.getInstantiatorStrategy())
@@ -361,6 +364,69 @@ public class SerializationUtilities {
       return new Path(URI.create(input.readString()));
     }
   }
+
+  /**
+   * Supports sublists created via {@link ArrayList#subList(int, int)} since java7 (oracle jdk,
+   * represented by <code>java.util.ArrayList$SubList</code>).
+   * This is from kryo-serializers package.
+   */
+  private static class ArrayListSubListSerializer extends com.esotericsoftware.kryo.Serializer<List<?>> {
+
+      private Field _parentField;
+      private Field _parentOffsetField;
+      private Field _sizeField;
+
+      public ArrayListSubListSerializer() {
+          try {
+              final Class<?> clazz = Class.forName("java.util.ArrayList$SubList");
+              _parentField = clazz.getDeclaredField("parent");
+              _parentOffsetField = clazz.getDeclaredField( "parentOffset" );
+              _sizeField = clazz.getDeclaredField( "size" );
+              _parentField.setAccessible( true );
+              _parentOffsetField.setAccessible( true );
+              _sizeField.setAccessible( true );
+          } catch (final Exception e) {
+              throw new RuntimeException(e);
+          }
+      }
+
+      @Override
+      public List<?> read(final Kryo kryo, final Input input, final Class<List<?>> clazz) {
+          kryo.reference(FAKE_REFERENCE);
+          final List<?> list = (List<?>) kryo.readClassAndObject(input);
+          final int fromIndex = input.readInt(true);
+          final int toIndex = input.readInt(true);
+          return list.subList(fromIndex, toIndex);
+      }
+
+      @Override
+      public void write(final Kryo kryo, final Output output, final List<?> obj) {
+        try {
+            kryo.writeClassAndObject(output, _parentField.get(obj));
+            final int parentOffset = _parentOffsetField.getInt( obj );
+            final int fromIndex = parentOffset;
+            output.writeInt(fromIndex, true);
+            final int toIndex = fromIndex + _sizeField.getInt( obj );
+            output.writeInt(toIndex, true);
+        } catch (final Exception e) {
+                throw new RuntimeException(e);
+        }
+      }
+
+      @Override
+      public List<?> copy(final Kryo kryo, final List<?> original) {
+        try {
+            kryo.reference(FAKE_REFERENCE);
+            final List<?> list = (List<?>) _parentField.get(original);
+            final int parentOffset = _parentOffsetField.getInt( original );
+            final int fromIndex = parentOffset;
+            final int toIndex = fromIndex + _sizeField.getInt( original );
+            return kryo.copy(list).subList(fromIndex, toIndex);
+        } catch (final Exception e) {
+                throw new RuntimeException(e);
+        }
+      }
+    }
 
   /**
    * A kryo {@link Serializer} for lists created via {@link Arrays#asList(Object...)}.
