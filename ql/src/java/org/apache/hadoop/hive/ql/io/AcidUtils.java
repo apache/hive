@@ -41,6 +41,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
+import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -1829,6 +1830,41 @@ public class AcidUtils {
       }
     }
     return fileList;
+  }
+
+  public static List<Path> getValidDataPaths(Path dataPath, Configuration conf, String validWriteIdStr)
+          throws IOException {
+    List<Path> pathList = new ArrayList<>();
+    if ((validWriteIdStr == null) || validWriteIdStr.isEmpty()) {
+      // If Non-Acid case, then all files would be in the base data path. So, just return it.
+      pathList.add(dataPath);
+      return pathList;
+    }
+
+    // If ACID/MM tables, then need to find the valid state wrt to given ValidWriteIdList.
+    ValidWriteIdList validWriteIdList = new ValidReaderWriteIdList(validWriteIdStr);
+    Directory acidInfo = AcidUtils.getAcidState(dataPath, conf, validWriteIdList);
+
+    for (HdfsFileStatusWithId hfs : acidInfo.getOriginalFiles()) {
+      pathList.add(hfs.getFileStatus().getPath());
+    }
+    for (ParsedDelta delta : acidInfo.getCurrentDirectories()) {
+      pathList.add(delta.getPath());
+    }
+    if (acidInfo.getBaseDirectory() != null) {
+      pathList.add(acidInfo.getBaseDirectory());
+    }
+    return pathList;
+  }
+
+  public static String getAcidSubDir(Path dataPath) {
+    String dataDir = dataPath.getName();
+    if (dataDir.startsWith(AcidUtils.BASE_PREFIX)
+            || dataDir.startsWith(AcidUtils.DELTA_PREFIX)
+            || dataDir.startsWith(AcidUtils.DELETE_DELTA_PREFIX)) {
+      return dataDir;
+    }
+    return null;
   }
 
   public static boolean isAcidEnabled(HiveConf hiveConf) {

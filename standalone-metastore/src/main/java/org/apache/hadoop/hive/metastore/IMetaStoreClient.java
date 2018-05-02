@@ -2819,14 +2819,14 @@ public interface IMetaStoreClient {
   /**
    * Rollback a transaction.  This will also unlock any locks associated with
    * this transaction.
-   * @param txnid id of transaction to be rolled back.
+   * @param srcTxnid id of transaction at source while is rolled back and to be replicated.
    * @param replPolicy the replication policy to identify the source cluster
    * @throws NoSuchTxnException if the requested transaction does not exist.
    * Note that this can result from the transaction having timed out and been
    * deleted.
    * @throws TException
    */
-  void replRollbackTxn(long txnid, String replPolicy) throws NoSuchTxnException, TException;
+  void replRollbackTxn(long srcTxnid, String replPolicy) throws NoSuchTxnException, TException;
 
   /**
    * Commit a transaction.  This will also unlock any locks associated with
@@ -2845,7 +2845,7 @@ public interface IMetaStoreClient {
   /**
    * Commit a transaction.  This will also unlock any locks associated with
    * this transaction.
-   * @param txnid id of transaction to be committed.
+   * @param srcTxnid id of transaction at source which is committed and to be replicated.
    * @param replPolicy the replication policy to identify the source cluster
    * @throws NoSuchTxnException if the requested transaction does not exist.
    * This can result fro the transaction having timed out and been deleted by
@@ -2854,7 +2854,7 @@ public interface IMetaStoreClient {
    * aborted.  This can result from the transaction timing out.
    * @throws TException
    */
-  void replCommitTxn(long txnid, String replPolicy)
+  void replCommitTxn(long srcTxnid, String replPolicy)
           throws NoSuchTxnException, TxnAbortedException, TException;
 
   /**
@@ -2871,6 +2871,17 @@ public interface IMetaStoreClient {
    * @throws TException
    */
   long allocateTableWriteId(long txnId, String dbName, String tableName) throws TException;
+
+  /**
+   * Replicate Table Write Ids state to mark aborted write ids and writeid high water mark.
+   * @param validWriteIdList Snapshot of writeid list when the table/partition is dumped.
+   * @param dbName Database name
+   * @param tableName Table which is written.
+   * @param partNames List of partitions being written.
+   * @throws TException in case of failure to replicate the writeid state
+   */
+  void replTableWriteIdState(String validWriteIdList, String dbName, String tableName, List<String> partNames)
+          throws TException;
 
   /**
    * Allocate a per table write ID and associate it with the given transaction.

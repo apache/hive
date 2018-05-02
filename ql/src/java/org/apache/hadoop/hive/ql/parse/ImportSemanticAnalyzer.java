@@ -327,15 +327,15 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     Long writeId = 0L; // Initialize with 0 for non-ACID and non-MM tables.
     int stmtId = 0;
-    if ((tableExists && AcidUtils.isTransactionalTable(table))
-        || (!tableExists && AcidUtils.isTablePropertyTransactional(tblDesc.getTblProps()))) {
+    if (!replicationSpec.isInReplicationScope()
+            && ((tableExists && AcidUtils.isTransactionalTable(table))
+            || (!tableExists && AcidUtils.isTablePropertyTransactional(tblDesc.getTblProps())))) {
       //if importing into existing transactional table or will create a new transactional table
       //(because Export was done from transactional table), need a writeId
       // Explain plan doesn't open a txn and hence no need to allocate write id.
       if (x.getCtx().getExplainConfig() == null) {
         writeId = txnMgr.getTableWriteId(tblDesc.getDatabaseName(), tblDesc.getTableName());
         stmtId = txnMgr.getStmtIdAndIncrement();
-
       }
     }
 

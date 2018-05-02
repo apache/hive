@@ -72,8 +72,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
   protected int execute(DriverContext driverContext) {
     try {
       int maxTasks = conf.getIntVar(HiveConf.ConfVars.REPL_APPROX_MAX_LOAD_TASKS);
-      Context context = new Context(conf, getHive(), work.sessionStateLineageState,
-          work.currentTransactionId, driverContext.getCtx());
+      Context context = new Context(conf, getHive(), work.sessionStateLineageState, driverContext.getCtx());
       TaskTracker loadTaskTracker = new TaskTracker(maxTasks);
       /*
           for now for simplicity we are doing just one directory ( one database ), come back to use
@@ -127,7 +126,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
               new TableContext(dbTracker, work.dbNameToLoadIn, work.tableNameToLoadIn);
           TableEvent tableEvent = (TableEvent) next;
           LoadTable loadTable = new LoadTable(tableEvent, context, iterator.replLogger(),
-                                              tableContext, loadTaskTracker, getTxnMgr());
+                                              tableContext, loadTaskTracker);
           tableTracker = loadTable.tasks();
           if (!scope.database) {
             scope.rootTasks.addAll(tableTracker.tasks());
@@ -145,7 +144,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
           // for a table we explicitly try to load partitions as there is no separate partitions events.
           LoadPartitions loadPartitions =
               new LoadPartitions(context, iterator.replLogger(), loadTaskTracker, tableEvent,
-                      work.dbNameToLoadIn, tableContext, getTxnMgr());
+                      work.dbNameToLoadIn, tableContext);
           TaskTracker partitionsTracker = loadPartitions.tasks();
           partitionsPostProcessing(iterator, scope, loadTaskTracker, tableTracker,
               partitionsTracker);
@@ -163,7 +162,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
               work.tableNameToLoadIn);
           LoadPartitions loadPartitions =
               new LoadPartitions(context, iterator.replLogger(), tableContext, loadTaskTracker,
-                      event.asTableEvent(), work.dbNameToLoadIn, event.lastPartitionReplicated(), getTxnMgr());
+                      event.asTableEvent(), work.dbNameToLoadIn, event.lastPartitionReplicated());
           /*
                the tableTracker here should be a new instance and not an existing one as this can
                only happen when we break in between loading partitions.

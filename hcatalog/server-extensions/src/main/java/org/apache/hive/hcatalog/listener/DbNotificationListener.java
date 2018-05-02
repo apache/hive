@@ -240,7 +240,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
         FileStatus file = files[i];
         i++;
         return ReplChangeManager.encodeFileUri(file.getPath().toString(),
-            ReplChangeManager.checksumFor(file.getPath(), fs));
+            ReplChangeManager.checksumFor(file.getPath(), fs), null);
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
