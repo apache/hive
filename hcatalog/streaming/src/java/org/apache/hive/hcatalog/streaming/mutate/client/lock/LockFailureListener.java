@@ -20,7 +20,10 @@ package org.apache.hive.hcatalog.streaming.mutate.client.lock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Provides a means to handle the situation when a held lock fails. */
+/** Provides a means to handle the situation when a held lock fails.
+ * @deprecated as of Hive 3.0.0
+ */
+@Deprecated
 public interface LockFailureListener {
 
   static final Logger LOG = LoggerFactory.getLogger(LockFailureListener.class);

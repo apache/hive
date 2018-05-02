@@ -19,7 +19,7 @@
 package org.apache.hive.streaming;
 
 public class StreamingException extends Exception {
-  public StreamingException(String msg, Exception cause) {
+  public StreamingException(String msg, Throwable cause) {
     super(msg, cause);
   }
   public StreamingException(String msg) {

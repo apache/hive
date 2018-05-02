@@ -19,6 +19,10 @@
 package org.apache.hive.hcatalog.streaming;
 
 
+/**
+ * @deprecated as of Hive 3.0.0, replaced by {@link org.apache.hive.streaming.RecordWriter}
+ */
+@Deprecated
 public interface RecordWriter {
 
   /** Writes using a hive RecordUpdater

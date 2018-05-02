@@ -28,7 +28,10 @@ import org.apache.hadoop.hive.ql.io.RecordUpdater;
 import org.apache.hadoop.hive.ql.io.orc.OrcRecordUpdater;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
-/** Base {@link Mutator} implementation. Creates a suitable {@link RecordUpdater} and delegates mutation events. */
+/** Base {@link Mutator} implementation. Creates a suitable {@link RecordUpdater} and delegates mutation events.
+ * @deprecated as of Hive 3.0.0
+ */
+@Deprecated
 public class MutatorImpl implements Mutator {
 
   private final long writeId;

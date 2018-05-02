@@ -22,6 +22,10 @@ import java.io.IOException;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 
+/**
+ * @deprecated as of Hive 3.0.0
+ */
+@Deprecated
 public interface MutatorFactory {
 
   Mutator newMutator(AcidOutputFormat<?, ?> outputFormat, long writeId, Path partitionPath, int bucketId)

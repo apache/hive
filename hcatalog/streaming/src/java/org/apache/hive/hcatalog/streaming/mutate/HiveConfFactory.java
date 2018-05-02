@@ -22,7 +22,10 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Creates/configures {@link HiveConf} instances with required ACID attributes. */
+/** Creates/configures {@link HiveConf} instances with required ACID attributes.
+ * @deprecated as of Hive 3.0.0
+ */
+@Deprecated
 public class HiveConfFactory {
 
   private static final Logger LOG = LoggerFactory.getLogger(HiveConfFactory.class);
