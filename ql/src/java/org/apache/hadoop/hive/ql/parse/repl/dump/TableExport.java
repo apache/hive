@@ -26,7 +26,6 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
-import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -45,6 +44,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -149,9 +149,11 @@ public class TableExport {
         }
         new PartitionExport(paths, partitions, distCpDoAsUser, conf).write(replicationSpec);
       } else {
-        Path fromPath = tableSpec.tableHandle.getDataLocation();
+        List<Path> dataPathList = Utils.getDataPathList(tableSpec.tableHandle.getDataLocation(),
+                replicationSpec, conf);
+
         // this is the data copy
-        new FileOperations(fromPath, paths.dataExportDir(), distCpDoAsUser, conf)
+        new FileOperations(dataPathList, paths.dataExportDir(), distCpDoAsUser, conf)
             .export(replicationSpec);
       }
     } catch (Exception e) {
@@ -160,12 +162,6 @@ public class TableExport {
   }
 
   private boolean shouldExport() {
-    // Note: this is a temporary setting that is needed because replication does not support
-    //       ACID or MM tables at the moment. It will eventually be removed.
-    if (conf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_INCLUDE_ACID_TABLES)
-        && AcidUtils.isTransactionalTable(tableSpec.tableHandle)) {
-      return true;
-    }
     return Utils.shouldReplicate(replicationSpec, tableSpec.tableHandle, conf);
   }
 

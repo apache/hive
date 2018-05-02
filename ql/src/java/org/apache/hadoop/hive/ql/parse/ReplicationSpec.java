@@ -43,6 +43,7 @@ public class ReplicationSpec {
   private boolean isNoop = false;
   private boolean isLazy = false; // lazy mode => we only list files, and expect that the eventual copy will pull data in.
   private boolean isReplace = true; // default is that the import mode is insert overwrite
+  private String validWriteIdList = null; // WriteIds snapshot for replicating ACID/MM tables.
   private Type specType = Type.DEFAULT; // DEFAULT means REPL_LOAD or BOOTSTRAP_DUMP or EXPORT
 
   // Key definitions related to replication
@@ -52,7 +53,8 @@ public class ReplicationSpec {
     CURR_STATE_ID("repl.last.id"),
     NOOP("repl.noop"),
     LAZY("repl.lazy"),
-    IS_REPLACE("repl.is.replace")
+    IS_REPLACE("repl.is.replace"),
+    VALID_WRITEID_LIST("repl.valid.writeid.list")
     ;
     private final String keyName;
 
@@ -140,6 +142,7 @@ public class ReplicationSpec {
     this.isNoop = Boolean.parseBoolean(keyFetcher.apply(ReplicationSpec.KEY.NOOP.toString()));
     this.isLazy = Boolean.parseBoolean(keyFetcher.apply(ReplicationSpec.KEY.LAZY.toString()));
     this.isReplace = Boolean.parseBoolean(keyFetcher.apply(ReplicationSpec.KEY.IS_REPLACE.toString()));
+    this.validWriteIdList = keyFetcher.apply(ReplicationSpec.KEY.VALID_WRITEID_LIST.toString());
   }
 
   /**
@@ -325,6 +328,27 @@ public class ReplicationSpec {
     this.isLazy = isLazy;
   }
 
+  /**
+   * @return the WriteIds snapshot for the current ACID/MM table being replicated
+   */
+  public String getValidWriteIdList() {
+    return validWriteIdList;
+  }
+
+  /**
+   * @param validWriteIdList WriteIds snapshot for the current ACID/MM table being replicated
+   */
+  public void setValidWriteIdList(String validWriteIdList) {
+    this.validWriteIdList = validWriteIdList;
+  }
+
+  /**
+   * @return whether the current replication dumped object related to ACID/Mm table
+   */
+  public boolean isTransactionalTableDump() {
+    return (validWriteIdList != null);
+  }
+
   public String get(KEY key) {
     switch (key){
       case REPL_SCOPE:
@@ -346,6 +370,8 @@ public class ReplicationSpec {
         return String.valueOf(isLazy());
       case IS_REPLACE:
         return String.valueOf(isReplace());
+      case VALID_WRITEID_LIST:
+        return getValidWriteIdList();
     }
     return null;
   }
