@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
+import org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -114,6 +115,7 @@ public final class HiveFileFormatUtils {
           .put(SequenceFileInputFormat.class, SequenceFileInputFormatChecker.class)
           .put(RCFileInputFormat.class, RCFileInputFormat.class)
           .put(OrcInputFormat.class, OrcInputFormat.class)
+          .put(MapredParquetInputFormat.class, MapredParquetInputFormat.class)
           .build();
       textInputFormatCheckerMap = ImmutableMap
           .<Class<? extends InputFormat>, Class<? extends InputFormatChecker>>builder()
