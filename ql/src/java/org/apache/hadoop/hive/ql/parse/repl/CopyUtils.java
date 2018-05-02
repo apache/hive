@@ -66,43 +66,52 @@ public class CopyUtils {
   // Used by replication, copy files from source to destination. It is possible source file is
   // changed/removed during copy, so double check the checksum after copy,
   // if not match, copy again from cm
-  public void copyAndVerify(FileSystem destinationFs, Path destination,
+  public void copyAndVerify(FileSystem destinationFs, Path destRoot,
                     List<ReplChangeManager.FileInfo> srcFiles) throws IOException, LoginException {
-    Map<FileSystem, List<ReplChangeManager.FileInfo>> map = fsToFileMap(srcFiles);
-    for (Map.Entry<FileSystem, List<ReplChangeManager.FileInfo>> entry : map.entrySet()) {
+    Map<FileSystem, Map< Path, List<ReplChangeManager.FileInfo>>> map = fsToFileMap(srcFiles, destRoot);
+    for (Map.Entry<FileSystem, Map<Path, List<ReplChangeManager.FileInfo>>> entry : map.entrySet()) {
       FileSystem sourceFs = entry.getKey();
-      List<ReplChangeManager.FileInfo> fileInfoList = entry.getValue();
-      boolean useRegularCopy = regularCopy(destinationFs, sourceFs, fileInfoList);
+      Map<Path, List<ReplChangeManager.FileInfo>> destMap = entry.getValue();
+      for (Map.Entry<Path, List<ReplChangeManager.FileInfo>> destMapEntry : destMap.entrySet()) {
+        Path destination = destMapEntry.getKey();
+        List<ReplChangeManager.FileInfo> fileInfoList = destMapEntry.getValue();
+        boolean useRegularCopy = regularCopy(destinationFs, sourceFs, fileInfoList);
 
-      doCopyRetry(sourceFs, fileInfoList, destinationFs, destination, useRegularCopy);
+        if (!destinationFs.exists(destination)
+                && !FileUtils.mkdir(destinationFs, destination, hiveConf)) {
+          LOG.error("Failed to create destination directory: " + destination);
+          throw new IOException("Destination directory creation failed");
+        }
+        doCopyRetry(sourceFs, fileInfoList, destinationFs, destination, useRegularCopy);
 
-      // Verify checksum, retry if checksum changed
-      List<ReplChangeManager.FileInfo> retryFileInfoList = new ArrayList<>();
-      for (ReplChangeManager.FileInfo srcFile : srcFiles) {
-        if(!srcFile.isUseSourcePath()) {
-          // If already use cmpath, nothing we can do here, skip this file
-          continue;
-        }
-        String sourceChecksumString = srcFile.getCheckSum();
-        if (sourceChecksumString != null) {
-          String verifySourceChecksumString;
-          try {
-            verifySourceChecksumString
-                    = ReplChangeManager.checksumFor(srcFile.getSourcePath(), sourceFs);
-          } catch (IOException e) {
-            // Retry with CM path
-            verifySourceChecksumString = null;
+        // Verify checksum, retry if checksum changed
+        List<ReplChangeManager.FileInfo> retryFileInfoList = new ArrayList<>();
+        for (ReplChangeManager.FileInfo srcFile : srcFiles) {
+          if (!srcFile.isUseSourcePath()) {
+            // If already use cmpath, nothing we can do here, skip this file
+            continue;
           }
-          if ((verifySourceChecksumString == null)
-                  || !sourceChecksumString.equals(verifySourceChecksumString)) {
-            // If checksum does not match, likely the file is changed/removed, copy again from cm
-            srcFile.setIsUseSourcePath(false);
-            retryFileInfoList.add(srcFile);
+          String sourceChecksumString = srcFile.getCheckSum();
+          if (sourceChecksumString != null) {
+            String verifySourceChecksumString;
+            try {
+              verifySourceChecksumString
+                      = ReplChangeManager.checksumFor(srcFile.getSourcePath(), sourceFs);
+            } catch (IOException e) {
+              // Retry with CM path
+              verifySourceChecksumString = null;
+            }
+            if ((verifySourceChecksumString == null)
+                    || !sourceChecksumString.equals(verifySourceChecksumString)) {
+              // If checksum does not match, likely the file is changed/removed, copy again from cm
+              srcFile.setIsUseSourcePath(false);
+              retryFileInfoList.add(srcFile);
+            }
           }
         }
-      }
-      if (!retryFileInfoList.isEmpty()) {
-        doCopyRetry(sourceFs, retryFileInfoList, destinationFs, destination, useRegularCopy);
+        if (!retryFileInfoList.isEmpty()) {
+          doCopyRetry(sourceFs, retryFileInfoList, destinationFs, destination, useRegularCopy);
+        }
       }
     }
   }
@@ -212,7 +221,7 @@ public class CopyUtils {
     for (Map.Entry<FileSystem, List<Path>> entry : map.entrySet()) {
       final FileSystem sourceFs = entry.getKey();
       List<ReplChangeManager.FileInfo> fileList = Lists.transform(entry.getValue(),
-                                path -> { return new ReplChangeManager.FileInfo(sourceFs, path);});
+              path -> new ReplChangeManager.FileInfo(sourceFs, path, null));
       doCopyOnce(sourceFs, entry.getValue(),
                  destinationFs, destination,
                  regularCopy(destinationFs, sourceFs, fileList));
@@ -287,16 +296,33 @@ public class CopyUtils {
     return result;
   }
 
-  private Map<FileSystem, List<ReplChangeManager.FileInfo>> fsToFileMap(
-      List<ReplChangeManager.FileInfo> srcFiles) throws IOException {
-    Map<FileSystem, List<ReplChangeManager.FileInfo>> result = new HashMap<>();
+  // Create map of source file system to destination path to list of files to copy
+  private Map<FileSystem, Map<Path, List<ReplChangeManager.FileInfo>>> fsToFileMap(
+      List<ReplChangeManager.FileInfo> srcFiles, Path destRoot) throws IOException {
+    Map<FileSystem, Map<Path, List<ReplChangeManager.FileInfo>>> result = new HashMap<>();
     for (ReplChangeManager.FileInfo file : srcFiles) {
       FileSystem fileSystem = file.getSrcFs();
       if (!result.containsKey(fileSystem)) {
-        result.put(fileSystem, new ArrayList<ReplChangeManager.FileInfo>());
+        result.put(fileSystem, new HashMap<>());
       }
-      result.get(fileSystem).add(file);
+      Path destination = getCopyDestination(file, destRoot);
+      if (!result.get(fileSystem).containsKey(destination)) {
+        result.get(fileSystem).put(destination, new ArrayList<>());
+      }
+      result.get(fileSystem).get(destination).add(file);
     }
     return result;
+  }
+
+  private Path getCopyDestination(ReplChangeManager.FileInfo fileInfo, Path destRoot) {
+    if (fileInfo.getSubDir() == null) {
+      return destRoot;
+    }
+    String[] subDirs = fileInfo.getSubDir().split(Path.SEPARATOR);
+    Path destination = destRoot;
+    for (String subDir: subDirs) {
+      destination = new Path(destination, subDir);
+    }
+    return destination;
   }
 }

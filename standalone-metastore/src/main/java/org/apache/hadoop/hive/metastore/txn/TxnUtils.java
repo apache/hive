@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -56,24 +57,46 @@ public class TxnUtils {
    * @return a valid txn list.
    */
   public static ValidTxnList createValidReadTxnList(GetOpenTxnsResponse txns, long currentTxn) {
-    /*todo: should highWater be min(currentTxn,txns.getTxn_high_water_mark()) assuming currentTxn>0
+    /*
+     * The highWaterMark should be min(currentTxn,txns.getTxn_high_water_mark()) assuming currentTxn>0
      * otherwise if currentTxn=7 and 8 commits before 7, then 7 will see result of 8 which
-     * doesn't make sense for Snapshot Isolation.  Of course for Read Committed, the list should
-     * inlude the latest committed set.*/
-    long highWater = txns.getTxn_high_water_mark();
-    List<Long> open = txns.getOpen_txns();
-    BitSet abortedBits = BitSet.valueOf(txns.getAbortedBits());
-    long[] exceptions = new long[open.size() - (currentTxn > 0 ? 1 : 0)];
+     * doesn't make sense for Snapshot Isolation. Of course for Read Committed, the list should
+     * include the latest committed set.
+     */
+    long highWaterMark = (currentTxn > 0) ? Math.min(currentTxn, txns.getTxn_high_water_mark())
+                                          : txns.getTxn_high_water_mark();
+
+    // Open txns are already sorted in ascending order. This list may or may not include HWM
+    // but it is guaranteed that list won't have txn > HWM. But, if we overwrite the HWM with currentTxn
+    // then need to truncate the exceptions list accordingly.
+    List<Long> openTxns = txns.getOpen_txns();
+
+    // We care only about open/aborted txns below currentTxn and hence the size should be determined
+    // for the exceptions list. The currentTxn will be missing in openTxns list only in rare case like
+    // txn is aborted by AcidHouseKeeperService and compactor actually cleans up the aborted txns.
+    // So, for such cases, we get negative value for sizeToHwm with found position for currentTxn, and so,
+    // we just negate it to get the size.
+    int sizeToHwm = (currentTxn > 0) ? Collections.binarySearch(openTxns, currentTxn) : openTxns.size();
+    sizeToHwm = (sizeToHwm < 0) ? (-sizeToHwm) : sizeToHwm;
+    long[] exceptions = new long[sizeToHwm];
+    BitSet inAbortedBits = BitSet.valueOf(txns.getAbortedBits());
+    BitSet outAbortedBits = new BitSet();
+    long minOpenTxnId = Long.MAX_VALUE;
     int i = 0;
-    for (long txn : open) {
-      if (currentTxn > 0 && currentTxn == txn) continue;
+    for (long txn : openTxns) {
+      // For snapshot isolation, we don't care about txns greater than current txn and so stop here.
+      // Also, we need not include current txn to exceptions list.
+      if ((currentTxn > 0) && (txn >= currentTxn)) {
+        break;
+      }
+      if (inAbortedBits.get(i)) {
+        outAbortedBits.set(i);
+      } else if (minOpenTxnId == Long.MAX_VALUE) {
+        minOpenTxnId = txn;
+      }
       exceptions[i++] = txn;
     }
-    if (txns.isSetMin_open_txn()) {
-      return new ValidReadTxnList(exceptions, abortedBits, highWater, txns.getMin_open_txn());
-    } else {
-      return new ValidReadTxnList(exceptions, abortedBits, highWater);
-    }
+    return new ValidReadTxnList(exceptions, outAbortedBits, highWaterMark, minOpenTxnId);
   }
 
   /**

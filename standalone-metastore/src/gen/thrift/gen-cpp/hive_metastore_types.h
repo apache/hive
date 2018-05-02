@@ -443,6 +443,8 @@ class AbortTxnsRequest;
 
 class CommitTxnRequest;
 
+class ReplTblWriteIdStateRequest;
+
 class GetValidWriteIdsRequest;
 
 class TableValidWriteIds;
@@ -6960,6 +6962,79 @@ class CommitTxnRequest {
 void swap(CommitTxnRequest &a, CommitTxnRequest &b);
 
 inline std::ostream& operator<<(std::ostream& out, const CommitTxnRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _ReplTblWriteIdStateRequest__isset {
+  _ReplTblWriteIdStateRequest__isset() : partNames(false) {}
+  bool partNames :1;
+} _ReplTblWriteIdStateRequest__isset;
+
+class ReplTblWriteIdStateRequest {
+ public:
+
+  ReplTblWriteIdStateRequest(const ReplTblWriteIdStateRequest&);
+  ReplTblWriteIdStateRequest& operator=(const ReplTblWriteIdStateRequest&);
+  ReplTblWriteIdStateRequest() : validWriteIdlist(), user(), hostName(), dbName(), tableName() {
+  }
+
+  virtual ~ReplTblWriteIdStateRequest() throw();
+  std::string validWriteIdlist;
+  std::string user;
+  std::string hostName;
+  std::string dbName;
+  std::string tableName;
+  std::vector<std::string>  partNames;
+
+  _ReplTblWriteIdStateRequest__isset __isset;
+
+  void __set_validWriteIdlist(const std::string& val);
+
+  void __set_user(const std::string& val);
+
+  void __set_hostName(const std::string& val);
+
+  void __set_dbName(const std::string& val);
+
+  void __set_tableName(const std::string& val);
+
+  void __set_partNames(const std::vector<std::string> & val);
+
+  bool operator == (const ReplTblWriteIdStateRequest & rhs) const
+  {
+    if (!(validWriteIdlist == rhs.validWriteIdlist))
+      return false;
+    if (!(user == rhs.user))
+      return false;
+    if (!(hostName == rhs.hostName))
+      return false;
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(tableName == rhs.tableName))
+      return false;
+    if (__isset.partNames != rhs.__isset.partNames)
+      return false;
+    else if (__isset.partNames && !(partNames == rhs.partNames))
+      return false;
+    return true;
+  }
+  bool operator != (const ReplTblWriteIdStateRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ReplTblWriteIdStateRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(ReplTblWriteIdStateRequest &a, ReplTblWriteIdStateRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const ReplTblWriteIdStateRequest& obj)
 {
   obj.printTo(out);
   return out;
