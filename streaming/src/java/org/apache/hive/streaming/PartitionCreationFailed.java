@@ -19,7 +19,7 @@
 package org.apache.hive.streaming;
 
 public class PartitionCreationFailed extends StreamingException {
-  public PartitionCreationFailed(HiveEndPoint endPoint, Exception cause) {
-    super("Failed to create partition " + endPoint, cause);
+  PartitionCreationFailed(StreamingConnection connection, Throwable cause) {
+    super("Failed to create partition " + connection, cause);
   }
 }

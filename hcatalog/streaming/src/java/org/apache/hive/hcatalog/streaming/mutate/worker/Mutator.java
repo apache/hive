@@ -24,7 +24,9 @@ import java.io.IOException;
 /**
  * Interface for submitting mutation events to a given partition and bucket in an ACID table. Requires records to arrive
  * in the order defined by the {@link SequenceValidator}.
+ * @deprecated as of Hive 3.0.0
  */
+@Deprecated
 public interface Mutator extends Closeable, Flushable {
 
   void insert(Object record) throws IOException;

@@ -439,68 +439,75 @@ public class TestStreaming {
     String tableLoc  = "'" + dbUri + Path.SEPARATOR + "streamedtable" + "'";
     String tableLoc2 = "'" + dbUri + Path.SEPARATOR + "finaltable" + "'";
     String tableLoc3 = "'" + dbUri + Path.SEPARATOR + "nobucket" + "'";
+    // disabling vectorization as this test yields incorrect results with vectorization
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
+    try (IDriver driver = DriverFactory.newDriver(conf)) {
+      runDDL(driver, "create database testBucketing3");
+      runDDL(driver, "use testBucketing3");
+      runDDL(driver, "create table streamedtable ( key1 string,key2 int,data string ) clustered by ( key1,key2 ) into "
+        + bucketCount + " buckets  stored as orc  location " + tableLoc + " TBLPROPERTIES ('transactional'='true')");
+      //  In 'nobucket' table we capture bucketid from streamedtable to workaround a hive bug that prevents joins two identically bucketed tables
+      runDDL(driver, "create table nobucket ( bucketid int, key1 string,key2 int,data string ) location " + tableLoc3);
+      runDDL(driver,
+        "create table finaltable ( bucketid int, key1 string,key2 int,data string ) clustered by ( key1,key2 ) into "
+          + bucketCount + " buckets  stored as orc location " + tableLoc2 + " TBLPROPERTIES ('transactional'='true')");
 
-    runDDL(driver, "create database testBucketing3");
-    runDDL(driver, "use testBucketing3");
-    runDDL(driver, "create table streamedtable ( key1 string,key2 int,data string ) clustered by ( key1,key2 ) into "
-            + bucketCount + " buckets  stored as orc  location " + tableLoc + " TBLPROPERTIES ('transactional'='true')") ;
-//  In 'nobucket' table we capture bucketid from streamedtable to workaround a hive bug that prevents joins two identically bucketed tables
-    runDDL(driver, "create table nobucket ( bucketid int, key1 string,key2 int,data string ) location " + tableLoc3) ;
-    runDDL(driver, "create table finaltable ( bucketid int, key1 string,key2 int,data string ) clustered by ( key1,key2 ) into "
-            + bucketCount + " buckets  stored as orc location " + tableLoc2 + " TBLPROPERTIES ('transactional'='true')");
 
+      String[] records = new String[]{
+        "PSFAHYLZVC,29,EPNMA",
+        "PPPRKWAYAU,96,VUTEE",
+        "MIAOFERCHI,3,WBDSI",
+        "CEGQAZOWVN,0,WCUZL",
+        "XWAKMNSVQF,28,YJVHU",
+        "XBWTSAJWME,2,KDQFO",
+        "FUVLQTAXAY,5,LDSDG",
+        "QTQMDJMGJH,6,QBOMA",
+        "EFLOTLWJWN,71,GHWPS",
+        "PEQNAOJHCM,82,CAAFI",
+        "MOEKQLGZCP,41,RUACR",
+        "QZXMCOPTID,37,LFLWE",
+        "EYALVWICRD,13,JEZLC",
+        "VYWLZAYTXX,16,DMVZX",
+        "OSALYSQIXR,47,HNZVE",
+        "JGKVHKCEGQ,25,KSCJB",
+        "WQFMMYDHET,12,DTRWA",
+        "AJOVAYZKZQ,15,YBKFO",
+        "YAQONWCUAU,31,QJNHZ",
+        "DJBXUEUOEB,35,IYCBL"
+      };
 
-    String[] records = new String[] {
-    "PSFAHYLZVC,29,EPNMA",
-    "PPPRKWAYAU,96,VUTEE",
-    "MIAOFERCHI,3,WBDSI",
-    "CEGQAZOWVN,0,WCUZL",
-    "XWAKMNSVQF,28,YJVHU",
-    "XBWTSAJWME,2,KDQFO",
-    "FUVLQTAXAY,5,LDSDG",
-    "QTQMDJMGJH,6,QBOMA",
-    "EFLOTLWJWN,71,GHWPS",
-    "PEQNAOJHCM,82,CAAFI",
-    "MOEKQLGZCP,41,RUACR",
-    "QZXMCOPTID,37,LFLWE",
-    "EYALVWICRD,13,JEZLC",
-    "VYWLZAYTXX,16,DMVZX",
-    "OSALYSQIXR,47,HNZVE",
-    "JGKVHKCEGQ,25,KSCJB",
-    "WQFMMYDHET,12,DTRWA",
-    "AJOVAYZKZQ,15,YBKFO",
-    "YAQONWCUAU,31,QJNHZ",
-    "DJBXUEUOEB,35,IYCBL"
-    };
+      HiveEndPoint endPt = new HiveEndPoint(metaStoreURI, "testBucketing3", "streamedtable", null);
+      String[] colNames1 = new String[]{"key1", "key2", "data"};
+      DelimitedInputWriter wr = new DelimitedInputWriter(colNames1, ",", endPt);
+      StreamingConnection connection = endPt.newConnection(false, "UT_" + Thread.currentThread().getName());
 
-    HiveEndPoint endPt = new HiveEndPoint(metaStoreURI, "testBucketing3", "streamedtable", null);
-    String[] colNames1 = new String[] { "key1", "key2", "data" };
-    DelimitedInputWriter wr = new DelimitedInputWriter(colNames1,",",  endPt);
-    StreamingConnection connection = endPt.newConnection(false, "UT_" + Thread.currentThread().getName());
+      TransactionBatch txnBatch = connection.fetchTransactionBatch(2, wr);
+      txnBatch.beginNextTransaction();
 
-    TransactionBatch txnBatch =  connection.fetchTransactionBatch(2, wr);
-    txnBatch.beginNextTransaction();
+      for (String record : records) {
+        txnBatch.write(record.toString().getBytes());
+      }
 
-    for (String record : records) {
-      txnBatch.write(record.toString().getBytes());
+      txnBatch.commit();
+      txnBatch.close();
+      connection.close();
+
+      ArrayList<String> res1 = queryTable(driver, "select row__id.bucketid, * from streamedtable order by key2");
+      for (String re : res1) {
+        System.out.println(re);
+      }
+
+      driver.run("insert into nobucket select row__id.bucketid,* from streamedtable");
+      runDDL(driver, " insert into finaltable select * from nobucket");
+      ArrayList<String> res2 = queryTable(driver,
+        "select row__id.bucketid,* from finaltable where row__id.bucketid<>bucketid");
+      for (String s : res2) {
+        LOG.error(s);
+      }
+      Assert.assertTrue(res2.isEmpty());
+    } finally {
+      conf.unset(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED.varname);
     }
-
-    txnBatch.commit();
-    txnBatch.close();
-    connection.close();
-
-    ArrayList<String> res1 = queryTable(driver, "select row__id.bucketid, * from streamedtable order by key2");
-    for (String re : res1) {
-      System.out.println(re);
-    }
-
-    driver.run("insert into nobucket select row__id.bucketid,* from streamedtable");
-    runDDL(driver, " insert into finaltable select * from nobucket");
-    ArrayList<String> res2 = queryTable(driver, "select row__id.bucketid,* from finaltable where row__id.bucketid<>bucketid");
-    for (String s : res2) {
-      LOG.error(s);
-    }
-    Assert.assertTrue(res2.isEmpty());
   }
 
 

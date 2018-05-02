@@ -18,163 +18,73 @@
 
 package org.apache.hive.streaming;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.RegexSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.StructField;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.Text;
 
 /**
  * Streaming Writer handles text input data with regex. Uses
  * org.apache.hadoop.hive.serde2.RegexSerDe
+ *
+ * NOTE: This record writer is NOT thread-safe. Use one record writer per streaming connection.
  */
 public class StrictRegexWriter extends AbstractRecordWriter {
+  private String regex;
   private RegexSerDe serde;
-  private final StructObjectInspector recordObjInspector;
-  private final ObjectInspector[] bucketObjInspectors;
-  private final StructField[] bucketStructFields;
 
-  /**
-   * @param endPoint the end point to write to
-   * @param conn     connection this Writer is to be used with
-   * @throws ConnectionError
-   * @throws SerializationError
-   * @throws StreamingException
-   */
-  public StrictRegexWriter(HiveEndPoint endPoint, StreamingConnection conn)
-    throws ConnectionError, SerializationError, StreamingException {
-    this(null, endPoint, null, conn);
+  private StrictRegexWriter(final Builder builder) {
+    this.regex = builder.regex;
   }
 
-  /**
-   * @param endPoint the end point to write to
-   * @param conf     a Hive conf object. Should be null if not using advanced Hive settings.
-   * @param conn     connection this Writer is to be used with
-   * @throws ConnectionError
-   * @throws SerializationError
-   * @throws StreamingException
-   */
-  public StrictRegexWriter(HiveEndPoint endPoint, HiveConf conf, StreamingConnection conn)
-    throws ConnectionError, SerializationError, StreamingException {
-    this(null, endPoint, conf, conn);
+  public static Builder newBuilder() {
+    return new Builder();
   }
 
-  /**
-   * @param regex    to parse the data
-   * @param endPoint the end point to write to
-   * @param conf     a Hive conf object. Should be null if not using advanced Hive settings.
-   * @param conn     connection this Writer is to be used with
-   * @throws ConnectionError
-   * @throws SerializationError
-   * @throws StreamingException
-   */
-  public StrictRegexWriter(String regex, HiveEndPoint endPoint, HiveConf conf, StreamingConnection conn)
-    throws ConnectionError, SerializationError, StreamingException {
-    super(endPoint, conf, conn);
-    this.serde = createSerde(tbl, conf, regex);
-    // get ObjInspectors for entire record and bucketed cols
-    try {
-      recordObjInspector = (StructObjectInspector) serde.getObjectInspector();
-      this.bucketObjInspectors = getObjectInspectorsForBucketedCols(bucketIds, recordObjInspector);
-    } catch (SerDeException e) {
-      throw new SerializationError("Unable to get ObjectInspector for bucket columns", e);
+  public static class Builder {
+    private String regex;
+
+    public Builder withRegex(final String regex) {
+      this.regex = regex;
+      return this;
     }
 
-    // get StructFields for bucketed cols
-    bucketStructFields = new StructField[bucketIds.size()];
-    List<? extends StructField> allFields = recordObjInspector.getAllStructFieldRefs();
-    for (int i = 0; i < bucketIds.size(); i++) {
-      bucketStructFields[i] = allFields.get(bucketIds.get(i));
-    }
-  }
-
-  @Override
-  public AbstractSerDe getSerde() {
-    return serde;
-  }
-
-  @Override
-  protected StructObjectInspector getRecordObjectInspector() {
-    return recordObjInspector;
-  }
-
-  @Override
-  protected StructField[] getBucketStructFields() {
-    return bucketStructFields;
-  }
-
-  @Override
-  protected ObjectInspector[] getBucketObjectInspectors() {
-    return bucketObjInspectors;
-  }
-
-
-  @Override
-  public void write(long writeId, byte[] record)
-    throws StreamingIOFailure, SerializationError {
-    try {
-      Object encodedRow = encode(record);
-      int bucket = getBucket(encodedRow);
-      getRecordUpdater(bucket).insert(writeId, encodedRow);
-    } catch (IOException e) {
-      throw new StreamingIOFailure("Error writing record in transaction write id("
-        + writeId + ")", e);
+    public StrictRegexWriter build() {
+      return new StrictRegexWriter(this);
     }
   }
 
   /**
    * Creates RegexSerDe
    *
-   * @param tbl   used to create serde
-   * @param conf  used to create serde
-   * @param regex used to create serde
-   * @return
    * @throws SerializationError if serde could not be initialized
    */
-  private static RegexSerDe createSerde(Table tbl, HiveConf conf, String regex)
-    throws SerializationError {
+  @Override
+  public RegexSerDe createSerde() throws SerializationError {
     try {
       Properties tableProps = MetaStoreUtils.getTableMetadata(tbl);
       tableProps.setProperty(RegexSerDe.INPUT_REGEX, regex);
-      ArrayList<String> tableColumns = getCols(tbl);
-      tableProps.setProperty(serdeConstants.LIST_COLUMNS, StringUtils.join(tableColumns, ","));
+      tableProps.setProperty(serdeConstants.LIST_COLUMNS, StringUtils.join(inputColumns, ","));
       RegexSerDe serde = new RegexSerDe();
       SerDeUtils.initializeSerDe(serde, conf, tableProps, null);
+      this.serde = serde;
       return serde;
     } catch (SerDeException e) {
       throw new SerializationError("Error initializing serde " + RegexSerDe.class.getName(), e);
     }
   }
 
-  private static ArrayList<String> getCols(Table table) {
-    List<FieldSchema> cols = table.getSd().getCols();
-    ArrayList<String> colNames = new ArrayList<String>(cols.size());
-    for (FieldSchema col : cols) {
-      colNames.add(col.getName().toLowerCase());
-    }
-    return colNames;
-  }
-
   /**
    * Encode Utf8 encoded string bytes using RegexSerDe
    *
-   * @param utf8StrRecord
+   * @param utf8StrRecord - serialized record
    * @return The encoded object
-   * @throws SerializationError
+   * @throws SerializationError - in case of any deserialization error
    */
   @Override
   public Object encode(byte[] utf8StrRecord) throws SerializationError {
