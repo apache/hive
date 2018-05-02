@@ -68,6 +68,12 @@ public class FSPartitionEvent implements PartitionEvent {
   }
 
   @Override
+  public List<String> partitions(ImportTableDesc tblDesc)
+          throws SemanticException {
+    return tableEvent.partitions(tblDesc);
+  }
+
+  @Override
   public ReplicationSpec replicationSpec() {
     return tableEvent.replicationSpec();
   }

@@ -36,18 +36,16 @@ public class Context {
   taken care when using other methods.
  */
   public final LineageState sessionStateLineageState;
-  public final long currentTransactionId;
 
 
   public Context(HiveConf hiveConf, Hive hiveDb,
-      LineageState lineageState, long currentTransactionId,
+      LineageState lineageState,
       org.apache.hadoop.hive.ql.Context nestedContext) throws MetaException {
     this.hiveConf = hiveConf;
     this.hiveDb = hiveDb;
     this.warehouse = new Warehouse(hiveConf);
     this.pathInfo = new PathInfo(hiveConf);
     sessionStateLineageState = lineageState;
-    this.currentTransactionId = currentTransactionId;
     this.nestedContext = nestedContext;
   }
 }

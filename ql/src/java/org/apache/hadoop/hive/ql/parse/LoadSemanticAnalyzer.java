@@ -81,7 +81,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     });
     if ((srcs != null) && srcs.length == 1) {
-      if (srcs[0].isDir()) {
+      if (srcs[0].isDirectory()) {
         srcs = fs.listStatus(srcs[0].getPath(), new PathFilter() {
           @Override
           public boolean accept(Path p) {
