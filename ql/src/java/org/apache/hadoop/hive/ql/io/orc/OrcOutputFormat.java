@@ -227,6 +227,11 @@ public class OrcOutputFormat extends FileOutputFormat<NullWritable, OrcSerdeRow>
       return null;
     }
 
+    @Override
+    public long getBufferedRowCount() {
+      return 0;
+    }
+
     private void stringifyObject(StringBuilder buffer,
                                  Object obj,
                                  ObjectInspector inspector

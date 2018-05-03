@@ -106,6 +106,8 @@ public class OrcRecordUpdater implements RecordUpdater {
   // This records how many rows have been inserted or deleted.  It is separate from insertedRows
   // because that is monotonically increasing to give new unique row ids.
   private long rowCountDelta = 0;
+  // used only for insert events, this is the number of rows held in memory before flush() is invoked
+  private long bufferedRows = 0;
   private final KeyIndexBuilder indexBuilder = new KeyIndexBuilder("insert");
   private KeyIndexBuilder deleteEventIndexBuilder;
   private StructField recIdField = null; // field to look for the record identifier in
@@ -438,6 +440,7 @@ public class OrcRecordUpdater implements RecordUpdater {
       addSimpleEvent(INSERT_OPERATION, currentWriteId, insertedRows++, row);
     }
     rowCountDelta++;
+    bufferedRows++;
   }
 
   @Override
@@ -481,6 +484,7 @@ public class OrcRecordUpdater implements RecordUpdater {
       flushLengths.writeLong(len);
       OrcInputFormat.SHIMS.hflush(flushLengths);
     }
+    bufferedRows = 0;
     //multiple transactions only happen for streaming ingest which only allows inserts
     assert deleteEventWriter == null : "unexpected delete writer for " + path;
   }
@@ -537,6 +541,11 @@ public class OrcRecordUpdater implements RecordUpdater {
     // Don't worry about setting raw data size diff.  I have no idea how to calculate that
     // without finding the row we are updating or deleting, which would be a mess.
     return stats;
+  }
+
+  @Override
+  public long getBufferedRowCount() {
+    return bufferedRows;
   }
 
   static RecordIdentifier[] parseKeyIndex(Reader reader) {
