@@ -361,7 +361,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
             return true;
           case INSERT_OVERWRITE:
             //see HIVE-18154
-            return false; // TODO: is this still relevant for insert-only tables?
+            return false;
           default:
             //not relevant for LOAD
             return false;

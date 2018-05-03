@@ -74,11 +74,26 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     return TEST_DATA_DIR;
   }
 
-  @Test//todo: what is this for?
+  /**
+   * tests that a failing Insert Overwrite (which creates a new base_x) is properly marked as
+   * aborted.
+   */
+  @Test
   public void testInsertOverwrite() throws Exception {
     runStatementOnDriver("insert overwrite table " + Table.NONACIDORCTBL + " select a,b from " + Table.NONACIDORCTBL2);
     runStatementOnDriver("create table " + Table.NONACIDORCTBL2 + "3(a int, b int) clustered by (a) into " + BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES ('transactional'='false')");
-
+    runStatementOnDriver("insert into " + Table.ACIDTBL + " values(1,2)");
+    List<String> rs = runStatementOnDriver("select a from " + Table.ACIDTBL + " where b = 2");
+    Assert.assertEquals(1, rs.size());
+    Assert.assertEquals("1", rs.get(0));
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, true);
+    runStatementOnDriver("insert into " + Table.ACIDTBL + " values(3,2)");
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, false);
+    runStatementOnDriver("insert into " + Table.ACIDTBL + " values(5,6)");
+    rs = runStatementOnDriver("select a from " + Table.ACIDTBL + " order by a");
+    Assert.assertEquals(2, rs.size());
+    Assert.assertEquals("1", rs.get(0));
+    Assert.assertEquals("5", rs.get(1));
   }
   @Ignore("not needed but useful for testing")
   @Test
