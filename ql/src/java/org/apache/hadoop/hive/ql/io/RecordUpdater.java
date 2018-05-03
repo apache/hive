@@ -18,10 +18,9 @@
 
 package org.apache.hadoop.hive.ql.io;
 
-import org.apache.hadoop.hive.serde2.SerDeStats;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-
 import java.io.IOException;
+
+import org.apache.hadoop.hive.serde2.SerDeStats;
 
 /**
  * API for supporting updating records.
@@ -73,4 +72,11 @@ public interface RecordUpdater {
    * @return SerDeStats
    */
   SerDeStats getStats();
+
+  /**
+   * Returns the number of rows in memory before flush().
+   *
+   * @return - buffered row count
+   */
+  long getBufferedRowCount();
 }

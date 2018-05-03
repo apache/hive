@@ -20,7 +20,6 @@ package org.apache.hive.streaming;
 
 import java.util.Properties;
 
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.serde2.JsonSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
@@ -53,7 +52,7 @@ public class StrictJsonWriter extends AbstractRecordWriter {
   @Override
   public JsonSerDe createSerde() throws SerializationError {
     try {
-      Properties tableProps = MetaStoreUtils.getTableMetadata(tbl);
+      Properties tableProps = table.getMetadata();
       JsonSerDe serde = new JsonSerDe();
       SerDeUtils.initializeSerDe(serde, conf, tableProps, null);
       this.serde = serde;

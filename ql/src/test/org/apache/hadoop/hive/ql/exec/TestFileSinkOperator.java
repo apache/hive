@@ -773,6 +773,11 @@ public class TestFileSinkOperator {
           stats.setRowCount(numRecordsAdded);
           return stats;
         }
+
+        @Override
+        public long getBufferedRowCount() {
+          return records.size();
+        }
       };
     }
 
