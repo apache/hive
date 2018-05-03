@@ -61,4 +61,11 @@ public interface StreamingConnection extends ConnectionInfo, PartitionHandler {
    * Closes streaming connection.
    */
   void close();
+
+  /**
+   * Gets stats about the streaming connection.
+   *
+   * @return - connection stats
+   */
+  ConnectionStats getConnectionStats();
 }
