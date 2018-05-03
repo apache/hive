@@ -399,6 +399,8 @@
                     <include>Partition.java</include>
                     <include>SerDeInfo.java</include>
                     <include>StorageDescriptor.java</include>
+                    <include>ColumnStatisticsDesc.java</include>
+                    <include>ColumnStatisticsObj.java</include>
                   </includes>
                   <tokenValueMap>${basedir}/src/main/resources/thrift-replacements.txt</tokenValueMap>
                   <regex>true</regex>
