@@ -59,6 +59,7 @@ import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ColumnStatsList;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
+import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.ColStatistics.Range;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -1054,8 +1055,8 @@ public class StatsUtils {
       cs.setAvgColLen(getAvgColLenOf(conf,cinfo.getObjectInspector(), cinfo.getTypeName()));
     } else if (colTypeLowerCase.equals(serdeConstants.BOOLEAN_TYPE_NAME)) {
         cs.setCountDistint(2);
-        cs.setNumTrues(Math.max(1, (long)numRows/2));
-        cs.setNumFalses(Math.max(1, (long)numRows/2));
+        cs.setNumTrues(Math.max(1, numRows/2));
+        cs.setNumFalses(Math.max(1, numRows/2));
         cs.setAvgColLen(JavaDataModel.get().primitive1());
     } else if (colTypeLowerCase.equals(serdeConstants.TIMESTAMP_TYPE_NAME) ||
         colTypeLowerCase.equals(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME)) {
@@ -1117,6 +1118,12 @@ public class StatsUtils {
     // Retrieve stats from metastore
     String dbName = table.getDbName();
     String tabName = table.getTableName();
+    if (SemanticAnalyzer.DUMMY_DATABASE.equals(dbName) &&
+        SemanticAnalyzer.DUMMY_TABLE.equals(tabName)) {
+      // insert into values gets written into insert from select dummy_table
+      // This table is dummy and has no stats
+      return null;
+    }
     List<ColStatistics> stats = null;
     try {
       List<ColumnStatisticsObj> colStat = Hive.get().getTableColumnStatistics(
