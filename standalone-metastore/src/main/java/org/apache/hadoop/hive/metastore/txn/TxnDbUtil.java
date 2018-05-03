@@ -82,20 +82,20 @@ public final class TxnDbUtil {
           "  TXN_HOST varchar(128) NOT NULL)");
 
       stmt.execute("CREATE TABLE TXN_COMPONENTS (" +
-          "  TC_TXNID bigint REFERENCES TXNS (TXN_ID)," +
+          "  TC_TXNID bigint NOT NULL REFERENCES TXNS (TXN_ID)," +
           "  TC_DATABASE varchar(128) NOT NULL," +
           "  TC_TABLE varchar(128)," +
           "  TC_PARTITION varchar(767)," +
           "  TC_OPERATION_TYPE char(1) NOT NULL," +
-          "  TC_WRITEID bigint)");
+          "  TC_WRITEID bigint NOT NULL)");
       stmt.execute("CREATE TABLE COMPLETED_TXN_COMPONENTS (" +
-          "  CTC_TXNID bigint," +
+          "  CTC_TXNID bigint NOT NULL," +
           "  CTC_DATABASE varchar(128) NOT NULL," +
           "  CTC_TABLE varchar(128)," +
           "  CTC_PARTITION varchar(767)," +
           "  CTC_ID bigint GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1) NOT NULL," +
           "  CTC_TIMESTAMP timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL," +
-          "  CTC_WRITEID bigint)");
+          "  CTC_WRITEID bigint NOT NULL)");
       stmt.execute("CREATE TABLE NEXT_TXN_ID (" + "  NTXN_NEXT bigint NOT NULL)");
       stmt.execute("INSERT INTO NEXT_TXN_ID VALUES(1)");
 
