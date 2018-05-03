@@ -347,6 +347,7 @@ KW_OPERATOR: 'OPERATOR';
 KW_EXPRESSION: 'EXPRESSION';
 KW_DETAIL: 'DETAIL';
 KW_WAIT: 'WAIT';
+KW_SYNC: 'SYNC';
 
 // Operators
 // NOTE: if you add a new function/operator, add it to sysFuncNames so that describe function _FUNC_ will work.

@@ -35,6 +35,8 @@ public class MsckDesc extends DDLWork implements Serializable {
   private ArrayList<LinkedHashMap<String, String>> partSpecs;
   private String resFile;
   private boolean repairPartitions;
+  private boolean addPartitions;
+  private boolean dropPartitions;
 
   /**
    * For serialization use only.
@@ -42,20 +44,26 @@ public class MsckDesc extends DDLWork implements Serializable {
   public MsckDesc() {
   }
 
-  /**
-   * Description of a msck command.
-   *
-   * @param tableName
-   *          Table to check, can be null.
-   * @param partSpecs
-   *          Partition specification, can be null.
-   * @param resFile
-   *          Where to save the output of the command
-   * @param repairPartitions
-   *          remove stale / add new partitions found during the check
-   */
+    /**
+     * Description of a msck command.
+     *
+     * @param tableName
+     *          Table to check, can be null.
+     * @param partSpecs
+     *          Partition specification, can be null.
+     * @param resFile
+     *          Where to save the output of the command
+     * @param repairPartitions
+     *          remove stale / add new partitions found during the check
+     * @param addPartitions
+     *          find partitions that are missing from metastore, and add them when repairPartitions
+     *          is set to true
+     * @param dropPartitions
+     *          find stale partitions in metastore, and drop them when repairPartitions
+     *          is set to true
+     */
   public MsckDesc(String tableName, List<? extends Map<String, String>> partSpecs,
-      Path resFile, boolean repairPartitions) {
+        Path resFile, boolean repairPartitions, boolean addPartitions, boolean dropPartitions) {
     super();
     this.tableName = tableName;
     this.partSpecs = new ArrayList<LinkedHashMap<String, String>>(partSpecs.size());
@@ -64,6 +72,8 @@ public class MsckDesc extends DDLWork implements Serializable {
     }
     this.resFile = resFile.toString();
     this.repairPartitions = repairPartitions;
+    this.addPartitions = addPartitions;
+    this.dropPartitions = dropPartitions;
   }
 
   /**
@@ -116,6 +126,20 @@ public class MsckDesc extends DDLWork implements Serializable {
    */
   public boolean isRepairPartitions() {
     return repairPartitions;
+  }
+
+  /**
+   * @return if missing partitions is to be found, and added with repair option
+   */
+  public boolean isAddPartitions() {
+    return addPartitions;
+  }
+
+  /**
+   * @return if stale partitions is to be found, and removed with repair option
+   */
+  public boolean isDropPartitions() {
+    return dropPartitions;
   }
 
   /**

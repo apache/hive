@@ -466,6 +466,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
     xlateMap.put("KW_CLUSTER", "CLUSTER");
     xlateMap.put("KW_DISTRIBUTE", "DISTRIBUTE");
     xlateMap.put("KW_SORT", "SORT");
+    xlateMap.put("KW_SYNC", "SYNC");
     xlateMap.put("KW_UNION", "UNION");
     xlateMap.put("KW_INTERSECT", "INTERSECT");
     xlateMap.put("KW_EXCEPT", "EXCEPT");
@@ -1796,8 +1797,11 @@ withAdminOption
 metastoreCheck
 @init { pushMsg("metastore check statement", state); }
 @after { popMsg(state); }
-    : KW_MSCK (repair=KW_REPAIR)? (KW_TABLE tableName partitionSpec? (COMMA partitionSpec)*)?
-    -> ^(TOK_MSCK $repair? (tableName partitionSpec*)?)
+    : KW_MSCK (repair=KW_REPAIR)?
+      (KW_TABLE tableName
+        ((add=KW_ADD | drop=KW_DROP | sync=KW_SYNC) (parts=KW_PARTITIONS))? |
+        (partitionSpec)?)
+    -> ^(TOK_MSCK $repair? tableName? $add? $drop? $sync? (partitionSpec*)?)
     ;
 
 resourceList
