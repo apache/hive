@@ -166,8 +166,8 @@ import org.slf4j.LoggerFactory;
     this();
     this.isTblLevel = isTblLevel;
     setIsTblLevelIsSet(true);
-    this.dbName = dbName;
-    this.tableName = tableName;
+    this.dbName = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(dbName);
+    this.tableName = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(tableName);
   }
 
   /**
@@ -177,17 +177,17 @@ import org.slf4j.LoggerFactory;
     __isset_bitfield = other.__isset_bitfield;
     this.isTblLevel = other.isTblLevel;
     if (other.isSetDbName()) {
-      this.dbName = other.dbName;
+      this.dbName = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(other.dbName);
     }
     if (other.isSetTableName()) {
-      this.tableName = other.tableName;
+      this.tableName = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(other.tableName);
     }
     if (other.isSetPartName()) {
       this.partName = other.partName;
     }
     this.lastAnalyzed = other.lastAnalyzed;
     if (other.isSetCatName()) {
-      this.catName = other.catName;
+      this.catName = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(other.catName);
     }
   }
 
@@ -234,7 +234,7 @@ import org.slf4j.LoggerFactory;
   }
 
   public void setDbName(String dbName) {
-    this.dbName = dbName;
+    this.dbName = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(dbName);
   }
 
   public void unsetDbName() {
@@ -257,7 +257,7 @@ import org.slf4j.LoggerFactory;
   }
 
   public void setTableName(String tableName) {
-    this.tableName = tableName;
+    this.tableName = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(tableName);
   }
 
   public void unsetTableName() {
@@ -325,7 +325,7 @@ import org.slf4j.LoggerFactory;
   }
 
   public void setCatName(String catName) {
-    this.catName = catName;
+    this.catName = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(catName);
   }
 
   public void unsetCatName() {
@@ -750,7 +750,7 @@ import org.slf4j.LoggerFactory;
             break;
           case 2: // DB_NAME
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.dbName = iprot.readString();
+              struct.dbName = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(iprot.readString());
               struct.setDbNameIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
@@ -758,7 +758,7 @@ import org.slf4j.LoggerFactory;
             break;
           case 3: // TABLE_NAME
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.tableName = iprot.readString();
+              struct.tableName = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(iprot.readString());
               struct.setTableNameIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
@@ -782,7 +782,7 @@ import org.slf4j.LoggerFactory;
             break;
           case 6: // CAT_NAME
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.catName = iprot.readString();
+              struct.catName = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(iprot.readString());
               struct.setCatNameIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
@@ -880,9 +880,9 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol iprot = (TTupleProtocol) prot;
       struct.isTblLevel = iprot.readBool();
       struct.setIsTblLevelIsSet(true);
-      struct.dbName = iprot.readString();
+      struct.dbName = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(iprot.readString());
       struct.setDbNameIsSet(true);
-      struct.tableName = iprot.readString();
+      struct.tableName = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(iprot.readString());
       struct.setTableNameIsSet(true);
       BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
@@ -894,7 +894,7 @@ import org.slf4j.LoggerFactory;
         struct.setLastAnalyzedIsSet(true);
       }
       if (incoming.get(2)) {
-        struct.catName = iprot.readString();
+        struct.catName = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(iprot.readString());
         struct.setCatNameIsSet(true);
       }
     }
