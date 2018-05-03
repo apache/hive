@@ -20,6 +20,8 @@ package org.apache.hive.streaming;
 
 import java.util.List;
 
+import org.apache.hadoop.hive.ql.metadata.Table;
+
 /**
  * Helper interface to get connection related information.
  */
@@ -33,18 +35,11 @@ public interface ConnectionInfo {
   String getMetastoreUri();
 
   /**
-   * Get the database used by streaming connection.
-   *
-   * @return - database
-   */
-  String getDatabase();
-
-  /**
    * Get the table used by streaming connection.
    *
    * @return - table
    */
-  String getTable();
+  Table getTable();
 
   /**
    * Get any static partitions specified during streaming connection creation.

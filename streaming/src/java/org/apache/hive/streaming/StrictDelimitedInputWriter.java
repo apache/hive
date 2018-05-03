@@ -21,7 +21,6 @@ package org.apache.hive.streaming;
 
 import java.util.Properties;
 
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
@@ -93,7 +92,7 @@ public class StrictDelimitedInputWriter extends AbstractRecordWriter {
   @Override
   public LazySimpleSerDe createSerde() throws SerializationError {
     try {
-      Properties tableProps = MetaStoreUtils.getTableMetadata(tbl);
+      Properties tableProps = table.getMetadata();
       tableProps.setProperty(serdeConstants.LIST_COLUMNS, Joiner.on(",").join(inputColumns));
       tableProps.setProperty(serdeConstants.LIST_COLUMN_TYPES, Joiner.on(":").join(inputTypes));
       tableProps.setProperty(serdeConstants.FIELD_DELIM, String.valueOf(fieldDelimiter));

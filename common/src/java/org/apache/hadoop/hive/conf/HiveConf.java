@@ -1899,6 +1899,19 @@ public class HiveConf extends Configuration {
         " (split generation reads and caches file footers). HYBRID chooses between the above strategies" +
         " based on heuristics."),
 
+    // hive streaming ingest settings
+    HIVE_STREAMING_AUTO_FLUSH_ENABLED("hive.streaming.auto.flush.enabled", true, "Whether to enable memory \n" +
+      "monitoring and automatic flushing of open record updaters during streaming ingest. This is an expert level \n" +
+      "setting and disabling this may have severe performance impact under memory pressure."),
+    HIVE_HEAP_MEMORY_MONITOR_USAGE_THRESHOLD("hive.heap.memory.monitor.usage.threshold", 0.7f,
+      "Hive streaming does automatic memory management across all open record writers. This threshold will let the \n" +
+        "memory monitor take an action (flush open files) when heap memory usage exceeded this threshold."),
+    HIVE_STREAMING_AUTO_FLUSH_CHECK_INTERVAL_SIZE("hive.streaming.auto.flush.check.interval.size", "100Mb",
+      new SizeValidator(),
+      "Hive streaming ingest has auto flush mechanism to flush all open record updaters under memory pressure.\n" +
+        "When memory usage exceed hive.heap.memory.monitor.default.usage.threshold, the auto-flush mechanism will \n" +
+        "wait until this size (default 100Mb) of records are ingested before triggering flush."),
+
     HIVE_ORC_MS_FOOTER_CACHE_ENABLED("hive.orc.splits.ms.footer.cache.enabled", false,
         "Whether to enable using file metadata cache in metastore for ORC file footers."),
     HIVE_ORC_MS_FOOTER_CACHE_PPD("hive.orc.splits.ms.footer.cache.ppd.enabled", true,
