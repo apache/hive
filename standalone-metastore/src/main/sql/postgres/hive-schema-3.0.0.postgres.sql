@@ -680,7 +680,7 @@ CREATE TABLE "WM_TRIGGER" (
     "NAME" character varying(128) NOT NULL,
     "TRIGGER_EXPRESSION" character varying(1024) DEFAULT NULL::character varying,
     "ACTION_EXPRESSION" character varying(1024) DEFAULT NULL::character varying,
-    "IS_IN_UNMANAGED" boolean NOT NULL DEFAULT false
+    "IS_IN_UNMANAGED" smallint NOT NULL DEFAULT 0
 );
 
 CREATE TABLE "WM_POOL_TO_TRIGGER" (
