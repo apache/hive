@@ -231,7 +231,7 @@ import org.slf4j.LoggerFactory;
       this.privileges = new PrincipalPrivilegeSet(other.privileges);
     }
     if (other.isSetCatName()) {
-      this.catName = other.catName;
+      this.catName = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(other.catName);
     }
   }
 
@@ -467,7 +467,7 @@ import org.slf4j.LoggerFactory;
   }
 
   public void setCatName(String catName) {
-    this.catName = catName;
+    this.catName = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(catName);
   }
 
   public void unsetCatName() {
@@ -1029,7 +1029,7 @@ import org.slf4j.LoggerFactory;
             break;
           case 2: // DB_NAME
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.dbName = iprot.readString();
+              struct.dbName = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(iprot.readString());
               struct.setDbNameIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
@@ -1037,7 +1037,7 @@ import org.slf4j.LoggerFactory;
             break;
           case 3: // TABLE_NAME
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.tableName = iprot.readString();
+              struct.tableName = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(iprot.readString());
               struct.setTableNameIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
@@ -1099,7 +1099,7 @@ import org.slf4j.LoggerFactory;
             break;
           case 9: // CAT_NAME
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.catName = iprot.readString();
+              struct.catName = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(iprot.readString());
               struct.setCatNameIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
@@ -1284,11 +1284,11 @@ import org.slf4j.LoggerFactory;
         struct.setValuesIsSet(true);
       }
       if (incoming.get(1)) {
-        struct.dbName = iprot.readString();
+        struct.dbName = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(iprot.readString());
         struct.setDbNameIsSet(true);
       }
       if (incoming.get(2)) {
-        struct.tableName = iprot.readString();
+        struct.tableName = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(iprot.readString());
         struct.setTableNameIsSet(true);
       }
       if (incoming.get(3)) {
@@ -1325,7 +1325,7 @@ import org.slf4j.LoggerFactory;
         struct.setPrivilegesIsSet(true);
       }
       if (incoming.get(8)) {
-        struct.catName = iprot.readString();
+        struct.catName = org.apache.hadoop.hive.metastore.utils.StringUtils.intern(iprot.readString());
         struct.setCatNameIsSet(true);
       }
     }
