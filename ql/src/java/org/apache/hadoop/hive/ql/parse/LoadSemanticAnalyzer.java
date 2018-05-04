@@ -62,6 +62,7 @@ import org.apache.hadoop.hive.ql.plan.BasicStatsWork;
 import org.apache.hadoop.mapred.InputFormat;
 
 import com.google.common.collect.Lists;
+import org.apache.hadoop.mapred.TextInputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -172,8 +173,6 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
         if (oneSrc.isDir()) {
           reparseAndSuperAnalyze(table, fromURI);
           return null;
-/*          throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(fromTree,
-              "source contains directory: " + oneSrc.getPath().toString()));*/
         }
       }
       validateAcidFiles(table, srcs, fileSystem);
@@ -449,8 +448,9 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
     // wipe out partition columns
     tempTableObj.setPartCols(new ArrayList<>());
 
-    // Set data location
+    // Set data location and input format, it must be text
     tempTableObj.setDataLocation(new Path(fromURI));
+    tempTableObj.setInputFormatClass(TextInputFormat.class);
 
     // Step 2 : create the Insert query
     StringBuilder rewrittenQueryStr = new StringBuilder();
