@@ -158,12 +158,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab2
 POSTHOOK: Output: default@tab2
 PREHOOK: query: analyze table tab2 compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@tab2
 PREHOOK: Output: default@tab2
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: analyze table tab2 compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@tab2
 POSTHOOK: Output: default@tab2
 POSTHOOK: Output: hdfs://### HDFS PATH ###

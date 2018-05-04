@@ -235,19 +235,19 @@ Stage-2
         default@src_stats,src_stats,Tbl:COMPLETE,Col:COMPLETE
 
 PREHOOK: query: analyze table src_stats compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@src_stats
 PREHOOK: Output: default@src_stats
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: analyze table src_stats compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@src_stats
 POSTHOOK: Output: default@src_stats
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain analyze analyze table src_stats compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 POSTHOOK: query: explain analyze analyze table src_stats compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 
