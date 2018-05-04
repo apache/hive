@@ -95,32 +95,32 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@loc
 POSTHOOK: Output: default@loc
 PREHOOK: query: analyze table emp compute statistics for columns lastname,deptid,locid
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@emp
 PREHOOK: Output: default@emp
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table emp compute statistics for columns lastname,deptid,locid
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@emp
 POSTHOOK: Output: default@emp
 #### A masked pattern was here ####
 PREHOOK: query: analyze table dept compute statistics for columns deptname,deptid
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@dept
 PREHOOK: Output: default@dept
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table dept compute statistics for columns deptname,deptid
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@dept
 POSTHOOK: Output: default@dept
 #### A masked pattern was here ####
 PREHOOK: query: analyze table loc compute statistics for columns state,locid,zip,year
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@loc
 PREHOOK: Output: default@loc
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table loc compute statistics for columns state,locid,zip,year
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@loc
 POSTHOOK: Output: default@loc
 #### A masked pattern was here ####

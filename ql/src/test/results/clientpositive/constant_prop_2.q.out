@@ -23,10 +23,10 @@ POSTHOOK: Input: default@src
 500
 PREHOOK: query: explain 
 analyze table srcpart partition (ds='2008-04-08',hr=11) compute statistics for columns key, value
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 POSTHOOK: query: explain 
 analyze table srcpart partition (ds='2008-04-08',hr=11) compute statistics for columns key, value
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0

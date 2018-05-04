@@ -218,12 +218,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@src
 PREHOOK: query: ANALYZE TABLE src COMPUTE STATISTICS FOR COLUMNS key,value
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@src
 PREHOOK: Output: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: ANALYZE TABLE src COMPUTE STATISTICS FOR COLUMNS key,value
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@src
 #### A masked pattern was here ####

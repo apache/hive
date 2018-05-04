@@ -7,9 +7,9 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1
 PREHOOK: query: explain analyze table t1 compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 POSTHOOK: query: explain analyze table t1 compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0
@@ -57,12 +57,12 @@ STAGE PLANS:
           Table: default.t1
 
 PREHOOK: query: analyze table t1 compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@t1
 PREHOOK: Output: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table t1 compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: default@t1
 #### A masked pattern was here ####

@@ -34,12 +34,12 @@ POSTHOOK: Lineage: emps.empid SCRIPT []
 POSTHOOK: Lineage: emps.name SCRIPT []
 POSTHOOK: Lineage: emps.salary SCRIPT []
 PREHOOK: query: analyze table emps compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@emps
 PREHOOK: Output: default@emps
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table emps compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@emps
 POSTHOOK: Output: default@emps
 #### A masked pattern was here ####
@@ -71,12 +71,12 @@ POSTHOOK: Lineage: depts.deptno SCRIPT []
 POSTHOOK: Lineage: depts.locationid SCRIPT []
 POSTHOOK: Lineage: depts.name SCRIPT []
 PREHOOK: query: analyze table depts compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@depts
 PREHOOK: Output: default@depts
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table depts compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@depts
 POSTHOOK: Output: default@depts
 #### A masked pattern was here ####
@@ -105,12 +105,12 @@ POSTHOOK: Output: default@dependents
 POSTHOOK: Lineage: dependents.empid SCRIPT []
 POSTHOOK: Lineage: dependents.name SCRIPT []
 PREHOOK: query: analyze table dependents compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@dependents
 PREHOOK: Output: default@dependents
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table dependents compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@dependents
 POSTHOOK: Output: default@dependents
 #### A masked pattern was here ####
@@ -139,12 +139,12 @@ POSTHOOK: Output: default@locations
 POSTHOOK: Lineage: locations.locationid SCRIPT []
 POSTHOOK: Lineage: locations.name SCRIPT []
 PREHOOK: query: analyze table locations compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@locations
 PREHOOK: Output: default@locations
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table locations compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@locations
 POSTHOOK: Output: default@locations
 #### A masked pattern was here ####
@@ -203,12 +203,12 @@ POSTHOOK: Input: default@emps
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1
 PREHOOK: query: analyze table mv1 compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@mv1
 PREHOOK: Output: default@mv1
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table mv1 compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@mv1
 POSTHOOK: Output: default@mv1
 #### A masked pattern was here ####
@@ -321,12 +321,12 @@ POSTHOOK: Input: default@emps
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1
 PREHOOK: query: analyze table mv1 compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@mv1
 PREHOOK: Output: default@mv1
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table mv1 compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@mv1
 POSTHOOK: Output: default@mv1
 #### A masked pattern was here ####
@@ -443,12 +443,12 @@ POSTHOOK: Input: default@emps
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1
 PREHOOK: query: analyze table mv1 compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@mv1
 PREHOOK: Output: default@mv1
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table mv1 compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@mv1
 POSTHOOK: Output: default@mv1
 #### A masked pattern was here ####
@@ -591,12 +591,12 @@ POSTHOOK: Input: default@emps
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1
 PREHOOK: query: analyze table mv1 compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@mv1
 PREHOOK: Output: default@mv1
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table mv1 compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@mv1
 POSTHOOK: Output: default@mv1
 #### A masked pattern was here ####
@@ -764,12 +764,12 @@ POSTHOOK: Input: default@emps
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1
 PREHOOK: query: analyze table mv1 compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@mv1
 PREHOOK: Output: default@mv1
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table mv1 compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@mv1
 POSTHOOK: Output: default@mv1
 #### A masked pattern was here ####

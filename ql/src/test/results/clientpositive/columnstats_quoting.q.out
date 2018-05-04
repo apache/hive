@@ -11,9 +11,9 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@user_web_events
 PREHOOK: query: explain analyze table user_web_events compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 POSTHOOK: query: explain analyze table user_web_events compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0
@@ -61,19 +61,19 @@ STAGE PLANS:
           Table: default.user_web_events
 
 PREHOOK: query: analyze table user_web_events compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@user_web_events
 PREHOOK: Output: default@user_web_events
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table user_web_events compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@user_web_events
 POSTHOOK: Output: default@user_web_events
 #### A masked pattern was here ####
 PREHOOK: query: explain analyze table user_web_events compute statistics for columns `user id`
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 POSTHOOK: query: explain analyze table user_web_events compute statistics for columns `user id`
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0
@@ -121,12 +121,12 @@ STAGE PLANS:
           Table: default.user_web_events
 
 PREHOOK: query: analyze table user_web_events compute statistics for columns `user id`
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@user_web_events
 PREHOOK: Output: default@user_web_events
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table user_web_events compute statistics for columns `user id`
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@user_web_events
 POSTHOOK: Output: default@user_web_events
 #### A masked pattern was here ####

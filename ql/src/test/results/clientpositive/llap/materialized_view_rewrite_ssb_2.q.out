@@ -529,52 +529,52 @@ POSTHOOK: Lineage: lineorder.lo_suppkey SIMPLE [(lineorder_ext)lineorder_ext.Fie
 POSTHOOK: Lineage: lineorder.lo_supplycost SIMPLE [(lineorder_ext)lineorder_ext.FieldSchema(name:lo_supplycost, type:double, comment:null), ]
 POSTHOOK: Lineage: lineorder.lo_tax SIMPLE [(lineorder_ext)lineorder_ext.FieldSchema(name:lo_tax, type:double, comment:null), ]
 PREHOOK: query: analyze table customer compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@customer
 PREHOOK: Output: default@customer
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table customer compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@customer
 POSTHOOK: Output: default@customer
 #### A masked pattern was here ####
 PREHOOK: query: analyze table dates compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@dates
 PREHOOK: Output: default@dates
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table dates compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@dates
 POSTHOOK: Output: default@dates
 #### A masked pattern was here ####
 PREHOOK: query: analyze table ssb_part compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@ssb_part
 PREHOOK: Output: default@ssb_part
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table ssb_part compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@ssb_part
 POSTHOOK: Output: default@ssb_part
 #### A masked pattern was here ####
 PREHOOK: query: analyze table supplier compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@supplier
 PREHOOK: Output: default@supplier
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table supplier compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@supplier
 POSTHOOK: Output: default@supplier
 #### A masked pattern was here ####
 PREHOOK: query: analyze table lineorder compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@lineorder
 PREHOOK: Output: default@lineorder
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table lineorder compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@lineorder
 POSTHOOK: Output: default@lineorder
 #### A masked pattern was here ####
