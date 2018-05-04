@@ -392,13 +392,13 @@ public class HiveMetaTool {
       printSerdePropURIUpdateSummary(updateSerdeURIretVal, serdePropKey, isDryRun);
     }
   }
-  private void prepareAcidUpgrade(HiveMetaTool metaTool) {
+  private void prepareAcidUpgrade(String scriptLocation) {
     try {
-      prepareAcidUpgradeInternal();
+      prepareAcidUpgradeInternal(scriptLocation);
     }
     catch(TException|IOException ex) {
       System.err.println(StringUtils.stringifyException(ex));
-      printAndExit(metaTool);
+      printAndExit(this);
     }
   }
   private static class CompactionMetaInfo {
@@ -430,7 +430,7 @@ public class HiveMetaTool {
    * @throws MetaException
    * @throws TException
    */
-  private void prepareAcidUpgradeInternal() throws MetaException, TException, IOException {
+  private void prepareAcidUpgradeInternal(String scriptLocation) throws MetaException, TException, IOException {
     Configuration conf = MetastoreConf.newMetastoreConf();
     System.out.println("Looking for Acid tables that need to be compacted");
     //todo: check if acid is enabled and bail if not
@@ -441,7 +441,6 @@ public class HiveMetaTool {
     List<String> compactions = new ArrayList<>();
     List<String> convertToAcid = new ArrayList<>();
     List<String> convertToMM = new ArrayList<>();
-    final String scriptLocation = ".";//todo: get this from input
     final CompactionMetaInfo compactionMetaInfo = new CompactionMetaInfo();
     for(String dbName : databases) {
       List<String> tables = hms.getAllTables(dbName);
@@ -549,8 +548,13 @@ public class HiveMetaTool {
    */
   private static void makeCompactionScript(List<String> commands, String scriptLocation,
       CompactionMetaInfo compactionMetaInfo) throws IOException {
-    try(PrintWriter pw = createScript(commands, "compacts_" + System.currentTimeMillis() +
-        ".sql", scriptLocation)) {
+    if (commands.isEmpty()) {
+      System.out.println("No compaction is necessary");
+      return;
+    }
+    String fileName = "compacts_" + System.currentTimeMillis() + ".sql";
+    System.out.println("Writing compaction commands to " + fileName);
+    try(PrintWriter pw = createScript(commands, fileName, scriptLocation)) {
       //add post script
       pw.println("-- Generated total of " + commands.size() + " compaction commands");
       if(compactionMetaInfo.numberOfBytes < Math.pow(2, 20)) {
@@ -576,13 +580,24 @@ public class HiveMetaTool {
   }
   private static void makeConvertTableScript(List<String> alterTableAcid, List<String> alterTableMm,
       String scriptLocation) throws IOException {
-    try(PrintWriter pw = createScript(alterTableAcid, "convertToAcid_" + System.currentTimeMillis() + ".sql",
-        scriptLocation)) {
-      pw.println("-- These commands may be executed by Hive 1.x later");
+    if (alterTableAcid.isEmpty()) {
+      System.out.println("No acid conversion is necessary");
+    } else {
+      String fileName = "convertToAcid_" + System.currentTimeMillis() + ".sql";
+      System.out.println("Writing acid conversion commands to " + fileName);
+      try(PrintWriter pw = createScript(alterTableAcid, fileName, scriptLocation)) {
+        pw.println("-- These commands may be executed by Hive 1.x later");
+      }
     }
-    try(PrintWriter pw = createScript(alterTableMm, "convertToMM_" + System.currentTimeMillis() + ".sql",
-        scriptLocation)) {
-      pw.println("-- These commands must be executed by Hive 3.0 or later");
+    
+    if (alterTableMm.isEmpty()) {
+      System.out.println("No managed table conversion is necessary");
+    } else {
+      String fileName = "convertToMM_" + System.currentTimeMillis() + ".sql";
+      System.out.println("Writing managed table conversion commands to " + fileName);
+      try(PrintWriter pw = createScript(alterTableMm, fileName, scriptLocation)) {
+        pw.println("-- These commands must be executed by Hive 3.0 or later");
+      }
     }
   }
 
@@ -597,8 +612,15 @@ public class HiveMetaTool {
     return pw;
   }
   private static void makeRenameFileScript(String scriptLocation) throws IOException {
-    createScript(Collections.emptyList(), "normalizeFileNames_" +
-        System.currentTimeMillis() + ".sh", scriptLocation);
+    List<String> commands = Collections.emptyList();
+    if (commands.isEmpty()) {
+      System.out.println("No file renaming is necessary");
+    } else {
+      String fileName = "normalizeFileNames_" + System.currentTimeMillis() + ".sh";
+      System.out.println("Writing file renaming commands to " + fileName);
+      PrintWriter pw = createScript(commands, fileName, scriptLocation);
+      pw.close();
+    }
   }
   /**
    * @return any compaction commands to run for {@code Table t}
@@ -843,13 +865,16 @@ public class HiveMetaTool {
           }
       } else if(line.hasOption("prepareAcidUpgrade")) {
         String[] values = line.getOptionValues("prepareAcidUpgrade");
-        String targetDir = null;
+        String targetDir = ".";
         if(values != null && values.length > 0) {
           if(values.length > 1) {
             System.err.println("HiveMetaTool: prepareAcidUpgrade");
+            printAndExit(metaTool);
+          } else {
+            targetDir = values[0];
           }
         }
-        metaTool.prepareAcidUpgrade(metaTool);
+        metaTool.prepareAcidUpgrade(targetDir);
       } else {
           if (line.hasOption("dryRun")) {
             System.err.println("HiveMetaTool: dryRun is not a valid standalone option");
