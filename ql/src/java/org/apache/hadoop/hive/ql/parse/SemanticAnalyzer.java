@@ -14384,7 +14384,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (isNonNativeTable) {
       return WriteEntity.WriteType.INSERT_OVERWRITE;
     } else {
-      return ((ltd.getLoadFileType() == LoadFileType.REPLACE_ALL)
+      return ((ltd.getLoadFileType() == LoadFileType.REPLACE_ALL || ltd.isInsertOverwrite())
           ? WriteEntity.WriteType.INSERT_OVERWRITE : getWriteType(dest));
     }
   }
