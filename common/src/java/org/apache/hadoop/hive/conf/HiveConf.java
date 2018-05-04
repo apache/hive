@@ -3022,6 +3022,16 @@ public class HiveConf extends Configuration {
         "The maximum number of past queries to show in HiverSever2 WebUI."),
     HIVE_SERVER2_WEBUI_USE_PAM("hive.server2.webui.use.pam", false,
         "If true, the HiveServer2 WebUI will be secured with PAM."),
+    HIVE_SERVER2_WEBUI_ENABLE_CORS("hive.server2.webui.enable.cors", false,
+      "Whether to enable cross origin requests (CORS)\n"),
+    HIVE_SERVER2_WEBUI_CORS_ALLOWED_ORIGINS("hive.server2.webui.cors.allowed.origins", "*",
+      "Comma separated list of origins that are allowed when CORS is enabled.\n"),
+    HIVE_SERVER2_WEBUI_CORS_ALLOWED_METHODS("hive.server2.webui.cors.allowed.methods", "GET,POST,DELETE,HEAD",
+      "Comma separated list of http methods that are allowed when CORS is enabled.\n"),
+    HIVE_SERVER2_WEBUI_CORS_ALLOWED_HEADERS("hive.server2.webui.cors.allowed.headers",
+      "X-Requested-With,Content-Type,Accept,Origin",
+      "Comma separated list of http headers that are allowed when CORS is enabled.\n"),
+
 
     // Tez session settings
     HIVE_SERVER2_ACTIVE_PASSIVE_HA_ENABLE("hive.server2.active.passive.ha.enable", false,
