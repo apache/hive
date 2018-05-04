@@ -109,4 +109,34 @@ public class StringUtils {
     wrt.close();
     return stm.toString();
   }
+
+  /**
+   * Given an array of bytes it will convert the bytes to a hex string
+   * representation of the bytes.
+   * @param bytes Input bytes
+   * @param start start index, inclusively
+   * @param end end index, exclusively
+   * @return hex string representation of the byte array
+   */
+  public static String byteToHexString(byte[] bytes, int start, int end) {
+    if(bytes == null) {
+      throw new IllegalArgumentException("bytes == null");
+    } else {
+      StringBuilder s = new StringBuilder();
+
+      for(int i = start; i < end; ++i) {
+        s.append(String.format("%02x", bytes[i]));
+      }
+      return s.toString();
+    }
+  }
+
+  /**
+   * Checks if the input string/char sequence is empty
+   * @param cs Input char sequence
+   * @return true if empty and false if not
+   */
+  public static boolean isEmpty(CharSequence cs) {
+    return cs == null || cs.length() == 0;
+  }
 }
