@@ -2436,6 +2436,10 @@ public class HiveConf extends Configuration {
         "In nonstrict mode, for non-ACID resources, INSERT will only acquire shared lock, which\n" +
         "allows two concurrent writes to the same partition but still lets lock manager prevent\n" +
         "DROP TABLE etc. when the table is being written to"),
+    TXN_OVERWRITE_X_LOCK("hive.txn.xlock.iow", true,
+        "Ensures commands with OVERWRITE (such as INSERT OVERWRITE) acquire Exclusive locks for\b" +
+            "transactional tables.  This ensures that inserts (w/o overwrite) running concurrently\n" +
+            "are not hidden by the INSERT OVERWRITE."),
     /**
      * @deprecated Use MetastoreConf.TXN_TIMEOUT
      */

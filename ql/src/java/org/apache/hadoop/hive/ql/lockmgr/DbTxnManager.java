@@ -510,7 +510,11 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
         case INSERT_OVERWRITE:
           t = getTable(output);
           if (AcidUtils.isTransactionalTable(t)) {
-            compBuilder.setSemiShared();
+            if(conf.getBoolVar(HiveConf.ConfVars.TXN_OVERWRITE_X_LOCK)) {
+              compBuilder.setExclusive();
+            } else {
+              compBuilder.setSemiShared();
+            }
             compBuilder.setOperationType(DataOperationType.UPDATE);
           } else {
             compBuilder.setExclusive();
