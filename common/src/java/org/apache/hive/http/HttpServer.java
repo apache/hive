@@ -46,6 +46,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authentication.server.AuthenticationFilter;
 import org.apache.hadoop.security.authorize.AccessControlList;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.security.http.CrossOriginFilter;
 import org.apache.hive.http.security.PamAuthenticator;
 import org.apache.hive.http.security.PamConstraint;
 import org.apache.hive.http.security.PamConstraintMapping;
@@ -125,6 +126,10 @@ public class HttpServer {
     private boolean useSPNEGO;
     private boolean useSSL;
     private boolean usePAM;
+    private boolean enableCORS;
+    private String allowedOrigins;
+    private String allowedMethods;
+    private String allowedHeaders;
     private PamAuthenticator pamAuthenticator;
     private String contextRootRewriteTarget = "/index.html";
     private final List<Pair<String, Class<? extends HttpServlet>>> servlets =
@@ -196,6 +201,26 @@ public class HttpServer {
 
     public Builder setUseSPNEGO(boolean useSPNEGO) {
       this.useSPNEGO = useSPNEGO;
+      return this;
+    }
+
+    public Builder setEnableCORS(boolean enableCORS) {
+      this.enableCORS = enableCORS;
+      return this;
+    }
+
+    public Builder setAllowedOrigins(String allowedOrigins) {
+      this.allowedOrigins = allowedOrigins;
+      return this;
+    }
+
+    public Builder setAllowedMethods(String allowedMethods) {
+      this.allowedMethods = allowedMethods;
+      return this;
+    }
+
+    public Builder setAllowedHeaders(String allowedHeaders) {
+      this.allowedHeaders = allowedHeaders;
       return this;
     }
 
@@ -401,6 +426,23 @@ public class HttpServer {
   }
 
   /**
+   * Setup cross-origin requests (CORS) filter.
+   * @param b - builder
+   */
+  private void setupCORSFilter(Builder b) {
+    FilterHolder holder = new FilterHolder();
+    holder.setClassName(CrossOriginFilter.class.getName());
+    Map<String, String> params = new HashMap<>();
+    params.put(CrossOriginFilter.ALLOWED_ORIGINS, b.allowedOrigins);
+    params.put(CrossOriginFilter.ALLOWED_METHODS, b.allowedMethods);
+    params.put(CrossOriginFilter.ALLOWED_HEADERS, b.allowedHeaders);
+    holder.setInitParameters(params);
+
+    ServletHandler handler = webAppContext.getServletHandler();
+    handler.addFilterWithMapping(holder, "/*", FilterMapping.ALL);
+  }
+
+  /**
    * Create a channel connector for "http/https" requests
    */
   Connector createChannelConnector(int queueSize, Builder b) {
@@ -472,6 +514,10 @@ public class HttpServer {
     if (b.useSPNEGO) {
       // Secure the web server with kerberos
       setupSpnegoFilter(b);
+    }
+
+    if (b.enableCORS) {
+      setupCORSFilter(b);
     }
 
     initializeWebServer(b, threadPool.getMaxThreads());
