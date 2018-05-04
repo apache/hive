@@ -19,7 +19,9 @@
 package org.apache.hive.jdbc;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -38,6 +40,7 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethodBase;
 import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.methods.OptionsMethod;
 import org.apache.curator.test.TestingServer;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -51,6 +54,7 @@ import org.apache.hive.service.server.HS2ActivePassiveHARegistryClient;
 import org.apache.hive.service.server.HiveServer2Instance;
 import org.apache.hive.service.server.TestHS2HttpServerPam;
 import org.apache.hive.service.servlet.HS2Peers;
+import org.apache.http.HttpException;
 import org.apache.http.HttpHeaders;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.After;
@@ -317,6 +321,8 @@ public class TestActivePassiveHA {
 
   @Test(timeout = 60000)
   public void testManualFailover() throws Exception {
+    hiveConf1.setBoolVar(ConfVars.HIVE_SERVER2_WEBUI_ENABLE_CORS, true);
+    hiveConf2.setBoolVar(ConfVars.HIVE_SERVER2_WEBUI_ENABLE_CORS, true);
     setPamConfs(hiveConf1);
     setPamConfs(hiveConf2);
     PamAuthenticator pamAuthenticator1 = new TestHS2HttpServerPam.TestPamAuthenticator(hiveConf1);
@@ -337,41 +343,43 @@ public class TestActivePassiveHA {
       // when we start miniHS2_1 will be leader (sequential start)
       assertEquals(true, miniHS2_1.getIsLeaderTestFuture().get());
       assertEquals(true, miniHS2_1.isLeader());
-      assertEquals("true", sendGet(url1, true));
+      assertEquals("true", sendGet(url1, true, true));
 
       // trigger failover on miniHS2_1
-      String resp = sendDelete(url1, true);
+      String resp = sendDelete(url1, true, true);
       assertTrue(resp.contains("Failover successful!"));
 
       // make sure miniHS2_1 is not leader
       assertEquals(true, miniHS2_1.getNotLeaderTestFuture().get());
       assertEquals(false, miniHS2_1.isLeader());
-      assertEquals("false", sendGet(url1, true));
+      assertEquals("false", sendGet(url1, true, true));
 
       // make sure miniHS2_2 is the new leader
       assertEquals(true, miniHS2_2.getIsLeaderTestFuture().get());
       assertEquals(true, miniHS2_2.isLeader());
-      assertEquals("true", sendGet(url2, true));
+      assertEquals("true", sendGet(url2, true, true));
 
       // send failover request again to miniHS2_1 and get a failure
-      resp = sendDelete(url1, true);
+      resp = sendDelete(url1, true, true);
       assertTrue(resp.contains("Cannot failover an instance that is not a leader"));
       assertEquals(true, miniHS2_1.getNotLeaderTestFuture().get());
       assertEquals(false, miniHS2_1.isLeader());
 
       // send failover request to miniHS2_2 and make sure miniHS2_1 takes over (returning back to leader, test listeners)
-      resp = sendDelete(url2, true);
+      resp = sendDelete(url2, true, true);
       assertTrue(resp.contains("Failover successful!"));
       assertEquals(true, miniHS2_1.getIsLeaderTestFuture().get());
       assertEquals(true, miniHS2_1.isLeader());
-      assertEquals("true", sendGet(url1, true));
+      assertEquals("true", sendGet(url1, true, true));
       assertEquals(true, miniHS2_2.getNotLeaderTestFuture().get());
-      assertEquals("false", sendGet(url2, true));
+      assertEquals("false", sendGet(url2, true, true));
       assertEquals(false, miniHS2_2.isLeader());
     } finally {
       // revert configs to not affect other tests
       unsetPamConfs(hiveConf1);
       unsetPamConfs(hiveConf2);
+      hiveConf1.unset(ConfVars.HIVE_SERVER2_WEBUI_ENABLE_CORS.varname);
+      hiveConf2.unset(ConfVars.HIVE_SERVER2_WEBUI_ENABLE_CORS.varname);
     }
   }
 
@@ -533,20 +541,40 @@ public class TestActivePassiveHA {
   }
 
   private String sendGet(String url, boolean enableAuth) throws Exception {
-    return sendAuthMethod(new GetMethod(url), enableAuth);
+    return sendAuthMethod(new GetMethod(url), enableAuth, false);
+  }
+
+  private String sendGet(String url, boolean enableAuth, boolean enableCORS) throws Exception {
+    return sendAuthMethod(new GetMethod(url), enableAuth, enableCORS);
   }
 
   private String sendDelete(String url, boolean enableAuth) throws Exception {
-    return sendAuthMethod(new DeleteMethod(url), enableAuth);
+    return sendAuthMethod(new DeleteMethod(url), enableAuth, false);
   }
 
-  private String sendAuthMethod(HttpMethodBase method, boolean enableAuth) throws Exception {
+  private String sendDelete(String url, boolean enableAuth, boolean enableCORS) throws Exception {
+    return sendAuthMethod(new DeleteMethod(url), enableAuth, enableCORS);
+  }
+
+  private String sendAuthMethod(HttpMethodBase method, boolean enableAuth, boolean enableCORS) throws Exception {
     HttpClient client = new HttpClient();
     try {
       if (enableAuth) {
-        String userPass = ADMIN_USER + ":" + ADMIN_PASSWORD;
-        method.addRequestHeader(HttpHeaders.AUTHORIZATION,
-          "Basic " + new String(Base64.getEncoder().encode(userPass.getBytes())));
+        setupAuthHeaders(method);
+      }
+      // CORS check
+      if (enableCORS) {
+        String origin = "http://example.com";
+        OptionsMethod optionsMethod = new OptionsMethod(method.getURI().toString());
+        optionsMethod.addRequestHeader("Origin", origin);
+        setupAuthHeaders(optionsMethod);
+        int statusCode = client.executeMethod(optionsMethod);
+        if (statusCode == 200) {
+          assertNotNull(optionsMethod.getResponseHeader("Access-Control-Allow-Origin"));
+          assertEquals(origin, optionsMethod.getResponseHeader("Access-Control-Allow-Origin").getValue());
+        } else {
+          fail("CORS returned: " + statusCode + " Error: " + optionsMethod.getStatusLine().getReasonPhrase());
+        }
       }
       int statusCode = client.executeMethod(method);
       if (statusCode == 200) {
@@ -557,6 +585,12 @@ public class TestActivePassiveHA {
     } finally {
       method.releaseConnection();
     }
+  }
+
+  private void setupAuthHeaders(final HttpMethodBase method) {
+    String userPass = ADMIN_USER + ":" + ADMIN_PASSWORD;
+    method.addRequestHeader(HttpHeaders.AUTHORIZATION,
+      "Basic " + new String(Base64.getEncoder().encode(userPass.getBytes())));
   }
 
   private Map<String, String> getConfOverlay(final String instanceId) {

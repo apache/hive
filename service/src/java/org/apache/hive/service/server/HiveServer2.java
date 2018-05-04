@@ -345,6 +345,24 @@ public class HiveServer2 extends CompositeService {
             builder.setSPNEGOKeytab(spnegoKeytab);
             builder.setUseSPNEGO(true);
           }
+          if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_ENABLE_CORS)) {
+            builder.setEnableCORS(true);
+            String allowedOrigins = hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_CORS_ALLOWED_ORIGINS);
+            String allowedMethods = hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_CORS_ALLOWED_METHODS);
+            String allowedHeaders = hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_CORS_ALLOWED_HEADERS);
+            if (Strings.isBlank(allowedOrigins) || Strings.isBlank(allowedMethods) || Strings.isBlank(allowedHeaders)) {
+              throw new IllegalArgumentException("CORS enabled. But " +
+                ConfVars.HIVE_SERVER2_WEBUI_CORS_ALLOWED_ORIGINS.varname + "/" +
+                ConfVars.HIVE_SERVER2_WEBUI_CORS_ALLOWED_METHODS.varname + "/" +
+                ConfVars.HIVE_SERVER2_WEBUI_CORS_ALLOWED_HEADERS.varname + "/" +
+                " is not configured");
+            }
+            builder.setAllowedOrigins(allowedOrigins);
+            builder.setAllowedMethods(allowedMethods);
+            builder.setAllowedHeaders(allowedHeaders);
+            LOG.info("CORS enabled - allowed-origins: {} allowed-methods: {} allowed-headers: {}", allowedOrigins,
+              allowedMethods, allowedHeaders);
+          }
           if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_USE_PAM)) {
             if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_USE_SSL)) {
               String hiveServer2PamServices = hiveConf.getVar(ConfVars.HIVE_SERVER2_PAM_SERVICES);
