@@ -178,8 +178,8 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
 	numFiles            	3                   
-	numRows             	15                  
-	rawDataSize         	3483                
+	numRows             	5                   
+	rawDataSize         	1069                
 	totalSize           	4033                
 #### A masked pattern was here ####
 	 	 

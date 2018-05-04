@@ -44,12 +44,12 @@ bitVector
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\",\"col4\":\"true\",\"col5\":\"true\",\"col6\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: analyze table testAvro compute statistics for columns col1,col3
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@testavro
 PREHOOK: Output: default@testavro
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table testAvro compute statistics for columns col1,col3
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@testavro
 POSTHOOK: Output: default@testavro
 #### A masked pattern was here ####

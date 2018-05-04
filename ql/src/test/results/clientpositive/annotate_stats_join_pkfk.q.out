@@ -295,12 +295,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@store
 POSTHOOK: Output: default@store
 PREHOOK: query: analyze table store compute statistics for columns s_store_sk, s_floor_space
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@store
 PREHOOK: Output: default@store
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table store compute statistics for columns s_store_sk, s_floor_space
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@store
 POSTHOOK: Output: default@store
 #### A masked pattern was here ####
@@ -313,12 +313,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@store_bigint
 POSTHOOK: Output: default@store_bigint
 PREHOOK: query: analyze table store_bigint compute statistics for columns s_store_sk, s_floor_space
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@store_bigint
 PREHOOK: Output: default@store_bigint
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table store_bigint compute statistics for columns s_store_sk, s_floor_space
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@store_bigint
 POSTHOOK: Output: default@store_bigint
 #### A masked pattern was here ####
@@ -331,12 +331,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@store_sales
 POSTHOOK: Output: default@store_sales
 PREHOOK: query: analyze table store_sales compute statistics for columns ss_store_sk, ss_addr_sk, ss_quantity
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@store_sales
 PREHOOK: Output: default@store_sales
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table store_sales compute statistics for columns ss_store_sk, ss_addr_sk, ss_quantity
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@store_sales
 POSTHOOK: Output: default@store_sales
 #### A masked pattern was here ####
@@ -349,12 +349,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@customer_address
 POSTHOOK: Output: default@customer_address
 PREHOOK: query: analyze table customer_address compute statistics for columns ca_address_sk
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@customer_address
 PREHOOK: Output: default@customer_address
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table customer_address compute statistics for columns ca_address_sk
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@customer_address
 POSTHOOK: Output: default@customer_address
 #### A masked pattern was here ####

@@ -175,67 +175,67 @@ POSTHOOK: Lineage: e011_03_small.c1 SIMPLE [(e011_01_small)e011_01_small.FieldSc
 POSTHOOK: Lineage: e011_03_small.c2 SIMPLE [(e011_01_small)e011_01_small.FieldSchema(name:c2, type:decimal(7,2), comment:null), ]
 c1	c2
 PREHOOK: query: ANALYZE TABLE e011_01 COMPUTE STATISTICS FOR COLUMNS
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@e011_01
 PREHOOK: Output: default@e011_01
 #### A masked pattern was here ####
 POSTHOOK: query: ANALYZE TABLE e011_01 COMPUTE STATISTICS FOR COLUMNS
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@e011_01
 POSTHOOK: Output: default@e011_01
 #### A masked pattern was here ####
 _c0	_c1
 PREHOOK: query: ANALYZE TABLE e011_02 COMPUTE STATISTICS FOR COLUMNS
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@e011_02
 PREHOOK: Output: default@e011_02
 #### A masked pattern was here ####
 POSTHOOK: query: ANALYZE TABLE e011_02 COMPUTE STATISTICS FOR COLUMNS
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@e011_02
 POSTHOOK: Output: default@e011_02
 #### A masked pattern was here ####
 _c0	_c1
 PREHOOK: query: ANALYZE TABLE e011_03 COMPUTE STATISTICS FOR COLUMNS
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@e011_03
 PREHOOK: Output: default@e011_03
 #### A masked pattern was here ####
 POSTHOOK: query: ANALYZE TABLE e011_03 COMPUTE STATISTICS FOR COLUMNS
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@e011_03
 POSTHOOK: Output: default@e011_03
 #### A masked pattern was here ####
 _c0	_c1
 PREHOOK: query: ANALYZE TABLE e011_01_small COMPUTE STATISTICS FOR COLUMNS
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@e011_01_small
 PREHOOK: Output: default@e011_01_small
 #### A masked pattern was here ####
 POSTHOOK: query: ANALYZE TABLE e011_01_small COMPUTE STATISTICS FOR COLUMNS
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@e011_01_small
 POSTHOOK: Output: default@e011_01_small
 #### A masked pattern was here ####
 _c0	_c1
 PREHOOK: query: ANALYZE TABLE e011_02_small COMPUTE STATISTICS FOR COLUMNS
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@e011_02_small
 PREHOOK: Output: default@e011_02_small
 #### A masked pattern was here ####
 POSTHOOK: query: ANALYZE TABLE e011_02_small COMPUTE STATISTICS FOR COLUMNS
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@e011_02_small
 POSTHOOK: Output: default@e011_02_small
 #### A masked pattern was here ####
 _c0	_c1
 PREHOOK: query: ANALYZE TABLE e011_03_small COMPUTE STATISTICS FOR COLUMNS
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@e011_03_small
 PREHOOK: Output: default@e011_03_small
 #### A masked pattern was here ####
 POSTHOOK: query: ANALYZE TABLE e011_03_small COMPUTE STATISTICS FOR COLUMNS
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@e011_03_small
 POSTHOOK: Output: default@e011_03_small
 #### A masked pattern was here ####

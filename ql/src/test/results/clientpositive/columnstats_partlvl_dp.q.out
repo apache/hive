@@ -68,10 +68,10 @@ POSTHOOK: Output: default@employee_part
 POSTHOOK: Output: default@employee_part@employeesalary=3000.0/country=UK
 PREHOOK: query: explain 
 analyze table Employee_Part partition (employeeSalary='4000.0', country) compute statistics for columns employeeName, employeeID
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 POSTHOOK: query: explain 
 analyze table Employee_Part partition (employeeSalary='4000.0', country) compute statistics for columns employeeName, employeeID
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0
@@ -127,14 +127,14 @@ STAGE PLANS:
           Table: default.employee_part
 
 PREHOOK: query: analyze table Employee_Part partition (employeeSalary='4000.0', country) compute statistics for columns employeeName, employeeID
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@employee_part
 PREHOOK: Input: default@employee_part@employeesalary=4000.0/country=USA
 PREHOOK: Output: default@employee_part
 PREHOOK: Output: default@employee_part@employeesalary=4000.0/country=USA
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table Employee_Part partition (employeeSalary='4000.0', country) compute statistics for columns employeeName, employeeID
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@employee_part
 POSTHOOK: Input: default@employee_part@employeesalary=4000.0/country=USA
 POSTHOOK: Output: default@employee_part
@@ -199,10 +199,10 @@ bitVector           	HL
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: explain	
 analyze table Employee_Part partition (employeeSalary='2000.0') compute statistics for columns employeeID
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 POSTHOOK: query: explain	
 analyze table Employee_Part partition (employeeSalary='2000.0') compute statistics for columns employeeID
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0
@@ -258,7 +258,7 @@ STAGE PLANS:
           Table: default.employee_part
 
 PREHOOK: query: analyze table Employee_Part partition (employeeSalary='2000.0') compute statistics for columns employeeID
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@employee_part
 PREHOOK: Input: default@employee_part@employeesalary=2000.0/country=UK
 PREHOOK: Input: default@employee_part@employeesalary=2000.0/country=USA
@@ -267,7 +267,7 @@ PREHOOK: Output: default@employee_part@employeesalary=2000.0/country=UK
 PREHOOK: Output: default@employee_part@employeesalary=2000.0/country=USA
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table Employee_Part partition (employeeSalary='2000.0') compute statistics for columns employeeID
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@employee_part
 POSTHOOK: Input: default@employee_part@employeesalary=2000.0/country=UK
 POSTHOOK: Input: default@employee_part@employeesalary=2000.0/country=USA
@@ -313,10 +313,10 @@ bitVector           	HL
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: explain	
 analyze table Employee_Part partition (employeeSalary) compute statistics for columns employeeID
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 POSTHOOK: query: explain	
 analyze table Employee_Part partition (employeeSalary) compute statistics for columns employeeID
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0
@@ -372,7 +372,7 @@ STAGE PLANS:
           Table: default.employee_part
 
 PREHOOK: query: analyze table Employee_Part partition (employeeSalary) compute statistics for columns employeeID
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@employee_part
 PREHOOK: Input: default@employee_part@employeesalary=2000.0/country=UK
 PREHOOK: Input: default@employee_part@employeesalary=2000.0/country=USA
@@ -389,7 +389,7 @@ PREHOOK: Output: default@employee_part@employeesalary=3500.0/country=UK
 PREHOOK: Output: default@employee_part@employeesalary=4000.0/country=USA
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table Employee_Part partition (employeeSalary) compute statistics for columns employeeID
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@employee_part
 POSTHOOK: Input: default@employee_part@employeesalary=2000.0/country=UK
 POSTHOOK: Input: default@employee_part@employeesalary=2000.0/country=USA
@@ -425,10 +425,10 @@ bitVector           	HL
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: explain	
 analyze table Employee_Part partition (employeeSalary,country) compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 POSTHOOK: query: explain	
 analyze table Employee_Part partition (employeeSalary,country) compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0
@@ -484,7 +484,7 @@ STAGE PLANS:
           Table: default.employee_part
 
 PREHOOK: query: analyze table Employee_Part partition (employeeSalary,country) compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@employee_part
 PREHOOK: Input: default@employee_part@employeesalary=2000.0/country=UK
 PREHOOK: Input: default@employee_part@employeesalary=2000.0/country=USA
@@ -501,7 +501,7 @@ PREHOOK: Output: default@employee_part@employeesalary=3500.0/country=UK
 PREHOOK: Output: default@employee_part@employeesalary=4000.0/country=USA
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table Employee_Part partition (employeeSalary,country) compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@employee_part
 POSTHOOK: Input: default@employee_part@employeesalary=2000.0/country=UK
 POSTHOOK: Input: default@employee_part@employeesalary=2000.0/country=USA
@@ -586,7 +586,7 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@employee
 POSTHOOK: Output: default@employee@employeesalary=3000.0/country=UK
 PREHOOK: query: analyze table Employee partition (employeeSalary,country) compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@employee
 PREHOOK: Input: default@employee@employeesalary=2000.0/country=UK
 PREHOOK: Input: default@employee@employeesalary=2000.0/country=USA
@@ -599,7 +599,7 @@ PREHOOK: Output: default@employee@employeesalary=3000.0/country=UK
 PREHOOK: Output: default@employee@employeesalary=3500.0/country=UK
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table Employee partition (employeeSalary,country) compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@employee
 POSTHOOK: Input: default@employee@employeesalary=2000.0/country=UK
 POSTHOOK: Input: default@employee@employeesalary=2000.0/country=USA
@@ -648,7 +648,7 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@employee
 POSTHOOK: Output: default@employee@employeesalary=4000.0/country=USA
 PREHOOK: query: analyze table Employee partition (employeeSalary) compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@employee
 PREHOOK: Input: default@employee@employeesalary=2000.0/country=UK
 PREHOOK: Input: default@employee@employeesalary=2000.0/country=USA
@@ -665,7 +665,7 @@ PREHOOK: Output: default@employee@employeesalary=3500.0/country=UK
 PREHOOK: Output: default@employee@employeesalary=4000.0/country=USA
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table Employee partition (employeeSalary) compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@employee
 POSTHOOK: Input: default@employee@employeesalary=2000.0/country=UK
 POSTHOOK: Input: default@employee@employeesalary=2000.0/country=USA
@@ -717,14 +717,14 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@employee
 POSTHOOK: Output: default@employee@employeesalary=6000.0/country=UK
 PREHOOK: query: analyze table Employee partition (employeeSalary='6000.0',country='UK') compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@employee
 PREHOOK: Input: default@employee@employeesalary=6000.0/country=UK
 PREHOOK: Output: default@employee
 PREHOOK: Output: default@employee@employeesalary=6000.0/country=UK
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table Employee partition (employeeSalary='6000.0',country='UK') compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@employee
 POSTHOOK: Input: default@employee@employeesalary=6000.0/country=UK
 POSTHOOK: Output: default@employee

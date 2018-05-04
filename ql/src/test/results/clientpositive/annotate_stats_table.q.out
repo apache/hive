@@ -118,12 +118,12 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: analyze table emp_orc compute statistics for columns deptid
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@emp_orc
 PREHOOK: Output: default@emp_orc
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table emp_orc compute statistics for columns deptid
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@emp_orc
 POSTHOOK: Output: default@emp_orc
 #### A masked pattern was here ####
@@ -170,12 +170,12 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: analyze table emp_orc compute statistics for columns lastname,deptid
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@emp_orc
 PREHOOK: Output: default@emp_orc
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table emp_orc compute statistics for columns lastname,deptid
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@emp_orc
 POSTHOOK: Output: default@emp_orc
 #### A masked pattern was here ####

@@ -33,12 +33,12 @@ POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@src_stat_int
 PREHOOK: query: ANALYZE TABLE src_stat COMPUTE STATISTICS for columns key
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@src_stat
 PREHOOK: Output: default@src_stat
 #### A masked pattern was here ####
 POSTHOOK: query: ANALYZE TABLE src_stat COMPUTE STATISTICS for columns key
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@src_stat
 POSTHOOK: Output: default@src_stat
 #### A masked pattern was here ####
@@ -108,12 +108,12 @@ bitVector
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: ANALYZE TABLE src_stat_int COMPUTE STATISTICS for columns key
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@src_stat_int
 PREHOOK: Output: default@src_stat_int
 #### A masked pattern was here ####
 POSTHOOK: query: ANALYZE TABLE src_stat_int COMPUTE STATISTICS for columns key
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@src_stat_int
 POSTHOOK: Output: default@src_stat_int
 #### A masked pattern was here ####

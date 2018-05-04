@@ -53,9 +53,9 @@ Sort Columns:       	[]
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: explain extended analyze table s compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 POSTHOOK: query: explain extended analyze table s compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-2 depends on stages: Stage-0
@@ -187,12 +187,12 @@ STAGE PLANS:
           Is Table Level Stats: true
 
 PREHOOK: query: analyze table s compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@s
 PREHOOK: Output: default@s
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table s compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@s
 POSTHOOK: Output: default@s
 #### A masked pattern was here ####
@@ -310,9 +310,9 @@ Sort Columns:       	[]
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: explain extended analyze table spart compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 POSTHOOK: query: explain extended analyze table spart compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-2 depends on stages: Stage-0
@@ -503,7 +503,7 @@ STAGE PLANS:
           Is Table Level Stats: false
 
 PREHOOK: query: analyze table spart compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@spart
 PREHOOK: Input: default@spart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@spart@ds=2008-04-08/hr=12
@@ -512,7 +512,7 @@ PREHOOK: Output: default@spart@ds=2008-04-08/hr=11
 PREHOOK: Output: default@spart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table spart compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@spart
 POSTHOOK: Input: default@spart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@spart@ds=2008-04-08/hr=12
@@ -720,9 +720,9 @@ Sort Columns:       	[]
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: explain extended analyze table spart partition(ds,hr) compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 POSTHOOK: query: explain extended analyze table spart partition(ds,hr) compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-2 depends on stages: Stage-0
@@ -913,7 +913,7 @@ STAGE PLANS:
           Is Table Level Stats: false
 
 PREHOOK: query: analyze table spart partition(ds,hr) compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@spart
 PREHOOK: Input: default@spart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@spart@ds=2008-04-08/hr=12
@@ -922,7 +922,7 @@ PREHOOK: Output: default@spart@ds=2008-04-08/hr=11
 PREHOOK: Output: default@spart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table spart partition(ds,hr) compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@spart
 POSTHOOK: Input: default@spart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@spart@ds=2008-04-08/hr=12
@@ -1130,9 +1130,9 @@ Sort Columns:       	[]
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: explain extended analyze table spart partition(hr="11") compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 POSTHOOK: query: explain extended analyze table spart partition(hr="11") compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-2 depends on stages: Stage-0
@@ -1274,14 +1274,14 @@ STAGE PLANS:
           Is Table Level Stats: false
 
 PREHOOK: query: analyze table spart partition(hr="11") compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@spart
 PREHOOK: Input: default@spart@ds=2008-04-08/hr=11
 PREHOOK: Output: default@spart
 PREHOOK: Output: default@spart@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table spart partition(hr="11") compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@spart
 POSTHOOK: Input: default@spart@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@spart

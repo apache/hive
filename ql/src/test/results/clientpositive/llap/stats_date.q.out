@@ -17,12 +17,12 @@ POSTHOOK: Output: default@foo
 POSTHOOK: Lineage: foo.x SCRIPT []
 POSTHOOK: Lineage: foo.y SCRIPT []
 PREHOOK: query: analyze table foo compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@foo
 PREHOOK: Output: default@foo
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table foo compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@foo
 POSTHOOK: Output: default@foo
 #### A masked pattern was here ####

@@ -4936,7 +4936,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","val":"true"}}
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 2
-              bucket_field_name key
+              bucket_field_name key,val
               bucketing_version 2
               column.name.delimiter ,
               columns key,val
@@ -4960,7 +4960,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","val":"true"}}
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 2
-                bucket_field_name key
+                bucket_field_name key,val
                 bucketing_version 2
                 column.name.delimiter ,
                 columns key,val
@@ -5289,7 +5289,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","val":"true"}}
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 2
-              bucket_field_name key
+              bucket_field_name key,val
               bucketing_version 2
               column.name.delimiter ,
               columns key,val
@@ -5313,7 +5313,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","val":"true"}}
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 2
-                bucket_field_name key
+                bucket_field_name key,val
                 bucketing_version 2
                 column.name.delimiter ,
                 columns key,val
@@ -5735,7 +5735,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","val":"true"}}
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 2
-              bucket_field_name key
+              bucket_field_name key,val
               bucketing_version 2
               column.name.delimiter ,
               columns key,val
@@ -5759,7 +5759,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","val":"true"}}
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 2
-                bucket_field_name key
+                bucket_field_name key,val
                 bucketing_version 2
                 column.name.delimiter ,
                 columns key,val
@@ -6180,7 +6180,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","val":"true"}}
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 2
-              bucket_field_name key
+              bucket_field_name key,val
               bucketing_version 2
               column.name.delimiter ,
               columns key,val
@@ -6204,7 +6204,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","val":"true"}}
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 2
-                bucket_field_name key
+                bucket_field_name key,val
                 bucketing_version 2
                 column.name.delimiter ,
                 columns key,val
@@ -6632,7 +6632,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","val":"true"}}
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 2
-              bucket_field_name key
+              bucket_field_name key,val
               bucketing_version 2
               column.name.delimiter ,
               columns key,val
@@ -6656,7 +6656,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","val":"true"}}
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 2
-                bucket_field_name key
+                bucket_field_name key,val
                 bucketing_version 2
                 column.name.delimiter ,
                 columns key,val

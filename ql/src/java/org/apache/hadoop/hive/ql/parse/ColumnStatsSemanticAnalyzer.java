@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -236,7 +237,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
         }
       }
     }
-    
+
     return colTypes;
   }
 
@@ -403,6 +404,9 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       ctx.setExplainConfig(origCtx.getExplainConfig());
       LOG.info("Invoking analyze on rewritten query");
       analyzeInternal(rewrittenTree);
+      // After analyzeInternal() Hiveop get set as Query
+      // since we are passing in AST for select query, so reset it.
+      this.queryState.setCommandType(HiveOperation.ANALYZE_TABLE);
     } else {
       initCtx(origCtx);
       LOG.info("Invoking analyze on original query");

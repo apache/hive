@@ -1394,7 +1394,7 @@ STAGE PLANS:
             properties:
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 3
-              bucket_field_name key
+              bucket_field_name key,value
               bucketing_version 2
               column.name.delimiter ,
               columns key,value
@@ -1417,7 +1417,7 @@ STAGE PLANS:
               properties:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 3
-                bucket_field_name key
+                bucket_field_name key,value
                 bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
