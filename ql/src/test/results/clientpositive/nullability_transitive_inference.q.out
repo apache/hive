@@ -34,12 +34,12 @@ POSTHOOK: Lineage: emps.empid SCRIPT []
 POSTHOOK: Lineage: emps.name SCRIPT []
 POSTHOOK: Lineage: emps.salary SCRIPT []
 PREHOOK: query: analyze table emps compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@emps
 PREHOOK: Output: default@emps
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table emps compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@emps
 POSTHOOK: Output: default@emps
 #### A masked pattern was here ####
@@ -71,12 +71,12 @@ POSTHOOK: Lineage: depts.deptno SCRIPT []
 POSTHOOK: Lineage: depts.locationid SCRIPT []
 POSTHOOK: Lineage: depts.name SCRIPT []
 PREHOOK: query: analyze table depts compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@depts
 PREHOOK: Output: default@depts
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table depts compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@depts
 POSTHOOK: Output: default@depts
 #### A masked pattern was here ####

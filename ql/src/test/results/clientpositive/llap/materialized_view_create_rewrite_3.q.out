@@ -29,12 +29,12 @@ POSTHOOK: Lineage: cmv_basetable.b SCRIPT []
 POSTHOOK: Lineage: cmv_basetable.c SCRIPT []
 POSTHOOK: Lineage: cmv_basetable.d SCRIPT []
 PREHOOK: query: analyze table cmv_basetable compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@cmv_basetable
 PREHOOK: Output: default@cmv_basetable
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table cmv_basetable compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@cmv_basetable
 POSTHOOK: Output: default@cmv_basetable
 #### A masked pattern was here ####
@@ -63,12 +63,12 @@ POSTHOOK: Lineage: cmv_basetable_2.b SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_2.c SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_2.d SCRIPT []
 PREHOOK: query: analyze table cmv_basetable_2 compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@cmv_basetable_2
 PREHOOK: Output: default@cmv_basetable_2
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table cmv_basetable_2 compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@cmv_basetable_2
 POSTHOOK: Output: default@cmv_basetable_2
 #### A masked pattern was here ####
@@ -295,12 +295,12 @@ POSTHOOK: Lineage: cmv_basetable_2.b SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_2.c SCRIPT []
 POSTHOOK: Lineage: cmv_basetable_2.d SCRIPT []
 PREHOOK: query: analyze table cmv_basetable_2 compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@cmv_basetable_2
 PREHOOK: Output: default@cmv_basetable_2
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table cmv_basetable_2 compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@cmv_basetable_2
 POSTHOOK: Output: default@cmv_basetable_2
 #### A masked pattern was here ####
@@ -914,12 +914,12 @@ POSTHOOK: Lineage: cmv_irrelevant_table.b SCRIPT []
 POSTHOOK: Lineage: cmv_irrelevant_table.c SCRIPT []
 POSTHOOK: Lineage: cmv_irrelevant_table.d SCRIPT []
 PREHOOK: query: analyze table cmv_irrelevant_table compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@cmv_irrelevant_table
 PREHOOK: Output: default@cmv_irrelevant_table
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table cmv_irrelevant_table compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@cmv_irrelevant_table
 POSTHOOK: Output: default@cmv_irrelevant_table
 #### A masked pattern was here ####

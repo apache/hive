@@ -189,12 +189,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@small_alltypesorc_a
 POSTHOOK: Output: default@small_alltypesorc_a
 PREHOOK: query: ANALYZE TABLE small_alltypesorc_a COMPUTE STATISTICS FOR COLUMNS
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@small_alltypesorc_a
 PREHOOK: Output: default@small_alltypesorc_a
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: ANALYZE TABLE small_alltypesorc_a COMPUTE STATISTICS FOR COLUMNS
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@small_alltypesorc_a
 POSTHOOK: Output: default@small_alltypesorc_a
 POSTHOOK: Output: hdfs://### HDFS PATH ###

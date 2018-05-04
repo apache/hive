@@ -28,12 +28,12 @@ POSTHOOK: Lineage: all_nulls.a SIMPLE []
 POSTHOOK: Lineage: all_nulls.b SIMPLE []
 POSTHOOK: Lineage: all_nulls.c SIMPLE []
 PREHOOK: query: analyze table all_nulls compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@all_nulls
 #### A masked pattern was here ####
 PREHOOK: Output: default@all_nulls
 POSTHOOK: query: analyze table all_nulls compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@all_nulls
 #### A masked pattern was here ####
 POSTHOOK: Output: default@all_nulls

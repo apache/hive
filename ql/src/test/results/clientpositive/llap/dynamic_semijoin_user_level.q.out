@@ -103,17 +103,17 @@ POSTHOOK: Output: default@srcpart_small@ds=2008-04-09
 POSTHOOK: Lineage: srcpart_small PARTITION(ds=2008-04-09).key1 SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: srcpart_small PARTITION(ds=2008-04-09).value1 SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: analyze table alltypesorc_int compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@alltypesorc_int
 PREHOOK: Output: default@alltypesorc_int
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: analyze table alltypesorc_int compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@alltypesorc_int
 POSTHOOK: Output: default@alltypesorc_int
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: analyze table srcpart_date compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@srcpart_date
 PREHOOK: Input: default@srcpart_date@ds=2008-04-08
 PREHOOK: Input: default@srcpart_date@ds=2008-04-09
@@ -122,7 +122,7 @@ PREHOOK: Output: default@srcpart_date@ds=2008-04-08
 PREHOOK: Output: default@srcpart_date@ds=2008-04-09
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: analyze table srcpart_date compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@srcpart_date
 POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
 POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
@@ -131,7 +131,7 @@ POSTHOOK: Output: default@srcpart_date@ds=2008-04-08
 POSTHOOK: Output: default@srcpart_date@ds=2008-04-09
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: analyze table srcpart_small compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@srcpart_small
 PREHOOK: Input: default@srcpart_small@ds=2008-04-08
 PREHOOK: Input: default@srcpart_small@ds=2008-04-09
@@ -140,7 +140,7 @@ PREHOOK: Output: default@srcpart_small@ds=2008-04-08
 PREHOOK: Output: default@srcpart_small@ds=2008-04-09
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: analyze table srcpart_small compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@srcpart_small
 POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
 POSTHOOK: Input: default@srcpart_small@ds=2008-04-09

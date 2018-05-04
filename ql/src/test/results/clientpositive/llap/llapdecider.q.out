@@ -234,12 +234,12 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: analyze table src_orc compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@src_orc
 PREHOOK: Output: default@src_orc
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: analyze table src_orc compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@src_orc
 POSTHOOK: Output: default@src_orc
 POSTHOOK: Output: hdfs://### HDFS PATH ###

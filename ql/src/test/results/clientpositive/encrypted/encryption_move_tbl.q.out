@@ -47,12 +47,12 @@ POSTHOOK: Input: database:default
 encrypted_table
 src
 PREHOOK: query: ANALYZE TABLE encrypted_table COMPUTE STATISTICS FOR COLUMNS
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@encrypted_table
 PREHOOK: Output: default@encrypted_table
 #### A PARTIAL masked pattern was here #### data/warehouse/encrypted_table/.hive-staging
 POSTHOOK: query: ANALYZE TABLE encrypted_table COMPUTE STATISTICS FOR COLUMNS
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@encrypted_table
 POSTHOOK: Output: default@encrypted_table
 #### A PARTIAL masked pattern was here #### data/warehouse/encrypted_table/.hive-staging

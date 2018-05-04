@@ -65,7 +65,7 @@ POSTHOOK: Output: default@pcs_t1@ds=2000-04-08
 POSTHOOK: Output: default@pcs_t1@ds=2000-04-09
 POSTHOOK: Output: default@pcs_t1@ds=2000-04-10
 PREHOOK: query: analyze table pcs_t1 partition(ds) compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@pcs_t1
 PREHOOK: Input: default@pcs_t1@ds=2000-04-08
 PREHOOK: Input: default@pcs_t1@ds=2000-04-09
@@ -76,7 +76,7 @@ PREHOOK: Output: default@pcs_t1@ds=2000-04-09
 PREHOOK: Output: default@pcs_t1@ds=2000-04-10
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table pcs_t1 partition(ds) compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@pcs_t1
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-09

@@ -31,7 +31,7 @@ POSTHOOK: Output: default@src_stat_part@partitionid=2
 POSTHOOK: Lineage: src_stat_part PARTITION(partitionid=2).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_stat_part PARTITION(partitionid=2).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: ANALYZE TABLE src_stat_part partition (partitionId) COMPUTE STATISTICS for columns key
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@src_stat_part
 PREHOOK: Input: default@src_stat_part@partitionid=1
 PREHOOK: Input: default@src_stat_part@partitionid=2
@@ -40,7 +40,7 @@ PREHOOK: Output: default@src_stat_part@partitionid=1
 PREHOOK: Output: default@src_stat_part@partitionid=2
 #### A masked pattern was here ####
 POSTHOOK: query: ANALYZE TABLE src_stat_part partition (partitionId) COMPUTE STATISTICS for columns key
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@src_stat_part
 POSTHOOK: Input: default@src_stat_part@partitionid=1
 POSTHOOK: Input: default@src_stat_part@partitionid=2
@@ -67,7 +67,7 @@ num_falses
 bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: ANALYZE TABLE src_stat_part partition (partitionId) COMPUTE STATISTICS for columns key, value
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@src_stat_part
 PREHOOK: Input: default@src_stat_part@partitionid=1
 PREHOOK: Input: default@src_stat_part@partitionid=2
@@ -76,7 +76,7 @@ PREHOOK: Output: default@src_stat_part@partitionid=1
 PREHOOK: Output: default@src_stat_part@partitionid=2
 #### A masked pattern was here ####
 POSTHOOK: query: ANALYZE TABLE src_stat_part partition (partitionId) COMPUTE STATISTICS for columns key, value
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@src_stat_part
 POSTHOOK: Input: default@src_stat_part@partitionid=1
 POSTHOOK: Input: default@src_stat_part@partitionid=2
@@ -153,35 +153,35 @@ POSTHOOK: Output: default@src_stat_string_part@partitionname=p%221
 POSTHOOK: Lineage: src_stat_string_part PARTITION(partitionname=p"1).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_stat_string_part PARTITION(partitionname=p"1).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: ANALYZE TABLE src_stat_string_part partition (partitionName="p\'1") COMPUTE STATISTICS for columns key, value
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@src_stat_string_part
 PREHOOK: Input: default@src_stat_string_part@partitionname=p%271
 PREHOOK: Output: default@src_stat_string_part
 PREHOOK: Output: default@src_stat_string_part@partitionname=p%271
 #### A masked pattern was here ####
 POSTHOOK: query: ANALYZE TABLE src_stat_string_part partition (partitionName="p\'1") COMPUTE STATISTICS for columns key, value
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@src_stat_string_part
 POSTHOOK: Input: default@src_stat_string_part@partitionname=p%271
 POSTHOOK: Output: default@src_stat_string_part
 POSTHOOK: Output: default@src_stat_string_part@partitionname=p%271
 #### A masked pattern was here ####
 PREHOOK: query: ANALYZE TABLE src_stat_string_part partition (partitionName="p\"1") COMPUTE STATISTICS for columns key, value
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@src_stat_string_part
 PREHOOK: Input: default@src_stat_string_part@partitionname=p%221
 PREHOOK: Output: default@src_stat_string_part
 PREHOOK: Output: default@src_stat_string_part@partitionname=p%221
 #### A masked pattern was here ####
 POSTHOOK: query: ANALYZE TABLE src_stat_string_part partition (partitionName="p\"1") COMPUTE STATISTICS for columns key, value
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@src_stat_string_part
 POSTHOOK: Input: default@src_stat_string_part@partitionname=p%221
 POSTHOOK: Output: default@src_stat_string_part
 POSTHOOK: Output: default@src_stat_string_part@partitionname=p%221
 #### A masked pattern was here ####
 PREHOOK: query: ANALYZE TABLE src_stat_string_part COMPUTE STATISTICS for columns key, value
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@src_stat_string_part
 PREHOOK: Input: default@src_stat_string_part@partitionname=p%221
 PREHOOK: Input: default@src_stat_string_part@partitionname=p%271
@@ -190,7 +190,7 @@ PREHOOK: Output: default@src_stat_string_part@partitionname=p%221
 PREHOOK: Output: default@src_stat_string_part@partitionname=p%271
 #### A masked pattern was here ####
 POSTHOOK: query: ANALYZE TABLE src_stat_string_part COMPUTE STATISTICS for columns key, value
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@src_stat_string_part
 POSTHOOK: Input: default@src_stat_string_part@partitionname=p%221
 POSTHOOK: Input: default@src_stat_string_part@partitionname=p%271

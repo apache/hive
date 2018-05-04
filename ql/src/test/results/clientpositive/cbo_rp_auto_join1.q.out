@@ -47,12 +47,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl1
 POSTHOOK: Output: default@tbl1
 PREHOOK: query: analyze table tbl1 compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@tbl1
 PREHOOK: Output: default@tbl1
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table tbl1 compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@tbl1
 POSTHOOK: Output: default@tbl1
 #### A masked pattern was here ####
@@ -65,12 +65,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl2
 POSTHOOK: Output: default@tbl2
 PREHOOK: query: analyze table tbl2 compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@tbl2
 PREHOOK: Output: default@tbl2
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table tbl2 compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@tbl2
 POSTHOOK: Output: default@tbl2
 #### A masked pattern was here ####

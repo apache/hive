@@ -41,12 +41,12 @@ POSTHOOK: Lineage: source_table_001.my_id SCRIPT []
 POSTHOOK: Lineage: source_table_001.my_id2 SCRIPT []
 POSTHOOK: Lineage: source_table_001.up_volume SCRIPT []
 PREHOOK: query: analyze table source_table_001 compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@source_table_001
 PREHOOK: Output: default@source_table_001
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table source_table_001 compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@source_table_001
 POSTHOOK: Output: default@source_table_001
 #### A masked pattern was here ####
@@ -73,12 +73,12 @@ POSTHOOK: Input: default@source_table_001
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@source_table_001_mv
 PREHOOK: query: analyze table source_table_001_mv compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@source_table_001_mv
 PREHOOK: Output: default@source_table_001_mv
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table source_table_001_mv compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@source_table_001_mv
 POSTHOOK: Output: default@source_table_001_mv
 #### A masked pattern was here ####
@@ -189,12 +189,12 @@ POSTHOOK: Input: default@source_table_001
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@source_table_001_mv
 PREHOOK: query: analyze table source_table_001_mv compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@source_table_001_mv
 PREHOOK: Output: default@source_table_001_mv
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table source_table_001_mv compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@source_table_001_mv
 POSTHOOK: Output: default@source_table_001_mv
 #### A masked pattern was here ####
