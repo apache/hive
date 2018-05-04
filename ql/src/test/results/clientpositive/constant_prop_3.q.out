@@ -49,12 +49,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_hive
 POSTHOOK: Output: default@part_hive
 PREHOOK: query: analyze table part_hive compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@part_hive
 PREHOOK: Output: default@part_hive
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table part_hive compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@part_hive
 POSTHOOK: Output: default@part_hive
 #### A masked pattern was here ####
@@ -67,12 +67,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partsupp_hive
 POSTHOOK: Output: default@partsupp_hive
 PREHOOK: query: analyze table partsupp_hive compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@partsupp_hive
 PREHOOK: Output: default@partsupp_hive
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table partsupp_hive compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@partsupp_hive
 POSTHOOK: Output: default@partsupp_hive
 #### A masked pattern was here ####
@@ -85,12 +85,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@supplier_hive
 POSTHOOK: Output: default@supplier_hive
 PREHOOK: query: analyze table supplier_hive compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@supplier_hive
 PREHOOK: Output: default@supplier_hive
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table supplier_hive compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@supplier_hive
 POSTHOOK: Output: default@supplier_hive
 #### A masked pattern was here ####

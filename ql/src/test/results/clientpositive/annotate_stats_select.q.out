@@ -111,12 +111,12 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: analyze table alltypes_orc compute statistics for columns bo1, ti1, si1, i1, bi1, f1, d1, s1, vc1
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@alltypes_orc
 PREHOOK: Output: default@alltypes_orc
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table alltypes_orc compute statistics for columns bo1, ti1, si1, i1, bi1, f1, d1, s1, vc1
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@alltypes_orc
 POSTHOOK: Output: default@alltypes_orc
 #### A masked pattern was here ####

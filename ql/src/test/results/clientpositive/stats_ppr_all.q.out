@@ -47,7 +47,7 @@ POSTHOOK: Output: default@ss@country=US/year=2015/month=1/day=2
 POSTHOOK: Lineage: ss PARTITION(country=US,year=2015,month=1,day=2).order_amount SCRIPT []
 POSTHOOK: Lineage: ss PARTITION(country=US,year=2015,month=1,day=2).sales_order_id SCRIPT []
 PREHOOK: query: ANALYZE TABLE ss PARTITION(country,year,month,day) compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@ss
 PREHOOK: Input: default@ss@country=US/year=2015/month=1/day=1
 PREHOOK: Input: default@ss@country=US/year=2015/month=1/day=2
@@ -58,7 +58,7 @@ PREHOOK: Output: default@ss@country=US/year=2015/month=1/day=2
 PREHOOK: Output: default@ss@country=US/year=2015/month=2/day=1
 #### A masked pattern was here ####
 POSTHOOK: query: ANALYZE TABLE ss PARTITION(country,year,month,day) compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@ss
 POSTHOOK: Input: default@ss@country=US/year=2015/month=1/day=1
 POSTHOOK: Input: default@ss@country=US/year=2015/month=1/day=2

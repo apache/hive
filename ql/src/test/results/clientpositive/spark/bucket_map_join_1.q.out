@@ -87,7 +87,7 @@ STAGE PLANS:
                   properties:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 1
-                    bucket_field_name value
+                    bucket_field_name value,key
                     bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
@@ -110,7 +110,7 @@ STAGE PLANS:
                     properties:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 1
-                      bucket_field_name value
+                      bucket_field_name value,key
                       bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
@@ -184,7 +184,7 @@ STAGE PLANS:
                   properties:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 1
-                    bucket_field_name key
+                    bucket_field_name key,value
                     bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
@@ -207,7 +207,7 @@ STAGE PLANS:
                     properties:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 1
-                      bucket_field_name key
+                      bucket_field_name key,value
                       bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
