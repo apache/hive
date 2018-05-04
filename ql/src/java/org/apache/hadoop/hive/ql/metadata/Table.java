@@ -369,14 +369,17 @@ public class Table implements Serializable {
   final public void validatePartColumnNames(
       Map<String, String> spec, boolean shouldBeFull) throws SemanticException {
     List<FieldSchema> partCols = tTable.getPartitionKeys();
+    final String tableName = Warehouse.getQualifiedName(tTable);
     if (partCols == null || (partCols.size() == 0)) {
       if (spec != null) {
-        throw new ValidationFailureSemanticException("table is not partitioned but partition spec exists: " + spec);
+        throw new ValidationFailureSemanticException(tableName +
+            " table is not partitioned but partition spec exists: " + spec);
       }
       return;
     } else if (spec == null) {
       if (shouldBeFull) {
-        throw new ValidationFailureSemanticException("table is partitioned but partition spec is not specified");
+        throw new ValidationFailureSemanticException(tableName +
+            " table is partitioned but partition spec is not specified");
       }
       return;
     }
@@ -390,10 +393,11 @@ public class Table implements Serializable {
       }
     }
     if (columnsFound < spec.size()) {
-      throw new ValidationFailureSemanticException("Partition spec " + spec + " contains non-partition columns");
+      throw new ValidationFailureSemanticException(tableName + ": Partition spec " + spec +
+          " contains non-partition columns");
     }
     if (shouldBeFull && (spec.size() != partCols.size())) {
-      throw new ValidationFailureSemanticException("partition spec " + spec
+      throw new ValidationFailureSemanticException(tableName + ": partition spec " + spec
           + " doesn't contain all (" + partCols.size() + ") partition columns");
     }
   }
