@@ -87,7 +87,7 @@ public final class TxnDbUtil {
           "  TC_TABLE varchar(128)," +
           "  TC_PARTITION varchar(767)," +
           "  TC_OPERATION_TYPE char(1) NOT NULL," +
-          "  TC_WRITEID bigint NOT NULL)");
+          "  TC_WRITEID bigint)");
       stmt.execute("CREATE TABLE COMPLETED_TXN_COMPONENTS (" +
           "  CTC_TXNID bigint NOT NULL," +
           "  CTC_DATABASE varchar(128) NOT NULL," +
@@ -95,7 +95,7 @@ public final class TxnDbUtil {
           "  CTC_PARTITION varchar(767)," +
           "  CTC_ID bigint GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1) NOT NULL," +
           "  CTC_TIMESTAMP timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL," +
-          "  CTC_WRITEID bigint NOT NULL)");
+          "  CTC_WRITEID bigint)");
       stmt.execute("CREATE TABLE NEXT_TXN_ID (" + "  NTXN_NEXT bigint NOT NULL)");
       stmt.execute("INSERT INTO NEXT_TXN_ID VALUES(1)");
 
