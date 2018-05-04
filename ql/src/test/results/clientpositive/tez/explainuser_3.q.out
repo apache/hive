@@ -17,12 +17,12 @@ POSTHOOK: Output: default@acid_vectorized
 POSTHOOK: Lineage: acid_vectorized.a SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
 POSTHOOK: Lineage: acid_vectorized.b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
 PREHOOK: query: analyze table acid_vectorized compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@acid_vectorized
 PREHOOK: Output: default@acid_vectorized
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: analyze table acid_vectorized compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@acid_vectorized
 POSTHOOK: Output: default@acid_vectorized
 POSTHOOK: Output: hdfs://### HDFS PATH ###
@@ -197,9 +197,9 @@ Stage-2
         default@src,src,Tbl:COMPLETE,Col:COMPLETE
 
 PREHOOK: query: explain analyze table src compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 POSTHOOK: query: explain analyze table src compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 
