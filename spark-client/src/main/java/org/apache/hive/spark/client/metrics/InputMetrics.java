@@ -44,4 +44,10 @@ public class InputMetrics implements Serializable {
     this(metrics.inputMetrics().bytesRead());
   }
 
+  @Override
+  public String toString() {
+    return "InputMetrics{" +
+            "bytesRead=" + bytesRead +
+            '}';
+  }
 }

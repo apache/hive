@@ -84,8 +84,8 @@ public final class SparkClientFactory {
   public static SparkClient createClient(Map<String, String> sparkConf, HiveConf hiveConf,
                                          String sessionId)
           throws IOException, SparkException {
-    Preconditions.checkState(server != null, "initialize() not called.");
+    Preconditions.checkState(server != null,
+            "Invalid state: Hive on Spark RPC Server has not been initialized");
     return new SparkClientImpl(server, sparkConf, hiveConf, sessionId);
   }
-
 }

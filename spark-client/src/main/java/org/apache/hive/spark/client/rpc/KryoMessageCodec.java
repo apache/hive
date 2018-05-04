@@ -101,7 +101,7 @@ class KryoMessageCodec extends ByteToMessageCodec<Object> {
       Input kryoIn = new Input(new ByteBufferInputStream(nioBuffer));
 
       Object msg = kryos.get().readClassAndObject(kryoIn);
-      LOG.debug("Decoded message of type {} ({} bytes)",
+      LOG.trace("Decoded message of type {} ({} bytes)",
           msg != null ? msg.getClass().getName() : msg, msgSize);
       out.add(msg);
     } finally {
@@ -118,7 +118,7 @@ class KryoMessageCodec extends ByteToMessageCodec<Object> {
     kryoOut.flush();
 
     byte[] msgData = maybeEncrypt(bytes.toByteArray());
-    LOG.debug("Encoded message of type {} ({} bytes)", msg.getClass().getName(), msgData.length);
+    LOG.trace("Encoded message of type {} ({} bytes)", msg.getClass().getName(), msgData.length);
     checkSize(msgData.length);
 
     buf.ensureWritable(msgData.length + 4);

@@ -130,7 +130,7 @@ public class SparkTask extends Task<SparkWork> {
       if (driverContext.isShutdown()) {
         LOG.warn("Killing Spark job");
         killJob();
-        throw new HiveException("Operation is cancelled.");
+        throw new HiveException(String.format("Spark task %s cancelled for query %s", getId(), sparkWork.getQueryId()));
       }
 
       // Get the Job Handle id associated with the Spark job
@@ -176,7 +176,7 @@ public class SparkTask extends Task<SparkWork> {
                 ? "UNKNOWN" : jobID));
         killJob();
       } else if (rc == 4) {
-        LOG.info("The spark job or one stage of it has too many tasks" +
+        LOG.info("The Spark job or one stage of it has too many tasks" +
             ". Cancelling Spark job " + sparkJobID + " with application ID " + jobID );
         killJob();
       }
@@ -186,7 +186,7 @@ public class SparkTask extends Task<SparkWork> {
       }
       sparkJobStatus.cleanup();
     } catch (Exception e) {
-      String msg = "Failed to execute spark task, with exception '" + Utilities.getNameMessage(e) + "'";
+      String msg = "Failed to execute Spark task " + getId() + ", with exception '" + Utilities.getNameMessage(e) + "'";
 
       // Has to use full name to make sure it does not conflict with
       // org.apache.commons.lang.StringUtils

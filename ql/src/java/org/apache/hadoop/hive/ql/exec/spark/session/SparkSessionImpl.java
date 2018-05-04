@@ -79,7 +79,7 @@ public class SparkSessionImpl implements SparkSession {
 
   @Override
   public void open(HiveConf conf) throws HiveException {
-    LOG.info("Trying to open Spark session {}", sessionId);
+    LOG.info("Trying to open Hive on Spark session {}", sessionId);
     this.conf = conf;
     isOpen = true;
     try {
@@ -94,12 +94,12 @@ public class SparkSessionImpl implements SparkSession {
       }
       throw he;
     }
-    LOG.info("Spark session {} is successfully opened", sessionId);
+    LOG.info("Hive on Spark session {} successfully opened", sessionId);
   }
 
   @Override
   public SparkJobRef submit(DriverContext driverContext, SparkWork sparkWork) throws Exception {
-    Preconditions.checkState(isOpen, "Session is not open. Can't submit jobs.");
+    Preconditions.checkState(isOpen, "Hive on Spark session is not open. Can't submit jobs.");
     return hiveSparkClient.execute(driverContext, sparkWork);
   }
 
@@ -129,9 +129,9 @@ public class SparkSessionImpl implements SparkSession {
     totalCores = totalCores / sparkConf.getInt("spark.task.cpus", 1);
 
     long memoryPerTaskInBytes = totalMemory / totalCores;
-    LOG.info("Spark cluster current has executors: " + numExecutors
+    LOG.info("Hive on Spark application currently has number of executors: " + numExecutors
         + ", total cores: " + totalCores + ", memory per executor: "
-        + executorMemoryInMB + "M, memoryFraction: " + memoryFraction);
+        + executorMemoryInMB + " mb, memoryFraction: " + memoryFraction);
     return new ObjectPair<Long, Integer>(Long.valueOf(memoryPerTaskInBytes),
         Integer.valueOf(totalCores));
   }
@@ -153,15 +153,15 @@ public class SparkSessionImpl implements SparkSession {
 
   @Override
   public void close() {
-    LOG.info("Trying to close Spark session {}", sessionId);
+    LOG.info("Trying to close Hive on Spark session {}", sessionId);
     isOpen = false;
     if (hiveSparkClient != null) {
       try {
         hiveSparkClient.close();
-        LOG.info("Spark session {} is successfully closed", sessionId);
+        LOG.info("Hive on Spark session {} successfully closed", sessionId);
         cleanScratchDir();
       } catch (IOException e) {
-        LOG.error("Failed to close spark session (" + sessionId + ").", e);
+        LOG.error("Failed to close Hive on Spark session (" + sessionId + ")", e);
       }
     }
     hiveSparkClient = null;
@@ -197,20 +197,22 @@ public class SparkSessionImpl implements SparkSession {
     StringBuilder matchedString = new StringBuilder();
     while (e != null) {
       if (e instanceof TimeoutException) {
-        return new HiveException(e, ErrorMsg.SPARK_CREATE_CLIENT_TIMEOUT);
+        return new HiveException(e, ErrorMsg.SPARK_CREATE_CLIENT_TIMEOUT, sessionId);
       } else if (e instanceof InterruptedException) {
         return new HiveException(e, ErrorMsg.SPARK_CREATE_CLIENT_INTERRUPTED, sessionId);
       } else if (e instanceof RuntimeException) {
         String sts = Throwables.getStackTraceAsString(e);
         if (matches(sts, AM_TIMEOUT_ERR, matchedString)) {
-          return new HiveException(e, ErrorMsg.SPARK_CREATE_CLIENT_TIMEOUT);
+          return new HiveException(e, ErrorMsg.SPARK_CREATE_CLIENT_TIMEOUT, sessionId);
         } else if (matches(sts, UNKNOWN_QUEUE_ERR, matchedString) || matches(sts, STOPPED_QUEUE_ERR, matchedString)) {
-          return new HiveException(e, ErrorMsg.SPARK_CREATE_CLIENT_INVALID_QUEUE, matchedString.toString());
+          return new HiveException(e, ErrorMsg.SPARK_CREATE_CLIENT_INVALID_QUEUE, sessionId,
+                  matchedString.toString());
         } else if (matches(sts, FULL_QUEUE_ERR, matchedString)) {
-          return new HiveException(e, ErrorMsg.SPARK_CREATE_CLIENT_QUEUE_FULL, matchedString.toString());
+          return new HiveException(e, ErrorMsg.SPARK_CREATE_CLIENT_QUEUE_FULL, sessionId,
+                  matchedString.toString());
         } else if (matches(sts, INVALILD_MEM_ERR, matchedString) || matches(sts, INVALID_CORE_ERR, matchedString)) {
           return new HiveException(e, ErrorMsg.SPARK_CREATE_CLIENT_INVALID_RESOURCE_REQUEST,
-              matchedString.toString());
+              sessionId, matchedString.toString());
         } else {
           return new HiveException(e, ErrorMsg.SPARK_CREATE_CLIENT_ERROR, sessionId, Throwables.getRootCause(e).getMessage());
         }
