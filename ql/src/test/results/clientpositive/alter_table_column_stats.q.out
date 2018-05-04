@@ -74,12 +74,12 @@ POSTHOOK: query: use statsdb1
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:statsdb1
 PREHOOK: query: analyze table testtable0 compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: statsdb1@testtable0
 #### A masked pattern was here ####
 PREHOOK: Output: statsdb1@testtable0
 POSTHOOK: query: analyze table testtable0 compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: statsdb1@testtable0
 #### A masked pattern was here ####
 POSTHOOK: Output: statsdb1@testtable0
@@ -587,7 +587,7 @@ bitVector
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col2\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: analyze table testpart0 compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: statsdb1@testpart0
 PREHOOK: Input: statsdb1@testpart0@part=part1
 PREHOOK: Input: statsdb1@testpart0@part=part2
@@ -596,7 +596,7 @@ PREHOOK: Output: statsdb1@testpart0
 PREHOOK: Output: statsdb1@testpart0@part=part1
 PREHOOK: Output: statsdb1@testpart0@part=part2
 POSTHOOK: query: analyze table testpart0 compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: statsdb1@testpart0
 POSTHOOK: Input: statsdb1@testpart0@part=part1
 POSTHOOK: Input: statsdb1@testpart0@part=part2
@@ -1955,12 +1955,12 @@ POSTHOOK: query: use statsdb1
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:statsdb1
 PREHOOK: query: analyze table testtable0 compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: statsdb1@testtable0
 #### A masked pattern was here ####
 PREHOOK: Output: statsdb1@testtable0
 POSTHOOK: query: analyze table testtable0 compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: statsdb1@testtable0
 #### A masked pattern was here ####
 POSTHOOK: Output: statsdb1@testtable0
@@ -2468,7 +2468,7 @@ bitVector
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col2\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: analyze table testpart0 compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: statsdb1@testpart0
 PREHOOK: Input: statsdb1@testpart0@part=part1
 PREHOOK: Input: statsdb1@testpart0@part=part2
@@ -2477,7 +2477,7 @@ PREHOOK: Output: statsdb1@testpart0
 PREHOOK: Output: statsdb1@testpart0@part=part1
 PREHOOK: Output: statsdb1@testpart0@part=part2
 POSTHOOK: query: analyze table testpart0 compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: statsdb1@testpart0
 POSTHOOK: Input: statsdb1@testpart0@part=part1
 POSTHOOK: Input: statsdb1@testpart0@part=part2

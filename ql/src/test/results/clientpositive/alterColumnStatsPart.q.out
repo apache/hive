@@ -155,14 +155,14 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: analyze table p partition(c=1) compute statistics for columns a
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@p
 PREHOOK: Input: default@p@c=1
 PREHOOK: Output: default@p
 PREHOOK: Output: default@p@c=1
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table p partition(c=1) compute statistics for columns a
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@p
 POSTHOOK: Input: default@p@c=1
 POSTHOOK: Output: default@p
@@ -382,14 +382,14 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: analyze table p partition(c=100) compute statistics for columns a
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@p
 PREHOOK: Input: default@p@c=100
 PREHOOK: Output: default@p
 PREHOOK: Output: default@p@c=100
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table p partition(c=100) compute statistics for columns a
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@p
 POSTHOOK: Input: default@p@c=100
 POSTHOOK: Output: default@p
@@ -492,14 +492,14 @@ POSTHOOK: Output: default@p@c=100
 POSTHOOK: Lineage: p PARTITION(c=100).a SCRIPT []
 POSTHOOK: Lineage: p PARTITION(c=100).b SCRIPT []
 PREHOOK: query: analyze table p partition(c=100) compute statistics for columns a
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@p
 PREHOOK: Input: default@p@c=100
 PREHOOK: Output: default@p
 PREHOOK: Output: default@p@c=100
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table p partition(c=100) compute statistics for columns a
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@p
 POSTHOOK: Input: default@p@c=100
 POSTHOOK: Output: default@p

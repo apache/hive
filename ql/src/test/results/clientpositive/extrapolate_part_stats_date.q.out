@@ -34,7 +34,7 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@date_dim@d_date_sk=2416947
 POSTHOOK: Lineage: date_dim PARTITION(d_date_sk=2416947).d_date SCRIPT []
 PREHOOK: query: analyze table date_dim partition(d_date_sk) compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@date_dim
 PREHOOK: Input: default@date_dim@d_date_sk=2416945
 PREHOOK: Input: default@date_dim@d_date_sk=2416946
@@ -45,7 +45,7 @@ PREHOOK: Output: default@date_dim@d_date_sk=2416946
 PREHOOK: Output: default@date_dim@d_date_sk=2416947
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table date_dim partition(d_date_sk) compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@date_dim
 POSTHOOK: Input: default@date_dim@d_date_sk=2416945
 POSTHOOK: Input: default@date_dim@d_date_sk=2416946

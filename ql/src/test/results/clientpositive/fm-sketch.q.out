@@ -16,9 +16,9 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@n
 POSTHOOK: Lineage: n.key EXPRESSION []
 PREHOOK: query: explain analyze table n compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 POSTHOOK: query: explain analyze table n compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0
@@ -66,12 +66,12 @@ STAGE PLANS:
           Table: default.n
 
 PREHOOK: query: analyze table n compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@n
 PREHOOK: Output: default@n
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table n compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@n
 POSTHOOK: Output: default@n
 #### A masked pattern was here ####
@@ -112,9 +112,9 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@i
 POSTHOOK: Lineage: i.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: explain analyze table i compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 POSTHOOK: query: explain analyze table i compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0
@@ -162,12 +162,12 @@ STAGE PLANS:
           Table: default.i
 
 PREHOOK: query: analyze table i compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@i
 PREHOOK: Output: default@i
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table i compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@i
 POSTHOOK: Output: default@i
 #### A masked pattern was here ####
@@ -216,12 +216,12 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@i
 POSTHOOK: Lineage: i.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: analyze table i compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@i
 PREHOOK: Output: default@i
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table i compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@i
 POSTHOOK: Output: default@i
 #### A masked pattern was here ####
@@ -270,12 +270,12 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@i
 POSTHOOK: Lineage: i.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: analyze table i compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@i
 PREHOOK: Output: default@i
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table i compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@i
 POSTHOOK: Output: default@i
 #### A masked pattern was here ####
@@ -360,12 +360,12 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@i
 POSTHOOK: Lineage: i.key SCRIPT []
 PREHOOK: query: analyze table i compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@i
 PREHOOK: Output: default@i
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table i compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@i
 POSTHOOK: Output: default@i
 #### A masked pattern was here ####

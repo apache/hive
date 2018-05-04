@@ -37,7 +37,7 @@ POSTHOOK: Lineage: partitioned1 PARTITION(part=2).b SCRIPT []
 POSTHOOK: Lineage: partitioned1 PARTITION(part=2).c SCRIPT []
 POSTHOOK: Lineage: partitioned1 PARTITION(part=2).d SCRIPT []
 PREHOOK: query: analyze table partitioned1 compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@partitioned1
 PREHOOK: Input: default@partitioned1@part=1
 PREHOOK: Input: default@partitioned1@part=2
@@ -46,7 +46,7 @@ PREHOOK: Output: default@partitioned1@part=1
 PREHOOK: Output: default@partitioned1@part=2
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table partitioned1 compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@partitioned1
 POSTHOOK: Input: default@partitioned1@part=1
 POSTHOOK: Input: default@partitioned1@part=2
@@ -243,7 +243,7 @@ POSTHOOK: Lineage: partitioned1 PARTITION(part=2).b SCRIPT []
 POSTHOOK: Lineage: partitioned1 PARTITION(part=2).c SCRIPT []
 POSTHOOK: Lineage: partitioned1 PARTITION(part=2).d SCRIPT []
 PREHOOK: query: analyze table partitioned1 compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@partitioned1
 PREHOOK: Input: default@partitioned1@part=1
 PREHOOK: Input: default@partitioned1@part=2
@@ -252,7 +252,7 @@ PREHOOK: Output: default@partitioned1@part=1
 PREHOOK: Output: default@partitioned1@part=2
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table partitioned1 compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@partitioned1
 POSTHOOK: Input: default@partitioned1@part=1
 POSTHOOK: Input: default@partitioned1@part=2

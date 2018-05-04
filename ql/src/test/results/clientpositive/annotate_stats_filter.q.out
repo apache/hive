@@ -111,12 +111,12 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: analyze table loc_orc compute statistics for columns state,locid,zip,year
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@loc_orc
 PREHOOK: Output: default@loc_orc
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table loc_orc compute statistics for columns state,locid,zip,year
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@loc_orc
 POSTHOOK: Output: default@loc_orc
 #### A masked pattern was here ####

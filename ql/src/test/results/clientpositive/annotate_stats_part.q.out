@@ -270,14 +270,14 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: analyze table loc_orc partition(year='2001') compute statistics for columns state,locid
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@loc_orc
 PREHOOK: Input: default@loc_orc@year=2001
 PREHOOK: Output: default@loc_orc
 PREHOOK: Output: default@loc_orc@year=2001
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table loc_orc partition(year='2001') compute statistics for columns state,locid
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@loc_orc
 POSTHOOK: Input: default@loc_orc@year=2001
 POSTHOOK: Output: default@loc_orc

@@ -189,12 +189,12 @@ POSTHOOK: Input: default@calendar
 #### A masked pattern was here ####
 12
 PREHOOK: query: analyze table calendar compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@calendar
 PREHOOK: Output: default@calendar
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table calendar compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@calendar
 POSTHOOK: Output: default@calendar
 #### A masked pattern was here ####
@@ -436,12 +436,12 @@ POSTHOOK: Input: default@calendar
 #### A masked pattern was here ####
 15
 PREHOOK: query: analyze table calendar compute statistics for columns year
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@calendar
 PREHOOK: Output: default@calendar
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table calendar compute statistics for columns year
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@calendar
 POSTHOOK: Output: default@calendar
 #### A masked pattern was here ####
@@ -571,12 +571,12 @@ POSTHOOK: Input: default@calendar
 #### A masked pattern was here ####
 15
 PREHOOK: query: analyze table calendar compute statistics for columns month
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@calendar
 PREHOOK: Output: default@calendar
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table calendar compute statistics for columns month
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@calendar
 POSTHOOK: Output: default@calendar
 #### A masked pattern was here ####
@@ -761,14 +761,14 @@ POSTHOOK: Input: default@calendarp@p=1
 #### A masked pattern was here ####
 2012
 PREHOOK: query: analyze table calendarp partition (p=1) compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@calendarp
 PREHOOK: Input: default@calendarp@p=1
 PREHOOK: Output: default@calendarp
 PREHOOK: Output: default@calendarp@p=1
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table calendarp partition (p=1) compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@calendarp
 POSTHOOK: Input: default@calendarp@p=1
 POSTHOOK: Output: default@calendarp

@@ -115,32 +115,32 @@ POSTHOOK: Input: default@missing_stats_t3
 #### A masked pattern was here ####
 0
 PREHOOK: query: ANALYZE TABLE missing_stats_t1 COMPUTE STATISTICS FOR COLUMNS
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@missing_stats_t1
 PREHOOK: Output: default@missing_stats_t1
 #### A masked pattern was here ####
 POSTHOOK: query: ANALYZE TABLE missing_stats_t1 COMPUTE STATISTICS FOR COLUMNS
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@missing_stats_t1
 POSTHOOK: Output: default@missing_stats_t1
 #### A masked pattern was here ####
 PREHOOK: query: ANALYZE TABLE missing_stats_t2 COMPUTE STATISTICS FOR COLUMNS
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@missing_stats_t2
 PREHOOK: Output: default@missing_stats_t2
 #### A masked pattern was here ####
 POSTHOOK: query: ANALYZE TABLE missing_stats_t2 COMPUTE STATISTICS FOR COLUMNS
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@missing_stats_t2
 POSTHOOK: Output: default@missing_stats_t2
 #### A masked pattern was here ####
 PREHOOK: query: ANALYZE TABLE missing_stats_t3 COMPUTE STATISTICS FOR COLUMNS
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@missing_stats_t3
 PREHOOK: Output: default@missing_stats_t3
 #### A masked pattern was here ####
 POSTHOOK: query: ANALYZE TABLE missing_stats_t3 COMPUTE STATISTICS FOR COLUMNS
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@missing_stats_t3
 POSTHOOK: Output: default@missing_stats_t3
 #### A masked pattern was here ####
