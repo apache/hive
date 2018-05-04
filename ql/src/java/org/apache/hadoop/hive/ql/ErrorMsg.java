@@ -495,8 +495,8 @@ public enum ErrorMsg {
   FILE_NOT_FOUND(20012, "File not found: {0}", "64000", true),
   WRONG_FILE_FORMAT(20013, "Wrong file format. Please check the file's format.", "64000", true),
 
-  SPARK_CREATE_CLIENT_INVALID_QUEUE(20014, "Spark job is submitted to an invalid queue: {0}."
-      + " Please fix and try again.", true),
+  SPARK_CREATE_CLIENT_INVALID_QUEUE(20014, "Spark app for session {0} was submitted to an invalid" +
+          " queue: {1}. Please fix and try again.", true),
   SPARK_RUNTIME_OOM(20015, "Spark job failed because of out of memory."),
 
   // An exception from runtime that will show the full stack to client
@@ -574,13 +574,13 @@ public enum ErrorMsg {
   SPARK_CREATE_CLIENT_TIMEOUT(30038,
       "Timed out while creating Spark client for session {0}.", true),
   SPARK_CREATE_CLIENT_QUEUE_FULL(30039,
-      "Failed to create Spark client because job queue is full: {0}.", true),
+      "Failed to create Spark client for session {0} because job queue is full: {1}.", true),
   SPARK_CREATE_CLIENT_INTERRUPTED(30040,
       "Interrupted while creating Spark client for session {0}", true),
   SPARK_CREATE_CLIENT_ERROR(30041,
       "Failed to create Spark client for Spark session {0}: {1}", true),
   SPARK_CREATE_CLIENT_INVALID_RESOURCE_REQUEST(30042,
-      "Failed to create Spark client due to invalid resource request: {0}", true),
+      "Failed to create Spark client for session {0} due to invalid resource request: {1}", true),
   SPARK_CREATE_CLIENT_CLOSED_SESSION(30043,
       "Cannot create Spark client on a closed session {0}", true),
 

@@ -127,4 +127,22 @@ public class Metrics implements Serializable {
     return (metrics.shuffleWriteMetrics() != null) ? new ShuffleWriteMetrics(metrics) : null;
   }
 
+  @Override
+  public String toString() {
+    return "Metrics{" +
+            "executorDeserializeTime=" + executorDeserializeTime +
+            ", executorDeserializeCpuTime=" + executorDeserializeCpuTime +
+            ", executorRunTime=" + executorRunTime +
+            ", executorCpuTime=" + executorCpuTime +
+            ", resultSize=" + resultSize +
+            ", jvmGCTime=" + jvmGCTime +
+            ", resultSerializationTime=" + resultSerializationTime +
+            ", memoryBytesSpilled=" + memoryBytesSpilled +
+            ", diskBytesSpilled=" + diskBytesSpilled +
+            ", taskDurationTime=" + taskDurationTime +
+            ", inputMetrics=" + inputMetrics +
+            ", shuffleReadMetrics=" + shuffleReadMetrics +
+            ", shuffleWriteMetrics=" + shuffleWriteMetrics +
+            '}';
+  }
 }

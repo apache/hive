@@ -43,6 +43,7 @@ import java.io.Writer;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -103,17 +104,16 @@ class SparkClientImpl implements SparkClient {
       // The RPC server will take care of timeouts here.
       this.driverRpc = rpcServer.registerClient(sessionid, secret, protocol).get();
     } catch (Throwable e) {
-      String errorMsg = null;
+      String errorMsg;
       if (e.getCause() instanceof TimeoutException) {
-        errorMsg = "Timed out waiting for client to connect.\nPossible reasons include network " +
-            "issues, errors in remote driver or the cluster has no available resources, etc." +
+        errorMsg = "Timed out waiting for Remote Spark Driver to connect to HiveServer2.\nPossible reasons " +
+            "include network issues, errors in remote driver, cluster has no available resources, etc." +
             "\nPlease check YARN or Spark driver's logs for further information.";
       } else if (e.getCause() instanceof InterruptedException) {
-        errorMsg = "Interruption occurred while waiting for client to connect.\nPossibly the Spark session is closed " +
-            "such as in case of query cancellation." +
-            "\nPlease refer to HiveServer2 logs for further information.";
+        errorMsg = "Interrupted while waiting for Remote Spark Driver to connect to HiveServer2.\nIt is possible " +
+            "that the query was cancelled which would cause the Spark Session to close.";
       } else {
-        errorMsg = "Error while waiting for client to connect.";
+        errorMsg = "Error while waiting for Remote Spark Driver to connect back to HiveServer2.";
       }
       LOG.error(errorMsg, e);
       driverThread.interrupt();
@@ -126,13 +126,20 @@ class SparkClientImpl implements SparkClient {
       throw Throwables.propagate(e);
     }
 
+    LOG.info("Successfully connected to Remote Spark Driver at: " + this.driverRpc.getRemoteAddress());
+
     driverRpc.addListener(new Rpc.Listener() {
         @Override
         public void rpcClosed(Rpc rpc) {
           if (isAlive) {
-            LOG.warn("Client RPC channel closed unexpectedly.");
+            LOG.warn("Connection to Remote Spark Driver {} closed unexpectedly", driverRpc.getRemoteAddress());
             isAlive = false;
           }
+        }
+
+        @Override
+        public String toString() {
+          return "Connection to Remote Spark Driver Closed Unexpectedly";
         }
     });
     isAlive = true;
@@ -256,7 +263,7 @@ class SparkClientImpl implements SparkClient {
     try {
       URL sparkDefaultsUrl = Thread.currentThread().getContextClassLoader().getResource("spark-defaults.conf");
       if (sparkDefaultsUrl != null) {
-        LOG.info("Loading spark defaults: " + sparkDefaultsUrl);
+        LOG.info("Loading spark defaults configs from: " + sparkDefaultsUrl);
         allProps.load(new ByteArrayInputStream(Resources.toByteArray(sparkDefaultsUrl)));
       }
     } catch (Exception e) {
@@ -574,7 +581,7 @@ class SparkClientImpl implements SparkClient {
     }
 
     private void handle(ChannelHandlerContext ctx, Error msg) {
-      LOG.warn("Error reported from remote driver: {}", msg.cause);
+      LOG.warn("Error reported from Remote Spark Driver: {}", msg.cause);
     }
 
     private void handle(ChannelHandlerContext ctx, JobMetrics msg) {
@@ -582,14 +589,14 @@ class SparkClientImpl implements SparkClient {
       if (handle != null) {
         handle.getMetrics().addMetrics(msg.sparkJobId, msg.stageId, msg.taskId, msg.metrics);
       } else {
-        LOG.warn("Received metrics for unknown job {}", msg.jobId);
+        LOG.warn("Received metrics for unknown Spark job {}", msg.sparkJobId);
       }
     }
 
     private void handle(ChannelHandlerContext ctx, JobResult msg) {
       JobHandleImpl<?> handle = jobs.remove(msg.id);
       if (handle != null) {
-        LOG.info("Received result for {}", msg.id);
+        LOG.debug("Received result for client job {}", msg.id);
         handle.setSparkCounters(msg.sparkCounters);
         Throwable error = msg.error;
         if (error == null) {
@@ -598,7 +605,7 @@ class SparkClientImpl implements SparkClient {
           handle.setFailure(error);
         }
       } else {
-        LOG.warn("Received result for unknown job {}", msg.id);
+        LOG.warn("Received result for unknown client job {}", msg.id);
       }
     }
 
@@ -607,18 +614,23 @@ class SparkClientImpl implements SparkClient {
       if (handle != null) {
         handle.changeState(JobHandle.State.STARTED);
       } else {
-        LOG.warn("Received event for unknown job {}", msg.id);
+        LOG.warn("Received event for unknown client job {}", msg.id);
       }
     }
 
     private void handle(ChannelHandlerContext ctx, JobSubmitted msg) {
       JobHandleImpl<?> handle = jobs.get(msg.clientJobId);
       if (handle != null) {
-        LOG.info("Received spark job ID: {} for {}", msg.sparkJobId, msg.clientJobId);
+        LOG.info("Received Spark job ID: {} for client job {}", msg.sparkJobId, msg.clientJobId);
         handle.addSparkJobId(msg.sparkJobId);
       } else {
-        LOG.warn("Received spark job ID: {} for unknown job {}", msg.sparkJobId, msg.clientJobId);
+        LOG.warn("Received Spark job ID: {} for unknown client job {}", msg.sparkJobId, msg.clientJobId);
       }
+    }
+
+    @Override
+    protected String name() {
+      return "HiveServer2 to Remote Spark Driver Connection";
     }
   }
 

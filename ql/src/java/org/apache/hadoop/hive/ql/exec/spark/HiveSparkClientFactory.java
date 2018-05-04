@@ -104,7 +104,7 @@ public class HiveSparkClientFactory {
       inputStream = HiveSparkClientFactory.class.getClassLoader()
         .getResourceAsStream(SPARK_DEFAULT_CONF_FILE);
       if (inputStream != null) {
-        LOG.info("loading spark properties from: " + SPARK_DEFAULT_CONF_FILE);
+        LOG.info("Loading Spark properties from: " + SPARK_DEFAULT_CONF_FILE);
         Properties properties = new Properties();
         properties.load(new InputStreamReader(inputStream, CharsetNames.UTF_8));
         for (String propertyName : properties.stringPropertyNames()) {
@@ -118,7 +118,7 @@ public class HiveSparkClientFactory {
         }
       }
     } catch (IOException e) {
-      LOG.info("Failed to open spark configuration file: "
+      LOG.info("Failed to open Spark configuration file: "
         + SPARK_DEFAULT_CONF_FILE, e);
     } finally {
       if (inputStream != null) {
