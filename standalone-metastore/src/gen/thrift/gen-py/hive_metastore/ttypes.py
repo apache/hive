@@ -4457,6 +4457,7 @@ class Table:
    - rewriteEnabled
    - creationMetadata
    - catName
+   - ownerType
   """
 
   thrift_spec = (
@@ -4478,9 +4479,10 @@ class Table:
     (15, TType.BOOL, 'rewriteEnabled', None, None, ), # 15
     (16, TType.STRUCT, 'creationMetadata', (CreationMetadata, CreationMetadata.thrift_spec), None, ), # 16
     (17, TType.STRING, 'catName', None, None, ), # 17
+    (18, TType.I32, 'ownerType', None,     1, ), # 18
   )
 
-  def __init__(self, tableName=None, dbName=None, owner=None, createTime=None, lastAccessTime=None, retention=None, sd=None, partitionKeys=None, parameters=None, viewOriginalText=None, viewExpandedText=None, tableType=None, privileges=None, temporary=thrift_spec[14][4], rewriteEnabled=None, creationMetadata=None, catName=None,):
+  def __init__(self, tableName=None, dbName=None, owner=None, createTime=None, lastAccessTime=None, retention=None, sd=None, partitionKeys=None, parameters=None, viewOriginalText=None, viewExpandedText=None, tableType=None, privileges=None, temporary=thrift_spec[14][4], rewriteEnabled=None, creationMetadata=None, catName=None, ownerType=thrift_spec[18][4],):
     self.tableName = tableName
     self.dbName = dbName
     self.owner = owner
@@ -4498,6 +4500,7 @@ class Table:
     self.rewriteEnabled = rewriteEnabled
     self.creationMetadata = creationMetadata
     self.catName = catName
+    self.ownerType = ownerType
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -4608,6 +4611,11 @@ class Table:
           self.catName = iprot.readString()
         else:
           iprot.skip(ftype)
+      elif fid == 18:
+        if ftype == TType.I32:
+          self.ownerType = iprot.readI32()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -4693,6 +4701,10 @@ class Table:
       oprot.writeFieldBegin('catName', TType.STRING, 17)
       oprot.writeString(self.catName)
       oprot.writeFieldEnd()
+    if self.ownerType is not None:
+      oprot.writeFieldBegin('ownerType', TType.I32, 18)
+      oprot.writeI32(self.ownerType)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -4719,6 +4731,7 @@ class Table:
     value = (value * 31) ^ hash(self.rewriteEnabled)
     value = (value * 31) ^ hash(self.creationMetadata)
     value = (value * 31) ^ hash(self.catName)
+    value = (value * 31) ^ hash(self.ownerType)
     return value
 
   def __repr__(self):
