@@ -40,6 +40,9 @@ import org.apache.hive.service.cli.session.HiveSession;
 
 
 
+
+
+
 /**
  * GetTablesOperation.
  *
