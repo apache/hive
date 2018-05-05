@@ -6387,6 +6387,10 @@ class Table {
    * @var string
    */
   public $catName = null;
+  /**
+   * @var int
+   */
+  public $ownerType =   1;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -6475,6 +6479,10 @@ class Table {
           'var' => 'catName',
           'type' => TType::STRING,
           ),
+        18 => array(
+          'var' => 'ownerType',
+          'type' => TType::I32,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -6528,6 +6536,9 @@ class Table {
       }
       if (isset($vals['catName'])) {
         $this->catName = $vals['catName'];
+      }
+      if (isset($vals['ownerType'])) {
+        $this->ownerType = $vals['ownerType'];
       }
     }
   }
@@ -6697,6 +6708,13 @@ class Table {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 18:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->ownerType);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -6827,6 +6845,11 @@ class Table {
     if ($this->catName !== null) {
       $xfer += $output->writeFieldBegin('catName', TType::STRING, 17);
       $xfer += $output->writeString($this->catName);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->ownerType !== null) {
+      $xfer += $output->writeFieldBegin('ownerType', TType::I32, 18);
+      $xfer += $output->writeI32($this->ownerType);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

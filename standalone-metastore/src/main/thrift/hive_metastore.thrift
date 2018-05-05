@@ -423,7 +423,8 @@ struct Table {
   14: optional bool temporary=false,
   15: optional bool rewriteEnabled,     // rewrite enabled or not
   16: optional CreationMetadata creationMetadata,   // only for MVs, it stores table names used and txn list at MV creation
-  17: optional string catName          // Name of the catalog the table is in
+  17: optional string catName,          // Name of the catalog the table is in
+  18: optional PrincipalType ownerType = PrincipalType.USER // owner type of this table (default to USER for backward compatibility)
 }
 
 struct Partition {
