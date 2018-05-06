@@ -20,11 +20,13 @@ package org.apache.hive.streaming;
 
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.BUCKET_COUNT;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -447,6 +449,60 @@ public class TestStreaming {
     connection.write(row2.getBytes());
     connection.commitTransaction();
     connection.close();
+
+    List<String> rs = queryTable(driver, "select ROW__ID, bo, ti, si, i, bi, f, d, de, ts, da, s, c, vc, m, l, st," +
+      " INPUT__FILE__NAME from default.alltypes order by ROW__ID");
+    Assert.assertEquals(2, rs.size());
+    String gotRow1 = rs.get(0);
+    String expectedPrefixRow1 = "{\"writeid\":1,\"bucketid\":536870912," +
+      "\"rowid\":0}\ttrue\t10\t100\t1000\t10000\t4.0\t20.0\t4.222\t1969-12-31 15:59:58.174\t1970-01-01\tstring" +
+      "\thello\thello\t{\"k1\":\"v1\"}\t[100,200]\t{\"c1\":10,\"c2\":\"foo\"}";
+    String expectedSuffixRow1 = "alltypes/delta_0000001_0000002/bucket_00000";
+    String gotRow2 = rs.get(1);
+    String expectedPrefixRow2 = "{\"writeid\":1,\"bucketid\":536870912," +
+      "\"rowid\":1}\tfalse\t20\t200\t2000\t20000\t8.0\t40.0\t2.222\t1970-12-31 15:59:58.174\t1971-01-01\tabcd" +
+      "\tworld\tworld\t{\"k4\":\"v4\"}\t[200,300]\t{\"c1\":20,\"c2\":\"bar\"}";
+    String expectedSuffixRow2 = "alltypes/delta_0000001_0000002/bucket_00000";
+    Assert.assertTrue(gotRow1, gotRow1.startsWith(expectedPrefixRow1));
+    Assert.assertTrue(gotRow1, gotRow1.endsWith(expectedSuffixRow1));
+    Assert.assertTrue(gotRow2, gotRow2.startsWith(expectedPrefixRow2));
+    Assert.assertTrue(gotRow2, gotRow2.endsWith(expectedSuffixRow2));
+  }
+
+  @Test
+  public void testAllTypesDelimitedWriterInputStream() throws Exception {
+    queryTable(driver, "drop table if exists default.alltypes");
+    queryTable(driver,
+      "create table if not exists default.alltypes ( bo boolean, ti tinyint, si smallint, i int, bi bigint, " +
+        "f float, d double, de decimal(10,3), ts timestamp, da date, s string, c char(5), vc varchar(5), " +
+        "m map<string, string>, l array<int>, st struct<c1:int, c2:string> ) " +
+        "stored as orc TBLPROPERTIES('transactional'='true')");
+    StrictDelimitedInputWriter wr = StrictDelimitedInputWriter.newBuilder()
+      .withFieldDelimiter('|')
+      .withCollectionDelimiter(',')
+      .withMapKeyDelimiter(':')
+      .withLineDelimiterPattern("\n")
+      .build();
+    StreamingConnection connection = HiveStreamingConnection.newBuilder()
+      .withDatabase("default")
+      .withTable("alltypes")
+      .withAgentInfo("UT_" + Thread.currentThread().getName())
+      .withTransactionBatchSize(2)
+      .withRecordWriter(wr)
+      .withHiveConf(conf)
+      .connect();
+
+    String row1 = "true|10|100|1000|10000|4.0|20.0|4.2222|1969-12-31 " +
+      "15:59:58.174|1970-01-01|string|hello|hello|k1:v1|100,200|10,foo";
+    String row2 = "false|20|200|2000|20000|8.0|40.0|2.2222|1970-12-31 15:59:58.174|1971-01-01|abcd|world|world|" +
+      "k4:v4|200,300|20,bar";
+    String allRows = row1 + "\n" + row2 + "\n";
+    ByteArrayInputStream bais = new ByteArrayInputStream(allRows.getBytes());
+    connection.beginTransaction();
+    connection.write(bais);
+    connection.commitTransaction();
+    connection.close();
+    bais.close();
 
     List<String> rs = queryTable(driver, "select ROW__ID, bo, ti, si, i, bi, f, d, de, ts, da, s, c, vc, m, l, st," +
       " INPUT__FILE__NAME from default.alltypes order by ROW__ID");
@@ -1226,6 +1282,37 @@ public class TestStreaming {
   }
 
   @Test
+  public void testRegexInputStream() throws Exception {
+    String regex = "([^,]*),(.*)";
+    StrictRegexWriter writer = StrictRegexWriter.newBuilder()
+      // if unspecified, default one or [\r\n] will be used for line break
+      .withRegex(regex)
+      .build();
+    StreamingConnection connection = HiveStreamingConnection.newBuilder()
+      .withDatabase(dbName)
+      .withTable(tblName)
+      .withStaticPartitionValues(partitionVals)
+      .withAgentInfo("UT_" + Thread.currentThread().getName())
+      .withHiveConf(conf)
+      .withRecordWriter(writer)
+      .connect();
+
+    String rows = "1,foo\r2,bar\r3,baz";
+    ByteArrayInputStream bais = new ByteArrayInputStream(rows.getBytes());
+    connection.beginTransaction();
+    connection.write(bais);
+    connection.commitTransaction();
+    bais.close();
+    connection.close();
+
+    List<String> rs = queryTable(driver, "select * from " + dbName + "." + tblName);
+    Assert.assertEquals(3, rs.size());
+    Assert.assertEquals("1\tfoo\tAsia\tIndia", rs.get(0));
+    Assert.assertEquals("2\tbar\tAsia\tIndia", rs.get(1));
+    Assert.assertEquals("3\tbaz\tAsia\tIndia", rs.get(2));
+  }
+
+  @Test
   public void testTransactionBatchCommitJson() throws Exception {
     StrictJsonWriter writer = StrictJsonWriter.newBuilder()
       .build();
@@ -1258,6 +1345,37 @@ public class TestStreaming {
 
     List<String> rs = queryTable(driver, "select * from " + dbName + "." + tblName);
     Assert.assertEquals(1, rs.size());
+  }
+
+  @Test
+  public void testJsonInputStream() throws Exception {
+    StrictJsonWriter writer = StrictJsonWriter.newBuilder()
+      .withLineDelimiterPattern("\\|")
+      .build();
+    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
+      .withDatabase(dbName)
+      .withTable(tblName)
+      .withStaticPartitionValues(partitionVals)
+      .withAgentInfo("UT_" + Thread.currentThread().getName())
+      .withRecordWriter(writer)
+      .withHiveConf(conf)
+      .connect();
+
+    // 1st Txn
+    connection.beginTransaction();
+    Assert.assertEquals(HiveStreamingConnection.TxnState.OPEN, connection.getCurrentTransactionState());
+    String records = "{\"id\" : 1, \"msg\": \"Hello streaming\"}|{\"id\" : 2, \"msg\": \"Hello world\"}|{\"id\" : 3, " +
+      "\"msg\": \"Hello world!!\"}";
+    ByteArrayInputStream bais = new ByteArrayInputStream(records.getBytes());
+    connection.write(bais);
+    connection.commitTransaction();
+    bais.close();
+    connection.close();
+    List<String> rs = queryTable(driver, "select * from " + dbName + "." + tblName);
+    Assert.assertEquals(3, rs.size());
+    Assert.assertEquals("1\tHello streaming\tAsia\tIndia", rs.get(0));
+    Assert.assertEquals("2\tHello world\tAsia\tIndia", rs.get(1));
+    Assert.assertEquals("3\tHello world!!\tAsia\tIndia", rs.get(2));
   }
 
   @Test
@@ -2793,6 +2911,12 @@ public class TestStreaming {
     @Override
     public void write(long writeId, byte[] record) throws StreamingException {
       delegate.write(writeId, record);
+      produceFault();
+    }
+
+    @Override
+    public void write(final long writeId, final InputStream inputStream) throws StreamingException {
+      delegate.write(writeId, inputStream);
       produceFault();
     }
 

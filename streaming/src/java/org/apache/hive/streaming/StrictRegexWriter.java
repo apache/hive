@@ -38,6 +38,7 @@ public class StrictRegexWriter extends AbstractRecordWriter {
   private RegexSerDe serde;
 
   private StrictRegexWriter(final Builder builder) {
+    super(builder.lineDelimiter);
     this.regex = builder.regex;
   }
 
@@ -47,9 +48,15 @@ public class StrictRegexWriter extends AbstractRecordWriter {
 
   public static class Builder {
     private String regex;
+    private String lineDelimiter;
 
     public Builder withRegex(final String regex) {
       this.regex = regex;
+      return this;
+    }
+
+    public Builder withLineDelimiterPattern(final String lineDelimiter) {
+      this.lineDelimiter = lineDelimiter;
       return this;
     }
 
