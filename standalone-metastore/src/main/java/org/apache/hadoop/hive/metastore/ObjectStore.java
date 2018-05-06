@@ -69,6 +69,7 @@ import javax.jdo.datastore.JDOConnection;
 import javax.jdo.identity.IntIdentity;
 import javax.sql.DataSource;
 
+import com.google.common.base.Strings;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -1903,6 +1904,15 @@ public class ObjectStore implements RawStore, Configurable {
         .getRetention(), convertToStorageDescriptor(mtbl.getSd()),
         convertToFieldSchemas(mtbl.getPartitionKeys()), convertMap(mtbl.getParameters()),
         mtbl.getViewOriginalText(), mtbl.getViewExpandedText(), tableType);
+
+    if (Strings.isNullOrEmpty(mtbl.getOwnerType())) {
+      // Before the ownerType exists in an old Hive schema, USER was the default type for owner.
+      // Let's set the default to USER to keep backward compatibility.
+      t.setOwnerType(PrincipalType.USER);
+    } else {
+      t.setOwnerType(PrincipalType.valueOf(mtbl.getOwnerType()));
+    }
+
     t.setRewriteEnabled(mtbl.isRewriteEnabled());
     t.setCatName(mtbl.getDatabase().getCatalogName());
     return t;
@@ -1938,9 +1948,12 @@ public class ObjectStore implements RawStore, Configurable {
       }
     }
 
+    PrincipalType ownerPrincipalType = tbl.getOwnerType();
+    String ownerType = (ownerPrincipalType == null) ? PrincipalType.USER.name() : ownerPrincipalType.name();
+
     // A new table is always created with a new column descriptor
     return new MTable(normalizeIdentifier(tbl.getTableName()), mdb,
-        convertToMStorageDescriptor(tbl.getSd()), tbl.getOwner(), tbl
+        convertToMStorageDescriptor(tbl.getSd()), tbl.getOwner(), ownerType, tbl
         .getCreateTime(), tbl.getLastAccessTime(), tbl.getRetention(),
         convertToMFieldSchemas(tbl.getPartitionKeys()), tbl.getParameters(),
         tbl.getViewOriginalText(), tbl.getViewExpandedText(), tbl.isRewriteEnabled(),
@@ -3926,6 +3939,7 @@ public class ObjectStore implements RawStore, Configurable {
       oldt.setTableName(normalizeIdentifier(newt.getTableName()));
       oldt.setParameters(newt.getParameters());
       oldt.setOwner(newt.getOwner());
+      oldt.setOwnerType(newt.getOwnerType());
       // Fully copy over the contents of the new SD into the old SD,
       // so we don't create an extra SD in the metastore db that has no references.
       MColumnDescriptor oldCD = null;
