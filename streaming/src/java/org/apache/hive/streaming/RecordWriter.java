@@ -19,6 +19,8 @@
 package org.apache.hive.streaming;
 
 
+import java.io.InputStream;
+
 import java.util.Set;
 
 public interface RecordWriter {
@@ -34,15 +36,28 @@ public interface RecordWriter {
   void init(StreamingConnection connection, long minWriteId, long maxWriteID) throws StreamingException;
 
   /**
-   * Writes using a hive RecordUpdater
+   * Writes using a hive RecordUpdater.
    *
-   * @param writeId the write ID of the table mapping to Txn in which the write occurs
-   * @param record  the record to be written
+   * @param writeId - the write ID of the table mapping to Txn in which the write occurs
+   * @param record  - the record to be written
+   * @throws StreamingException - thrown when write fails
    */
   void write(long writeId, byte[] record) throws StreamingException;
 
   /**
+   * Writes using a hive RecordUpdater. The specified input stream will be automatically closed
+   * by the API after reading all the records out of it.
+   *
+   * @param writeId     - the write ID of the table mapping to Txn in which the write occurs
+   * @param inputStream - the record to be written
+   * @throws StreamingException - thrown when write fails
+   */
+  void write(long writeId, InputStream inputStream) throws StreamingException;
+
+  /**
    * Flush records from buffer. Invoked by TransactionBatch.commitTransaction()
+   *
+   * @throws StreamingException - thrown when flush fails
    */
   void flush() throws StreamingException;
 
