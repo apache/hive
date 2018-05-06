@@ -362,6 +362,7 @@ CREATE TABLE TBLS
     DB_ID bigint NULL,
     LAST_ACCESS_TIME int NOT NULL,
     OWNER nvarchar(767) NULL,
+    OWNER_TYPE nvarchar(10) NULL,
     RETENTION int NOT NULL,
     SD_ID bigint NULL,
     TBL_NAME nvarchar(256) NULL,

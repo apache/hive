@@ -381,6 +381,7 @@ CREATE TABLE "TBLS" (
     "DB_ID" bigint,
     "LAST_ACCESS_TIME" bigint NOT NULL,
     "OWNER" character varying(767) DEFAULT NULL::character varying,
+    "OWNER_TYPE" character varying(10) DEFAULT NULL::character varying,
     "RETENTION" bigint NOT NULL,
     "SD_ID" bigint,
     "TBL_NAME" character varying(256) DEFAULT NULL::character varying,
