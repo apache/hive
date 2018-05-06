@@ -34,13 +34,24 @@ import org.apache.hadoop.io.Text;
 public class StrictJsonWriter extends AbstractRecordWriter {
   private JsonSerDe serde;
 
+  public StrictJsonWriter(final Builder builder) {
+    super(builder.lineDelimiter);
+  }
+
   public static Builder newBuilder() {
     return new Builder();
   }
 
   public static class Builder {
+    private String lineDelimiter;
+
+    public Builder withLineDelimiterPattern(final String lineDelimiter) {
+      this.lineDelimiter = lineDelimiter;
+      return this;
+    }
+
     public StrictJsonWriter build() {
-      return new StrictJsonWriter();
+      return new StrictJsonWriter(this);
     }
   }
 
