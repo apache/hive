@@ -229,10 +229,14 @@ public class TestCachedStore {
     tbl2 = objectStore.getTable(DEFAULT_CATALOG_NAME, dbName, tblName2);
 
     // Alter table "tbl" via ObjectStore
-    tblOwner = "user2";
+    tblOwner = "role1";
     tbl.setOwner(tblOwner);
+    tbl.setOwnerType(PrincipalType.ROLE);
     objectStore.alterTable(DEFAULT_CATALOG_NAME, dbName, tblName, tbl);
     tbl = objectStore.getTable(DEFAULT_CATALOG_NAME, dbName, tblName);
+
+    Assert.assertEquals("Owner of the table did not change.", tblOwner, tbl.getOwner());
+    Assert.assertEquals("Owner type of the table did not change", PrincipalType.ROLE, tbl.getOwnerType());
 
     // Drop table "tbl1" via ObjectStore
     objectStore.dropTable(DEFAULT_CATALOG_NAME, dbName, tblName1);
