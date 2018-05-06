@@ -20,6 +20,7 @@ package org.apache.hive.streaming;
 
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryUsage;
@@ -30,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -60,6 +62,7 @@ import org.slf4j.LoggerFactory;
 public abstract class AbstractRecordWriter implements RecordWriter {
   private static final Logger LOG = LoggerFactory.getLogger(AbstractRecordWriter.class.getName());
 
+  private static final String DEFAULT_LINE_DELIMITER_PATTERN = "[\r\n]";
   protected HiveConf conf;
   private StreamingConnection conn;
   protected Table table;
@@ -87,6 +90,7 @@ public abstract class AbstractRecordWriter implements RecordWriter {
   private AcidOutputFormat<?, ?> acidOutputFormat;
   private Long curBatchMinWriteId;
   private Long curBatchMaxWriteId;
+  private final String lineDelimiter;
   private HeapMemoryMonitor heapMemoryMonitor;
   // if low memory canary is set and if records after set canary exceeds threshold, trigger a flush.
   // This is to avoid getting notified of low memory too often and flushing too often.
@@ -95,6 +99,11 @@ public abstract class AbstractRecordWriter implements RecordWriter {
   private boolean autoFlush;
   private float memoryUsageThreshold;
   private long ingestSizeThreshold;
+
+  public AbstractRecordWriter(final String lineDelimiter) {
+    this.lineDelimiter = lineDelimiter == null || lineDelimiter.isEmpty() ?
+      DEFAULT_LINE_DELIMITER_PATTERN : lineDelimiter;
+  }
 
   private static class OrcMemoryPressureMonitor implements HeapMemoryMonitor.Listener {
     private static final Logger LOG = LoggerFactory.getLogger(OrcMemoryPressureMonitor.class.getName());
@@ -367,6 +376,15 @@ public abstract class AbstractRecordWriter implements RecordWriter {
   }
 
   @Override
+  public void write(final long writeId, final InputStream inputStream) throws StreamingException {
+    try (Scanner scanner = new Scanner(inputStream).useDelimiter(lineDelimiter)) {
+      while (scanner.hasNext()) {
+        write(writeId, scanner.next().getBytes());
+      }
+    }
+  }
+
+  @Override
   public void write(final long writeId, final byte[] record) throws StreamingException {
     checkAutoFlush();
     ingestSizeBytes += record.length;
@@ -375,6 +393,9 @@ public abstract class AbstractRecordWriter implements RecordWriter {
       int bucket = getBucket(encodedRow);
       List<String> partitionValues = getPartitionValues(encodedRow);
       getRecordUpdater(partitionValues, bucket).insert(writeId, encodedRow);
+      // ingest size bytes gets resetted on flush() whereas connection stats is not
+      conn.getConnectionStats().incrementRecordsWritten();
+      conn.getConnectionStats().incrementRecordsSize(record.length);
     } catch (IOException e) {
       throw new StreamingIOFailure("Error writing record in transaction write id ("
         + writeId + ")", e);

@@ -19,7 +19,9 @@
 package org.apache.hive.streaming;
 
 
+import java.io.InputStream;
 import java.util.Properties;
+import java.util.Scanner;
 
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -44,6 +46,7 @@ public class StrictDelimitedInputWriter extends AbstractRecordWriter {
   private LazySimpleSerDe serde;
 
   private StrictDelimitedInputWriter(Builder builder) {
+    super(builder.lineDelimiter);
     this.fieldDelimiter = builder.fieldDelimiter;
     this.collectionDelimiter = builder.collectionDelimiter;
     this.mapKeyDelimiter = builder.mapKeyDelimiter;
@@ -57,6 +60,7 @@ public class StrictDelimitedInputWriter extends AbstractRecordWriter {
     private char fieldDelimiter = (char) LazySerDeParameters.DefaultSeparators[0];
     private char collectionDelimiter = (char) LazySerDeParameters.DefaultSeparators[1];
     private char mapKeyDelimiter = (char) LazySerDeParameters.DefaultSeparators[2];
+    private String lineDelimiter;
 
     public Builder withFieldDelimiter(final char fieldDelimiter) {
       this.fieldDelimiter = fieldDelimiter;
@@ -70,6 +74,11 @@ public class StrictDelimitedInputWriter extends AbstractRecordWriter {
 
     public Builder withMapKeyDelimiter(final char mapKeyDelimiter) {
       this.mapKeyDelimiter = mapKeyDelimiter;
+      return this;
+    }
+
+    public Builder withLineDelimiterPattern(final String lineDelimiter) {
+      this.lineDelimiter = lineDelimiter;
       return this;
     }
 
