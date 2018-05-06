@@ -4218,12 +4218,12 @@ public class HiveConf extends Configuration {
        "exception) is the default; 'skip' will skip the invalid directories and still repair the" +
        " others; 'ignore' will skip the validation (legacy behavior, causes bugs in many cases)"),
     HIVE_MSCK_REPAIR_BATCH_SIZE(
-        "hive.msck.repair.batch.size", 0,
+        "hive.msck.repair.batch.size", 3000,
         "Batch size for the msck repair command. If the value is greater than zero,\n "
             + "it will execute batch wise with the configured batch size. In case of errors while\n"
             + "adding unknown partitions the batch size is automatically reduced by half in the subsequent\n"
-            + "retry attempt. The default value is zero which means it will execute directly (not batch wise)"),
-    HIVE_MSCK_REPAIR_BATCH_MAX_RETRIES("hive.msck.repair.batch.max.retries", 0,
+            + "retry attempt. The default value is 3000 which means it will execute in the batches of 3000."),
+    HIVE_MSCK_REPAIR_BATCH_MAX_RETRIES("hive.msck.repair.batch.max.retries", 4,
         "Maximum number of retries for the msck repair command when adding unknown partitions.\n "
         + "If the value is greater than zero it will retry adding unknown partitions until the maximum\n"
         + "number of attempts is reached or batch size is reduced to 0, whichever is earlier.\n"
