@@ -4405,9 +4405,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
       throws HiveException {
     try {
       CompactionType cr = null;
-      if ("major".equals(compactType)) {
+      if ("major".equalsIgnoreCase(compactType)) {
         cr = CompactionType.MAJOR;
-      } else if ("minor".equals(compactType)) {
+      } else if ("minor".equalsIgnoreCase(compactType)) {
         cr = CompactionType.MINOR;
       } else {
         throw new RuntimeException("Unknown compaction type " + compactType);
