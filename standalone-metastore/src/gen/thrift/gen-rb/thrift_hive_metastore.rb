@@ -2161,6 +2161,22 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'grant_revoke_privileges failed: unknown result')
     end
 
+    def refresh_privileges(objToRefresh, grantRequest)
+      send_refresh_privileges(objToRefresh, grantRequest)
+      return recv_refresh_privileges()
+    end
+
+    def send_refresh_privileges(objToRefresh, grantRequest)
+      send_message('refresh_privileges', Refresh_privileges_args, :objToRefresh => objToRefresh, :grantRequest => grantRequest)
+    end
+
+    def recv_refresh_privileges()
+      result = receive_message(Refresh_privileges_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'refresh_privileges failed: unknown result')
+    end
+
     def set_ugi(user_name, group_names)
       send_set_ugi(user_name, group_names)
       return recv_set_ugi()
@@ -5119,6 +5135,17 @@ module ThriftHiveMetastore
         result.o1 = o1
       end
       write_result(result, oprot, 'grant_revoke_privileges', seqid)
+    end
+
+    def process_refresh_privileges(seqid, iprot, oprot)
+      args = read_args(iprot, Refresh_privileges_args)
+      result = Refresh_privileges_result.new()
+      begin
+        result.success = @handler.refresh_privileges(args.objToRefresh, args.grantRequest)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'refresh_privileges', seqid)
     end
 
     def process_set_ugi(seqid, iprot, oprot)
@@ -10879,6 +10906,42 @@ module ThriftHiveMetastore
   end
 
   class Grant_revoke_privileges_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::GrantRevokePrivilegeResponse},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Refresh_privileges_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    OBJTOREFRESH = 1
+    GRANTREQUEST = 2
+
+    FIELDS = {
+      OBJTOREFRESH => {:type => ::Thrift::Types::STRUCT, :name => 'objToRefresh', :class => ::HiveObjectRef},
+      GRANTREQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'grantRequest', :class => ::GrantRevokePrivilegeRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Refresh_privileges_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
     SUCCESS = 0
     O1 = 1

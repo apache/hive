@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
+import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.ISchema;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
@@ -508,6 +509,11 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
     return objectStore.revokePrivileges(privileges, grantOption);
   }
 
+  @Override
+  public boolean refreshPrivileges(HiveObjectRef objToRefresh, PrivilegeBag grantPrivileges)
+          throws InvalidObjectException, MetaException, NoSuchObjectException {
+    return objectStore.refreshPrivileges(objToRefresh, grantPrivileges);
+  }
   @Override
   public Role getRole(String roleName) throws NoSuchObjectException {
     return objectStore.getRole(roleName);

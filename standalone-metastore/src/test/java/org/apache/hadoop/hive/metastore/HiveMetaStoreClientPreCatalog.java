@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -2024,6 +2025,31 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     req.setPrivileges(privileges);
     req.setRevokeGrantOption(grantOption);
     GrantRevokePrivilegeResponse res = client.grant_revoke_privileges(req);
+    if (!res.isSetSuccess()) {
+      throw new MetaException("GrantRevokePrivilegeResponse missing success field");
+    }
+    return res.isSuccess();
+  }
+
+  @Override
+  public boolean refresh_privileges(HiveObjectRef objToRefresh,
+      PrivilegeBag grantPrivileges) throws MetaException,
+      TException {
+    String defaultCat = getDefaultCatalog(conf);
+    objToRefresh.setCatName(defaultCat);
+
+    if (grantPrivileges.getPrivileges() != null) {
+      for (HiveObjectPrivilege priv : grantPrivileges.getPrivileges()) {
+        if (!priv.getHiveObject().isSetCatName()) {
+          priv.getHiveObject().setCatName(defaultCat);
+        }
+      }
+    }
+    GrantRevokePrivilegeRequest grantReq = new GrantRevokePrivilegeRequest();
+    grantReq.setRequestType(GrantRevokeType.GRANT);
+    grantReq.setPrivileges(grantPrivileges);
+
+    GrantRevokePrivilegeResponse res = client.refresh_privileges(objToRefresh, grantReq);
     if (!res.isSetSuccess()) {
       throw new MetaException("GrantRevokePrivilegeResponse missing success field");
     }

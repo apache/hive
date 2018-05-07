@@ -23,9 +23,9 @@ import java.util.Collections;
 import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.accumulo.Utils;
 import org.apache.hadoop.hive.accumulo.columns.ColumnEncoding;
 import org.apache.hadoop.hive.accumulo.columns.HiveAccumuloRowIdColumnMapping;
+import org.apache.hadoop.hive.ql.metadata.JarUtils;
 import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.lazy.LazyFactory;
@@ -62,7 +62,7 @@ public class DefaultAccumuloRowIdFactory implements AccumuloRowIdFactory {
 
   @Override
   public void addDependencyJars(Configuration conf) throws IOException {
-    Utils.addDependencyJars(conf, Collections.<Class<?>> singletonList(getClass()));
+    JarUtils.addDependencyJars(conf, Collections.<Class<?>> singletonList(getClass()));
   }
 
   @Override
