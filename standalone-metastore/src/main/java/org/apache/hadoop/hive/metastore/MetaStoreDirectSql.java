@@ -179,7 +179,8 @@ class MetaStoreDirectSql {
           + " Disabling directSQL as it uses hand-hardcoded SQL with that assumption.");
       isCompatibleDatastore = false;
     } else {
-      isCompatibleDatastore = ensureDbInit() && runTestQuery();
+      boolean isInTest = MetastoreConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST);
+      isCompatibleDatastore = (!isInTest || ensureDbInit()) && runTestQuery();
       if (isCompatibleDatastore) {
         LOG.info("Using direct SQL, underlying DB is " + dbType);
       }
