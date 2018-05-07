@@ -146,8 +146,19 @@ public class FileOperations {
   private void exportFilesAsList() throws SemanticException, IOException {
     // This is only called for replication that handles MM tables; no need for mmCtx.
     try (BufferedWriter writer = writer()) {
-      for (Path dataPath : dataPathList) {
-        writeFilesList(listFilesInDir(dataPath), writer, AcidUtils.getAcidSubDir(dataPath));
+      if (mmCtx != null) {
+        assert dataPathList.size() == 1;
+        Path dataPath = dataPathList.get(0);
+        ValidWriteIdList ids = AcidUtils.getTableValidWriteIdList(
+            hiveConf, mmCtx.getFqTableName());
+        List<Path> validPaths = getMmValidPaths(ids, dataPath);
+        for (Path mmPath : validPaths) {
+          writeFilesList(listFilesInDir(mmPath), writer, AcidUtils.getAcidSubDir(dataPath));
+        }
+      } else {
+        for (Path dataPath : dataPathList) {
+          writeFilesList(listFilesInDir(dataPath), writer, AcidUtils.getAcidSubDir(dataPath));
+        }
       }
     }
   }
