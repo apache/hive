@@ -17,39 +17,65 @@
  */
 package org.apache.hadoop.hive.ql.plan;
 
+import java.io.Serializable;
+
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Serializable;
-
 @Explain(displayName = "Export Work", explainLevels = { Explain.Level.USER, Explain.Level.DEFAULT,
     Explain.Level.EXTENDED })
 public class ExportWork implements Serializable {
-  private Logger LOG = LoggerFactory.getLogger(ExportWork.class);
+  private static Logger LOG = LoggerFactory.getLogger(ExportWork.class);
 
   private static final long serialVersionUID = 1L;
+
+  public final static class MmContext {
+    private final String fqTableName;
+
+    private MmContext(String fqTableName) {
+      this.fqTableName = fqTableName;
+    }
+
+    @Override
+    public String toString() {
+      return "[" + fqTableName + "]";
+    }
+
+    public static MmContext createIfNeeded(Table t) {
+      if (t == null) return null;
+      if (!AcidUtils.isInsertOnlyTable(t.getParameters())) return null;
+      return new MmContext(AcidUtils.getFullTableName(t.getDbName(), t.getTableName()));
+    }
+
+    public String getFqTableName() {
+      return fqTableName;
+    }
+  }
 
   private final String exportRootDirName;
   private TableSpec tableSpec;
   private ReplicationSpec replicationSpec;
   private String astRepresentationForErrorMsg;
-  private String qualifiedTableName;
+  private String acidFqTableName;
+  private final MmContext mmContext;
 
   /**
-   * @param qualifiedTable if exporting Acid table, this is temp table - null otherwise
+   * @param acidFqTableName if exporting Acid table, this is temp table - null otherwise
    */
   public ExportWork(String exportRootDirName, TableSpec tableSpec, ReplicationSpec replicationSpec,
-      String astRepresentationForErrorMsg, String qualifiedTable) {
+      String astRepresentationForErrorMsg, String acidFqTableName, MmContext mmContext) {
     this.exportRootDirName = exportRootDirName;
     this.tableSpec = tableSpec;
     this.replicationSpec = replicationSpec;
     this.astRepresentationForErrorMsg = astRepresentationForErrorMsg;
-    this.qualifiedTableName = qualifiedTable;
+    this.mmContext = mmContext;
+    this.acidFqTableName = acidFqTableName;
   }
 
   public String getExportRootDir() {
@@ -60,24 +86,16 @@ public class ExportWork implements Serializable {
     return tableSpec;
   }
 
-  public void setTableSpec(TableSpec tableSpec) {
-    this.tableSpec = tableSpec;
-  }
-
   public ReplicationSpec getReplicationSpec() {
     return replicationSpec;
-  }
-
-  public void setReplicationSpec(ReplicationSpec replicationSpec) {
-    this.replicationSpec = replicationSpec;
   }
 
   public String getAstRepresentationForErrorMsg() {
     return astRepresentationForErrorMsg;
   }
 
-  public void setAstRepresentationForErrorMsg(String astRepresentationForErrorMsg) {
-    this.astRepresentationForErrorMsg = astRepresentationForErrorMsg;
+  public MmContext getMmContext() {
+    return mmContext;
   }
 
   /**
@@ -88,10 +106,10 @@ public class ExportWork implements Serializable {
    * for more info.
    */
   public void acidPostProcess(Hive db) throws HiveException {
-    if(qualifiedTableName != null) {
-      LOG.info("Swapping export of " + tableSpec.tableName + " to " + qualifiedTableName +
+    if (acidFqTableName != null) {
+      LOG.info("Swapping export of " + tableSpec.tableName + " to " + acidFqTableName +
           " using partSpec=" + tableSpec.partSpec);
-      tableSpec = new TableSpec(db, qualifiedTableName, tableSpec.partSpec, true);
+      tableSpec = new TableSpec(db, acidFqTableName, tableSpec.partSpec, true);
     }
   }
 }

@@ -292,14 +292,42 @@ POSTHOOK: type: IMPORT
 #### A masked pattern was here ####
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@import2_mm
-PREHOOK: query: desc import2_mm
+PREHOOK: query: desc formatted import2_mm
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@import2_mm
-POSTHOOK: query: desc import2_mm
+POSTHOOK: query: desc formatted import2_mm
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@import2_mm
+# col_name            	data_type           	comment             
 key                 	int                 	                    
 p                   	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	bucketing_version   	2                   
+	numFiles            	3                   
+	numRows             	6                   
+	rawDataSize         	37                  
+	totalSize           	43                  
+	transactional       	true                
+	transactional_properties	insert_only         
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: select * from import2_mm order by key, p
 PREHOOK: type: QUERY
 PREHOOK: Input: default@import2_mm
@@ -338,18 +366,46 @@ POSTHOOK: Output: default@import3_mm
 POSTHOOK: Output: default@import3_mm@p=455
 POSTHOOK: Output: default@import3_mm@p=456
 POSTHOOK: Output: default@import3_mm@p=457
-PREHOOK: query: desc import3_mm
+PREHOOK: query: desc formatted import3_mm
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@import3_mm
-POSTHOOK: query: desc import3_mm
+POSTHOOK: query: desc formatted import3_mm
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@import3_mm
+# col_name            	data_type           	comment             
 key                 	int                 	                    
-p                   	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 p                   	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	bucketing_version   	2                   
+	numFiles            	3                   
+	numPartitions       	3                   
+	numRows             	6                   
+	rawDataSize         	13                  
+	totalSize           	19                  
+	transactional       	true                
+	transactional_properties	insert_only         
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: select * from import3_mm order by key, p
 PREHOOK: type: QUERY
 PREHOOK: Input: default@import3_mm

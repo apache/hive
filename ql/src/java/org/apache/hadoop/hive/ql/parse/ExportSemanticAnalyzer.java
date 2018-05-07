@@ -19,12 +19,17 @@
 package org.apache.hadoop.hive.ql.parse;
 
 
+import java.util.Set;
+
+import javax.annotation.Nullable;
+
 import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -32,15 +37,14 @@ import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.repl.dump.TableExport;
 import org.apache.hadoop.hive.ql.plan.ExportWork;
-
-import javax.annotation.Nullable;
-import java.util.Set;
+import org.apache.hadoop.hive.ql.plan.ExportWork.MmContext;
 
 /**
  * ExportSemanticAnalyzer.
  *
  */
 public class ExportSemanticAnalyzer extends BaseSemanticAnalyzer {
+  private boolean isMmExport = false;
 
   ExportSemanticAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
@@ -48,7 +52,9 @@ public class ExportSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   @Override
   public void analyzeInternal(ASTNode ast) throws SemanticException {
-    rootTasks.add(analyzeExport(ast, null, db, conf, inputs, outputs));
+    Task<ExportWork> task = analyzeExport(ast, null, db, conf, inputs, outputs);
+    isMmExport = task.getWork().getMmContext() != null;
+    rootTasks.add(task);
   }
   /**
    * @param acidTableName - table name in db.table format; not NULL if exporting Acid table
@@ -80,12 +86,10 @@ public class ExportSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     try {
       ts = new TableSpec(db, conf, (ASTNode) tableTree, false, true);
-    } catch (SemanticException sme){
-      if ((replicationSpec.isInReplicationScope()) &&
-            ((sme.getCause() instanceof InvalidTableException)
-            || (sme instanceof Table.ValidationFailureSemanticException)
-            )
-          ){
+    } catch (SemanticException sme) {
+      if (!replicationSpec.isInReplicationScope()) throw sme;
+      if ((sme.getCause() instanceof InvalidTableException)
+            || (sme instanceof Table.ValidationFailureSemanticException)) {
         // If we're in replication scope, it's possible that we're running the export long after
         // the table was dropped, so the table not existing currently or being a different kind of
         // table is not an error - it simply means we should no-op, and let a future export
@@ -101,15 +105,26 @@ public class ExportSemanticAnalyzer extends BaseSemanticAnalyzer {
     // All parsing is done, we're now good to start the export process
     TableExport.Paths exportPaths =
         new TableExport.Paths(ErrorMsg.INVALID_PATH.getMsg(ast), tmpPath, conf, false);
-    TableExport tableExport = new TableExport(exportPaths, ts, replicationSpec, db, null, conf);
-    TableExport.AuthEntities authEntities = tableExport.getAuthEntities();
+    // Note: this tableExport is actually never used other than for auth, and another one is
+    //       created when the task is executed. So, we don't care about the correct MM state here.
+    TableExport.AuthEntities authEntities = new TableExport(
+        exportPaths, ts, replicationSpec, db, null, conf, null).getAuthEntities();
     inputs.addAll(authEntities.inputs);
     outputs.addAll(authEntities.outputs);
     String exportRootDirName = tmpPath;
+    MmContext mmCtx = MmContext.createIfNeeded(ts == null ? null : ts.tableHandle);
+
+    Utilities.FILE_OP_LOGGER.debug("Exporting table {}: MM context {}",
+        ts == null ? null : ts.tableName, mmCtx);
     // Configure export work
-    ExportWork exportWork =
-        new ExportWork(exportRootDirName, ts, replicationSpec, ErrorMsg.INVALID_PATH.getMsg(ast), acidTableName);
+    ExportWork exportWork = new ExportWork(exportRootDirName, ts, replicationSpec,
+        ErrorMsg.INVALID_PATH.getMsg(ast), acidTableName, mmCtx);
     // Create an export task and add it as a root task
-    return  TaskFactory.get(exportWork);
+    return TaskFactory.get(exportWork);
+  }
+  
+  @Override
+  public boolean hasTransactionalInQuery() {
+    return isMmExport; // Full ACID export goes thru UpdateDelete analyzer.
   }
 }
