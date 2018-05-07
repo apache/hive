@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -51,14 +51,12 @@ public class PerfLogger {
   public static final String SERIALIZE_PLAN = "serializePlan";
   public static final String DESERIALIZE_PLAN = "deserializePlan";
   public static final String CLONE_PLAN = "clonePlan";
-  public static final String TASK = "task.";
   public static final String RELEASE_LOCKS = "releaseLocks";
   public static final String PRUNE_LISTING = "prune-listing";
   public static final String PARTITION_RETRIEVING = "partition-retrieving";
   public static final String PRE_HOOK = "PreHook.";
   public static final String POST_HOOK = "PostHook.";
   public static final String FAILURE_HOOK = "FailureHook.";
-  public static final String DRIVER_RUN = "Driver.run";
   public static final String TEZ_COMPILER = "TezCompiler";
   public static final String TEZ_SUBMIT_TO_RUNNING = "TezSubmitToRunningDag";
   public static final String TEZ_BUILD_DAG = "TezBuildDag";
@@ -70,10 +68,13 @@ public class PerfLogger {
   public static final String TEZ_RUN_PROCESSOR = "TezRunProcessor";
   public static final String TEZ_INIT_OPERATORS = "TezInitializeOperators";
   public static final String LOAD_HASHTABLE = "LoadHashtable";
+  public static final String TEZ_GET_SESSION = "TezGetSession";
+  public static final String SAVE_TO_RESULTS_CACHE = "saveToResultsCache";
 
   public static final String SPARK_SUBMIT_TO_RUNNING = "SparkSubmitToRunning";
   public static final String SPARK_BUILD_PLAN = "SparkBuildPlan";
   public static final String SPARK_BUILD_RDD_GRAPH = "SparkBuildRDDGraph";
+  public static final String SPARK_CREATE_EXPLAIN_PLAN = "SparkCreateExplainPlan.";
   public static final String SPARK_SUBMIT_JOB = "SparkSubmitJob";
   public static final String SPARK_RUN_JOB = "SparkRunJob";
   public static final String SPARK_CREATE_TRAN = "SparkCreateTran.";

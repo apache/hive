@@ -47,12 +47,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl1
 POSTHOOK: Output: default@tbl1
 PREHOOK: query: analyze table tbl1 compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@tbl1
 PREHOOK: Output: default@tbl1
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table tbl1 compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@tbl1
 POSTHOOK: Output: default@tbl1
 #### A masked pattern was here ####
@@ -65,12 +65,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl2
 POSTHOOK: Output: default@tbl2
 PREHOOK: query: analyze table tbl2 compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@tbl2
 PREHOOK: Output: default@tbl2
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table tbl2 compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@tbl2
 POSTHOOK: Output: default@tbl2
 #### A masked pattern was here ####
@@ -178,6 +178,7 @@ STAGE PLANS:
               sort order: 
               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: $sum0(VALUE._col0)
@@ -309,6 +310,7 @@ STAGE PLANS:
               sort order: 
               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -1045,6 +1047,7 @@ STAGE PLANS:
                     Map-reduce partition columns: _col0 (type: int)
                     Statistics: Num rows: 5 Data size: 60 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: bigint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -1109,6 +1112,7 @@ STAGE PLANS:
               sort order: 
               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: $sum0(VALUE._col0)
@@ -1148,6 +1152,7 @@ STAGE PLANS:
                     Map-reduce partition columns: _col0 (type: int)
                     Statistics: Num rows: 5 Data size: 60 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: bigint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -24,7 +24,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.sql.Date;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -95,7 +95,7 @@ public abstract class ReaderWriter {
 
     case DataType.MAP:
       int size = in.readInt();
-      Map<Object, Object> m = new HashMap<Object, Object>(size);
+      Map<Object, Object> m = new LinkedHashMap<Object, Object>(size);
       for (int i = 0; i < size; i++) {
         m.put(readDatum(in), readDatum(in));
       }

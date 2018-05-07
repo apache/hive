@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,6 +18,7 @@
  
 package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
 
+import org.apache.hadoop.hive.ql.exec.vector.expressions.OverflowUtils;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.NullUtil;
 import org.apache.hadoop.hive.ql.exec.vector.*;
@@ -52,6 +53,12 @@ public class <ClassName> extends VectorExpression {
   @Override
   public void evaluate(VectorizedRowBatch batch) {
 
+    // return immediately if batch is empty
+    final int n = batch.size;
+    if (n == 0) {
+      return;
+    }
+
     if (childExpressions != null) {
       super.evaluateChildren(batch);
     }
@@ -60,31 +67,23 @@ public class <ClassName> extends VectorExpression {
     <InputColumnVectorType2> inputColVector2 = (<InputColumnVectorType2>) batch.cols[colNum2];
     <OutputColumnVectorType> outputColVector = (<OutputColumnVectorType>) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
-    int n = batch.size;
+
     <OperandType1>[] vector1 = inputColVector1.vector;
     <OperandType2>[] vector2 = inputColVector2.vector;
     <ReturnType>[] outputVector = outputColVector.vector;
-    
-    // return immediately if batch is empty
-    if (n == 0) {
-      return;
-    }
-    
-    outputColVector.isRepeating = 
-         inputColVector1.isRepeating && inputColVector2.isRepeating
-      || inputColVector1.isRepeating && !inputColVector1.noNulls && inputColVector1.isNull[0]
-      || inputColVector2.isRepeating && !inputColVector2.noNulls && inputColVector2.isNull[0];
-    
-    // Handle nulls first  
+
+    /*
+     * Propagate null values for a two-input operator and set isRepeating and noNulls appropriately.
+     */
     NullUtil.propagateNullsColCol(
       inputColVector1, inputColVector2, outputColVector, sel, n, batch.selectedInUse);
-          
+
     /* Disregard nulls for processing. In other words,
-     * the arithmetic operation is performed even if one or 
+     * the arithmetic operation is performed even if one or
      * more inputs are null. This is to improve speed by avoiding
      * conditional checks in the inner loop.
-     */ 
-    if (inputColVector1.isRepeating && inputColVector2.isRepeating) { 
+     */
+    if (inputColVector1.isRepeating && inputColVector2.isRepeating) {
       outputVector[0] = vector1[0] <OperatorSymbol> vector2[0];
     } else if (inputColVector1.isRepeating) {
       final <OperandType1> vector1Value = vector1[0];
@@ -122,7 +121,13 @@ public class <ClassName> extends VectorExpression {
         }
       }
     }
-    
+
+#IF CHECKED
+    //when operating in checked mode make sure we handle overflows similar to non-vectorized expression
+    OverflowUtils.accountForOverflow<CamelReturnType>(getOutputTypeInfo(), outputColVector,
+      batch.selectedInUse, sel, n);
+#ELSE
+#ENDIF CHECKED
     /* For the case when the output can have null values, follow 
      * the convention that the data values must be 1 for long and 
      * NaN for double. This is to prevent possible later zero-divide errors
@@ -131,6 +136,13 @@ public class <ClassName> extends VectorExpression {
      */
     NullUtil.setNullDataEntries<CamelReturnType>(outputColVector, batch.selectedInUse, sel, n);
   }
+
+#IF CHECKED
+  @Override
+  public boolean supportsCheckedExecution() {
+    return true;
+  }
+#ENDIF CHECKED
 
   @Override
   public String vectorExpressionParameters() {

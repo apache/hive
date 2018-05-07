@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -79,18 +79,21 @@ public class OrcColumnVectorProducer implements ColumnVectorProducer {
     this.tracePool = tracePool;
   }
 
+  public Configuration getConf() {
+    return conf;
+  }
+
   @Override
   public ReadPipeline createReadPipeline(
-      Consumer<ColumnVectorBatch> consumer, FileSplit split, List<Integer> columnIds,
-      SearchArgument sarg, String[] columnNames, QueryFragmentCounters counters,
-      TypeDescription readerSchema, InputFormat<?, ?> unused0, Deserializer unused1,
-      Reporter reporter, JobConf job, Map<Path, PartitionDesc> unused2) throws IOException {
+      Consumer<ColumnVectorBatch> consumer, FileSplit split, Includes includes,
+      SearchArgument sarg, QueryFragmentCounters counters, SchemaEvolutionFactory sef,
+      InputFormat<?, ?> unused0, Deserializer unused1, Reporter reporter, JobConf job,
+      Map<Path, PartitionDesc> unused2) throws IOException {
     cacheMetrics.incrCacheReadRequests();
-    OrcEncodedDataConsumer edc = new OrcEncodedDataConsumer(consumer, columnIds.size(),
-        _skipCorrupt, counters, ioMetrics);
-    OrcEncodedDataReader reader = new OrcEncodedDataReader(
-        lowLevelCache, bufferManager, metadataCache, conf, job, split, columnIds, sarg,
-        columnNames, edc, counters, readerSchema, tracePool);
+    OrcEncodedDataConsumer edc = new OrcEncodedDataConsumer(
+        consumer, includes, _skipCorrupt, counters, ioMetrics);
+    OrcEncodedDataReader reader = new OrcEncodedDataReader(lowLevelCache, bufferManager,
+        metadataCache, conf, job, split, includes, sarg, edc, counters, sef, tracePool);
     edc.init(reader, reader, reader.getTrace());
     return edc;
   }

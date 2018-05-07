@@ -22,6 +22,7 @@ import java.net.InetSocketAddress;
 import com.google.protobuf.RpcController;
 import com.google.protobuf.ServiceException;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.io.retry.RetryPolicy;
 import org.apache.hadoop.ipc.ProtobufRpcEngine;
 import org.apache.hadoop.ipc.ProtocolProxy;
@@ -74,6 +75,16 @@ public class LlapManagementProtocolClientImpl implements LlapManagementProtocolP
       GetTokenRequestProto request) throws ServiceException {
     try {
       return getProxy().getDelegationToken(null, request);
+    } catch (IOException e) {
+      throw new ServiceException(e);
+    }
+  }
+
+  @Override
+  public LlapDaemonProtocolProtos.PurgeCacheResponseProto purgeCache(final RpcController controller,
+    final LlapDaemonProtocolProtos.PurgeCacheRequestProto request) throws ServiceException {
+    try {
+      return getProxy().purgeCache(null, request);
     } catch (IOException e) {
       throw new ServiceException(e);
     }

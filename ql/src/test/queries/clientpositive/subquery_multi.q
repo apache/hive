@@ -1,3 +1,6 @@
+--! qt:dataset:src
+--! qt:dataset:part
+--! qt:dataset:lineitem
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 
@@ -125,6 +128,17 @@ select count(*)  from src
     where src.key in (select key from src s1 where s1.key > '9')
         or src.value is not null
         or exists(select key from src);
+
+-- EXISTS and NOT EXISTS with non-equi predicate
+explain select * from part ws1 where
+    exists (select * from part ws2 where ws1.p_type= ws2.p_type
+                            and ws1.p_retailprice <> ws2.p_retailprice)
+    and not exists(select * from part_null wr1 where ws1.p_type = wr1.p_name);
+select * from part ws1 where
+    exists (select * from part ws2 where ws1.p_type= ws2.p_type
+                            and ws1.p_retailprice <> ws2.p_retailprice)
+    and not exists(select * from part_null wr1 where ws1.p_type = wr1.p_name);
+
 
 drop table tnull;
 drop table tempty;

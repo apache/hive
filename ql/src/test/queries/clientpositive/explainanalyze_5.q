@@ -1,3 +1,7 @@
+--! qt:dataset:src1
+--! qt:dataset:src
+--! qt:dataset:alltypesorc
+SET hive.vectorized.execution.enabled=false;
 set hive.map.aggr=false;
 
 set hive.stats.column.autogather=true;

@@ -74,7 +74,7 @@ STAGE PLANS:
                         tag: 0
                         value expressions: _col1 (type: string)
                         auto parallelism: true
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
@@ -89,6 +89,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 16
                     bucket_field_name key
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -112,6 +113,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 16
                       bucket_field_name key
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -154,7 +156,7 @@ STAGE PLANS:
                         tag: 1
                         value expressions: _col1 (type: string)
                         auto parallelism: true
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
@@ -169,6 +171,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 16
                     bucket_field_name key
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -192,6 +195,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 16
                       bucket_field_name key
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -235,7 +239,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: string), _col2 (type: int), _col3 (type: string)
                   auto parallelism: false
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
@@ -388,7 +392,7 @@ STAGE PLANS:
                         tag: 0
                         value expressions: _col2 (type: string)
                         auto parallelism: true
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
@@ -403,6 +407,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 16
                     bucket_field_name key
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,key2,value
                     columns.comments 
@@ -426,6 +431,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 16
                       bucket_field_name key
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,key2,value
                       columns.comments 
@@ -468,7 +474,7 @@ STAGE PLANS:
                         tag: 1
                         value expressions: _col2 (type: string)
                         auto parallelism: true
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
@@ -483,6 +489,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 16
                     bucket_field_name key
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,key2,value
                     columns.comments 
@@ -506,6 +513,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 16
                       bucket_field_name key
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,key2,value
                       columns.comments 
@@ -549,7 +557,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: int), _col2 (type: string), _col3 (type: int), _col4 (type: int), _col5 (type: string)
                   auto parallelism: false
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
@@ -650,7 +658,7 @@ STAGE PLANS:
                         tag: 0
                         value expressions: _col2 (type: string)
                         auto parallelism: true
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
@@ -665,6 +673,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 16
                     bucket_field_name key
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,key2,value
                     columns.comments 
@@ -688,6 +697,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 16
                       bucket_field_name key
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,key2,value
                       columns.comments 
@@ -730,7 +740,7 @@ STAGE PLANS:
                         tag: 1
                         value expressions: _col2 (type: string)
                         auto parallelism: true
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
@@ -745,6 +755,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 16
                     bucket_field_name key
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,key2,value
                     columns.comments 
@@ -768,6 +779,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 16
                       bucket_field_name key
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,key2,value
                       columns.comments 
@@ -811,7 +823,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: int), _col2 (type: string), _col3 (type: int), _col4 (type: int), _col5 (type: string)
                   auto parallelism: false
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
@@ -912,7 +924,7 @@ STAGE PLANS:
                         tag: 0
                         value expressions: _col1 (type: int)
                         auto parallelism: true
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
@@ -927,6 +939,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 16
                     bucket_field_name key
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,key2,value
                     columns.comments 
@@ -950,6 +963,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 16
                       bucket_field_name key
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,key2,value
                       columns.comments 
@@ -992,7 +1006,7 @@ STAGE PLANS:
                         tag: 1
                         value expressions: _col1 (type: int)
                         auto parallelism: true
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
@@ -1007,6 +1021,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 16
                     bucket_field_name key
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,key2,value
                     columns.comments 
@@ -1030,6 +1045,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 16
                       bucket_field_name key
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,key2,value
                       columns.comments 
@@ -1073,7 +1089,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: int), _col2 (type: string), _col3 (type: int), _col4 (type: int), _col5 (type: string)
                   auto parallelism: false
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator

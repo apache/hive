@@ -1,0 +1,1681 @@
+PREHOOK: query: CREATE TABLE schema_evolution_data(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
+row format delimited fields terminated by '|' stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@schema_evolution_data
+POSTHOOK: query: CREATE TABLE schema_evolution_data(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
+row format delimited fields terminated by '|' stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@schema_evolution_data
+PREHOOK: query: load data local inpath '../../data/files/schema_evolution/schema_evolution_data.txt' overwrite into table schema_evolution_data
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@schema_evolution_data
+POSTHOOK: query: load data local inpath '../../data/files/schema_evolution/schema_evolution_data.txt' overwrite into table schema_evolution_data
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@schema_evolution_data
+PREHOOK: query: CREATE TABLE schema_evolution_data_2(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
+row format delimited fields terminated by '|' stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@schema_evolution_data_2
+POSTHOOK: query: CREATE TABLE schema_evolution_data_2(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
+row format delimited fields terminated by '|' stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@schema_evolution_data_2
+PREHOOK: query: load data local inpath '../../data/files/schema_evolution/schema_evolution_data_2.txt' overwrite into table schema_evolution_data_2
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@schema_evolution_data_2
+POSTHOOK: query: load data local inpath '../../data/files/schema_evolution/schema_evolution_data_2.txt' overwrite into table schema_evolution_data_2
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@schema_evolution_data_2
+PREHOOK: query: CREATE TABLE partitioned_update_1(insert_num int, a INT, b STRING) PARTITIONED BY(part INT) clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@partitioned_update_1
+POSTHOOK: query: CREATE TABLE partitioned_update_1(insert_num int, a INT, b STRING) PARTITIONED BY(part INT) clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@partitioned_update_1
+PREHOOK: query: insert into table partitioned_update_1 partition(part=1) SELECT insert_num, int1, 'original' FROM schema_evolution_data
+PREHOOK: type: QUERY
+PREHOOK: Input: default@schema_evolution_data
+PREHOOK: Output: default@partitioned_update_1@part=1
+POSTHOOK: query: insert into table partitioned_update_1 partition(part=1) SELECT insert_num, int1, 'original' FROM schema_evolution_data
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@schema_evolution_data
+POSTHOOK: Output: default@partitioned_update_1@part=1
+POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=1).a SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=1).b SIMPLE []
+POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:insert_num, type:int, comment:null), ]
+insert_num	int1	_c2
+PREHOOK: query: alter table partitioned_update_1 add columns(c int, d string)
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: default@partitioned_update_1
+PREHOOK: Output: default@partitioned_update_1
+POSTHOOK: query: alter table partitioned_update_1 add columns(c int, d string)
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: default@partitioned_update_1
+POSTHOOK: Output: default@partitioned_update_1
+PREHOOK: query: insert into table partitioned_update_1 partition(part=2) SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2 WHERE insert_num <=110
+PREHOOK: type: QUERY
+PREHOOK: Input: default@schema_evolution_data_2
+PREHOOK: Output: default@partitioned_update_1@part=2
+POSTHOOK: query: insert into table partitioned_update_1 partition(part=2) SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2 WHERE insert_num <=110
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@schema_evolution_data_2
+POSTHOOK: Output: default@partitioned_update_1@part=2
+POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=2).a SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=2).b SIMPLE []
+POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=2).c SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=2).d SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=2).insert_num SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:insert_num, type:int, comment:null), ]
+insert_num	int1	_c2	int1	string1
+PREHOOK: query: insert into table partitioned_update_1 partition(part=1) SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2 WHERE insert_num > 110
+PREHOOK: type: QUERY
+PREHOOK: Input: default@schema_evolution_data_2
+PREHOOK: Output: default@partitioned_update_1@part=1
+POSTHOOK: query: insert into table partitioned_update_1 partition(part=1) SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2 WHERE insert_num > 110
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@schema_evolution_data_2
+POSTHOOK: Output: default@partitioned_update_1@part=1
+POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=1).a SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=1).b SIMPLE []
+POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=1).c SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=1).d SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:insert_num, type:int, comment:null), ]
+insert_num	int1	_c2	int1	string1
+PREHOOK: query: select insert_num,part,a,b,c,d from partitioned_update_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partitioned_update_1
+PREHOOK: Input: default@partitioned_update_1@part=1
+PREHOOK: Input: default@partitioned_update_1@part=2
+#### A masked pattern was here ####
+POSTHOOK: query: select insert_num,part,a,b,c,d from partitioned_update_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partitioned_update_1
+POSTHOOK: Input: default@partitioned_update_1@part=1
+POSTHOOK: Input: default@partitioned_update_1@part=2
+#### A masked pattern was here ####
+insert_num	part	a	b	c	d
+101	1	-2147483648	original	NULL	NULL
+102	1	2147483647	original	NULL	NULL
+103	1	NULL	original	NULL	NULL
+104	1	203332	original	NULL	NULL
+105	1	-999992	original	NULL	NULL
+106	2	0	new	0	hangar paralysed companion
+107	2	127	new	127	bottom
+108	2	NULL	new	NULL	baffling
+109	2	17	new	17	feather weight
+110	2	400	new	400	window  
+111	1	-57923222	new	-57923222	astonishing
+112	1	82153733	new	82153733	Antarctic peninsula
+113	1	40000	new	40000	Delaware
+114	1	-128	new	-128	smaller than Scotland
+115	1	32768	new	32768	major glaciation
+PREHOOK: query: update partitioned_update_1 set c=99
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partitioned_update_1
+PREHOOK: Input: default@partitioned_update_1@part=1
+PREHOOK: Input: default@partitioned_update_1@part=2
+PREHOOK: Output: default@partitioned_update_1@part=1
+PREHOOK: Output: default@partitioned_update_1@part=2
+POSTHOOK: query: update partitioned_update_1 set c=99
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partitioned_update_1
+POSTHOOK: Input: default@partitioned_update_1@part=1
+POSTHOOK: Input: default@partitioned_update_1@part=2
+POSTHOOK: Output: default@partitioned_update_1@part=1
+POSTHOOK: Output: default@partitioned_update_1@part=2
+row__id	insert_num	a	b	_c4	d	part
+PREHOOK: query: select insert_num,part,a,b,c,d from partitioned_update_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partitioned_update_1
+PREHOOK: Input: default@partitioned_update_1@part=1
+PREHOOK: Input: default@partitioned_update_1@part=2
+#### A masked pattern was here ####
+POSTHOOK: query: select insert_num,part,a,b,c,d from partitioned_update_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partitioned_update_1
+POSTHOOK: Input: default@partitioned_update_1@part=1
+POSTHOOK: Input: default@partitioned_update_1@part=2
+#### A masked pattern was here ####
+insert_num	part	a	b	c	d
+101	1	-2147483648	original	99	NULL
+102	1	2147483647	original	99	NULL
+103	1	NULL	original	99	NULL
+104	1	203332	original	99	NULL
+105	1	-999992	original	99	NULL
+106	2	0	new	99	hangar paralysed companion
+107	2	127	new	99	bottom
+108	2	NULL	new	99	baffling
+109	2	17	new	99	feather weight
+110	2	400	new	99	window  
+111	1	-57923222	new	99	astonishing
+112	1	82153733	new	99	Antarctic peninsula
+113	1	40000	new	99	Delaware
+114	1	-128	new	99	smaller than Scotland
+115	1	32768	new	99	major glaciation
+PREHOOK: query: alter table partitioned_update_1 partition(part=1) compact 'major'
+PREHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: query: alter table partitioned_update_1 partition(part=1) compact 'major'
+POSTHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: query: alter table partitioned_update_1 partition(part=2) compact 'major'
+PREHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: query: alter table partitioned_update_1 partition(part=2) compact 'major'
+POSTHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: query: select insert_num,part,a,b,c,d from partitioned_update_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partitioned_update_1
+PREHOOK: Input: default@partitioned_update_1@part=1
+PREHOOK: Input: default@partitioned_update_1@part=2
+#### A masked pattern was here ####
+POSTHOOK: query: select insert_num,part,a,b,c,d from partitioned_update_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partitioned_update_1
+POSTHOOK: Input: default@partitioned_update_1@part=1
+POSTHOOK: Input: default@partitioned_update_1@part=2
+#### A masked pattern was here ####
+insert_num	part	a	b	c	d
+101	1	-2147483648	original	99	NULL
+102	1	2147483647	original	99	NULL
+103	1	NULL	original	99	NULL
+104	1	203332	original	99	NULL
+105	1	-999992	original	99	NULL
+106	2	0	new	99	hangar paralysed companion
+107	2	127	new	99	bottom
+108	2	NULL	new	99	baffling
+109	2	17	new	99	feather weight
+110	2	400	new	99	window  
+111	1	-57923222	new	99	astonishing
+112	1	82153733	new	99	Antarctic peninsula
+113	1	40000	new	99	Delaware
+114	1	-128	new	99	smaller than Scotland
+115	1	32768	new	99	major glaciation
+PREHOOK: query: DROP TABLE partitioned_update_1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@partitioned_update_1
+PREHOOK: Output: default@partitioned_update_1
+POSTHOOK: query: DROP TABLE partitioned_update_1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@partitioned_update_1
+POSTHOOK: Output: default@partitioned_update_1
+PREHOOK: query: CREATE TABLE partitioned_delete_1(insert_num int, a INT, b STRING) PARTITIONED BY(part INT) clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@partitioned_delete_1
+POSTHOOK: query: CREATE TABLE partitioned_delete_1(insert_num int, a INT, b STRING) PARTITIONED BY(part INT) clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@partitioned_delete_1
+PREHOOK: query: insert into table partitioned_delete_1 partition(part=1) SELECT insert_num, int1, 'original' FROM schema_evolution_data
+PREHOOK: type: QUERY
+PREHOOK: Input: default@schema_evolution_data
+PREHOOK: Output: default@partitioned_delete_1@part=1
+POSTHOOK: query: insert into table partitioned_delete_1 partition(part=1) SELECT insert_num, int1, 'original' FROM schema_evolution_data
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@schema_evolution_data
+POSTHOOK: Output: default@partitioned_delete_1@part=1
+POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=1).a SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=1).b SIMPLE []
+POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:insert_num, type:int, comment:null), ]
+insert_num	int1	_c2
+PREHOOK: query: alter table partitioned_delete_1 add columns(c int, d string)
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: default@partitioned_delete_1
+PREHOOK: Output: default@partitioned_delete_1
+POSTHOOK: query: alter table partitioned_delete_1 add columns(c int, d string)
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: default@partitioned_delete_1
+POSTHOOK: Output: default@partitioned_delete_1
+PREHOOK: query: insert into table partitioned_delete_1 partition(part=2) SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2 WHERE insert_num <=110
+PREHOOK: type: QUERY
+PREHOOK: Input: default@schema_evolution_data_2
+PREHOOK: Output: default@partitioned_delete_1@part=2
+POSTHOOK: query: insert into table partitioned_delete_1 partition(part=2) SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2 WHERE insert_num <=110
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@schema_evolution_data_2
+POSTHOOK: Output: default@partitioned_delete_1@part=2
+POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=2).a SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=2).b SIMPLE []
+POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=2).c SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=2).d SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=2).insert_num SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:insert_num, type:int, comment:null), ]
+insert_num	int1	_c2	int1	string1
+PREHOOK: query: insert into table partitioned_delete_1 partition(part=1) SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2 WHERE insert_num > 110
+PREHOOK: type: QUERY
+PREHOOK: Input: default@schema_evolution_data_2
+PREHOOK: Output: default@partitioned_delete_1@part=1
+POSTHOOK: query: insert into table partitioned_delete_1 partition(part=1) SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2 WHERE insert_num > 110
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@schema_evolution_data_2
+POSTHOOK: Output: default@partitioned_delete_1@part=1
+POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=1).a SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=1).b SIMPLE []
+POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=1).c SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=1).d SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:insert_num, type:int, comment:null), ]
+insert_num	int1	_c2	int1	string1
+PREHOOK: query: select part,a,b,c,d from partitioned_delete_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partitioned_delete_1
+PREHOOK: Input: default@partitioned_delete_1@part=1
+PREHOOK: Input: default@partitioned_delete_1@part=2
+#### A masked pattern was here ####
+POSTHOOK: query: select part,a,b,c,d from partitioned_delete_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partitioned_delete_1
+POSTHOOK: Input: default@partitioned_delete_1@part=1
+POSTHOOK: Input: default@partitioned_delete_1@part=2
+#### A masked pattern was here ####
+part	a	b	c	d
+1	-128	new	-128	smaller than Scotland
+1	-2147483648	original	NULL	NULL
+1	-57923222	new	-57923222	astonishing
+1	-999992	original	NULL	NULL
+1	203332	original	NULL	NULL
+1	2147483647	original	NULL	NULL
+1	32768	new	32768	major glaciation
+1	40000	new	40000	Delaware
+1	82153733	new	82153733	Antarctic peninsula
+1	NULL	original	NULL	NULL
+2	0	new	0	hangar paralysed companion
+2	127	new	127	bottom
+2	17	new	17	feather weight
+2	400	new	400	window  
+2	NULL	new	NULL	baffling
+PREHOOK: query: delete from partitioned_delete_1 where insert_num = 102 or insert_num = 104 or insert_num = 106
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partitioned_delete_1
+PREHOOK: Input: default@partitioned_delete_1@part=1
+PREHOOK: Input: default@partitioned_delete_1@part=2
+PREHOOK: Output: default@partitioned_delete_1@part=1
+PREHOOK: Output: default@partitioned_delete_1@part=2
+POSTHOOK: query: delete from partitioned_delete_1 where insert_num = 102 or insert_num = 104 or insert_num = 106
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partitioned_delete_1
+POSTHOOK: Input: default@partitioned_delete_1@part=1
+POSTHOOK: Input: default@partitioned_delete_1@part=2
+POSTHOOK: Output: default@partitioned_delete_1@part=1
+POSTHOOK: Output: default@partitioned_delete_1@part=2
+row__id	part
+PREHOOK: query: select insert_num,part,a,b,c,d from partitioned_delete_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partitioned_delete_1
+PREHOOK: Input: default@partitioned_delete_1@part=1
+PREHOOK: Input: default@partitioned_delete_1@part=2
+#### A masked pattern was here ####
+POSTHOOK: query: select insert_num,part,a,b,c,d from partitioned_delete_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partitioned_delete_1
+POSTHOOK: Input: default@partitioned_delete_1@part=1
+POSTHOOK: Input: default@partitioned_delete_1@part=2
+#### A masked pattern was here ####
+insert_num	part	a	b	c	d
+101	1	-2147483648	original	NULL	NULL
+103	1	NULL	original	NULL	NULL
+105	1	-999992	original	NULL	NULL
+107	2	127	new	127	bottom
+108	2	NULL	new	NULL	baffling
+109	2	17	new	17	feather weight
+110	2	400	new	400	window  
+111	1	-57923222	new	-57923222	astonishing
+112	1	82153733	new	82153733	Antarctic peninsula
+113	1	40000	new	40000	Delaware
+114	1	-128	new	-128	smaller than Scotland
+115	1	32768	new	32768	major glaciation
+PREHOOK: query: alter table partitioned_delete_1 partition(part=1) compact 'major'
+PREHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: query: alter table partitioned_delete_1 partition(part=1) compact 'major'
+POSTHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: query: alter table partitioned_delete_1 partition(part=2) compact 'major'
+PREHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: query: alter table partitioned_delete_1 partition(part=2) compact 'major'
+POSTHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: query: select insert_num,part,a,b,c,d from partitioned_delete_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partitioned_delete_1
+PREHOOK: Input: default@partitioned_delete_1@part=1
+PREHOOK: Input: default@partitioned_delete_1@part=2
+#### A masked pattern was here ####
+POSTHOOK: query: select insert_num,part,a,b,c,d from partitioned_delete_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partitioned_delete_1
+POSTHOOK: Input: default@partitioned_delete_1@part=1
+POSTHOOK: Input: default@partitioned_delete_1@part=2
+#### A masked pattern was here ####
+insert_num	part	a	b	c	d
+101	1	-2147483648	original	NULL	NULL
+103	1	NULL	original	NULL	NULL
+105	1	-999992	original	NULL	NULL
+107	2	127	new	127	bottom
+108	2	NULL	new	NULL	baffling
+109	2	17	new	17	feather weight
+110	2	400	new	400	window  
+111	1	-57923222	new	-57923222	astonishing
+112	1	82153733	new	82153733	Antarctic peninsula
+113	1	40000	new	40000	Delaware
+114	1	-128	new	-128	smaller than Scotland
+115	1	32768	new	32768	major glaciation
+PREHOOK: query: DROP TABLE partitioned_delete_1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@partitioned_delete_1
+PREHOOK: Output: default@partitioned_delete_1
+POSTHOOK: query: DROP TABLE partitioned_delete_1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@partitioned_delete_1
+POSTHOOK: Output: default@partitioned_delete_1
+PREHOOK: query: CREATE TABLE partitioned_delete_2(insert_num int, a INT, b STRING) PARTITIONED BY(part INT) clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@partitioned_delete_2
+POSTHOOK: query: CREATE TABLE partitioned_delete_2(insert_num int, a INT, b STRING) PARTITIONED BY(part INT) clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@partitioned_delete_2
+PREHOOK: query: insert into table partitioned_delete_2 partition(part=1) SELECT insert_num, int1, 'original' FROM schema_evolution_data
+PREHOOK: type: QUERY
+PREHOOK: Input: default@schema_evolution_data
+PREHOOK: Output: default@partitioned_delete_2@part=1
+POSTHOOK: query: insert into table partitioned_delete_2 partition(part=1) SELECT insert_num, int1, 'original' FROM schema_evolution_data
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@schema_evolution_data
+POSTHOOK: Output: default@partitioned_delete_2@part=1
+POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=1).a SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=1).b SIMPLE []
+POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:insert_num, type:int, comment:null), ]
+insert_num	int1	_c2
+PREHOOK: query: alter table partitioned_delete_2 add columns(c int, d string)
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: default@partitioned_delete_2
+PREHOOK: Output: default@partitioned_delete_2
+POSTHOOK: query: alter table partitioned_delete_2 add columns(c int, d string)
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: default@partitioned_delete_2
+POSTHOOK: Output: default@partitioned_delete_2
+PREHOOK: query: insert into table partitioned_delete_2 partition(part=2) SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2 WHERE insert_num <=110
+PREHOOK: type: QUERY
+PREHOOK: Input: default@schema_evolution_data_2
+PREHOOK: Output: default@partitioned_delete_2@part=2
+POSTHOOK: query: insert into table partitioned_delete_2 partition(part=2) SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2 WHERE insert_num <=110
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@schema_evolution_data_2
+POSTHOOK: Output: default@partitioned_delete_2@part=2
+POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=2).a SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=2).b SIMPLE []
+POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=2).c SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=2).d SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=2).insert_num SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:insert_num, type:int, comment:null), ]
+insert_num	int1	_c2	int1	string1
+PREHOOK: query: insert into table partitioned_delete_2 partition(part=1)  SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2 WHERE insert_num > 110
+PREHOOK: type: QUERY
+PREHOOK: Input: default@schema_evolution_data_2
+PREHOOK: Output: default@partitioned_delete_2@part=1
+POSTHOOK: query: insert into table partitioned_delete_2 partition(part=1)  SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2 WHERE insert_num > 110
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@schema_evolution_data_2
+POSTHOOK: Output: default@partitioned_delete_2@part=1
+POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=1).a SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=1).b SIMPLE []
+POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=1).c SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=1).d SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:insert_num, type:int, comment:null), ]
+insert_num	int1	_c2	int1	string1
+PREHOOK: query: select insert_num,part,a,b,c,d from partitioned_delete_2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partitioned_delete_2
+PREHOOK: Input: default@partitioned_delete_2@part=1
+PREHOOK: Input: default@partitioned_delete_2@part=2
+#### A masked pattern was here ####
+POSTHOOK: query: select insert_num,part,a,b,c,d from partitioned_delete_2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partitioned_delete_2
+POSTHOOK: Input: default@partitioned_delete_2@part=1
+POSTHOOK: Input: default@partitioned_delete_2@part=2
+#### A masked pattern was here ####
+insert_num	part	a	b	c	d
+101	1	-2147483648	original	NULL	NULL
+102	1	2147483647	original	NULL	NULL
+103	1	NULL	original	NULL	NULL
+104	1	203332	original	NULL	NULL
+105	1	-999992	original	NULL	NULL
+106	2	0	new	0	hangar paralysed companion
+107	2	127	new	127	bottom
+108	2	NULL	new	NULL	baffling
+109	2	17	new	17	feather weight
+110	2	400	new	400	window  
+111	1	-57923222	new	-57923222	astonishing
+112	1	82153733	new	82153733	Antarctic peninsula
+113	1	40000	new	40000	Delaware
+114	1	-128	new	-128	smaller than Scotland
+115	1	32768	new	32768	major glaciation
+PREHOOK: query: delete from partitioned_delete_2 where insert_num = 108 or insert_num > 113
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partitioned_delete_2
+PREHOOK: Input: default@partitioned_delete_2@part=1
+PREHOOK: Input: default@partitioned_delete_2@part=2
+PREHOOK: Output: default@partitioned_delete_2@part=1
+PREHOOK: Output: default@partitioned_delete_2@part=2
+POSTHOOK: query: delete from partitioned_delete_2 where insert_num = 108 or insert_num > 113
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partitioned_delete_2
+POSTHOOK: Input: default@partitioned_delete_2@part=1
+POSTHOOK: Input: default@partitioned_delete_2@part=2
+POSTHOOK: Output: default@partitioned_delete_2@part=1
+POSTHOOK: Output: default@partitioned_delete_2@part=2
+row__id	part
+PREHOOK: query: select insert_num,part,a,b,c,d from partitioned_delete_2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partitioned_delete_2
+PREHOOK: Input: default@partitioned_delete_2@part=1
+PREHOOK: Input: default@partitioned_delete_2@part=2
+#### A masked pattern was here ####
+POSTHOOK: query: select insert_num,part,a,b,c,d from partitioned_delete_2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partitioned_delete_2
+POSTHOOK: Input: default@partitioned_delete_2@part=1
+POSTHOOK: Input: default@partitioned_delete_2@part=2
+#### A masked pattern was here ####
+insert_num	part	a	b	c	d
+101	1	-2147483648	original	NULL	NULL
+102	1	2147483647	original	NULL	NULL
+103	1	NULL	original	NULL	NULL
+104	1	203332	original	NULL	NULL
+105	1	-999992	original	NULL	NULL
+106	2	0	new	0	hangar paralysed companion
+107	2	127	new	127	bottom
+109	2	17	new	17	feather weight
+110	2	400	new	400	window  
+111	1	-57923222	new	-57923222	astonishing
+112	1	82153733	new	82153733	Antarctic peninsula
+113	1	40000	new	40000	Delaware
+PREHOOK: query: alter table partitioned_delete_2 partition(part=1) compact 'major'
+PREHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: query: alter table partitioned_delete_2 partition(part=1) compact 'major'
+POSTHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: query: alter table partitioned_delete_2 partition(part=2) compact 'major'
+PREHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: query: alter table partitioned_delete_2 partition(part=2) compact 'major'
+POSTHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: query: select insert_num,part,a,b,c,d from partitioned_delete_2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partitioned_delete_2
+PREHOOK: Input: default@partitioned_delete_2@part=1
+PREHOOK: Input: default@partitioned_delete_2@part=2
+#### A masked pattern was here ####
+POSTHOOK: query: select insert_num,part,a,b,c,d from partitioned_delete_2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partitioned_delete_2
+POSTHOOK: Input: default@partitioned_delete_2@part=1
+POSTHOOK: Input: default@partitioned_delete_2@part=2
+#### A masked pattern was here ####
+insert_num	part	a	b	c	d
+101	1	-2147483648	original	NULL	NULL
+102	1	2147483647	original	NULL	NULL
+103	1	NULL	original	NULL	NULL
+104	1	203332	original	NULL	NULL
+105	1	-999992	original	NULL	NULL
+106	2	0	new	0	hangar paralysed companion
+107	2	127	new	127	bottom
+109	2	17	new	17	feather weight
+110	2	400	new	400	window  
+111	1	-57923222	new	-57923222	astonishing
+112	1	82153733	new	82153733	Antarctic peninsula
+113	1	40000	new	40000	Delaware
+PREHOOK: query: DROP TABLE partitioned_delete_2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@partitioned_delete_2
+PREHOOK: Output: default@partitioned_delete_2
+POSTHOOK: query: DROP TABLE partitioned_delete_2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@partitioned_delete_2
+POSTHOOK: Output: default@partitioned_delete_2
+PREHOOK: query: drop table if exists missing_ddl_2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists missing_ddl_2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table missing_ddl_2(name string, age int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@missing_ddl_2
+POSTHOOK: query: create table missing_ddl_2(name string, age int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@missing_ddl_2
+PREHOOK: query: insert overwrite table missing_ddl_2 select value, key from srcbucket
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket
+PREHOOK: Output: default@missing_ddl_2
+POSTHOOK: query: insert overwrite table missing_ddl_2 select value, key from srcbucket
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket
+POSTHOOK: Output: default@missing_ddl_2
+POSTHOOK: Lineage: missing_ddl_2.age SIMPLE [(srcbucket)srcbucket.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: missing_ddl_2.name SIMPLE [(srcbucket)srcbucket.FieldSchema(name:value, type:string, comment:null), ]
+value	key
+PREHOOK: query: alter table missing_ddl_2 add columns (gps double)
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: default@missing_ddl_2
+PREHOOK: Output: default@missing_ddl_2
+POSTHOOK: query: alter table missing_ddl_2 add columns (gps double)
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: default@missing_ddl_2
+POSTHOOK: Output: default@missing_ddl_2
+PREHOOK: query: DROP TABLE IF EXISTS all100kjson_textfile_orc
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS all100kjson_textfile_orc
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE all100kjson_textfile_orc (
+                             si smallint,
+                             i int,
+                             b bigint,
+                             f float,
+                             d double,
+                             s string,
+                             bo boolean,
+                             ts timestamp)
+                             PARTITIONED BY (t tinyint)
+                             ROW FORMAT SERDE 'org.apache.hive.hcatalog.data.JsonSerDe'
+                             WITH SERDEPROPERTIES ('timestamp.formats'='yyyy-MM-dd\'T\'HH:mm:ss')
+                             STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@all100kjson_textfile_orc
+POSTHOOK: query: CREATE TABLE all100kjson_textfile_orc (
+                             si smallint,
+                             i int,
+                             b bigint,
+                             f float,
+                             d double,
+                             s string,
+                             bo boolean,
+                             ts timestamp)
+                             PARTITIONED BY (t tinyint)
+                             ROW FORMAT SERDE 'org.apache.hive.hcatalog.data.JsonSerDe'
+                             WITH SERDEPROPERTIES ('timestamp.formats'='yyyy-MM-dd\'T\'HH:mm:ss')
+                             STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@all100kjson_textfile_orc
+PREHOOK: query: INSERT INTO TABLE all100kjson_textfile_orc PARTITION (t) SELECT csmallint, cint, cbigint, cfloat, cdouble, cstring1, cboolean1, ctimestamp1, ctinyint FROM alltypesorc WHERE ctinyint > 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@all100kjson_textfile_orc
+POSTHOOK: query: INSERT INTO TABLE all100kjson_textfile_orc PARTITION (t) SELECT csmallint, cint, cbigint, cfloat, cdouble, cstring1, cboolean1, ctimestamp1, ctinyint FROM alltypesorc WHERE ctinyint > 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=1
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=10
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=11
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=12
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=13
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=14
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=15
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=16
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=17
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=18
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=19
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=2
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=20
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=21
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=22
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=23
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=24
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=25
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=26
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=27
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=28
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=29
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=3
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=30
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=31
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=32
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=33
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=34
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=35
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=36
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=37
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=38
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=39
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=4
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=40
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=41
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=42
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=43
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=44
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=45
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=46
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=47
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=48
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=49
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=5
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=50
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=51
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=52
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=53
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=54
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=55
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=56
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=57
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=58
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=59
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=6
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=60
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=61
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=62
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=7
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=8
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=9
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=10).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=10).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=10).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=10).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=10).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=10).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=10).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=10).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=11).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=11).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=11).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=11).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=11).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=11).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=11).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=11).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=12).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=12).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=12).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=12).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=12).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=12).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=12).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=12).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=13).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=13).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=13).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=13).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=13).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=13).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=13).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=13).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=14).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=14).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=14).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=14).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=14).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=14).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=14).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=14).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=15).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=15).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=15).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=15).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=15).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=15).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=15).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=15).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=16).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=16).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=16).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=16).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=16).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=16).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=16).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=16).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=17).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=17).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=17).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=17).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=17).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=17).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=17).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=17).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=18).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=18).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=18).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=18).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=18).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=18).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=18).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=18).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=19).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=19).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=19).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=19).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=19).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=19).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=19).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=19).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=1).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=1).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=1).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=1).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=1).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=1).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=1).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=1).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=20).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=20).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=20).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=20).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=20).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=20).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=20).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=20).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=21).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=21).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=21).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=21).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=21).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=21).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=21).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=21).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=22).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=22).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=22).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=22).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=22).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=22).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=22).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=22).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=23).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=23).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=23).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=23).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=23).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=23).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=23).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=23).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=24).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=24).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=24).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=24).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=24).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=24).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=24).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=24).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=25).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=25).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=25).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=25).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=25).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=25).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=25).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=25).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=26).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=26).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=26).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=26).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=26).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=26).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=26).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=26).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=27).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=27).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=27).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=27).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=27).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=27).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=27).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=27).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=28).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=28).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=28).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=28).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=28).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=28).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=28).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=28).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=29).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=29).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=29).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=29).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=29).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=29).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=29).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=29).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=2).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=2).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=2).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=2).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=2).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=2).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=2).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=2).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=30).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=30).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=30).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=30).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=30).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=30).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=30).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=30).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=31).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=31).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=31).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=31).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=31).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=31).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=31).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=31).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=32).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=32).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=32).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=32).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=32).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=32).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=32).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=32).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=33).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=33).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=33).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=33).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=33).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=33).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=33).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=33).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=34).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=34).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=34).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=34).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=34).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=34).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=34).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=34).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=35).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=35).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=35).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=35).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=35).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=35).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=35).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=35).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=36).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=36).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=36).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=36).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=36).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=36).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=36).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=36).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=37).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=37).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=37).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=37).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=37).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=37).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=37).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=37).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=38).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=38).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=38).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=38).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=38).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=38).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=38).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=38).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=39).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=39).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=39).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=39).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=39).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=39).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=39).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=39).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=3).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=3).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=3).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=3).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=3).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=3).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=3).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=3).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=40).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=40).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=40).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=40).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=40).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=40).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=40).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=40).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=41).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=41).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=41).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=41).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=41).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=41).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=41).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=41).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=42).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=42).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=42).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=42).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=42).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=42).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=42).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=42).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=43).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=43).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=43).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=43).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=43).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=43).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=43).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=43).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=44).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=44).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=44).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=44).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=44).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=44).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=44).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=44).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=45).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=45).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=45).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=45).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=45).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=45).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=45).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=45).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=46).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=46).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=46).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=46).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=46).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=46).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=46).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=46).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=47).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=47).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=47).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=47).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=47).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=47).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=47).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=47).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=48).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=48).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=48).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=48).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=48).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=48).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=48).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=48).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=49).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=49).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=49).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=49).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=49).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=49).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=49).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=49).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=4).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=4).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=4).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=4).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=4).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=4).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=4).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=4).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=50).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=50).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=50).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=50).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=50).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=50).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=50).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=50).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=51).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=51).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=51).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=51).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=51).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=51).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=51).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=51).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=52).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=52).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=52).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=52).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=52).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=52).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=52).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=52).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=53).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=53).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=53).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=53).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=53).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=53).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=53).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=53).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=54).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=54).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=54).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=54).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=54).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=54).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=54).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=54).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=55).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=55).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=55).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=55).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=55).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=55).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=55).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=55).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=56).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=56).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=56).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=56).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=56).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=56).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=56).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=56).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=57).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=57).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=57).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=57).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=57).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=57).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=57).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=57).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=58).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=58).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=58).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=58).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=58).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=58).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=58).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=58).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=59).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=59).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=59).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=59).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=59).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=59).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=59).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=59).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=5).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=5).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=5).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=5).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=5).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=5).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=5).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=5).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=60).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=60).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=60).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=60).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=60).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=60).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=60).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=60).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=61).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=61).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=61).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=61).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=61).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=61).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=61).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=61).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=62).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=62).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=62).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=62).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=62).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=62).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=62).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=62).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=6).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=6).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=6).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=6).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=6).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=6).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=6).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=6).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=7).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=7).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=7).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=7).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=7).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=7).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=7).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=7).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=8).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=8).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=8).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=8).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=8).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=8).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=8).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=8).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=9).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=9).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=9).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=9).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=9).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=9).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=9).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=9).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+csmallint	cint	cbigint	cfloat	cdouble	cstring1	cboolean1	ctimestamp1	ctinyint
+PREHOOK: query: ALTER TABLE all100kjson_textfile_orc
+                            SET FILEFORMAT
+                            INPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat'
+                            OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
+                            SERDE 'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
+PREHOOK: type: ALTERTABLE_FILEFORMAT
+PREHOOK: Input: default@all100kjson_textfile_orc
+PREHOOK: Output: default@all100kjson_textfile_orc
+POSTHOOK: query: ALTER TABLE all100kjson_textfile_orc
+                            SET FILEFORMAT
+                            INPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat'
+                            OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
+                            SERDE 'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
+POSTHOOK: type: ALTERTABLE_FILEFORMAT
+POSTHOOK: Input: default@all100kjson_textfile_orc
+POSTHOOK: Output: default@all100kjson_textfile_orc
+PREHOOK: query: INSERT INTO TABLE all100kjson_textfile_orc PARTITION (t) SELECT csmallint, cint, cbigint, cfloat, cdouble, cstring1, cboolean1, ctimestamp1, ctinyint FROM alltypesorc WHERE ctinyint < 1 and ctinyint > -50
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@all100kjson_textfile_orc
+POSTHOOK: query: INSERT INTO TABLE all100kjson_textfile_orc PARTITION (t) SELECT csmallint, cint, cbigint, cfloat, cdouble, cstring1, cboolean1, ctimestamp1, ctinyint FROM alltypesorc WHERE ctinyint < 1 and ctinyint > -50
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=-1
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=-10
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=-11
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=-12
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=-13
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=-14
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=-15
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=-16
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=-17
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=-18
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=-19
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=-2
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=-20
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=-21
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=-22
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=-23
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=-24
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=-25
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=-26
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=-27
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=-28
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=-29
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=-3
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=-30
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=-31
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=-32
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=-33
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=-34
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=-35
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=-36
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=-37
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=-38
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=-39
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=-4
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=-40
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=-41
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=-42
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=-43
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=-44
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=-45
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=-46
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=-47
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=-48
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=-49
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=-5
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=-6
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=-7
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=-8
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=-9
+POSTHOOK: Output: default@all100kjson_textfile_orc@t=0
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-10).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-10).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-10).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-10).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-10).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-10).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-10).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-10).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-11).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-11).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-11).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-11).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-11).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-11).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-11).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-11).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-12).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-12).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-12).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-12).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-12).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-12).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-12).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-12).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-13).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-13).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-13).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-13).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-13).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-13).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-13).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-13).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-14).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-14).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-14).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-14).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-14).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-14).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-14).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-14).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-15).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-15).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-15).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-15).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-15).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-15).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-15).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-15).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-16).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-16).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-16).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-16).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-16).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-16).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-16).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-16).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-17).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-17).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-17).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-17).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-17).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-17).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-17).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-17).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-18).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-18).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-18).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-18).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-18).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-18).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-18).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-18).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-19).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-19).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-19).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-19).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-19).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-19).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-19).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-19).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-1).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-1).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-1).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-1).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-1).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-1).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-1).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-1).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-20).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-20).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-20).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-20).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-20).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-20).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-20).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-20).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-21).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-21).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-21).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-21).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-21).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-21).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-21).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-21).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-22).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-22).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-22).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-22).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-22).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-22).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-22).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-22).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-23).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-23).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-23).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-23).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-23).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-23).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-23).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-23).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-24).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-24).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-24).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-24).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-24).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-24).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-24).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-24).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-25).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-25).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-25).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-25).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-25).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-25).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-25).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-25).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-26).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-26).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-26).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-26).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-26).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-26).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-26).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-26).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-27).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-27).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-27).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-27).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-27).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-27).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-27).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-27).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-28).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-28).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-28).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-28).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-28).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-28).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-28).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-28).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-29).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-29).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-29).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-29).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-29).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-29).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-29).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-29).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-2).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-2).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-2).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-2).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-2).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-2).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-2).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-2).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-30).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-30).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-30).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-30).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-30).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-30).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-30).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-30).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-31).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-31).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-31).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-31).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-31).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-31).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-31).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-31).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-32).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-32).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-32).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-32).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-32).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-32).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-32).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-32).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-33).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-33).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-33).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-33).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-33).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-33).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-33).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-33).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-34).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-34).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-34).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-34).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-34).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-34).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-34).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-34).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-35).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-35).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-35).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-35).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-35).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-35).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-35).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-35).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-36).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-36).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-36).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-36).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-36).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-36).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-36).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-36).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-37).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-37).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-37).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-37).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-37).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-37).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-37).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-37).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-38).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-38).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-38).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-38).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-38).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-38).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-38).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-38).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-39).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-39).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-39).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-39).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-39).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-39).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-39).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-39).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-3).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-3).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-3).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-3).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-3).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-3).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-3).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-3).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-40).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-40).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-40).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-40).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-40).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-40).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-40).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-40).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-41).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-41).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-41).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-41).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-41).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-41).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-41).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-41).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-42).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-42).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-42).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-42).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-42).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-42).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-42).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-42).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-43).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-43).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-43).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-43).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-43).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-43).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-43).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-43).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-44).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-44).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-44).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-44).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-44).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-44).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-44).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-44).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-45).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-45).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-45).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-45).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-45).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-45).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-45).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-45).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-46).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-46).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-46).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-46).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-46).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-46).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-46).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-46).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-47).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-47).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-47).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-47).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-47).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-47).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-47).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-47).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-48).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-48).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-48).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-48).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-48).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-48).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-48).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-48).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-49).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-49).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-49).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-49).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-49).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-49).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-49).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-49).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-4).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-4).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-4).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-4).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-4).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-4).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-4).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-4).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-5).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-5).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-5).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-5).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-5).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-5).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-5).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-5).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-6).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-6).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-6).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-6).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-6).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-6).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-6).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-6).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-7).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-7).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-7).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-7).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-7).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-7).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-7).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-7).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-8).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-8).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-8).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-8).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-8).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-8).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-8).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-8).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-9).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-9).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-9).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-9).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-9).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-9).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-9).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=-9).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=0).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=0).bo SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=0).d SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=0).f SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=0).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=0).s SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=0).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=0).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+csmallint	cint	cbigint	cfloat	cdouble	cstring1	cboolean1	ctimestamp1	ctinyint
+PREHOOK: query: DROP TABLE IF EXISTS emptyavro
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS emptyavro
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE emptyavro (i int)
+               PARTITIONED BY (s string)
+               STORED AS AVRO
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@emptyavro
+POSTHOOK: query: CREATE TABLE emptyavro (i int)
+               PARTITIONED BY (s string)
+               STORED AS AVRO
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@emptyavro
+PREHOOK: query: load data local inpath '../../data/files/empty1.txt' into table emptyavro PARTITION (s='something')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@emptyavro
+POSTHOOK: query: load data local inpath '../../data/files/empty1.txt' into table emptyavro PARTITION (s='something')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@emptyavro
+POSTHOOK: Output: default@emptyavro@s=something
+PREHOOK: query: SELECT COUNT(*) from emptyavro
+PREHOOK: type: QUERY
+PREHOOK: Input: default@emptyavro
+PREHOOK: Input: default@emptyavro@s=something
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) from emptyavro
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@emptyavro
+POSTHOOK: Input: default@emptyavro@s=something
+#### A masked pattern was here ####
+_c0
+0

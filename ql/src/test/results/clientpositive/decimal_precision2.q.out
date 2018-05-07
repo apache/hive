@@ -147,7 +147,7 @@ STAGE PLANS:
           Row Limit Per Split: 1
           Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions: 69.0212249755859375 (type: decimal(18,16))
+            expressions: 69.0212249755859375 (type: decimal(27,20))
             outputColumnNames: _col0
             Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink

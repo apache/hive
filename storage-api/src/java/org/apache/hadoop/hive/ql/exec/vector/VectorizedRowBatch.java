@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -136,12 +136,56 @@ public class VectorizedRowBatch implements Writable {
     return o.toString();
   }
 
-  @Override
-  public String toString() {
+  public String stringifyColumn(int columnNum) {
     if (size == 0) {
       return "";
     }
     StringBuilder b = new StringBuilder();
+    b.append("columnNum ");
+    b.append(columnNum);
+    b.append(", size ");
+    b.append(size);
+    b.append(", selectedInUse ");
+    b.append(selectedInUse);
+    ColumnVector colVector = cols[columnNum];
+    b.append(", noNulls ");
+    b.append(colVector.noNulls);
+    b.append(", isRepeating ");
+    b.append(colVector.isRepeating);
+    b.append('\n');
+
+    final boolean noNulls = colVector.noNulls;
+    final boolean[] isNull = colVector.isNull;
+    if (colVector.isRepeating) {
+      final boolean hasRepeatedValue = (noNulls || !isNull[0]);
+      for (int i = 0; i < size; i++) {
+        if (hasRepeatedValue) {
+          colVector.stringifyValue(b, 0);
+        } else {
+          b.append("NULL");
+        }
+        b.append('\n');
+      }
+    } else {
+      for (int i = 0; i < size; i++) {
+        final int batchIndex = (selectedInUse ? selected[i] : i);
+        if (noNulls || !isNull[batchIndex]) {
+          colVector.stringifyValue(b, batchIndex);
+        } else {
+          b.append("NULL");
+        }
+        b.append('\n');
+      }
+    }
+    return b.toString();
+  }
+
+  public String stringify(String prefix) {
+    if (size == 0) {
+      return "";
+    }
+    StringBuilder b = new StringBuilder();
+    b.append(prefix);
     b.append("Column vector types: ");
     for (int k = 0; k < projectionSize; k++) {
       int projIndex = projectedColumns[k];
@@ -189,11 +233,18 @@ public class VectorizedRowBatch implements Writable {
           if (k > 0) {
             b.append(", ");
           }
-          cv.stringifyValue(b, i);
+          if (cv != null) {
+            try {
+              cv.stringifyValue(b, i);
+            } catch (Exception ex) {
+              b.append("<invalid>");
+            }
+          }
         }
         b.append(']');
         if (j < size - 1) {
           b.append('\n');
+          b.append(prefix);
         }
       }
     } else {
@@ -216,10 +267,16 @@ public class VectorizedRowBatch implements Writable {
         b.append(']');
         if (i < size - 1) {
           b.append('\n');
+          b.append(prefix);
         }
       }
     }
     return b.toString();
+  }
+
+  @Override
+  public String toString() {
+    return stringify("");
   }
 
   @Override

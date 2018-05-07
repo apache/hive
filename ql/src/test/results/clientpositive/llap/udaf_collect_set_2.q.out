@@ -103,8 +103,8 @@ POSTHOOK: Input: default@customers
 POSTHOOK: Input: default@orders
 #### A masked pattern was here ####
 1	[{"name":"Chris","date":"2013-06-21","amount":21.45},{"name":"Chris","date":"2014-10-11","amount":29.36}]
-2	[{"name":"John","date":"2013-08-10","amount":126.57},{"name":"John","date":"2014-06-25","amount":3.65},{"name":"John","date":"2015-01-15","amount":27.45}]
 3	[{"name":"Martin","date":"2014-05-11","amount":30.5},{"name":"Martin","date":"2014-12-12","amount":210.03}]
+2	[{"name":"John","date":"2013-08-10","amount":126.57},{"name":"John","date":"2014-06-25","amount":3.65},{"name":"John","date":"2015-01-15","amount":27.45}]
 PREHOOK: query: SELECT c.id, sort_array(collect_list(named_struct("name", c.name, "date", o.d, "amount", o.amount)))
 FROM customers c
 INNER JOIN orders o
@@ -122,8 +122,8 @@ POSTHOOK: Input: default@customers
 POSTHOOK: Input: default@orders
 #### A masked pattern was here ####
 1	[{"name":"Chris","date":"2013-06-21","amount":21.45},{"name":"Chris","date":"2013-06-21","amount":21.45},{"name":"Chris","date":"2014-10-11","amount":29.36}]
-2	[{"name":"John","date":"2013-08-10","amount":126.57},{"name":"John","date":"2014-06-25","amount":3.65},{"name":"John","date":"2015-01-15","amount":27.45}]
 3	[{"name":"Martin","date":"2014-05-11","amount":30.5},{"name":"Martin","date":"2014-12-12","amount":210.03}]
+2	[{"name":"John","date":"2013-08-10","amount":126.57},{"name":"John","date":"2014-06-25","amount":3.65},{"name":"John","date":"2015-01-15","amount":27.45}]
 PREHOOK: query: SELECT c.id, sort_array(collect_set(named_struct("name", c.name, "date", o.d, "amount", cast(o.amount as decimal(10,1)))))
 FROM customers c
 INNER JOIN orders o
@@ -141,8 +141,8 @@ POSTHOOK: Input: default@customers
 POSTHOOK: Input: default@orders
 #### A masked pattern was here ####
 1	[{"name":"Chris","date":"2013-06-21","amount":21.5},{"name":"Chris","date":"2014-10-11","amount":29.4}]
-2	[{"name":"John","date":"2013-08-10","amount":126.6},{"name":"John","date":"2014-06-25","amount":3.7},{"name":"John","date":"2015-01-15","amount":27.5}]
 3	[{"name":"Martin","date":"2014-05-11","amount":30.5},{"name":"Martin","date":"2014-12-12","amount":210}]
+2	[{"name":"John","date":"2013-08-10","amount":126.6},{"name":"John","date":"2014-06-25","amount":3.7},{"name":"John","date":"2015-01-15","amount":27.5}]
 PREHOOK: query: SELECT c.id, sort_array(collect_list(named_struct("name", c.name, "date", o.d, "amount", cast(o.amount as decimal(10,1)))))
 FROM customers c
 INNER JOIN orders o
@@ -160,8 +160,8 @@ POSTHOOK: Input: default@customers
 POSTHOOK: Input: default@orders
 #### A masked pattern was here ####
 1	[{"name":"Chris","date":"2013-06-21","amount":21.5},{"name":"Chris","date":"2013-06-21","amount":21.5},{"name":"Chris","date":"2014-10-11","amount":29.4}]
-2	[{"name":"John","date":"2013-08-10","amount":126.6},{"name":"John","date":"2014-06-25","amount":3.7},{"name":"John","date":"2015-01-15","amount":27.5}]
 3	[{"name":"Martin","date":"2014-05-11","amount":30.5},{"name":"Martin","date":"2014-12-12","amount":210}]
+2	[{"name":"John","date":"2013-08-10","amount":126.6},{"name":"John","date":"2014-06-25","amount":3.7},{"name":"John","date":"2015-01-15","amount":27.5}]
 PREHOOK: query: SELECT c.id, sort_array(collect_set(struct(c.name, o.d, o.amount)))
 FROM customers c
 INNER JOIN orders o
@@ -179,8 +179,8 @@ POSTHOOK: Input: default@customers
 POSTHOOK: Input: default@orders
 #### A masked pattern was here ####
 1	[{"col1":"Chris","col2":"2013-06-21","col3":21.45},{"col1":"Chris","col2":"2014-10-11","col3":29.36}]
-2	[{"col1":"John","col2":"2013-08-10","col3":126.57},{"col1":"John","col2":"2014-06-25","col3":3.65},{"col1":"John","col2":"2015-01-15","col3":27.45}]
 3	[{"col1":"Martin","col2":"2014-05-11","col3":30.5},{"col1":"Martin","col2":"2014-12-12","col3":210.03}]
+2	[{"col1":"John","col2":"2013-08-10","col3":126.57},{"col1":"John","col2":"2014-06-25","col3":3.65},{"col1":"John","col2":"2015-01-15","col3":27.45}]
 PREHOOK: query: SELECT c.id, sort_array(collect_list(struct(c.name, o.d, o.amount)))
 FROM customers c
 INNER JOIN orders o
@@ -198,8 +198,8 @@ POSTHOOK: Input: default@customers
 POSTHOOK: Input: default@orders
 #### A masked pattern was here ####
 1	[{"col1":"Chris","col2":"2013-06-21","col3":21.45},{"col1":"Chris","col2":"2013-06-21","col3":21.45},{"col1":"Chris","col2":"2014-10-11","col3":29.36}]
-2	[{"col1":"John","col2":"2013-08-10","col3":126.57},{"col1":"John","col2":"2014-06-25","col3":3.65},{"col1":"John","col2":"2015-01-15","col3":27.45}]
 3	[{"col1":"Martin","col2":"2014-05-11","col3":30.5},{"col1":"Martin","col2":"2014-12-12","col3":210.03}]
+2	[{"col1":"John","col2":"2013-08-10","col3":126.57},{"col1":"John","col2":"2014-06-25","col3":3.65},{"col1":"John","col2":"2015-01-15","col3":27.45}]
 PREHOOK: query: SELECT c.id, sort_array(collect_set(named_struct("name", c.name, "date", o.d, "sub", o.sub)))
 FROM customers c
 INNER JOIN nested_orders o
@@ -216,9 +216,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@customers
 POSTHOOK: Input: default@nested_orders
 #### A masked pattern was here ####
-1	[{"name":"Chris","date":"2013-06-21","sub":{"\"juice\"":21.45,"\"bread\"":15.2}},{"name":"Chris","date":"2014-10-11","sub":{"\"grape\"":1200.5,"\"rice\"":29.36}}]
-2	[{"name":"John","date":"2013-08-10","sub":{"\"yogurt\"":126.57,"\"beef\"":210.57}},{"name":"John","date":"2014-06-25","sub":{"\"chocolate\"":3.65,"\"water\"":420.36}},{"name":"John","date":"2015-01-15","sub":{"\"milk\"":27.45}}]
+1	[{"name":"Chris","date":"2013-06-21","sub":{"\"juice\"":21.45,"\"bread\"":15.2}},{"name":"Chris","date":"2014-10-11","sub":{"\"rice\"":29.36,"\"grape\"":1200.5}}]
 3	[{"name":"Martin","date":"2014-05-11","sub":{"\"apple\"":30.5,"\"orange\"":41.35}},{"name":"Martin","date":"2014-12-12","sub":{"\"icecream\"":210.03,"\"banana\"":100.56,"\"coffee":500.0}}]
+2	[{"name":"John","date":"2013-08-10","sub":{"\"yogurt\"":126.57,"\"beef\"":210.57}},{"name":"John","date":"2014-06-25","sub":{"\"chocolate\"":3.65,"\"water\"":420.36}},{"name":"John","date":"2015-01-15","sub":{"\"milk\"":27.45}}]
 PREHOOK: query: SELECT c.id, sort_array(collect_list(named_struct("name", c.name, "date", o.d, "sub", o.sub)))
 FROM customers c
 INNER JOIN nested_orders o
@@ -235,9 +235,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@customers
 POSTHOOK: Input: default@nested_orders
 #### A masked pattern was here ####
-1	[{"name":"Chris","date":"2013-06-21","sub":{"\"juice\"":21.45,"\"bread\"":15.2}},{"name":"Chris","date":"2013-06-21","sub":{"\"juice\"":21.45,"\"bread\"":15.2}},{"name":"Chris","date":"2014-10-11","sub":{"\"grape\"":1200.5,"\"rice\"":29.36}}]
-2	[{"name":"John","date":"2013-08-10","sub":{"\"yogurt\"":126.57,"\"beef\"":210.57}},{"name":"John","date":"2014-06-25","sub":{"\"chocolate\"":3.65,"\"water\"":420.36}},{"name":"John","date":"2015-01-15","sub":{"\"milk\"":27.45}}]
+1	[{"name":"Chris","date":"2013-06-21","sub":{"\"juice\"":21.45,"\"bread\"":15.2}},{"name":"Chris","date":"2013-06-21","sub":{"\"juice\"":21.45,"\"bread\"":15.2}},{"name":"Chris","date":"2014-10-11","sub":{"\"rice\"":29.36,"\"grape\"":1200.5}}]
 3	[{"name":"Martin","date":"2014-05-11","sub":{"\"apple\"":30.5,"\"orange\"":41.35}},{"name":"Martin","date":"2014-12-12","sub":{"\"icecream\"":210.03,"\"banana\"":100.56,"\"coffee":500.0}}]
+2	[{"name":"John","date":"2013-08-10","sub":{"\"yogurt\"":126.57,"\"beef\"":210.57}},{"name":"John","date":"2014-06-25","sub":{"\"chocolate\"":3.65,"\"water\"":420.36}},{"name":"John","date":"2015-01-15","sub":{"\"milk\"":27.45}}]
 PREHOOK: query: SELECT c.id, sort_array(collect_set(struct(c.name, o.d, o.sub)))
 FROM customers c
 INNER JOIN nested_orders o
@@ -254,9 +254,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@customers
 POSTHOOK: Input: default@nested_orders
 #### A masked pattern was here ####
-1	[{"col1":"Chris","col2":"2013-06-21","col3":{"\"juice\"":21.45,"\"bread\"":15.2}},{"col1":"Chris","col2":"2014-10-11","col3":{"\"grape\"":1200.5,"\"rice\"":29.36}}]
-2	[{"col1":"John","col2":"2013-08-10","col3":{"\"yogurt\"":126.57,"\"beef\"":210.57}},{"col1":"John","col2":"2014-06-25","col3":{"\"chocolate\"":3.65,"\"water\"":420.36}},{"col1":"John","col2":"2015-01-15","col3":{"\"milk\"":27.45}}]
+1	[{"col1":"Chris","col2":"2013-06-21","col3":{"\"juice\"":21.45,"\"bread\"":15.2}},{"col1":"Chris","col2":"2014-10-11","col3":{"\"rice\"":29.36,"\"grape\"":1200.5}}]
 3	[{"col1":"Martin","col2":"2014-05-11","col3":{"\"apple\"":30.5,"\"orange\"":41.35}},{"col1":"Martin","col2":"2014-12-12","col3":{"\"icecream\"":210.03,"\"banana\"":100.56,"\"coffee":500.0}}]
+2	[{"col1":"John","col2":"2013-08-10","col3":{"\"yogurt\"":126.57,"\"beef\"":210.57}},{"col1":"John","col2":"2014-06-25","col3":{"\"chocolate\"":3.65,"\"water\"":420.36}},{"col1":"John","col2":"2015-01-15","col3":{"\"milk\"":27.45}}]
 PREHOOK: query: SELECT c.id, sort_array(collect_list(struct(c.name, o.d, o.sub)))
 FROM customers c
 INNER JOIN nested_orders o
@@ -273,9 +273,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@customers
 POSTHOOK: Input: default@nested_orders
 #### A masked pattern was here ####
-1	[{"col1":"Chris","col2":"2013-06-21","col3":{"\"juice\"":21.45,"\"bread\"":15.2}},{"col1":"Chris","col2":"2013-06-21","col3":{"\"juice\"":21.45,"\"bread\"":15.2}},{"col1":"Chris","col2":"2014-10-11","col3":{"\"grape\"":1200.5,"\"rice\"":29.36}}]
-2	[{"col1":"John","col2":"2013-08-10","col3":{"\"yogurt\"":126.57,"\"beef\"":210.57}},{"col1":"John","col2":"2014-06-25","col3":{"\"chocolate\"":3.65,"\"water\"":420.36}},{"col1":"John","col2":"2015-01-15","col3":{"\"milk\"":27.45}}]
+1	[{"col1":"Chris","col2":"2013-06-21","col3":{"\"juice\"":21.45,"\"bread\"":15.2}},{"col1":"Chris","col2":"2013-06-21","col3":{"\"juice\"":21.45,"\"bread\"":15.2}},{"col1":"Chris","col2":"2014-10-11","col3":{"\"rice\"":29.36,"\"grape\"":1200.5}}]
 3	[{"col1":"Martin","col2":"2014-05-11","col3":{"\"apple\"":30.5,"\"orange\"":41.35}},{"col1":"Martin","col2":"2014-12-12","col3":{"\"icecream\"":210.03,"\"banana\"":100.56,"\"coffee":500.0}}]
+2	[{"col1":"John","col2":"2013-08-10","col3":{"\"yogurt\"":126.57,"\"beef\"":210.57}},{"col1":"John","col2":"2014-06-25","col3":{"\"chocolate\"":3.65,"\"water\"":420.36}},{"col1":"John","col2":"2015-01-15","col3":{"\"milk\"":27.45}}]
 PREHOOK: query: SELECT c.id, sort_array(collect_set(named_struct("name", c.name, "date", o.d, "sub", map_values(o.sub))))
 FROM customers c
 INNER JOIN nested_orders o
@@ -292,9 +292,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@customers
 POSTHOOK: Input: default@nested_orders
 #### A masked pattern was here ####
-1	[{"name":"Chris","date":"2013-06-21","sub":[21.45,15.2]},{"name":"Chris","date":"2014-10-11","sub":[1200.5,29.36]}]
-2	[{"name":"John","date":"2013-08-10","sub":[126.57,210.57]},{"name":"John","date":"2014-06-25","sub":[3.65,420.36]},{"name":"John","date":"2015-01-15","sub":[27.45]}]
+1	[{"name":"Chris","date":"2013-06-21","sub":[21.45,15.2]},{"name":"Chris","date":"2014-10-11","sub":[29.36,1200.5]}]
 3	[{"name":"Martin","date":"2014-05-11","sub":[30.5,41.35]},{"name":"Martin","date":"2014-12-12","sub":[210.03,100.56,500.0]}]
+2	[{"name":"John","date":"2013-08-10","sub":[126.57,210.57]},{"name":"John","date":"2014-06-25","sub":[3.65,420.36]},{"name":"John","date":"2015-01-15","sub":[27.45]}]
 PREHOOK: query: SELECT c.id, sort_array(collect_list(named_struct("name", c.name, "date", o.d, "sub", map_values(o.sub))))
 FROM customers c
 INNER JOIN nested_orders o
@@ -311,9 +311,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@customers
 POSTHOOK: Input: default@nested_orders
 #### A masked pattern was here ####
-1	[{"name":"Chris","date":"2013-06-21","sub":[21.45,15.2]},{"name":"Chris","date":"2013-06-21","sub":[21.45,15.2]},{"name":"Chris","date":"2014-10-11","sub":[1200.5,29.36]}]
-2	[{"name":"John","date":"2013-08-10","sub":[126.57,210.57]},{"name":"John","date":"2014-06-25","sub":[3.65,420.36]},{"name":"John","date":"2015-01-15","sub":[27.45]}]
+1	[{"name":"Chris","date":"2013-06-21","sub":[21.45,15.2]},{"name":"Chris","date":"2013-06-21","sub":[21.45,15.2]},{"name":"Chris","date":"2014-10-11","sub":[29.36,1200.5]}]
 3	[{"name":"Martin","date":"2014-05-11","sub":[30.5,41.35]},{"name":"Martin","date":"2014-12-12","sub":[210.03,100.56,500.0]}]
+2	[{"name":"John","date":"2013-08-10","sub":[126.57,210.57]},{"name":"John","date":"2014-06-25","sub":[3.65,420.36]},{"name":"John","date":"2015-01-15","sub":[27.45]}]
 PREHOOK: query: SELECT c.id, sort_array(collect_set(struct(c.name, o.d, map_values(o.sub))))
 FROM customers c
 INNER JOIN nested_orders o
@@ -330,9 +330,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@customers
 POSTHOOK: Input: default@nested_orders
 #### A masked pattern was here ####
-1	[{"col1":"Chris","col2":"2013-06-21","col3":[21.45,15.2]},{"col1":"Chris","col2":"2014-10-11","col3":[1200.5,29.36]}]
-2	[{"col1":"John","col2":"2013-08-10","col3":[126.57,210.57]},{"col1":"John","col2":"2014-06-25","col3":[3.65,420.36]},{"col1":"John","col2":"2015-01-15","col3":[27.45]}]
+1	[{"col1":"Chris","col2":"2013-06-21","col3":[21.45,15.2]},{"col1":"Chris","col2":"2014-10-11","col3":[29.36,1200.5]}]
 3	[{"col1":"Martin","col2":"2014-05-11","col3":[30.5,41.35]},{"col1":"Martin","col2":"2014-12-12","col3":[210.03,100.56,500.0]}]
+2	[{"col1":"John","col2":"2013-08-10","col3":[126.57,210.57]},{"col1":"John","col2":"2014-06-25","col3":[3.65,420.36]},{"col1":"John","col2":"2015-01-15","col3":[27.45]}]
 PREHOOK: query: SELECT c.id, sort_array(collect_list(struct(c.name, o.d, map_values(o.sub))))
 FROM customers c
 INNER JOIN nested_orders o
@@ -349,9 +349,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@customers
 POSTHOOK: Input: default@nested_orders
 #### A masked pattern was here ####
-1	[{"col1":"Chris","col2":"2013-06-21","col3":[21.45,15.2]},{"col1":"Chris","col2":"2013-06-21","col3":[21.45,15.2]},{"col1":"Chris","col2":"2014-10-11","col3":[1200.5,29.36]}]
-2	[{"col1":"John","col2":"2013-08-10","col3":[126.57,210.57]},{"col1":"John","col2":"2014-06-25","col3":[3.65,420.36]},{"col1":"John","col2":"2015-01-15","col3":[27.45]}]
+1	[{"col1":"Chris","col2":"2013-06-21","col3":[21.45,15.2]},{"col1":"Chris","col2":"2013-06-21","col3":[21.45,15.2]},{"col1":"Chris","col2":"2014-10-11","col3":[29.36,1200.5]}]
 3	[{"col1":"Martin","col2":"2014-05-11","col3":[30.5,41.35]},{"col1":"Martin","col2":"2014-12-12","col3":[210.03,100.56,500.0]}]
+2	[{"col1":"John","col2":"2013-08-10","col3":[126.57,210.57]},{"col1":"John","col2":"2014-06-25","col3":[3.65,420.36]},{"col1":"John","col2":"2015-01-15","col3":[27.45]}]
 PREHOOK: query: SELECT c.id, sort_array(collect_set(array(o.amount)))
 FROM customers c
 INNER JOIN orders o
@@ -369,8 +369,8 @@ POSTHOOK: Input: default@customers
 POSTHOOK: Input: default@orders
 #### A masked pattern was here ####
 1	[[21.45],[29.36]]
-2	[[3.65],[27.45],[126.57]]
 3	[[30.5],[210.03]]
+2	[[3.65],[27.45],[126.57]]
 PREHOOK: query: SELECT c.id, sort_array(collect_list(array(o.amount)))
 FROM customers c
 INNER JOIN orders o
@@ -388,8 +388,8 @@ POSTHOOK: Input: default@customers
 POSTHOOK: Input: default@orders
 #### A masked pattern was here ####
 1	[[21.45],[21.45],[29.36]]
-2	[[3.65],[27.45],[126.57]]
 3	[[30.5],[210.03]]
+2	[[3.65],[27.45],[126.57]]
 PREHOOK: query: SELECT c.id, sort_array(collect_set(array(cast(o.amount as decimal(10,1)))))
 FROM customers c
 INNER JOIN orders o
@@ -407,8 +407,8 @@ POSTHOOK: Input: default@customers
 POSTHOOK: Input: default@orders
 #### A masked pattern was here ####
 1	[[21.5],[29.4]]
-2	[[3.7],[27.5],[126.6]]
 3	[[30.5],[210]]
+2	[[3.7],[27.5],[126.6]]
 PREHOOK: query: SELECT c.id, sort_array(collect_list(array(cast(o.amount as decimal(10,1)))))
 FROM customers c
 INNER JOIN orders o
@@ -426,8 +426,8 @@ POSTHOOK: Input: default@customers
 POSTHOOK: Input: default@orders
 #### A masked pattern was here ####
 1	[[21.5],[21.5],[29.4]]
-2	[[3.7],[27.5],[126.6]]
 3	[[30.5],[210]]
+2	[[3.7],[27.5],[126.6]]
 PREHOOK: query: SELECT c.id, sort_array(collect_set(array(o.sub)))
 FROM customers c
 INNER JOIN nested_orders o
@@ -444,9 +444,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@customers
 POSTHOOK: Input: default@nested_orders
 #### A masked pattern was here ####
-1	[[{"\"juice\"":21.45,"\"bread\"":15.2}],[{"\"grape\"":1200.5,"\"rice\"":29.36}]]
-2	[[{"\"milk\"":27.45}],[{"\"yogurt\"":126.57,"\"beef\"":210.57}],[{"\"chocolate\"":3.65,"\"water\"":420.36}]]
+1	[[{"\"juice\"":21.45,"\"bread\"":15.2}],[{"\"rice\"":29.36,"\"grape\"":1200.5}]]
 3	[[{"\"apple\"":30.5,"\"orange\"":41.35}],[{"\"icecream\"":210.03,"\"banana\"":100.56,"\"coffee":500.0}]]
+2	[[{"\"milk\"":27.45}],[{"\"yogurt\"":126.57,"\"beef\"":210.57}],[{"\"chocolate\"":3.65,"\"water\"":420.36}]]
 PREHOOK: query: SELECT c.id, sort_array(collect_list(array(o.sub)))
 FROM customers c
 INNER JOIN nested_orders o
@@ -463,9 +463,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@customers
 POSTHOOK: Input: default@nested_orders
 #### A masked pattern was here ####
-1	[[{"\"juice\"":21.45,"\"bread\"":15.2}],[{"\"juice\"":21.45,"\"bread\"":15.2}],[{"\"grape\"":1200.5,"\"rice\"":29.36}]]
-2	[[{"\"milk\"":27.45}],[{"\"yogurt\"":126.57,"\"beef\"":210.57}],[{"\"chocolate\"":3.65,"\"water\"":420.36}]]
+1	[[{"\"juice\"":21.45,"\"bread\"":15.2}],[{"\"juice\"":21.45,"\"bread\"":15.2}],[{"\"rice\"":29.36,"\"grape\"":1200.5}]]
 3	[[{"\"apple\"":30.5,"\"orange\"":41.35}],[{"\"icecream\"":210.03,"\"banana\"":100.56,"\"coffee":500.0}]]
+2	[[{"\"milk\"":27.45}],[{"\"yogurt\"":126.57,"\"beef\"":210.57}],[{"\"chocolate\"":3.65,"\"water\"":420.36}]]
 PREHOOK: query: SELECT c.id, sort_array(collect_set(array(map_values(o.sub))))
 FROM customers c
 INNER JOIN nested_orders o
@@ -482,9 +482,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@customers
 POSTHOOK: Input: default@nested_orders
 #### A masked pattern was here ####
-1	[[[21.45,15.2]],[[1200.5,29.36]]]
-2	[[[3.65,420.36]],[[27.45]],[[126.57,210.57]]]
+1	[[[21.45,15.2]],[[29.36,1200.5]]]
 3	[[[30.5,41.35]],[[210.03,100.56,500.0]]]
+2	[[[3.65,420.36]],[[27.45]],[[126.57,210.57]]]
 PREHOOK: query: SELECT c.id, sort_array(collect_list(array(map_values(o.sub))))
 FROM customers c
 INNER JOIN nested_orders o
@@ -501,9 +501,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@customers
 POSTHOOK: Input: default@nested_orders
 #### A masked pattern was here ####
-1	[[[21.45,15.2]],[[21.45,15.2]],[[1200.5,29.36]]]
-2	[[[3.65,420.36]],[[27.45]],[[126.57,210.57]]]
+1	[[[21.45,15.2]],[[21.45,15.2]],[[29.36,1200.5]]]
 3	[[[30.5,41.35]],[[210.03,100.56,500.0]]]
+2	[[[3.65,420.36]],[[27.45]],[[126.57,210.57]]]
 PREHOOK: query: SELECT c.id, sort_array(collect_set(map("amount", o.amount)))
 FROM customers c
 INNER JOIN orders o
@@ -521,8 +521,8 @@ POSTHOOK: Input: default@customers
 POSTHOOK: Input: default@orders
 #### A masked pattern was here ####
 1	[{"amount":21.45},{"amount":29.36}]
-2	[{"amount":3.65},{"amount":27.45},{"amount":126.57}]
 3	[{"amount":30.5},{"amount":210.03}]
+2	[{"amount":3.65},{"amount":27.45},{"amount":126.57}]
 PREHOOK: query: SELECT c.id, sort_array(collect_list(map("amount", o.amount)))
 FROM customers c
 INNER JOIN orders o
@@ -540,8 +540,8 @@ POSTHOOK: Input: default@customers
 POSTHOOK: Input: default@orders
 #### A masked pattern was here ####
 1	[{"amount":21.45},{"amount":21.45},{"amount":29.36}]
-2	[{"amount":3.65},{"amount":27.45},{"amount":126.57}]
 3	[{"amount":30.5},{"amount":210.03}]
+2	[{"amount":3.65},{"amount":27.45},{"amount":126.57}]
 PREHOOK: query: SELECT c.id, sort_array(collect_set(map("amount", cast(o.amount as decimal(10,1)))))
 FROM customers c
 INNER JOIN orders o
@@ -559,8 +559,8 @@ POSTHOOK: Input: default@customers
 POSTHOOK: Input: default@orders
 #### A masked pattern was here ####
 1	[{"amount":21.5},{"amount":29.4}]
-2	[{"amount":3.7},{"amount":27.5},{"amount":126.6}]
 3	[{"amount":30.5},{"amount":210}]
+2	[{"amount":3.7},{"amount":27.5},{"amount":126.6}]
 PREHOOK: query: SELECT c.id, sort_array(collect_list(map("amount", cast(o.amount as decimal(10,1)))))
 FROM customers c
 INNER JOIN orders o
@@ -578,8 +578,8 @@ POSTHOOK: Input: default@customers
 POSTHOOK: Input: default@orders
 #### A masked pattern was here ####
 1	[{"amount":21.5},{"amount":21.5},{"amount":29.4}]
-2	[{"amount":3.7},{"amount":27.5},{"amount":126.6}]
 3	[{"amount":30.5},{"amount":210}]
+2	[{"amount":3.7},{"amount":27.5},{"amount":126.6}]
 PREHOOK: query: SELECT c.id, sort_array(collect_set(map("sub", o.sub)))
 FROM customers c
 INNER JOIN nested_orders o
@@ -596,9 +596,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@customers
 POSTHOOK: Input: default@nested_orders
 #### A masked pattern was here ####
-1	[{"sub":{"\"juice\"":21.45,"\"bread\"":15.2}},{"sub":{"\"grape\"":1200.5,"\"rice\"":29.36}}]
-2	[{"sub":{"\"milk\"":27.45}},{"sub":{"\"yogurt\"":126.57,"\"beef\"":210.57}},{"sub":{"\"chocolate\"":3.65,"\"water\"":420.36}}]
+1	[{"sub":{"\"juice\"":21.45,"\"bread\"":15.2}},{"sub":{"\"rice\"":29.36,"\"grape\"":1200.5}}]
 3	[{"sub":{"\"apple\"":30.5,"\"orange\"":41.35}},{"sub":{"\"icecream\"":210.03,"\"banana\"":100.56,"\"coffee":500.0}}]
+2	[{"sub":{"\"milk\"":27.45}},{"sub":{"\"yogurt\"":126.57,"\"beef\"":210.57}},{"sub":{"\"chocolate\"":3.65,"\"water\"":420.36}}]
 PREHOOK: query: SELECT c.id, sort_array(collect_list(map("sub", o.sub)))
 FROM customers c
 INNER JOIN nested_orders o
@@ -615,9 +615,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@customers
 POSTHOOK: Input: default@nested_orders
 #### A masked pattern was here ####
-1	[{"sub":{"\"juice\"":21.45,"\"bread\"":15.2}},{"sub":{"\"juice\"":21.45,"\"bread\"":15.2}},{"sub":{"\"grape\"":1200.5,"\"rice\"":29.36}}]
-2	[{"sub":{"\"milk\"":27.45}},{"sub":{"\"yogurt\"":126.57,"\"beef\"":210.57}},{"sub":{"\"chocolate\"":3.65,"\"water\"":420.36}}]
+1	[{"sub":{"\"juice\"":21.45,"\"bread\"":15.2}},{"sub":{"\"juice\"":21.45,"\"bread\"":15.2}},{"sub":{"\"rice\"":29.36,"\"grape\"":1200.5}}]
 3	[{"sub":{"\"apple\"":30.5,"\"orange\"":41.35}},{"sub":{"\"icecream\"":210.03,"\"banana\"":100.56,"\"coffee":500.0}}]
+2	[{"sub":{"\"milk\"":27.45}},{"sub":{"\"yogurt\"":126.57,"\"beef\"":210.57}},{"sub":{"\"chocolate\"":3.65,"\"water\"":420.36}}]
 PREHOOK: query: SELECT c.id, sort_array(collect_set(map("sub", map_values(o.sub))))
 FROM customers c
 INNER JOIN nested_orders o
@@ -634,9 +634,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@customers
 POSTHOOK: Input: default@nested_orders
 #### A masked pattern was here ####
-1	[{"sub":[21.45,15.2]},{"sub":[1200.5,29.36]}]
-2	[{"sub":[3.65,420.36]},{"sub":[27.45]},{"sub":[126.57,210.57]}]
+1	[{"sub":[21.45,15.2]},{"sub":[29.36,1200.5]}]
 3	[{"sub":[30.5,41.35]},{"sub":[210.03,100.56,500.0]}]
+2	[{"sub":[3.65,420.36]},{"sub":[27.45]},{"sub":[126.57,210.57]}]
 PREHOOK: query: SELECT c.id, sort_array(collect_list(map("sub", map_values(o.sub))))
 FROM customers c
 INNER JOIN nested_orders o
@@ -653,9 +653,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@customers
 POSTHOOK: Input: default@nested_orders
 #### A masked pattern was here ####
-1	[{"sub":[21.45,15.2]},{"sub":[21.45,15.2]},{"sub":[1200.5,29.36]}]
-2	[{"sub":[3.65,420.36]},{"sub":[27.45]},{"sub":[126.57,210.57]}]
+1	[{"sub":[21.45,15.2]},{"sub":[21.45,15.2]},{"sub":[29.36,1200.5]}]
 3	[{"sub":[30.5,41.35]},{"sub":[210.03,100.56,500.0]}]
+2	[{"sub":[3.65,420.36]},{"sub":[27.45]},{"sub":[126.57,210.57]}]
 PREHOOK: query: DROP TABLE customer
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE customer

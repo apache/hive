@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -25,6 +25,7 @@ import java.util.Objects;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.optimizer.signature.Signature;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
 
@@ -90,7 +91,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
 
   // Record what type of write this is.  Default is non-ACID (ie old style).
   private AcidUtils.Operation writeType = AcidUtils.Operation.NOT_ACID;
-  private long txnId = 0;  // transaction id for this operation
+  private long tableWriteId = 0;  // table write id for this operation
   private int statementId = -1;
 
   private transient Table table;
@@ -167,7 +168,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
     ret.setStatsReliable(statsReliable);
     ret.setDpSortState(dpSortState);
     ret.setWriteType(writeType);
-    ret.setTransactionId(txnId);
+    ret.setTableWriteId(tableWriteId);
     ret.setStatementId(statementId);
     ret.setStatsTmpDir(statsTmpDir);
     ret.setIsMerge(isMerge);
@@ -195,6 +196,11 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
     return dirName;
   }
 
+  @Signature
+  public String getDirNameString() {
+    return dirName.toString();
+  }
+
   public void setDirName(final Path dirName) {
     this.dirName = dirName;
   }
@@ -207,7 +213,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   public Path getMergeInputDirName() {
     Path root = getFinalDirName();
     if (isMmTable()) {
-      return new Path(root, AcidUtils.deltaSubdir(txnId, txnId, statementId));
+      return new Path(root, AcidUtils.deltaSubdir(tableWriteId, tableWriteId, statementId));
     } else {
       return root;
     }
@@ -223,6 +229,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   }
 
   @Explain(displayName = "compressed")
+  @Signature
   public boolean getCompressed() {
     return compressed;
   }
@@ -232,6 +239,8 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   }
 
   @Explain(displayName = "GlobalTableId", explainLevels = { Level.EXTENDED })
+  @Signature
+
   public int getDestTableId() {
     return destTableId;
   }
@@ -260,6 +269,8 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
    * @return the multiFileSpray
    */
   @Explain(displayName = "MultiFileSpray", explainLevels = { Level.EXTENDED })
+  @Signature
+
   public boolean isMultiFileSpray() {
     return multiFileSpray;
   }
@@ -311,6 +322,8 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
    * @return the totalFiles
    */
   @Explain(displayName = "TotalFiles", explainLevels = { Level.EXTENDED })
+  @Signature
+
   public int getTotalFiles() {
     return totalFiles;
   }
@@ -340,6 +353,8 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
    * @return the numFiles
    */
   @Explain(displayName = "NumFilesPerFileSink", explainLevels = { Level.EXTENDED })
+  @Signature
+
   public int getNumFiles() {
     return numFiles;
   }
@@ -364,6 +379,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   }
 
   @Explain(displayName = "Static Partition Specification", explainLevels = { Level.EXTENDED })
+  @Signature
   public String getStaticSpec() {
     return staticSpec;
   }
@@ -374,6 +390,8 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
 
   @Override
   @Explain(displayName = "GatherStats", explainLevels = { Level.EXTENDED })
+  @Signature
+
   public boolean isGatherStats() {
     return gatherStats;
   }
@@ -391,6 +409,9 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
    */
   @Override
   @Explain(displayName = "Stats Publishing Key Prefix", explainLevels = { Level.EXTENDED })
+  // FIXME: including this in the signature will almost certenly differ even if the operator is doing the same
+  // there might be conflicting usages of logicalCompare?
+  @Signature
   public String getStatsAggPrefix() {
     // dirName uniquely identifies destination directory of a FileSinkOperator.
     // If more than one FileSinkOperator write to the same partition, this dirName
@@ -483,11 +504,11 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   public String getWriteTypeString() {
     return getWriteType() == AcidUtils.Operation.NOT_ACID ? null : getWriteType().toString();
   }
-  public void setTransactionId(long id) {
-    txnId = id;
+  public void setTableWriteId(long id) {
+    tableWriteId = id;
   }
-  public long getTransactionId() {
-    return txnId;
+  public long getTableWriteId() {
+    return tableWriteId;
   }
 
   public void setStatementId(int id) {

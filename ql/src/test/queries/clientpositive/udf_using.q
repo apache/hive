@@ -1,3 +1,4 @@
+--! qt:dataset:src
 dfs ${system:test.dfs.mkdir} hdfs:///tmp/udf_using;
 
 dfs -copyFromLocal ../../data/files/sales.txt hdfs:///tmp/udf_using/sales.txt;

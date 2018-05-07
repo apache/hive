@@ -100,6 +100,7 @@ STAGE PLANS:
                   TopN Hash Memory Usage: 0.1
                   value expressions: _col1 (type: bigint)
         Reducer 3 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: array<string>), VALUE._col0 (type: bigint)
@@ -131,6 +132,7 @@ STAGE PLANS:
                   TopN Hash Memory Usage: 0.1
                   value expressions: _col1 (type: bigint)
         Reducer 5 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: map<string,string>), VALUE._col0 (type: bigint)

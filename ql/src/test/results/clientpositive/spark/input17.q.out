@@ -59,6 +59,7 @@ STAGE PLANS:
                         Statistics: Num rows: 11 Data size: 30700 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string), _col1 (type: string)
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: UDFToInteger(VALUE._col0) (type: int), VALUE._col1 (type: string)

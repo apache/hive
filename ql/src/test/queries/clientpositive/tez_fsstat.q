@@ -4,10 +4,10 @@ set hive.mapred.mode=nonstrict;
 CREATE TABLE tab_part (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE;
 CREATE TABLE t1 (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE;
 
-load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE t1 partition(ds='2008-04-08');
-load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE t1 partition(ds='2008-04-08');
-load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE t1 partition(ds='2008-04-08');
-load data local inpath '../../data/files/srcbucket23.txt' INTO TABLE t1 partition(ds='2008-04-08');
+load data local inpath '../../data/files/bmj/000000_0' INTO TABLE t1 partition(ds='2008-04-08');
+load data local inpath '../../data/files/bmj/000001_0' INTO TABLE t1 partition(ds='2008-04-08');
+load data local inpath '../../data/files/bmj/000002_0' INTO TABLE t1 partition(ds='2008-04-08');
+load data local inpath '../../data/files/bmj/000003_0' INTO TABLE t1 partition(ds='2008-04-08');
 
 
 

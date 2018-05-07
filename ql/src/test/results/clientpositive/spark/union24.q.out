@@ -87,7 +87,7 @@ STAGE PLANS:
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (UDFToDouble(key) < 10.0) (type: boolean)
+                    predicate: (UDFToDouble(key) < 10.0D) (type: boolean)
                     Statistics: Num rows: 103 Data size: 494 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), count (type: bigint)
@@ -115,6 +115,7 @@ STAGE PLANS:
                         TotalFiles: 1
                         GatherStats: false
                         MultiFileSpray: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -126,6 +127,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,count
                     columns.comments 
@@ -147,6 +149,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,count
                       columns.comments 
@@ -174,7 +177,7 @@ STAGE PLANS:
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (UDFToDouble(key) < 10.0) (type: boolean)
+                    predicate: (UDFToDouble(key) < 10.0D) (type: boolean)
                     Statistics: Num rows: 103 Data size: 494 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), count (type: bigint)
@@ -202,6 +205,7 @@ STAGE PLANS:
                         TotalFiles: 1
                         GatherStats: false
                         MultiFileSpray: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -213,6 +217,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,count
                     columns.comments 
@@ -234,6 +239,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,count
                       columns.comments 
@@ -261,7 +267,7 @@ STAGE PLANS:
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (UDFToDouble(key) < 10.0) (type: boolean)
+                    predicate: (UDFToDouble(key) < 10.0D) (type: boolean)
                     Statistics: Num rows: 103 Data size: 494 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), count (type: bigint)
@@ -289,6 +295,7 @@ STAGE PLANS:
                         TotalFiles: 1
                         GatherStats: false
                         MultiFileSpray: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -300,6 +307,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,count
                     columns.comments 
@@ -321,6 +329,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,count
                       columns.comments 
@@ -348,7 +357,7 @@ STAGE PLANS:
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (UDFToDouble(key) < 10.0) (type: boolean)
+                    predicate: (UDFToDouble(key) < 10.0D) (type: boolean)
                     Statistics: Num rows: 103 Data size: 494 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
@@ -365,6 +374,7 @@ STAGE PLANS:
                         tag: -1
                         value expressions: _col1 (type: bigint)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -376,6 +386,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,count
                     columns.comments 
@@ -397,6 +408,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,count
                       columns.comments 
@@ -417,6 +429,7 @@ STAGE PLANS:
             Truncated Path -> Alias:
               /src5 [null-subquery2:$hdt$_2-subquery2:src5]
         Reducer 5 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -545,7 +558,7 @@ STAGE PLANS:
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (UDFToDouble(key) < 10.0) (type: boolean)
+                    predicate: (UDFToDouble(key) < 10.0D) (type: boolean)
                     Statistics: Num rows: 103 Data size: 494 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), count (type: bigint)
@@ -573,6 +586,7 @@ STAGE PLANS:
                         TotalFiles: 1
                         GatherStats: false
                         MultiFileSpray: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -584,6 +598,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,count
                     columns.comments 
@@ -605,6 +620,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,count
                       columns.comments 
@@ -632,7 +648,7 @@ STAGE PLANS:
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (UDFToDouble(key) < 10.0) (type: boolean)
+                    predicate: (UDFToDouble(key) < 10.0D) (type: boolean)
                     Statistics: Num rows: 103 Data size: 494 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), count (type: bigint)
@@ -660,6 +676,7 @@ STAGE PLANS:
                         TotalFiles: 1
                         GatherStats: false
                         MultiFileSpray: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -671,6 +688,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,count
                     columns.comments 
@@ -692,6 +710,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,count
                       columns.comments 
@@ -719,7 +738,7 @@ STAGE PLANS:
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (UDFToDouble(key) < 10.0) (type: boolean)
+                    predicate: (UDFToDouble(key) < 10.0D) (type: boolean)
                     Statistics: Num rows: 103 Data size: 494 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
@@ -733,6 +752,7 @@ STAGE PLANS:
                         Statistics: Num rows: 103 Data size: 494 Basic stats: COMPLETE Column stats: NONE
                         tag: 0
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -744,6 +764,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,count
                     columns.comments 
@@ -765,6 +786,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,count
                       columns.comments 
@@ -792,7 +814,7 @@ STAGE PLANS:
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (UDFToDouble(key) < 10.0) (type: boolean)
+                    predicate: (UDFToDouble(key) < 10.0D) (type: boolean)
                     Statistics: Num rows: 103 Data size: 494 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), count (type: bigint)
@@ -807,6 +829,7 @@ STAGE PLANS:
                         tag: 1
                         value expressions: _col1 (type: bigint)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -818,6 +841,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,count
                     columns.comments 
@@ -839,6 +863,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,count
                       columns.comments 
@@ -981,7 +1006,7 @@ STAGE PLANS:
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (UDFToDouble(key) < 10.0) (type: boolean)
+                    predicate: (UDFToDouble(key) < 10.0D) (type: boolean)
                     Statistics: Num rows: 103 Data size: 494 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), count (type: bigint)
@@ -1009,6 +1034,7 @@ STAGE PLANS:
                         TotalFiles: 1
                         GatherStats: false
                         MultiFileSpray: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -1020,6 +1046,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,count
                     columns.comments 
@@ -1041,6 +1068,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,count
                       columns.comments 
@@ -1068,7 +1096,7 @@ STAGE PLANS:
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (UDFToDouble(key) < 10.0) (type: boolean)
+                    predicate: (UDFToDouble(key) < 10.0D) (type: boolean)
                     Statistics: Num rows: 103 Data size: 494 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), count (type: bigint)
@@ -1096,6 +1124,7 @@ STAGE PLANS:
                         TotalFiles: 1
                         GatherStats: false
                         MultiFileSpray: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -1107,6 +1136,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,count
                     columns.comments 
@@ -1128,6 +1158,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,count
                       columns.comments 
@@ -1155,7 +1186,7 @@ STAGE PLANS:
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (UDFToDouble(key) < 10.0) (type: boolean)
+                    predicate: (UDFToDouble(key) < 10.0D) (type: boolean)
                     Statistics: Num rows: 103 Data size: 494 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
@@ -1169,6 +1200,7 @@ STAGE PLANS:
                         Statistics: Num rows: 103 Data size: 494 Basic stats: COMPLETE Column stats: NONE
                         tag: 0
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -1180,6 +1212,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,count
                     columns.comments 
@@ -1201,6 +1234,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,count
                       columns.comments 
@@ -1228,7 +1262,7 @@ STAGE PLANS:
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (UDFToDouble(key) < 10.0) (type: boolean)
+                    predicate: (UDFToDouble(key) < 10.0D) (type: boolean)
                     Statistics: Num rows: 103 Data size: 494 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
@@ -1242,6 +1276,7 @@ STAGE PLANS:
                         Statistics: Num rows: 103 Data size: 494 Basic stats: COMPLETE Column stats: NONE
                         tag: 1
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -1253,6 +1288,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,count
                     columns.comments 
@@ -1274,6 +1310,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,count
                       columns.comments 
@@ -1320,6 +1357,7 @@ STAGE PLANS:
                     value expressions: _col1 (type: bigint)
                     auto parallelism: false
         Reducer 5 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator

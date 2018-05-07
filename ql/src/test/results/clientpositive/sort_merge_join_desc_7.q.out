@@ -113,7 +113,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count 2
-                    bucket_field_name key
+                    bucket_field_name key,value
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -136,7 +136,8 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count 2
-                      bucket_field_name key
+                      bucket_field_name key,value
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -160,7 +161,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count 2
-                    bucket_field_name key
+                    bucket_field_name key,value
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -183,7 +184,8 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count 2
-                      bucket_field_name key
+                      bucket_field_name key,value
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -246,6 +248,7 @@ STAGE PLANS:
                     tag: -1
                     value expressions: _col0 (type: bigint)
                     auto parallelism: false
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
       Path -> Alias:
@@ -261,7 +264,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count 2
-              bucket_field_name key
+              bucket_field_name key,value
               column.name.delimiter ,
               columns key,value
               columns.comments 
@@ -284,7 +287,8 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count 2
-                bucket_field_name key
+                bucket_field_name key,value
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -310,7 +314,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count 2
-              bucket_field_name key
+              bucket_field_name key,value
               column.name.delimiter ,
               columns key,value
               columns.comments 
@@ -333,7 +337,8 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count 2
-                bucket_field_name key
+                bucket_field_name key,value
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 

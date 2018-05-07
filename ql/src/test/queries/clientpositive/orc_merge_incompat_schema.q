@@ -1,3 +1,5 @@
+SET hive.vectorized.execution.enabled=false;
+
 set hive.metastore.disallow.incompatible.col.type.changes=false;
 
 CREATE TABLE orc_create_staging (

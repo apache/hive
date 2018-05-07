@@ -1,3 +1,4 @@
+--! qt:dataset:srcpart
 set hive.lock.mapred.only.operation=true;
 drop table tstsrcpart;
 create table tstsrcpart like srcpart;

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,10 +19,10 @@ package org.apache.hadoop.hive.ql.parse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.File;
 import java.io.Serializable;
 import java.util.List;
 
-import com.google.common.base.Strings;
 import org.apache.hadoop.hive.cli.control.AbstractCliConfig;
 import org.apache.hadoop.hive.cli.control.CliAdapter;
 import org.apache.hadoop.hive.cli.control.CliConfigs;
@@ -33,6 +33,8 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+
+import com.google.common.base.Strings;
 
 public class CoreParseNegative extends CliAdapter{
 
@@ -103,6 +105,9 @@ public class CoreParseNegative extends CliAdapter{
         qt.init(fname);
         firstRun = false;
       }
+
+      qt.cliInit(new File(fpath), false);
+
       ASTNode tree = qt.parseQuery(fname);
       List<Task<? extends Serializable>> tasks = qt.analyzeAST(tree);
       fail("Unexpected success for query: " + fname + debugHint);

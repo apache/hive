@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -264,9 +264,9 @@ public class SetSparkReducerParallelism implements NodeProcessor {
           context.getConf(), sparkSessionManager);
       sparkMemoryAndCores = sparkSession.getMemoryAndCores();
     } catch (HiveException e) {
-      throw new SemanticException("Failed to get a spark session: " + e);
+      throw new SemanticException("Failed to get a Hive on Spark session", e);
     } catch (Exception e) {
-      LOG.warn("Failed to get spark memory/core info", e);
+      LOG.warn("Failed to get spark memory/core info, reducer parallelism may be inaccurate", e);
     } finally {
       if (sparkSession != null && sparkSessionManager != null) {
         try {

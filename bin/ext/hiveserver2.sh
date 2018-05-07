@@ -17,7 +17,7 @@ THISSERVICE=hiveserver2
 export SERVICE_LIST="${SERVICE_LIST}${THISSERVICE} "
 
 hiveserver2() {
-  echo "$(timestamp): Starting HiveServer2"
+  >&2 echo "$(timestamp): Starting HiveServer2"
   CLASS=org.apache.hive.service.server.HiveServer2
   if $cygwin; then
     HIVE_LIB=`cygpath -w "$HIVE_LIB"`
@@ -25,6 +25,7 @@ hiveserver2() {
   JAR=${HIVE_LIB}/hive-service-[0-9].*.jar
 
   export HADOOP_CLIENT_OPTS=" -Dproc_hiveserver2 $HADOOP_CLIENT_OPTS "
+  export HADOOP_OPTS="$HIVESERVER2_HADOOP_OPTS $HADOOP_OPTS"
   exec $HADOOP jar $JAR $CLASS $HIVE_OPTS "$@"
 }
 

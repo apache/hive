@@ -46,99 +46,99 @@ POSTHOOK: query: create table test4 (key string, value string) clustered by (val
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test4
-PREHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE test1
+PREHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE test1
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@test1
-POSTHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE test1
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE test1
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@test1
-PREHOOK: query: load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE test1
+PREHOOK: query: load data local inpath '../../data/files/bmj/000001_0' INTO TABLE test1
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@test1
-POSTHOOK: query: load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE test1
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000001_0' INTO TABLE test1
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@test1
-PREHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE test1
+PREHOOK: query: load data local inpath '../../data/files/bmj/000002_0' INTO TABLE test1
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@test1
-POSTHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE test1
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000002_0' INTO TABLE test1
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@test1
-PREHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE test2
+PREHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE test2
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@test2
-POSTHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE test2
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE test2
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@test2
-PREHOOK: query: load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE test2
+PREHOOK: query: load data local inpath '../../data/files/bmj/000001_0' INTO TABLE test2
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@test2
-POSTHOOK: query: load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE test2
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000001_0' INTO TABLE test2
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@test2
-PREHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE test2
+PREHOOK: query: load data local inpath '../../data/files/bmj/000002_0' INTO TABLE test2
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@test2
-POSTHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE test2
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000002_0' INTO TABLE test2
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@test2
-PREHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE test3
+PREHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE test3
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@test3
-POSTHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE test3
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE test3
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@test3
-PREHOOK: query: load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE test3
+PREHOOK: query: load data local inpath '../../data/files/bmj/000001_0' INTO TABLE test3
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@test3
-POSTHOOK: query: load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE test3
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000001_0' INTO TABLE test3
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@test3
-PREHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE test3
+PREHOOK: query: load data local inpath '../../data/files/bmj/000002_0' INTO TABLE test3
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@test3
-POSTHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE test3
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000002_0' INTO TABLE test3
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@test3
-PREHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE test4
+PREHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE test4
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@test4
-POSTHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE test4
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE test4
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@test4
-PREHOOK: query: load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE test4
+PREHOOK: query: load data local inpath '../../data/files/bmj/000001_0' INTO TABLE test4
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@test4
-POSTHOOK: query: load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE test4
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000001_0' INTO TABLE test4
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@test4
-PREHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE test4
+PREHOOK: query: load data local inpath '../../data/files/bmj/000002_0' INTO TABLE test4
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@test4
-POSTHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE test4
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000002_0' INTO TABLE test4
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@test4
@@ -171,6 +171,7 @@ STAGE PLANS:
                         0 key (type: string), value (type: string)
                         1 key (type: string), value (type: string)
                       Position of Big Table: 0
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
                 Bucket Mapjoin Context:
@@ -190,6 +191,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 3
                     bucket_field_name key
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -212,6 +214,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 3
                       bucket_field_name key
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -284,6 +287,7 @@ STAGE PLANS:
                           TotalFiles: 1
                           GatherStats: false
                           MultiFileSpray: false
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
                 Bucket Mapjoin Context:
@@ -303,6 +307,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 3
                     bucket_field_name key
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -325,6 +330,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 3
                       bucket_field_name key
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -380,6 +386,7 @@ STAGE PLANS:
                         0 key (type: string), value (type: string)
                         1 key (type: string), value (type: string)
                       Position of Big Table: 0
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
                 Bucket Mapjoin Context:
@@ -399,6 +406,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 3
                     bucket_field_name value
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -421,6 +429,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 3
                       bucket_field_name value
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -493,6 +502,7 @@ STAGE PLANS:
                           TotalFiles: 1
                           GatherStats: false
                           MultiFileSpray: false
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
                 Bucket Mapjoin Context:
@@ -512,6 +522,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 3
                     bucket_field_name value
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -534,6 +545,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 3
                       bucket_field_name value
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -589,6 +601,7 @@ STAGE PLANS:
                         0 (key + key) (type: double)
                         1 UDFToDouble(key) (type: double)
                       Position of Big Table: 0
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
             Path -> Alias:
@@ -603,6 +616,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 3
                     bucket_field_name key
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -625,6 +639,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 3
                       bucket_field_name key
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -696,6 +711,7 @@ STAGE PLANS:
                           TotalFiles: 1
                           GatherStats: false
                           MultiFileSpray: false
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
             Path -> Alias:
@@ -710,6 +726,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 3
                     bucket_field_name key
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -732,6 +749,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 3
                       bucket_field_name key
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -787,6 +805,7 @@ STAGE PLANS:
                         0 key (type: string), value (type: string)
                         1 key (type: string), value (type: string)
                       Position of Big Table: 0
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
             Path -> Alias:
@@ -801,6 +820,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 3
                     bucket_field_name value
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -823,6 +843,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 3
                       bucket_field_name value
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -894,6 +915,7 @@ STAGE PLANS:
                           TotalFiles: 1
                           GatherStats: false
                           MultiFileSpray: false
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
             Path -> Alias:
@@ -908,6 +930,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 3
                     bucket_field_name key
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -930,6 +953,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 3
                       bucket_field_name key
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -985,6 +1009,7 @@ STAGE PLANS:
                         0 key (type: string), value (type: string)
                         1 key (type: string), value (type: string)
                       Position of Big Table: 0
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
             Path -> Alias:
@@ -998,7 +1023,8 @@ STAGE PLANS:
                   properties:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 3
-                    bucket_field_name key
+                    bucket_field_name key,value
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -1020,7 +1046,8 @@ STAGE PLANS:
                     properties:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 3
-                      bucket_field_name key
+                      bucket_field_name key,value
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -1092,6 +1119,7 @@ STAGE PLANS:
                           TotalFiles: 1
                           GatherStats: false
                           MultiFileSpray: false
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
             Path -> Alias:
@@ -1106,6 +1134,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 3
                     bucket_field_name key
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -1128,6 +1157,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 3
                       bucket_field_name key
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -1183,6 +1213,7 @@ STAGE PLANS:
                         0 key (type: string), value (type: string)
                         1 key (type: string), value (type: string)
                       Position of Big Table: 0
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
             Path -> Alias:
@@ -1196,7 +1227,8 @@ STAGE PLANS:
                   properties:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 3
-                    bucket_field_name value
+                    bucket_field_name value,key
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -1218,7 +1250,8 @@ STAGE PLANS:
                     properties:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 3
-                      bucket_field_name value
+                      bucket_field_name value,key
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -1290,6 +1323,7 @@ STAGE PLANS:
                           TotalFiles: 1
                           GatherStats: false
                           MultiFileSpray: false
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
             Path -> Alias:
@@ -1304,6 +1338,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 3
                     bucket_field_name key
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -1326,6 +1361,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 3
                       bucket_field_name key
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -1381,6 +1417,7 @@ STAGE PLANS:
                         0 key (type: string), value (type: string)
                         1 key (type: string), value (type: string)
                       Position of Big Table: 0
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
             Path -> Alias:
@@ -1394,7 +1431,8 @@ STAGE PLANS:
                   properties:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 3
-                    bucket_field_name key
+                    bucket_field_name key,value
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -1416,7 +1454,8 @@ STAGE PLANS:
                     properties:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 3
-                      bucket_field_name key
+                      bucket_field_name key,value
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -1488,6 +1527,7 @@ STAGE PLANS:
                           TotalFiles: 1
                           GatherStats: false
                           MultiFileSpray: false
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
             Path -> Alias:
@@ -1502,6 +1542,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 3
                     bucket_field_name value
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -1524,6 +1565,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 3
                       bucket_field_name value
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -1579,6 +1621,7 @@ STAGE PLANS:
                         0 key (type: string), value (type: string)
                         1 key (type: string), value (type: string)
                       Position of Big Table: 0
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
             Path -> Alias:
@@ -1592,7 +1635,8 @@ STAGE PLANS:
                   properties:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 3
-                    bucket_field_name value
+                    bucket_field_name value,key
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -1614,7 +1658,8 @@ STAGE PLANS:
                     properties:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 3
-                      bucket_field_name value
+                      bucket_field_name value,key
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -1686,6 +1731,7 @@ STAGE PLANS:
                           TotalFiles: 1
                           GatherStats: false
                           MultiFileSpray: false
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
             Path -> Alias:
@@ -1700,6 +1746,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 3
                     bucket_field_name value
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -1722,6 +1769,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 3
                       bucket_field_name value
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -1777,6 +1825,7 @@ STAGE PLANS:
                         0 key (type: string), value (type: string)
                         1 key (type: string), value (type: string)
                       Position of Big Table: 0
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
             Path -> Alias:
@@ -1790,7 +1839,8 @@ STAGE PLANS:
                   properties:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 3
-                    bucket_field_name value
+                    bucket_field_name value,key
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -1812,7 +1862,8 @@ STAGE PLANS:
                     properties:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 3
-                      bucket_field_name value
+                      bucket_field_name value,key
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -1884,6 +1935,7 @@ STAGE PLANS:
                           TotalFiles: 1
                           GatherStats: false
                           MultiFileSpray: false
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
             Path -> Alias:
@@ -1897,7 +1949,8 @@ STAGE PLANS:
                   properties:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 3
-                    bucket_field_name key
+                    bucket_field_name key,value
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -1919,7 +1972,8 @@ STAGE PLANS:
                     properties:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 3
-                      bucket_field_name key
+                      bucket_field_name key,value
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 

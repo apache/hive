@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -27,6 +27,8 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.optimizer.signature.Signature;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
 import org.apache.hadoop.hive.ql.plan.VectorReduceSinkDesc.ReduceSinkKeyType;
@@ -97,7 +99,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
   private float topNMemoryUsage = -1;
   private boolean mapGroupBy;  // for group-by, values with same key on top-K should be forwarded
   //flag used to control how TopN handled for PTF/Windowing partitions.
-  private boolean isPTFReduceSink = false; 
+  private boolean isPTFReduceSink = false;
   private boolean skipTag; // Skip writing tags when feeding into mapjoin hashtable
   private boolean forwarding; // Whether this RS can forward records directly instead of shuffling/sorting
 
@@ -126,6 +128,8 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
 
   private static transient Logger LOG = LoggerFactory.getLogger(ReduceSinkDesc.class);
 
+  private AcidUtils.Operation writeType;
+
   public ReduceSinkDesc() {
   }
 
@@ -136,7 +140,8 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
       List<List<Integer>> distinctColumnIndices,
       ArrayList<String> outputValueColumnNames, int tag,
       ArrayList<ExprNodeDesc> partitionCols, int numReducers,
-      final TableDesc keySerializeInfo, final TableDesc valueSerializeInfo) {
+      final TableDesc keySerializeInfo, final TableDesc valueSerializeInfo,
+      AcidUtils.Operation writeType) {
     this.keyCols = keyCols;
     this.numDistributionKeys = numDistributionKeys;
     this.valueCols = valueCols;
@@ -150,6 +155,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     this.distinctColumnIndices = distinctColumnIndices;
     this.setNumBuckets(-1);
     this.setBucketCols(null);
+    this.writeType = writeType;
   }
 
   @Override
@@ -202,6 +208,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "key expressions")
+  @Signature
   public String getKeyColString() {
     return PlanUtils.getExprListString(keyCols);
   }
@@ -223,6 +230,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "value expressions")
+  @Signature
   public String getValueColsString() {
     return PlanUtils.getExprListString(valueCols);
   }
@@ -241,6 +249,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "PartitionCols", explainLevels = { Level.USER })
+  @Signature
   public String getUserLevelExplainParitionColsString() {
     return PlanUtils.getExprListString(partitionCols, true);
   }
@@ -261,6 +270,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     return false;
   }
 
+  @Signature
   @Explain(displayName = "tag", explainLevels = { Level.EXTENDED })
   public int getTag() {
     return tag;
@@ -270,6 +280,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     this.tag = tag;
   }
 
+  @Signature
   public int getTopN() {
     return topN;
   }
@@ -349,6 +360,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
    *         of the same length as key columns, that consists of only "+"
    *         (ascending order) and "-" (descending order).
    */
+  @Signature
   @Explain(displayName = "sort order")
   public String getOrder() {
     return keySerializeInfo.getProperties().getProperty(
@@ -462,7 +474,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     // reducers or hash function.
 
     boolean wasUnset = this.reduceTraits.remove(ReducerTraits.UNSET);
-    
+
     if (this.reduceTraits.contains(ReducerTraits.FIXED)) {
       return;
     } else if (traits.contains(ReducerTraits.FIXED)) {
@@ -660,5 +672,9 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
           isAutoParallel() == otherDesc.isAutoParallel();
     }
     return false;
+  }
+
+  public AcidUtils.Operation getWriteType() {
+    return writeType;
   }
 }

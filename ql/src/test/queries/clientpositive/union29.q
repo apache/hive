@@ -1,3 +1,4 @@
+--! qt:dataset:src
 create table union_subq_union(key int, value string);
 
 explain

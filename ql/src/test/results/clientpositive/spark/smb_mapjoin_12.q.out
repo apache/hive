@@ -141,6 +141,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 16
                       bucket_field_name key
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -159,6 +160,7 @@ STAGE PLANS:
             Truncated Path -> Alias:
               /test_table1/ds=1 [a]
         Reducer 2 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
@@ -180,6 +182,7 @@ STAGE PLANS:
                         SORTBUCKETCOLSPREFIX TRUE
                         bucket_count 16
                         bucket_field_name key
+                        bucketing_version 2
                         column.name.delimiter ,
                         columns key,value
                         columns.comments 
@@ -212,6 +215,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 16
                 bucket_field_name key
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -266,7 +270,7 @@ POSTHOOK: Input: default@test_table1@ds=1
 POSTHOOK: Input: default@test_table3
 POSTHOOK: Input: default@test_table3@ds=1
 #### A masked pattern was here ####
-879
+420
 PREHOOK: query: explain extended
 INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '2') 
 SELECT /*+mapjoin(b)*/ a.key, concat(a.value, b.value) FROM test_table3 a JOIN test_table1 b ON a.key = b.key AND a.ds = '1' AND b.ds='1'
@@ -358,6 +362,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 16
                       bucket_field_name key
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -376,6 +381,7 @@ STAGE PLANS:
             Truncated Path -> Alias:
               /test_table3/ds=1 [a]
         Reducer 2 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
@@ -397,6 +403,7 @@ STAGE PLANS:
                         SORTBUCKETCOLSPREFIX TRUE
                         bucket_count 16
                         bucket_field_name key
+                        bucketing_version 2
                         column.name.delimiter ,
                         columns key,value
                         columns.comments 
@@ -429,6 +436,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 16
                 bucket_field_name key
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -477,4 +485,4 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table3
 POSTHOOK: Input: default@test_table3@ds=2
 #### A masked pattern was here ####
-879
+420

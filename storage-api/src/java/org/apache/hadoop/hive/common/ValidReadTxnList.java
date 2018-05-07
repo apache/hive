@@ -41,9 +41,6 @@ public class ValidReadTxnList implements ValidTxnList {
   /**
    * Used if there are no open transactions in the snapshot
    */
-  public ValidReadTxnList(long[] exceptions, BitSet abortedBits, long highWatermark) {
-    this(exceptions, abortedBits, highWatermark, Long.MAX_VALUE);
-  }
   public ValidReadTxnList(long[] exceptions, BitSet abortedBits, long highWatermark, long minOpenTxn) {
     if (exceptions.length > 0) {
       this.minOpenTxn = minOpenTxn;
@@ -59,24 +56,16 @@ public class ValidReadTxnList implements ValidTxnList {
 
   @Override
   public boolean isTxnValid(long txnid) {
-    if (highWatermark < txnid) {
+    if (txnid > highWatermark) {
       return false;
     }
     return Arrays.binarySearch(exceptions, txnid) < 0;
   }
 
-  /**
-   * We cannot use a base file if its range contains an open txn.
-   * @param txnid from base_xxxx
-   */
-  @Override
-  public boolean isValidBase(long txnid) {
-    return minOpenTxn > txnid && txnid <= highWatermark;
-  }
   @Override
   public RangeResponse isTxnRangeValid(long minTxnId, long maxTxnId) {
     // check the easy cases first
-    if (highWatermark < minTxnId) {
+    if (minTxnId > highWatermark) {
       return RangeResponse.NONE;
     } else if (exceptions.length > 0 && exceptions[0] > maxTxnId) {
       return RangeResponse.ALL;

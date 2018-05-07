@@ -53,6 +53,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: default.nzhang_part5
+            Execution mode: vectorized
 
   Stage: Stage-0
     Move Operator

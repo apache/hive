@@ -9,14 +9,16 @@ POSTHOOK: Output: default@aux1
 PREHOOK: query: INSERT INTO aux1 VALUES (NULL, NULL, 'None'), (98, NULL, 'None'),
     (99, 0, 'Alice'), (99, 2, 'Mat'), (100, 1, 'Bob'), (101, 2, 'Car')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@aux1
 POSTHOOK: query: INSERT INTO aux1 VALUES (NULL, NULL, 'None'), (98, NULL, 'None'),
     (99, 0, 'Alice'), (99, 2, 'Mat'), (100, 1, 'Bob'), (101, 2, 'Car')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@aux1
-POSTHOOK: Lineage: aux1.col_1 SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: aux1.key EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: aux1.value EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: aux1.col_1 SCRIPT []
+POSTHOOK: Lineage: aux1.key SCRIPT []
+POSTHOOK: Lineage: aux1.value SCRIPT []
 PREHOOK: query: CREATE TABLE test1 (key INT, value INT, col_1 STRING) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -49,14 +51,16 @@ POSTHOOK: Output: default@aux2
 PREHOOK: query: INSERT INTO aux2 VALUES (102, 2, 'Del'), (103, 2, 'Ema'),
     (104, 3, 'Fli'), (105, NULL, 'None')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@aux2
 POSTHOOK: query: INSERT INTO aux2 VALUES (102, 2, 'Del'), (103, 2, 'Ema'),
     (104, 3, 'Fli'), (105, NULL, 'None')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@aux2
-POSTHOOK: Lineage: aux2.col_2 SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: aux2.key EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: aux2.value EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: aux2.col_2 SCRIPT []
+POSTHOOK: Lineage: aux2.key SCRIPT []
+POSTHOOK: Lineage: aux2.value SCRIPT []
 PREHOOK: query: CREATE TABLE test2 (key INT, value INT, col_2 STRING) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -139,11 +143,11 @@ POSTHOOK: Input: default@test2
 #### A masked pattern was here ####
 98	NULL	None	NULL	NULL	NULL
 NULL	NULL	None	NULL	NULL	NULL
-99	0	Alice	NULL	NULL	NULL
 101	2	Car	103	2	Ema
 101	2	Car	102	2	Del
 99	2	Mat	103	2	Ema
 99	2	Mat	102	2	Del
+99	0	Alice	NULL	NULL	NULL
 100	1	Bob	NULL	NULL	NULL
 PREHOOK: query: EXPLAIN
 SELECT *
@@ -217,9 +221,9 @@ POSTHOOK: Input: default@test2
 #### A masked pattern was here ####
 98	NULL	None	NULL	NULL	NULL
 NULL	NULL	None	NULL	NULL	NULL
-99	0	Alice	NULL	NULL	NULL
 101	2	Car	102	2	Del
 99	2	Mat	NULL	NULL	NULL
+99	0	Alice	NULL	NULL	NULL
 100	1	Bob	NULL	NULL	NULL
 Warning: Map Join MAPJOIN[11][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
 PREHOOK: query: EXPLAIN
@@ -294,6 +298,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
 
@@ -322,9 +327,9 @@ POSTHOOK: Input: default@test2
 #### A masked pattern was here ####
 98	NULL	None	NULL	NULL	NULL
 NULL	NULL	None	NULL	NULL	NULL
-99	0	Alice	NULL	NULL	NULL
 101	2	Car	102	2	Del
 99	2	Mat	NULL	NULL	NULL
+99	0	Alice	NULL	NULL	NULL
 100	1	Bob	102	2	Del
 PREHOOK: query: EXPLAIN
 SELECT *
@@ -459,6 +464,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
       Local Work:
         Map Reduce Local Work
 
@@ -485,12 +491,12 @@ POSTHOOK: Input: default@test2
 #### A masked pattern was here ####
 98	NULL	None	NULL	NULL	NULL
 NULL	NULL	None	NULL	NULL	NULL
-99	0	Alice	NULL	NULL	NULL
 101	2	Car	105	NULL	None
 101	2	Car	103	2	Ema
 101	2	Car	102	2	Del
 101	2	Car	104	3	Fli
 99	2	Mat	NULL	NULL	NULL
+99	0	Alice	NULL	NULL	NULL
 100	1	Bob	105	NULL	None
 100	1	Bob	103	2	Ema
 100	1	Bob	102	2	Del
@@ -592,13 +598,13 @@ POSTHOOK: Input: default@test2
 #### A masked pattern was here ####
 98	NULL	None	102	2	Del
 NULL	NULL	None	102	2	Del
-99	0	Alice	102	2	Del
 101	2	Car	105	NULL	None
 101	2	Car	103	2	Ema
 101	2	Car	102	2	Del
 101	2	Car	104	3	Fli
 99	2	Mat	103	2	Ema
 99	2	Mat	102	2	Del
+99	0	Alice	102	2	Del
 100	1	Bob	105	NULL	None
 100	1	Bob	103	2	Ema
 100	1	Bob	102	2	Del
@@ -696,13 +702,13 @@ POSTHOOK: Input: default@test2
 #### A masked pattern was here ####
 98	NULL	None	NULL	NULL	NULL
 NULL	NULL	None	NULL	NULL	NULL
-99	0	Alice	NULL	NULL	NULL
 101	2	Car	105	NULL	None
 101	2	Car	103	2	Ema
 101	2	Car	102	2	Del
 101	2	Car	104	3	Fli
 99	2	Mat	103	2	Ema
 99	2	Mat	102	2	Del
+99	0	Alice	NULL	NULL	NULL
 100	1	Bob	105	NULL	None
 100	1	Bob	103	2	Ema
 100	1	Bob	102	2	Del
@@ -800,11 +806,11 @@ POSTHOOK: Input: default@test2
 #### A masked pattern was here ####
 98	NULL	None	102	2	Del
 NULL	NULL	None	102	2	Del
-99	0	Alice	102	2	Del
 101	2	Car	103	2	Ema
 101	2	Car	102	2	Del
 99	2	Mat	103	2	Ema
 99	2	Mat	102	2	Del
+99	0	Alice	102	2	Del
 100	1	Bob	102	2	Del
 PREHOOK: query: EXPLAIN
 SELECT *
@@ -876,10 +882,10 @@ POSTHOOK: Input: default@test2
 #### A masked pattern was here ####
 98	NULL	None	NULL	NULL	NULL
 NULL	NULL	None	NULL	NULL	NULL
-99	0	Alice	NULL	NULL	NULL
 101	2	Car	103	2	Ema
 101	2	Car	102	2	Del
 99	2	Mat	102	2	Del
+99	0	Alice	NULL	NULL	NULL
 100	1	Bob	NULL	NULL	NULL
 Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
 PREHOOK: query: EXPLAIN
@@ -983,9 +989,9 @@ POSTHOOK: Input: default@test2
 100	1	Bob	103	2	Ema
 98	NULL	None	102	2	Del
 NULL	NULL	None	102	2	Del
-99	0	Alice	102	2	Del
 101	2	Car	102	2	Del
 99	2	Mat	102	2	Del
+99	0	Alice	102	2	Del
 100	1	Bob	102	2	Del
 101	2	Car	104	3	Fli
 100	1	Bob	104	3	Fli
@@ -1186,9 +1192,9 @@ NULL	NULL	NULL	105	NULL	None
 99	2	Mat	103	2	Ema
 98	NULL	None	102	2	Del
 NULL	NULL	None	102	2	Del
-99	0	Alice	102	2	Del
 101	2	Car	102	2	Del
 99	2	Mat	102	2	Del
+99	0	Alice	102	2	Del
 100	1	Bob	102	2	Del
 NULL	NULL	NULL	104	3	Fli
 PREHOOK: query: EXPLAIN
@@ -1352,17 +1358,17 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test1
 POSTHOOK: Input: default@test2
 #### A masked pattern was here ####
+100	1	Bob	104	3	Fli
 100	1	Bob	102	2	Del
 100	1	Bob	103	2	Ema
 100	1	Bob	105	NULL	None
-100	1	Bob	104	3	Fli
+99	0	Alice	102	2	Del
 99	2	Mat	102	2	Del
 99	2	Mat	103	2	Ema
+101	2	Car	104	3	Fli
 101	2	Car	102	2	Del
 101	2	Car	103	2	Ema
 101	2	Car	105	NULL	None
-101	2	Car	104	3	Fli
-99	0	Alice	102	2	Del
 NULL	NULL	None	102	2	Del
 98	NULL	None	102	2	Del
 Warning: Shuffle Join JOIN[6][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
@@ -1449,17 +1455,17 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test1
 POSTHOOK: Input: default@test2
 #### A masked pattern was here ####
+100	1	Bob	104	3	Fli
 100	1	Bob	102	2	Del
 100	1	Bob	103	2	Ema
 100	1	Bob	105	NULL	None
-100	1	Bob	104	3	Fli
+99	0	Alice	NULL	NULL	NULL
 99	2	Mat	102	2	Del
 99	2	Mat	103	2	Ema
+101	2	Car	104	3	Fli
 101	2	Car	102	2	Del
 101	2	Car	103	2	Ema
 101	2	Car	105	NULL	None
-101	2	Car	104	3	Fli
-99	0	Alice	NULL	NULL	NULL
 NULL	NULL	None	NULL	NULL	NULL
 98	NULL	None	NULL	NULL	NULL
 Warning: Shuffle Join JOIN[6][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
@@ -1547,15 +1553,15 @@ POSTHOOK: Input: default@test1
 POSTHOOK: Input: default@test2
 #### A masked pattern was here ####
 100	1	Bob	102	2	Del
+99	0	Alice	102	2	Del
 99	2	Mat	102	2	Del
 99	2	Mat	103	2	Ema
 101	2	Car	102	2	Del
 101	2	Car	103	2	Ema
-99	0	Alice	102	2	Del
 NULL	NULL	None	102	2	Del
 98	NULL	None	102	2	Del
-NULL	NULL	NULL	105	NULL	None
 NULL	NULL	NULL	104	3	Fli
+NULL	NULL	NULL	105	NULL	None
 PREHOOK: query: EXPLAIN
 SELECT *
 FROM test1 FULL OUTER JOIN test2

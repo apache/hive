@@ -1,3 +1,4 @@
+--! qt:dataset:src
 -- should fail: hive.map.aggr.hash.min.reduction accepts float type
 desc src;
 

@@ -121,6 +121,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 16
                 bucket_field_name key
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -156,6 +157,7 @@ STAGE PLANS:
                 properties:
                   bucket_count 16
                   bucket_field_name key
+                  bucketing_version 2
                   column.name.delimiter ,
                   columns key,value
                   columns.comments 
@@ -213,6 +215,7 @@ STAGE PLANS:
               properties:
                 bucket_count 16
                 bucket_field_name key
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -251,6 +254,7 @@ STAGE PLANS:
               tag: -1
               value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
               auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -1921,6 +1925,7 @@ STAGE PLANS:
                   TotalFiles: 1
                   GatherStats: false
                   MultiFileSpray: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -1959,6 +1964,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 16
                 bucket_field_name key
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -2030,6 +2036,7 @@ STAGE PLANS:
                   TotalFiles: 1
                   GatherStats: false
                   MultiFileSpray: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -2067,6 +2074,7 @@ STAGE PLANS:
               properties:
                 bucket_count 16
                 bucket_field_name key
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -2101,47 +2109,38 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table1
 POSTHOOK: Input: default@test_table1@ds=1
 #### A masked pattern was here ####
-17	val_17	1
-33	val_33	1
-65	val_65	1
-97	val_97	1
-97	val_97	1
-113	val_113	1
-113	val_113	1
-129	val_129	1
-129	val_129	1
-145	val_145	1
-177	val_177	1
-193	val_193	1
-193	val_193	1
-193	val_193	1
-209	val_209	1
-209	val_209	1
-241	val_241	1
-257	val_257	1
-273	val_273	1
-273	val_273	1
-273	val_273	1
-289	val_289	1
-305	val_305	1
+8	val_8	1
+26	val_26	1
+26	val_26	1
+82	val_82	1
+103	val_103	1
+103	val_103	1
+118	val_118	1
+118	val_118	1
+128	val_128	1
+128	val_128	1
+128	val_128	1
+176	val_176	1
+176	val_176	1
+194	val_194	1
+275	val_275	1
+280	val_280	1
+280	val_280	1
+282	val_282	1
+282	val_282	1
+309	val_309	1
+309	val_309	1
 321	val_321	1
 321	val_321	1
-353	val_353	1
-353	val_353	1
-369	val_369	1
-369	val_369	1
-369	val_369	1
-401	val_401	1
-401	val_401	1
-401	val_401	1
-401	val_401	1
-401	val_401	1
-417	val_417	1
-417	val_417	1
-417	val_417	1
-449	val_449	1
-481	val_481	1
-497	val_497	1
+400	val_400	1
+438	val_438	1
+438	val_438	1
+438	val_438	1
+439	val_439	1
+439	val_439	1
+455	val_455	1
+462	val_462	1
+462	val_462	1
 PREHOOK: query: SELECT * FROM test_table3 TABLESAMPLE(BUCKET 2 OUT OF 16)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_table3
@@ -2152,103 +2151,70 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table3
 POSTHOOK: Input: default@test_table3@ds=1
 #### A masked pattern was here ####
-497	val_497	1
-481	val_481	1
-449	val_449	1
-417	val_417	1
-417	val_417	1
-417	val_417	1
-417	val_417	1
-417	val_417	1
-417	val_417	1
-417	val_417	1
-417	val_417	1
-417	val_417	1
-401	val_401	1
-401	val_401	1
-401	val_401	1
-401	val_401	1
-401	val_401	1
-401	val_401	1
-401	val_401	1
-401	val_401	1
-401	val_401	1
-401	val_401	1
-401	val_401	1
-401	val_401	1
-401	val_401	1
-401	val_401	1
-401	val_401	1
-401	val_401	1
-401	val_401	1
-401	val_401	1
-401	val_401	1
-401	val_401	1
-401	val_401	1
-401	val_401	1
-401	val_401	1
-401	val_401	1
-401	val_401	1
-369	val_369	1
-369	val_369	1
-369	val_369	1
-369	val_369	1
-369	val_369	1
-369	val_369	1
-369	val_369	1
-369	val_369	1
-369	val_369	1
-353	val_353	1
-353	val_353	1
-353	val_353	1
-353	val_353	1
+462	val_462	1
+462	val_462	1
+462	val_462	1
+462	val_462	1
+455	val_455	1
+439	val_439	1
+439	val_439	1
+439	val_439	1
+439	val_439	1
+438	val_438	1
+438	val_438	1
+438	val_438	1
+438	val_438	1
+438	val_438	1
+438	val_438	1
+438	val_438	1
+438	val_438	1
+438	val_438	1
+400	val_400	1
 321	val_321	1
 321	val_321	1
 321	val_321	1
 321	val_321	1
-305	val_305	1
-289	val_289	1
-273	val_273	1
-273	val_273	1
-273	val_273	1
-273	val_273	1
-273	val_273	1
-273	val_273	1
-273	val_273	1
-273	val_273	1
-273	val_273	1
-257	val_257	1
-241	val_241	1
-209	val_209	1
-209	val_209	1
-209	val_209	1
-209	val_209	1
-193	val_193	1
-193	val_193	1
-193	val_193	1
-193	val_193	1
-193	val_193	1
-193	val_193	1
-193	val_193	1
-193	val_193	1
-193	val_193	1
-177	val_177	1
-145	val_145	1
-129	val_129	1
-129	val_129	1
-129	val_129	1
-129	val_129	1
-113	val_113	1
-113	val_113	1
-113	val_113	1
-113	val_113	1
-97	val_97	1
-97	val_97	1
-97	val_97	1
-97	val_97	1
-65	val_65	1
-33	val_33	1
-17	val_17	1
+309	val_309	1
+309	val_309	1
+309	val_309	1
+309	val_309	1
+282	val_282	1
+282	val_282	1
+282	val_282	1
+282	val_282	1
+280	val_280	1
+280	val_280	1
+280	val_280	1
+280	val_280	1
+275	val_275	1
+194	val_194	1
+176	val_176	1
+176	val_176	1
+176	val_176	1
+176	val_176	1
+128	val_128	1
+128	val_128	1
+128	val_128	1
+128	val_128	1
+128	val_128	1
+128	val_128	1
+128	val_128	1
+128	val_128	1
+128	val_128	1
+118	val_118	1
+118	val_118	1
+118	val_118	1
+118	val_118	1
+103	val_103	1
+103	val_103	1
+103	val_103	1
+103	val_103	1
+82	val_82	1
+26	val_26	1
+26	val_26	1
+26	val_26	1
+26	val_26	1
+8	val_8	1
 PREHOOK: query: SELECT COUNT(*) FROM test_table3 TABLESAMPLE(BUCKET 2 OUT OF 16) a JOIN test_table1 TABLESAMPLE(BUCKET 2 OUT OF 16) b ON a.key = b.key AND a.ds = '1' AND b.ds='1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_table1
@@ -2263,4 +2229,4 @@ POSTHOOK: Input: default@test_table1@ds=1
 POSTHOOK: Input: default@test_table3
 POSTHOOK: Input: default@test_table3@ds=1
 #### A masked pattern was here ####
-293
+140

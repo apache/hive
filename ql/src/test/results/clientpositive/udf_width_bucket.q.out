@@ -214,12 +214,14 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alldecimaltypes
 PREHOOK: query: insert into table alldecimaltypes values (0.1, 0.1), (0.25, 0.25), (0.3456, 0.3456), (0.654321, 0.654321)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@alldecimaltypes
 POSTHOOK: query: insert into table alldecimaltypes values (0.1, 0.1), (0.25, 0.25), (0.3456, 0.3456), (0.654321, 0.654321)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@alldecimaltypes
-POSTHOOK: Lineage: alldecimaltypes.cdouble EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: alldecimaltypes.cfloat EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: alldecimaltypes.cdouble SCRIPT []
+POSTHOOK: Lineage: alldecimaltypes.cfloat SCRIPT []
 PREHOOK: query: select
 width_bucket(cfloat, 0, 1, 10),
 width_bucket(cdouble, 0, 1, 10)
@@ -288,6 +290,7 @@ PREHOOK: query: insert into table alltypes values
 (72, 72, 72, 72, 72.0, 72.0),
 (100, 100, 100, 100, 100.0, 100.0)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@alltypes
 POSTHOOK: query: insert into table alltypes values
 (0, 0, 0, 0, 0.0, 0.0),
@@ -297,13 +300,14 @@ POSTHOOK: query: insert into table alltypes values
 (72, 72, 72, 72, 72.0, 72.0),
 (100, 100, 100, 100, 100.0, 100.0)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@alltypes
-POSTHOOK: Lineage: alltypes.cbigint EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: alltypes.cdouble EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
-POSTHOOK: Lineage: alltypes.cfloat EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
-POSTHOOK: Lineage: alltypes.cint EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: alltypes.csmallint EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: alltypes.ctinyint EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: alltypes.cbigint SCRIPT []
+POSTHOOK: Lineage: alltypes.cdouble SCRIPT []
+POSTHOOK: Lineage: alltypes.cfloat SCRIPT []
+POSTHOOK: Lineage: alltypes.cint SCRIPT []
+POSTHOOK: Lineage: alltypes.csmallint SCRIPT []
+POSTHOOK: Lineage: alltypes.ctinyint SCRIPT []
 PREHOOK: query: select
 width_bucket(ctinyint, 0, 100, 10),
 width_bucket(csmallint, 0, 100, 10),
@@ -340,16 +344,18 @@ POSTHOOK: type: TRUNCATETABLE
 POSTHOOK: Output: default@alltypes
 PREHOOK: query: insert into table alltypes values (5, 5, 5, 10, 4.5, 7.25)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@alltypes
 POSTHOOK: query: insert into table alltypes values (5, 5, 5, 10, 4.5, 7.25)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@alltypes
-POSTHOOK: Lineage: alltypes.cbigint EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: alltypes.cdouble EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
-POSTHOOK: Lineage: alltypes.cfloat EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
-POSTHOOK: Lineage: alltypes.cint EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: alltypes.csmallint EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: alltypes.ctinyint EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: alltypes.cbigint SCRIPT []
+POSTHOOK: Lineage: alltypes.cdouble SCRIPT []
+POSTHOOK: Lineage: alltypes.cfloat SCRIPT []
+POSTHOOK: Lineage: alltypes.cint SCRIPT []
+POSTHOOK: Lineage: alltypes.csmallint SCRIPT []
+POSTHOOK: Lineage: alltypes.ctinyint SCRIPT []
 PREHOOK: query: select
 width_bucket(cdouble, ctinyint, cbigint, 10),
 width_bucket(cdouble, csmallint, cbigint, 10),
@@ -387,14 +393,16 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alltinyints
 PREHOOK: query: insert into table alltinyints values (5, 1, 10, 2)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@alltinyints
 POSTHOOK: query: insert into table alltinyints values (5, 1, 10, 2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@alltinyints
-POSTHOOK: Lineage: alltinyints.cint EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: alltinyints.ctinyint1 EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: alltinyints.ctinyint2 EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: alltinyints.ctinyint3 EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: alltinyints.cint SCRIPT []
+POSTHOOK: Lineage: alltinyints.ctinyint1 SCRIPT []
+POSTHOOK: Lineage: alltinyints.ctinyint2 SCRIPT []
+POSTHOOK: Lineage: alltinyints.ctinyint3 SCRIPT []
 PREHOOK: query: select width_bucket(ctinyint1, ctinyint2, ctinyint3, cint) from alltinyints
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltinyints
@@ -422,14 +430,16 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@allsmallints
 PREHOOK: query: insert into table allsmallints values (5, 1, 10, 2)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@allsmallints
 POSTHOOK: query: insert into table allsmallints values (5, 1, 10, 2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@allsmallints
-POSTHOOK: Lineage: allsmallints.cint EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: allsmallints.csmallint1 EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: allsmallints.csmallint2 EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: allsmallints.csmallint3 EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: allsmallints.cint SCRIPT []
+POSTHOOK: Lineage: allsmallints.csmallint1 SCRIPT []
+POSTHOOK: Lineage: allsmallints.csmallint2 SCRIPT []
+POSTHOOK: Lineage: allsmallints.csmallint3 SCRIPT []
 PREHOOK: query: select width_bucket(csmallint1, csmallint2, csmallint3, cint) from allsmallints
 PREHOOK: type: QUERY
 PREHOOK: Input: default@allsmallints
@@ -457,14 +467,16 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@allints
 PREHOOK: query: insert into table allints values (5, 1, 10, 2)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@allints
 POSTHOOK: query: insert into table allints values (5, 1, 10, 2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@allints
-POSTHOOK: Lineage: allints.cint1 EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: allints.cint2 EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: allints.cint3 EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: allints.cint4 EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: allints.cint1 SCRIPT []
+POSTHOOK: Lineage: allints.cint2 SCRIPT []
+POSTHOOK: Lineage: allints.cint3 SCRIPT []
+POSTHOOK: Lineage: allints.cint4 SCRIPT []
 PREHOOK: query: select width_bucket(cint1, cint2, cint3, cint4) from allints
 PREHOOK: type: QUERY
 PREHOOK: Input: default@allints
@@ -492,14 +504,16 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@allbigints
 PREHOOK: query: insert into table allbigints values (5, 1, 10, 2)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@allbigints
 POSTHOOK: query: insert into table allbigints values (5, 1, 10, 2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@allbigints
-POSTHOOK: Lineage: allbigints.cbigint1 EXPRESSION [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: allbigints.cbigint2 EXPRESSION [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: allbigints.cbigint3 EXPRESSION [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: allbigints.cint EXPRESSION [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: allbigints.cbigint1 SCRIPT []
+POSTHOOK: Lineage: allbigints.cbigint2 SCRIPT []
+POSTHOOK: Lineage: allbigints.cbigint3 SCRIPT []
+POSTHOOK: Lineage: allbigints.cint SCRIPT []
 PREHOOK: query: select width_bucket(cbigint1, cbigint2, cbigint3, cint) from allbigints
 PREHOOK: type: QUERY
 PREHOOK: Input: default@allbigints
@@ -527,14 +541,16 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@allfloats
 PREHOOK: query: insert into table allfloats values (5.0, 1.0, 10.0, 2)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@allfloats
 POSTHOOK: query: insert into table allfloats values (5.0, 1.0, 10.0, 2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@allfloats
-POSTHOOK: Lineage: allfloats.cfloat1 EXPRESSION [(values__tmp__table__8)values__tmp__table__8.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: allfloats.cfloat2 EXPRESSION [(values__tmp__table__8)values__tmp__table__8.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: allfloats.cfloat3 EXPRESSION [(values__tmp__table__8)values__tmp__table__8.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: allfloats.cint EXPRESSION [(values__tmp__table__8)values__tmp__table__8.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: allfloats.cfloat1 SCRIPT []
+POSTHOOK: Lineage: allfloats.cfloat2 SCRIPT []
+POSTHOOK: Lineage: allfloats.cfloat3 SCRIPT []
+POSTHOOK: Lineage: allfloats.cint SCRIPT []
 PREHOOK: query: select width_bucket(cfloat1, cfloat2, cfloat3, cint) from allfloats
 PREHOOK: type: QUERY
 PREHOOK: Input: default@allfloats
@@ -562,14 +578,16 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alldoubles
 PREHOOK: query: insert into table alldoubles values (5.0, 1.0, 10.0, 2)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@alldoubles
 POSTHOOK: query: insert into table alldoubles values (5.0, 1.0, 10.0, 2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@alldoubles
-POSTHOOK: Lineage: alldoubles.cdouble1 EXPRESSION [(values__tmp__table__9)values__tmp__table__9.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: alldoubles.cdouble2 EXPRESSION [(values__tmp__table__9)values__tmp__table__9.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: alldoubles.cdouble3 EXPRESSION [(values__tmp__table__9)values__tmp__table__9.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: alldoubles.cint EXPRESSION [(values__tmp__table__9)values__tmp__table__9.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: alldoubles.cdouble1 SCRIPT []
+POSTHOOK: Lineage: alldoubles.cdouble2 SCRIPT []
+POSTHOOK: Lineage: alldoubles.cdouble3 SCRIPT []
+POSTHOOK: Lineage: alldoubles.cint SCRIPT []
 PREHOOK: query: select width_bucket(cdouble1, cdouble2, cdouble3, cint) from alldoubles
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alldoubles
@@ -589,12 +607,14 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testgroupingsets
 PREHOOK: query: insert into table testgroupingsets values (1, 1), (2, 2)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@testgroupingsets
 POSTHOOK: query: insert into table testgroupingsets values (1, 1), (2, 2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@testgroupingsets
-POSTHOOK: Lineage: testgroupingsets.c1 EXPRESSION [(values__tmp__table__10)values__tmp__table__10.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: testgroupingsets.c2 EXPRESSION [(values__tmp__table__10)values__tmp__table__10.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: testgroupingsets.c1 SCRIPT []
+POSTHOOK: Lineage: testgroupingsets.c2 SCRIPT []
 PREHOOK: query: select c1, c2, width_bucket(5, c1, 10, case when grouping(c2) = 0 then 10 else 5 end) from testgroupingsets group by cube(c1, c2)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@testgroupingsets

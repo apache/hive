@@ -45,10 +45,6 @@ value               	string
 value               	string              	                    
 	 	 
 #### A masked pattern was here ####
-FROM src	 	 
-WHERE key=86, viewExpandedText:SELECT `src`.`key`, `src`.`value`	 	 
-FROM `default`.`src`	 	 
-WHERE `src`.`key`=86, tableType:VIRTUAL_VIEW, rewriteEnabled:false)		 
 PREHOOK: query: DESCRIBE FORMATTED vp1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@vp1
@@ -69,6 +65,7 @@ Retention:          	0
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
 	numFiles            	0                   
 	numPartitions       	0                   
 	numRows             	0                   
@@ -268,6 +265,7 @@ Retention:          	0
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
 	numFiles            	0                   
 	numPartitions       	0                   
 	numRows             	0                   
@@ -383,6 +381,7 @@ Retention:          	0
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
 	numFiles            	0                   
 	numPartitions       	0                   
 	numRows             	0                   

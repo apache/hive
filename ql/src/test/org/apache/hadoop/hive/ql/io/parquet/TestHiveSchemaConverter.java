@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -141,8 +141,8 @@ public class TestHiveSchemaConverter {
             "message hive_schema {\n"
             + "  optional group mapCol (MAP) {\n"
             + "    repeated group map (MAP_KEY_VALUE) {\n"
-            + "      required binary key;\n"
-            + "      optional binary value;\n"
+            + "      required binary key (UTF8);\n"
+            + "      optional binary value (UTF8);\n"
             + "    }\n"
             + "  }\n"
             + "}\n");
@@ -155,7 +155,7 @@ public class TestHiveSchemaConverter {
             "message hive_schema {\n"
             + "  optional group mapCol (MAP) {\n"
             + "    repeated group map (MAP_KEY_VALUE) {\n"
-            + "      required binary key;\n"
+            + "      required binary key (UTF8);\n"
             + "      optional fixed_len_byte_array(3) value (DECIMAL(5,2));\n"
             + "    }\n"
             + "  }\n"

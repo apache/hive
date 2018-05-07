@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,11 +18,19 @@
 
 package org.apache.hadoop.hive.ql;
 
+import java.util.ArrayList;
+
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.ql.reexec.IReExecutionPlugin;
+import org.apache.hadoop.hive.ql.reexec.ReExecDriver;
+import org.apache.hadoop.hive.ql.reexec.ReExecutionOverlayPlugin;
+import org.apache.hadoop.hive.ql.reexec.ReOptimizePlugin;
+
+import com.google.common.base.Strings;
 
 /**
- * Constructs a driver for ql clients
+ * Constructs a driver for ql clients.
  */
 public class DriverFactory {
 
@@ -30,33 +38,37 @@ public class DriverFactory {
     return newDriver(getNewQueryState(conf), null, null);
   }
 
-  enum ExecutionStrategy {
-    none {
-      @Override
-      IDriver build(QueryState queryState, String userName, QueryInfo queryInfo) {
-        return new Driver(queryState, userName, queryInfo);
-      }
-    };
+  public static IDriver newDriver(QueryState queryState, String userName, QueryInfo queryInfo) {
+    boolean enabled = queryState.getConf().getBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ENABLED);
+    if (!enabled) {
+      return new Driver(queryState, userName, queryInfo);
+    }
 
-    abstract IDriver build(QueryState queryState, String userName, QueryInfo queryInfo);
+    String strategies = queryState.getConf().getVar(ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES);
+    strategies = Strings.nullToEmpty(strategies).trim().toLowerCase();
+    ArrayList<IReExecutionPlugin> plugins = new ArrayList<>();
+    for (String string : strategies.split(",")) {
+      if (string.trim().isEmpty()) {
+        continue;
+      }
+      plugins.add(buildReExecPlugin(string));
+    }
+
+    return new ReExecDriver(queryState, userName, queryInfo, plugins);
   }
 
-  public static IDriver newDriver(QueryState queryState, String userName, QueryInfo queryInfo) {
-    ExecutionStrategy strategy = ExecutionStrategy.none;
-    return strategy.build(queryState, userName, queryInfo);
+  private static IReExecutionPlugin buildReExecPlugin(String name) throws RuntimeException {
+    if (name.equals("overlay")) {
+      return new ReExecutionOverlayPlugin();
+    }
+    if (name.equals("reoptimize")) {
+      return new ReOptimizePlugin();
+    }
+    throw new RuntimeException(
+        "Unknown re-execution plugin: " + name + " (" + ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES.varname + ")");
   }
 
   private static QueryState getNewQueryState(HiveConf conf) {
-    // FIXME: isolate hiveConf used for a single query
     return new QueryState.Builder().withGenerateNewQueryId(true).withHiveConf(conf).build();
   }
-
-  // FIXME: remove this method ; and use the conf at the callsite...
-  @Deprecated
-  public static IDriver newDriver() {
-    // only CLIDriver enter at this point
-    HiveConf conf = (SessionState.get() != null) ? SessionState.get().getConf() : new HiveConf();
-    return newDriver(conf);
-  }
-
 }

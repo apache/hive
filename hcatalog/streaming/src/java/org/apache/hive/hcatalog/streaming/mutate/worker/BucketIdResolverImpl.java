@@ -30,7 +30,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 /**
  * Implementation of a {@link BucketIdResolver} that includes the logic required to calculate a bucket id from a record
  * that is consistent with Hive's own internal computation scheme.
+ * @deprecated as of Hive 3.0.0
  */
+@Deprecated
 public class BucketIdResolverImpl implements BucketIdResolver {
 
   private static final long INVALID_TRANSACTION_ID = -1L;

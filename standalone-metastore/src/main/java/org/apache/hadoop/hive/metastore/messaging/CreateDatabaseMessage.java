@@ -19,10 +19,13 @@
 
 package org.apache.hadoop.hive.metastore.messaging;
 
+import org.apache.hadoop.hive.metastore.api.Database;
+
 public abstract class CreateDatabaseMessage extends EventMessage {
 
   protected CreateDatabaseMessage() {
     super(EventType.CREATE_DATABASE);
   }
 
+  public abstract Database getDatabaseObject() throws Exception;
 }

@@ -16,18 +16,22 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_table_2a
 PREHOOK: query: insert into table orc_table_1a values(1),(1), (2),(3)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@orc_table_1a
 POSTHOOK: query: insert into table orc_table_1a values(1),(1), (2),(3)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@orc_table_1a
-POSTHOOK: Lineage: orc_table_1a.a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: orc_table_1a.a SCRIPT []
 PREHOOK: query: insert into table orc_table_2a values(0),(2), (3),(null),(4)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@orc_table_2a
 POSTHOOK: query: insert into table orc_table_2a values(0),(2), (3),(null),(4)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@orc_table_2a
-POSTHOOK: Lineage: orc_table_2a.c EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: orc_table_2a.c SCRIPT []
 PREHOOK: query: explain vectorization detail
 select t1.a from orc_table_2a t2 join orc_table_1a t1 on t1.a = t2.c where t1.a > 2
 PREHOOK: type: QUERY
@@ -55,7 +59,7 @@ STAGE PLANS:
                   Statistics: Num rows: 5 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c:int, 1:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c:int, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -108,7 +112,7 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:a:int, 1:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:a:int, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -189,12 +193,12 @@ PREHOOK: query: select t1.a from orc_table_2a t2 join orc_table_1a t1 on t1.a = 
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_table_1a
 PREHOOK: Input: default@orc_table_2a
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select t1.a from orc_table_2a t2 join orc_table_1a t1 on t1.a = t2.c where t1.a > 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_table_1a
 POSTHOOK: Input: default@orc_table_2a
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 3
 PREHOOK: query: explain vectorization detail
 select t2.c from orc_table_2a t2 left semi join orc_table_1a t1 on t1.a = t2.c where t2.c > 2
@@ -223,7 +227,7 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:a:int, 1:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:a:int, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -288,7 +292,7 @@ STAGE PLANS:
                   Statistics: Num rows: 5 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c:int, 1:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c:int, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -361,12 +365,12 @@ PREHOOK: query: select t2.c from orc_table_2a t2 left semi join orc_table_1a t1 
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_table_1a
 PREHOOK: Input: default@orc_table_2a
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select t2.c from orc_table_2a t2 left semi join orc_table_1a t1 on t1.a = t2.c where t2.c > 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_table_1a
 POSTHOOK: Input: default@orc_table_2a
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 3
 PREHOOK: query: CREATE TABLE orc_table_1b(v1 STRING, a INT) STORED AS ORC
 PREHOOK: type: CREATETABLE
@@ -386,20 +390,24 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_table_2b
 PREHOOK: query: insert into table orc_table_1b values("one", 1),("one", 1), ("two", 2),("three", 3)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@orc_table_1b
 POSTHOOK: query: insert into table orc_table_1b values("one", 1),("one", 1), ("two", 2),("three", 3)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@orc_table_1b
-POSTHOOK: Lineage: orc_table_1b.a EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: orc_table_1b.v1 SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: orc_table_1b.a SCRIPT []
+POSTHOOK: Lineage: orc_table_1b.v1 SCRIPT []
 PREHOOK: query: insert into table orc_table_2b values(0, "ZERO"),(2, "TWO"), (3, "THREE"),(null, "<NULL>"),(4, "FOUR")
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@orc_table_2b
 POSTHOOK: query: insert into table orc_table_2b values(0, "ZERO"),(2, "TWO"), (3, "THREE"),(null, "<NULL>"),(4, "FOUR")
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@orc_table_2b
-POSTHOOK: Lineage: orc_table_2b.c EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: orc_table_2b.v2 SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: orc_table_2b.c SCRIPT []
+POSTHOOK: Lineage: orc_table_2b.v2 SCRIPT []
 PREHOOK: query: explain vectorization detail
 select t1.v1, t1.a from orc_table_2b t2 join orc_table_1b t1 on t1.a = t2.c where t1.a > 2
 PREHOOK: type: QUERY
@@ -427,7 +435,7 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 364 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:v1:string, 1:a:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:v1:string, 1:a:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -480,7 +488,7 @@ STAGE PLANS:
                   Statistics: Num rows: 5 Data size: 456 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c:int, 1:v2:string, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c:int, 1:v2:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -561,12 +569,12 @@ PREHOOK: query: select t1.v1, t1.a from orc_table_2b t2 join orc_table_1b t1 on 
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_table_1b
 PREHOOK: Input: default@orc_table_2b
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select t1.v1, t1.a from orc_table_2b t2 join orc_table_1b t1 on t1.a = t2.c where t1.a > 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_table_1b
 POSTHOOK: Input: default@orc_table_2b
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 three	3
 PREHOOK: query: explain vectorization detail
 select t1.v1, t1.a, t2.c, t2.v2 from orc_table_2b t2 join orc_table_1b t1 on t1.a = t2.c where t1.a > 2
@@ -595,7 +603,7 @@ STAGE PLANS:
                   Statistics: Num rows: 5 Data size: 456 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c:int, 1:v2:string, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c:int, 1:v2:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -648,7 +656,7 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 364 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:v1:string, 1:a:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:v1:string, 1:a:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -722,12 +730,12 @@ PREHOOK: query: select t1.v1, t1.a, t2.c, t2.v2 from orc_table_2b t2 join orc_ta
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_table_1b
 PREHOOK: Input: default@orc_table_2b
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select t1.v1, t1.a, t2.c, t2.v2 from orc_table_2b t2 join orc_table_1b t1 on t1.a = t2.c where t1.a > 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_table_1b
 POSTHOOK: Input: default@orc_table_2b
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 three	3	3	THREE
 PREHOOK: query: explain vectorization detail
 select t1.v1, t1.a*2, t2.c*5, t2.v2 from orc_table_2b t2 join orc_table_1b t1 on t1.a = t2.c where t1.a > 2
@@ -756,7 +764,7 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 364 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:v1:string, 1:a:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:v1:string, 1:a:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -809,7 +817,7 @@ STAGE PLANS:
                   Statistics: Num rows: 5 Data size: 456 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c:int, 1:v2:string, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c:int, 1:v2:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -892,12 +900,12 @@ PREHOOK: query: select t1.v1, t1.a*2, t2.c*5, t2.v2 from orc_table_2b t2 join or
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_table_1b
 PREHOOK: Input: default@orc_table_2b
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select t1.v1, t1.a*2, t2.c*5, t2.v2 from orc_table_2b t2 join orc_table_1b t1 on t1.a = t2.c where t1.a > 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_table_1b
 POSTHOOK: Input: default@orc_table_2b
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 three	6	15	THREE
 PREHOOK: query: explain vectorization detail
 select t1.v1, t2.v2, t2.c from orc_table_2b t2 join orc_table_1b t1 on t1.a = t2.c where t1.a > 2
@@ -926,7 +934,7 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 364 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:v1:string, 1:a:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:v1:string, 1:a:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -979,7 +987,7 @@ STAGE PLANS:
                   Statistics: Num rows: 5 Data size: 456 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c:int, 1:v2:string, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c:int, 1:v2:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -1061,12 +1069,12 @@ PREHOOK: query: select t1.v1, t2.v2, t2.c from orc_table_2b t2 join orc_table_1b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_table_1b
 PREHOOK: Input: default@orc_table_2b
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select t1.v1, t2.v2, t2.c from orc_table_2b t2 join orc_table_1b t1 on t1.a = t2.c where t1.a > 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_table_1b
 POSTHOOK: Input: default@orc_table_2b
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 three	THREE	3
 PREHOOK: query: explain vectorization detail
 select t1.a, t1.v1, t2.v2 from orc_table_2b t2 join orc_table_1b t1 on t1.a = t2.c where t1.a > 2
@@ -1095,7 +1103,7 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 364 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:v1:string, 1:a:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:v1:string, 1:a:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -1148,7 +1156,7 @@ STAGE PLANS:
                   Statistics: Num rows: 5 Data size: 456 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c:int, 1:v2:string, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c:int, 1:v2:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -1230,12 +1238,12 @@ PREHOOK: query: select t1.a, t1.v1, t2.v2 from orc_table_2b t2 join orc_table_1b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_table_1b
 PREHOOK: Input: default@orc_table_2b
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select t1.a, t1.v1, t2.v2 from orc_table_2b t2 join orc_table_1b t1 on t1.a = t2.c where t1.a > 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_table_1b
 POSTHOOK: Input: default@orc_table_2b
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 3	three	THREE
 PREHOOK: query: explain vectorization detail
 select t1.v1, t2.v2, t2.c from orc_table_1b t1 join orc_table_2b t2 on t1.a = t2.c where t1.a > 2
@@ -1264,7 +1272,7 @@ STAGE PLANS:
                   Statistics: Num rows: 5 Data size: 456 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c:int, 1:v2:string, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c:int, 1:v2:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -1317,7 +1325,7 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 364 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:v1:string, 1:a:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:v1:string, 1:a:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -1399,12 +1407,12 @@ PREHOOK: query: select t1.v1, t2.v2, t2.c from orc_table_1b t1 join orc_table_2b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_table_1b
 PREHOOK: Input: default@orc_table_2b
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select t1.v1, t2.v2, t2.c from orc_table_1b t1 join orc_table_2b t2 on t1.a = t2.c where t1.a > 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_table_1b
 POSTHOOK: Input: default@orc_table_2b
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 three	THREE	3
 PREHOOK: query: explain vectorization detail
 select t1.a, t1.v1, t2.v2 from orc_table_1b t1 join orc_table_2b t2 on t1.a = t2.c where t1.a > 2
@@ -1433,7 +1441,7 @@ STAGE PLANS:
                   Statistics: Num rows: 5 Data size: 456 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c:int, 1:v2:string, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c:int, 1:v2:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -1486,7 +1494,7 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 364 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:v1:string, 1:a:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:v1:string, 1:a:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -1568,10 +1576,10 @@ PREHOOK: query: select t1.a, t1.v1, t2.v2 from orc_table_1b t1 join orc_table_2b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_table_1b
 PREHOOK: Input: default@orc_table_2b
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select t1.a, t1.v1, t2.v2 from orc_table_1b t1 join orc_table_2b t2 on t1.a = t2.c where t1.a > 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_table_1b
 POSTHOOK: Input: default@orc_table_2b
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 3	three	THREE

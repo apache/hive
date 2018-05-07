@@ -1,0 +1,45 @@
+PREHOOK: query: create table dummy (a string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dummy
+POSTHOOK: query: create table dummy (a string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dummy
+#### A masked pattern was here ####
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dummy
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dummy
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+PREHOOK: query: create table foo (a bigint, b string) clustered by (a) into 256 buckets
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@foo
+POSTHOOK: query: create table foo (a bigint, b string) clustered by (a) into 256 buckets
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@foo
+PREHOOK: query: create table bar (a bigint, b string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@bar
+POSTHOOK: query: create table bar (a bigint, b string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@bar
+PREHOOK: query: insert overwrite table foo select * from bar
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bar
+PREHOOK: Output: default@foo
+POSTHOOK: query: insert overwrite table foo select * from bar
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bar
+POSTHOOK: Output: default@foo
+POSTHOOK: Lineage: foo.a SIMPLE [(bar)bar.FieldSchema(name:a, type:bigint, comment:null), ]
+POSTHOOK: Lineage: foo.b SIMPLE [(bar)bar.FieldSchema(name:b, type:string, comment:null), ]
+Found 256 items
+#### A masked pattern was here ####

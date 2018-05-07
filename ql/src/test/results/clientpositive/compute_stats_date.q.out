@@ -46,10 +46,10 @@ POSTHOOK: Input: default@tab_date
 {"columntype":"Date","min":"2000-11-20","max":"2010-10-29","countnulls":0,"numdistinctvalues":19,"ndvbitvector":HLL�ê����!���]����������������Y���T��P��R������W����ĈN������������}
 PREHOOK: query: explain
 analyze table tab_date compute statistics for columns fl_date
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 POSTHOOK: query: explain
 analyze table tab_date compute statistics for columns fl_date
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-1 depends on stages: Stage-0
@@ -97,12 +97,12 @@ STAGE PLANS:
           Table: default.tab_date
 
 PREHOOK: query: analyze table tab_date compute statistics for columns fl_date
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@tab_date
 PREHOOK: Output: default@tab_date
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table tab_date compute statistics for columns fl_date
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@tab_date
 POSTHOOK: Output: default@tab_date
 #### A masked pattern was here ####

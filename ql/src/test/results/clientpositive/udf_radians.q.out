@@ -17,7 +17,7 @@ STAGE PLANS:
           Row Limit Per Split: 1
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions: 1.000000357564167 (type: double)
+            expressions: 1.000000357564167D (type: double)
             outputColumnNames: _col0
             Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
@@ -75,7 +75,7 @@ STAGE PLANS:
           Row Limit Per Split: 1
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions: 1.000000357564167 (type: double)
+            expressions: 1.000000357564167D (type: double)
             outputColumnNames: _col0
             Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -71,7 +71,7 @@ public class GenMRTableScan1 implements NodeProcessor {
 
     // create a dummy MapReduce task
     MapredWork currWork = GenMapRedUtils.getMapRedWork(parseCtx);
-    MapRedTask currTask = (MapRedTask) TaskFactory.get(currWork, parseCtx.getConf());
+    MapRedTask currTask = (MapRedTask) TaskFactory.get(currWork);
     ctx.setCurrTask(currTask);
     ctx.setCurrTopOp(op);
 
@@ -101,7 +101,7 @@ public class GenMRTableScan1 implements NodeProcessor {
               PrunedPartitionList partList = new PrunedPartitionList(table, confirmedParts, partCols, false);
               statWork.addInputPartitions(partList.getPartitions());
             }
-            Task<StatsWork> snjTask = TaskFactory.get(statWork, parseCtx.getConf());
+            Task<StatsWork> snjTask = TaskFactory.get(statWork);
             ctx.setCurrTask(snjTask);
             ctx.setCurrTopOp(null);
             ctx.getRootTasks().clear();
@@ -112,13 +112,14 @@ public class GenMRTableScan1 implements NodeProcessor {
             // The MR task is just a simple TableScanOperator
 
             BasicStatsWork statsWork = new BasicStatsWork(table.getTableSpec());
+            statsWork.setIsExplicitAnalyze(true);
 
             statsWork.setNoScanAnalyzeCommand(noScan);
             StatsWork columnStatsWork = new StatsWork(table, statsWork, parseCtx.getConf());
             columnStatsWork.collectStatsFromAggregator(op.getConf());
 
             columnStatsWork.setSourceTask(currTask);
-            Task<StatsWork> columnStatsTask = TaskFactory.get(columnStatsWork, parseCtx.getConf());
+            Task<StatsWork> columnStatsTask = TaskFactory.get(columnStatsWork);
             currTask.addDependentTask(columnStatsTask);
             if (!ctx.getRootTasks().contains(currTask)) {
               ctx.getRootTasks().add(currTask);

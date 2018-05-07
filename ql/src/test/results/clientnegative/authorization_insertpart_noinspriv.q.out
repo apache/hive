@@ -25,6 +25,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain authorization insert into table testp partition (dt = '2012')  values (1)
 POSTHOOK: type: QUERY
 INPUTS: 
+  _dummy_database@_dummy_table
 OUTPUTS: 
   default@testp@dt=2012
 CURRENT_USER: 
@@ -38,6 +39,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain authorization insert overwrite table testp partition (dt = '2012')  values (1)
 POSTHOOK: type: QUERY
 INPUTS: 
+  _dummy_database@_dummy_table
 OUTPUTS: 
   default@testp@dt=2012
 CURRENT_USER: 

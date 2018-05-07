@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -110,6 +110,9 @@ public final class PlanUtils {
 
   public static TableDesc getDefaultTableDesc(CreateTableDesc directoryDesc,
       String cols, String colTypes ) {
+    // TODO: this should have an option for directory to inherit from the parent table,
+    //       including bucketing and list bucketing, for the use in compaction when the
+    //       latter runs inside a transaction.
     TableDesc ret = getDefaultTableDesc(Integer.toString(Utilities.ctrlaCode), cols,
         colTypes, false);;
     if (directoryDesc == null) {
@@ -147,6 +150,9 @@ public final class PlanUtils {
       }
       if (directoryDesc.getSerdeProps() != null) {
         properties.putAll(directoryDesc.getSerdeProps());
+      }
+      if (directoryDesc.getInputFormat() != null){
+        ret.setInputFileFormatClass(JavaUtils.loadClass(directoryDesc.getInputFormat()));
       }
       if (directoryDesc.getOutputFormat() != null){
         ret.setOutputFileFormatClass(JavaUtils.loadClass(directoryDesc.getOutputFormat()));
@@ -784,7 +790,7 @@ public final class PlanUtils {
     return new ReduceSinkDesc(keyCols, numKeys, valueCols, outputKeyCols,
         distinctColIndices, outputValCols,
         tag, partitionCols, numReducers, keyTable,
-        valueTable);
+        valueTable, writeType);
   }
 
   /**

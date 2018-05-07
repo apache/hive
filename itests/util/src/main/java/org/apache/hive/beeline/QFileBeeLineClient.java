@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -28,8 +28,11 @@ import java.io.PrintStream;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
 /**
@@ -44,6 +47,7 @@ public class QFileBeeLineClient implements AutoCloseable {
     "!set verbose false",
     "!set silent true",
     "!set showheader false",
+    "!set escapeCRLF false",
     "USE default;",
     "SHOW TABLES;",
   };
@@ -56,6 +60,7 @@ public class QFileBeeLineClient implements AutoCloseable {
     "!set verbose true",
     "!set silent false",
     "!set showheader true",
+    "!set escapeCRLF false",
     "!set outputformat table",
     "USE default;"
   };
@@ -187,7 +192,20 @@ public class QFileBeeLineClient implements AutoCloseable {
   }
 
   public void execute(QFile qFile) throws Exception {
+    execute(qFile, null);
+  }
+
+  public void execute(QFile qFile, List<Callable<Void>> preCommands) throws Exception {
+    if (preCommands == null) {
+      preCommands = new ArrayList<Callable<Void>>();
+    }
+
     beforeExecute(qFile);
+
+    for (Callable<Void> c : preCommands) {
+      c.call();
+    }
+
     String[] commands = beeLine.getCommands(qFile.getInputFile());
     execute(qFile.filterCommands(commands), qFile.getRawOutputFile(), qFile.getConverter());
     afterExecute(qFile);

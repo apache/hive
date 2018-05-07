@@ -1,3 +1,5 @@
+SET hive.vectorized.execution.enabled=false;
+
 create table map_txt (
   id int,
   content map<int,string>

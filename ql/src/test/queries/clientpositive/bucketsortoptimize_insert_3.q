@@ -1,3 +1,5 @@
+--! qt:dataset:src
+SET hive.vectorized.execution.enabled=false;
 set hive.optimize.bucketmapjoin = true;
 set hive.optimize.bucketmapjoin.sortedmerge = true;
 

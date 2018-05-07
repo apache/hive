@@ -8,12 +8,14 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1
 PREHOOK: query: insert into t1 values ('people', 10), ('strangers', 20), ('parents', 30)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t1
 POSTHOOK: query: insert into t1 values ('people', 10), ('strangers', 20), ('parents', 30)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t1
-POSTHOOK: Lineage: t1.k EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: t1.v SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: t1.k SCRIPT []
+POSTHOOK: Lineage: t1.v SCRIPT []
 PREHOOK: query: create table t2 (v string, k double)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -24,12 +26,14 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t2
 PREHOOK: query: insert into t2 values ('people', 10), ('strangers', 20), ('parents', 30)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t2
 POSTHOOK: query: insert into t2 values ('people', 10), ('strangers', 20), ('parents', 30)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t2
-POSTHOOK: Lineage: t2.k EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: t2.v SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: t2.k SCRIPT []
+POSTHOOK: Lineage: t2.v SCRIPT []
 PREHOOK: query: explain
 select * from t1 where t1.k in (select t2.k from t2 where t2.v='people') and t1.k<15
 PREHOOK: type: QUERY
@@ -66,7 +70,7 @@ STAGE PLANS:
                         Map-reduce partition columns: UDFToDouble(_col1) (type: double)
                         Statistics: Num rows: 1 Data size: 95 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string), _col1 (type: int)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 3 
             Map Operator Tree:
@@ -90,7 +94,7 @@ STAGE PLANS:
                           sort order: +
                           Map-reduce partition columns: _col0 (type: double)
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap

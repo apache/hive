@@ -22,27 +22,27 @@ POSTHOOK: query: create table smb_bucket_3(key int, value string) CLUSTERED BY (
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@smb_bucket_3
-PREHOOK: query: load data local inpath '../../data/files/smbbucket_1.rc' overwrite into table smb_bucket_1
+PREHOOK: query: load data local inpath '../../data/files/smb_rc1/000000_0' overwrite into table smb_bucket_1
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@smb_bucket_1
-POSTHOOK: query: load data local inpath '../../data/files/smbbucket_1.rc' overwrite into table smb_bucket_1
+POSTHOOK: query: load data local inpath '../../data/files/smb_rc1/000000_0' overwrite into table smb_bucket_1
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@smb_bucket_1
-PREHOOK: query: load data local inpath '../../data/files/smbbucket_2.rc' overwrite into table smb_bucket_2
+PREHOOK: query: load data local inpath '../../data/files/smb_rc2/000000_0' overwrite into table smb_bucket_2
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@smb_bucket_2
-POSTHOOK: query: load data local inpath '../../data/files/smbbucket_2.rc' overwrite into table smb_bucket_2
+POSTHOOK: query: load data local inpath '../../data/files/smb_rc2/000000_0' overwrite into table smb_bucket_2
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@smb_bucket_2
-PREHOOK: query: load data local inpath '../../data/files/smbbucket_3.rc' overwrite into table smb_bucket_3
+PREHOOK: query: load data local inpath '../../data/files/smb_rc3/000000_0' overwrite into table smb_bucket_3
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@smb_bucket_3
-POSTHOOK: query: load data local inpath '../../data/files/smbbucket_3.rc' overwrite into table smb_bucket_3
+POSTHOOK: query: load data local inpath '../../data/files/smb_rc3/000000_0' overwrite into table smb_bucket_3
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@smb_bucket_3
@@ -81,19 +81,21 @@ STAGE PLANS:
                       Reduce Output Operator
                         sort order: 
                         Statistics: Num rows: 1 Data size: 2080 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 4 
             Map Operator Tree:
                 TableScan
                   alias: b
                   Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (5 = key) (type: boolean)
+                    predicate: (key = 5) (type: boolean)
                     Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         sort order: 
                         Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -107,19 +109,21 @@ STAGE PLANS:
                       Reduce Output Operator
                         sort order: 
                         Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Map 7 
             Map Operator Tree:
                 TableScan
                   alias: d
                   Statistics: Num rows: 1 Data size: 2220 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (5 = key) (type: boolean)
+                    predicate: (key = 5) (type: boolean)
                     Statistics: Num rows: 1 Data size: 2220 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Statistics: Num rows: 1 Data size: 2220 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         sort order: 
                         Statistics: Num rows: 1 Data size: 2220 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
@@ -197,7 +201,7 @@ STAGE PLANS:
                   alias: b
                   Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (5 = key) (type: boolean)
+                    predicate: (key = 5) (type: boolean)
                     Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
@@ -205,6 +209,7 @@ STAGE PLANS:
                         keys:
                           0 
                           1 
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 
@@ -235,6 +240,7 @@ STAGE PLANS:
                           keys:
                             0 
                             1 
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
         Map 3 
@@ -251,6 +257,7 @@ STAGE PLANS:
                         keys:
                           0 
                           1 
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 
@@ -264,7 +271,7 @@ STAGE PLANS:
                   alias: d
                   Statistics: Num rows: 1 Data size: 2220 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (5 = key) (type: boolean)
+                    predicate: (key = 5) (type: boolean)
                     Statistics: Num rows: 1 Data size: 2220 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Statistics: Num rows: 1 Data size: 2220 Basic stats: COMPLETE Column stats: NONE
@@ -297,6 +304,7 @@ STAGE PLANS:
                                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
 

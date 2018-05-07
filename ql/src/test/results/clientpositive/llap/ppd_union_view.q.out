@@ -189,7 +189,7 @@ STAGE PLANS:
                           TotalFiles: 1
                           GatherStats: false
                           MultiFileSpray: false
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: unknown
         Map 3 
             Map Operator Tree:
@@ -216,7 +216,7 @@ STAGE PLANS:
                         tag: 0
                         value expressions: _col1 (type: string)
                         auto parallelism: true
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
@@ -253,6 +253,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns keymap,value
                       columns.comments 
@@ -297,7 +298,7 @@ STAGE PLANS:
                         tag: 1
                         value expressions: _col0 (type: string)
                         auto parallelism: true
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
@@ -334,6 +335,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,keymap
                       columns.comments 
@@ -498,7 +500,7 @@ STAGE PLANS:
                         TotalFiles: 1
                         GatherStats: false
                         MultiFileSpray: false
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
@@ -535,6 +537,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -579,7 +582,7 @@ STAGE PLANS:
                         tag: 0
                         value expressions: _col1 (type: string)
                         auto parallelism: true
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: unknown
         Map 5 
             Map Operator Tree:
@@ -591,7 +594,7 @@ STAGE PLANS:
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (('2011-10-15' = ds) and keymap is not null) (type: boolean)
+                    predicate: ((ds = '2011-10-15') and keymap is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: PARTIAL
                     Select Operator
                       expressions: key (type: string), keymap (type: string)
@@ -606,7 +609,7 @@ STAGE PLANS:
                         tag: 1
                         value expressions: _col0 (type: string)
                         auto parallelism: true
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: unknown
         Reducer 4 
             Execution mode: llap

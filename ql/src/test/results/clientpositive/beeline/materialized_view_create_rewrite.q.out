@@ -1,8 +1,8 @@
-PREHOOK: query: create table cmv_basetable (a int, b varchar(256), c decimal(10,2), d int)
+PREHOOK: query: create table cmv_basetable (a int, b varchar(256), c decimal(10,2), d int) stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@cmv_basetable
-POSTHOOK: query: create table cmv_basetable (a int, b varchar(256), c decimal(10,2), d int)
+POSTHOOK: query: create table cmv_basetable (a int, b varchar(256), c decimal(10,2), d int) stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cmv_basetable
@@ -13,6 +13,7 @@ PREHOOK: query: insert into cmv_basetable values
  (3, 'calvin', 978.76, 3),
  (3, 'charlie', 9.8, 1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@cmv_basetable
 POSTHOOK: query: insert into cmv_basetable values
  (1, 'alfred', 10.30, 2),
@@ -21,11 +22,22 @@ POSTHOOK: query: insert into cmv_basetable values
  (3, 'calvin', 978.76, 3),
  (3, 'charlie', 9.8, 1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@cmv_basetable
-POSTHOOK: Lineage: cmv_basetable.a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: cmv_basetable.b EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: cmv_basetable.c EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: cmv_basetable.d EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: cmv_basetable.a SCRIPT []
+POSTHOOK: Lineage: cmv_basetable.b SCRIPT []
+POSTHOOK: Lineage: cmv_basetable.c SCRIPT []
+POSTHOOK: Lineage: cmv_basetable.d SCRIPT []
+PREHOOK: query: analyze table cmv_basetable compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@cmv_basetable
+#### A masked pattern was here ####
+PREHOOK: Output: default@cmv_basetable
+POSTHOOK: query: analyze table cmv_basetable compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@cmv_basetable
+#### A masked pattern was here ####
+POSTHOOK: Output: default@cmv_basetable
 PREHOOK: query: create materialized view cmv_mat_view enable rewrite
 as select a, b, c from cmv_basetable where a = 2
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
@@ -53,6 +65,7 @@ PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: show tblproperties cmv_mat_view
 POSTHOOK: type: SHOW_TBLPROPERTIES
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true"}
+bucketing_version	2
 numFiles	1
 numRows	2
 rawDataSize	408
@@ -85,6 +98,7 @@ PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: show tblproperties cmv_mat_view2
 POSTHOOK: type: SHOW_TBLPROPERTIES
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true"}
+bucketing_version	2
 numFiles	1
 numRows	2
 rawDataSize	232
@@ -108,7 +122,7 @@ STAGE PLANS:
           alias: default.cmv_mat_view2
           Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: a (type: int), c (type: decimal(10,2))
+            expressions: 3 (type: int), c (type: decimal(10,2))
             outputColumnNames: _col0, _col1
             Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: NONE
             ListSink
@@ -158,31 +172,31 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: cmv_basetable
-            Statistics: Num rows: 5 Data size: 81 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 5 Data size: 1205 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (a = 3) (type: boolean)
-              Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 482 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: c (type: decimal(10,2))
                 outputColumnNames: _col0
-                Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 482 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 482 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: decimal(10,2))
           TableScan
             alias: cmv_basetable
-            Statistics: Num rows: 5 Data size: 81 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 5 Data size: 1205 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((3 = a) and (d = 3)) (type: boolean)
-              Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+              predicate: ((a = 3) and (d = 3)) (type: boolean)
+              Statistics: Num rows: 1 Data size: 241 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: c (type: decimal(10,2))
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 241 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 241 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: decimal(10,2))
       Reduce Operator Tree:
         Join Operator
@@ -192,14 +206,14 @@ STAGE PLANS:
             0 
             1 
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 2 Data size: 66 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2 Data size: 966 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: 3 (type: int), _col0 (type: decimal(10,2)), 3 (type: int), _col1 (type: decimal(10,2))
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 2 Data size: 66 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 966 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 2 Data size: 66 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 966 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -254,7 +268,7 @@ POSTHOOK: query: alter materialized view cmv_mat_view2 enable rewrite
 POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE
 POSTHOOK: Input: default@cmv_mat_view2
 POSTHOOK: Output: default@cmv_mat_view2
-Warning: Shuffle Join JOIN[7][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[6][tables = [test_db_materialized_view_create_rewrite.cmv_mat_view2, $hdt$_0]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: explain
 select * from (
   (select a, c from cmv_basetable where a = 3) table1
@@ -278,30 +292,26 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: default.cmv_mat_view2
-            Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: c (type: decimal(10,2))
-              outputColumnNames: _col0
-              Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                sort order: 
-                Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: decimal(10,2))
-          TableScan
             alias: cmv_basetable
-            Statistics: Num rows: 5 Data size: 81 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 5 Data size: 1205 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((3 = a) and (d = 3)) (type: boolean)
-              Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+              predicate: ((a = 3) and (d = 3)) (type: boolean)
+              Statistics: Num rows: 1 Data size: 241 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: c (type: decimal(10,2))
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                outputColumnNames: _col1
+                Statistics: Num rows: 1 Data size: 241 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: decimal(10,2))
+                  Statistics: Num rows: 1 Data size: 241 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: decimal(10,2))
+          TableScan
+            alias: default.cmv_mat_view2
+            Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: NONE
+            Reduce Output Operator
+              sort order: 
+              Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: NONE
+              value expressions: a (type: int), c (type: decimal(10,2))
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -309,15 +319,15 @@ STAGE PLANS:
           keys:
             0 
             1 
-          outputColumnNames: _col0, _col1
-          Statistics: Num rows: 2 Data size: 266 Basic stats: COMPLETE Column stats: NONE
+          outputColumnNames: _col0, _col1, _col6
+          Statistics: Num rows: 2 Data size: 716 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: 3 (type: int), _col0 (type: decimal(10,2)), 3 (type: int), _col1 (type: decimal(10,2))
+            expressions: _col0 (type: int), _col1 (type: decimal(10,2)), _col0 (type: int), _col6 (type: decimal(10,2))
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 2 Data size: 266 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 716 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 2 Data size: 266 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 716 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -329,7 +339,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join JOIN[7][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[6][tables = [test_db_materialized_view_create_rewrite.cmv_mat_view2, $hdt$_0]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: select * from (
   (select a, c from cmv_basetable where a = 3) table1
   join
@@ -383,31 +393,31 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: cmv_basetable
-            Statistics: Num rows: 5 Data size: 81 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 5 Data size: 1205 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (a = 3) (type: boolean)
-              Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 482 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: c (type: decimal(10,2))
                 outputColumnNames: _col0
-                Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 482 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2 Data size: 482 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: decimal(10,2))
           TableScan
             alias: cmv_basetable
-            Statistics: Num rows: 5 Data size: 81 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 5 Data size: 1205 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((3 = a) and (d = 3)) (type: boolean)
-              Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+              predicate: ((a = 3) and (d = 3)) (type: boolean)
+              Statistics: Num rows: 1 Data size: 241 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: c (type: decimal(10,2))
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 241 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 241 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: decimal(10,2))
       Reduce Operator Tree:
         Join Operator
@@ -417,14 +427,14 @@ STAGE PLANS:
             0 
             1 
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 2 Data size: 66 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 2 Data size: 966 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: 3 (type: int), _col0 (type: decimal(10,2)), 3 (type: int), _col1 (type: decimal(10,2))
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 2 Data size: 66 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 966 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 2 Data size: 66 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 966 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

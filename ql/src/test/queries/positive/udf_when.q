@@ -1,3 +1,4 @@
+--! qt:dataset:src
 SELECT CASE
         WHEN 1=1 THEN 2
         WHEN 3=5 THEN 4

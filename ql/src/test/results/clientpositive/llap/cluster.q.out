@@ -34,10 +34,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
@@ -102,10 +102,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
@@ -170,10 +170,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
@@ -238,10 +238,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
@@ -306,10 +306,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
@@ -374,10 +374,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
@@ -442,10 +442,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col1 (type: string)
                         Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: string)
@@ -510,10 +510,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
@@ -575,7 +575,7 @@ STAGE PLANS:
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: value (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 4 
             Map Operator Tree:
@@ -590,7 +590,7 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 2 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -614,7 +614,7 @@ STAGE PLANS:
                     Statistics: Num rows: 2 Data size: 530 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: string), _col2 (type: string)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col1 (type: string)
@@ -676,7 +676,7 @@ STAGE PLANS:
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: value (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 4 
             Map Operator Tree:
@@ -692,7 +692,7 @@ STAGE PLANS:
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: value (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -716,7 +716,7 @@ STAGE PLANS:
                     Statistics: Num rows: 2 Data size: 712 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: string), _col2 (type: string), _col3 (type: string)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string)
@@ -778,7 +778,7 @@ STAGE PLANS:
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: value (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 4 
             Map Operator Tree:
@@ -794,7 +794,7 @@ STAGE PLANS:
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: value (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -818,7 +818,7 @@ STAGE PLANS:
                     Statistics: Num rows: 2 Data size: 712 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string)
@@ -880,7 +880,7 @@ STAGE PLANS:
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 2 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: value (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 4 
             Map Operator Tree:
@@ -895,7 +895,7 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 2 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: llap
@@ -919,7 +919,7 @@ STAGE PLANS:
                     Statistics: Num rows: 2 Data size: 530 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: string), _col2 (type: string)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string), VALUE._col1 (type: string)
@@ -998,7 +998,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 332 Data size: 59096 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Map 4 
             Map Operator Tree:
@@ -1018,10 +1018,10 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 332 Data size: 59096 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
@@ -1064,296 +1064,206 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 10	val_10
+103	val_103
+103	val_103
 104	val_104
 104	val_104
-111	val_111
-114	val_114
-116	val_116
+105	val_105
+11	val_11
 126	val_126
 128	val_128
 128	val_128
 128	val_128
-131	val_131
+129	val_129
+129	val_129
+133	val_133
 134	val_134
 134	val_134
+136	val_136
+143	val_143
+149	val_149
+149	val_149
 152	val_152
 152	val_152
-155	val_155
+153	val_153
+157	val_157
+162	val_162
+166	val_166
 169	val_169
 169	val_169
 169	val_169
 169	val_169
-17	val_17
 170	val_170
-172	val_172
-172	val_172
+174	val_174
+174	val_174
+176	val_176
+176	val_176
+193	val_193
+193	val_193
+193	val_193
+196	val_196
+201	val_201
+205	val_205
+205	val_205
+209	val_209
+209	val_209
+213	val_213
+213	val_213
+218	val_218
+221	val_221
+221	val_221
+223	val_223
+223	val_223
+233	val_233
+233	val_233
+239	val_239
+239	val_239
+24	val_24
+24	val_24
+241	val_241
+242	val_242
+242	val_242
+247	val_247
+248	val_248
+26	val_26
+26	val_26
+263	val_263
+272	val_272
+272	val_272
+275	val_275
+285	val_285
+296	val_296
+298	val_298
+298	val_298
+298	val_298
+302	val_302
+307	val_307
+307	val_307
+310	val_310
+323	val_323
+325	val_325
+325	val_325
+333	val_333
+333	val_333
+335	val_335
+338	val_338
+360	val_360
+362	val_362
+367	val_367
+367	val_367
+375	val_375
+377	val_377
+384	val_384
+384	val_384
+384	val_384
+392	val_392
+399	val_399
+399	val_399
+401	val_401
+401	val_401
+401	val_401
+401	val_401
+401	val_401
+402	val_402
+403	val_403
+403	val_403
+403	val_403
+413	val_413
+413	val_413
+417	val_417
+417	val_417
+417	val_417
+419	val_419
+42	val_42
+42	val_42
+427	val_427
+438	val_438
+438	val_438
+438	val_438
+44	val_44
+458	val_458
+458	val_458
+459	val_459
+459	val_459
+466	val_466
+466	val_466
+466	val_466
+469	val_469
+469	val_469
+469	val_469
+469	val_469
+469	val_469
+472	val_472
+475	val_475
+478	val_478
+478	val_478
+479	val_479
+483	val_483
+489	val_489
+489	val_489
+489	val_489
+489	val_489
+495	val_495
+496	val_496
+5	val_5
+5	val_5
+5	val_5
+57	val_57
+58	val_58
+58	val_58
+64	val_64
+66	val_66
+69	val_69
+72	val_72
+72	val_72
+76	val_76
+76	val_76
+77	val_77
+9	val_9
+90	val_90
+90	val_90
+90	val_90
+0	val_0
+0	val_0
+0	val_0
+113	val_113
+113	val_113
+114	val_114
+116	val_116
+118	val_118
+118	val_118
+137	val_137
+137	val_137
+138	val_138
+138	val_138
+138	val_138
+138	val_138
+145	val_145
+146	val_146
+146	val_146
+155	val_155
+158	val_158
+164	val_164
+164	val_164
+165	val_165
+165	val_165
 178	val_178
-179	val_179
-179	val_179
+181	val_181
+183	val_183
+186	val_186
 189	val_189
-19	val_19
-192	val_192
+190	val_190
+191	val_191
+191	val_191
 194	val_194
 195	val_195
 195	val_195
 199	val_199
 199	val_199
 199	val_199
-20	val_20
-207	val_207
-207	val_207
-213	val_213
-213	val_213
-218	val_218
-223	val_223
-223	val_223
-229	val_229
-229	val_229
-233	val_233
-233	val_233
-235	val_235
-24	val_24
-24	val_24
-256	val_256
-256	val_256
-257	val_257
-26	val_26
-26	val_26
-265	val_265
-265	val_265
-266	val_266
-27	val_27
-278	val_278
-278	val_278
-280	val_280
-280	val_280
-284	val_284
-291	val_291
-30	val_30
-302	val_302
-305	val_305
-316	val_316
-316	val_316
-316	val_316
-321	val_321
-321	val_321
-323	val_323
-33	val_33
-333	val_333
-333	val_333
-338	val_338
-344	val_344
-344	val_344
-353	val_353
-353	val_353
-356	val_356
-364	val_364
-368	val_368
-369	val_369
-369	val_369
-369	val_369
-37	val_37
-37	val_37
-377	val_377
-378	val_378
-386	val_386
-392	val_392
-397	val_397
-397	val_397
-404	val_404
-404	val_404
-407	val_407
-411	val_411
-418	val_418
-419	val_419
-424	val_424
-424	val_424
-430	val_430
-430	val_430
-430	val_430
-432	val_432
-436	val_436
-437	val_437
-448	val_448
-454	val_454
-454	val_454
-454	val_454
-457	val_457
-468	val_468
-468	val_468
-468	val_468
-468	val_468
-477	val_477
-479	val_479
-490	val_490
-492	val_492
-492	val_492
-493	val_493
-495	val_495
-496	val_496
-497	val_497
-57	val_57
-67	val_67
-67	val_67
-8	val_8
-80	val_80
-85	val_85
-9	val_9
-92	val_92
-97	val_97
-97	val_97
-105	val_105
-11	val_11
-113	val_113
-113	val_113
-136	val_136
-137	val_137
-137	val_137
-138	val_138
-138	val_138
-138	val_138
-138	val_138
-143	val_143
-150	val_150
-158	val_158
-160	val_160
-162	val_162
-165	val_165
-165	val_165
-166	val_166
-174	val_174
-174	val_174
-177	val_177
-18	val_18
-18	val_18
-180	val_180
-186	val_186
-196	val_196
-197	val_197
-197	val_197
-217	val_217
-217	val_217
-219	val_219
-219	val_219
-226	val_226
-230	val_230
-230	val_230
-230	val_230
-230	val_230
-230	val_230
-238	val_238
-238	val_238
-242	val_242
-242	val_242
-248	val_248
-252	val_252
-260	val_260
-263	val_263
-274	val_274
-277	val_277
-277	val_277
-277	val_277
-277	val_277
-296	val_296
-307	val_307
-307	val_307
-308	val_308
-325	val_325
-325	val_325
-327	val_327
-327	val_327
-327	val_327
-342	val_342
-342	val_342
-348	val_348
-348	val_348
-348	val_348
-348	val_348
-348	val_348
-35	val_35
-35	val_35
-35	val_35
-351	val_351
-367	val_367
-367	val_367
-389	val_389
-393	val_393
-394	val_394
-4	val_4
-403	val_403
-403	val_403
-403	val_403
-409	val_409
-409	val_409
-409	val_409
-414	val_414
-414	val_414
-421	val_421
-427	val_427
-429	val_429
-429	val_429
-435	val_435
-438	val_438
-438	val_438
-438	val_438
-439	val_439
-439	val_439
-455	val_455
-458	val_458
-458	val_458
-460	val_460
-462	val_462
-462	val_462
-475	val_475
-478	val_478
-478	val_478
-480	val_480
-480	val_480
-480	val_480
-484	val_484
-487	val_487
-53	val_53
-58	val_58
-58	val_58
-66	val_66
-69	val_69
-77	val_77
-78	val_78
-83	val_83
-83	val_83
-90	val_90
-90	val_90
-90	val_90
-95	val_95
-95	val_95
-103	val_103
-103	val_103
-120	val_120
-120	val_120
-129	val_129
-129	val_129
-133	val_133
-145	val_145
-146	val_146
-146	val_146
-149	val_149
-149	val_149
-15	val_15
-15	val_15
-157	val_157
-181	val_181
-187	val_187
-187	val_187
-187	val_187
-191	val_191
-191	val_191
 2	val_2
-200	val_200
-200	val_200
-201	val_201
-202	val_202
-203	val_203
-203	val_203
+207	val_207
+207	val_207
 208	val_208
 208	val_208
 208	val_208
@@ -1363,201 +1273,291 @@ POSTHOOK: Input: default@src
 222	val_222
 224	val_224
 224	val_224
-228	val_228
-237	val_237
-237	val_237
-239	val_239
-239	val_239
-241	val_241
+229	val_229
+229	val_229
+230	val_230
+230	val_230
+230	val_230
+230	val_230
+230	val_230
+238	val_238
+238	val_238
 244	val_244
-255	val_255
-255	val_255
 258	val_258
+260	val_260
 262	val_262
+266	val_266
+27	val_27
 273	val_273
 273	val_273
 273	val_273
-275	val_275
 28	val_28
-282	val_282
-282	val_282
-285	val_285
-286	val_286
-287	val_287
+284	val_284
 288	val_288
 288	val_288
-292	val_292
-298	val_298
-298	val_298
-298	val_298
-310	val_310
-311	val_311
-311	val_311
-311	val_311
-332	val_332
-335	val_335
-336	val_336
-339	val_339
-360	val_360
-362	val_362
-373	val_373
-384	val_384
-384	val_384
-384	val_384
-395	val_395
-395	val_395
+30	val_30
+315	val_315
+321	val_321
+321	val_321
+33	val_33
+342	val_342
+342	val_342
+35	val_35
+35	val_35
+35	val_35
+364	val_364
+365	val_365
+366	val_366
+368	val_368
+386	val_386
+389	val_389
+394	val_394
 396	val_396
 396	val_396
 396	val_396
-402	val_402
-417	val_417
-417	val_417
-417	val_417
-42	val_42
-42	val_42
-43	val_43
+397	val_397
+397	val_397
+4	val_4
+41	val_41
+414	val_414
+414	val_414
+421	val_421
 444	val_444
-449	val_449
-453	val_453
-459	val_459
-459	val_459
-47	val_47
-481	val_481
+446	val_446
+448	val_448
+452	val_452
+454	val_454
+454	val_454
+454	val_454
+455	val_455
+460	val_460
+463	val_463
+463	val_463
 482	val_482
-483	val_483
-485	val_485
-489	val_489
-489	val_489
-489	val_489
-489	val_489
-494	val_494
+492	val_492
+492	val_492
+493	val_493
 65	val_65
-72	val_72
-72	val_72
-74	val_74
-76	val_76
-76	val_76
-82	val_82
-86	val_86
-87	val_87
-96	val_96
-0	val_0
-0	val_0
-0	val_0
-118	val_118
-118	val_118
-119	val_119
-119	val_119
-119	val_119
+78	val_78
+80	val_80
+97	val_97
+97	val_97
+111	val_111
 12	val_12
 12	val_12
-125	val_125
-125	val_125
-153	val_153
+120	val_120
+120	val_120
+131	val_131
+150	val_150
 156	val_156
+160	val_160
 163	val_163
-164	val_164
-164	val_164
 167	val_167
 167	val_167
 167	val_167
 168	val_168
+17	val_17
 175	val_175
 175	val_175
-176	val_176
-176	val_176
-183	val_183
-190	val_190
-193	val_193
-193	val_193
-193	val_193
-205	val_205
-205	val_205
-209	val_209
-209	val_209
-221	val_221
-221	val_221
-247	val_247
-249	val_249
-272	val_272
-272	val_272
+180	val_180
+20	val_20
+203	val_203
+203	val_203
+226	val_226
+237	val_237
+237	val_237
+255	val_255
+255	val_255
+256	val_256
+256	val_256
+274	val_274
+277	val_277
+277	val_277
+277	val_277
+277	val_277
 281	val_281
 281	val_281
-283	val_283
+282	val_282
+282	val_282
+286	val_286
+287	val_287
 289	val_289
-306	val_306
+292	val_292
+308	val_308
 309	val_309
 309	val_309
-315	val_315
-317	val_317
-317	val_317
 318	val_318
 318	val_318
 318	val_318
-322	val_322
-322	val_322
-331	val_331
-331	val_331
+327	val_327
+327	val_327
+327	val_327
+332	val_332
+339	val_339
 34	val_34
 341	val_341
-345	val_345
-365	val_365
-366	val_366
+348	val_348
+348	val_348
+348	val_348
+348	val_348
+348	val_348
+356	val_356
+37	val_37
+37	val_37
 374	val_374
-375	val_375
 379	val_379
 382	val_382
 382	val_382
-399	val_399
-399	val_399
-400	val_400
-401	val_401
-401	val_401
-401	val_401
-401	val_401
-401	val_401
-406	val_406
-406	val_406
-406	val_406
-406	val_406
-41	val_41
-413	val_413
-413	val_413
+409	val_409
+409	val_409
+409	val_409
+429	val_429
+429	val_429
+43	val_43
+430	val_430
+430	val_430
+430	val_430
 431	val_431
 431	val_431
 431	val_431
-44	val_44
+432	val_432
+435	val_435
+437	val_437
+439	val_439
+439	val_439
 443	val_443
-446	val_446
-452	val_452
-463	val_463
-463	val_463
-466	val_466
-466	val_466
-466	val_466
+457	val_457
+462	val_462
+462	val_462
 467	val_467
-469	val_469
-469	val_469
-469	val_469
-469	val_469
-469	val_469
 470	val_470
-472	val_472
+481	val_481
+487	val_487
+494	val_494
+51	val_51
+51	val_51
+70	val_70
+70	val_70
+70	val_70
+74	val_74
+82	val_82
+83	val_83
+83	val_83
+84	val_84
+84	val_84
+119	val_119
+119	val_119
+119	val_119
+125	val_125
+125	val_125
+15	val_15
+15	val_15
+172	val_172
+172	val_172
+177	val_177
+179	val_179
+179	val_179
+18	val_18
+18	val_18
+187	val_187
+187	val_187
+187	val_187
+19	val_19
+192	val_192
+197	val_197
+197	val_197
+200	val_200
+200	val_200
+202	val_202
+217	val_217
+217	val_217
+219	val_219
+219	val_219
+228	val_228
+235	val_235
+249	val_249
+252	val_252
+257	val_257
+265	val_265
+265	val_265
+278	val_278
+278	val_278
+280	val_280
+280	val_280
+283	val_283
+291	val_291
+305	val_305
+306	val_306
+311	val_311
+311	val_311
+311	val_311
+316	val_316
+316	val_316
+316	val_316
+317	val_317
+317	val_317
+322	val_322
+322	val_322
+331	val_331
+331	val_331
+336	val_336
+344	val_344
+344	val_344
+345	val_345
+351	val_351
+353	val_353
+353	val_353
+369	val_369
+369	val_369
+369	val_369
+373	val_373
+378	val_378
+393	val_393
+395	val_395
+395	val_395
+400	val_400
+404	val_404
+404	val_404
+406	val_406
+406	val_406
+406	val_406
+406	val_406
+407	val_407
+411	val_411
+418	val_418
+424	val_424
+424	val_424
+436	val_436
+449	val_449
+453	val_453
+468	val_468
+468	val_468
+468	val_468
+468	val_468
+47	val_47
+477	val_477
+480	val_480
+480	val_480
+480	val_480
+484	val_484
+485	val_485
+490	val_490
 491	val_491
+497	val_497
 498	val_498
 498	val_498
 498	val_498
-5	val_5
-5	val_5
-5	val_5
-51	val_51
-51	val_51
+53	val_53
 54	val_54
-64	val_64
-70	val_70
-70	val_70
-70	val_70
-84	val_84
-84	val_84
+67	val_67
+67	val_67
+8	val_8
+85	val_85
+86	val_86
+87	val_87
+92	val_92
+95	val_95
+95	val_95
+96	val_96
 98	val_98
 98	val_98

@@ -1,3 +1,4 @@
+--! qt:dataset:src
 -- HIVE-4375 Single sourced multi insert consists of native and non-native table mixed throws NPE
 CREATE TABLE src_x1(key string, value string);
 CREATE TABLE src_x2(key string, value string)

@@ -59,12 +59,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@customer_address
 POSTHOOK: Output: default@customer_address
 PREHOOK: query: analyze table customer_address compute statistics for columns ca_state, ca_zip
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@customer_address
 PREHOOK: Output: default@customer_address
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table customer_address compute statistics for columns ca_state, ca_zip
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@customer_address
 POSTHOOK: Output: default@customer_address
 #### A masked pattern was here ####
@@ -139,6 +139,7 @@ STAGE PLANS:
               sort order: 
               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -230,6 +231,7 @@ STAGE PLANS:
               sort order: 
               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
               value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)

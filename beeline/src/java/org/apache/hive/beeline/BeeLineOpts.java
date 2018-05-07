@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -70,6 +70,7 @@ class BeeLineOpts implements Completer {
   private boolean silent = false;
   private boolean color = false;
   private boolean showHeader = true;
+  private boolean escapeCRLF = false;
   private boolean showDbInPrompt = false;
   private int headerInterval = 100;
   private boolean fastConnect = true;
@@ -492,6 +493,21 @@ class BeeLineOpts implements Completer {
       HiveConf conf = beeLine.getCommands().getHiveConf(true);
       header = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CLI_PRINT_HEADER);
       return header;
+    }
+  }
+
+  public void setEscapeCRLF(boolean escapeCRLF) {
+    this.escapeCRLF = escapeCRLF;
+  }
+
+  public boolean getEscapeCRLF() {
+    if (beeLine.isBeeLine()) {
+      return escapeCRLF;
+    } else {
+      boolean flag;
+      HiveConf conf = beeLine.getCommands().getHiveConf(true);
+      flag = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CLI_PRINT_ESCAPE_CRLF);
+      return flag;
     }
   }
 

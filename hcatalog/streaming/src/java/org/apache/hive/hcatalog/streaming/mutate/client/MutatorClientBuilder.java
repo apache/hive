@@ -32,7 +32,10 @@ import org.apache.hive.hcatalog.streaming.mutate.UgiMetaStoreClientFactory;
 import org.apache.hive.hcatalog.streaming.mutate.client.lock.Lock;
 import org.apache.hive.hcatalog.streaming.mutate.client.lock.LockFailureListener;
 
-/** Convenience class for building {@link MutatorClient} instances. */
+/** Convenience class for building {@link MutatorClient} instances.
+ * @deprecated as of Hive 3.0.0
+ */
+@Deprecated
 public class MutatorClientBuilder {
 
   private final Map<String, AcidTable> tables = new HashMap<>();

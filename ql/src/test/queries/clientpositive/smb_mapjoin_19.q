@@ -1,10 +1,13 @@
+--! qt:dataset:src
 set hive.optimize.bucketmapjoin = true;
 set hive.optimize.bucketmapjoin.sortedmerge = true;
 
 
 set hive.exec.reducers.max = 1;
 set hive.merge.mapfiles=false;
-set hive.merge.mapredfiles=false; 
+set hive.merge.mapredfiles=false;
+
+set hive.metastore.aggregate.stats.cache.enabled=false;
 
 -- Create two bucketed and sorted tables
 CREATE TABLE test_table1 (key INT, value STRING) PARTITIONED BY (ds STRING)

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -189,11 +189,6 @@ public class StatsUtils {
    */
   public static long getNumRows(HiveConf conf, List<ColumnInfo> schema, Table table,
                                 PrunedPartitionList partitionList, AtomicInteger noColsMissingStats) {
-    //for non-partitioned table
-    List<String> neededColumns = new ArrayList<>();
-    for(ColumnInfo ci:schema) {
-      neededColumns.add(ci.getInternalName());
-    }
 
     boolean shouldEstimateStats = HiveConf.getBoolVar(conf, ConfVars.HIVE_STATS_ESTIMATE_STATS);
 
@@ -213,7 +208,7 @@ public class StatsUtils {
       }
       // go ahead with the estimation
       long ds = getDataSize(conf, table);
-      return getNumRows(conf, schema, neededColumns, table, ds);
+      return getNumRows(conf, schema, table, ds);
     }
     else { // partitioned table
       long nr = 0;
@@ -242,9 +237,12 @@ public class StatsUtils {
 
       ds = getSumIgnoreNegatives(dataSizes);
 
+      float deserFactor = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_STATS_DESERIALIZATION_FACTOR);
+
       if (ds <= 0) {
         dataSizes = getBasicStatForPartitions(
             table, partitionList.getNotDeniedPartns(), StatsSetupConst.TOTAL_SIZE);
+        dataSizes = safeMult(dataSizes, deserFactor);
         ds = getSumIgnoreNegatives(dataSizes);
       }
 
@@ -252,13 +250,11 @@ public class StatsUtils {
       // sizes
       if (ds <= 0 && shouldEstimateStats) {
         dataSizes = getFileSizeForPartitions(conf, partitionList.getNotDeniedPartns());
+        dataSizes = safeMult(dataSizes, deserFactor);
+        ds = getSumIgnoreNegatives(dataSizes);
       }
-      ds = getSumIgnoreNegatives(dataSizes);
-      float deserFactor =
-          HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_STATS_DESERIALIZATION_FACTOR);
-      ds = (long) (ds * deserFactor);
 
-      int avgRowSize = estimateRowSizeFromSchema(conf, schema, neededColumns);
+      int avgRowSize = estimateRowSizeFromSchema(conf, schema);
       if (avgRowSize > 0) {
         setUnknownRcDsToAverage(rowCounts, dataSizes, avgRowSize);
         nr = getSumIgnoreNegatives(rowCounts);
@@ -296,14 +292,13 @@ public class StatsUtils {
     }
   }
 
-  private static long getNumRows(HiveConf conf, List<ColumnInfo> schema, List<String> neededColumns,
-                                 Table table, long ds) {
+  private static long getNumRows(HiveConf conf, List<ColumnInfo> schema, Table table, long ds) {
     long nr = getNumRows(table);
     // number of rows -1 means that statistics from metastore is not reliable
     // and 0 means statistics gathering is disabled
     // estimate only if num rows is -1 since 0 could be actual number of rows
     if (nr < 0) {
-      int avgRowSize = estimateRowSizeFromSchema(conf, schema, neededColumns);
+      int avgRowSize = estimateRowSizeFromSchema(conf, schema);
       if (avgRowSize > 0) {
         if (LOG.isDebugEnabled()) {
           LOG.debug("Estimated average row size: " + avgRowSize);
@@ -341,7 +336,7 @@ public class StatsUtils {
       //getDataSize tries to estimate stats if it doesn't exist using file size
       // we would like to avoid file system calls  if it too expensive
       long ds = shouldEstimateStats? getDataSize(conf, table): getRawDataSize(table);
-      long nr = getNumRows(conf, schema, neededColumns, table, ds);
+      long nr = getNumRows(conf, schema, table, ds);
       List<ColStatistics> colStats = Lists.newArrayList();
       if (fetchColStats) {
         colStats = getTableColumnStats(table, schema, neededColumns, colStatsCache);
@@ -377,6 +372,7 @@ public class StatsUtils {
       ds = getSumIgnoreNegatives(dataSizes);
       if (ds <= 0) {
         dataSizes = getBasicStatForPartitions(table, partList.getNotDeniedPartns(), StatsSetupConst.TOTAL_SIZE);
+        dataSizes = safeMult(dataSizes, deserFactor);
         ds = getSumIgnoreNegatives(dataSizes);
       }
 
@@ -384,11 +380,11 @@ public class StatsUtils {
       // sizes
       if (ds <= 0 && shouldEstimateStats) {
         dataSizes = getFileSizeForPartitions(conf, partList.getNotDeniedPartns());
+        dataSizes = safeMult(dataSizes, deserFactor);
+        ds = getSumIgnoreNegatives(dataSizes);
       }
-      ds = getSumIgnoreNegatives(dataSizes);
-      ds = (long) (ds * deserFactor);
 
-      int avgRowSize = estimateRowSizeFromSchema(conf, schema, neededColumns);
+      int avgRowSize = estimateRowSizeFromSchema(conf, schema);
       if (avgRowSize > 0) {
         setUnknownRcDsToAverage(rowCounts, dataSizes, avgRowSize);
         nr = getSumIgnoreNegatives(rowCounts);
@@ -766,6 +762,14 @@ public class StatsUtils {
         dataSizes.set(i, s);
       }
     }
+  }
+
+  public static int estimateRowSizeFromSchema(HiveConf conf, List<ColumnInfo> schema) {
+    List<String> neededColumns = new ArrayList<>();
+    for (ColumnInfo ci : schema) {
+      neededColumns.add(ci.getInternalName());
+    }
+    return estimateRowSizeFromSchema(conf, schema, neededColumns);
   }
 
   public static int estimateRowSizeFromSchema(HiveConf conf, List<ColumnInfo> schema,
@@ -1706,7 +1710,7 @@ public class StatsUtils {
   private static long getNDVFor(ExprNodeGenericFuncDesc engfd, long numRows, Statistics parentStats) {
 
     GenericUDF udf = engfd.getGenericUDF();
-    if (!FunctionRegistry.isDeterministic(udf)){
+    if (!FunctionRegistry.isDeterministic(udf) && !FunctionRegistry.isRuntimeConstant(udf)){
       return numRows;
     }
     List<Long> ndvs = Lists.newArrayList();
@@ -1935,6 +1939,14 @@ public class StatsUtils {
     } catch (ArithmeticException ex) {
       return Long.MAX_VALUE;
     }
+  }
+
+  public static List<Long> safeMult(List<Long> l, float b) {
+    List<Long> ret = new ArrayList<>();
+    for (Long a : l) {
+      ret.add(safeMult(a, b));
+    }
+    return ret;
   }
 
   public static boolean hasDiscreteRange(ColStatistics colStat) {

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -27,7 +27,11 @@ import java.util.Set;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
+import org.apache.hadoop.hive.ql.metadata.CheckConstraint;
+import org.apache.hadoop.hive.ql.metadata.DefaultConstraint;
 import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -87,7 +91,7 @@ public interface MetaDataFormatter {
       boolean isFormatted, boolean isExt,
       boolean isOutputPadded, List<ColumnStatisticsObj> colStats,
       PrimaryKeyInfo pkInfo, ForeignKeyInfo fkInfo,
-      UniqueConstraint ukInfo, NotNullConstraint nnInfo)
+      UniqueConstraint ukInfo, NotNullConstraint nnInfo, DefaultConstraint dInfo, CheckConstraint cInfo)
           throws HiveException;
 
   /**
@@ -121,10 +125,13 @@ public interface MetaDataFormatter {
       String location, String ownerName, String ownerType, Map<String, String> params)
           throws HiveException;
 
-  public void showResourcePlans(DataOutputStream out, List<WMResourcePlan> resourcePlans)
+  void showResourcePlans(DataOutputStream out, List<WMResourcePlan> resourcePlans)
       throws HiveException;
 
-  public void showErrors(DataOutputStream out, List<String> errors)
+  void showFullResourcePlan(DataOutputStream out, WMFullResourcePlan resourcePlan)
+      throws HiveException;
+
+  void showErrors(DataOutputStream out, WMValidateResourcePlanResponse errors)
       throws HiveException;
 }
 

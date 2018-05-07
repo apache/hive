@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -29,23 +29,36 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
  * The first is always a boolean (LongColumnVector).
  * The second and third are string columns or string expression results.
  */
-public class IfExprStringGroupColumnStringGroupColumn extends IfExprConditionalFilter {
+public class IfExprStringGroupColumnStringGroupColumn extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  public IfExprStringGroupColumnStringGroupColumn(int arg1Column, int arg2Column, int arg3Column, int outputColumn) {
-    super(arg1Column, arg2Column, arg3Column, outputColumn);
+  private final int arg1Column;
+  private final int arg2Column;
+  private final int arg3Column;
+
+  public IfExprStringGroupColumnStringGroupColumn(int arg1Column, int arg2Column, int arg3Column,
+      int outputColumnNum) {
+    super(outputColumnNum);
+    this.arg1Column = arg1Column;
+    this.arg2Column = arg2Column;
+    this.arg3Column = arg3Column;
   }
 
   public IfExprStringGroupColumnStringGroupColumn() {
     super();
+
+    // Dummy final assignments.
+    arg1Column = -1;
+    arg2Column = -1;
+    arg3Column = -1;
   }
 
   @Override
   public void evaluate(VectorizedRowBatch batch) {
 
     if (childExpressions != null) {
-      super.evaluateIfConditionalExpr(batch, childExpressions);
+      super.evaluateChildren(batch);
     }
 
     LongColumnVector arg1ColVector = (LongColumnVector) batch.cols[arg1Column];
@@ -54,8 +67,10 @@ public class IfExprStringGroupColumnStringGroupColumn extends IfExprConditionalF
     BytesColumnVector outputColVector = (BytesColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] outputIsNull = outputColVector.isNull;
-    outputColVector.noNulls = arg2ColVector.noNulls && arg3ColVector.noNulls;
-    outputColVector.isRepeating = false; // may override later
+
+    // We do not need to do a column reset since we are carefully changing the output.
+    outputColVector.isRepeating = false;
+
     int n = batch.size;
     long[] vector1 = arg1ColVector.vector;
 
@@ -73,7 +88,7 @@ public class IfExprStringGroupColumnStringGroupColumn extends IfExprConditionalF
      * of code paths.
      */
     if (arg1ColVector.isRepeating) {
-      if (vector1[0] == 1) {
+      if ((arg1ColVector.noNulls || !arg1ColVector.isNull[0]) && vector1[0] == 1) {
         arg2ColVector.copySelected(batch.selectedInUse, sel, n, outputColVector);
       } else {
         arg3ColVector.copySelected(batch.selectedInUse, sel, n, outputColVector);
@@ -84,6 +99,11 @@ public class IfExprStringGroupColumnStringGroupColumn extends IfExprConditionalF
     // extend any repeating values and noNulls indicator in the inputs
     arg2ColVector.flatten(batch.selectedInUse, sel, n);
     arg3ColVector.flatten(batch.selectedInUse, sel, n);
+
+    /*
+     * Do careful maintenance of NULLs.
+     */
+    outputColVector.noNulls = false;
 
     if (arg1ColVector.noNulls) {
       if (batch.selectedInUse) {
@@ -121,6 +141,7 @@ public class IfExprStringGroupColumnStringGroupColumn extends IfExprConditionalF
         }
       }
     } else /* there are nulls */ {
+
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];

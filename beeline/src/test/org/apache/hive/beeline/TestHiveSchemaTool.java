@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -56,7 +56,7 @@ public class TestHiveSchemaTool {
   public void setup() throws IOException {
     mockStatic(HiveSchemaHelper.class);
     when(HiveSchemaHelper
-        .getValidConfVar(eq(MetastoreConf.ConfVars.CONNECTURLKEY), same(hiveConf)))
+        .getValidConfVar(eq(MetastoreConf.ConfVars.CONNECT_URL_KEY), same(hiveConf)))
         .thenReturn("someURL");
     when(HiveSchemaHelper
         .getValidConfVar(eq(MetastoreConf.ConfVars.CONNECTION_DRIVER), same(hiveConf)))
@@ -72,7 +72,7 @@ public class TestHiveSchemaTool {
   @After
   public void globalAssert() throws IOException {
     verifyStatic();
-    HiveSchemaHelper.getValidConfVar(eq(MetastoreConf.ConfVars.CONNECTURLKEY), same(hiveConf));
+    HiveSchemaHelper.getValidConfVar(eq(MetastoreConf.ConfVars.CONNECT_URL_KEY), same(hiveConf));
     HiveSchemaHelper
         .getValidConfVar(eq(MetastoreConf.ConfVars.CONNECTION_DRIVER), same(hiveConf));
 

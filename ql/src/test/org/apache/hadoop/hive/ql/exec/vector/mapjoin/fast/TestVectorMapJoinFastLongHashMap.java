@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.Random;
 
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
+import org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionError;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashMapResult;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast.CheckFastHashTable.VerifyFastLongHashMap;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast.VectorMapJoinFastLongHashMap;
@@ -273,6 +274,23 @@ public class TestVectorMapJoinFastLongHashMap extends CommonFastHashTable {
 
     int keyCount = 1000;
     addAndVerifyMultipleKeyMultipleValue(keyCount, map, verifyTable);
+  }
+
+  @Test
+  public void testOutOfBounds() throws Exception {
+    random = new Random(42662);
+
+    int HIGHEST_INT_POWER_OF_2 = 1073741824;
+    boolean error = false;
+    try {
+      // The c'tor should throw the error
+      VectorMapJoinFastMultiKeyHashMap map =
+              new VectorMapJoinFastMultiKeyHashMap(
+                      false, HIGHEST_INT_POWER_OF_2, LOAD_FACTOR, MODERATE_WB_SIZE, -1);
+    } catch (MapJoinMemoryExhaustionError e) {
+      error = true;
+    }
+    assert error;
   }
 
   /*

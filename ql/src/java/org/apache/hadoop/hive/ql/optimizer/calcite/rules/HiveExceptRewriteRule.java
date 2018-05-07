@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -275,7 +275,7 @@ public class HiveExceptRewriteRule extends RelOptRule {
         cluster.getTypeFactory()));
     return rexBuilder.makeCall(
         SqlFunctionConverter.getCalciteFn("*", calciteArgTypesBldr.build(),
-            TypeConverter.convert(TypeInfoFactory.longTypeInfo, cluster.getTypeFactory()), true),
+            TypeConverter.convert(TypeInfoFactory.longTypeInfo, cluster.getTypeFactory()), true, false),
         childRexNodeLst);
   }
 
@@ -294,7 +294,7 @@ public class HiveExceptRewriteRule extends RelOptRule {
     // a>0
     RexNode aMorethanZero = rexBuilder.makeCall(
         SqlFunctionConverter.getCalciteFn(">", calciteArgTypesBldr.build(),
-            TypeConverter.convert(TypeInfoFactory.longTypeInfo, cluster.getTypeFactory()), false),
+            TypeConverter.convert(TypeInfoFactory.longTypeInfo, cluster.getTypeFactory()), false, false),
         childRexNodeLst);
     childRexNodeLst = new ArrayList<RexNode>();
     RexLiteral two = rexBuilder.makeBigintLiteral(new BigDecimal(2));
@@ -303,7 +303,7 @@ public class HiveExceptRewriteRule extends RelOptRule {
     // 2*a
     RexNode twoa = rexBuilder.makeCall(
         SqlFunctionConverter.getCalciteFn("*", calciteArgTypesBldr.build(),
-            TypeConverter.convert(TypeInfoFactory.longTypeInfo, cluster.getTypeFactory()), false),
+            TypeConverter.convert(TypeInfoFactory.longTypeInfo, cluster.getTypeFactory()), false, false),
         childRexNodeLst);
     childRexNodeLst = new ArrayList<RexNode>();
     RexInputRef b = rexBuilder.makeInputRef(input, columnSize - 1);
@@ -312,7 +312,7 @@ public class HiveExceptRewriteRule extends RelOptRule {
     // 2a=b
     RexNode twoaEqualTob = rexBuilder.makeCall(
         SqlFunctionConverter.getCalciteFn("=", calciteArgTypesBldr.build(),
-            TypeConverter.convert(TypeInfoFactory.longTypeInfo, cluster.getTypeFactory()), false),
+            TypeConverter.convert(TypeInfoFactory.longTypeInfo, cluster.getTypeFactory()), false, false),
         childRexNodeLst);
     childRexNodeLst = new ArrayList<RexNode>();
     childRexNodeLst.add(aMorethanZero);
@@ -320,7 +320,7 @@ public class HiveExceptRewriteRule extends RelOptRule {
     // a>0 && 2a=b
     return rexBuilder.makeCall(
         SqlFunctionConverter.getCalciteFn("and", calciteArgTypesBldr.build(),
-            TypeConverter.convert(TypeInfoFactory.longTypeInfo, cluster.getTypeFactory()), false),
+            TypeConverter.convert(TypeInfoFactory.longTypeInfo, cluster.getTypeFactory()), false, false),
         childRexNodeLst);
   }
 
@@ -338,7 +338,7 @@ public class HiveExceptRewriteRule extends RelOptRule {
     childRexNodeLst.add(a);
     RexNode threea = rexBuilder.makeCall(
         SqlFunctionConverter.getCalciteFn("*", calciteArgTypesBldr.build(),
-            TypeConverter.convert(TypeInfoFactory.longTypeInfo, cluster.getTypeFactory()), false),
+            TypeConverter.convert(TypeInfoFactory.longTypeInfo, cluster.getTypeFactory()), false, false),
         childRexNodeLst);
 
     RexLiteral two = rexBuilder.makeBigintLiteral(new BigDecimal(2));
@@ -350,7 +350,7 @@ public class HiveExceptRewriteRule extends RelOptRule {
     childRexNodeLst.add(b);
     RexNode twob = rexBuilder.makeCall(
         SqlFunctionConverter.getCalciteFn("*", calciteArgTypesBldr.build(),
-            TypeConverter.convert(TypeInfoFactory.longTypeInfo, cluster.getTypeFactory()), false),
+            TypeConverter.convert(TypeInfoFactory.longTypeInfo, cluster.getTypeFactory()), false, false),
         childRexNodeLst);
 
     // 2b-3a
@@ -359,7 +359,7 @@ public class HiveExceptRewriteRule extends RelOptRule {
     childRexNodeLst.add(threea);
     return rexBuilder.makeCall(
         SqlFunctionConverter.getCalciteFn("-", calciteArgTypesBldr.build(),
-            TypeConverter.convert(TypeInfoFactory.longTypeInfo, cluster.getTypeFactory()), false),
+            TypeConverter.convert(TypeInfoFactory.longTypeInfo, cluster.getTypeFactory()), false, false),
         childRexNodeLst);
   }
 }

@@ -44,8 +44,28 @@ public class TestTriggersNoTezSessionPool extends AbstractJdbcTriggersTest {
   }
 
   @Test(timeout = 60000)
-  public void testTriggerTotalTasks() throws Exception {
-    Expression expression = ExpressionFactory.fromString("TOTAL_TASKS > 50");
+  public void testTriggerVertexTotalTasks() throws Exception {
+    Expression expression = ExpressionFactory.fromString("VERTEX_TOTAL_TASKS > 50");
+    Trigger trigger = new ExecutionTrigger("highly_parallel", expression, new Action(Action.Type.KILL_QUERY));
+    setupTriggers(Lists.newArrayList(trigger));
+    String query = "select sleep(t1.under_col, 5), t1.value from " + tableName + " t1 join " + tableName +
+      " t2 on t1.under_col>=t2.under_col";
+    runQueryWithTrigger(query, getConfigs(), trigger + " violated");
+  }
+
+  @Test(timeout = 60000)
+  public void testTriggerDAGTotalTasks() throws Exception {
+    Expression expression = ExpressionFactory.fromString("DAG_TOTAL_TASKS > 50");
+    Trigger trigger = new ExecutionTrigger("highly_parallel", expression, new Action(Action.Type.KILL_QUERY));
+    setupTriggers(Lists.newArrayList(trigger));
+    String query = "select sleep(t1.under_col, 5), t1.value from " + tableName + " t1 join " + tableName +
+      " t2 on t1.under_col>=t2.under_col";
+    runQueryWithTrigger(query, getConfigs(), trigger + " violated");
+  }
+
+  @Test(timeout = 60000)
+  public void testTriggerTotalLaunchedTasks() throws Exception {
+    Expression expression = ExpressionFactory.fromString("TOTAL_LAUNCHED_TASKS > 50");
     Trigger trigger = new ExecutionTrigger("highly_parallel", expression, new Action(Action.Type.KILL_QUERY));
     setupTriggers(Lists.newArrayList(trigger));
     String query = "select sleep(t1.under_col, 5), t1.value from " + tableName + " t1 join " + tableName +

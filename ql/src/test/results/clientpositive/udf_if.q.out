@@ -94,7 +94,7 @@ STAGE PLANS:
           Row Limit Per Split: 1
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions: 128 (type: smallint), 1.1 (type: decimal(11,1)), 'ABC' (type: string), '12.3' (type: string)
+            expressions: 128S (type: smallint), 1.1 (type: decimal(11,1)), 'ABC' (type: string), '12.3' (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
             Statistics: Num rows: 500 Data size: 145500 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink

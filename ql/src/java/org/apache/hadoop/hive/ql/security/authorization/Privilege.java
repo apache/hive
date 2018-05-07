@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -100,9 +100,6 @@ public class Privilege {
 
   public static Privilege DROP = new Privilege(PrivilegeType.DROP,
       PrivilegeScope.ALLSCOPE_EXCEPT_COLUMN);
-
-  public static Privilege INDEX = new Privilege(PrivilegeType.INDEX,
-      PrivilegeScope.ALLSCOPE);
 
   public static Privilege LOCK = new Privilege(PrivilegeType.LOCK,
       PrivilegeScope.ALLSCOPE_EXCEPT_COLUMN);

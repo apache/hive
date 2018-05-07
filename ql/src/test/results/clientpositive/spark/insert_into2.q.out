@@ -45,7 +45,9 @@ STAGE PLANS:
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       TopN Hash Memory Usage: 0.1
                       value expressions: _col1 (type: string)
+            Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
@@ -201,7 +203,9 @@ STAGE PLANS:
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       TopN Hash Memory Usage: 0.1
                       value expressions: _col1 (type: string)
+            Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
@@ -326,7 +330,9 @@ STAGE PLANS:
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       TopN Hash Memory Usage: 0.1
                       value expressions: _col1 (type: string)
+            Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
@@ -420,12 +426,14 @@ POSTHOOK: Input: default@insert_into2
 50
 PREHOOK: query: insert into table insert_into2 partition (ds='2') values(1, 'abc')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@insert_into2@ds=2
 POSTHOOK: query: insert into table insert_into2 partition (ds='2') values(1, 'abc')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@insert_into2@ds=2
-POSTHOOK: Lineage: insert_into2 PARTITION(ds=2).key EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: insert_into2 PARTITION(ds=2).value SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: insert_into2 PARTITION(ds=2).key SCRIPT []
+POSTHOOK: Lineage: insert_into2 PARTITION(ds=2).value SCRIPT []
 PREHOOK: query: explain
 SELECT COUNT(*) FROM insert_into2 where ds='2'
 PREHOOK: type: QUERY
@@ -447,9 +455,9 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: insert_into2
-                  Statistics: Num rows: 50 Data size: 5300 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 50 Data size: 530 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    Statistics: Num rows: 50 Data size: 5300 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 50 Data size: 530 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
                       mode: hash
@@ -459,7 +467,9 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: bigint)
+            Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -24,27 +24,38 @@ import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.events.AddForeignKeyEvent;
-import org.apache.hadoop.hive.metastore.events.AddIndexEvent;
 import org.apache.hadoop.hive.metastore.events.AddNotNullConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AddPrimaryKeyEvent;
+import org.apache.hadoop.hive.metastore.events.AddSchemaVersionEvent;
 import org.apache.hadoop.hive.metastore.events.AddUniqueConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AlterDatabaseEvent;
-import org.apache.hadoop.hive.metastore.events.AlterIndexEvent;
+import org.apache.hadoop.hive.metastore.events.AlterISchemaEvent;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
+import org.apache.hadoop.hive.metastore.events.AlterSchemaVersionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.ConfigChangeEvent;
+import org.apache.hadoop.hive.metastore.events.CreateCatalogEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.CreateFunctionEvent;
+import org.apache.hadoop.hive.metastore.events.CreateISchemaEvent;
 import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
+import org.apache.hadoop.hive.metastore.events.DropCatalogEvent;
 import org.apache.hadoop.hive.metastore.events.DropConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.DropFunctionEvent;
-import org.apache.hadoop.hive.metastore.events.DropIndexEvent;
+import org.apache.hadoop.hive.metastore.events.DropISchemaEvent;
 import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
+import org.apache.hadoop.hive.metastore.events.DropSchemaVersionEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
 import org.apache.hadoop.hive.metastore.events.InsertEvent;
 import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
+import org.apache.hadoop.hive.metastore.events.OpenTxnEvent;
+import org.apache.hadoop.hive.metastore.events.CommitTxnEvent;
+import org.apache.hadoop.hive.metastore.events.AbortTxnEvent;
+import org.apache.hadoop.hive.metastore.events.AllocWriteIdEvent;
+import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
+import java.sql.Connection;
 
 /**
  * This abstract class needs to be extended to  provide implementation of actions that needs
@@ -140,27 +151,6 @@ public abstract class MetaStoreEventListener implements Configurable {
   }
 
   /**
-   * @param indexEvent index event
-   * @throws MetaException
-   */
-  public void onAddIndex(AddIndexEvent indexEvent) throws MetaException {
-  }
-
-  /**
-   * @param indexEvent index event
-   * @throws MetaException
-   */
-  public void onDropIndex(DropIndexEvent indexEvent) throws MetaException {
-  }
-
-  /**
-   * @param indexEvent index event
-   * @throws MetaException
-   */
-  public void onAlterIndex(AlterIndexEvent indexEvent) throws MetaException {
-  }
-
-  /**
    * @param fnEvent function event
    * @throws MetaException
    */
@@ -182,7 +172,6 @@ public abstract class MetaStoreEventListener implements Configurable {
    * @throws MetaException
    */
   public void onInsert(InsertEvent insertEvent) throws MetaException {
-
   }
 
   /**
@@ -220,6 +209,75 @@ public abstract class MetaStoreEventListener implements Configurable {
   public void onDropConstraint(DropConstraintEvent dropConstraintEvent) throws MetaException {
   }
 
+  public void onCreateISchema(CreateISchemaEvent createISchemaEvent) throws MetaException {
+  }
+
+  public void onAlterISchema(AlterISchemaEvent alterISchemaEvent) throws MetaException {
+  }
+
+  public void onDropISchema(DropISchemaEvent dropISchemaEvent) throws MetaException {
+  }
+
+  public void onAddSchemaVersion(AddSchemaVersionEvent addSchemaVersionEvent) throws MetaException {
+  }
+
+  public void onAlterSchemaVersion(AlterSchemaVersionEvent alterSchemaVersionEvent)
+      throws MetaException {
+  }
+
+  public void onDropSchemaVersion(DropSchemaVersionEvent dropSchemaVersionEvent)
+      throws MetaException {
+  }
+
+  public void onCreateCatalog(CreateCatalogEvent createCatalogEvent) throws MetaException {
+  }
+
+  public void onDropCatalog(DropCatalogEvent dropCatalogEvent) throws MetaException {
+  }
+
+  /**
+   * This will be called when a new transaction is started.
+   * @param openTxnEvent event to be processed
+   * @param dbConn jdbc connection to remote meta store db.
+   * @param sqlGenerator helper class to generate db specific sql string.
+   * @throws MetaException
+   */
+  public void onOpenTxn(OpenTxnEvent openTxnEvent, Connection dbConn, SQLGenerator sqlGenerator) throws MetaException {
+  }
+
+  /**
+   * This will be called to commit a transaction.
+   * @param commitTxnEvent event to be processed
+   * @param dbConn jdbc connection to remote meta store db.
+   * @param sqlGenerator helper class to generate db specific sql string.
+   * @throws MetaException
+   */
+  public void onCommitTxn(CommitTxnEvent commitTxnEvent, Connection dbConn, SQLGenerator sqlGenerator) throws
+          MetaException {
+  }
+
+  /**
+   * This will be called to abort a transaction.
+   * @param abortTxnEvent event to be processed
+   * @param dbConn jdbc connection to remote meta store db.
+   * @param sqlGenerator helper class to generate db specific sql string.
+   * @throws MetaException
+   */
+  public void onAbortTxn(AbortTxnEvent abortTxnEvent, Connection dbConn, SQLGenerator sqlGenerator)
+          throws MetaException {
+  }
+
+  /**
+   * This will be called to alloc a new write id.
+   * @param allocWriteIdEvent event to be processed
+   * @param dbConn jdbc connection to remote meta store db.
+   * @param sqlGenerator helper class to generate db specific sql string.
+   * @throws MetaException
+   */
+  public void onAllocWriteId(AllocWriteIdEvent allocWriteIdEvent, Connection dbConn, SQLGenerator sqlGenerator)
+          throws MetaException {
+  }
+
   @Override
   public Configuration getConf() {
     return this.conf;
@@ -229,7 +287,4 @@ public abstract class MetaStoreEventListener implements Configurable {
   public void setConf(Configuration config) {
     this.conf = config;
   }
-
-
-
 }

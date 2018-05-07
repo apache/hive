@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -44,6 +44,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.hadoop.hive.llap.counters.FragmentCountersMap;
 import org.apache.hadoop.hive.llap.daemon.FinishableStateUpdateHandler;
 import org.apache.hadoop.hive.llap.daemon.SchedulerFragmentCompletingListener;
 import org.apache.hadoop.hive.llap.daemon.impl.comparator.LlapQueueComparatorBase;
@@ -53,6 +54,7 @@ import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
 import org.apache.hadoop.hive.llap.tezplugins.helpers.MonotonicClock;
 import org.apache.hadoop.service.AbstractService;
 import org.apache.hadoop.yarn.util.Clock;
+import org.apache.tez.common.counters.TezCounters;
 import org.apache.tez.runtime.task.EndReason;
 import org.apache.tez.runtime.task.TaskRunner2Result;
 import org.slf4j.Logger;
@@ -466,6 +468,7 @@ public class TaskExecutorService extends AbstractService
       if (evictedTask == null || !evictedTask.equals(taskWrapper)) {
         knownTasks.put(taskWrapper.getRequestId(), taskWrapper);
         taskWrapper.setIsInWaitQueue(true);
+        task.setWmCountersQueued();
         if (LOG.isDebugEnabled()) {
           LOG.debug("{} added to wait queue. Current wait queue size={}", task.getRequestId(),
               waitQueue.size());
@@ -612,6 +615,7 @@ public class TaskExecutorService extends AbstractService
             LOG.debug("Removing {} from waitQueue", fragmentId);
           }
           taskWrapper.setIsInWaitQueue(false);
+          taskWrapper.getTaskRunnerCallable().setWmCountersDone();
           if (waitQueue.remove(taskWrapper)) {
             if (metrics != null) {
               metrics.setExecutorNumQueuedRequests(waitQueue.size());
@@ -624,6 +628,7 @@ public class TaskExecutorService extends AbstractService
           }
           removeFromPreemptionQueue(taskWrapper);
         }
+        taskWrapper.getTaskRunnerCallable().setWmCountersDone();
         // TODO: this will probably send a message to AM. Is that needed here?
         taskWrapper.getTaskRunnerCallable().killTask();
       } else {
@@ -674,10 +679,12 @@ public class TaskExecutorService extends AbstractService
     if (LOG.isInfoEnabled()) {
       LOG.info("Attempting to execute {}", taskWrapper);
     }
-    ListenableFuture<TaskRunner2Result> future = executorService.submit(
-        taskWrapper.getTaskRunnerCallable());
+    TaskRunnerCallable task = taskWrapper.getTaskRunnerCallable();
+    task.setWmCountersRunning();
+    ListenableFuture<TaskRunner2Result> future = executorService.submit(task);
     runningFragmentCount.incrementAndGet();
     taskWrapper.setIsInWaitQueue(false);
+
     FutureCallback<TaskRunner2Result> wrappedCallback = createInternalCompletionListener(
       taskWrapper);
     // Callback on a separate thread so that when a task completes, the thread in the main queue
@@ -923,6 +930,7 @@ public class TaskExecutorService extends AbstractService
       knownTasks.remove(taskWrapper.getRequestId());
       taskWrapper.setIsInPreemptableQueue(false);
       taskWrapper.maybeUnregisterForFinishedStateNotifications();
+      taskWrapper.getTaskRunnerCallable().setWmCountersDone();
       updatePreemptionListAndNotify(result.getEndReason());
       taskWrapper.getTaskRunnerCallable().getCallback().onSuccess(result);
     }
@@ -937,6 +945,7 @@ public class TaskExecutorService extends AbstractService
       knownTasks.remove(taskWrapper.getRequestId());
       taskWrapper.setIsInPreemptableQueue(false);
       taskWrapper.maybeUnregisterForFinishedStateNotifications();
+      taskWrapper.getTaskRunnerCallable().setWmCountersDone();
       updatePreemptionListAndNotify(null);
       taskWrapper.getTaskRunnerCallable().getCallback().onFailure(t);
       LOG.error("Failed notification received: Stacktrace: " + ExceptionUtils.getStackTrace(t));

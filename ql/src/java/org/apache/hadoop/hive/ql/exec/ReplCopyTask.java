@@ -83,7 +83,7 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
       if (ReplChangeManager.isCMFileUri(fromPath, srcFs)) {
         String[] result = ReplChangeManager.getFileWithChksumFromURI(fromPath.toString());
         ReplChangeManager.FileInfo sourceInfo = ReplChangeManager
-            .getFileInfo(new Path(result[0]), result[1], conf);
+            .getFileInfo(new Path(result[0]), result[1], result[2], conf);
         if (FileUtils.copy(
             sourceInfo.getSrcFs(), sourceInfo.getSourcePath(),
             dstFs, toPath, false, false, conf)) {
@@ -130,7 +130,7 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
           console.printInfo("Copying file: " + oneSrc.getPath().toString());
           LOG.debug("ReplCopyTask :cp:{}=>{}", oneSrc.getPath(), toPath);
           srcFiles.add(new ReplChangeManager.FileInfo(oneSrc.getPath().getFileSystem(conf),
-                                                      oneSrc.getPath()));
+                                                      oneSrc.getPath(), null));
         }
       }
 
@@ -163,8 +163,8 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
       }
       return 0;
     } catch (Exception e) {
-      console.printError("Failed with exception " + e.getMessage(), "\n"
-          + StringUtils.stringifyException(e));
+      LOG.error(StringUtils.stringifyException(e));
+      setException(e);
       return (1);
     }
   }
@@ -183,14 +183,14 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
     try (BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(fileListing)))) {
       // TODO : verify if skipping charset here is okay
 
-      String line = null;
+      String line;
       while ((line = br.readLine()) != null) {
         LOG.debug("ReplCopyTask :_filesReadLine: {}", line);
 
         String[] fileWithChksum = ReplChangeManager.getFileWithChksumFromURI(line);
         try {
           ReplChangeManager.FileInfo f = ReplChangeManager
-              .getFileInfo(new Path(fileWithChksum[0]), fileWithChksum[1], conf);
+              .getFileInfo(new Path(fileWithChksum[0]), fileWithChksum[1], fileWithChksum[2], conf);
           filePaths.add(f);
         } catch (MetaException e) {
           // issue warning for missing file and throw exception
@@ -236,10 +236,10 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
         String distCpDoAsUser = conf.getVar(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER);
         rcwork.setDistCpDoAsUser(distCpDoAsUser);
       }
-      copyTask = TaskFactory.get(rcwork, conf, true);
+      copyTask = TaskFactory.get(rcwork, conf);
     } else {
       LOG.debug("ReplCopyTask:\tcwork");
-      copyTask = TaskFactory.get(new CopyWork(srcPath, dstPath, false), conf, true);
+      copyTask = TaskFactory.get(new CopyWork(srcPath, dstPath, false), conf);
     }
     return copyTask;
   }

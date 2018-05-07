@@ -47,7 +47,7 @@ import org.slf4j.LoggerFactory;
     schemes.put(TupleScheme.class, new WMAlterPoolRequestTupleSchemeFactory());
   }
 
-  private WMPool pool; // optional
+  private WMNullablePool pool; // optional
   private String poolPath; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
@@ -117,7 +117,7 @@ import org.slf4j.LoggerFactory;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.POOL, new org.apache.thrift.meta_data.FieldMetaData("pool", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
-        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, WMPool.class)));
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, WMNullablePool.class)));
     tmpMap.put(_Fields.POOL_PATH, new org.apache.thrift.meta_data.FieldMetaData("poolPath", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -132,7 +132,7 @@ import org.slf4j.LoggerFactory;
    */
   public WMAlterPoolRequest(WMAlterPoolRequest other) {
     if (other.isSetPool()) {
-      this.pool = new WMPool(other.pool);
+      this.pool = new WMNullablePool(other.pool);
     }
     if (other.isSetPoolPath()) {
       this.poolPath = other.poolPath;
@@ -149,11 +149,11 @@ import org.slf4j.LoggerFactory;
     this.poolPath = null;
   }
 
-  public WMPool getPool() {
+  public WMNullablePool getPool() {
     return this.pool;
   }
 
-  public void setPool(WMPool pool) {
+  public void setPool(WMNullablePool pool) {
     this.pool = pool;
   }
 
@@ -201,7 +201,7 @@ import org.slf4j.LoggerFactory;
       if (value == null) {
         unsetPool();
       } else {
-        setPool((WMPool)value);
+        setPool((WMNullablePool)value);
       }
       break;
 
@@ -409,7 +409,7 @@ import org.slf4j.LoggerFactory;
         switch (schemeField.id) {
           case 1: // POOL
             if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
-              struct.pool = new WMPool();
+              struct.pool = new WMNullablePool();
               struct.pool.read(iprot);
               struct.setPoolIsSet(true);
             } else { 
@@ -489,7 +489,7 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol iprot = (TTupleProtocol) prot;
       BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {
-        struct.pool = new WMPool();
+        struct.pool = new WMNullablePool();
         struct.pool.read(iprot);
         struct.setPoolIsSet(true);
       }

@@ -1,3 +1,5 @@
+--! qt:dataset:srcpart
+--! qt:dataset:src
 set hive.support.quoted.identifiers=none;
 EXPLAIN 
 SHOW TABLE EXTENDED IN default LIKE `src`;

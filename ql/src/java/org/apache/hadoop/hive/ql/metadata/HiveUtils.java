@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -26,10 +26,8 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.tez.TezContext;
-import org.apache.hadoop.hive.ql.index.HiveIndexHandler;
 import org.apache.hadoop.hive.ql.security.HadoopDefaultAuthenticator;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider;
@@ -315,24 +313,6 @@ public final class HiveUtils {
     // prevent instantiation
   }
 
-  public static HiveIndexHandler getIndexHandler(HiveConf conf,
-      String indexHandlerClass) throws HiveException {
-
-    if (indexHandlerClass == null) {
-      return null;
-    }
-    try {
-      Class<? extends HiveIndexHandler> handlerClass =
-        (Class<? extends HiveIndexHandler>)
-        Class.forName(indexHandlerClass, true, Utilities.getSessionSpecifiedClassLoader());
-      HiveIndexHandler indexHandler = ReflectionUtils.newInstance(handlerClass, conf);
-      return indexHandler;
-    } catch (ClassNotFoundException e) {
-      throw new HiveException("Error in loading index handler."
-          + e.getMessage(), e);
-    }
-  }
-
   @SuppressWarnings("unchecked")
   public static List<HiveMetastoreAuthorizationProvider> getMetaStoreAuthorizeProviderManagers(
       Configuration conf, HiveConf.ConfVars authorizationProviderConfKey,
@@ -438,22 +418,6 @@ public final class HiveUtils {
     return ret;
   }
 
-
-  /**
-   * Convert FieldSchemas to columnNames with backticks around them.
-   */
-  public static String getUnparsedColumnNamesFromFieldSchema(
-      List<FieldSchema> fieldSchemas) {
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < fieldSchemas.size(); i++) {
-      if (i > 0) {
-        sb.append(",");
-      }
-      sb.append(HiveUtils.unparseIdentifier(fieldSchemas.get(i).getName()));
-    }
-    return sb.toString();
-  }
-
   public static String getLocalDirList(Configuration conf) {
     if (HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
       TezContext tezContext = (TezContext) TezContext.get();
@@ -463,5 +427,15 @@ public final class HiveUtils {
     }
 
     return null;
+  }
+
+  public static String getReplPolicy(String dbName, String tableName) {
+    if ((dbName == null) || (dbName.isEmpty())) {
+      return null;
+    } else if ((tableName == null) || (tableName.isEmpty())) {
+      return dbName.toLowerCase() + ".*";
+    } else {
+      return dbName.toLowerCase() + "." + tableName.toLowerCase();
+    }
   }
 }

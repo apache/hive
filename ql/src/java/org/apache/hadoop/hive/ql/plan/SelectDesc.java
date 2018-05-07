@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+import org.apache.hadoop.hive.ql.optimizer.signature.Signature;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
 
@@ -72,6 +73,7 @@ public class SelectDesc extends AbstractOperatorDesc {
     return ret;
   }
 
+  @Signature
   @Explain(displayName = "expressions")
   public String getColListString() {
     return PlanUtils.getExprListString(colList);
@@ -86,6 +88,7 @@ public class SelectDesc extends AbstractOperatorDesc {
     this.colList = colList;
   }
 
+  @Signature
   @Explain(displayName = "outputColumnNames")
   public List<java.lang.String> getOutputColumnNames() {
     return outputColumnNames;
@@ -101,6 +104,7 @@ public class SelectDesc extends AbstractOperatorDesc {
     this.outputColumnNames = outputColumnNames;
   }
 
+  @Signature
   @Explain(displayName = "SELECT * ")
   public String explainNoCompute() {
     if (isSelStarNoCompute()) {
@@ -184,4 +188,5 @@ public class SelectDesc extends AbstractOperatorDesc {
     }
     return false;
   }
+
 }

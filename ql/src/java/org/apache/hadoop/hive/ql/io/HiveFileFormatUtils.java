@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
+import org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -91,6 +92,7 @@ public final class HiveFileFormatUtils {
 
     // immutable maps
     Map<Class<? extends InputFormat>, Class<? extends InputFormatChecker>> inputFormatCheckerMap;
+    Map<Class<? extends InputFormat>, Class<? extends InputFormatChecker>> textInputFormatCheckerMap;
     Map<Class<?>, Class<? extends OutputFormat>> outputFormatSubstituteMap;
 
     // mutable thread-safe map to store instances
@@ -113,6 +115,11 @@ public final class HiveFileFormatUtils {
           .put(SequenceFileInputFormat.class, SequenceFileInputFormatChecker.class)
           .put(RCFileInputFormat.class, RCFileInputFormat.class)
           .put(OrcInputFormat.class, OrcInputFormat.class)
+          .put(MapredParquetInputFormat.class, MapredParquetInputFormat.class)
+          .build();
+      textInputFormatCheckerMap = ImmutableMap
+          .<Class<? extends InputFormat>, Class<? extends InputFormatChecker>>builder()
+          .put(SequenceFileInputFormat.class, SequenceFileInputFormatChecker.class)
           .build();
       outputFormatSubstituteMap = ImmutableMap
           .<Class<?>, Class<? extends OutputFormat>>builder()
@@ -127,6 +134,10 @@ public final class HiveFileFormatUtils {
 
     public Set<Class<? extends InputFormat>> registeredClasses() {
       return inputFormatCheckerMap.keySet();
+    }
+
+    public Set<Class<? extends InputFormat>> registeredTextClasses() {
+      return textInputFormatCheckerMap.keySet();
     }
 
     public Class<? extends OutputFormat> getOutputFormatSubstiture(Class<?> origin) {
@@ -214,7 +225,7 @@ public final class HiveFileFormatUtils {
       }
     }
     if (files2.isEmpty()) return true;
-    Set<Class<? extends InputFormat>> inputFormatter = FileChecker.getInstance().registeredClasses();
+    Set<Class<? extends InputFormat>> inputFormatter = FileChecker.getInstance().registeredTextClasses();
     for (Class<? extends InputFormat> reg : inputFormatter) {
       boolean result = checkInputFormat(fs, conf, reg, files2);
       if (result) {
@@ -341,8 +352,8 @@ public final class HiveFileFormatUtils {
         .tableProperties(tableProp)
         .reporter(reporter)
         .writingBase(conf.getInsertOverwrite())
-        .minimumTransactionId(conf.getTransactionId())
-        .maximumTransactionId(conf.getTransactionId())
+        .minimumWriteId(conf.getTableWriteId())
+        .maximumWriteId(conf.getTableWriteId())
         .bucket(bucket)
         .inspector(inspector)
         .recordIdColumn(rowIdColNum)

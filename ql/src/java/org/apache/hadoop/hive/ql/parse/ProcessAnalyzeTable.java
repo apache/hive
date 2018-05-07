@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -103,7 +103,7 @@ public class ProcessAnalyzeTable implements NodeProcessor {
           PrunedPartitionList partList = new PrunedPartitionList(table, confirmedParts, partCols, false);
           statWork.addInputPartitions(partList.getPartitions());
         }
-        Task<StatsWork> snjTask = TaskFactory.get(statWork, parseContext.getConf());
+        Task<StatsWork> snjTask = TaskFactory.get(statWork);
         snjTask.setParentTasks(null);
         context.rootTasks.remove(context.currentTask);
         context.rootTasks.add(snjTask);
@@ -115,12 +115,13 @@ public class ProcessAnalyzeTable implements NodeProcessor {
         // The Tez task is just a simple TableScanOperator
 
         BasicStatsWork basicStatsWork = new BasicStatsWork(table.getTableSpec());
+        basicStatsWork.setIsExplicitAnalyze(true);
         basicStatsWork.setNoScanAnalyzeCommand(parseContext.getQueryProperties().isNoScanAnalyzeCommand());
         StatsWork columnStatsWork = new StatsWork(table, basicStatsWork, parseContext.getConf());
         columnStatsWork.collectStatsFromAggregator(tableScan.getConf());
 
         columnStatsWork.setSourceTask(context.currentTask);
-        Task<StatsWork> statsTask = TaskFactory.get(columnStatsWork, parseContext.getConf());
+        Task<StatsWork> statsTask = TaskFactory.get(columnStatsWork);
         context.currentTask.addDependentTask(statsTask);
 
         // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS noscan;

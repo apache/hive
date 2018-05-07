@@ -741,3 +741,237 @@ POSTHOOK: Input: default@cbo_t2
 POSTHOOK: Input: default@cbo_t2@dt=2014
 #### A masked pattern was here ####
 400
+PREHOOK: query: EXPLAIN select * from cbo_t2 where (cbo_t2.c_int) IN (cbo_t2.c_int)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN select * from cbo_t2 where (cbo_t2.c_int) IN (cbo_t2.c_int)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: cbo_t2
+          Statistics: Num rows: 20 Data size: 7138 Basic stats: COMPLETE Column stats: COMPLETE
+          Filter Operator
+            predicate: (c_int = c_int) (type: boolean)
+            Statistics: Num rows: 10 Data size: 3660 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              expressions: key (type: string), value (type: string), c_int (type: int), c_float (type: float), c_boolean (type: boolean), dt (type: string)
+              outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+              Statistics: Num rows: 10 Data size: 3660 Basic stats: COMPLETE Column stats: COMPLETE
+              ListSink
+
+PREHOOK: query: -- c_int is not null
+EXPLAIN select * from cbo_t2 where (cbo_t2.c_int) IN (2*cbo_t2.c_int)
+PREHOOK: type: QUERY
+POSTHOOK: query: -- c_int is not null
+EXPLAIN select * from cbo_t2 where (cbo_t2.c_int) IN (2*cbo_t2.c_int)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: cbo_t2
+          Statistics: Num rows: 20 Data size: 7138 Basic stats: COMPLETE Column stats: COMPLETE
+          Filter Operator
+            predicate: (c_int = (2 * c_int)) (type: boolean)
+            Statistics: Num rows: 10 Data size: 3660 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              expressions: key (type: string), value (type: string), c_int (type: int), c_float (type: float), c_boolean (type: boolean), dt (type: string)
+              outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+              Statistics: Num rows: 10 Data size: 3660 Basic stats: COMPLETE Column stats: COMPLETE
+              ListSink
+
+PREHOOK: query: -- c_int is 0
+EXPLAIN select * from cbo_t2 where (cbo_t2.c_int) = (cbo_t2.c_int)
+PREHOOK: type: QUERY
+POSTHOOK: query: -- c_int is 0
+EXPLAIN select * from cbo_t2 where (cbo_t2.c_int) = (cbo_t2.c_int)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: cbo_t2
+          Statistics: Num rows: 20 Data size: 7138 Basic stats: COMPLETE Column stats: COMPLETE
+          Filter Operator
+            predicate: (c_int = c_int) (type: boolean)
+            Statistics: Num rows: 10 Data size: 3660 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              expressions: key (type: string), value (type: string), c_int (type: int), c_float (type: float), c_boolean (type: boolean), dt (type: string)
+              outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+              Statistics: Num rows: 10 Data size: 3660 Basic stats: COMPLETE Column stats: COMPLETE
+              ListSink
+
+PREHOOK: query: -- c_int is not null
+EXPLAIN select * from cbo_t2 where (cbo_t2.c_int) IN (NULL)
+PREHOOK: type: QUERY
+POSTHOOK: query: -- c_int is not null
+EXPLAIN select * from cbo_t2 where (cbo_t2.c_int) IN (NULL)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: cbo_t2
+          Statistics: Num rows: 20 Data size: 7138 Basic stats: COMPLETE Column stats: COMPLETE
+          Filter Operator
+            predicate: (c_int = null) (type: boolean)
+            Statistics: Num rows: 10 Data size: 3660 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              expressions: key (type: string), value (type: string), null (type: int), c_float (type: float), c_boolean (type: boolean), dt (type: string)
+              outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+              Statistics: Num rows: 10 Data size: 3624 Basic stats: COMPLETE Column stats: COMPLETE
+              ListSink
+
+PREHOOK: query: -- rewrite to NULL
+EXPLAIN select * from cbo_t2 where (cbo_t2.c_int) IN (cbo_t2.c_int, 2*cbo_t2.c_int)
+PREHOOK: type: QUERY
+POSTHOOK: query: -- rewrite to NULL
+EXPLAIN select * from cbo_t2 where (cbo_t2.c_int) IN (cbo_t2.c_int, 2*cbo_t2.c_int)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: cbo_t2
+          Statistics: Num rows: 20 Data size: 7138 Basic stats: COMPLETE Column stats: COMPLETE
+          Filter Operator
+            predicate: (c_int) IN (c_int, (2 * c_int)) (type: boolean)
+            Statistics: Num rows: 10 Data size: 3660 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              expressions: key (type: string), value (type: string), c_int (type: int), c_float (type: float), c_boolean (type: boolean), dt (type: string)
+              outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+              Statistics: Num rows: 10 Data size: 3660 Basic stats: COMPLETE Column stats: COMPLETE
+              ListSink
+
+PREHOOK: query: -- no rewrite
+EXPLAIN select * from cbo_t2 where (cbo_t2.c_int) IN (cbo_t2.c_int, 0)
+PREHOOK: type: QUERY
+POSTHOOK: query: -- no rewrite
+EXPLAIN select * from cbo_t2 where (cbo_t2.c_int) IN (cbo_t2.c_int, 0)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: cbo_t2
+          Statistics: Num rows: 20 Data size: 7138 Basic stats: COMPLETE Column stats: COMPLETE
+          Filter Operator
+            predicate: (c_int) IN (c_int, 0) (type: boolean)
+            Statistics: Num rows: 10 Data size: 3660 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              expressions: key (type: string), value (type: string), c_int (type: int), c_float (type: float), c_boolean (type: boolean), dt (type: string)
+              outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+              Statistics: Num rows: 10 Data size: 3660 Basic stats: COMPLETE Column stats: COMPLETE
+              ListSink
+
+PREHOOK: query: -- no rewrite
+
+select count(*) from cbo_t2 where (cbo_t2.c_int) IN (cbo_t2.c_int)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t2
+PREHOOK: Input: default@cbo_t2@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: -- no rewrite
+
+select count(*) from cbo_t2 where (cbo_t2.c_int) IN (cbo_t2.c_int)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t2
+POSTHOOK: Input: default@cbo_t2@dt=2014
+#### A masked pattern was here ####
+18
+PREHOOK: query: -- c_int is not null
+select count(*) from cbo_t2 where (cbo_t2.c_int) IN (2*cbo_t2.c_int)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t2
+PREHOOK: Input: default@cbo_t2@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: -- c_int is not null
+select count(*) from cbo_t2 where (cbo_t2.c_int) IN (2*cbo_t2.c_int)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t2
+POSTHOOK: Input: default@cbo_t2@dt=2014
+#### A masked pattern was here ####
+0
+PREHOOK: query: -- c_int is 0
+select count(*) from cbo_t2 where (cbo_t2.c_int) = (cbo_t2.c_int)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t2
+PREHOOK: Input: default@cbo_t2@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: -- c_int is 0
+select count(*) from cbo_t2 where (cbo_t2.c_int) = (cbo_t2.c_int)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t2
+POSTHOOK: Input: default@cbo_t2@dt=2014
+#### A masked pattern was here ####
+18
+PREHOOK: query: -- c_int is not null
+select count(*) from cbo_t2 where (cbo_t2.c_int) IN (NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t2
+PREHOOK: Input: default@cbo_t2@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: -- c_int is not null
+select count(*) from cbo_t2 where (cbo_t2.c_int) IN (NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t2
+POSTHOOK: Input: default@cbo_t2@dt=2014
+#### A masked pattern was here ####
+0
+PREHOOK: query: -- rewrite to NULL
+select count(*) from cbo_t2 where (cbo_t2.c_int) IN (cbo_t2.c_int, 2*cbo_t2.c_int)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t2
+PREHOOK: Input: default@cbo_t2@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: -- rewrite to NULL
+select count(*) from cbo_t2 where (cbo_t2.c_int) IN (cbo_t2.c_int, 2*cbo_t2.c_int)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t2
+POSTHOOK: Input: default@cbo_t2@dt=2014
+#### A masked pattern was here ####
+18
+PREHOOK: query: -- no rewrite
+select count(*) from cbo_t2 where (cbo_t2.c_int) IN (cbo_t2.c_int, 0)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t2
+PREHOOK: Input: default@cbo_t2@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: -- no rewrite
+select count(*) from cbo_t2 where (cbo_t2.c_int) IN (cbo_t2.c_int, 0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t2
+POSTHOOK: Input: default@cbo_t2@dt=2014
+#### A masked pattern was here ####
+18

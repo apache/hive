@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -31,6 +31,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
+import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
@@ -100,6 +102,8 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
   List<SQLForeignKey> foreignKeys;
   List<SQLUniqueConstraint> uniqueConstraints;
   List<SQLNotNullConstraint> notNullConstraints;
+  List<SQLDefaultConstraint> defaultConstraints;
+  List<SQLCheckConstraint> checkConstraints;
   private Long initialMmWriteId; // Initial MM write ID for CTAS and import.
   // The FSOP configuration for the FSOP that is going to write initial data during ctas.
   // This is not needed beyond compilation, so it is transient.
@@ -119,14 +123,15 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
       Map<String, String> tblProps,
       boolean ifNotExists, List<String> skewedColNames, List<List<String>> skewedColValues,
       List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys,
-      List<SQLUniqueConstraint> uniqueConstraints, List<SQLNotNullConstraint> notNullConstraints) {
+      List<SQLUniqueConstraint> uniqueConstraints, List<SQLNotNullConstraint> notNullConstraints,
+      List<SQLDefaultConstraint> defaultConstraints, List<SQLCheckConstraint> checkConstraints) {
 
     this(tableName, isExternal, isTemporary, cols, partCols,
         bucketCols, sortCols, numBuckets, fieldDelim, fieldEscape,
         collItemDelim, mapKeyDelim, lineDelim, comment, inputFormat,
         outputFormat, location, serName, storageHandler, serdeProps,
         tblProps, ifNotExists, skewedColNames, skewedColValues,
-        primaryKeys, foreignKeys, uniqueConstraints, notNullConstraints);
+        primaryKeys, foreignKeys, uniqueConstraints, notNullConstraints, defaultConstraints, checkConstraints);
 
     this.databaseName = databaseName;
   }
@@ -142,13 +147,14 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
                          Map<String, String> tblProps,
                          boolean ifNotExists, List<String> skewedColNames, List<List<String>> skewedColValues,
                          boolean isCTAS, List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys,
-                         List<SQLUniqueConstraint> uniqueConstraints, List<SQLNotNullConstraint> notNullConstraints) {
+                         List<SQLUniqueConstraint> uniqueConstraints, List<SQLNotNullConstraint> notNullConstraints,
+                         List<SQLDefaultConstraint> defaultConstraints, List<SQLCheckConstraint> checkConstraints) {
     this(databaseName, tableName, isExternal, isTemporary, cols, partCols,
             bucketCols, sortCols, numBuckets, fieldDelim, fieldEscape,
             collItemDelim, mapKeyDelim, lineDelim, comment, inputFormat,
             outputFormat, location, serName, storageHandler, serdeProps,
             tblProps, ifNotExists, skewedColNames, skewedColValues,
-            primaryKeys, foreignKeys, uniqueConstraints, notNullConstraints);
+            primaryKeys, foreignKeys, uniqueConstraints, notNullConstraints, defaultConstraints, checkConstraints);
     this.isCTAS = isCTAS;
 
   }
@@ -165,7 +171,8 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
       Map<String, String> tblProps,
       boolean ifNotExists, List<String> skewedColNames, List<List<String>> skewedColValues,
       List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys,
-      List<SQLUniqueConstraint> uniqueConstraints, List<SQLNotNullConstraint> notNullConstraints) {
+      List<SQLUniqueConstraint> uniqueConstraints, List<SQLNotNullConstraint> notNullConstraints,
+      List<SQLDefaultConstraint> defaultConstraints, List<SQLCheckConstraint> checkConstraints) {
     this.tableName = tableName;
     this.isExternal = isExternal;
     this.isTemporary = isTemporary;
@@ -194,6 +201,8 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
     this.foreignKeys = copyList(foreignKeys);
     this.uniqueConstraints = copyList(uniqueConstraints);
     this.notNullConstraints = copyList(notNullConstraints);
+    this.defaultConstraints = copyList(defaultConstraints);
+    this.checkConstraints= copyList(checkConstraints);
   }
 
   private static <T> List<T> copyList(List<T> copy) {
@@ -271,6 +280,12 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
   public List<SQLNotNullConstraint> getNotNullConstraints() {
     return notNullConstraints;
   }
+
+  public List<SQLDefaultConstraint> getDefaultConstraints() {
+    return defaultConstraints;
+  }
+
+  public List<SQLCheckConstraint> getCheckConstraints() { return checkConstraints; }
 
   @Explain(displayName = "bucket columns")
   public List<String> getBucketCols() {

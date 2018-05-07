@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -26,12 +26,19 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Strings;
 
 import com.google.common.base.Throwables;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
+import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatisticsNames;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.DriverContext;
@@ -69,7 +76,6 @@ import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.util.StringUtils;
 
 import com.google.common.collect.Lists;
-import org.apache.spark.SparkException;
 
 public class SparkTask extends Task<SparkWork> {
   private static final String CLASS_NAME = SparkTask.class.getName();
@@ -77,7 +83,10 @@ public class SparkTask extends Task<SparkWork> {
   private static final LogHelper console = new LogHelper(LOG);
   private PerfLogger perfLogger;
   private static final long serialVersionUID = 1L;
-  private transient String sparkJobID;
+  // The id of the actual Spark job
+  private transient int sparkJobID;
+  // The id of the JobHandle used to track the actual Spark job
+  private transient String sparkJobHandleId;
   private transient SparkStatistics sparkStatistics;
   private transient long submitTime;
   private transient long startTime;
@@ -111,37 +120,63 @@ public class SparkTask extends Task<SparkWork> {
       SparkWork sparkWork = getWork();
       sparkWork.setRequiredCounterPrefix(getOperatorCounters());
 
+      // Submit the Spark job
       perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_SUBMIT_JOB);
       submitTime = perfLogger.getStartTime(PerfLogger.SPARK_SUBMIT_JOB);
       jobRef = sparkSession.submit(driverContext, sparkWork);
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_SUBMIT_JOB);
 
+      // If the driver context has been shutdown (due to query cancellation) kill the Spark job
       if (driverContext.isShutdown()) {
+        LOG.warn("Killing Spark job");
         killJob();
-        throw new HiveException("Operation is cancelled.");
+        throw new HiveException(String.format("Spark task %s cancelled for query %s", getId(), sparkWork.getQueryId()));
       }
 
-      addToHistory(jobRef);
-      sparkJobID = jobRef.getJobId();
-      this.jobID = jobRef.getSparkJobStatus().getAppID();
+      // Get the Job Handle id associated with the Spark job
+      sparkJobHandleId = jobRef.getJobId();
+
+      // Add Spark job handle id to the Hive History
+      addToHistory(Keys.SPARK_JOB_HANDLE_ID, jobRef.getJobId());
+
+      LOG.debug("Starting Spark job with job handle id " + sparkJobHandleId);
+
+      // Get the application id of the Spark app
+      jobID = jobRef.getSparkJobStatus().getAppID();
+
+      // Start monitoring the Spark job, returns when the Spark job has completed / failed, or if
+      // a timeout occurs
       rc = jobRef.monitorJob();
+
+      // Get the id the Spark job that was launched, returns -1 if no Spark job was launched
+      sparkJobID = jobRef.getSparkJobStatus().getJobId();
+
+      // Add Spark job id to the Hive History
+      addToHistory(Keys.SPARK_JOB_ID, Integer.toString(sparkJobID));
+
+      // Get the final state of the Spark job and parses its job info
       SparkJobStatus sparkJobStatus = jobRef.getSparkJobStatus();
-      getSparkJobInfo(sparkJobStatus, rc);
+      getSparkJobInfo(sparkJobStatus);
+      setSparkException(sparkJobStatus, rc);
+
       if (rc == 0) {
         sparkStatistics = sparkJobStatus.getSparkStatistics();
+        printExcessiveGCWarning();
         if (LOG.isInfoEnabled() && sparkStatistics != null) {
-          LOG.info(String.format("=====Spark Job[%s] statistics=====", jobRef.getJobId()));
-          logSparkStatistic(sparkStatistics);
+          LOG.info(sparkStatisticsToString(sparkStatistics, sparkJobID));
         }
-        LOG.info("Execution completed successfully");
+        LOG.info("Successfully completed Spark job[" + sparkJobID + "] with application ID " +
+                jobID + " and task ID " + getId());
       } else if (rc == 2) { // Cancel job if the monitor found job submission timeout.
         // TODO: If the timeout is because of lack of resources in the cluster, we should
         // ideally also cancel the app request here. But w/o facilities from Spark or YARN,
         // it's difficult to do it on hive side alone. See HIVE-12650.
-        LOG.info("Failed to submit Spark job " + sparkJobID);
+        LOG.debug("Failed to submit Spark job with job handle id " + sparkJobHandleId);
+        LOG.info("Failed to submit Spark job for application id " + (Strings.isNullOrEmpty(jobID)
+                ? "UNKNOWN" : jobID));
         killJob();
       } else if (rc == 4) {
-        LOG.info("The spark job or one stage of it has too many tasks" +
+        LOG.info("The Spark job or one stage of it has too many tasks" +
             ". Cancelling Spark job " + sparkJobID + " with application ID " + jobID );
         killJob();
       }
@@ -151,7 +186,7 @@ public class SparkTask extends Task<SparkWork> {
       }
       sparkJobStatus.cleanup();
     } catch (Exception e) {
-      String msg = "Failed to execute spark task, with exception '" + Utilities.getNameMessage(e) + "'";
+      String msg = "Failed to execute Spark task " + getId() + ", with exception '" + Utilities.getNameMessage(e) + "'";
 
       // Has to use full name to make sure it does not conflict with
       // org.apache.commons.lang.StringUtils
@@ -187,25 +222,57 @@ public class SparkTask extends Task<SparkWork> {
     return rc;
   }
 
-  private void addToHistory(SparkJobRef jobRef) {
-    console.printInfo("Starting Spark Job = " + jobRef.getJobId());
-    if (SessionState.get() != null) {
-      SessionState.get().getHiveHistory()
-	  .setQueryProperty(queryState.getQueryId(), Keys.SPARK_JOB_ID, jobRef.getJobId());
+  /**
+   * Use the Spark metrics and calculate how much task executione time was spent performing GC
+   * operations. If more than a defined threshold of time is spent, print out a warning on the
+   * console.
+   */
+  private void printExcessiveGCWarning() {
+    SparkStatisticGroup sparkStatisticGroup = sparkStatistics.getStatisticGroup(
+            SparkStatisticsNames.SPARK_GROUP_NAME);
+    if (sparkStatisticGroup != null) {
+      long taskDurationTime = Long.parseLong(sparkStatisticGroup.getSparkStatistic(
+              SparkStatisticsNames.TASK_DURATION_TIME).getValue());
+      long jvmGCTime = Long.parseLong(sparkStatisticGroup.getSparkStatistic(
+              SparkStatisticsNames.JVM_GC_TIME).getValue());
+
+      // Threshold percentage to trigger the GC warning
+      double threshold = 0.1;
+
+      if (jvmGCTime > taskDurationTime * threshold) {
+        long percentGcTime = Math.round((double) jvmGCTime / taskDurationTime * 100);
+        String gcWarning = String.format("WARNING: Spark Job[%s] Spent %s%% (%s ms / %s ms) of " +
+                "task time in GC", sparkJobID, percentGcTime, jvmGCTime, taskDurationTime);
+        console.printInfo(gcWarning);
+      }
     }
   }
 
-  private void logSparkStatistic(SparkStatistics sparkStatistic) {
+  private void addToHistory(Keys key, String value) {
+    if (SessionState.get() != null) {
+      SessionState.get().getHiveHistory().setQueryProperty(queryState.getQueryId(), key, value);
+    }
+  }
+
+  @VisibleForTesting
+  static String sparkStatisticsToString(SparkStatistics sparkStatistic, int sparkJobID) {
+    StringBuilder sparkStatsString = new StringBuilder();
+    sparkStatsString.append("\n\n");
+    sparkStatsString.append(String.format("=====Spark Job[%d] Statistics=====", sparkJobID));
+    sparkStatsString.append("\n\n");
+
     Iterator<SparkStatisticGroup> groupIterator = sparkStatistic.getStatisticGroups();
     while (groupIterator.hasNext()) {
       SparkStatisticGroup group = groupIterator.next();
-      LOG.info(group.getGroupName());
+      sparkStatsString.append(group.getGroupName()).append("\n");
       Iterator<SparkStatistic> statisticIterator = group.getStatistics();
       while (statisticIterator.hasNext()) {
         SparkStatistic statistic = statisticIterator.next();
-        LOG.info("\t" + statistic.getName() + ": " + statistic.getValue());
+        sparkStatsString.append("\t").append(statistic.getName()).append(": ").append(
+                statistic.getValue()).append("\n");
       }
     }
+    return sparkStatsString.toString();
   }
 
   /**
@@ -276,7 +343,7 @@ public class SparkTask extends Task<SparkWork> {
     return ((ReduceWork) children.get(0)).getReducer();
   }
 
-  public String getSparkJobID() {
+  public int getSparkJobID() {
     return sparkJobID;
   }
 
@@ -324,6 +391,7 @@ public class SparkTask extends Task<SparkWork> {
   }
 
   private void killJob() {
+    LOG.debug("Killing Spark job with job handle id " + sparkJobHandleId);
     boolean needToKillJob = false;
     if (jobRef != null && !jobKilled) {
       synchronized (this) {
@@ -337,7 +405,7 @@ public class SparkTask extends Task<SparkWork> {
       try {
         jobRef.cancelJob();
       } catch (Exception e) {
-        LOG.warn("failed to kill job", e);
+        LOG.warn("Failed to kill Spark job", e);
       }
     }
   }
@@ -374,8 +442,9 @@ public class SparkTask extends Task<SparkWork> {
             hiveCounters.add(((FileSinkOperator) operator).getCounterName(counter));
           }
         } else if (operator instanceof ReduceSinkOperator) {
+          final String contextName = conf.get(Operator.CONTEXT_NAME_KEY, "");
           for (ReduceSinkOperator.Counter counter : ReduceSinkOperator.Counter.values()) {
-            hiveCounters.add(((ReduceSinkOperator) operator).getCounterName(counter, conf));
+            hiveCounters.add(Utilities.getVertexCounterName(counter.name(), contextName));
           }
         } else if (operator instanceof ScriptOperator) {
           for (ScriptOperator.Counter counter : ScriptOperator.Counter.values()) {
@@ -392,7 +461,7 @@ public class SparkTask extends Task<SparkWork> {
     return counters;
   }
 
-  private void getSparkJobInfo(SparkJobStatus sparkJobStatus, int rc) {
+  private void getSparkJobInfo(SparkJobStatus sparkJobStatus) {
     try {
       stageIds = new ArrayList<Integer>();
       int[] ids = sparkJobStatus.getStageIds();
@@ -417,35 +486,68 @@ public class SparkTask extends Task<SparkWork> {
       succeededTaskCount = sumComplete;
       totalTaskCount = sumTotal;
       failedTaskCount = sumFailed;
-      if (rc != 0) {
-        Throwable error = sparkJobStatus.getError();
-        if (error != null) {
-          if ((error instanceof InterruptedException) ||
-              (error instanceof HiveException &&
-              error.getCause() instanceof InterruptedException)) {
-            killJob();
-          }
-          HiveException he;
-          if (isOOMError(error)) {
-            he = new HiveException(error, ErrorMsg.SPARK_RUNTIME_OOM);
-          } else {
-            he = new HiveException(error, ErrorMsg.SPARK_JOB_RUNTIME_ERROR);
-          }
-          setException(he);
-        }
-      }
     } catch (Exception e) {
       LOG.error("Failed to get Spark job information", e);
     }
+  }
+
+  @VisibleForTesting
+  void setSparkException(SparkJobStatus sparkJobStatus, int rc) {
+    if (rc != 0) {
+
+      // Set the Spark Job Exception
+      Throwable sparkJobException = sparkJobStatus.getSparkJobException();
+      if (sparkJobException != null) {
+        HiveException he;
+        if (isOOMError(sparkJobException)) {
+          he = new HiveException(sparkJobException, ErrorMsg.SPARK_RUNTIME_OOM);
+        } else if (isTaskFailure(sparkJobException)) {
+          he = new HiveException(sparkJobException, ErrorMsg.SPARK_TASK_RUNTIME_ERROR,
+                  Throwables.getRootCause(sparkJobException).getMessage());
+        } else {
+          he = new HiveException(sparkJobException, ErrorMsg.SPARK_JOB_RUNTIME_ERROR,
+                  Throwables.getRootCause(sparkJobException).getMessage());
+        }
+        setException(he);
+      }
+
+      // Set the Monitor Error
+      Throwable monitorError = sparkJobStatus.getMonitorError();
+      if (monitorError != null) {
+        if ((monitorError instanceof InterruptedException) ||
+                (monitorError instanceof HiveException &&
+                        monitorError.getCause() instanceof InterruptedException)) {
+          LOG.info("Killing Spark job since query was interrupted");
+          killJob();
+        }
+
+        // Prefer to propagate errors from the Spark job rather than the monitor, as errors from
+        // the Spark job are likely to be more relevant
+        if (getException() == null) {
+          setException(monitorError);
+        }
+      }
+    }
+  }
+
+  private boolean isTaskFailure(Throwable error) {
+    Pattern taskFailedPattern = Pattern.compile("Task.*in stage.*failed.*times");
+    while (error != null) {
+      if (taskFailedPattern.matcher(error.getMessage()).find()) {
+        return true;
+      }
+      error = error.getCause();
+    }
+    return false;
   }
 
   private boolean isOOMError(Throwable error) {
     while (error != null) {
       if (error instanceof OutOfMemoryError) {
         return true;
-      } else if (error instanceof SparkException) {
-        String sts = Throwables.getStackTraceAsString(error);
-        return sts.contains("Container killed by YARN for exceeding memory limits");
+      } else if (error.getMessage().contains("Container killed by YARN for exceeding memory " +
+              "limits")) {
+        return true;
       }
       error = error.getCause();
     }

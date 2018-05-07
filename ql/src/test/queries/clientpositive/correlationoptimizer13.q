@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 CREATE TABLE tmp(c1 INT, c2 INT, c3 STRING, c4 STRING);
 INSERT OVERWRITE TABLE tmp

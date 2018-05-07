@@ -35,7 +35,7 @@ public interface AlterHandler extends Configurable {
 
   /**
    * @deprecated As of release 2.2.0. Replaced by {@link #alterTable(RawStore, Warehouse, String,
-   * String, Table, EnvironmentContext, IHMSHandler)}
+   * String, String, Table, EnvironmentContext, IHMSHandler)}
    *
    * handles alter table, the changes could be cascaded to partitions if applicable
    *
@@ -43,6 +43,8 @@ public interface AlterHandler extends Configurable {
    *          object to get metadata
    * @param wh
    *          Hive Warehouse where table data is stored
+   * @param catName
+   *          catalog of the table being altered
    * @param dbname
    *          database of the table being altered
    * @param name
@@ -56,9 +58,11 @@ public interface AlterHandler extends Configurable {
    *           thrown if there is any other error
    */
   @Deprecated
-  void alterTable(RawStore msdb, Warehouse wh, String dbname,
+  default void alterTable(RawStore msdb, Warehouse wh, String catName, String dbname,
     String name, Table newTable, EnvironmentContext envContext)
-      throws InvalidOperationException, MetaException;
+      throws InvalidOperationException, MetaException {
+    alterTable(msdb, wh, catName, dbname, name, newTable, envContext, null);
+  }
 
   /**
    * handles alter table, the changes could be cascaded to partitions if applicable
@@ -67,6 +71,7 @@ public interface AlterHandler extends Configurable {
    *          object to get metadata
    * @param wh
    *          Hive Warehouse where table data is stored
+   * @param catName catalog of the table being altered
    * @param dbname
    *          database of the table being altered
    * @param name
@@ -81,7 +86,7 @@ public interface AlterHandler extends Configurable {
    * @throws MetaException
    *           thrown if there is any other error
    */
-  void alterTable(RawStore msdb, Warehouse wh, String dbname,
+  void alterTable(RawStore msdb, Warehouse wh, String catName, String dbname,
       String name, Table newTable, EnvironmentContext envContext,
       IHMSHandler handler) throws InvalidOperationException, MetaException;
 
@@ -119,7 +124,8 @@ public interface AlterHandler extends Configurable {
    *
    * @param msdb
    *          object to get metadata
-   * @param wh
+   * @param wh physical warehouse class
+   * @param catName catalog name
    * @param dbname
    *          database of the partition being altered
    * @param name
@@ -136,14 +142,15 @@ public interface AlterHandler extends Configurable {
    * @throws AlreadyExistsException
    * @throws MetaException
    */
-  Partition alterPartition(final RawStore msdb, Warehouse wh, final String dbname,
-    final String name, final List<String> part_vals, final Partition new_part, EnvironmentContext environmentContext,
-    IHMSHandler handler)
+  Partition alterPartition(final RawStore msdb, Warehouse wh, final String catName,
+                           final String dbname, final String name, final List<String> part_vals,
+                           final Partition new_part, EnvironmentContext environmentContext,
+                           IHMSHandler handler)
       throws InvalidOperationException, InvalidObjectException, AlreadyExistsException, MetaException;
 
   /**
-   * @deprecated As of release 2.2.0. Replaced by {@link #alterPartitions(RawStore, Warehouse, String,
-   * String, List, EnvironmentContext, IHMSHandler)}
+   * @deprecated As of release 3.0.0. Replaced by {@link #alterPartitions(RawStore, Warehouse, String,
+   * String, String, List, EnvironmentContext, IHMSHandler)}
    *
    * handles alter partitions
    *
@@ -188,7 +195,7 @@ public interface AlterHandler extends Configurable {
    * @throws AlreadyExistsException
    * @throws MetaException
    */
-  List<Partition> alterPartitions(final RawStore msdb, Warehouse wh,
+  List<Partition> alterPartitions(final RawStore msdb, Warehouse wh, final String catName,
     final String dbname, final String name, final List<Partition> new_parts,
     EnvironmentContext environmentContext,IHMSHandler handler)
       throws InvalidOperationException, InvalidObjectException, AlreadyExistsException, MetaException;

@@ -98,6 +98,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	5                   
 	rawDataSize         	1250                
@@ -115,12 +116,12 @@ Sort Columns:       	[]
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: analyze table table_change_numeric_group_string_group_floating_string_group compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@table_change_numeric_group_string_group_floating_string_group
 PREHOOK: Output: default@table_change_numeric_group_string_group_floating_string_group
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table table_change_numeric_group_string_group_floating_string_group compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_string_group
 POSTHOOK: Output: default@table_change_numeric_group_string_group_floating_string_group
 #### A masked pattern was here ####
@@ -157,6 +158,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"c1\":\"true\",\"c10\":\"true\",\"c12\":\"true\",\"c13\":\"true\",\"c15\":\"true\",\"c3\":\"true\",\"c4\":\"true\",\"c6\":\"true\",\"c7\":\"true\",\"c9\":\"true\",\"insert_num\":\"true\"}}
+	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	5                   
 	rawDataSize         	1250                
@@ -276,6 +278,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"c1\":\"true\",\"c10\":\"true\",\"c11\":\"true\",\"c12\":\"true\",\"c13\":\"true\",\"c14\":\"true\",\"c15\":\"true\",\"c2\":\"true\",\"c3\":\"true\",\"c4\":\"true\",\"c5\":\"true\",\"c6\":\"true\",\"c7\":\"true\",\"c8\":\"true\",\"c9\":\"true\",\"insert_num\":\"true\"}}
+	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	5                   
 	rawDataSize         	1250                

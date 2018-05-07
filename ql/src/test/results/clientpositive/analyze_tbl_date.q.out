@@ -8,18 +8,20 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table
 PREHOOK: query: insert into test_table values(null), (null), (null)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test_table
 POSTHOOK: query: insert into test_table values(null), (null), (null)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test_table
-POSTHOOK: Lineage: test_table.d EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: test_table.d EXPRESSION []
 PREHOOK: query: analyze table test_table compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@test_table
 PREHOOK: Output: default@test_table
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table test_table compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@test_table
 POSTHOOK: Output: default@test_table
 #### A masked pattern was here ####
@@ -40,6 +42,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"d\":\"true\"}}
+	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	3                   
 	rawDataSize         	6                   
@@ -85,6 +88,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator

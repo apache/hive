@@ -105,7 +105,7 @@ POSTHOOK: query: SELECT sort_array(array(map("b", 2, "a", 9, "c", 7), map("c", 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-[{"a":1,"b":5,"c":3},{"a":1,"b":8,"c":6},{"a":9,"b":2,"c":7}]
+[{"c":3,"b":5,"a":1},{"a":1,"c":6,"b":8},{"b":2,"a":9,"c":7}]
 PREHOOK: query: CREATE TABLE dest1 (
 	tinyints ARRAY<TINYINT>,
 	smallints ARRAY<SMALLINT>,

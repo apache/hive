@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -26,6 +27,7 @@ import org.apache.hadoop.hive.metastore.api.PartitionSpec;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.partition.spec.CompositePartitionSpecProxy;
@@ -34,10 +36,10 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.security.Permission;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -47,38 +49,16 @@ import java.util.Map;
 /**
  * Test to check PartitionSpec support in HiveMetaStore.
  */
+@Category(MetastoreCheckinTest.class)
 public class TestHiveMetaStorePartitionSpecs {
 
   private static final Logger LOG = LoggerFactory.getLogger(TestHiveMetaStorePartitionSpecs.class);
   private static int msPort;
   private static Configuration conf;
-  private static SecurityManager securityManager;
-
-  public static class NoExitSecurityManager extends SecurityManager {
-
-    @Override
-    public void checkPermission(Permission perm) {
-      // allow anything.
-    }
-
-    @Override
-    public void checkPermission(Permission perm, Object context) {
-      // allow anything.
-    }
-
-    @Override
-    public void checkExit(int status) {
-
-      super.checkExit(status);
-      throw new RuntimeException("System.exit() was called. Raising exception. ");
-    }
-  }
-
 
   @AfterClass
   public static void tearDown() throws Exception {
     LOG.info("Shutting down metastore.");
-    System.setSecurityManager(securityManager);
 
     HiveMetaStoreClient hmsc = new HiveMetaStoreClient(conf);
     hmsc.dropDatabase(dbName, true, true, true);
@@ -91,9 +71,7 @@ public class TestHiveMetaStorePartitionSpecs {
     MetastoreConf.setClass(metastoreConf, ConfVars.EXPRESSION_PROXY_CLASS,
       MockPartitionExpressionForMetastore.class, PartitionExpressionProxy.class);
     MetaStoreTestUtils.setConfForStandloneMode(metastoreConf);
-    msPort = MetaStoreTestUtils.startMetaStore(metastoreConf);
-    securityManager = System.getSecurityManager();
-    System.setSecurityManager(new NoExitSecurityManager());
+    msPort = MetaStoreTestUtils.startMetaStoreWithRetry(metastoreConf);
     conf = MetastoreConf.newMetastoreConf();
     MetastoreConf.setVar(conf, ConfVars.THRIFT_URIS, "thrift://localhost:" + msPort);
     MetastoreConf.setLongVar(conf, ConfVars.THRIFT_CONNECTION_RETRIES, 3);
@@ -144,11 +122,9 @@ public class TestHiveMetaStorePartitionSpecs {
                       true    // Cascade.
                       );
 
-    hmsc.createDatabase(new Database(dbName,
-                                     "",    // Description.
-                                     null,  // Location.
-                                     null   // Parameters.
-                       ));
+    new DatabaseBuilder()
+        .setName(dbName)
+        .create(hmsc, conf);
   }
 
   // Get partition-path. For grid='XYZ', place the partition outside the table-path.

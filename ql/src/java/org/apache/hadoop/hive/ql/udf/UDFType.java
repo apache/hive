@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -60,6 +60,16 @@ public @interface UDFType {
    * @return true
    */
   boolean stateful() default false;
+
+  /**
+   * Property used to mark functions like current_timestamp, current_date, current_database().
+   * These functions aren't actually deterministic (the values can change between queries),
+   * but the value returned by these functions should be consistent for the life of the query,
+   * so constant folding still applies for these functions.
+   * Queries using these functions should not be eligible for materialized views or query caching.
+   * @return true if the function is a runtime constant
+   */
+  boolean runtimeConstant() default false;
 
   /**
    * A UDF is considered distinctLike if the UDF can be evaluated on just the

@@ -1637,10 +1637,10 @@ POSTHOOK: Output: default@multi1_mm@p=1
 POSTHOOK: Output: default@multi1_mm@p=455
 POSTHOOK: Output: default@multi1_mm@p=456
 POSTHOOK: Output: default@multi1_mm@p=457
-POSTHOOK: Lineage: multi1_mm PARTITION(p=1).key SIMPLE [(intermediate)intermediate.FieldSchema(name:p, type:int, comment:null), ]
-POSTHOOK: Lineage: multi1_mm PARTITION(p=1).key2 SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: multi1_mm PARTITION(p=1).key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: multi1_mm PARTITION(p=1).key2 SIMPLE [(intermediate)intermediate.FieldSchema(name:p, type:int, comment:null), ]
+POSTHOOK: Lineage: multi1_mm PARTITION(p=1).key SIMPLE [(intermediate)intermediate.FieldSchema(name:p, type:int, comment:null), ]
+POSTHOOK: Lineage: multi1_mm PARTITION(p=1).key2 SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: multi1_mm PARTITION(p=455).key SIMPLE [(intermediate)intermediate.FieldSchema(name:p, type:int, comment:null), ]
 POSTHOOK: Lineage: multi1_mm PARTITION(p=455).key2 SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: multi1_mm PARTITION(p=456).key SIMPLE [(intermediate)intermediate.FieldSchema(name:p, type:int, comment:null), ]
@@ -1829,7 +1829,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}
+	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	6                   
 	rawDataSize         	13                  
@@ -1879,7 +1879,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}
+	bucketing_version   	2                   
 	numFiles            	2                   
 	numRows             	12                  
 	rawDataSize         	26                  
@@ -1937,7 +1937,8 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{}                  
+	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	5312                
@@ -2009,11 +2010,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet1_mm
 PREHOOK: query: INSERT INTO parquet1_mm VALUES(1), (2)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@parquet1_mm
 POSTHOOK: query: INSERT INTO parquet1_mm VALUES(1), (2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@parquet1_mm
-POSTHOOK: Lineage: parquet1_mm.id EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: parquet1_mm.id SCRIPT []
 PREHOOK: query: CREATE TABLE parquet2_mm(id INT, value STRING) STORED AS PARQUET tblproperties ("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -2024,20 +2027,24 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet2_mm
 PREHOOK: query: INSERT INTO parquet2_mm VALUES(1, 'value1')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@parquet2_mm
 POSTHOOK: query: INSERT INTO parquet2_mm VALUES(1, 'value1')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@parquet2_mm
-POSTHOOK: Lineage: parquet2_mm.id EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: parquet2_mm.value SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: parquet2_mm.id SCRIPT []
+POSTHOOK: Lineage: parquet2_mm.value SCRIPT []
 PREHOOK: query: INSERT INTO parquet2_mm VALUES(1, 'value2')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@parquet2_mm
 POSTHOOK: query: INSERT INTO parquet2_mm VALUES(1, 'value2')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@parquet2_mm
-POSTHOOK: Lineage: parquet2_mm.id EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: parquet2_mm.value SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: parquet2_mm.id SCRIPT []
+POSTHOOK: Lineage: parquet2_mm.value SCRIPT []
 PREHOOK: query: select parquet1_mm.id, t1.value, t2.value FROM parquet1_mm
   JOIN parquet2_mm t1 ON parquet1_mm.id=t1.id
   JOIN parquet2_mm t2 ON parquet1_mm.id=t2.id

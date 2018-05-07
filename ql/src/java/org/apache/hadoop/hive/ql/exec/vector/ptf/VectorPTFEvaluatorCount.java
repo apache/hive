@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -62,7 +62,7 @@ public class VectorPTFEvaluatorCount extends VectorPTFEvaluatorBase {
     }
     ColumnVector colVector = batch.cols[inputColumnNum];
     if (colVector.isRepeating) {
-      if (colVector.noNulls) {
+      if (colVector.noNulls || !colVector.isNull[0]) {
         count += size;
       }
     } else if (colVector.noNulls) {

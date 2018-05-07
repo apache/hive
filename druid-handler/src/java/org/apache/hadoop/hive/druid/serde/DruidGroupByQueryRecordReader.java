@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,30 +17,28 @@
  */
 package org.apache.hadoop.hive.druid.serde;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.metamx.http.client.HttpClient;
 import io.druid.data.input.MapBasedRow;
+import io.druid.data.input.Row;
 import io.druid.query.dimension.DimensionSpec;
 import io.druid.query.dimension.ExtractionDimensionSpec;
 import io.druid.query.extraction.TimeFormatExtractionFn;
+import io.druid.query.groupby.GroupByQuery;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.druid.DruidStorageHandlerUtils;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.InputSplit;
-
-import com.fasterxml.jackson.core.type.TypeReference;
-
-import io.druid.data.input.Row;
-import io.druid.query.groupby.GroupByQuery;
 import org.joda.time.format.ISODateTimeFormat;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.druid.serde.DruidSerDeUtils.ISO_TIME_FORMAT;
 
@@ -132,7 +130,9 @@ public class DruidGroupByQueryRecordReader
     // Create new value
     DruidWritable value = new DruidWritable();
     // 1) The timestamp column
-    value.getValue().put(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN, currentRow.getTimestamp().getMillis());
+    value.getValue().put(DruidStorageHandlerUtils.EVENT_TIMESTAMP_COLUMN,
+        currentRow.getTimestamp() == null ? null : currentRow.getTimestamp().getMillis()
+    );
     // 2) The dimension columns
     value.getValue().putAll(currentEvent);
     return value;
@@ -144,7 +144,9 @@ public class DruidGroupByQueryRecordReader
       // Update value
       value.getValue().clear();
       // 1) The timestamp column
-      value.getValue().put(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN, currentRow.getTimestamp().getMillis());
+      value.getValue().put(DruidStorageHandlerUtils.EVENT_TIMESTAMP_COLUMN,
+          currentRow.getTimestamp() == null ? null : currentRow.getTimestamp().getMillis()
+      );
       // 2) The dimension columns
       value.getValue().putAll(currentEvent);
       return true;

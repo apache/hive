@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -311,7 +311,7 @@ public class <ClassName> extends VectorAggregateExpression {
       HiveDecimalWritable[] vector = inputVector.vector;
 
       if (inputVector.isRepeating) {
-        if (inputVector.noNulls) {
+        if (inputVector.noNulls || !inputVector.isNull[0]) {
           iterateRepeatingNoNulls(myagg, vector[0], inputVector.scale, batchSize);
         }
       }

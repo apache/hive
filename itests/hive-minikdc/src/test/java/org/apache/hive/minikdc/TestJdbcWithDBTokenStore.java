@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,6 +20,7 @@ package org.apache.hive.minikdc;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.junit.BeforeClass;
 
@@ -36,15 +37,27 @@ public class TestJdbcWithDBTokenStore extends TestJdbcWithMiniKdc{
     confOverlay.put(ConfVars.HIVE_SERVER2_SESSION_HOOK.varname,
         SessionHookTest.class.getName());
 
+    miniHiveKdc = new MiniHiveKdc();
     HiveConf hiveConf = new HiveConf();
     //using old config value tests backwards compatibility
     hiveConf.setVar(ConfVars.METASTORE_CLUSTER_DELEGATION_TOKEN_STORE_CLS, "org.apache.hadoop.hive.thrift.DBTokenStore");
-    miniHiveKdc = MiniHiveKdc.getMiniHiveKdc(hiveConf);
     miniHS2 = MiniHiveKdc.getMiniHS2WithKerbWithRemoteHMSWithKerb(miniHiveKdc, hiveConf);
     miniHS2.start(confOverlay);
     String metastorePrincipal = miniHS2.getConfProperty(ConfVars.METASTORE_KERBEROS_PRINCIPAL.varname);
     String hs2Principal = miniHS2.getConfProperty(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL.varname);
     String hs2KeyTab = miniHS2.getConfProperty(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB.varname);
     System.out.println("HS2 principal : " + hs2Principal + " HS2 keytab : " + hs2KeyTab + " Metastore principal : " + metastorePrincipal);
+    System.setProperty(HiveConf.ConfVars.METASTOREWAREHOUSE.varname,
+        MetastoreConf.getVar(hiveConf, MetastoreConf.ConfVars.WAREHOUSE));
+    System.setProperty(HiveConf.ConfVars.METASTORECONNECTURLKEY.varname,
+        MetastoreConf.getVar(hiveConf, MetastoreConf.ConfVars.CONNECT_URL_KEY));
+    // Before this patch, the Embedded MetaStore was used here not the one started by the MiniHS2
+    // The below 3 lines would change the tests to use the Remote MetaStore, but it will cause a
+    // failure. By removing the thrift MetaStore uris, the tests are passing again.
+    // I think this is an valid problem here, but not really sure about the
+    // tests original intention, so keep everything as it was originally.
+//    System.setProperty(HiveConf.ConfVars.METASTOREURIS.varname,
+//        MetastoreConf.getVar(hiveConf, MetastoreConf.ConfVars.THRIFT_URIS));
+//    Thread.sleep(2000);
   }
 }

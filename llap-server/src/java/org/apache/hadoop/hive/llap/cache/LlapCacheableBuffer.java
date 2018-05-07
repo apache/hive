@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -55,6 +55,8 @@ public abstract class LlapCacheableBuffer {
     return "[" + Integer.toHexString(hashCode()) + " " + String.format("%1$.2f", priority) + " "
         + lastUpdate + " " + (isLocked() ? "!" : ".") + "]";
   }
+
+  public abstract String getTag();
 
   protected abstract boolean isLocked();
 }

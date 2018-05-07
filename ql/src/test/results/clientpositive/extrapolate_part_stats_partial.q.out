@@ -64,28 +64,28 @@ POSTHOOK: Lineage: loc_orc_1d PARTITION(year=2003).locid SIMPLE [(ext_loc)ext_lo
 POSTHOOK: Lineage: loc_orc_1d PARTITION(year=2003).state SIMPLE [(ext_loc)ext_loc.FieldSchema(name:state, type:string, comment:null), ]
 POSTHOOK: Lineage: loc_orc_1d PARTITION(year=2003).zip SIMPLE [(ext_loc)ext_loc.FieldSchema(name:zip, type:int, comment:null), ]
 PREHOOK: query: analyze table loc_orc_1d partition(year='2001') compute statistics for columns state,locid
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@loc_orc_1d
 PREHOOK: Input: default@loc_orc_1d@year=2001
 PREHOOK: Output: default@loc_orc_1d
 PREHOOK: Output: default@loc_orc_1d@year=2001
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table loc_orc_1d partition(year='2001') compute statistics for columns state,locid
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@loc_orc_1d
 POSTHOOK: Input: default@loc_orc_1d@year=2001
 POSTHOOK: Output: default@loc_orc_1d
 POSTHOOK: Output: default@loc_orc_1d@year=2001
 #### A masked pattern was here ####
 PREHOOK: query: analyze table loc_orc_1d partition(year='2002') compute statistics for columns state,locid
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@loc_orc_1d
 PREHOOK: Input: default@loc_orc_1d@year=2002
 PREHOOK: Output: default@loc_orc_1d
 PREHOOK: Output: default@loc_orc_1d@year=2002
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table loc_orc_1d partition(year='2002') compute statistics for columns state,locid
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@loc_orc_1d
 POSTHOOK: Input: default@loc_orc_1d@year=2002
 POSTHOOK: Output: default@loc_orc_1d
@@ -169,6 +169,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns state,locid,zip
                 columns.comments 
@@ -214,6 +215,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns state,locid,zip
                 columns.comments 
@@ -259,6 +261,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns state,locid,zip
                 columns.comments 
@@ -304,6 +307,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns state,locid,zip
                 columns.comments 
@@ -372,6 +376,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns state,locid,zip
                 columns.comments 
@@ -417,6 +422,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns state,locid,zip
                 columns.comments 
@@ -462,6 +468,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns state,locid,zip
                 columns.comments 
@@ -507,6 +514,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns state,locid,zip
                 columns.comments 
@@ -534,28 +542,28 @@ STAGE PLANS:
             ListSink
 
 PREHOOK: query: analyze table loc_orc_1d partition(year='2000') compute statistics for columns state
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@loc_orc_1d
 PREHOOK: Input: default@loc_orc_1d@year=2000
 PREHOOK: Output: default@loc_orc_1d
 PREHOOK: Output: default@loc_orc_1d@year=2000
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table loc_orc_1d partition(year='2000') compute statistics for columns state
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@loc_orc_1d
 POSTHOOK: Input: default@loc_orc_1d@year=2000
 POSTHOOK: Output: default@loc_orc_1d
 POSTHOOK: Output: default@loc_orc_1d@year=2000
 #### A masked pattern was here ####
 PREHOOK: query: analyze table loc_orc_1d partition(year='2003') compute statistics for columns state
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@loc_orc_1d
 PREHOOK: Input: default@loc_orc_1d@year=2003
 PREHOOK: Output: default@loc_orc_1d
 PREHOOK: Output: default@loc_orc_1d@year=2003
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table loc_orc_1d partition(year='2003') compute statistics for columns state
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@loc_orc_1d
 POSTHOOK: Input: default@loc_orc_1d@year=2003
 POSTHOOK: Output: default@loc_orc_1d
@@ -603,6 +611,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns state,locid,zip
                 columns.comments 
@@ -648,6 +657,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns state,locid,zip
                 columns.comments 
@@ -693,6 +703,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns state,locid,zip
                 columns.comments 
@@ -738,6 +749,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns state,locid,zip
                 columns.comments 
@@ -806,6 +818,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns state,locid,zip
                 columns.comments 
@@ -851,6 +864,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns state,locid,zip
                 columns.comments 
@@ -896,6 +910,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns state,locid,zip
                 columns.comments 
@@ -941,6 +956,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns state,locid,zip
                 columns.comments 
@@ -1022,28 +1038,28 @@ POSTHOOK: Lineage: loc_orc_2d PARTITION(zip=94087,year=2002).state SIMPLE [(ext_
 POSTHOOK: Lineage: loc_orc_2d PARTITION(zip=94087,year=2003).locid SIMPLE [(ext_loc)ext_loc.FieldSchema(name:locid, type:int, comment:null), ]
 POSTHOOK: Lineage: loc_orc_2d PARTITION(zip=94087,year=2003).state SIMPLE [(ext_loc)ext_loc.FieldSchema(name:state, type:string, comment:null), ]
 PREHOOK: query: analyze table loc_orc_2d partition(zip=94086, year='2001') compute statistics for columns state,locid
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@loc_orc_2d
 PREHOOK: Input: default@loc_orc_2d@zip=94086/year=2001
 PREHOOK: Output: default@loc_orc_2d
 PREHOOK: Output: default@loc_orc_2d@zip=94086/year=2001
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table loc_orc_2d partition(zip=94086, year='2001') compute statistics for columns state,locid
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@loc_orc_2d
 POSTHOOK: Input: default@loc_orc_2d@zip=94086/year=2001
 POSTHOOK: Output: default@loc_orc_2d
 POSTHOOK: Output: default@loc_orc_2d@zip=94086/year=2001
 #### A masked pattern was here ####
 PREHOOK: query: analyze table loc_orc_2d partition(zip=94087, year='2002') compute statistics for columns state,locid
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@loc_orc_2d
 PREHOOK: Input: default@loc_orc_2d@zip=94087/year=2002
 PREHOOK: Output: default@loc_orc_2d
 PREHOOK: Output: default@loc_orc_2d@zip=94087/year=2002
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table loc_orc_2d partition(zip=94087, year='2002') compute statistics for columns state,locid
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@loc_orc_2d
 POSTHOOK: Input: default@loc_orc_2d@zip=94087/year=2002
 POSTHOOK: Output: default@loc_orc_2d
@@ -1092,6 +1108,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns state,locid
                 columns.comments 
@@ -1138,6 +1155,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns state,locid
                 columns.comments 
@@ -1184,6 +1202,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns state,locid
                 columns.comments 
@@ -1230,6 +1249,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns state,locid
                 columns.comments 
@@ -1276,6 +1296,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns state,locid
                 columns.comments 
@@ -1322,6 +1343,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns state,locid
                 columns.comments 
@@ -1368,6 +1390,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns state,locid
                 columns.comments 
@@ -1414,6 +1437,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns state,locid
                 columns.comments 
@@ -1460,6 +1484,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns state,locid
                 columns.comments 
@@ -1506,6 +1531,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns state,locid
                 columns.comments 
@@ -1552,6 +1578,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns state,locid
                 columns.comments 
@@ -1621,6 +1648,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns state,locid
                 columns.comments 
@@ -1667,6 +1695,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns state,locid
                 columns.comments 
@@ -1713,6 +1742,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns state,locid
                 columns.comments 
@@ -1759,6 +1789,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns state,locid
                 columns.comments 
@@ -1805,6 +1836,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns state,locid
                 columns.comments 
@@ -1851,6 +1883,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns state,locid
                 columns.comments 
@@ -1897,6 +1930,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns state,locid
                 columns.comments 
@@ -1943,6 +1977,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns state,locid
                 columns.comments 
@@ -1989,6 +2024,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns state,locid
                 columns.comments 
@@ -2035,6 +2071,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns state,locid
                 columns.comments 
@@ -2081,6 +2118,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns state,locid
                 columns.comments 

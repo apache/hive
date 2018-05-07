@@ -58,34 +58,10 @@ default	alltypesorc			hive_test_user	USER	DELETE	true	-1	hive_test_user
 default	alltypesorc			hive_test_user	USER	INSERT	true	-1	hive_test_user
 default	alltypesorc			hive_test_user	USER	SELECT	true	-1	hive_test_user
 default	alltypesorc			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-default	alltypesparquet			hive_test_user	USER	DELETE	true	-1	hive_test_user
-default	alltypesparquet			hive_test_user	USER	INSERT	true	-1	hive_test_user
-default	alltypesparquet			hive_test_user	USER	SELECT	true	-1	hive_test_user
-default	alltypesparquet			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-default	cbo_t1			hive_test_user	USER	DELETE	true	-1	hive_test_user
-default	cbo_t1			hive_test_user	USER	INSERT	true	-1	hive_test_user
-default	cbo_t1			hive_test_user	USER	SELECT	true	-1	hive_test_user
-default	cbo_t1			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-default	cbo_t2			hive_test_user	USER	DELETE	true	-1	hive_test_user
-default	cbo_t2			hive_test_user	USER	INSERT	true	-1	hive_test_user
-default	cbo_t2			hive_test_user	USER	SELECT	true	-1	hive_test_user
-default	cbo_t2			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-default	cbo_t3			hive_test_user	USER	DELETE	true	-1	hive_test_user
-default	cbo_t3			hive_test_user	USER	INSERT	true	-1	hive_test_user
-default	cbo_t3			hive_test_user	USER	SELECT	true	-1	hive_test_user
-default	cbo_t3			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-default	lineitem			hive_test_user	USER	DELETE	true	-1	hive_test_user
-default	lineitem			hive_test_user	USER	INSERT	true	-1	hive_test_user
-default	lineitem			hive_test_user	USER	SELECT	true	-1	hive_test_user
-default	lineitem			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 default	moretypes			hive_test_user	USER	DELETE	true	-1	hive_test_user
 default	moretypes			hive_test_user	USER	INSERT	true	-1	hive_test_user
 default	moretypes			hive_test_user	USER	SELECT	true	-1	hive_test_user
 default	moretypes			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-default	part			hive_test_user	USER	DELETE	true	-1	hive_test_user
-default	part			hive_test_user	USER	INSERT	true	-1	hive_test_user
-default	part			hive_test_user	USER	SELECT	true	-1	hive_test_user
-default	part			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 default	scr_txn			hive_test_user	USER	DELETE	true	-1	hive_test_user
 default	scr_txn			hive_test_user	USER	INSERT	true	-1	hive_test_user
 default	scr_txn			hive_test_user	USER	SELECT	true	-1	hive_test_user
@@ -94,49 +70,17 @@ default	src			hive_test_user	USER	DELETE	true	-1	hive_test_user
 default	src			hive_test_user	USER	INSERT	true	-1	hive_test_user
 default	src			hive_test_user	USER	SELECT	true	-1	hive_test_user
 default	src			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-default	src1			hive_test_user	USER	DELETE	true	-1	hive_test_user
-default	src1			hive_test_user	USER	INSERT	true	-1	hive_test_user
-default	src1			hive_test_user	USER	SELECT	true	-1	hive_test_user
-default	src1			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 default	src_buck			hive_test_user	USER	DELETE	true	-1	hive_test_user
 default	src_buck			hive_test_user	USER	INSERT	true	-1	hive_test_user
 default	src_buck			hive_test_user	USER	SELECT	true	-1	hive_test_user
 default	src_buck			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-default	src_cbo			hive_test_user	USER	DELETE	true	-1	hive_test_user
-default	src_cbo			hive_test_user	USER	INSERT	true	-1	hive_test_user
-default	src_cbo			hive_test_user	USER	SELECT	true	-1	hive_test_user
-default	src_cbo			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-default	src_json			hive_test_user	USER	DELETE	true	-1	hive_test_user
-default	src_json			hive_test_user	USER	INSERT	true	-1	hive_test_user
-default	src_json			hive_test_user	USER	SELECT	true	-1	hive_test_user
-default	src_json			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-default	src_sequencefile			hive_test_user	USER	DELETE	true	-1	hive_test_user
-default	src_sequencefile			hive_test_user	USER	INSERT	true	-1	hive_test_user
-default	src_sequencefile			hive_test_user	USER	SELECT	true	-1	hive_test_user
-default	src_sequencefile			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 default	src_skew			hive_test_user	USER	DELETE	true	-1	hive_test_user
 default	src_skew			hive_test_user	USER	INSERT	true	-1	hive_test_user
 default	src_skew			hive_test_user	USER	SELECT	true	-1	hive_test_user
 default	src_skew			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-default	src_thrift			hive_test_user	USER	DELETE	true	-1	hive_test_user
-default	src_thrift			hive_test_user	USER	INSERT	true	-1	hive_test_user
-default	src_thrift			hive_test_user	USER	SELECT	true	-1	hive_test_user
-default	src_thrift			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-default	srcbucket			hive_test_user	USER	DELETE	true	-1	hive_test_user
-default	srcbucket			hive_test_user	USER	INSERT	true	-1	hive_test_user
-default	srcbucket			hive_test_user	USER	SELECT	true	-1	hive_test_user
-default	srcbucket			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-default	srcbucket2			hive_test_user	USER	DELETE	true	-1	hive_test_user
-default	srcbucket2			hive_test_user	USER	INSERT	true	-1	hive_test_user
-default	srcbucket2			hive_test_user	USER	SELECT	true	-1	hive_test_user
-default	srcbucket2			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-default	srcpart			hive_test_user	USER	DELETE	true	-1	hive_test_user
-default	srcpart			hive_test_user	USER	INSERT	true	-1	hive_test_user
-default	srcpart			hive_test_user	USER	SELECT	true	-1	hive_test_user
-default	srcpart			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-PREHOOK: query: DROP DATABASE IF EXISTS SYS
+PREHOOK: query: DROP DATABASE IF EXISTS SYS CASCADE
 PREHOOK: type: DROPDATABASE
-POSTHOOK: query: DROP DATABASE IF EXISTS SYS
+POSTHOOK: query: DROP DATABASE IF EXISTS SYS CASCADE
 POSTHOOK: type: DROPDATABASE
 PREHOOK: query: CREATE DATABASE SYS
 PREHOOK: type: CREATEDATABASE
@@ -481,110 +425,6 @@ FROM
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@GLOBAL_PRIVS
-POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE TABLE IF NOT EXISTS `IDXS` (
-  `INDEX_ID` bigint,
-  `CREATE_TIME` int,
-  `DEFERRED_REBUILD` boolean,
-  `INDEX_HANDLER_CLASS` string,
-  `INDEX_NAME` string,
-  `INDEX_TBL_ID` bigint,
-  `LAST_ACCESS_TIME` int,
-  `ORIG_TBL_ID` bigint,
-  `SD_ID` bigint,
-  CONSTRAINT `SYS_PK_IDXS` PRIMARY KEY (`INDEX_ID`) DISABLE
-)
-STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
-TBLPROPERTIES (
-"hive.sql.database.type" = "METASTORE",
-"hive.sql.query" =
-"SELECT
-  \"INDEX_ID\",
-  \"CREATE_TIME\",
-  \"DEFERRED_REBUILD\",
-  \"INDEX_HANDLER_CLASS\",
-  \"INDEX_NAME\",
-  \"INDEX_TBL_ID\",
-  \"LAST_ACCESS_TIME\",
-  \"ORIG_TBL_ID\",
-  \"SD_ID\"
-FROM
-  \"IDXS\""
-)
-PREHOOK: type: CREATETABLE
-PREHOOK: Output: SYS@IDXS
-PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS `IDXS` (
-  `INDEX_ID` bigint,
-  `CREATE_TIME` int,
-  `DEFERRED_REBUILD` boolean,
-  `INDEX_HANDLER_CLASS` string,
-  `INDEX_NAME` string,
-  `INDEX_TBL_ID` bigint,
-  `LAST_ACCESS_TIME` int,
-  `ORIG_TBL_ID` bigint,
-  `SD_ID` bigint,
-  CONSTRAINT `SYS_PK_IDXS` PRIMARY KEY (`INDEX_ID`) DISABLE
-)
-STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
-TBLPROPERTIES (
-"hive.sql.database.type" = "METASTORE",
-"hive.sql.query" =
-"SELECT
-  \"INDEX_ID\",
-  \"CREATE_TIME\",
-  \"DEFERRED_REBUILD\",
-  \"INDEX_HANDLER_CLASS\",
-  \"INDEX_NAME\",
-  \"INDEX_TBL_ID\",
-  \"LAST_ACCESS_TIME\",
-  \"ORIG_TBL_ID\",
-  \"SD_ID\"
-FROM
-  \"IDXS\""
-)
-POSTHOOK: type: CREATETABLE
-POSTHOOK: Output: SYS@IDXS
-POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE TABLE IF NOT EXISTS `INDEX_PARAMS` (
-  `INDEX_ID` bigint,
-  `PARAM_KEY` string,
-  `PARAM_VALUE` string,
-  CONSTRAINT `SYS_PK_INDEX_PARAMS` PRIMARY KEY (`INDEX_ID`,`PARAM_KEY`) DISABLE
-)
-STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
-TBLPROPERTIES (
-"hive.sql.database.type" = "METASTORE",
-"hive.sql.query" =
-"SELECT
-  \"INDEX_ID\",
-  \"PARAM_KEY\",
-  \"PARAM_VALUE\"
-FROM
-  \"INDEX_PARAMS\""
-)
-PREHOOK: type: CREATETABLE
-PREHOOK: Output: SYS@INDEX_PARAMS
-PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS `INDEX_PARAMS` (
-  `INDEX_ID` bigint,
-  `PARAM_KEY` string,
-  `PARAM_VALUE` string,
-  CONSTRAINT `SYS_PK_INDEX_PARAMS` PRIMARY KEY (`INDEX_ID`,`PARAM_KEY`) DISABLE
-)
-STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
-TBLPROPERTIES (
-"hive.sql.database.type" = "METASTORE",
-"hive.sql.query" =
-"SELECT
-  \"INDEX_ID\",
-  \"PARAM_KEY\",
-  \"PARAM_VALUE\"
-FROM
-  \"INDEX_PARAMS\""
-)
-POSTHOOK: type: CREATETABLE
-POSTHOOK: Output: SYS@INDEX_PARAMS
 POSTHOOK: Output: database:sys
 PREHOOK: query: CREATE TABLE IF NOT EXISTS `PARTITIONS` (
   `PART_ID` bigint,
@@ -1572,6 +1412,80 @@ FROM TBLS"
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@TBLS
 POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE TABLE IF NOT EXISTS `MV_CREATION_METADATA` (
+  `MV_CREATION_METADATA_ID` bigint,
+  `DB_NAME` string,
+  `TBL_NAME` string,
+  `TXN_LIST` string,
+  CONSTRAINT `SYS_PK_MV_CREATION_METADATA` PRIMARY KEY (`MV_CREATION_METADATA_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"MV_CREATION_METADATA_ID\",
+  \"DB_NAME\",
+  \"TBL_NAME\",
+  \"TXN_LIST\"
+FROM MV_CREATION_METADATA"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@MV_CREATION_METADATA
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS `MV_CREATION_METADATA` (
+  `MV_CREATION_METADATA_ID` bigint,
+  `DB_NAME` string,
+  `TBL_NAME` string,
+  `TXN_LIST` string,
+  CONSTRAINT `SYS_PK_MV_CREATION_METADATA` PRIMARY KEY (`MV_CREATION_METADATA_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"MV_CREATION_METADATA_ID\",
+  \"DB_NAME\",
+  \"TBL_NAME\",
+  \"TXN_LIST\"
+FROM MV_CREATION_METADATA"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@MV_CREATION_METADATA
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE TABLE IF NOT EXISTS `MV_TABLES_USED` (
+  `MV_CREATION_METADATA_ID` bigint,
+  `TBL_ID` bigint
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"MV_CREATION_METADATA_ID\",
+  \"TBL_ID\"
+FROM MV_TABLES_USED"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@MV_TABLES_USED
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS `MV_TABLES_USED` (
+  `MV_CREATION_METADATA_ID` bigint,
+  `TBL_ID` bigint
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"MV_CREATION_METADATA_ID\",
+  \"TBL_ID\"
+FROM MV_TABLES_USED"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@MV_TABLES_USED
+POSTHOOK: Output: database:sys
 PREHOOK: query: CREATE TABLE IF NOT EXISTS `TBL_COL_PRIVS` (
   `TBL_COLUMN_GRANT_ID` bigint,
   `COLUMN_NAME` string,
@@ -1936,13 +1850,15 @@ POSTHOOK: Output: SYS@VERSION
 POSTHOOK: Output: database:sys
 PREHOOK: query: INSERT INTO `VERSION` VALUES (1, '3.0.0', 'Hive release version 3.0.0')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: sys@version
 POSTHOOK: query: INSERT INTO `VERSION` VALUES (1, '3.0.0', 'Hive release version 3.0.0')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: sys@version
-POSTHOOK: Lineage: version.schema_version SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: version.ver_id EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: version.version_comment SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: version.schema_version SCRIPT []
+POSTHOOK: Lineage: version.ver_id SCRIPT []
+POSTHOOK: Lineage: version.version_comment SCRIPT []
 PREHOOK: query: CREATE TABLE IF NOT EXISTS `DB_VERSION` (
   `VER_ID` BIGINT,
   `SCHEMA_VERSION` string,
@@ -2057,6 +1973,7 @@ PREHOOK: query: CREATE TABLE IF NOT EXISTS `KEY_CONSTRAINTS`
   `UPDATE_RULE` string,
   `DELETE_RULE` string,
   `ENABLE_VALIDATE_RELY` int,
+  `DEFAULT_VALUE` string,
   CONSTRAINT `SYS_PK_KEY_CONSTRAINTS` PRIMARY KEY (`CONSTRAINT_NAME`, `POSITION`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
@@ -2075,7 +1992,8 @@ TBLPROPERTIES (
   \"CONSTRAINT_TYPE\",
   \"UPDATE_RULE\",
   \"DELETE_RULE\",
-  \"ENABLE_VALIDATE_RELY\"
+  \"ENABLE_VALIDATE_RELY\",
+  \"DEFAULT_VALUE\"
 FROM
   \"KEY_CONSTRAINTS\""
 )
@@ -2096,6 +2014,7 @@ POSTHOOK: query: CREATE TABLE IF NOT EXISTS `KEY_CONSTRAINTS`
   `UPDATE_RULE` string,
   `DELETE_RULE` string,
   `ENABLE_VALIDATE_RELY` int,
+  `DEFAULT_VALUE` string,
   CONSTRAINT `SYS_PK_KEY_CONSTRAINTS` PRIMARY KEY (`CONSTRAINT_NAME`, `POSITION`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
@@ -2114,7 +2033,8 @@ TBLPROPERTIES (
   \"CONSTRAINT_TYPE\",
   \"UPDATE_RULE\",
   \"DELETE_RULE\",
-  \"ENABLE_VALIDATE_RELY\"
+  \"ENABLE_VALIDATE_RELY\",
+  \"DEFAULT_VALUE\"
 FROM
   \"KEY_CONSTRAINTS\""
 )
@@ -2412,12 +2332,12 @@ TBLPROPERTIES (
   WM_RESOURCEPLAN.NAME,
   ENTITY_TYPE,
   ENTITY_NAME,
-  WM_POOL.PATH,
+  case when WM_POOL.PATH is null then '<unmanaged>' else WM_POOL.PATH end,
   ORDERING
-FROM
-  WM_MAPPING
+FROM WM_MAPPING
 JOIN WM_RESOURCEPLAN ON WM_MAPPING.RP_ID = WM_RESOURCEPLAN.RP_ID
-LEFT OUTER JOIN WM_POOL ON WM_POOL.POOL_ID = WM_MAPPING.POOL_ID"
+LEFT OUTER JOIN WM_POOL ON WM_POOL.POOL_ID = WM_MAPPING.POOL_ID
+"
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@WM_MAPPINGS
@@ -2437,19 +2357,19 @@ TBLPROPERTIES (
   WM_RESOURCEPLAN.NAME,
   ENTITY_TYPE,
   ENTITY_NAME,
-  WM_POOL.PATH,
+  case when WM_POOL.PATH is null then '<unmanaged>' else WM_POOL.PATH end,
   ORDERING
-FROM
-  WM_MAPPING
+FROM WM_MAPPING
 JOIN WM_RESOURCEPLAN ON WM_MAPPING.RP_ID = WM_RESOURCEPLAN.RP_ID
-LEFT OUTER JOIN WM_POOL ON WM_POOL.POOL_ID = WM_MAPPING.POOL_ID"
+LEFT OUTER JOIN WM_POOL ON WM_POOL.POOL_ID = WM_MAPPING.POOL_ID
+"
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@WM_MAPPINGS
 POSTHOOK: Output: database:sys
-PREHOOK: query: DROP DATABASE IF EXISTS INFORMATION_SCHEMA
+PREHOOK: query: DROP DATABASE IF EXISTS INFORMATION_SCHEMA CASCADE
 PREHOOK: type: DROPDATABASE
-POSTHOOK: query: DROP DATABASE IF EXISTS INFORMATION_SCHEMA
+POSTHOOK: query: DROP DATABASE IF EXISTS INFORMATION_SCHEMA CASCADE
 POSTHOOK: type: DROPDATABASE
 PREHOOK: query: CREATE DATABASE INFORMATION_SCHEMA
 PREHOOK: type: CREATEDATABASE
@@ -3216,8 +3136,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@bucketing_cols
 #### A masked pattern was here ####
 key	0
-key	0
-key	0
 value	0
 PREHOOK: query: select count(*) from cds
 PREHOOK: type: QUERY
@@ -3227,7 +3145,7 @@ POSTHOOK: query: select count(*) from cds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@cds
 #### A masked pattern was here ####
-70
+57
 PREHOOK: query: select column_name, type_name, integer_idx from columns_v2 order by column_name, integer_idx limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@columns_v2
@@ -3239,8 +3157,8 @@ POSTHOOK: Input: sys@columns_v2
 a	decimal(10,2)	0
 action_expression	string	3
 add_time	int	1
-aint	int	0
 alloc_fraction	double	2
+avg_col_len	double	14
 PREHOOK: query: select param_key, param_value from database_params order by param_key, param_value limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@database_params
@@ -3272,22 +3190,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@global_privs
 #### A masked pattern was here ####
 admin	admin
-PREHOOK: query: select index_name, index_handler_class from idxs order by index_name limit 5
-PREHOOK: type: QUERY
-PREHOOK: Input: sys@idxs
-#### A masked pattern was here ####
-POSTHOOK: query: select index_name, index_handler_class from idxs order by index_name limit 5
-POSTHOOK: type: QUERY
-POSTHOOK: Input: sys@idxs
-#### A masked pattern was here ####
-PREHOOK: query: select param_key, param_value from index_params order by param_key, param_value limit 5
-PREHOOK: type: QUERY
-PREHOOK: Input: sys@index_params
-#### A masked pattern was here ####
-POSTHOOK: query: select param_key, param_value from index_params order by param_key, param_value limit 5
-POSTHOOK: type: QUERY
-POSTHOOK: Input: sys@index_params
-#### A masked pattern was here ####
 PREHOOK: query: select part_name from partitions order by part_name limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@partitions
@@ -3296,11 +3198,6 @@ POSTHOOK: query: select part_name from partitions order by part_name limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@partitions
 #### A masked pattern was here ####
-ds=2008-04-08/hr=11
-ds=2008-04-08/hr=12
-ds=2008-04-09/hr=11
-ds=2008-04-09/hr=12
-dt=2014
 PREHOOK: query: select pkey_name, pkey_type from partition_keys order by pkey_name limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@partition_keys
@@ -3309,10 +3206,6 @@ POSTHOOK: query: select pkey_name, pkey_type from partition_keys order by pkey_n
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@partition_keys
 #### A masked pattern was here ####
-ds	string
-dt	string
-dt	string
-hr	string
 PREHOOK: query: select part_key_val, integer_idx from partition_key_vals order by part_key_val, integer_idx limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@partition_key_vals
@@ -3321,11 +3214,6 @@ POSTHOOK: query: select part_key_val, integer_idx from partition_key_vals order 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@partition_key_vals
 #### A masked pattern was here ####
-11	1
-11	1
-12	1
-12	1
-2008-04-08	0
 PREHOOK: query: select param_key, param_value from partition_params order by param_key, param_value limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@partition_params
@@ -3334,11 +3222,6 @@ POSTHOOK: query: select param_key, param_value from partition_params order by pa
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@partition_params
 #### A masked pattern was here ####
-COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"c_boolean":"true","c_float":"true","c_int":"true","key":"true","value":"true"}}
-COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"c_boolean":"true","c_float":"true","c_int":"true","key":"true","value":"true"}}
-COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
 PREHOOK: query: select grantor, principal_name from part_col_privs order by grantor, principal_name limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@part_col_privs
@@ -3381,7 +3264,7 @@ POSTHOOK: query: select count(*) from sds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@sds
 #### A masked pattern was here ####
-76
+57
 PREHOOK: query: select param_key, param_value from sd_params order by param_key, param_value limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@sd_params
@@ -3398,11 +3281,11 @@ POSTHOOK: query: select sequence_name from sequence_table order by sequence_name
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@sequence_table
 #### A masked pattern was here ####
+org.apache.hadoop.hive.metastore.model.MCatalog
 org.apache.hadoop.hive.metastore.model.MColumnDescriptor
+org.apache.hadoop.hive.metastore.model.MCreationMetadata
 org.apache.hadoop.hive.metastore.model.MDatabase
 org.apache.hadoop.hive.metastore.model.MFunction
-org.apache.hadoop.hive.metastore.model.MGlobalPrivilege
-org.apache.hadoop.hive.metastore.model.MPartition
 PREHOOK: query: select name, slib from serdes order by name, slib limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@serdes
@@ -3424,11 +3307,11 @@ POSTHOOK: query: select param_key, param_value from serde_params order by param_
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@serde_params
 #### A masked pattern was here ####
-field.delim	,
-field.delim	,
-field.delim	,
-field.delim	,
-field.delim	,
+serialization.format	1
+serialization.format	1
+serialization.format	1
+serialization.format	1
+serialization.format	1
 PREHOOK: query: select skewed_col_name from skewed_col_names order by skewed_col_name limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@skewed_col_names
@@ -3504,10 +3387,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@tbls
 #### A masked pattern was here ####
 alltypesorc
-alltypesparquet
 bucketing_cols
-cbo_t1
-cbo_t2
+cds
+column_privileges
+columns
 PREHOOK: query: select column_name, grantor, principal_name from tbl_col_privs order by column_name, principal_name limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@tbl_col_privs
@@ -3555,16 +3438,6 @@ POSTHOOK: query: select table_name, partition_name, column_name, num_nulls, num_
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@part_col_stats
 #### A masked pattern was here ####
-cbo_t1	dt=2014	c_boolean	2	NULL
-cbo_t1	dt=2014	c_float	2	1
-cbo_t1	dt=2014	c_int	2	1
-cbo_t1	dt=2014	key	2	4
-cbo_t1	dt=2014	value	2	4
-cbo_t2	dt=2014	c_boolean	2	NULL
-cbo_t2	dt=2014	c_float	2	2
-cbo_t2	dt=2014	c_int	2	2
-cbo_t2	dt=2014	key	2	5
-cbo_t2	dt=2014	value	2	5
 PREHOOK: query: select schema_version from version order by schema_version limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@version
@@ -3607,10 +3480,10 @@ POSTHOOK: Input: sys@table_params
 POSTHOOK: Input: sys@table_stats_view
 #### A masked pattern was here ####
 {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}	0	0	0	0
-{"BASIC_STATS":"true","COLUMN_STATS":{"entity_name":"true","entity_type":"true","ordering":"true","pool_path":"true","rp_name":"true"}}	0	0	0	0
-{"BASIC_STATS":"true","COLUMN_STATS":{"next_val":"true","sequence_name":"true"}}	0	0	0	0
+{"BASIC_STATS":"true","COLUMN_STATS":{"pool_path":"true","rp_name":"true","trigger_name":"true"}}	0	0	0	0
 {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}	0	0	0	0
-#### A masked pattern was here ####
+{"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true","c":"true","d":"true","e":"true","f":"true","g":"true"}}	0	0	0	0
+{"BASIC_STATS":"true","COLUMN_STATS":{"create_time":"true","last_access_time":"true","part_id":"true","part_name":"true","sd_id":"true","tbl_id":"true"}}	0	0	0	0
 PREHOOK: query: select COLUMN_STATS_ACCURATE, NUM_FILES, NUM_ROWS, RAW_DATA_SIZE, TOTAL_SIZE FROM PARTITION_STATS_VIEW where COLUMN_STATS_ACCURATE is not null order by NUM_FILES, NUM_ROWS, RAW_DATA_SIZE limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@partition_params
@@ -3621,11 +3494,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@partition_params
 POSTHOOK: Input: sys@partition_stats_view
 #### A masked pattern was here ####
-{"BASIC_STATS":"true","COLUMN_STATS":{"c_boolean":"true","c_float":"true","c_int":"true","key":"true","value":"true"}}	1	20	262	282
-{"BASIC_STATS":"true","COLUMN_STATS":{"c_boolean":"true","c_float":"true","c_int":"true","key":"true","value":"true"}}	1	20	262	282
-{"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}	1	500	5312	5812
-{"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}	1	500	5312	5812
-{"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}	1	500	5312	5812
 PREHOOK: query: describe sys.tab_col_stats
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: sys@tab_col_stats
@@ -3748,25 +3616,11 @@ POSTHOOK: Input: sys@dbs
 POSTHOOK: Input: sys@tbls
 #### A masked pattern was here ####
 default	default	alltypesorc	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	default	alltypesparquet	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	default	cbo_t1	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	default	cbo_t2	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	default	cbo_t3	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	default	lineitem	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	default	moretypes	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	default	part	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	default	scr_txn	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	default	src	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	default	src1	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	default	src_buck	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	default	src_cbo	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	default	src_json	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	default	src_sequencefile	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	default	src_skew	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	default	src_thrift	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	default	srcbucket	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	default	srcbucket2	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	default	srcpart	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	information_schema	column_privileges	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	information_schema	columns	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	information_schema	schemata	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
@@ -3782,9 +3636,9 @@ default	sys	db_version	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	dbs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	funcs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	global_privs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	sys	idxs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	sys	index_params	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	key_constraints	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	mv_creation_metadata	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	mv_tables_used	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	part_col_privs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	part_col_stats	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	part_privs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
@@ -3836,12 +3690,12 @@ hive_test_user	hive_test_user	default	default	alltypesorc	DELETE	YES	NO
 hive_test_user	hive_test_user	default	default	alltypesorc	INSERT	YES	NO
 hive_test_user	hive_test_user	default	default	alltypesorc	SELECT	YES	NO
 hive_test_user	hive_test_user	default	default	alltypesorc	UPDATE	YES	NO
-hive_test_user	hive_test_user	default	default	alltypesparquet	DELETE	YES	NO
-hive_test_user	hive_test_user	default	default	alltypesparquet	INSERT	YES	NO
-hive_test_user	hive_test_user	default	default	alltypesparquet	SELECT	YES	NO
-hive_test_user	hive_test_user	default	default	alltypesparquet	UPDATE	YES	NO
-hive_test_user	hive_test_user	default	default	cbo_t1	DELETE	YES	NO
-hive_test_user	hive_test_user	default	default	cbo_t1	INSERT	YES	NO
+hive_test_user	hive_test_user	default	default	moretypes	DELETE	YES	NO
+hive_test_user	hive_test_user	default	default	moretypes	INSERT	YES	NO
+hive_test_user	hive_test_user	default	default	moretypes	SELECT	YES	NO
+hive_test_user	hive_test_user	default	default	moretypes	UPDATE	YES	NO
+hive_test_user	hive_test_user	default	default	scr_txn	DELETE	YES	NO
+hive_test_user	hive_test_user	default	default	scr_txn	INSERT	YES	NO
 PREHOOK: query: select * from COLUMNS where TABLE_NAME = 'alltypesorc' or TABLE_NAME = 'moretypes' order by TABLE_SCHEMA, TABLE_NAME, ORDINAL_POSITION
 PREHOOK: type: QUERY
 PREHOOK: Input: information_schema@columns
@@ -3858,25 +3712,25 @@ POSTHOOK: Input: sys@dbs
 POSTHOOK: Input: sys@sds
 POSTHOOK: Input: sys@tbls
 #### A masked pattern was here ####
-default	default	alltypesorc	ctinyint	0	NULL	YES	tinyint	NULL	NULL	3	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	11	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	tinyint	3	10
-default	default	alltypesorc	csmallint	1	NULL	YES	smallint	NULL	NULL	5	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	11	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	smallint	5	10
-default	default	alltypesorc	cint	2	NULL	YES	int	NULL	NULL	10	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	11	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	int	10	10
-default	default	alltypesorc	cbigint	3	NULL	YES	bigint	NULL	NULL	19	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	11	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	bigint	19	10
-default	default	alltypesorc	cfloat	4	NULL	YES	float	NULL	NULL	23	2	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	11	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	float	23	2
-default	default	alltypesorc	cdouble	5	NULL	YES	double	NULL	NULL	53	2	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	11	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	double	53	2
-default	default	alltypesorc	cstring1	6	NULL	YES	string	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	11	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	string	NULL	NULL
-default	default	alltypesorc	cstring2	7	NULL	YES	string	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	11	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	string	NULL	NULL
-default	default	alltypesorc	ctimestamp1	8	NULL	YES	timestamp	NULL	NULL	NULL	NULL	NULL	9	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	11	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	timestamp	NULL	NULL
-default	default	alltypesorc	ctimestamp2	9	NULL	YES	timestamp	NULL	NULL	NULL	NULL	NULL	9	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	11	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	timestamp	NULL	NULL
-default	default	alltypesorc	cboolean1	10	NULL	YES	boolean	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	11	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	boolean	NULL	NULL
-default	default	alltypesorc	cboolean2	11	NULL	YES	boolean	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	11	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	boolean	NULL	NULL
-default	default	moretypes	a	0	NULL	YES	decimal(10,2)	NULL	NULL	10	10	2	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	85	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	decimal(10,2)	10	10
-default	default	moretypes	b	1	NULL	YES	tinyint	NULL	NULL	3	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	85	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	tinyint	3	10
-default	default	moretypes	c	2	NULL	YES	smallint	NULL	NULL	5	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	85	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	smallint	5	10
-default	default	moretypes	d	3	NULL	YES	int	NULL	NULL	10	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	85	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	int	10	10
-default	default	moretypes	e	4	NULL	YES	bigint	NULL	NULL	19	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	85	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	bigint	19	10
-default	default	moretypes	f	5	NULL	YES	varchar(10)	10	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	85	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	varchar(10)	NULL	NULL
-default	default	moretypes	g	6	NULL	YES	char(3)	3	3	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	85	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	char(3)	NULL	NULL
+default	default	alltypesorc	ctinyint	0	NULL	YES	tinyint	NULL	NULL	3	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	12	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	tinyint	3	10
+default	default	alltypesorc	csmallint	1	NULL	YES	smallint	NULL	NULL	5	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	12	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	smallint	5	10
+default	default	alltypesorc	cint	2	NULL	YES	int	NULL	NULL	10	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	12	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	int	10	10
+default	default	alltypesorc	cbigint	3	NULL	YES	bigint	NULL	NULL	19	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	12	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	bigint	19	10
+default	default	alltypesorc	cfloat	4	NULL	YES	float	NULL	NULL	23	2	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	12	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	float	23	2
+default	default	alltypesorc	cdouble	5	NULL	YES	double	NULL	NULL	53	2	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	12	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	double	53	2
+default	default	alltypesorc	cstring1	6	NULL	YES	string	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	12	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	string	NULL	NULL
+default	default	alltypesorc	cstring2	7	NULL	YES	string	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	12	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	string	NULL	NULL
+default	default	alltypesorc	ctimestamp1	8	NULL	YES	timestamp	NULL	NULL	NULL	NULL	NULL	9	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	12	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	timestamp	NULL	NULL
+default	default	alltypesorc	ctimestamp2	9	NULL	YES	timestamp	NULL	NULL	NULL	NULL	NULL	9	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	12	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	timestamp	NULL	NULL
+default	default	alltypesorc	cboolean1	10	NULL	YES	boolean	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	12	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	boolean	NULL	NULL
+default	default	alltypesorc	cboolean2	11	NULL	YES	boolean	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	12	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	boolean	NULL	NULL
+default	default	moretypes	a	0	NULL	YES	decimal(10,2)	NULL	NULL	10	10	2	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	16	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	decimal(10,2)	10	10
+default	default	moretypes	b	1	NULL	YES	tinyint	NULL	NULL	3	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	16	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	tinyint	3	10
+default	default	moretypes	c	2	NULL	YES	smallint	NULL	NULL	5	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	16	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	smallint	5	10
+default	default	moretypes	d	3	NULL	YES	int	NULL	NULL	10	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	16	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	int	10	10
+default	default	moretypes	e	4	NULL	YES	bigint	NULL	NULL	19	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	16	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	bigint	19	10
+default	default	moretypes	f	5	NULL	YES	varchar(10)	10	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	16	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	varchar(10)	NULL	NULL
+default	default	moretypes	g	6	NULL	YES	char(3)	3	3	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	16	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	char(3)	NULL	NULL
 PREHOOK: query: select * from COLUMN_PRIVILEGES order by GRANTOR, GRANTEE, TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: information_schema@column_privileges

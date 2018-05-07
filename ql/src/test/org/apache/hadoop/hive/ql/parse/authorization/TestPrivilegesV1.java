@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -41,9 +41,9 @@ public class TestPrivilegesV1 extends PrivilegesTestBase{
   public void setup() throws Exception {
     queryState = new QueryState.Builder().build();
     db = Mockito.mock(Hive.class);
+    HiveConf hiveConf = queryState.getConf();
     table = new Table(DB, TABLE);
     partition = new Partition(table);
-    HiveConf hiveConf = queryState.getConf();
     hiveConf
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
@@ -66,7 +66,6 @@ public class TestPrivilegesV1 extends PrivilegesTestBase{
     grantUserTable("alter", PrivilegeType.ALTER_METADATA);
     grantUserTable("create", PrivilegeType.CREATE);
     grantUserTable("drop", PrivilegeType.DROP);
-    grantUserTable("index", PrivilegeType.INDEX);
     grantUserTable("lock", PrivilegeType.LOCK);
     grantUserTable("select", PrivilegeType.SELECT);
     grantUserTable("show_database", PrivilegeType.SHOW_DATABASE);

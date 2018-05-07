@@ -1,3 +1,4 @@
+--! qt:dataset:srcpart
 CREATE TABLE dest1(key INT, value STRING, hr STRING, ds STRING) STORED AS TEXTFILE;
 CREATE TABLE dest2(key INT, value STRING, hr STRING, ds STRING) STORED AS TEXTFILE;
 

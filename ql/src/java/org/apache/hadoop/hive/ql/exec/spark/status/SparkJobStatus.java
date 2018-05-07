@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -43,9 +43,13 @@ public interface SparkJobStatus {
 
   SparkStatistics getSparkStatistics();
 
+  String getWebUIURL();
+
   void cleanup();
 
-  Throwable getError();
+  Throwable getMonitorError();
 
-  void setError(Throwable e);
+  void setMonitorError(Throwable e);
+
+  Throwable getSparkJobException();
 }

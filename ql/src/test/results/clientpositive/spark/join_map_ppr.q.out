@@ -47,6 +47,7 @@ STAGE PLANS:
                         1 key (type: string)
                         2 key (type: string)
                       Position of Big Table: 2
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
             Path -> Alias:
@@ -60,6 +61,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 'default','default'
@@ -81,6 +83,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
@@ -116,6 +119,7 @@ STAGE PLANS:
                         1 key (type: string)
                         2 key (type: string)
                       Position of Big Table: 2
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
             Path -> Alias:
@@ -129,6 +133,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 'default','default'
@@ -150,6 +155,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
@@ -215,6 +221,7 @@ STAGE PLANS:
                               properties:
                                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","val2":"true","value":"true"}}
                                 bucket_count -1
+                                bucketing_version 2
                                 column.name.delimiter ,
                                 columns key,value,val2
                                 columns.comments 
@@ -234,6 +241,7 @@ STAGE PLANS:
                           TotalFiles: 1
                           GatherStats: true
                           MultiFileSpray: false
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
             Path -> Alias:
@@ -272,6 +280,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
@@ -301,6 +310,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","val2":"true","value":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value,val2
                 columns.comments 
@@ -540,6 +550,7 @@ STAGE PLANS:
                         1 UDFToDouble(key) (type: double)
                         2 UDFToDouble(key) (type: double)
                       Position of Big Table: 2
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
             Path -> Alias:
@@ -553,6 +564,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -574,6 +586,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -609,6 +622,7 @@ STAGE PLANS:
                         1 UDFToDouble(key) (type: double)
                         2 UDFToDouble(key) (type: double)
                       Position of Big Table: 2
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
             Path -> Alias:
@@ -622,6 +636,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -643,6 +658,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -708,6 +724,7 @@ STAGE PLANS:
                               properties:
                                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                                 bucket_count -1
+                                bucketing_version 2
                                 column.name.delimiter ,
                                 columns key,value,val2
                                 columns.comments 
@@ -727,6 +744,7 @@ STAGE PLANS:
                           TotalFiles: 1
                           GatherStats: true
                           MultiFileSpray: false
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
             Path -> Alias:
@@ -765,6 +783,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
@@ -794,6 +813,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value,val2
                 columns.comments 

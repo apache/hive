@@ -19,7 +19,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
-    <version>3.0.0-SNAPSHOT</version>
+    <version>3.1.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -29,13 +29,21 @@
 
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
-    <druid.metamx.util.version>0.27.10</druid.metamx.util.version>
+    <druid.metamx.util.version>1.3.2</druid.metamx.util.version>
     <druid.guava.version>16.0.1</druid.guava.version>
   </properties>
 
   <dependencies>
     <!-- dependencies are always listed in sorted order by groupId, artifectId -->
     <!-- intra-project -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.dataformat</groupId>
+      <artifactId>jackson-dataformat-smile</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+    </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-exec</artifactId>
@@ -96,6 +104,7 @@
           <artifactId>jackson-databind</artifactId>
         </exclusion>
       </exclusions>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>joda-time</groupId>
@@ -124,6 +133,7 @@
           <artifactId>druid-aws-common</artifactId>
         </exclusion>
       </exclusions>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>io.druid</groupId>
@@ -136,6 +146,7 @@
           <artifactId>annotations</artifactId>
         </exclusion>
       </exclusions>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>io.druid.extensions</groupId>
@@ -153,6 +164,14 @@
         <exclusion>
           <groupId>com.fasterxml.jackson.core</groupId>
           <artifactId>jackson-databind</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-aws</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.amazonaws</groupId>
+          <artifactId>aws-java-sdk-s3</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -342,6 +361,7 @@
                       <include>org.apache.commons:*</include>
                       <include>org.roaringbitmap:*</include>
                       <include>org.apache.derby:*</include>
+                      <include>org.asynchttpclient:*</include>
                     </includes>
                   </artifactSet>
                   <filters>

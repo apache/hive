@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore.partition.spec;
 
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.PartitionListComposingSpec;
 import org.apache.hadoop.hive.metastore.api.PartitionSpec;
 
 import java.util.Arrays;
@@ -33,10 +34,30 @@ public class PartitionListComposingSpecProxy extends PartitionSpecProxy {
 
   private PartitionSpec partitionSpec;
 
-  protected PartitionListComposingSpecProxy(PartitionSpec partitionSpec) {
+  protected PartitionListComposingSpecProxy(PartitionSpec partitionSpec) throws MetaException {
     assert partitionSpec.isSetPartitionList()
         : "Partition-list should have been set.";
+    PartitionListComposingSpec partitionList = partitionSpec.getPartitionList();
+    if (partitionList == null || partitionList.getPartitions() == null) {
+      throw new MetaException("The partition list cannot be null.");
+    }
+    for (Partition partition : partitionList.getPartitions()) {
+      if (partition == null) {
+        throw new MetaException("Partition cannot be null.");
+      }
+      if (partition.getValues() == null || partition.getValues().isEmpty()) {
+        throw new MetaException("The partition value list cannot be null or empty.");
+      }
+      if (partition.getValues().contains(null)) {
+        throw new MetaException("Partition value cannot be null.");
+      }
+    }
     this.partitionSpec = partitionSpec;
+  }
+
+  @Override
+  public String getCatName() {
+    return partitionSpec.getCatName();
   }
 
   @Override
@@ -65,6 +86,14 @@ public class PartitionListComposingSpecProxy extends PartitionSpecProxy {
   }
 
   @Override
+  public void setCatName(String catName) {
+    partitionSpec.setCatName(catName);
+    for (Partition partition : partitionSpec.getPartitionList().getPartitions()) {
+      partition.setCatName(catName);
+    }
+  }
+
+  @Override
   public void setDbName(String dbName) {
     partitionSpec.setDbName(dbName);
     for (Partition partition : partitionSpec.getPartitionList().getPartitions()) {
@@ -87,6 +116,10 @@ public class PartitionListComposingSpecProxy extends PartitionSpecProxy {
 
     if (oldRootPath == null) {
       throw new MetaException("No common root-path. Can't replace root-path!");
+    }
+
+    if (newRootPath == null) {
+      throw new MetaException("Root path cannot be null.");
     }
 
     for (Partition partition : partitionSpec.getPartitionList().getPartitions()) {
@@ -115,6 +148,11 @@ public class PartitionListComposingSpecProxy extends PartitionSpecProxy {
     @Override
     public Partition getCurrent() {
       return partitionList.get(index);
+    }
+
+    @Override
+    public String getCatName() {
+      return partitionSpecProxy.getCatName();
     }
 
     @Override

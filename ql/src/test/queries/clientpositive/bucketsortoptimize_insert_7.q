@@ -1,3 +1,5 @@
+--! qt:dataset:src
+SET hive.vectorized.execution.enabled=false;
 set hive.mapred.mode=nonstrict;
 set hive.auto.convert.join=true;
 set hive.auto.convert.sortmerge.join=true;

@@ -12,11 +12,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dummy
 PREHOOK: query: INSERT INTO TABLE dummy VALUES (42)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@dummy
 POSTHOOK: query: INSERT INTO TABLE dummy VALUES (42)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@dummy
-POSTHOOK: Lineage: dummy.i EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: dummy.i SCRIPT []
 PREHOOK: query: DROP TABLE IF EXISTS nested_tbl_1
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE IF EXISTS nested_tbl_1

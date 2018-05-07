@@ -19,4 +19,4 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@xxx6
 POSTHOOK: Lineage: xxx6.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-FAILED: ValidationFailureSemanticException Partition spec {v=val_86} contains non-partition columns
+FAILED: ValidationFailureSemanticException default.xxx6: Partition spec {v=val_86} contains non-partition columns

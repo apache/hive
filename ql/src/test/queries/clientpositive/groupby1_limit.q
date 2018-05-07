@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.stats.column.autogather=false;
 set hive.mapred.mode=nonstrict;
 set mapred.reduce.tasks=31;

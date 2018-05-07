@@ -19,12 +19,12 @@ POSTHOOK: Output: default@stats_invalid
 POSTHOOK: Lineage: stats_invalid.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: stats_invalid.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: analyze table stats_invalid compute statistics for columns key,value
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@stats_invalid
 PREHOOK: Output: default@stats_invalid
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table stats_invalid compute statistics for columns key,value
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@stats_invalid
 POSTHOOK: Output: default@stats_invalid
 #### A masked pattern was here ####
@@ -46,6 +46,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	5312                
@@ -89,6 +90,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	numFiles            	1                   
 	numRows             	500                 

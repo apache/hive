@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,20 +18,25 @@
 
 package org.apache.hadoop.hive.ql.exec.spark.status.impl;
 
+import org.apache.hadoop.hive.ql.exec.spark.SparkUtilities;
+import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatisticsNames;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatistics;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatisticsBuilder;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hive.spark.client.MetricsCollection;
-import org.apache.hive.spark.counter.SparkCounters;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobStatus;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkStageProgress;
+import org.apache.hive.spark.client.MetricsCollection;
 import org.apache.hive.spark.client.Job;
 import org.apache.hive.spark.client.JobContext;
 import org.apache.hive.spark.client.JobHandle;
 import org.apache.hive.spark.client.SparkClient;
+import org.apache.hive.spark.counter.SparkCounters;
+
 import org.apache.spark.JobExecutionStatus;
 import org.apache.spark.SparkJobInfo;
 import org.apache.spark.SparkStageInfo;
@@ -122,19 +127,36 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
     if (metricsCollection == null || getCounter() == null) {
       return null;
     }
-    SparkStatisticsBuilder sparkStatisticsBuilder = new SparkStatisticsBuilder();
-    // add Hive operator level statistics.
-    sparkStatisticsBuilder.add(getCounter());
-    // add spark job metrics.
-    String jobIdentifier = "Spark Job[" + jobHandle.getClientJobId() + "] Metrics";
 
+    SparkStatisticsBuilder sparkStatisticsBuilder = new SparkStatisticsBuilder();
+
+    // add Hive operator level statistics. - e.g. RECORDS_IN, RECORDS_OUT
+    sparkStatisticsBuilder.add(getCounter());
+
+    // add spark job metrics. - e.g. metrics collected by Spark itself (JvmGCTime,
+    // ExecutorRunTime, etc.)
     Map<String, Long> flatJobMetric = SparkMetricsUtils.collectMetrics(
         metricsCollection.getAllMetrics());
     for (Map.Entry<String, Long> entry : flatJobMetric.entrySet()) {
-      sparkStatisticsBuilder.add(jobIdentifier, entry.getKey(), Long.toString(entry.getValue()));
+      sparkStatisticsBuilder.add(SparkStatisticsNames.SPARK_GROUP_NAME, entry.getKey(),
+              Long.toString(entry.getValue()));
     }
 
     return sparkStatisticsBuilder.build();
+  }
+
+  @Override
+  public String getWebUIURL() {
+    Future<String> getWebUIURL = sparkClient.run(new GetWebUIURLJob());
+    try {
+      return getWebUIURL.get(sparkClientTimeoutInSeconds, TimeUnit.SECONDS);
+    } catch (Exception e) {
+      LOG.warn("Failed to get web UI URL.", e);
+      if (Thread.interrupted()) {
+        error = e;
+      }
+      return "UNKNOWN";
+    }
   }
 
   @Override
@@ -143,16 +165,18 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
   }
 
   @Override
-  public Throwable getError() {
-    if (error != null) {
-      return error;
-    }
-    return jobHandle.getError();
+  public Throwable getMonitorError() {
+    return error;
   }
 
   @Override
-  public void setError(Throwable e) {
+  public void setMonitorError(Throwable e) {
     this.error = e;
+  }
+
+  @Override
+  public Throwable getSparkJobException() {
+    return jobHandle.getError();
   }
 
   /**
@@ -285,6 +309,20 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
     @Override
     public String call(JobContext jc) throws Exception {
       return jc.sc().sc().applicationId();
+    }
+  }
+
+  private static class GetWebUIURLJob implements Job<String> {
+
+    public GetWebUIURLJob() {
+    }
+
+    @Override
+    public String call(JobContext jc) throws Exception {
+      if (jc.sc().sc().uiWebUrl().isDefined()) {
+        return SparkUtilities.reverseDNSLookupURL(jc.sc().sc().uiWebUrl().get());
+      }
+      return "UNDEFINED";
     }
   }
 }

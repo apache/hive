@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -32,6 +32,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.parse.repl.dump.io.FileOperations;
 import org.apache.hadoop.hive.ql.plan.CopyWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.util.StringUtils;
@@ -61,6 +63,7 @@ public class CopyTask extends Task<CopyWork> implements Serializable {
   protected int copyOnePath(Path fromPath, Path toPath) {
     FileSystem dstFs = null;
     try {
+      Utilities.FILE_OP_LOGGER.trace("Copying data from {} to {} " + fromPath);
       console.printInfo("Copying data from " + fromPath.toString(), " to "
           + toPath.toString());
 
@@ -85,7 +88,7 @@ public class CopyTask extends Task<CopyWork> implements Serializable {
       for (FileStatus oneSrc : srcs) {
         String oneSrcPathStr = oneSrc.getPath().toString();
         console.printInfo("Copying file: " + oneSrcPathStr);
-        LOG.debug("Copying file: {}", oneSrcPathStr);
+        Utilities.FILE_OP_LOGGER.debug("Copying file {} to {}", oneSrcPathStr, toPath);
         if (!FileUtils.copy(srcFs, oneSrc.getPath(), dstFs, toPath,
             false, // delete source
             true, // overwrite destination
@@ -110,7 +113,7 @@ public class CopyTask extends Task<CopyWork> implements Serializable {
     if (!fs.exists(path)) return null;
     if (!isSourceMm) return matchFilesOneDir(fs, path, null);
     // Note: this doesn't handle list bucketing properly; neither does the original code.
-    FileStatus[] mmDirs = fs.listStatus(path, new JavaUtils.AnyIdDirFilter());
+    FileStatus[] mmDirs = fs.listStatus(path, new AcidUtils.AnyIdDirFilter());
     if (mmDirs == null || mmDirs.length == 0) return null;
     List<FileStatus> allFiles = new ArrayList<FileStatus>();
     for (FileStatus mmDir : mmDirs) {

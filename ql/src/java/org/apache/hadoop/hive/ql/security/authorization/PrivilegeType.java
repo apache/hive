@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -33,7 +33,6 @@ public enum PrivilegeType {
   ALTER_METADATA(HiveParser.TOK_PRIV_ALTER_METADATA, "Alter"),
   CREATE(HiveParser.TOK_PRIV_CREATE, "Create"),
   DROP(HiveParser.TOK_PRIV_DROP, "Drop"),
-  INDEX(HiveParser.TOK_PRIV_INDEX, "Index"),
   LOCK(HiveParser.TOK_PRIV_LOCK, "Lock"),
   SELECT(HiveParser.TOK_PRIV_SELECT, "Select"),
   SHOW_DATABASE(HiveParser.TOK_PRIV_SHOW_DATABASE, "Show_Database"),

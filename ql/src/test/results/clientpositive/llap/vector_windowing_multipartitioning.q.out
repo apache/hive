@@ -74,7 +74,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2), 10:bin:binary, 11:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2), 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: s (type: string), si (type: smallint)
                     sort order: ++
@@ -10242,7 +10242,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 344 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2), 10:bin:binary, 11:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2), 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -10520,7 +10520,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2), 10:bin:binary, 11:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2), 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -10724,36 +10724,36 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over10k
 #### A masked pattern was here ####
 s	_c1	sum_window_1
-bob steinbeck	722083	38.33000183105469
-tom allen	1248023	89.88999938964844
+tom allen	1248023	47.16999816894531
+tom allen	1248023	77.77999877929688
+bob steinbeck	722083	83.52999877929688
 tom allen	1248023	83.47000122070312
+tom allen	1248023	15.84000015258789
+tom allen	1248023	39.4900016784668
+bob steinbeck	722083	80.7300033569336
+tom allen	1248023	11.300000190734863
+tom allen	1248023	2.8499999046325684
+tom allen	1248023	19.459999084472656
+bob steinbeck	722083	26.290000915527344
+tom allen	1248023	14.510000228881836
+bob steinbeck	722083	83.52999877929688
+tom allen	1248023	52.779998779296875
+bob steinbeck	722083	9.699999809265137
+tom allen	1248023	55.38999938964844
+tom allen	1248023	132.82000350952148
+bob steinbeck	722083	132.82000350952148
+tom allen	1248023	11.069999694824219
+bob steinbeck	722083	38.33000183105469
+tom allen	1248023	26.239999771118164
 bob steinbeck	722083	47.810001373291016
 bob steinbeck	722083	68.46999740600586
 tom allen	1248023	68.46999740600586
 bob steinbeck	722083	28.479999542236328
-tom allen	1248023	2.8499999046325684
-bob steinbeck	722083	26.290000915527344
 bob steinbeck	722083	36.209999084472656
-bob steinbeck	722083	83.52999877929688
-tom allen	1248023	39.4900016784668
-bob steinbeck	722083	80.7300033569336
-tom allen	1248023	77.77999877929688
-tom allen	1248023	26.239999771118164
 tom allen	1248023	95.41000366210938
-tom allen	1248023	81.8499984741211
-tom allen	1248023	11.300000190734863
-tom allen	1248023	55.38999938964844
-tom allen	1248023	132.82000350952148
-bob steinbeck	722083	132.82000350952148
-tom allen	1248023	47.16999816894531
-tom allen	1248023	11.069999694824219
-bob steinbeck	722083	83.52999877929688
-tom allen	1248023	19.459999084472656
-tom allen	1248023	14.510000228881836
+tom allen	1248023	89.88999938964844
 tom allen	1248023	38.93000030517578
-tom allen	1248023	15.84000015258789
-tom allen	1248023	52.779998779296875
-bob steinbeck	722083	9.699999809265137
+tom allen	1248023	81.8499984741211
 PREHOOK: query: explain vectorization detail
 select s, rank() over (partition by s order by bo), rank() over (partition by si order by bin desc) from over10k
 where s = 'tom allen' or s = 'bob steinbeck'
@@ -10787,7 +10787,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2), 10:bin:binary, 11:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2), 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -11060,7 +11060,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2), 10:bin:binary, 11:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2), 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -11340,7 +11340,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 304 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2), 10:bin:binary, 11:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(4,2), 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator

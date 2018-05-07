@@ -11,21 +11,25 @@ POSTHOOK: Output: default@numt
 PREHOOK: query: --comment2
 insert into numt values(1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@numt
 POSTHOOK: query: --comment2
 insert into numt values(1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@numt
-POSTHOOK: Lineage: numt.idx EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: numt.idx SCRIPT []
 PREHOOK: query: --comment3
 insert into numt values(2)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@numt
 POSTHOOK: query: --comment3
 insert into numt values(2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@numt
-POSTHOOK: Lineage: numt.idx EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: numt.idx SCRIPT []
 PREHOOK: query: select idx from numt where --comment5
 idx = 1
 PREHOOK: type: QUERY

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -1302,15 +1302,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   public Integer visitCopy_stmt(HplsqlParser.Copy_stmtContext ctx) { 
     return new Copy(exec).run(ctx); 
   }
-  
-  /**
-   * COPY FROM FTP statement
-   */
-  @Override 
-  public Integer visitCopy_from_ftp_stmt(HplsqlParser.Copy_from_ftp_stmtContext ctx) { 
-    return new Ftp(exec).run(ctx); 
-  }
-  
+
   /**
    * COPY FROM LOCAL statement
    */

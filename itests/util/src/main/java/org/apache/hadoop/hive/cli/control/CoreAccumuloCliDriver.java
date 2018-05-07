@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,6 +18,8 @@
 package org.apache.hadoop.hive.cli.control;
 
 import static org.junit.Assert.assertTrue;
+
+import java.io.File;
 
 import org.apache.hadoop.hive.accumulo.AccumuloQTestUtil;
 import org.apache.hadoop.hive.accumulo.AccumuloTestSetup;
@@ -41,16 +43,7 @@ public class CoreAccumuloCliDriver extends CliAdapter {
   @BeforeClass
   public void beforeClass() {
     setup = new AccumuloTestSetup();
-  }
-  @Override
-  @AfterClass
-  public void shutdown() throws Exception {
-    setup.tearDown();
-  }
-  @Override
-  @Before
-  public void setUp() {
-
+    
     MiniClusterType miniMR = cliConfig.getClusterType();
     String initScript = cliConfig.getInitScript();
     String cleanupScript = cliConfig.getCleanupScript();
@@ -58,20 +51,35 @@ public class CoreAccumuloCliDriver extends CliAdapter {
     try {
       qt = new AccumuloQTestUtil(cliConfig.getResultsDir(), cliConfig.getLogDir(), miniMR,
           setup, initScript, cleanupScript);
+      
+      // do a one time initialization
+      qt.cleanUp();
+      qt.createSources();
     } catch (Exception e) {
       throw new RuntimeException("Unexpected exception in setUp",e);
     }
   }
-
+  
   @Override
-  @After
-  public void tearDown() {
+  @AfterClass
+  public void shutdown() throws Exception {
+    setup.tearDown();
+    
     try {
       qt.shutdown();
     }
     catch (Exception e) {
       throw new RuntimeException("Unexpected exception in tearDown",e);
     }
+  }
+  @Override
+  @Before
+  public void setUp() {
+  }
+
+  @Override
+  @After
+  public void tearDown() {
   }
 
   @Override
@@ -87,7 +95,7 @@ public class CoreAccumuloCliDriver extends CliAdapter {
         return;
       }
 
-      qt.cliInit(fname);
+      qt.cliInit(new File(fpath), false);
       qt.clearTestSideEffects();
       int ecode = qt.executeClient(fname);
       if (ecode != 0) {

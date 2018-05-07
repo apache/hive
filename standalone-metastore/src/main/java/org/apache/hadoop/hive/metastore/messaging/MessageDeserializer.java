@@ -52,12 +52,6 @@ public abstract class MessageDeserializer {
       return getCreateFunctionMessage(messageBody);
     case DROP_FUNCTION:
       return getDropFunctionMessage(messageBody);
-    case CREATE_INDEX:
-      return getCreateIndexMessage(messageBody);
-    case DROP_INDEX:
-      return getDropIndexMessage(messageBody);
-    case ALTER_INDEX:
-      return getAlterIndexMessage(messageBody);
     case INSERT:
       return getInsertMessage(messageBody);
     case ADD_PRIMARYKEY:
@@ -70,6 +64,12 @@ public abstract class MessageDeserializer {
       return getAddNotNullConstraintMessage(messageBody);
     case DROP_CONSTRAINT:
       return getDropConstraintMessage(messageBody);
+    case OPEN_TXN:
+      return getOpenTxnMessage(messageBody);
+    case COMMIT_TXN:
+      return getCommitTxnMessage(messageBody);
+    case ABORT_TXN:
+      return getAbortTxnMessage(messageBody);
     default:
       throw new IllegalArgumentException("Unsupported event-type: " + eventTypeString);
     }
@@ -135,21 +135,6 @@ public abstract class MessageDeserializer {
   public abstract DropFunctionMessage getDropFunctionMessage(String messageBody);
 
   /**
-   * Method to de-serialize CreateIndexMessage instance.
-   */
-  public abstract CreateIndexMessage getCreateIndexMessage(String messageBody);
-
-  /**
-   * Method to de-serialize DropIndexMessage instance.
-   */
-  public abstract DropIndexMessage getDropIndexMessage(String messageBody);
-
-  /**
-   * Method to de-serialize AlterIndexMessage instance.
-   */
-  public abstract AlterIndexMessage getAlterIndexMessage(String messageBody);
-
-  /**
    * Method to deserialize InsertMessage
    * @param messageBody the message in serialized form
    * @return message in object form
@@ -180,6 +165,26 @@ public abstract class MessageDeserializer {
    * Method to de-serialize DropConstraintMessage instance.
    */
   public abstract DropConstraintMessage getDropConstraintMessage(String messageBody);
+
+  /**
+   * Method to de-serialize OpenTxnMessage instance.
+   */
+  public abstract OpenTxnMessage getOpenTxnMessage(String messageBody);
+
+  /**
+   * Method to de-serialize CommitTxnMessage instance.
+   */
+  public abstract CommitTxnMessage getCommitTxnMessage(String messageBody);
+
+  /**
+   * Method to de-serialize AbortTxnMessage instance.
+   */
+  public abstract AbortTxnMessage getAbortTxnMessage(String messageBody);
+
+  /*
+   * Method to de-serialize AllocWriteIdMessage instance.
+   */
+  public abstract AllocWriteIdMessage getAllocWriteIdMessage(String messageBody);
 
   // Protection against construction.
   protected MessageDeserializer() {}

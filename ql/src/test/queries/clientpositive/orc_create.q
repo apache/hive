@@ -1,4 +1,8 @@
+--! qt:dataset:src
+
+set hive.vectorized.execution.enabled=false;
 set hive.mapred.mode=nonstrict;
+
 -- SORT_QUERY_RESULTS
 
 DROP TABLE orc_create;

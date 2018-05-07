@@ -99,6 +99,35 @@ having grouping(key) = 1 OR grouping(value) = 1
 order by x desc, case when x = 1 then key end;
 
 explain vectorization detail
+select key, value, grouping(key), grouping(value)
+from T1
+group by key, value;
+
+select key, value, grouping(key), grouping(value)
+from T1
+group by key, value;
+
+explain vectorization detail
+select key, value, grouping(value)
+from T1
+group by key, value;
+
+select key, value, grouping(value)
+from T1
+group by key, value;
+
+explain vectorization detail
+select key, value
+from T1
+group by key, value
+having grouping(key) = 0;
+
+select key, value
+from T1
+group by key, value
+having grouping(key) = 0;
+
+explain vectorization detail
 select key, value, `grouping__id`, grouping(key, value)
 from T1
 group by cube(key, value);

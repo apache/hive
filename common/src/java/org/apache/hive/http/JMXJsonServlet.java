@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -324,7 +324,7 @@ public class JMXJsonServlet extends HttpServlet {
       // UnsupportedOperationExceptions happen in the normal course of business,
       // so no need to log them as errors all the time.
       if (e.getCause() instanceof UnsupportedOperationException) {
-        LOG.debug("getting attribute "+attName+" of "+oname+" threw an exception", e);
+        LOG.debug("getting attribute "+attName+" of "+oname+" is unsupported");
       } else {
         LOG.error("getting attribute "+attName+" of "+oname+" threw an exception", e);
       }

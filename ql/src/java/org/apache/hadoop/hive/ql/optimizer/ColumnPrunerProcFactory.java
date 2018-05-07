@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
@@ -804,8 +805,10 @@ public final class ColumnPrunerProcFactory {
         for (FieldNode col : cols) {
           int index = originalOutputColumnNames.indexOf(col.getFieldName());
           Table tab = cppCtx.getParseContext().getViewProjectToTableSchema().get(op);
+          List<FieldSchema> fullFieldList = new ArrayList<FieldSchema>(tab.getCols());
+          fullFieldList.addAll(tab.getPartCols());
           cppCtx.getParseContext().getColumnAccessInfo()
-              .add(tab.getCompleteName(), tab.getCols().get(index).getName());
+              .add(tab.getCompleteName(), fullFieldList.get(index).getName());
         }
       }
       if (cols.size() < originalOutputColumnNames.size()) {

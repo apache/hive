@@ -5,10 +5,10 @@ set hive.mapred.mode=nonstrict;
 -- 0.23 changed input order of data in reducer task, which affects result of percentile_approx
 
 CREATE TABLE bucket (key double, value string) CLUSTERED BY (key) SORTED BY (key DESC)  INTO 4 BUCKETS STORED AS TEXTFILE;
-load data local inpath '../../data/files/srcsortbucket1outof4.txt' INTO TABLE bucket;
-load data local inpath '../../data/files/srcsortbucket2outof4.txt' INTO TABLE bucket;
-load data local inpath '../../data/files/srcsortbucket3outof4.txt' INTO TABLE bucket;
-load data local inpath '../../data/files/srcsortbucket4outof4.txt' INTO TABLE bucket;
+load data local inpath '../../data/files/auto_sortmerge_join/big/000000_0' INTO TABLE bucket;
+load data local inpath '../../data/files/auto_sortmerge_join/big/000001_0' INTO TABLE bucket;
+load data local inpath '../../data/files/auto_sortmerge_join/big/000002_0' INTO TABLE bucket;
+load data local inpath '../../data/files/auto_sortmerge_join/big/000003_0' INTO TABLE bucket;
 
 create table t1 (result double);
 create table t2 (result double);
@@ -99,5 +99,4 @@ select percentile_approx(key, 0.5) from bucket;
 select percentile_approx(key, 0.5) between 255.0 and 257.0 from bucket;
 
 -- test where number of elements is zero
-set hive.cbo.enable=false;
 select percentile_approx(key, array(0.50, 0.70, 0.90, 0.95, 0.99)) from bucket where key > 10000;

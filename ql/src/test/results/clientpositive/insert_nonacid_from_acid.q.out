@@ -8,13 +8,15 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@sample_06
 PREHOOK: query: insert into table sample_06 values ('aaa', 35, 3.00), ('bbb', 32, 3.00), ('ccc', 32, 3.00), ('ddd', 35, 3.00), ('eee', 32, 3.00)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@sample_06
 POSTHOOK: query: insert into table sample_06 values ('aaa', 35, 3.00), ('bbb', 32, 3.00), ('ccc', 32, 3.00), ('ddd', 35, 3.00), ('eee', 32, 3.00)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@sample_06
-POSTHOOK: Lineage: sample_06.age EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: sample_06.gpa EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: sample_06.name EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: sample_06.age SCRIPT []
+POSTHOOK: Lineage: sample_06.gpa SCRIPT []
+POSTHOOK: Lineage: sample_06.name SCRIPT []
 PREHOOK: query: select * from sample_06 where gpa = 3.00
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sample_06

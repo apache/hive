@@ -21,9 +21,7 @@ CREATE TABLE baz(a INT);
 -- SHOW TABLES basic syntax tests
 USE default;
 SHOW TABLES FROM test_db;
-SHOW TABLES FROM default;
 SHOW TABLES IN test_db;
-SHOW TABLES IN default;
 SHOW TABLES IN test_db "test*";
 SHOW TABLES IN test_db LIKE "nomatch";
 

@@ -1,3 +1,5 @@
+--! qt:dataset:srcpart
+--! qt:dataset:srcbucket
 CREATE TABLE dest1(key INT, value STRING, dt STRING, hr STRING) STORED AS TEXTFILE;
 
 -- no input pruning, no sample filter

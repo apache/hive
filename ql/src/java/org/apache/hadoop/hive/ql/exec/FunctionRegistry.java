@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -214,6 +214,7 @@ public final class FunctionRegistry {
     system.registerUDF("rand", UDFRand.class, false);
     system.registerGenericUDF("abs", GenericUDFAbs.class);
     system.registerGenericUDF("sq_count_check", GenericUDFSQCountCheck.class);
+    system.registerGenericUDF("enforce_constraint", GenericUDFEnforceNotNullConstraint.class);
     system.registerGenericUDF("pmod", GenericUDFPosMod.class);
 
     system.registerUDF("ln", UDFLn.class, false);
@@ -382,10 +383,6 @@ public final class FunctionRegistry {
     system.registerGenericUDF("between", GenericUDFBetween.class);
     system.registerGenericUDF("in_bloom_filter", GenericUDFInBloomFilter.class);
 
-    system.registerGenericUDF("ewah_bitmap_and", GenericUDFEWAHBitmapAnd.class);
-    system.registerGenericUDF("ewah_bitmap_or", GenericUDFEWAHBitmapOr.class);
-    system.registerGenericUDF("ewah_bitmap_empty", GenericUDFEWAHBitmapEmpty.class);
-
     // Utility UDFs
     system.registerUDF("version", UDFVersion.class, false);
 
@@ -399,6 +396,18 @@ public final class FunctionRegistry {
     system.registerUDF(serdeConstants.FLOAT_TYPE_NAME, UDFToFloat.class, false, UDFToFloat.class.getSimpleName());
     system.registerUDF(serdeConstants.DOUBLE_TYPE_NAME, UDFToDouble.class, false, UDFToDouble.class.getSimpleName());
     system.registerUDF(serdeConstants.STRING_TYPE_NAME, UDFToString.class, false, UDFToString.class.getSimpleName());
+    // following mapping is to enable UDFName to UDF while generating expression for default value (in operator tree)
+    //  e.g. cast(4 as string) is serialized as UDFToString(4) into metastore, to allow us to generate appropriate UDF for
+    //  UDFToString we need the following mappings
+    // Rest of the types e.g. DATE, CHAR, VARCHAR etc are already registered
+    system.registerUDF(UDFToString.class.getSimpleName(), UDFToString.class, false, UDFToString.class.getSimpleName());
+    system.registerUDF(UDFToBoolean.class.getSimpleName(), UDFToBoolean.class, false, UDFToBoolean.class.getSimpleName());
+    system.registerUDF(UDFToDouble.class.getSimpleName(), UDFToDouble.class, false, UDFToDouble.class.getSimpleName());
+    system.registerUDF(UDFToFloat.class.getSimpleName(), UDFToFloat.class, false, UDFToFloat.class.getSimpleName());
+    system.registerUDF(UDFToInteger.class.getSimpleName(), UDFToInteger.class, false, UDFToInteger.class.getSimpleName());
+    system.registerUDF(UDFToLong.class.getSimpleName(), UDFToLong.class, false, UDFToLong.class.getSimpleName());
+    system.registerUDF(UDFToShort.class.getSimpleName(), UDFToShort.class, false, UDFToShort.class.getSimpleName());
+    system.registerUDF(UDFToByte.class.getSimpleName(), UDFToByte.class, false, UDFToByte.class.getSimpleName());
 
     system.registerGenericUDF(serdeConstants.DATE_TYPE_NAME, GenericUDFToDate.class);
     system.registerGenericUDF(serdeConstants.TIMESTAMP_TYPE_NAME, GenericUDFTimestamp.class);
@@ -446,8 +455,6 @@ public final class FunctionRegistry {
     system.registerGenericUDAF("ngrams", new GenericUDAFnGrams());
     system.registerGenericUDAF("context_ngrams", new GenericUDAFContextNGrams());
 
-    system.registerGenericUDAF("ewah_bitmap", new GenericUDAFEWAHBitmap());
-
     system.registerGenericUDAF("compute_stats", new GenericUDAFComputeStats());
     system.registerGenericUDAF("bloom_filter", new GenericUDAFBloomFilter());
     system.registerUDAF("percentile", UDAFPercentile.class);
@@ -460,6 +467,7 @@ public final class FunctionRegistry {
 
     system.registerGenericUDF("array", GenericUDFArray.class);
     system.registerGenericUDF("assert_true", GenericUDFAssertTrue.class);
+    system.registerGenericUDF("assert_true_oom", GenericUDFAssertTrueOOM.class);
     system.registerGenericUDF("map", GenericUDFMap.class);
     system.registerGenericUDF("struct", GenericUDFStruct.class);
     system.registerGenericUDF("named_struct", GenericUDFNamedStruct.class);
@@ -470,6 +478,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("when", GenericUDFWhen.class);
     system.registerGenericUDF("nullif", GenericUDFNullif.class);
     system.registerGenericUDF("hash", GenericUDFHash.class);
+    system.registerGenericUDF("murmur_hash", GenericUDFMurmurHash.class);
     system.registerGenericUDF("coalesce", GenericUDFCoalesce.class);
     system.registerGenericUDF("index", GenericUDFIndex.class);
     system.registerGenericUDF("in_file", GenericUDFInFile.class);
@@ -857,6 +866,15 @@ public final class FunctionRegistry {
 
     if (pcA == pcB) {
       // Same primitive category
+      return pcA;
+    }
+
+    if (pcA == PrimitiveCategory.VOID) {
+      // Handle NULL, we return the type of pcB
+      return pcB;
+    }
+    if (pcB == PrimitiveCategory.VOID) {
+      // Handle NULL, we return the type of pcA
       return pcA;
     }
 
@@ -1483,6 +1501,40 @@ public final class FunctionRegistry {
   }
 
   /**
+   * Returns whether a GenericUDF is a runtime constant or not.
+   */
+  public static boolean isRuntimeConstant(GenericUDF genericUDF) {
+    UDFType genericUDFType = AnnotationUtils.getAnnotation(genericUDF.getClass(), UDFType.class);
+    if (genericUDFType != null && genericUDFType.runtimeConstant()) {
+      return true;
+    }
+
+    if (genericUDF instanceof GenericUDFBridge) {
+      GenericUDFBridge bridge = (GenericUDFBridge) genericUDF;
+      UDFType bridgeUDFType = AnnotationUtils.getAnnotation(bridge.getUdfClass(), UDFType.class);
+      if (bridgeUDFType != null && bridgeUDFType.runtimeConstant()) {
+        return true;
+      }
+    }
+
+    if (genericUDF instanceof GenericUDFMacro) {
+      GenericUDFMacro macro = (GenericUDFMacro) (genericUDF);
+      return macro.isRuntimeConstant();
+    }
+
+    return false;
+  }
+
+  /**
+   * Returns whether the expression, for a single query, returns the same result given
+   * the same arguments/children. This includes deterministic functions as well as runtime
+   * constants (which may not be deterministic across queries).
+   */
+  public static boolean isConsistentWithinQuery(GenericUDF genericUDF) {
+    return (isDeterministic(genericUDF) || isRuntimeConstant(genericUDF)) && !isStateful(genericUDF);
+  }
+
+  /**
    * Returns whether the exprNodeDesc is a node of "and", "or", "not".
    */
   public static boolean isOpAndOrNot(ExprNodeDesc desc) {
@@ -1617,7 +1669,9 @@ public final class FunctionRegistry {
 
   public static boolean isPermanentFunction(ExprNodeGenericFuncDesc fnExpr) {
     GenericUDF udf = fnExpr.getGenericUDF();
-    if (udf == null) return false;
+    if (udf == null) {
+      return false;
+    }
 
     Class<?> clazz = udf.getClass();
     if (udf instanceof GenericUDFBridge) {
@@ -1743,7 +1797,9 @@ public final class FunctionRegistry {
    */
   public static boolean isBuiltInFuncExpr(ExprNodeGenericFuncDesc fnExpr) {
     GenericUDF udf = fnExpr.getGenericUDF();
-    if (udf == null) return false;
+    if (udf == null) {
+      return false;
+    }
 
     Class clazz = udf.getClass();
     if (udf instanceof GenericUDFBridge) {

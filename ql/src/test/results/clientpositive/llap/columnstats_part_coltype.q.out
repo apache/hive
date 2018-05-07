@@ -61,14 +61,14 @@ POSTHOOK: Output: default@partcolstats@ds=2015-04-03/hr=3/part=partB
 POSTHOOK: Lineage: partcolstats PARTITION(ds=2015-04-03,hr=3,part=partB).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partcolstats PARTITION(ds=2015-04-03,hr=3,part=partB).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: analyze table partcolstats partition (ds=date '2015-04-02', hr=2, part='partA') compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@partcolstats
 PREHOOK: Input: default@partcolstats@ds=2015-04-02/hr=2/part=partA
 PREHOOK: Output: default@partcolstats
 PREHOOK: Output: default@partcolstats@ds=2015-04-02/hr=2/part=partA
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table partcolstats partition (ds=date '2015-04-02', hr=2, part='partA') compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@partcolstats
 POSTHOOK: Input: default@partcolstats@ds=2015-04-02/hr=2/part=partA
 POSTHOOK: Output: default@partcolstats
@@ -147,7 +147,7 @@ num_falses
 bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: analyze table partcolstats partition (ds=date '2015-04-02', hr=2, part) compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@partcolstats
 PREHOOK: Input: default@partcolstats@ds=2015-04-02/hr=2/part=partA
 PREHOOK: Input: default@partcolstats@ds=2015-04-02/hr=2/part=partB
@@ -156,7 +156,7 @@ PREHOOK: Output: default@partcolstats@ds=2015-04-02/hr=2/part=partA
 PREHOOK: Output: default@partcolstats@ds=2015-04-02/hr=2/part=partB
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table partcolstats partition (ds=date '2015-04-02', hr=2, part) compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@partcolstats
 POSTHOOK: Input: default@partcolstats@ds=2015-04-02/hr=2/part=partA
 POSTHOOK: Input: default@partcolstats@ds=2015-04-02/hr=2/part=partB
@@ -237,7 +237,7 @@ num_falses
 bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: analyze table partcolstats partition (ds=date '2015-04-02', hr, part) compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@partcolstats
 PREHOOK: Input: default@partcolstats@ds=2015-04-02/hr=2/part=partA
 PREHOOK: Input: default@partcolstats@ds=2015-04-02/hr=2/part=partB
@@ -248,7 +248,7 @@ PREHOOK: Output: default@partcolstats@ds=2015-04-02/hr=2/part=partB
 PREHOOK: Output: default@partcolstats@ds=2015-04-02/hr=3/part=partA
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table partcolstats partition (ds=date '2015-04-02', hr, part) compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@partcolstats
 POSTHOOK: Input: default@partcolstats@ds=2015-04-02/hr=2/part=partA
 POSTHOOK: Input: default@partcolstats@ds=2015-04-02/hr=2/part=partB
@@ -367,7 +367,7 @@ num_falses
 bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: analyze table partcolstats partition (ds, hr, part) compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@partcolstats
 PREHOOK: Input: default@partcolstats@ds=2015-04-02/hr=2/part=partA
 PREHOOK: Input: default@partcolstats@ds=2015-04-02/hr=2/part=partB
@@ -382,7 +382,7 @@ PREHOOK: Output: default@partcolstats@ds=2015-04-03/hr=3/part=partA
 PREHOOK: Output: default@partcolstats@ds=2015-04-03/hr=3/part=partB
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table partcolstats partition (ds, hr, part) compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@partcolstats
 POSTHOOK: Input: default@partcolstats@ds=2015-04-02/hr=2/part=partA
 POSTHOOK: Input: default@partcolstats@ds=2015-04-02/hr=2/part=partB
@@ -499,14 +499,14 @@ POSTHOOK: Output: default@partcolstatsnum@tint=100/sint=1000/bint=1000000
 POSTHOOK: Lineage: partcolstatsnum PARTITION(tint=100,sint=1000,bint=1000000).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partcolstatsnum PARTITION(tint=100,sint=1000,bint=1000000).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: analyze table partcolstatsnum partition (tint=100, sint=1000, bint=1000000) compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@partcolstatsnum
 PREHOOK: Input: default@partcolstatsnum@tint=100/sint=1000/bint=1000000
 PREHOOK: Output: default@partcolstatsnum
 PREHOOK: Output: default@partcolstatsnum@tint=100/sint=1000/bint=1000000
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table partcolstatsnum partition (tint=100, sint=1000, bint=1000000) compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@partcolstatsnum
 POSTHOOK: Input: default@partcolstatsnum@tint=100/sint=1000/bint=1000000
 POSTHOOK: Output: default@partcolstatsnum
@@ -561,14 +561,14 @@ POSTHOOK: Output: default@partcolstatsdec@decpart=1000.0001
 POSTHOOK: Lineage: partcolstatsdec PARTITION(decpart=1000.0001).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partcolstatsdec PARTITION(decpart=1000.0001).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: analyze table partcolstatsdec partition (decpart='1000.0001') compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@partcolstatsdec
 PREHOOK: Input: default@partcolstatsdec@decpart=1000.0001
 PREHOOK: Output: default@partcolstatsdec
 PREHOOK: Output: default@partcolstatsdec@decpart=1000.0001
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table partcolstatsdec partition (decpart='1000.0001') compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@partcolstatsdec
 POSTHOOK: Input: default@partcolstatsdec@decpart=1000.0001
 POSTHOOK: Output: default@partcolstatsdec
@@ -623,14 +623,14 @@ POSTHOOK: Output: default@partcolstatschar@varpart=part1/charpart=aaa
 POSTHOOK: Lineage: partcolstatschar PARTITION(varpart=part1,charpart=aaa).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partcolstatschar PARTITION(varpart=part1,charpart=aaa).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: analyze table partcolstatschar partition (varpart='part1', charpart='aaa') compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@partcolstatschar
 PREHOOK: Input: default@partcolstatschar@varpart=part1/charpart=aaa
 PREHOOK: Output: default@partcolstatschar
 PREHOOK: Output: default@partcolstatschar@varpart=part1/charpart=aaa
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table partcolstatschar partition (varpart='part1', charpart='aaa') compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@partcolstatschar
 POSTHOOK: Input: default@partcolstatschar@varpart=part1/charpart=aaa
 POSTHOOK: Output: default@partcolstatschar

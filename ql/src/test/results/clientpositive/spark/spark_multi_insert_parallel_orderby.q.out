@@ -46,7 +46,9 @@ STAGE PLANS:
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       TopN Hash Memory Usage: 0.1
                       value expressions: _col1 (type: string)
+            Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
@@ -72,11 +74,11 @@ STAGE PLANS:
 PREHOOK: query: select key,value from src order by key limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select key,value from src order by key limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	val_0
 0	val_0
 0	val_0
@@ -128,7 +130,9 @@ STAGE PLANS:
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       TopN Hash Memory Usage: 0.1
                       value expressions: _col1 (type: string)
+            Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
@@ -210,11 +214,11 @@ POSTHOOK: Lineage: e2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, co
 PREHOOK: query: select * from e1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@e1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from e1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@e1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	val_0
 0	val_0
 0	val_0
@@ -228,11 +232,11 @@ POSTHOOK: Input: default@e1
 PREHOOK: query: select * from e2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@e2
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from e2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@e2
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 0
 0
@@ -296,6 +300,7 @@ STAGE PLANS:
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.e2
+            Execution mode: vectorized
 
   Stage: Stage-0
     Move Operator
@@ -349,11 +354,11 @@ POSTHOOK: Lineage: e2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, co
 PREHOOK: query: select * from e1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@e1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from e1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@e1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	val_0
 0	val_0
 0	val_0
@@ -857,11 +862,11 @@ POSTHOOK: Input: default@e1
 PREHOOK: query: select * from e2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@e2
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from e2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@e2
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 0
 0
@@ -1417,7 +1422,9 @@ STAGE PLANS:
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.e2
+            Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: string), VALUE._col1 (type: string)
@@ -1487,20 +1494,20 @@ POSTHOOK: Lineage: e2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, co
 PREHOOK: query: select count(*) from e1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@e1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from e1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@e1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 10
 PREHOOK: query: select * from e2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@e2
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from e2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@e2
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 0
 0

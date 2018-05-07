@@ -1,3 +1,6 @@
+--! qt:dataset:src
+
+set hive.vectorized.execution.enabled=false;
 set hive.exec.mode.local.auto=false;
 set hive.exec.reducers.max = 2;
 
@@ -5,10 +8,10 @@ set hive.exec.reducers.max = 2;
 -- table with 3 buckets, and uses a post-hook to confirm that 1 reducer was used
 
 CREATE TABLE test_table(key int, value string) CLUSTERED BY (key) INTO 3 BUCKETS;
-set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.VerifyNumReducersHook;
-set VerifyNumReducersHook.num.reducers=1;
 
+explain extended insert overwrite table test_table
+  select * from src;
 insert overwrite table test_table
 select * from src;
 
-set hive.exec.post.hooks=;
+drop table test_table;

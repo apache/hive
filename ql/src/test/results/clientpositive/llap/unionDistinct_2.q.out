@@ -242,20 +242,6 @@ key                 	string
 value               	string              	                    
 	 	 
 #### A masked pattern was here ####
-(	 	 
-select distinct * from u1	 	 
-union  	 	 
-select key, value from u2	 	 
-union all	 	 
-select key as key, value from u3	 	 
-) tab, viewExpandedText:select distinct `tab`.`key`, `tab`.`value` from 	 	 
-(	 	 
-select distinct `u1`.`key`, `u1`.`value` from `default`.`u1`	 	 
-union  	 	 
-select `u2`.`key`, `u2`.`value` from `default`.`u2`	 	 
-union all	 	 
-select `u3`.`key` as `key`, `u3`.`value` from `default`.`u3`	 	 
-) `tab`, tableType:VIRTUAL_VIEW, rewriteEnabled:false)		 
 PREHOOK: query: select * from v
 PREHOOK: type: QUERY
 PREHOOK: Input: default@u1
@@ -318,16 +304,6 @@ key                 	string
 value               	string              	                    
 	 	 
 #### A masked pattern was here ####
-(	 	 
-select distinct * from u1	 	 
-union  	 	 
-select distinct * from u2	 	 
-) tab, viewExpandedText:select `tab`.`key`, `tab`.`value` from 	 	 
-(	 	 
-select distinct `u1`.`key`, `u1`.`value` from `default`.`u1`	 	 
-union  	 	 
-select distinct `u2`.`key`, `u2`.`value` from `default`.`u2`	 	 
-) `tab`, tableType:VIRTUAL_VIEW, rewriteEnabled:false)		 
 PREHOOK: query: select * from v
 PREHOOK: type: QUERY
 PREHOOK: Input: default@u1
@@ -385,16 +361,6 @@ key                 	string
 value               	string              	                    
 	 	 
 #### A masked pattern was here ####
-(	 	 
-select distinct u1.* from u1	 	 
-union all 	 	 
-select distinct * from u2	 	 
-) tab, viewExpandedText:select `tab`.`key`, `tab`.`value` from 	 	 
-(	 	 
-select distinct `u1`.`key`, `u1`.`value` from `default`.`u1`	 	 
-union all 	 	 
-select distinct `u2`.`key`, `u2`.`value` from `default`.`u2`	 	 
-) `tab`, tableType:VIRTUAL_VIEW, rewriteEnabled:false)		 
 PREHOOK: query: select * from v
 PREHOOK: type: QUERY
 PREHOOK: Input: default@u1

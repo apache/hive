@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.slf4j.Logger;
@@ -86,7 +87,8 @@ public class MetaDataExportListener extends MetaStorePreEventListener {
     Path outFile = new Path(metaPath, name + EximUtil.METADATA_NAME);
     try {
       SessionState.getConsole().printInfo("Beginning metadata export");
-      EximUtil.createExportDump(fs, outFile, mTbl, null, null);
+      EximUtil.createExportDump(fs, outFile, mTbl, null, null,
+          new HiveConf(conf, MetaDataExportListener.class));
       if (moveMetadataToTrash == true) {
         wh.deleteDir(metaPath, true);
       }

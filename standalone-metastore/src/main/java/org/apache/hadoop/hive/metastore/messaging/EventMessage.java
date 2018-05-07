@@ -42,14 +42,24 @@ public abstract class EventMessage {
     INSERT(MessageFactory.INSERT_EVENT),
     CREATE_FUNCTION(MessageFactory.CREATE_FUNCTION_EVENT),
     DROP_FUNCTION(MessageFactory.DROP_FUNCTION_EVENT),
-    CREATE_INDEX(MessageFactory.CREATE_INDEX_EVENT),
-    DROP_INDEX(MessageFactory.DROP_INDEX_EVENT),
-    ALTER_INDEX(MessageFactory.ALTER_INDEX_EVENT),
+
     ADD_PRIMARYKEY(MessageFactory.ADD_PRIMARYKEY_EVENT),
     ADD_FOREIGNKEY(MessageFactory.ADD_FOREIGNKEY_EVENT),
     ADD_UNIQUECONSTRAINT(MessageFactory.ADD_UNIQUECONSTRAINT_EVENT),
     ADD_NOTNULLCONSTRAINT(MessageFactory.ADD_NOTNULLCONSTRAINT_EVENT),
-    DROP_CONSTRAINT(MessageFactory.DROP_CONSTRAINT_EVENT);
+    DROP_CONSTRAINT(MessageFactory.DROP_CONSTRAINT_EVENT),
+    CREATE_ISCHEMA(MessageFactory.CREATE_ISCHEMA_EVENT),
+    ALTER_ISCHEMA(MessageFactory.ALTER_ISCHEMA_EVENT),
+    DROP_ISCHEMA(MessageFactory.DROP_ISCHEMA_EVENT),
+    ADD_SCHEMA_VERSION(MessageFactory.ADD_SCHEMA_VERSION_EVENT),
+    ALTER_SCHEMA_VERSION(MessageFactory.ALTER_SCHEMA_VERSION_EVENT),
+    DROP_SCHEMA_VERSION(MessageFactory.DROP_SCHEMA_VERSION_EVENT),
+    CREATE_CATALOG(MessageFactory.CREATE_CATALOG_EVENT),
+    DROP_CATALOG(MessageFactory.DROP_CATALOG_EVENT),
+    OPEN_TXN(MessageFactory.OPEN_TXN_EVENT),
+    COMMIT_TXN(MessageFactory.COMMIT_TXN_EVENT),
+    ABORT_TXN(MessageFactory.ABORT_TXN_EVENT),
+    ALLOC_WRITE_ID(MessageFactory.ALLOC_WRITE_ID_EVENT);
 
     private String typeString;
 
@@ -100,12 +110,15 @@ public abstract class EventMessage {
    * Class invariant. Checked after construction or deserialization.
    */
   public EventMessage checkValid() {
-    if (getServer() == null || getServicePrincipal() == null)
+    if (getServer() == null || getServicePrincipal() == null) {
       throw new IllegalStateException("Server-URL/Service-Principal shouldn't be null.");
-    if (getEventType() == null)
+    }
+    if (getEventType() == null) {
       throw new IllegalStateException("Event-type unset.");
-    if (getDB() == null)
+    }
+    if (getDB() == null) {
       throw new IllegalArgumentException("DB-name unset.");
+    }
 
     return this;
   }

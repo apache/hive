@@ -40,6 +40,7 @@ STAGE PLANS:
                 Map-reduce partition columns: _col2 (type: string), _col3 (type: string)
                 Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col0 (type: string)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: string), KEY._col3 (type: string), KEY.'_bucket_number' (type: string)

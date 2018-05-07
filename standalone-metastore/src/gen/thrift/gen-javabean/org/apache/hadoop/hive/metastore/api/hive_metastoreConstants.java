@@ -84,4 +84,6 @@ import org.slf4j.LoggerFactory;
 
   public static final String TABLE_TRANSACTIONAL_PROPERTIES = "transactional_properties";
 
+  public static final String TABLE_BUCKETING_VERSION = "bucketing_version";
+
 }

@@ -23,9 +23,8 @@ import org.apache.hive.spark.client.metrics.Metrics;
 import org.apache.hive.spark.client.rpc.RpcDispatcher;
 import org.apache.hive.spark.counter.SparkCounters;
 
-import com.google.common.base.Throwables;
 
-abstract class BaseProtocol extends RpcDispatcher {
+public abstract class BaseProtocol extends RpcDispatcher {
 
   protected static class CancelJob implements Serializable {
 
@@ -39,28 +38,40 @@ abstract class BaseProtocol extends RpcDispatcher {
       this(null);
     }
 
+    @Override
+    public String toString() {
+      return "CancelJob{" +
+              "id='" + id + '\'' +
+              '}';
+    }
   }
 
   protected static class EndSession implements Serializable {
 
+    @Override
+    public String toString() {
+      return "EndSession";
+    }
   }
 
   protected static class Error implements Serializable {
 
     final String cause;
 
-    Error(Throwable cause) {
-      if (cause == null) {
-        this.cause = "";
-      } else {
-        this.cause = Throwables.getStackTraceAsString(cause);
-      }
+    Error(String cause) {
+      this.cause = cause;
     }
 
     Error() {
       this(null);
     }
 
+    @Override
+    public String toString() {
+      return "Error{" +
+              "cause='" + cause + '\'' +
+              '}';
+    }
   }
 
   protected static class JobMetrics implements Serializable {
@@ -83,6 +94,16 @@ abstract class BaseProtocol extends RpcDispatcher {
       this(null, -1, -1, -1, null);
     }
 
+    @Override
+    public String toString() {
+      return "JobMetrics{" +
+              "jobId='" + jobId + '\'' +
+              ", sparkJobId=" + sparkJobId +
+              ", stageId=" + stageId +
+              ", taskId=" + taskId +
+              ", metrics=" + metrics +
+              '}';
+    }
   }
 
   protected static class JobRequest<T extends Serializable> implements Serializable {
@@ -99,19 +120,26 @@ abstract class BaseProtocol extends RpcDispatcher {
       this(null, null);
     }
 
+    @Override
+    public String toString() {
+      return "JobRequest{" +
+              "id='" + id + '\'' +
+              ", job=" + job +
+              '}';
+    }
   }
 
-  protected static class JobResult<T extends Serializable> implements Serializable {
+  public static class JobResult<T extends Serializable> implements Serializable {
 
     final String id;
     final T result;
-    final String error;
+    final Throwable error;
     final SparkCounters sparkCounters;
 
     JobResult(String id, T result, Throwable error, SparkCounters sparkCounters) {
       this.id = id;
       this.result = result;
-      this.error = error != null ? Throwables.getStackTraceAsString(error) : null;
+      this.error = error;
       this.sparkCounters = sparkCounters;
     }
 
@@ -119,6 +147,15 @@ abstract class BaseProtocol extends RpcDispatcher {
       this(null, null, null, null);
     }
 
+    @Override
+    public String toString() {
+      return "JobResult{" +
+              "id='" + id + '\'' +
+              ", result=" + result +
+              ", error=" + error +
+              ", sparkCounters=" + sparkCounters +
+              '}';
+    }
   }
 
   protected static class JobStarted implements Serializable {
@@ -133,6 +170,12 @@ abstract class BaseProtocol extends RpcDispatcher {
       this(null);
     }
 
+    @Override
+    public String toString() {
+      return "JobStarted{" +
+              "id='" + id + '\'' +
+              '}';
+    }
   }
 
   /**
@@ -150,6 +193,14 @@ abstract class BaseProtocol extends RpcDispatcher {
     JobSubmitted() {
       this(null, -1);
     }
+
+    @Override
+    public String toString() {
+      return "JobSubmitted{" +
+              "clientJobId='" + clientJobId + '\'' +
+              ", sparkJobId=" + sparkJobId +
+              '}';
+    }
   }
 
   protected static class SyncJobRequest<T extends Serializable> implements Serializable {
@@ -164,6 +215,11 @@ abstract class BaseProtocol extends RpcDispatcher {
       this(null);
     }
 
+    @Override
+    public String toString() {
+      return "SyncJobRequest{" +
+              "job=" + job +
+              '}';
+    }
   }
-
 }

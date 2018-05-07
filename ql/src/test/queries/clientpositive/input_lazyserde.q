@@ -1,3 +1,9 @@
+--! qt:dataset:srcbucket2
+--! qt:dataset:src_thrift
+-- Suppress vectorization due to known bug.  See HIVE-19088.
+set hive.vectorized.execution.enabled=false;
+set hive.test.vectorized.execution.enabled.override=none;
+
 -- SORT_QUERY_RESULTS
 
 DROP TABLE dest1;

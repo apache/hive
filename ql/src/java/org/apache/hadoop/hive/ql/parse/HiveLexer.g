@@ -303,6 +303,7 @@ KW_COMPACTIONS: 'COMPACTIONS';
 KW_TRANSACTIONS: 'TRANSACTIONS';
 KW_REWRITE : 'REWRITE';
 KW_AUTHORIZATION: 'AUTHORIZATION';
+KW_REOPTIMIZATION: 'REOPTIMIZATION';
 KW_CONF: 'CONF';
 KW_VALUES: 'VALUES';
 KW_RELOAD: 'RELOAD';
@@ -359,6 +360,7 @@ KW_QUERY_PARALLELISM: 'QUERY_PARALLELISM';
 KW_PLANS: 'PLANS';
 KW_ACTIVATE: 'ACTIVATE';
 KW_DEFAULT: 'DEFAULT';
+KW_CHECK: 'CHECK';
 KW_POOL: 'POOL';
 KW_MOVE: 'MOVE';
 KW_DO: 'DO';
@@ -370,6 +372,8 @@ KW_WORKLOAD: 'WORKLOAD';
 KW_MANAGEMENT: 'MANAGEMENT';
 KW_ACTIVE: 'ACTIVE';
 KW_UNMANAGED: 'UNMANAGED';
+KW_APPLICATION: 'APPLICATION';
+KW_SYNC: 'SYNC';
 
 // Operators
 // NOTE: if you add a new function/operator, add it to sysFuncNames so that describe function _FUNC_ will work.
@@ -466,6 +470,21 @@ NumberLiteral
 ByteLengthLiteral
     :
     (Digit)+ ('b' | 'B' | 'k' | 'K' | 'm' | 'M' | 'g' | 'G')
+    ;
+
+TimeFullLiteral
+    :
+    (Digit)+ ('NS' | 'NSEC' | 'NSECS' | 'NANOSECOND' | 'NANOSECONDS' |
+          'US' | 'USEC' | 'USECS' | 'MICROSECOND' | 'MICROSECONDS' |
+          'MS' | 'MSEC' | 'MSECS' | 'MILLISECOND' | 'MILLISECONDS' |
+          'SEC' | 'SECS' | 'SECOND' | 'SECONDS' |
+          'MIN' | 'MINS' | 'MINUTE' | 'MINUTES' |
+          'HOUR' | 'HOURS' | 'DAY' | 'DAYS')
+    ;
+
+ByteLengthFullLiteral
+    :
+    (Digit)+ ('KB' | 'MB' | 'GB' | 'TB' | 'PB')
     ;
 
 Number

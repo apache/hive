@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -27,16 +27,27 @@ interface QueryAllocationManager {
   void start();
   void stop();
   /**
-   * Updates the session allocations asynchoronously.
+   * Updates the session allocations asynchronously.
    * @param totalMaxAlloc The total maximum fraction of the cluster to allocate. Used to
    *                      avoid various artifacts, esp. with small numbers and double weirdness.
    *                      Null means the total is unknown.
    * @param sessions Sessions to update based on their allocation fraction.
+   * @return The number of executors/cpus allocated.
    */
-  void updateSessionsAsync(Double totalMaxAlloc, List<WmTezSession> sessions);
+  int updateSessionsAsync(Double totalMaxAlloc, List<WmTezSession> sessions);
+
+  /**
+   * @return the number of CPUs equivalent to percentage allocation, for information purposes.
+   */
+  int translateAllocationToCpus(double allocation);
 
   /**
    * Sets a callback to be invoked on cluster changes relevant to resource allocation.
    */
   void setClusterChangedCallback(Runnable clusterChangedCallback);
+  
+  /**
+   * Updates the session asynchronously with the existing allocation.
+   */
+  void updateSessionAsync(WmTezSession session);
 }

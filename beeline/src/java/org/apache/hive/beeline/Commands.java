@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -1072,7 +1072,6 @@ public class Commands {
    * Check if the input line is a multi-line command which needs to read further
    */
   public String handleMultiLineCmd(String line) throws IOException {
-    //When using -e, console reader is not initialized and command is always a single line
     int[] startQuote = {-1};
     line = HiveStringUtils.removeComments(line, startQuote);
     while (isMultiLine(line) && beeLine.getOpts().isAllowMultiLineCommand()) {
@@ -1641,7 +1640,14 @@ public class Commands {
       if (!beeLine.isBeeLine()) {
         beeLine.updateOptsForCli();
       }
-      beeLine.runInit();
+
+      int initScriptExecutionResult = beeLine.runInit();
+
+      //if execution of the init script(s) return anything other than ERRNO_OK from beeline
+      //exit beeline with error unless --force is set
+      if(initScriptExecutionResult != 0 && !beeLine.getOpts().getForce()) {
+        return beeLine.error("init script execution failed.");
+      }
 
       beeLine.setCompletions();
       beeLine.getOpts().setLastConnectedUrl(url);

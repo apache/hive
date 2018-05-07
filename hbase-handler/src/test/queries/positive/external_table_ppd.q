@@ -1,3 +1,4 @@
+--! qt:dataset:src
 DROP TABLE t_hbase;
 
 CREATE TABLE t_hbase(key STRING,

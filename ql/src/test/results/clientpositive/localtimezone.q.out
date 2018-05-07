@@ -27,6 +27,7 @@ PREHOOK: query: insert into `date_test` VALUES
   ('2011-01-01 01:01:01.12345678912 GMT-05:00'),
   ('2011-01-01 01:01:01.12345678912 xyz')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@date_test
 POSTHOOK: query: insert into `date_test` VALUES
   ('2011-01-01 01:01:01.123'),
@@ -37,8 +38,9 @@ POSTHOOK: query: insert into `date_test` VALUES
   ('2011-01-01 01:01:01.12345678912 GMT-05:00'),
   ('2011-01-01 01:01:01.12345678912 xyz')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@date_test
-POSTHOOK: Lineage: date_test.mydate1 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: date_test.mydate1 SCRIPT []
 PREHOOK: query: create table `timestamp_test` (`mydate1` timestamp)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -56,6 +58,7 @@ PREHOOK: query: insert into `timestamp_test` VALUES
   ('2011-01-01 01:01:01.12345678912 GMT-05:00'),
   ('2011-01-01 01:01:01.12345678912 xyz')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@timestamp_test
 POSTHOOK: query: insert into `timestamp_test` VALUES
   ('2011-01-01 01:01:01.123'),
@@ -66,8 +69,9 @@ POSTHOOK: query: insert into `timestamp_test` VALUES
   ('2011-01-01 01:01:01.12345678912 GMT-05:00'),
   ('2011-01-01 01:01:01.12345678912 xyz')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@timestamp_test
-POSTHOOK: Lineage: timestamp_test.mydate1 EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: timestamp_test.mydate1 SCRIPT []
 PREHOOK: query: create table `timestamptz_test` (`mydate1` timestamp with local time zone)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -85,6 +89,7 @@ PREHOOK: query: insert into `timestamptz_test` VALUES
   ('2011-01-01 01:01:01.12345678912 GMT-05:00'),
   ('2011-01-01 01:01:01.12345678912 xyz')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@timestamptz_test
 POSTHOOK: query: insert into `timestamptz_test` VALUES
   ('2011-01-01 01:01:01.123'),
@@ -95,8 +100,9 @@ POSTHOOK: query: insert into `timestamptz_test` VALUES
   ('2011-01-01 01:01:01.12345678912 GMT-05:00'),
   ('2011-01-01 01:01:01.12345678912 xyz')
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@timestamptz_test
-POSTHOOK: Lineage: timestamptz_test.mydate1 EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: timestamptz_test.mydate1 SCRIPT []
 PREHOOK: query: select * from `date_test`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@date_test
@@ -495,6 +501,7 @@ PREHOOK: query: insert into `timestamptz_test2` VALUES
   ('2011-01-01 01:01:01.12345678912 GMT-05:00', 'pin', null),
   ('2011-01-01 01:01:01.12345678912 xyz', 'cable', 0.0)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@timestamptz_test2
 POSTHOOK: query: insert into `timestamptz_test2` VALUES
   ('2011-01-01 01:01:01.123', 'laptop 1', 9.2),
@@ -508,10 +515,11 @@ POSTHOOK: query: insert into `timestamptz_test2` VALUES
   ('2011-01-01 01:01:01.12345678912 GMT-05:00', 'pin', null),
   ('2011-01-01 01:01:01.12345678912 xyz', 'cable', 0.0)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@timestamptz_test2
-POSTHOOK: Lineage: timestamptz_test2.item SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: timestamptz_test2.mydate1 EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-POSTHOOK: Lineage: timestamptz_test2.price EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: timestamptz_test2.item SCRIPT []
+POSTHOOK: Lineage: timestamptz_test2.mydate1 SCRIPT []
+POSTHOOK: Lineage: timestamptz_test2.price SCRIPT []
 PREHOOK: query: select `item`, `price`,
 rank() over (partition by `mydate1` order by `price`) as r
 from `timestamptz_test2`

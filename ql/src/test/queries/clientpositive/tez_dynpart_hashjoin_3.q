@@ -1,3 +1,5 @@
+--! qt:dataset:src
+--! qt:dataset:alltypesorc
 set hive.optimize.limittranspose=true;
 set hive.optimize.limittranspose.reductionpercentage=0.1f;
 set hive.optimize.limittranspose.reductiontuples=100;
@@ -14,8 +16,8 @@ limit 1;
 
 set hive.auto.convert.join=true;
 set hive.optimize.dynamic.partition.hashjoin=true;
-set hive.auto.convert.join.noconditionaltask.size=200000;
-set hive.exec.reducers.bytes.per.reducer=200000;
+set hive.auto.convert.join.noconditionaltask.size=20000;
+set hive.exec.reducers.bytes.per.reducer=2000;
 
 explain
 select a.*

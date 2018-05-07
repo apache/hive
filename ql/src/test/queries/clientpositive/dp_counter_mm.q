@@ -1,5 +1,4 @@
--- remove disable after HIVE-18237
-set hive.stats.column.autogather=false;
+--! qt:dataset:src
 set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.exec.max.dynamic.partitions.pernode=200;
 set hive.exec.max.dynamic.partitions=200;

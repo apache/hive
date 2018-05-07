@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -37,12 +37,14 @@ class QueryExecutionBreakdownSummary implements PrintSummary {
   private final Long compileEndTime;
   private final Long dagSubmitStartTime;
   private final Long submitToRunningDuration;
+  private final Long getSessionDuration;
 
   QueryExecutionBreakdownSummary(PerfLogger perfLogger) {
     this.perfLogger = perfLogger;
     this.compileEndTime = perfLogger.getEndTime(PerfLogger.COMPILE);
     this.dagSubmitStartTime = perfLogger.getStartTime(PerfLogger.TEZ_SUBMIT_DAG);
     this.submitToRunningDuration = perfLogger.getDuration(PerfLogger.TEZ_SUBMIT_TO_RUNNING);
+    this.getSessionDuration = perfLogger.getDuration(PerfLogger.TEZ_GET_SESSION);
   }
 
   private String formatNumber(long number) {
@@ -66,8 +68,9 @@ class QueryExecutionBreakdownSummary implements PrintSummary {
     console.printInfo(format("Compile Query", compile));
 
     // prepare plan for submission (building DAG, adding resources, creating scratch dirs etc.)
-    long totalDAGPrep = dagSubmitStartTime - compileEndTime;
+    long totalDAGPrep = dagSubmitStartTime - compileEndTime - getSessionDuration;
     console.printInfo(format("Prepare Plan", totalDAGPrep));
+    console.printInfo(format("Get Query Coordinator (AM)", getSessionDuration));
 
     // submit to accept dag (if session is closed, this will include re-opening of session time,
     // localizing files for AM, submitting DAG)

@@ -14,6 +14,9 @@ values
 (2.51, 1.251),
 (3.51, 1.351);
 
+-- Add a single NULL row that will come from ORC as isRepeated.
+insert into test_vector_bround values (NULL, NULL);
+
 set hive.vectorized.execution.enabled=true;
 
 explain vectorization detail

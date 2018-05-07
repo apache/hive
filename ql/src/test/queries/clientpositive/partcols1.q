@@ -1,3 +1,4 @@
+--! qt:dataset:src
 
 create table test1(col1 string) partitioned by (partitionId int);
 insert overwrite table test1 partition (partitionId=1)

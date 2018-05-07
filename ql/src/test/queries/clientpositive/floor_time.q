@@ -1,3 +1,4 @@
+--! qt:dataset:src
 drop table extract_udf;
 
 create table extract_udf (t timestamp);

@@ -25,13 +25,16 @@ import java.util.concurrent.TimeUnit;
 import javax.jdo.JDOException;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
 
+@Category(MetastoreCheckinTest.class)
 public class TestRetriesInRetryingHMSHandler {
 
   private static Configuration conf;
@@ -40,9 +43,9 @@ public class TestRetriesInRetryingHMSHandler {
   @BeforeClass
   public static void setup() throws IOException {
     conf = MetastoreConf.newMetastoreConf();
-    MetastoreConf.setLongVar(conf, ConfVars.HMSHANDLERATTEMPTS, RETRY_ATTEMPTS);
-    MetastoreConf.setTimeVar(conf, ConfVars.HMSHANDLERINTERVAL, 10, TimeUnit.MILLISECONDS);
-    MetastoreConf.setBoolVar(conf, ConfVars.HMSHANDLERFORCERELOADCONF, false);
+    MetastoreConf.setLongVar(conf, ConfVars.HMS_HANDLER_ATTEMPTS, RETRY_ATTEMPTS);
+    MetastoreConf.setTimeVar(conf, ConfVars.HMS_HANDLER_INTERVAL, 10, TimeUnit.MILLISECONDS);
+    MetastoreConf.setBoolVar(conf, ConfVars.HMS_HANDLER_FORCE_RELOAD_CONF, false);
   }
 
   /*

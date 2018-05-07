@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.map.aggr=true;
 set hive.groupby.skewindata=false;
 set mapred.reduce.tasks=31;

@@ -1,5 +1,5 @@
 set hive.mapred.mode=nonstrict;
-SET hive.vectorized.execution.enabled = true;
+SET hive.vectorized.execution.enabled = false;
 SET hive.int.timestamp.conversion.in.seconds=false;
 set hive.fetch.task.conversion=none;
 

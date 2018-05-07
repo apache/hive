@@ -1,3 +1,4 @@
+--! qt:dataset:alltypesorc
 set hive.stats.column.autogather=false;
 set hive.cli.print.header=true;
 set hive.explain.user=false;

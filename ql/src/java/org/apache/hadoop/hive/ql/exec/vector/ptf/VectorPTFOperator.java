@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -227,7 +227,6 @@ public class VectorPTFOperator extends Operator<PTFDesc>
       int outputColumn = outputProjectionColumnMap[i];
       vOutContext.addProjectionColumn(columnName, outputColumn);
     }
-    vOutContext.setInitialTypeInfos(Arrays.asList(outputTypeInfos));
   }
 
   /*
@@ -435,6 +434,7 @@ public class VectorPTFOperator extends Operator<PTFDesc>
         return true;
       }
       if (isNull) {
+        // NULL does equal NULL here.
         continue;
       }
 

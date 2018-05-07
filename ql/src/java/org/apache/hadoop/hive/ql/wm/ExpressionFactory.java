@@ -19,6 +19,10 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.Validator;
+import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hadoop.hive.ql.parse.HiveParser;
+import org.apache.hadoop.hive.ql.parse.ParseDriver;
+import org.apache.hadoop.hive.ql.parse.ParseException;
 
 /**
  * Factory to create expressions
@@ -30,16 +34,33 @@ public class ExpressionFactory {
       return null;
     }
 
-    // TODO: Only ">" predicate is supported right now, this has to be extended to support expression tree when
-    // multiple conditions are required. HIVE-17622
+    ParseDriver driver = new ParseDriver();
+    ASTNode node = null;
+    try {
+      node = driver.parseTriggerExpression(expression);
+    } catch (ParseException e) {
+      throw new IllegalArgumentException("Invalid expression: " + expression, e);
+    }
+    if (node.getChildCount() == 2 && node.getChild(1).getType() == HiveParser.EOF) {
+      node = (ASTNode) node.getChild(0);
+    }
+    if (node.getType() != HiveParser.TOK_TRIGGER_EXPRESSION) {
+      throw new IllegalArgumentException(
+          "Expected trigger expression, got: " + node.toStringTree());
+    }
 
-    String[] tokens = expression.split(Expression.Predicate.GREATER_THAN.getSymbol());
-    if (tokens.length != 2) {
+    if (node.getChildCount() != 3) {
+      throw new IllegalArgumentException("Only single > condition supported: " + expression);
+    }
+
+    // Only ">" predicate is supported right now, this has to be extended to support
+    // expression tree when multiple conditions are required. HIVE-17622
+    if (node.getChild(1).getType() != HiveParser.GREATERTHAN) {
       throw new IllegalArgumentException("Invalid predicate in expression");
     }
 
-    final String counterName = tokens[0].trim();
-    final String counterValueStr = tokens[1].trim();
+    final String counterName = node.getChild(0).getText();
+    final String counterValueStr = node.getChild(2).getText().toLowerCase();
     if (counterName.isEmpty()) {
       throw new IllegalArgumentException("Counter name cannot be empty!");
     }

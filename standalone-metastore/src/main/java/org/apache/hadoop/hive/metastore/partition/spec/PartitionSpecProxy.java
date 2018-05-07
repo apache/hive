@@ -37,6 +37,12 @@ public abstract class PartitionSpecProxy {
   public abstract int size();
 
   /**
+   * Set catalog name.
+   * @param catName catalog name.
+   */
+  public abstract void setCatName(String catName);
+
+  /**
    * Setter for name of the DB.
    * @param dbName The name of the DB.
    */
@@ -47,6 +53,12 @@ public abstract class PartitionSpecProxy {
    * @param tableName The name of the table.
    */
   public abstract void setTableName(String tableName);
+
+  /**
+   * Get catalog name.
+   * @return catalog name.
+   */
+  public abstract String getCatName();
 
   /**
    * Getter for name of the DB.
@@ -88,8 +100,9 @@ public abstract class PartitionSpecProxy {
      * Factory method. Construct PartitionSpecProxy from raw PartitionSpec.
      * @param partSpec Raw PartitionSpec from the Thrift API.
      * @return PartitionSpecProxy instance.
+     * @throws MetaException
      */
-    public static PartitionSpecProxy get(PartitionSpec partSpec) {
+    public static PartitionSpecProxy get(PartitionSpec partSpec) throws MetaException {
 
       if (partSpec == null) {
         return null;
@@ -111,8 +124,9 @@ public abstract class PartitionSpecProxy {
      * Factory method to construct CompositePartitionSpecProxy.
      * @param partitionSpecs List of raw PartitionSpecs.
      * @return A CompositePartitionSpecProxy instance.
+     * @throws MetaException
      */
-    public static PartitionSpecProxy get(List<PartitionSpec> partitionSpecs) {
+    public static PartitionSpecProxy get(List<PartitionSpec> partitionSpecs) throws MetaException {
       return new CompositePartitionSpecProxy(partitionSpecs);
     }
 
@@ -129,6 +143,12 @@ public abstract class PartitionSpecProxy {
      * @return The "current" partition object.
      */
     Partition getCurrent();
+
+    /**
+     * Get the catalog name.
+     * @return catalog name.
+     */
+    String getCatName();
 
     /**
      * Getter for the name of the DB.
@@ -184,6 +204,7 @@ public abstract class PartitionSpecProxy {
     public SimplePartitionWrapperIterator(Partition partition) {this.partition = partition;}
 
     @Override public Partition getCurrent() { return partition; }
+    @Override public String getCatName() { return partition.getCatName(); }
     @Override public String getDbName() { return partition.getDbName(); }
     @Override public String getTableName() { return partition.getTableName(); }
     @Override public Map<String, String> getParameters() { return partition.getParameters(); }

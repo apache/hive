@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -94,6 +94,7 @@ class TezProgressMonitor implements ProgressMonitor {
         if (progress != null) {
           // Map 1 .......... container  SUCCEEDED      7          7        0        0       0       0
 
+          // TODO: can we pass custom things thru the progress?
           results.add(
             Arrays.asList(
               getNameWithProgress(vertexName, progress.succeededTaskCount, progress.totalTaskCount),

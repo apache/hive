@@ -129,6 +129,7 @@ STAGE PLANS:
               sort order: 
               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
@@ -163,6 +164,6 @@ POSTHOOK: Input: default@t1@ds=1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t2@ds=1
 #### A masked pattern was here ####
-18
+15
 mapreduce.framework.name=yarn
-mapreduce.jobtracker.address=local
+mapreduce.jobtracker.address=localhost:58

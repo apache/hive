@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -71,5 +71,9 @@ public class DeleteResourceProcessor implements CommandProcessor {
     }
 
     return new CommandProcessorResponse(0);
+  }
+
+  @Override
+  public void close() throws Exception {
   }
 }

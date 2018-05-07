@@ -124,6 +124,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 16
                     bucket_field_name key
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -147,6 +148,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 16
                       bucket_field_name key
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -167,6 +169,7 @@ STAGE PLANS:
             Truncated Path -> Alias:
               /test_table1 [a]
         Reducer 2 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
@@ -256,6 +259,7 @@ STAGE PLANS:
                         0 UDFToDouble(key) (type: double)
                         1 UDFToDouble(value) (type: double)
                       Position of Big Table: 0
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
             Path -> Alias:
@@ -270,7 +274,8 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 16
-                    bucket_field_name key
+                    bucket_field_name key,value
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -293,7 +298,8 @@ STAGE PLANS:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 16
-                      bucket_field_name key
+                      bucket_field_name key,value
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -355,6 +361,7 @@ STAGE PLANS:
                           TopN Hash Memory Usage: 0.1
                           value expressions: _col1 (type: string), _col2 (type: int), _col3 (type: string)
                           auto parallelism: false
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
             Path -> Alias:
@@ -369,7 +376,8 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 16
-                    bucket_field_name key
+                    bucket_field_name key,value
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
@@ -392,7 +400,8 @@ STAGE PLANS:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 16
-                      bucket_field_name key
+                      bucket_field_name key,value
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -413,6 +422,7 @@ STAGE PLANS:
             Truncated Path -> Alias:
               /test_table3 [a]
         Reducer 2 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator

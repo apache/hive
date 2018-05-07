@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 --This query must pass even when vectorized reader is not available for
 --RC files. The query must fall back to the non-vector mode and run successfully.

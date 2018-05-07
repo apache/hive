@@ -1,11 +1,11 @@
 PREHOOK: query: select * from src a union all select * from src b limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from src a union all select * from src b limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain analyze select * from src a union all select * from src b limit 10
 PREHOOK: type: QUERY
 POSTHOOK: query: explain analyze select * from src a union all select * from src b limit 10
@@ -41,11 +41,11 @@ Stage-0
 PREHOOK: query: select key from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select key from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain analyze select key from src
 PREHOOK: type: QUERY
 POSTHOOK: query: explain analyze select key from src
@@ -150,11 +150,11 @@ Stage-3
 PREHOOK: query: select key from src limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select key from src limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain analyze select key from src limit 10
 PREHOOK: type: QUERY
 POSTHOOK: query: explain analyze select key from src limit 10
@@ -174,11 +174,11 @@ Stage-0
 PREHOOK: query: select key from src where value < 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select key from src where value < 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain analyze select key from src where value < 10
 PREHOOK: type: QUERY
 POSTHOOK: query: explain analyze select key from src where value < 10
@@ -191,18 +191,18 @@ Stage-0
     Select Operator [SEL_2]
       Output:["_col0"]
       Filter Operator [FIL_4]
-        predicate:(UDFToDouble(value) < 10.0)
+        predicate:(UDFToDouble(value) < 10.0D)
         TableScan [TS_0]
           Output:["key","value"]
 
 PREHOOK: query: select key from src where key < 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select key from src where key < 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain analyze select key from src where key < 10
 PREHOOK: type: QUERY
 POSTHOOK: query: explain analyze select key from src where key < 10
@@ -215,27 +215,27 @@ Stage-0
     Select Operator [SEL_2]
       Output:["_col0"]
       Filter Operator [FIL_4]
-        predicate:(UDFToDouble(key) < 10.0)
+        predicate:(UDFToDouble(key) < 10.0D)
         TableScan [TS_0]
           Output:["key"]
 
 PREHOOK: query: select count(*) from (select key from src where key < 10)subq
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from (select key from src where key < 10)subq
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 10
 PREHOOK: query: select key, count(key) from src group by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select key, count(key) from src group by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain analyze select key, count(key) from src group by key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain analyze select key, count(key) from src group by key
@@ -264,20 +264,20 @@ Stage-0
 PREHOOK: query: select count(*) from (select key, count(key) from src group by key)subq
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from (select key, count(key) from src group by key)subq
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 309
 PREHOOK: query: select count(*) from src a join src b on a.key = b.value where a.key > 0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from src a join src b on a.key = b.value where a.key > 0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain analyze select count(*) from src a join src b on a.key = b.value where a.key > 0
 PREHOOK: type: QUERY
 POSTHOOK: query: explain analyze select count(*) from src a join src b on a.key = b.value where a.key > 0
@@ -306,7 +306,7 @@ Stage-0
                 Select Operator [SEL_2] (rows=166/497 width=87)
                   Output:["_col0"]
                   Filter Operator [FIL_16] (rows=166/497 width=87)
-                    predicate:(UDFToDouble(key) > 0.0)
+                    predicate:(UDFToDouble(key) > 0.0D)
                     TableScan [TS_0] (rows=500/500 width=87)
                       default@src,a,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
             <-Map 4 [SIMPLE_EDGE]
@@ -315,18 +315,18 @@ Stage-0
                 Select Operator [SEL_5] (rows=166/0 width=91)
                   Output:["_col0"]
                   Filter Operator [FIL_17] (rows=166/0 width=91)
-                    predicate:(UDFToDouble(value) > 0.0)
+                    predicate:(UDFToDouble(value) > 0.0D)
                     TableScan [TS_3] (rows=500/500 width=91)
                       default@src,b,Tbl:COMPLETE,Col:COMPLETE,Output:["value"]
 
 PREHOOK: query: select count(*) from src a join src b on a.key = b.key where a.key > 0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from src a join src b on a.key = b.key where a.key > 0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain analyze select count(*) from src a join src b on a.key = b.key where a.key > 0
 PREHOOK: type: QUERY
 POSTHOOK: query: explain analyze select count(*) from src a join src b on a.key = b.key where a.key > 0
@@ -355,7 +355,7 @@ Stage-0
                 Select Operator [SEL_2] (rows=166/497 width=87)
                   Output:["_col0"]
                   Filter Operator [FIL_16] (rows=166/497 width=87)
-                    predicate:(UDFToDouble(key) > 0.0)
+                    predicate:(UDFToDouble(key) > 0.0D)
                     TableScan [TS_0] (rows=500/500 width=87)
                       default@src,a,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
             <-Map 4 [SIMPLE_EDGE]
@@ -364,27 +364,27 @@ Stage-0
                 Select Operator [SEL_5] (rows=166/497 width=87)
                   Output:["_col0"]
                   Filter Operator [FIL_17] (rows=166/497 width=87)
-                    predicate:(UDFToDouble(key) > 0.0)
+                    predicate:(UDFToDouble(key) > 0.0D)
                     TableScan [TS_3] (rows=500/500 width=87)
                       default@src,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
 
 PREHOOK: query: select count(*) from src a join src b on a.key = b.key where a.key > 0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from src a join src b on a.key = b.key where a.key > 0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1019
 PREHOOK: query: select * from src a union all select * from src b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from src a union all select * from src b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain analyze select * from src a union all select * from src b
 PREHOOK: type: QUERY
 POSTHOOK: query: explain analyze select * from src a union all select * from src b
@@ -416,22 +416,22 @@ Stage-0
 PREHOOK: query: select count(*) from (select * from src a union all select * from src b)subq
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from (select * from src a union all select * from src b)subq
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1000
 PREHOOK: query: SELECT x.key, y.value
 FROM src x JOIN src y ON (x.key = y.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT x.key, y.value
 FROM src x JOIN src y ON (x.key = y.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: EXPLAIN analyze 
 SELECT x.key, y.value
 FROM src x JOIN src y ON (x.key = y.key)
@@ -481,7 +481,7 @@ on a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: cat
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT
 TRANSFORM(a.key, a.value) USING 'cat' AS (tkey, tvalue)
 FROM src a join src b
@@ -489,7 +489,7 @@ on a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: cat
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain analyze
 SELECT
 TRANSFORM(a.key, a.value) USING 'cat' AS (tkey, tvalue)

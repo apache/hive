@@ -206,6 +206,7 @@ STAGE PLANS:
                   sort order: 
                   Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: decimal(11,1)), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: bigint), _col6 (type: bigint), _col7 (type: int), _col8 (type: bigint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0), sum(VALUE._col1), sum(VALUE._col2), count(VALUE._col3), count(VALUE._col4), count(VALUE._col5), count(VALUE._col6), max(VALUE._col7), min(VALUE._col8)
@@ -260,6 +261,7 @@ STAGE PLANS:
                   sort order: 
                   Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: decimal(11,1)), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: bigint), _col6 (type: bigint), _col7 (type: int), _col8 (type: bigint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0), sum(VALUE._col1), sum(VALUE._col2), count(VALUE._col3), count(VALUE._col4), count(VALUE._col5), count(VALUE._col6), max(VALUE._col7), min(VALUE._col8)
@@ -314,6 +316,7 @@ STAGE PLANS:
                   sort order: 
                   Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: decimal(11,1)), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: bigint), _col6 (type: bigint), _col7 (type: int), _col8 (type: bigint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0), sum(VALUE._col1), sum(VALUE._col2), count(VALUE._col3), count(VALUE._col4), count(VALUE._col5), count(VALUE._col6), max(VALUE._col7), min(VALUE._col8)
@@ -368,6 +371,7 @@ STAGE PLANS:
                   sort order: 
                   Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: decimal(11,1)), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: bigint), _col6 (type: bigint), _col7 (type: int), _col8 (type: bigint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0), sum(VALUE._col1), sum(VALUE._col2), count(VALUE._col3), count(VALUE._col4), count(VALUE._col5), count(VALUE._col6), max(VALUE._col7), min(VALUE._col8)
@@ -393,52 +397,52 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: analyze table stats_tbl compute statistics for columns t,si,i,b,f,d,bo,s,bin
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@stats_tbl
 PREHOOK: Output: default@stats_tbl
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table stats_tbl compute statistics for columns t,si,i,b,f,d,bo,s,bin
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@stats_tbl
 POSTHOOK: Output: default@stats_tbl
 #### A masked pattern was here ####
 PREHOOK: query: analyze table stats_tbl_part partition(dt='2010') compute statistics for columns t,si,i,b,f,d,bo,s,bin
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@stats_tbl_part
 PREHOOK: Input: default@stats_tbl_part@dt=2010
 PREHOOK: Output: default@stats_tbl_part
 PREHOOK: Output: default@stats_tbl_part@dt=2010
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table stats_tbl_part partition(dt='2010') compute statistics for columns t,si,i,b,f,d,bo,s,bin
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@stats_tbl_part
 POSTHOOK: Input: default@stats_tbl_part@dt=2010
 POSTHOOK: Output: default@stats_tbl_part
 POSTHOOK: Output: default@stats_tbl_part@dt=2010
 #### A masked pattern was here ####
 PREHOOK: query: analyze table stats_tbl_part partition(dt='2011') compute statistics for columns t,si,i,b,f,d,bo,s,bin
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@stats_tbl_part
 PREHOOK: Input: default@stats_tbl_part@dt=2011
 PREHOOK: Output: default@stats_tbl_part
 PREHOOK: Output: default@stats_tbl_part@dt=2011
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table stats_tbl_part partition(dt='2011') compute statistics for columns t,si,i,b,f,d,bo,s,bin
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@stats_tbl_part
 POSTHOOK: Input: default@stats_tbl_part@dt=2011
 POSTHOOK: Output: default@stats_tbl_part
 POSTHOOK: Output: default@stats_tbl_part@dt=2011
 #### A masked pattern was here ####
 PREHOOK: query: analyze table stats_tbl_part partition(dt='2012') compute statistics for columns t,si,i,b,f,d,bo,s,bin
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@stats_tbl_part
 PREHOOK: Input: default@stats_tbl_part@dt=2012
 PREHOOK: Output: default@stats_tbl_part
 PREHOOK: Output: default@stats_tbl_part@dt=2012
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table stats_tbl_part partition(dt='2012') compute statistics for columns t,si,i,b,f,d,bo,s,bin
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@stats_tbl_part
 POSTHOOK: Input: default@stats_tbl_part@dt=2012
 POSTHOOK: Output: default@stats_tbl_part
@@ -622,6 +626,7 @@ STAGE PLANS:
                   sort order: 
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -259,6 +259,10 @@ public abstract class VectorMapJoinFastLongHashTable
   protected long[] slotPairs;
 
   private void allocateBucketArray() {
+    // We allocate pairs, so we cannot go above highest Integer power of 2 / 4.
+    if (logicalHashBucketCount > ONE_QUARTER_LIMIT) {
+      throwExpandError(ONE_QUARTER_LIMIT, "Long");
+    }
     int slotPairArraySize = 2 * logicalHashBucketCount;
     slotPairs = new long[slotPairArraySize];
   }

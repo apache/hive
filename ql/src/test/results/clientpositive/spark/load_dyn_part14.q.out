@@ -70,7 +70,9 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         TopN Hash Memory Usage: 0.1
+            Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Limit
                 Number of rows: 2
@@ -88,6 +90,7 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: default.nzhang_part14
         Reducer 4 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Limit
                 Number of rows: 2
@@ -105,6 +108,7 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: default.nzhang_part14
         Reducer 6 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Limit
                 Number of rows: 2

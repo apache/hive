@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore;
 
 import java.util.List;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
@@ -110,5 +111,13 @@ public final class SynchronizedMetaStoreClient {
 
   public synchronized void close() {
     client.close();
+  }
+
+  public boolean isSameConfObj(Configuration c) {
+    return client.isSameConfObj(c);
+  }
+
+  public boolean isCompatibleWith(Configuration c) {
+    return client.isCompatibleWith(c);
   }
 }

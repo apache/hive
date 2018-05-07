@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -46,7 +46,9 @@ import java.util.Properties;
  * Streaming Writer handles delimited input (eg. CSV).
  * Delimited input is parsed & reordered to match column order in table
  * Uses Lazy Simple Serde to process delimited input
+ * @deprecated as of Hive 3.0.0, replaced by {@link org.apache.hive.streaming.StrictDelimitedInputWriter}
  */
+@Deprecated
 public class DelimitedInputWriter extends AbstractRecordWriter {
   private final boolean reorderingNeeded;
   private String delimiter;
@@ -255,16 +257,16 @@ public class DelimitedInputWriter extends AbstractRecordWriter {
   }
 
   @Override
-  public void write(long transactionId, byte[] record)
+  public void write(long writeId, byte[] record)
           throws SerializationError, StreamingIOFailure {
     try {
       byte[] orderedFields = reorderFields(record);
       Object encodedRow = encode(orderedFields);
       int bucket = getBucket(encodedRow);
-      getRecordUpdater(bucket).insert(transactionId, encodedRow);
+      getRecordUpdater(bucket).insert(writeId, encodedRow);
     } catch (IOException e) {
-      throw new StreamingIOFailure("Error writing record in transaction ("
-              + transactionId + ")", e);
+      throw new StreamingIOFailure("Error writing record in transaction write id ("
+              + writeId + ")", e);
     }
   }
 

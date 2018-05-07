@@ -34,10 +34,10 @@ POSTHOOK: Lineage: srcpartbucket PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(s
 POSTHOOK: Lineage: srcpartbucket PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: srcpartbucket PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain extended
-select ds, count(1) from srcpartbucket tablesample (bucket 1 out of 4 on key) where ds is not null group by ds ORDER BY ds ASC
+select ds, count(1) from srcpartbucket tablesample (bucket 2 out of 4 on key) where ds is not null group by ds ORDER BY ds ASC
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
-select ds, count(1) from srcpartbucket tablesample (bucket 1 out of 4 on key) where ds is not null group by ds ORDER BY ds ASC
+select ds, count(1) from srcpartbucket tablesample (bucket 2 out of 4 on key) where ds is not null group by ds ORDER BY ds ASC
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -60,8 +60,8 @@ STAGE PLANS:
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: true
-                    predicate: (((hash(key) & 2147483647) % 4) = 0) (type: boolean)
-                    sampleDesc: BUCKET 1 OUT OF 4
+                    predicate: (((hash(key) & 2147483647) % 4) = 1) (type: boolean)
+                    sampleDesc: BUCKET 2 OUT OF 4
                     Statistics: Num rows: 20 Data size: 5380 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ds (type: string)
@@ -82,14 +82,14 @@ STAGE PLANS:
                           tag: -1
                           value expressions: _col1 (type: bigint)
                           auto parallelism: true
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: 000000_0
+                  base file name: 000002_0
                   input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
                   partition values:
@@ -122,6 +122,7 @@ STAGE PLANS:
                     properties:
                       bucket_count 4
                       bucket_field_name key
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -139,7 +140,7 @@ STAGE PLANS:
                   name: default.srcpartbucket
 #### A masked pattern was here ####
                 Partition
-                  base file name: 000000_0
+                  base file name: 000002_0
                   input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
                   partition values:
@@ -172,6 +173,7 @@ STAGE PLANS:
                     properties:
                       bucket_count 4
                       bucket_field_name key
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -189,7 +191,7 @@ STAGE PLANS:
                   name: default.srcpartbucket
 #### A masked pattern was here ####
                 Partition
-                  base file name: 000000_0
+                  base file name: 000002_0
                   input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
                   partition values:
@@ -222,6 +224,7 @@ STAGE PLANS:
                     properties:
                       bucket_count 4
                       bucket_field_name key
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -239,7 +242,7 @@ STAGE PLANS:
                   name: default.srcpartbucket
 #### A masked pattern was here ####
                 Partition
-                  base file name: 000000_0
+                  base file name: 000002_0
                   input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
                   partition values:
@@ -272,6 +275,7 @@ STAGE PLANS:
                     properties:
                       bucket_count 4
                       bucket_field_name key
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
@@ -288,12 +292,12 @@ STAGE PLANS:
                     name: default.srcpartbucket
                   name: default.srcpartbucket
             Truncated Path -> Alias:
-              /srcpartbucket/ds=2008-04-08/hr=11/000000_0 [srcpartbucket]
-              /srcpartbucket/ds=2008-04-08/hr=12/000000_0 [srcpartbucket]
-              /srcpartbucket/ds=2008-04-09/hr=11/000000_0 [srcpartbucket]
-              /srcpartbucket/ds=2008-04-09/hr=12/000000_0 [srcpartbucket]
+              /srcpartbucket/ds=2008-04-08/hr=11/000002_0 [srcpartbucket]
+              /srcpartbucket/ds=2008-04-08/hr=12/000002_0 [srcpartbucket]
+              /srcpartbucket/ds=2008-04-09/hr=11/000002_0 [srcpartbucket]
+              /srcpartbucket/ds=2008-04-09/hr=12/000002_0 [srcpartbucket]
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -311,7 +315,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: bigint)
                   auto parallelism: false
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
@@ -347,7 +351,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select ds, count(1) from srcpartbucket tablesample (bucket 1 out of 4 on key) where ds is not null group by ds ORDER BY ds ASC
+PREHOOK: query: select ds, count(1) from srcpartbucket tablesample (bucket 2 out of 4 on key) where ds is not null group by ds ORDER BY ds ASC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpartbucket
 PREHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=11
@@ -355,7 +359,7 @@ PREHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
-POSTHOOK: query: select ds, count(1) from srcpartbucket tablesample (bucket 1 out of 4 on key) where ds is not null group by ds ORDER BY ds ASC
+POSTHOOK: query: select ds, count(1) from srcpartbucket tablesample (bucket 2 out of 4 on key) where ds is not null group by ds ORDER BY ds ASC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpartbucket
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=11
@@ -363,8 +367,6 @@ POSTHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
-2008-04-08	10
-2008-04-09	10
 PREHOOK: query: select ds, count(1) from srcpartbucket tablesample (bucket 1 out of 2 on key) where ds is not null group by ds ORDER BY ds ASC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpartbucket
@@ -381,8 +383,6 @@ POSTHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
-2008-04-08	12
-2008-04-09	12
 PREHOOK: query: select * from srcpartbucket where ds is not null ORDER BY key ASC, value ASC, ds ASC, hr ASC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpartbucket

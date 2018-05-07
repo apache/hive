@@ -51,7 +51,6 @@ stmt :
      | collect_stats_stmt
      | close_stmt
      | cmp_stmt
-     | copy_from_ftp_stmt
      | copy_from_local_stmt
      | copy_stmt
      | commit_stmt
@@ -618,10 +617,6 @@ cmp_source :
       (table_name where_clause? | T_OPEN_P select_stmt T_CLOSE_P) (T_AT ident)?
      ;
      
-copy_from_ftp_stmt :  
-       T_COPY T_FROM T_FTP expr copy_ftp_option*
-     ;
-
 copy_from_local_stmt :  // COPY FROM LOCAL statement
        T_COPY T_FROM T_LOCAL copy_source (T_COMMA copy_source)* T_TO copy_target copy_file_option*
      ;
@@ -650,18 +645,6 @@ copy_file_option :
      | T_IGNORE
      | T_OVERWRITE
      ;
-     
-copy_ftp_option :
-       T_USER expr
-     | T_PWD expr
-     | T_DIR (file_name | expr) 
-     | T_FILES expr
-     | T_NEW
-     | T_OVERWRITE
-     | T_SUBDIR
-     | T_SESSIONS expr
-     | T_TO T_LOCAL? (file_name | expr)
- ;
      
 commit_stmt :           // COMMIT statement
        T_COMMIT T_WORK?
@@ -1345,7 +1328,6 @@ non_reserved_words :                      // Tokens that are not reserved words 
      | T_FORMAT     
      | T_FOUND        
      | T_FROM  
-     | T_FTP     
      | T_FULL     
      | T_FUNCTION
      | T_GET
@@ -1669,7 +1651,6 @@ T_FOREIGN         : F O R E I G N ;
 T_FORMAT          : F O R M A T ;
 T_FOUND           : F O U N D ;
 T_FROM            : F R O M ; 
-T_FTP             : F T P ;
 T_FULL            : F U L L ;
 T_FUNCTION        : F U N C T I O N ;
 T_GET             : G E T ;

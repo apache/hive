@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.cache.BuddyAllocator;
 import org.apache.hadoop.hive.llap.cache.BufferUsageManager;
+import org.apache.hadoop.hive.llap.cache.CacheContentsTracker;
 import org.apache.hadoop.hive.llap.cache.EvictionDispatcher;
 import org.apache.hadoop.hive.llap.cache.LlapDataBuffer;
 import org.apache.hadoop.hive.llap.cache.LlapOomDebugDump;
@@ -76,6 +77,7 @@ import org.apache.hive.common.util.FixedSizedObjectPool;
 
 
 
+
 import com.google.common.primitives.Ints;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
@@ -84,7 +86,6 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
   public static final Logger ORC_LOGGER = LoggerFactory.getLogger("LlapIoOrc");
   public static final Logger CACHE_LOGGER = LoggerFactory.getLogger("LlapIoCache");
   public static final Logger LOCKING_LOGGER = LoggerFactory.getLogger("LlapIoLocking");
-
   private static final String MODE_CACHE = "cache";
 
   // TODO: later, we may have a map
@@ -99,6 +100,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
   private final LowLevelCache dataCache;
   private final BufferUsageManager bufferManager;
   private final Configuration daemonConf;
+  private LowLevelCachePolicy cachePolicy;
 
   private LlapIoImpl(Configuration conf) throws IOException {
     this.daemonConf = conf;
@@ -137,8 +139,14 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
       boolean useLrfu = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_USE_LRFU);
       long totalMemorySize = HiveConf.getSizeVar(conf, ConfVars.LLAP_IO_MEMORY_MAX_SIZE);
       int minAllocSize = (int)HiveConf.getSizeVar(conf, ConfVars.LLAP_ALLOCATOR_MIN_ALLOC);
-      LowLevelCachePolicy cachePolicy = useLrfu ? new LowLevelLrfuCachePolicy(
+      LowLevelCachePolicy cp = useLrfu ? new LowLevelLrfuCachePolicy(
           minAllocSize, totalMemorySize, conf) : new LowLevelFifoCachePolicy();
+      boolean trackUsage = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_TRACK_CACHE_USAGE);
+      if (trackUsage) {
+        this.cachePolicy = new CacheContentsTracker(cp);
+      } else {
+        this.cachePolicy = cp;
+      }
       // Allocator uses memory manager to request memory, so create the manager next.
       LowLevelCacheMemoryManager memManager = new LowLevelCacheMemoryManager(
           totalMemorySize, cachePolicy, cacheMetrics);
@@ -179,8 +187,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
     }
     // IO thread pool. Listening is used for unhandled errors for now (TODO: remove?)
     int numThreads = HiveConf.getIntVar(conf, HiveConf.ConfVars.LLAP_IO_THREADPOOL_SIZE);
-    executor = new StatsRecordingThreadPool(numThreads, numThreads,
-        0L, TimeUnit.MILLISECONDS,
+    executor = new StatsRecordingThreadPool(numThreads, numThreads, 0L, TimeUnit.MILLISECONDS,
         new LinkedBlockingQueue<Runnable>(),
         new ThreadFactoryBuilder().setNameFormat("IO-Elevator-Thread-%d").setDaemon(true).build());
     FixedSizedObjectPool<IoTrace> tracePool = IoTrace.createTracePool(conf);
@@ -207,6 +214,14 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
   }
 
   @Override
+  public long purge() {
+    if (cachePolicy != null) {
+      return cachePolicy.purge();
+    }
+    return 0;
+  }
+
+  @Override
   public InputFormat<NullWritable, VectorizedRowBatch> getInputFormat(
       InputFormat<?, ?> sourceInputFormat, Deserializer sourceSerDe) {
     ColumnVectorProducer cvp = genericCvp;
@@ -216,7 +231,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
       LOG.warn("LLAP encode is disabled; cannot use for " + sourceInputFormat.getClass());
       return null;
     }
-    return new LlapInputFormat(sourceInputFormat, sourceSerDe, cvp, executor);
+    return new LlapInputFormat(sourceInputFormat, sourceSerDe, cvp, executor, daemonConf);
   }
 
   @Override
@@ -257,7 +272,14 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
     @Override
     public long[] putFileData(Object fileKey, DiskRange[] ranges,
         MemoryBuffer[] data, long baseOffset) {
-      return lowLevelCache.putFileData(fileKey, ranges, data, baseOffset, Priority.NORMAL, null);
+      return putFileData(fileKey, ranges, data, baseOffset, null);
+    }
+
+    @Override
+    public long[] putFileData(Object fileKey, DiskRange[] ranges,
+        MemoryBuffer[] data, long baseOffset, String tag) {
+      return lowLevelCache.putFileData(
+          fileKey, ranges, data, baseOffset, Priority.NORMAL, null, tag);
     }
 
     @Override

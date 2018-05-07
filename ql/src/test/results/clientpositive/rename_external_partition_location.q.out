@@ -66,14 +66,14 @@ Found 1 items
 5val_5
 9val_9
 PREHOOK: query: ANALYZE TABLE ex_table PARTITION (part='part1') COMPUTE STATISTICS FOR COLUMNS
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@ex_table
 PREHOOK: Input: default@ex_table@part=part1
 PREHOOK: Output: default@ex_table
 PREHOOK: Output: default@ex_table@part=part1
 #### A masked pattern was here ####
 POSTHOOK: query: ANALYZE TABLE ex_table PARTITION (part='part1') COMPUTE STATISTICS FOR COLUMNS
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@ex_table
 POSTHOOK: Input: default@ex_table@part=part1
 POSTHOOK: Output: default@ex_table
@@ -102,6 +102,7 @@ Table Type:         	EXTERNAL_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
 	numFiles            	1                   
 	numPartitions       	1                   
 	numRows             	10                  
@@ -264,6 +265,7 @@ Table Type:         	EXTERNAL_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
 	numFiles            	1                   
 	numPartitions       	1                   
 	numRows             	10                  

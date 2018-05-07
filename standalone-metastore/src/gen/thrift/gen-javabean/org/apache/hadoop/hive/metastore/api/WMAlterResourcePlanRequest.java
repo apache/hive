@@ -51,7 +51,7 @@ import org.slf4j.LoggerFactory;
   }
 
   private String resourcePlanName; // optional
-  private WMResourcePlan resourcePlan; // optional
+  private WMNullableResourcePlan resourcePlan; // optional
   private boolean isEnableAndActivate; // optional
   private boolean isForceDeactivate; // optional
   private boolean isReplace; // optional
@@ -138,7 +138,7 @@ import org.slf4j.LoggerFactory;
     tmpMap.put(_Fields.RESOURCE_PLAN_NAME, new org.apache.thrift.meta_data.FieldMetaData("resourcePlanName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.RESOURCE_PLAN, new org.apache.thrift.meta_data.FieldMetaData("resourcePlan", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
-        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, WMResourcePlan.class)));
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, WMNullableResourcePlan.class)));
     tmpMap.put(_Fields.IS_ENABLE_AND_ACTIVATE, new org.apache.thrift.meta_data.FieldMetaData("isEnableAndActivate", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     tmpMap.put(_Fields.IS_FORCE_DEACTIVATE, new org.apache.thrift.meta_data.FieldMetaData("isForceDeactivate", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
@@ -161,7 +161,7 @@ import org.slf4j.LoggerFactory;
       this.resourcePlanName = other.resourcePlanName;
     }
     if (other.isSetResourcePlan()) {
-      this.resourcePlan = new WMResourcePlan(other.resourcePlan);
+      this.resourcePlan = new WMNullableResourcePlan(other.resourcePlan);
     }
     this.isEnableAndActivate = other.isEnableAndActivate;
     this.isForceDeactivate = other.isForceDeactivate;
@@ -207,11 +207,11 @@ import org.slf4j.LoggerFactory;
     }
   }
 
-  public WMResourcePlan getResourcePlan() {
+  public WMNullableResourcePlan getResourcePlan() {
     return this.resourcePlan;
   }
 
-  public void setResourcePlan(WMResourcePlan resourcePlan) {
+  public void setResourcePlan(WMNullableResourcePlan resourcePlan) {
     this.resourcePlan = resourcePlan;
   }
 
@@ -310,7 +310,7 @@ import org.slf4j.LoggerFactory;
       if (value == null) {
         unsetResourcePlan();
       } else {
-        setResourcePlan((WMResourcePlan)value);
+        setResourcePlan((WMNullableResourcePlan)value);
       }
       break;
 
@@ -649,7 +649,7 @@ import org.slf4j.LoggerFactory;
             break;
           case 2: // RESOURCE_PLAN
             if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
-              struct.resourcePlan = new WMResourcePlan();
+              struct.resourcePlan = new WMNullableResourcePlan();
               struct.resourcePlan.read(iprot);
               struct.setResourcePlanIsSet(true);
             } else { 
@@ -782,7 +782,7 @@ import org.slf4j.LoggerFactory;
         struct.setResourcePlanNameIsSet(true);
       }
       if (incoming.get(1)) {
-        struct.resourcePlan = new WMResourcePlan();
+        struct.resourcePlan = new WMNullableResourcePlan();
         struct.resourcePlan.read(iprot);
         struct.setResourcePlanIsSet(true);
       }

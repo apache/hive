@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -1129,5 +1129,20 @@ public class TestBeeLineWithArgs {
     List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
     argList.add("--outputformat=tsv2");
     testScriptFile(SCRIPT_TEXT, argList, EXPECTED_PATTERN, true);
+  }
+
+  /**
+   * Test 'describe extended' on tables that have special white space characters in the row format.
+   */
+  @Test
+  public void testDescribeExtended() throws Throwable {
+    String SCRIPT_TEXT = "drop table if exists describeDelim;"
+        + "create table describeDelim (orderid int, orderdate string, customerid int)"
+        + " ROW FORMAT DELIMITED FIELDS terminated by '\\t' LINES terminated by '\\n';"
+        + "describe extended describeDelim;";
+    List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
+    testScriptFile(SCRIPT_TEXT, argList, OutStream.OUT, Arrays.asList(
+        new Tuple<>("Detailed Table Information.*line.delim=\\\\n", true),
+        new Tuple<>("Detailed Table Information.*field.delim=\\\\t", true)));
   }
 }

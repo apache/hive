@@ -1,33 +1,34 @@
 /*
-  Licensed to the Apache Software Foundation (ASF) under one
-  or more contributor license agreements.  See the NOTICE file
-  distributed with this work for additional information
-  regarding copyright ownership.  The ASF licenses this file
-  to you under the Apache License, Version 2.0 (the
-  "License"); you may not use this file except in compliance
-  with the License.  You may obtain a copy of the License at
-
-      http://www.apache.org/licenses/LICENSE-2.0
-
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.apache.hadoop.hive.ql.parse.repl.dump;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.repl.dump.io.FileOperations;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
@@ -35,7 +36,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.hadoop.hive.ql.parse.repl.dump.TableExport.AuthEntities;
 import static org.apache.hadoop.hive.ql.parse.repl.dump.TableExport.Paths;
 
 /**
@@ -49,6 +49,7 @@ class PartitionExport {
   private final String distCpDoAsUser;
   private final HiveConf hiveConf;
   private final int nThreads;
+  private final SessionState callersSession;
 
   private static final Logger LOG = LoggerFactory.getLogger(PartitionExport.class);
   private BlockingQueue<Partition> queue;
@@ -61,11 +62,14 @@ class PartitionExport {
     this.hiveConf = hiveConf;
     this.nThreads = hiveConf.getIntVar(HiveConf.ConfVars.REPL_PARTITIONS_DUMP_PARALLELISM);
     this.queue = new ArrayBlockingQueue<>(2 * nThreads);
+    this.callersSession = SessionState.get();
   }
 
   void write(final ReplicationSpec forReplicationSpec) throws InterruptedException {
-    ExecutorService producer = Executors.newFixedThreadPool(1);
+    ExecutorService producer = Executors.newFixedThreadPool(1,
+        new ThreadFactoryBuilder().setNameFormat("partition-submitter-thread-%d").build());
     producer.submit(() -> {
+      SessionState.setCurrentSessionState(callersSession);
       for (Partition partition : partitionIterable) {
         try {
           queue.put(partition);
@@ -97,11 +101,12 @@ class PartitionExport {
         String partitionName = partition.getName();
         String threadName = Thread.currentThread().getName();
         LOG.debug("Thread: {}, start partition dump {}", threadName, partitionName);
-        Path fromPath = partition.getDataLocation();
         try {
           // this the data copy
+          List<Path> dataPathList = Utils.getDataPathList(partition.getDataLocation(),
+                  forReplicationSpec, hiveConf);
           Path rootDataDumpDir = paths.partitionExportDir(partitionName);
-          new FileOperations(fromPath, rootDataDumpDir, distCpDoAsUser, hiveConf)
+          new FileOperations(dataPathList, rootDataDumpDir, distCpDoAsUser, hiveConf)
                   .export(forReplicationSpec);
           LOG.debug("Thread: {}, finish partition dump {}", threadName, partitionName);
         } catch (Exception e) {

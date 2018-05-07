@@ -1,3 +1,4 @@
+--! qt:dataset:src
 --SORT_QUERY_RESULTS
 
 DROP TABLE IF EXISTS encrypted_table PURGE;

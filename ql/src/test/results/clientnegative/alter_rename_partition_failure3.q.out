@@ -31,4 +31,4 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter_rename_partition_src
 POSTHOOK: Output: default@alter_rename_partition@pcol1=old_part1%3A/pcol2=old_part2%3A
 POSTHOOK: Lineage: alter_rename_partition PARTITION(pcol1=old_part1:,pcol2=old_part2:).col1 SIMPLE [(alter_rename_partition_src)alter_rename_partition_src.FieldSchema(name:col1, type:string, comment:null), ]
-FAILED: ValidationFailureSemanticException Partition spec {pcol1=old_part1:, pcol2=old_part2:, pcol3=old_part3:} contains non-partition columns
+FAILED: ValidationFailureSemanticException default.alter_rename_partition: Partition spec {pcol1=old_part1:, pcol2=old_part2:, pcol3=old_part3:} contains non-partition columns

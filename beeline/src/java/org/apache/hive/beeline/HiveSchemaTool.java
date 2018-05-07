@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,6 +17,7 @@
  */
 package org.apache.hive.beeline;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
@@ -33,6 +34,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.IMetaStoreSchemaInfo;
 import org.apache.hadoop.hive.metastore.MetaStoreSchemaInfoFactory;
@@ -42,6 +44,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.tools.HiveSchemaHelper;
 import org.apache.hadoop.hive.metastore.tools.HiveSchemaHelper.MetaStoreConnectionInfo;
 import org.apache.hadoop.hive.metastore.tools.HiveSchemaHelper.NestedScriptParser;
+import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,6 +64,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -69,6 +73,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
 public class HiveSchemaTool {
   private String userName = null;
@@ -84,6 +90,7 @@ public class HiveSchemaTool {
   private final String metaDbType;
   private final IMetaStoreSchemaInfo metaStoreSchemaInfo;
   private boolean needsQuotedIdentifier;
+  private String quoteCharacter;
 
   static final private Logger LOG = LoggerFactory.getLogger(HiveSchemaTool.class.getName());
 
@@ -99,7 +106,9 @@ public class HiveSchemaTool {
     this.hiveConf = hiveConf;
     this.dbType = dbType;
     this.metaDbType = metaDbType;
-    this.needsQuotedIdentifier = getDbCommandParser(dbType).needsQuotedIdentifier();
+    NestedScriptParser parser = getDbCommandParser(dbType, metaDbType);
+    this.needsQuotedIdentifier = parser.needsQuotedIdentifier();
+    this.quoteCharacter = parser.getQuoteCharacter();
     this.metaStoreSchemaInfo = MetaStoreSchemaInfoFactory.get(hiveConf, hiveHome, dbType);
   }
 
@@ -151,20 +160,14 @@ public class HiveSchemaTool {
     System.exit(1);
   }
 
-  Connection getConnectionToMetastore(boolean printInfo)
-      throws HiveMetaException {
-    return HiveSchemaHelper.getConnectionToMetastore(userName,
-        passWord, url, driver, printInfo, hiveConf);
+  Connection getConnectionToMetastore(boolean printInfo) throws HiveMetaException {
+    return HiveSchemaHelper.getConnectionToMetastore(userName, passWord, url, driver, printInfo, hiveConf,
+        null);
   }
 
   private NestedScriptParser getDbCommandParser(String dbType, String metaDbType) {
-    return HiveSchemaHelper.getDbCommandParser(dbType, dbOpts, userName,
-	passWord, hiveConf, metaDbType);
-  }
-
-  private NestedScriptParser getDbCommandParser(String dbType) {
-    return HiveSchemaHelper.getDbCommandParser(dbType, dbOpts, userName,
-	passWord, hiveConf, null);
+    return HiveSchemaHelper.getDbCommandParser(dbType, dbOpts, userName, passWord, hiveConf,
+        metaDbType, false);
   }
 
   /***
@@ -511,7 +514,7 @@ public class HiveSchemaTool {
 
   private MetaStoreConnectionInfo getConnectionInfo(boolean printInfo) {
     return new MetaStoreConnectionInfo(userName, passWord, url, driver, printInfo, hiveConf,
-        dbType);
+        dbType, metaDbType);
   }
   /**
    * Perform metastore schema upgrade
@@ -593,7 +596,7 @@ public class HiveSchemaTool {
     Connection conn = getConnectionToMetastore(false);
     boolean success = true;
     try {
-      if (validateSchemaVersions(conn)) {
+      if (validateSchemaVersions()) {
         System.out.println("[SUCCESS]\n");
       } else {
         success = false;
@@ -701,7 +704,7 @@ public class HiveSchemaTool {
     }
   }
 
-  boolean validateSchemaVersions(Connection conn) throws HiveMetaException {
+  boolean validateSchemaVersions() throws HiveMetaException {
     System.out.println("Validating schema version");
     try {
       String newSchemaVersion = metaStoreSchemaInfo.getMetaStoreSchemaVersion(getConnectionInfo(false));
@@ -745,9 +748,16 @@ public class HiveSchemaTool {
 
     LOG.debug("Validating tables in the schema for version " + version);
     try {
+      String schema = null;
+      try {
+        schema = hmsConn.getSchema();
+      } catch (SQLFeatureNotSupportedException e) {
+        LOG.debug("schema is not supported");
+      }
+      
       metadata       = conn.getMetaData();
       String[] types = {"TABLE"};
-      rs             = metadata.getTables(null, hmsConn.getSchema(), "%", types);
+      rs             = metadata.getTables(null, schema, "%", types);
       String table   = null;
 
       while (rs.next()) {
@@ -756,7 +766,7 @@ public class HiveSchemaTool {
         LOG.debug("Found table " + table + " in HMS dbstore");
       }
     } catch (SQLException e) {
-      throw new HiveMetaException("Failed to retrieve schema tables from Hive Metastore DB," + e.getMessage());
+      throw new HiveMetaException("Failed to retrieve schema tables from Hive Metastore DB", e);
     } finally {
       if (rs != null) {
         try {
@@ -804,7 +814,7 @@ public class HiveSchemaTool {
 
   private List<String> findCreateTable(String path, List<String> tableList)
       throws Exception {
-    NestedScriptParser sp           = HiveSchemaHelper.getDbCommandParser(dbType);
+    NestedScriptParser sp           = HiveSchemaHelper.getDbCommandParser(dbType, false);
     Matcher matcher                 = null;
     Pattern regexp                  = null;
     List<String> subs               = new ArrayList<String>();
@@ -874,6 +884,204 @@ public class HiveSchemaTool {
     } catch(SQLException e) {
         throw new HiveMetaException("Failed to validate columns for incorrect NULL values", e);
     }
+  }
+
+  @VisibleForTesting
+  void createCatalog(String catName, String location, String description, boolean ifNotExists)
+      throws HiveMetaException {
+    catName = normalizeIdentifier(catName);
+    System.out.println("Create catalog " + catName + " at location " + location);
+
+    Connection conn = getConnectionToMetastore(true);
+    boolean success = false;
+    try {
+      conn.setAutoCommit(false);
+      try (Statement stmt = conn.createStatement()) {
+        // If they set ifNotExists check for existence first, and bail if it exists.  This is
+        // more reliable then attempting to parse the error message from the SQLException.
+        if (ifNotExists) {
+          String query = "select " + quoteIf("NAME") + " from " + quoteIf("CTLGS") +
+              " where " + quoteIf("NAME") + " = '" + catName + "'";
+          LOG.debug("Going to run " + query);
+          ResultSet rs = stmt.executeQuery(query);
+          if (rs.next()) {
+            System.out.println("Catalog " + catName + " already exists");
+            return;
+          }
+        }
+        SQLGenerator sqlGenerator = new SQLGenerator(
+            DatabaseProduct.determineDatabaseProduct(
+                conn.getMetaData().getDatabaseProductName()
+            ), hiveConf);
+        String query = sqlGenerator.addForUpdateClause("select max(" + quoteIf("CTLG_ID") + ") " +
+            "from " + quoteIf("CTLGS"));
+        LOG.debug("Going to run " + query);
+        ResultSet rs = stmt.executeQuery(query);
+        if (!rs.next()) {
+          throw new HiveMetaException("No catalogs found, have you upgraded the database?");
+        }
+        int catNum = rs.getInt(1) + 1;
+
+        String update = "insert into " + quoteIf("CTLGS") +
+            "(" + quoteIf("CTLG_ID") + ", " + quoteIf("NAME") + ", " + quoteAlways("DESC") + ", " + quoteIf( "LOCATION_URI") + ") " +
+            " values (" + catNum + ", '" + catName + "', '" + description + "', '" + location + "')";
+        LOG.debug("Going to run " + update);
+        stmt.execute(update);
+        conn.commit();
+        success = true;
+      }
+    } catch (MetaException|SQLException e) {
+      throw new HiveMetaException("Failed to add catalog", e);
+    } finally {
+      try {
+        if (!success) conn.rollback();
+      } catch (SQLException e) {
+        // Not really much we can do here.
+        LOG.error("Failed to rollback, everything will probably go bad from here.");
+      }
+    }
+  }
+
+  @VisibleForTesting
+  void moveDatabase(String fromCatName, String toCatName, String dbName) throws HiveMetaException {
+    fromCatName = normalizeIdentifier(fromCatName);
+    toCatName = normalizeIdentifier(toCatName);
+    dbName = normalizeIdentifier(dbName);
+    System.out.println("Moving database " + dbName + " from catalog " + fromCatName +
+        " to catalog " + toCatName);
+    Connection conn = getConnectionToMetastore(true);
+    boolean success = false;
+    try {
+      conn.setAutoCommit(false);
+      try (Statement stmt = conn.createStatement()) {
+        updateCatalogNameInTable(stmt, "DBS", "CTLG_NAME", "NAME", fromCatName, toCatName, dbName, false);
+        updateCatalogNameInTable(stmt, "TAB_COL_STATS", "CAT_NAME", "DB_NAME", fromCatName, toCatName, dbName, true);
+        updateCatalogNameInTable(stmt, "PART_COL_STATS", "CAT_NAME", "DB_NAME", fromCatName, toCatName, dbName, true);
+        updateCatalogNameInTable(stmt, "PARTITION_EVENTS", "CAT_NAME", "DB_NAME", fromCatName, toCatName, dbName, true);
+        updateCatalogNameInTable(stmt, "NOTIFICATION_LOG", "CAT_NAME", "DB_NAME", fromCatName, toCatName, dbName, true);
+        conn.commit();
+        success = true;
+      }
+    } catch (SQLException e) {
+      throw new HiveMetaException("Failed to move database", e);
+    } finally {
+      try {
+        if (!success) conn.rollback();
+      } catch (SQLException e) {
+        // Not really much we can do here.
+        LOG.error("Failed to rollback, everything will probably go bad from here.");
+      }
+    }
+  }
+
+  private void updateCatalogNameInTable(Statement stmt, String tableName, String catColName,
+                                        String dbColName, String fromCatName,
+                                        String toCatName, String dbName, boolean zeroUpdatesOk)
+      throws HiveMetaException, SQLException {
+    String update = "update " + quoteIf(tableName) + " " +
+        "set " + quoteIf(catColName) + " = '" + toCatName + "' " +
+        "where " + quoteIf(catColName) + " = '" + fromCatName + "' and " + quoteIf(dbColName) + " = '" + dbName + "'";
+    LOG.debug("Going to run " + update);
+    int numUpdated = stmt.executeUpdate(update);
+    if (numUpdated != 1 && !(zeroUpdatesOk && numUpdated == 0)) {
+      throw new HiveMetaException("Failed to properly update the " + tableName +
+          " table.  Expected to update 1 row but instead updated " + numUpdated);
+    }
+  }
+
+  @VisibleForTesting
+  void moveTable(String fromCat, String toCat, String fromDb, String toDb, String tableName)
+      throws HiveMetaException {
+    fromCat = normalizeIdentifier(fromCat);
+    toCat = normalizeIdentifier(toCat);
+    fromDb = normalizeIdentifier(fromDb);
+    toDb = normalizeIdentifier(toDb);
+    tableName = normalizeIdentifier(tableName);
+    Connection conn = getConnectionToMetastore(true);
+    boolean success = false;
+    try {
+      conn.setAutoCommit(false);
+      try (Statement stmt = conn.createStatement()) {
+        // Find the old database id
+        String query = "select " + quoteIf("DB_ID") +
+            " from " + quoteIf("DBS") +
+            " where " + quoteIf("NAME") + " = '" + fromDb + "' "
+                + "and " + quoteIf("CTLG_NAME") + " = '" + fromCat + "'";
+        LOG.debug("Going to run " + query);
+        ResultSet rs = stmt.executeQuery(query);
+        if (!rs.next()) {
+          throw new HiveMetaException("Unable to find database " + fromDb);
+        }
+        long oldDbId = rs.getLong(1);
+
+        // Find the new database id
+        query = "select " + quoteIf("DB_ID") +
+            " from " + quoteIf("DBS") +
+            " where " + quoteIf("NAME") + " = '" + toDb + "' "
+                + "and " + quoteIf("CTLG_NAME") + " = '" + toCat + "'";
+        LOG.debug("Going to run " + query);
+        rs = stmt.executeQuery(query);
+        if (!rs.next()) {
+          throw new HiveMetaException("Unable to find database " + toDb);
+        }
+        long newDbId = rs.getLong(1);
+
+        String update = "update " + quoteIf("TBLS") + " " +
+            "set " + quoteIf("DB_ID") + " = " + newDbId + " " +
+            "where " + quoteIf("DB_ID") + " = " + oldDbId +
+                " and " + quoteIf("TBL_NAME") + " = '" + tableName + "'";
+        LOG.debug("Going to run " + update);
+        int numUpdated = stmt.executeUpdate(update);
+        if (numUpdated != 1) {
+          throw new HiveMetaException(
+              "Failed to properly update TBLS table.  Expected to update " +
+                  "1 row but instead updated " + numUpdated);
+        }
+        updateDbNameForTable(stmt, "TAB_COL_STATS", "TABLE_NAME", fromCat, toCat, fromDb, toDb, tableName);
+        updateDbNameForTable(stmt, "PART_COL_STATS", "TABLE_NAME", fromCat, toCat, fromDb, toDb, tableName);
+        updateDbNameForTable(stmt, "PARTITION_EVENTS", "TBL_NAME", fromCat, toCat, fromDb, toDb, tableName);
+        updateDbNameForTable(stmt, "NOTIFICATION_LOG", "TBL_NAME", fromCat, toCat, fromDb, toDb, tableName);
+        conn.commit();
+        success = true;
+      }
+    } catch (SQLException se) {
+      throw new HiveMetaException("Failed to move table", se);
+    } finally {
+      try {
+        if (!success) conn.rollback();
+      } catch (SQLException e) {
+        // Not really much we can do here.
+        LOG.error("Failed to rollback, everything will probably go bad from here.");
+      }
+
+    }
+  }
+
+  private void updateDbNameForTable(Statement stmt, String tableName,
+                                    String tableColumnName, String fromCat, String toCat,
+                                    String fromDb, String toDb, String hiveTblName)
+      throws HiveMetaException, SQLException {
+    String update = "update " + quoteIf(tableName) + " " +
+            "set " + quoteIf("CAT_NAME") + " = '" + toCat + "', " + quoteIf("DB_NAME") + " = '" + toDb + "' " +
+            "where " + quoteIf("CAT_NAME") + " = '" + fromCat + "' " +
+                "and " + quoteIf("DB_NAME") + " = '" + fromDb + "' " +
+                "and " + quoteIf(tableColumnName) + " = '" + hiveTblName + "'";
+    LOG.debug("Going to run " + update);
+    int numUpdated = stmt.executeUpdate(update);
+    if (numUpdated > 1 || numUpdated < 0) {
+      throw new HiveMetaException("Failed to properly update the " + tableName +
+          " table.  Expected to update 1 row but instead updated " + numUpdated);
+    }
+  }
+
+  // Quote if the database requires it
+  private String quoteIf(String identifier) {
+    return needsQuotedIdentifier ? quoteCharacter + identifier + quoteCharacter : identifier;
+  }
+
+  // Quote always, for fields that mimic SQL keywords, like DESC
+  private String quoteAlways(String identifier) {
+    return quoteCharacter + identifier + quoteCharacter;
   }
 
   /**
@@ -989,7 +1197,7 @@ public class HiveSchemaTool {
     private String[] argsWith(String password) throws IOException {
       return new String[]
         {
-          "-u", url == null ? HiveSchemaHelper.getValidConfVar(MetastoreConf.ConfVars.CONNECTURLKEY, hiveConf) : url,
+          "-u", url == null ? HiveSchemaHelper.getValidConfVar(MetastoreConf.ConfVars.CONNECT_URL_KEY, hiveConf) : url,
           "-d", driver == null ? HiveSchemaHelper.getValidConfVar(MetastoreConf.ConfVars.CONNECTION_DRIVER, hiveConf) : driver,
           "-n", userName,
           "-p", password,
@@ -1024,11 +1232,27 @@ public class HiveSchemaTool {
                 create("initSchemaTo");
     Option infoOpt = new Option("info", "Show config and schema details");
     Option validateOpt = new Option("validate", "Validate the database");
+    Option createCatalog = OptionBuilder
+        .hasArg()
+        .withDescription("Create a catalog, requires --catalogLocation parameter as well")
+        .create("createCatalog");
+    Option moveDatabase = OptionBuilder
+        .hasArg()
+        .withDescription("Move a database between catalogs.  Argument is the database name. " +
+            "Requires --fromCatalog and --toCatalog parameters as well")
+        .create("moveDatabase");
+    Option moveTable = OptionBuilder
+        .hasArg()
+        .withDescription("Move a table to a different database.  Argument is the table name. " +
+            "Requires --fromCatalog, --toCatalog, --fromDatabase, and --toDatabase " +
+            " parameters as well.")
+        .create("moveTable");
 
     OptionGroup optGroup = new OptionGroup();
     optGroup.addOption(upgradeOpt).addOption(initOpt).
                 addOption(help).addOption(upgradeFromOpt).
-                addOption(initToOpt).addOption(infoOpt).addOption(validateOpt);
+                addOption(initToOpt).addOption(infoOpt).addOption(validateOpt)
+                .addOption(createCatalog).addOption(moveDatabase).addOption(moveTable);
     optGroup.setRequired(true);
 
     Option userNameOpt = OptionBuilder.withArgName("user")
@@ -1059,6 +1283,37 @@ public class HiveSchemaTool {
     Option serversOpt = OptionBuilder.withArgName("serverList")
         .hasArgs().withDescription("a comma-separated list of servers used in location validation in the format of scheme://authority (e.g. hdfs://localhost:8000)")
         .create("servers");
+    Option catalogLocation = OptionBuilder
+        .hasArg()
+        .withDescription("Location of new catalog, required when adding a catalog")
+        .create("catalogLocation");
+    Option catalogDescription = OptionBuilder
+        .hasArg()
+        .withDescription("Description of new catalog")
+        .create("catalogDescription");
+    Option ifNotExists = OptionBuilder
+        .withDescription("If passed then it is not an error to create an existing catalog")
+        .create("ifNotExists");
+    Option toCatalog = OptionBuilder
+        .hasArg()
+        .withDescription("Catalog a moving database or table is going to.  This is " +
+            "required if you are moving a database or table.")
+        .create("toCatalog");
+    Option fromCatalog = OptionBuilder
+        .hasArg()
+        .withDescription("Catalog a moving database or table is coming from.  This is " +
+            "required if you are moving a database or table.")
+        .create("fromCatalog");
+    Option toDatabase = OptionBuilder
+        .hasArg()
+        .withDescription("Database a moving table is going to.  This is " +
+            "required if you are moving a table.")
+        .create("toDatabase");
+    Option fromDatabase = OptionBuilder
+        .hasArg()
+        .withDescription("Database a moving table is coming from.  This is " +
+            "required if you are moving a table.")
+        .create("fromDatabase");
     cmdLineOptions.addOption(help);
     cmdLineOptions.addOption(dryRunOpt);
     cmdLineOptions.addOption(userNameOpt);
@@ -1070,6 +1325,13 @@ public class HiveSchemaTool {
     cmdLineOptions.addOption(driverOpt);
     cmdLineOptions.addOption(dbOpts);
     cmdLineOptions.addOption(serversOpt);
+    cmdLineOptions.addOption(catalogLocation);
+    cmdLineOptions.addOption(catalogDescription);
+    cmdLineOptions.addOption(ifNotExists);
+    cmdLineOptions.addOption(toCatalog);
+    cmdLineOptions.addOption(fromCatalog);
+    cmdLineOptions.addOption(toDatabase);
+    cmdLineOptions.addOption(fromDatabase);
     cmdLineOptions.addOptionGroup(optGroup);
   }
 
@@ -1186,6 +1448,17 @@ public class HiveSchemaTool {
         schemaTool.doInit(schemaVer);
       } else if (line.hasOption("validate")) {
         schemaTool.doValidate();
+      } else if (line.hasOption("createCatalog")) {
+        schemaTool.createCatalog(line.getOptionValue("createCatalog"),
+            line.getOptionValue("catalogLocation"), line.getOptionValue("catalogDescription"),
+            line.hasOption("ifNotExists"));
+      } else if (line.hasOption("moveDatabase")) {
+        schemaTool.moveDatabase(line.getOptionValue("fromCatalog"),
+            line.getOptionValue("toCatalog"), line.getOptionValue("moveDatabase"));
+      } else if (line.hasOption("moveTable")) {
+        schemaTool.moveTable(line.getOptionValue("fromCatalog"), line.getOptionValue("toCatalog"),
+            line.getOptionValue("fromDatabase"), line.getOptionValue("toDatabase"),
+            line.getOptionValue("moveTable"));
       } else {
         System.err.println("no valid option supplied");
         printAndExit(cmdLineOptions);

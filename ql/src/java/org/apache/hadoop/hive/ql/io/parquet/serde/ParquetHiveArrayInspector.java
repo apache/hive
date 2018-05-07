@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,6 +14,7 @@
 package org.apache.hadoop.hive.ql.io.parquet.serde;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -69,7 +70,7 @@ public class ParquetHiveArrayInspector implements SettableListObjectInspector {
     }
 
     if (data instanceof List) {
-      return ((List)data).get(index);
+      return ((List<?>)data).get(index);
     }
 
     throw new UnsupportedOperationException("Cannot inspect " + data.getClass().getCanonicalName());
@@ -91,7 +92,7 @@ public class ParquetHiveArrayInspector implements SettableListObjectInspector {
     }
 
     if (data instanceof List) {
-      return ((List)data).size();
+      return ((List<?>)data).size();
     }
 
     throw new UnsupportedOperationException("Cannot inspect " + data.getClass().getCanonicalName());
@@ -108,13 +109,7 @@ public class ParquetHiveArrayInspector implements SettableListObjectInspector {
       if (array == null) {
         return null;
       }
-
-      final List<Writable> list = new ArrayList<Writable>(array.length);
-      for (final Writable obj : array) {
-        list.add(obj);
-      }
-
-      return list;
+      return new ArrayList<Writable>(Arrays.asList(array));
     }
 
     if (data instanceof List) {
@@ -126,29 +121,27 @@ public class ParquetHiveArrayInspector implements SettableListObjectInspector {
 
   @Override
   public Object create(final int size) {
-    final ArrayList<Object> result = new ArrayList<Object>(size);
-    for (int i = 0; i < size; ++i) {
-      result.add(null);
-    }
-    return result;
+    return new ArrayList<Object>(Arrays.asList(new Object[size]));
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public Object set(final Object list, final int index, final Object element) {
-    final ArrayList l = (ArrayList) list;
+    final List<Object> l = (List<Object>) list;
     l.set(index, element);
     return list;
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public Object resize(final Object list, final int newSize) {
-    final ArrayList l = (ArrayList) list;
-    l.ensureCapacity(newSize);
-    while (l.size() < newSize) {
-      l.add(null);
-    }
-    while (l.size() > newSize) {
-      l.remove(l.size() - 1);
+    final List<Object> l = (List<Object>) list;
+    final int deltaSize = newSize - l.size();
+    if (deltaSize > 0) {
+      l.addAll(Arrays.asList(new Object[deltaSize]));
+    } else {
+      int size = l.size();
+      l.subList(size + deltaSize, size).clear();
     }
     return list;
   }
@@ -167,8 +160,6 @@ public class ParquetHiveArrayInspector implements SettableListObjectInspector {
 
   @Override
   public int hashCode() {
-    int hash = 3;
-    hash = 29 * hash + (this.arrayElementInspector != null ? this.arrayElementInspector.hashCode() : 0);
-    return hash;
+    return (this.arrayElementInspector != null ? this.arrayElementInspector.hashCode() : 0);
   }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,12 +23,14 @@ import java.io.Serializable;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
-@Explain(displayName = "Show Resource plans", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+@Explain(displayName = "Show Resource plans",
+    explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class ShowResourcePlanDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 6076076933035978545L;
 
-  private static final String table = "show_resourceplan";
-  private static final String schema = "rp_name,status,query_parallelism#string,string,int";
+  private static final String TABLE = "show_resourceplan";
+  private static final String ALL_SCHEMA = "rp_name,status,query_parallelism#string,string,int";
+  private static final String SINGLE_SCHEMA = "line#string";
 
   String resFile;
   String resourcePlanName;
@@ -50,16 +52,17 @@ public class ShowResourcePlanDesc extends DDLDesc implements Serializable {
     this.resFile = resFile;
   }
 
-  @Explain(displayName="resourcePlanName", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Explain(displayName="resourcePlanName",
+      explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getResourcePlanName() {
     return resourcePlanName;
   }
 
   public String getTable() {
-    return table;
+    return TABLE;
   }
 
-  public String getSchema() {
-    return schema;
+  public String getSchema(String rpName) {
+    return (rpName == null) ? ALL_SCHEMA : SINGLE_SCHEMA;
   }
 }

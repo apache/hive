@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,7 +23,9 @@ import static org.junit.Assert.assertEquals;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColUnaryMinus;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColUnaryMinusChecked;
 import org.apache.hadoop.hive.ql.exec.vector.util.VectorizedRowGroupGenUtil;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.junit.Test;
 
 /**
@@ -35,6 +37,37 @@ public class TestUnaryMinus {
   public void testUnaryMinus() {
     VectorizedRowBatch vrg = VectorizedRowGroupGenUtil.getVectorizedRowBatch(1024, 2, 23);
     LongColUnaryMinus expr = new LongColUnaryMinus(0, 1);
+    expr.evaluate(vrg);
+    //verify
+    long[] inVector = ((LongColumnVector) vrg.cols[0]).vector;
+    long[] outVector = ((LongColumnVector) vrg.cols[1]).vector;
+    for (int i = 0; i < outVector.length; i++) {
+      assertEquals(0, inVector[i]+outVector[i]);
+    }
+  }
+
+
+  @Test
+  public void testUnaryMinusCheckedOverflow() {
+    VectorizedRowBatch vrg = VectorizedRowGroupGenUtil.getVectorizedRowBatch(1, 2, 0);
+    //set value to MIN_VALUE so that -MIN_VALUE overflows and gets set to MIN_VALUE again
+    ((LongColumnVector)vrg.cols[0]).vector[0] = Integer.MIN_VALUE;
+    LongColUnaryMinusChecked expr = new LongColUnaryMinusChecked(0, 1);
+    expr.setOutputTypeInfo(TypeInfoFactory.getPrimitiveTypeInfo("int"));
+    expr.evaluate(vrg);
+    //verify
+    long[] inVector = ((LongColumnVector) vrg.cols[0]).vector;
+    long[] outVector = ((LongColumnVector) vrg.cols[1]).vector;
+    for (int i = 0; i < outVector.length; i++) {
+      assertEquals(Integer.MIN_VALUE, outVector[i]);
+    }
+  }
+
+  @Test
+  public void testUnaryMinusChecked() {
+    VectorizedRowBatch vrg = VectorizedRowGroupGenUtil.getVectorizedRowBatch(1024, 2, 23);
+    LongColUnaryMinusChecked expr = new LongColUnaryMinusChecked(0, 1);
+    expr.setOutputTypeInfo(TypeInfoFactory.getPrimitiveTypeInfo("bigint"));
     expr.evaluate(vrg);
     //verify
     long[] inVector = ((LongColumnVector) vrg.cols[0]).vector;

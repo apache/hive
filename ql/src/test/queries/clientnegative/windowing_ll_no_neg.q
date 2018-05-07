@@ -1,3 +1,4 @@
+--! qt:dataset:part
 select p_mfgr, p_name, p_size,
 min(p_retailprice),
 rank() over(distribute by p_mfgr sort by p_name)as r,

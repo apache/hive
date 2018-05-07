@@ -117,6 +117,7 @@ STAGE PLANS:
                         tag: 0
                         value expressions: _col0 (type: int), _col2 (type: int), _col3 (type: int)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -128,6 +129,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns dealid,date,time,cityid,userid
                     columns.comments 
@@ -149,6 +151,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns dealid,date,time,cityid,userid
                       columns.comments 
@@ -190,6 +193,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
                         tag: 1
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -201,6 +205,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns dealid,date,time,cityid,userid
                     columns.comments 
@@ -222,6 +227,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns dealid,date,time,cityid,userid
                       columns.comments 
@@ -263,6 +269,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
                         tag: 1
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -274,6 +281,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns dealid,date,time,cityid,userid
                     columns.comments 
@@ -295,6 +303,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns dealid,date,time,cityid,userid
                       columns.comments 
@@ -336,6 +345,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
                         tag: 1
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -347,6 +357,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns dealid,date,time,cityid,userid
                     columns.comments 
@@ -368,6 +379,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns dealid,date,time,cityid,userid
                       columns.comments 
@@ -409,6 +421,7 @@ STAGE PLANS:
                         Statistics: Num rows: 100 Data size: 288 Basic stats: COMPLETE Column stats: NONE
                         tag: 1
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -420,6 +433,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns userid
                     columns.comments 
@@ -441,6 +455,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns userid
                       columns.comments 

@@ -53,6 +53,7 @@ STAGE PLANS:
                             properties:
                               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"dt":"true","hr":"true","key":"true","value":"true"}}
                               bucket_count -1
+                              bucketing_version 2
                               column.name.delimiter ,
                               columns key,value,dt,hr
                               columns.comments 
@@ -72,6 +73,7 @@ STAGE PLANS:
                         TotalFiles: 1
                         GatherStats: true
                         MultiFileSpray: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -108,6 +110,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
@@ -137,6 +140,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"dt":"true","hr":"true","key":"true","value":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value,dt,hr
                 columns.comments 

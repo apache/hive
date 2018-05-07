@@ -101,6 +101,7 @@ STAGE PLANS:
                           SORTBUCKETCOLSPREFIX TRUE
                           bucket_count 16
                           bucket_field_name key
+                          bucketing_version 2
                           column.name.delimiter ,
                           columns key,value
                           columns.comments 
@@ -156,6 +157,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 16
                 bucket_field_name key
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -188,6 +190,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 16
                 bucket_field_name key
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -247,7 +250,7 @@ POSTHOOK: Input: default@test_table1@ds=1
 POSTHOOK: Input: default@test_table3
 POSTHOOK: Input: default@test_table3@ds=1
 #### A masked pattern was here ####
-879
+420
 PREHOOK: query: explain extended
 INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '2') 
 SELECT /*+mapjoin(b)*/ a.key, concat(a.value, b.value) FROM test_table3 a JOIN test_table1 b ON a.key = b.key AND a.ds = '1' AND b.ds='1'
@@ -332,6 +335,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 16
                 bucket_field_name key
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -368,6 +372,7 @@ STAGE PLANS:
                   SORTBUCKETCOLSPREFIX TRUE
                   bucket_count 16
                   bucket_field_name key
+                  bucketing_version 2
                   column.name.delimiter ,
                   columns key,value
                   columns.comments 
@@ -426,6 +431,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 16
                 bucket_field_name key
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
@@ -464,6 +470,7 @@ STAGE PLANS:
               tag: -1
               value expressions: _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
               auto parallelism: false
+      Execution mode: vectorized
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -551,4 +558,4 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table3
 POSTHOOK: Input: default@test_table3@ds=2
 #### A masked pattern was here ####
-879
+420

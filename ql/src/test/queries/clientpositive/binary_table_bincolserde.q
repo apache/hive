@@ -1,3 +1,4 @@
+--! qt:dataset:src
 drop table ba_test;
 
 -- Tests everything in binary_table_colserde.q + uses LazyBinaryColumnarSerde

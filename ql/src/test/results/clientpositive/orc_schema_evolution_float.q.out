@@ -12,18 +12,22 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@float_text
 PREHOOK: query: insert into float_text values(74.72)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@float_text
 POSTHOOK: query: insert into float_text values(74.72)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@float_text
-POSTHOOK: Lineage: float_text.f EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: float_text.f SCRIPT []
 PREHOOK: query: insert into float_text values(0.22)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@float_text
 POSTHOOK: query: insert into float_text values(0.22)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@float_text
-POSTHOOK: Lineage: float_text.f EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: float_text.f SCRIPT []
 PREHOOK: query: select f from float_text
 PREHOOK: type: QUERY
 PREHOOK: Input: default@float_text

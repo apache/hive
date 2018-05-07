@@ -1,21 +1,22 @@
 Found 1 items
-#### A masked pattern was here ####
+-rw-r--r--   3 ### USER ### ### GROUP ###         16 ### HDFS DATE ### hdfs://### HDFS PATH ###¢Bar/in1.txt
 Found 1 items
-#### A masked pattern was here ####
+-rw-r--r--   3 ### USER ### ### GROUP ###         16 ### HDFS DATE ### hdfs://### HDFS PATH ###Foo/in1.txt
 Found 2 items
-#### A masked pattern was here ####
+drwxr-xr-x   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###Foo
+drwxr-xr-x   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###¢Bar
 PREHOOK: query: create external table table_external (c1 int, c2 int)
 partitioned by (day string)
-#### A masked pattern was here ####
+location 'hdfs://### HDFS PATH ###'
 PREHOOK: type: CREATETABLE
-#### A masked pattern was here ####
+PREHOOK: Input: hdfs://### HDFS PATH ###
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table_external
 POSTHOOK: query: create external table table_external (c1 int, c2 int)
 partitioned by (day string)
-#### A masked pattern was here ####
+location 'hdfs://### HDFS PATH ###'
 POSTHOOK: type: CREATETABLE
-#### A masked pattern was here ####
+POSTHOOK: Input: hdfs://### HDFS PATH ###
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_external
 PREHOOK: query: msck repair table table_external
@@ -28,7 +29,8 @@ Partitions not in metastore:	table_external:day=¢Bar
 Repair: Cannot add partition table_external:day=Foo due to invalid characters in the name
 #### A masked pattern was here ####
 Found 2 items
-#### A masked pattern was here ####
+drwxr-xr-x   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###Foo
+drwxr-xr-x   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###¢Bar
 PREHOOK: query: show partitions table_external
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@table_external
@@ -40,12 +42,12 @@ PREHOOK: query: select * from table_external
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_external
 PREHOOK: Input: default@table_external@day=¢Bar
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from table_external
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_external
 POSTHOOK: Input: default@table_external@day=¢Bar
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 NULL	35	¢Bar
 48	NULL	¢Bar
 100	100	¢Bar

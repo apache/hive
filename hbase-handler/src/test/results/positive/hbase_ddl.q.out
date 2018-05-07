@@ -68,7 +68,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((UDFToDouble(key) % 2.0) = 0.0) (type: boolean)
+              predicate: ((UDFToDouble(key) % 2.0D) = 0.0D) (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: UDFToInteger(key) (type: int), value (type: string)
@@ -82,6 +82,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.hbase.HiveHBaseTableOutputFormat
                       serde: org.apache.hadoop.hive.hbase.HBaseSerDe
                       name: default.hbase_table_1
+      Execution mode: vectorized
 
 PREHOOK: query: FROM src INSERT OVERWRITE TABLE hbase_table_1 SELECT * WHERE (key%2)=0
 PREHOOK: type: QUERY
@@ -116,6 +117,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 	hbase.mapred.output.outputtable	kkk                 
 	hbase.table.name    	hbase_table_0       
 #### A masked pattern was here ####
@@ -162,6 +164,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	bucketing_version   	2                   
 	hbase.table.name    	hbase_table_0       
 #### A masked pattern was here ####
 	numFiles            	0                   

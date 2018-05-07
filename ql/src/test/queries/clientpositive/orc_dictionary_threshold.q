@@ -1,3 +1,6 @@
+--! qt:dataset:src
+
+set hive.vectorized.execution.enabled=false;
 set hive.exec.orc.dictionary.key.size.threshold=-1;
 
 -- Set the threshold to -1 to guarantee dictionary encoding is turned off

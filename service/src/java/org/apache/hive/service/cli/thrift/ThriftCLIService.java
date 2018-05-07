@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -349,22 +349,32 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
   public TSetClientInfoResp SetClientInfo(TSetClientInfoReq req) throws TException {
     // TODO: We don't do anything for now, just log this for debugging.
     //       We may be able to make use of this later, e.g. for workload management.
+    TSetClientInfoResp resp = null;
     if (req.isSetConfiguration()) {
       StringBuilder sb = null;
+      SessionHandle sh = null;
       for (Map.Entry<String, String> e : req.getConfiguration().entrySet()) {
         if (sb == null) {
-          SessionHandle sh = new SessionHandle(req.getSessionHandle());
+          sh = new SessionHandle(req.getSessionHandle());
           sb = new StringBuilder("Client information for ").append(sh).append(": ");
         } else {
           sb.append(", ");
         }
         sb.append(e.getKey()).append(" = ").append(e.getValue());
+        if ("ApplicationName".equals(e.getKey())) {
+          try {
+            cliService.setApplicationName(sh, e.getValue());
+          } catch (Exception ex) {
+            LOG.warn("Error setting application name", ex);
+            resp = new TSetClientInfoResp(HiveSQLException.toTStatus(ex));
+          }
+        }
       }
       if (sb != null) {
         LOG.info("{}", sb);
       }
     }
-    return new TSetClientInfoResp(OK_STATUS);
+    return resp == null ? new TSetClientInfoResp(OK_STATUS) : resp;
   }
 
   private String getIpAddress() {

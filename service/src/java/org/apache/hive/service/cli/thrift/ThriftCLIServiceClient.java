@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -82,6 +82,8 @@ import org.apache.hive.service.rpc.thrift.TOperationHandle;
 import org.apache.hive.service.rpc.thrift.TProtocolVersion;
 import org.apache.hive.service.rpc.thrift.TRenewDelegationTokenReq;
 import org.apache.hive.service.rpc.thrift.TRenewDelegationTokenResp;
+import org.apache.hive.service.rpc.thrift.TSetClientInfoReq;
+import org.apache.hive.service.rpc.thrift.TSetClientInfoResp;
 import org.apache.hive.service.rpc.thrift.TStatus;
 import org.apache.hive.service.rpc.thrift.TStatusCode;
 import org.apache.thrift.TException;
@@ -560,6 +562,18 @@ public class ThriftCLIServiceClient extends CLIServiceClient {
   public String getQueryId(TOperationHandle operationHandle) throws HiveSQLException {
     try {
       return cliService.GetQueryId(new TGetQueryIdReq(operationHandle)).getQueryId();
+    } catch (TException e) {
+      throw new HiveSQLException(e);
+    }
+  }
+
+  @Override
+  public void setApplicationName(SessionHandle sh, String value) throws HiveSQLException {
+    try {
+      TSetClientInfoReq req = new TSetClientInfoReq(sh.toTSessionHandle());
+      req.putToConfiguration("ApplicationName", value);
+      TSetClientInfoResp resp = cliService.SetClientInfo(req);
+      checkStatus(resp.getStatus());
     } catch (TException e) {
       throw new HiveSQLException(e);
     }

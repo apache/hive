@@ -45,8 +45,6 @@ POSTHOOK: Input: default@v
 key                 	string              	                    
 	 	 
 #### A masked pattern was here ####
-select key from cte, viewExpandedText:with cte as (select `src`.`key`, `src`.`value` from `default`.`src` order by key limit 5)	 	 
-select `cte`.`key` from cte, tableType:VIRTUAL_VIEW, rewriteEnabled:false)		 
 PREHOOK: query: create database bug
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:bug
@@ -120,8 +118,6 @@ key                 	string
 value               	string              	                    
 	 	 
 #### A masked pattern was here ####
-select * from cte, viewExpandedText:with cte as (select `src`.`key`, `src`.`value` from `default`.`src`  order by `src`.`key` limit 5)	 	 
-select `cte`.`key`, `cte`.`value` from cte, tableType:VIRTUAL_VIEW, rewriteEnabled:false)		 
 PREHOOK: query: create database bug
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:bug
@@ -193,8 +189,6 @@ POSTHOOK: Input: default@v
 key                 	string              	                    
 	 	 
 #### A masked pattern was here ####
-select * from src1, viewExpandedText:with src1 as (select `src`.`key` from `default`.`src` order by key limit 5)	 	 
-select `src1`.`key` from src1, tableType:VIRTUAL_VIEW, rewriteEnabled:false)		 
 PREHOOK: query: create database bug
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:bug
@@ -258,8 +252,6 @@ POSTHOOK: Input: default@v
 key                 	string              	                    
 	 	 
 #### A masked pattern was here ####
-select * from src1 a where a.key is not null, viewExpandedText:with src1 as (select `src`.`key` from `default`.`src` order by key limit 5)	 	 
-select `a`.`key` from src1 a where `a`.`key` is not null, tableType:VIRTUAL_VIEW, rewriteEnabled:false)		 
 PREHOOK: query: select * from v
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src

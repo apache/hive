@@ -70,6 +70,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.null_tab3
+      Execution mode: vectorized
 
   Stage: Stage-7
     Conditional Operator
@@ -173,6 +174,7 @@ OUTPUTFORMAT
 LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
+  'bucketing_version'='2', 
 #### A masked pattern was here ####
 1.01
 1.01

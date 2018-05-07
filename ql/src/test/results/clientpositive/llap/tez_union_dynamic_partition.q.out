@@ -8,19 +8,21 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dummy
 PREHOOK: query: insert into table dummy values (1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@dummy
 POSTHOOK: query: insert into table dummy values (1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@dummy
-POSTHOOK: Lineage: dummy.i EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: dummy.i SCRIPT []
 PREHOOK: query: select * from dummy
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dummy
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from dummy
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dummy
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1
 PREHOOK: query: create table partunion1(id1 int) partitioned by (part1 string)
 PREHOOK: type: CREATETABLE
@@ -203,11 +205,11 @@ PREHOOK: query: select * from partunion1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partunion1
 PREHOOK: Input: default@partunion1@part1=2014
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from partunion1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partunion1
 POSTHOOK: Input: default@partunion1@part1=2014
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	2014
 2	2014

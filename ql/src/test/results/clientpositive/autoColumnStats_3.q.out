@@ -11,12 +11,12 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_multi1
 PREHOOK: query: analyze table src_multi1 compute statistics for columns key
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@src_multi1
 PREHOOK: Output: default@src_multi1
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table src_multi1 compute statistics for columns key
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@src_multi1
 POSTHOOK: Output: default@src_multi1
 #### A masked pattern was here ####
@@ -135,6 +135,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
 	numFiles            	0                   
 	numPartitions       	0                   
 	numRows             	0                   
@@ -221,14 +222,14 @@ Sort Columns:       	[]
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: analyze table nzhang_part14 partition(ds='1', hr='3') compute statistics for columns value
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@nzhang_part14
 PREHOOK: Input: default@nzhang_part14@ds=1/hr=3
 PREHOOK: Output: default@nzhang_part14
 PREHOOK: Output: default@nzhang_part14@ds=1/hr=3
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table nzhang_part14 partition(ds='1', hr='3') compute statistics for columns value
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@nzhang_part14
 POSTHOOK: Input: default@nzhang_part14@ds=1/hr=3
 POSTHOOK: Output: default@nzhang_part14

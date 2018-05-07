@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,6 +22,8 @@ public class Constants {
   public static final String LLAP_LOGGER_NAME_QUERY_ROUTING = "query-routing";
   public static final String LLAP_LOGGER_NAME_CONSOLE = "console";
   public static final String LLAP_LOGGER_NAME_RFA = "RFA";
+  public static final String LLAP_NUM_BUCKETS = "llap.num.buckets";
+  public static final String LLAP_BUCKET_ID = "llap.bucket.id";
 
   /* Constants for Druid storage handler */
   public static final String DRUID_HIVE_STORAGE_HANDLER_ID =
@@ -31,8 +33,13 @@ public class Constants {
   public static final String DRUID_DATA_SOURCE = "druid.datasource";
   public static final String DRUID_SEGMENT_GRANULARITY = "druid.segment.granularity";
   public static final String DRUID_QUERY_GRANULARITY = "druid.query.granularity";
+  public static final String DRUID_TARGET_SHARDS_PER_GRANULARITY =
+      "druid.segment.targetShardsPerGranularity";
   public static final String DRUID_TIMESTAMP_GRANULARITY_COL_NAME = "__time_granularity";
+  public static final String DRUID_SHARD_KEY_COL_NAME = "__druid_extra_partition_key";
   public static final String DRUID_QUERY_JSON = "druid.query.json";
+  public static final String DRUID_QUERY_FIELD_NAMES = "druid.fieldNames";
+  public static final String DRUID_QUERY_FIELD_TYPES = "druid.fieldTypes";
   public static final String DRUID_QUERY_TYPE = "druid.query.type";
   public static final String DRUID_QUERY_FETCH = "druid.query.fetch";
   public static final String DRUID_SEGMENT_DIRECTORY = "druid.storage.storageDirectory";
@@ -41,7 +48,22 @@ public class Constants {
   public static final String DRUID_SEGMENT_VERSION = "druid.segment.version";
   public static final String DRUID_JOB_WORKING_DIRECTORY = "druid.job.workingDirectory";
 
+
+  public static final String KAFKA_TOPIC = "kafka.topic";
+  public static final String KAFKA_BOOTSTRAP_SERVERS = "kafka.bootstrap.servers";
+
+  public static final String DRUID_KAFKA_INGESTION_PROPERTY_PREFIX = "druid.kafka.ingestion.";
+  /* Kafka Ingestion state - valid values - START/STOP/RESET */
+  public static final String DRUID_KAFKA_INGESTION = "druid.kafka.ingestion";
+
+  public static final String HIVE_JDBC_QUERY = "hive.sql.generated.query";
+  public static final String JDBC_QUERY = "hive.sql.query";
+  public static final String JDBC_HIVE_STORAGE_HANDLER_ID =
+      "org.apache.hive.storage.jdbc.JdbcStorageHandler";
+
   public static final String HIVE_SERVER2_JOB_CREDSTORE_PASSWORD_ENVVAR = "HIVE_JOB_CREDSTORE_PASSWORD";
   public static final String HADOOP_CREDENTIAL_PASSWORD_ENVVAR = "HADOOP_CREDSTORE_PASSWORD";
   public static final String HADOOP_CREDENTIAL_PROVIDER_PATH_CONFIG = "hadoop.security.credential.provider.path";
+
+  public static final String MATERIALIZED_VIEW_REWRITING_TIME_WINDOW = "rewriting.time.window";
 }

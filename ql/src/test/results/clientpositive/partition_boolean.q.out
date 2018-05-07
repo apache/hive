@@ -8,32 +8,40 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@broken
 PREHOOK: query: INSERT INTO TABLE broken PARTITION(b1=false,s='a',b2=false,i=0) VALUES(1)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@broken@b1=false/s=a/b2=false/i=0
 POSTHOOK: query: INSERT INTO TABLE broken PARTITION(b1=false,s='a',b2=false,i=0) VALUES(1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@broken@b1=false/s=a/b2=false/i=0
-POSTHOOK: Lineage: broken PARTITION(b1=false,s=a,b2=false,i=0).c EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: broken PARTITION(b1=false,s=a,b2=false,i=0).c SCRIPT []
 PREHOOK: query: INSERT INTO TABLE broken PARTITION(b1=FALSE,s='a',b2=false,i=0) VALUES(3)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@broken@b1=false/s=a/b2=false/i=0
 POSTHOOK: query: INSERT INTO TABLE broken PARTITION(b1=FALSE,s='a',b2=false,i=0) VALUES(3)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@broken@b1=false/s=a/b2=false/i=0
-POSTHOOK: Lineage: broken PARTITION(b1=false,s=a,b2=false,i=0).c EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: broken PARTITION(b1=false,s=a,b2=false,i=0).c SCRIPT []
 PREHOOK: query: INSERT INTO TABLE broken PARTITION(b1='no',s='a',b2=False,i=0) VALUES(5)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@broken@b1=false/s=a/b2=false/i=0
 POSTHOOK: query: INSERT INTO TABLE broken PARTITION(b1='no',s='a',b2=False,i=0) VALUES(5)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@broken@b1=false/s=a/b2=false/i=0
-POSTHOOK: Lineage: broken PARTITION(b1=false,s=a,b2=false,i=0).c EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: broken PARTITION(b1=false,s=a,b2=false,i=0).c SCRIPT []
 PREHOOK: query: INSERT INTO TABLE broken PARTITION(b1='off',s='a',b2='0',i=0) VALUES(7)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@broken@b1=false/s=a/b2=false/i=0
 POSTHOOK: query: INSERT INTO TABLE broken PARTITION(b1='off',s='a',b2='0',i=0) VALUES(7)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@broken@b1=false/s=a/b2=false/i=0
-POSTHOOK: Lineage: broken PARTITION(b1=false,s=a,b2=false,i=0).c EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: broken PARTITION(b1=false,s=a,b2=false,i=0).c SCRIPT []
 PREHOOK: query: select * from broken where b1=false and b2=false
 PREHOOK: type: QUERY
 PREHOOK: Input: default@broken
@@ -50,32 +58,40 @@ POSTHOOK: Input: default@broken@b1=false/s=a/b2=false/i=0
 7	false	a	false	0
 PREHOOK: query: INSERT INTO TABLE broken PARTITION(b1=true,s='a',b2=true,i=0) VALUES(2)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@broken@b1=true/s=a/b2=true/i=0
 POSTHOOK: query: INSERT INTO TABLE broken PARTITION(b1=true,s='a',b2=true,i=0) VALUES(2)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@broken@b1=true/s=a/b2=true/i=0
-POSTHOOK: Lineage: broken PARTITION(b1=true,s=a,b2=true,i=0).c EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: broken PARTITION(b1=true,s=a,b2=true,i=0).c SCRIPT []
 PREHOOK: query: INSERT INTO TABLE broken PARTITION(b1=TRUE,s='a',b2=true,i=0) VALUES(4)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@broken@b1=true/s=a/b2=true/i=0
 POSTHOOK: query: INSERT INTO TABLE broken PARTITION(b1=TRUE,s='a',b2=true,i=0) VALUES(4)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@broken@b1=true/s=a/b2=true/i=0
-POSTHOOK: Lineage: broken PARTITION(b1=true,s=a,b2=true,i=0).c EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: broken PARTITION(b1=true,s=a,b2=true,i=0).c SCRIPT []
 PREHOOK: query: INSERT INTO TABLE broken PARTITION(b1='yes',s='a',b2=True,i=0) VALUES(6)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@broken@b1=true/s=a/b2=true/i=0
 POSTHOOK: query: INSERT INTO TABLE broken PARTITION(b1='yes',s='a',b2=True,i=0) VALUES(6)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@broken@b1=true/s=a/b2=true/i=0
-POSTHOOK: Lineage: broken PARTITION(b1=true,s=a,b2=true,i=0).c EXPRESSION [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: broken PARTITION(b1=true,s=a,b2=true,i=0).c SCRIPT []
 PREHOOK: query: INSERT INTO TABLE broken PARTITION(b1='1',s='a',b2='on',i=0) VALUES(8)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@broken@b1=true/s=a/b2=true/i=0
 POSTHOOK: query: INSERT INTO TABLE broken PARTITION(b1='1',s='a',b2='on',i=0) VALUES(8)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@broken@b1=true/s=a/b2=true/i=0
-POSTHOOK: Lineage: broken PARTITION(b1=true,s=a,b2=true,i=0).c EXPRESSION [(values__tmp__table__8)values__tmp__table__8.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: broken PARTITION(b1=true,s=a,b2=true,i=0).c SCRIPT []
 PREHOOK: query: select * from broken where b1 is true and b2 is true
 PREHOOK: type: QUERY
 PREHOOK: Input: default@broken
@@ -92,32 +108,40 @@ POSTHOOK: Input: default@broken@b1=true/s=a/b2=true/i=0
 8	true	a	true	0
 PREHOOK: query: INSERT INTO TABLE broken PARTITION(b1=false,s='a',b2=true,i=0) VALUES(100)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@broken@b1=false/s=a/b2=true/i=0
 POSTHOOK: query: INSERT INTO TABLE broken PARTITION(b1=false,s='a',b2=true,i=0) VALUES(100)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@broken@b1=false/s=a/b2=true/i=0
-POSTHOOK: Lineage: broken PARTITION(b1=false,s=a,b2=true,i=0).c EXPRESSION [(values__tmp__table__9)values__tmp__table__9.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: broken PARTITION(b1=false,s=a,b2=true,i=0).c SCRIPT []
 PREHOOK: query: INSERT INTO TABLE broken PARTITION(b1=FALSE,s='a',b2=TRUE,i=0) VALUES(1000)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@broken@b1=false/s=a/b2=true/i=0
 POSTHOOK: query: INSERT INTO TABLE broken PARTITION(b1=FALSE,s='a',b2=TRUE,i=0) VALUES(1000)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@broken@b1=false/s=a/b2=true/i=0
-POSTHOOK: Lineage: broken PARTITION(b1=false,s=a,b2=true,i=0).c EXPRESSION [(values__tmp__table__10)values__tmp__table__10.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: broken PARTITION(b1=false,s=a,b2=true,i=0).c SCRIPT []
 PREHOOK: query: INSERT INTO TABLE broken PARTITION(b1=true,s='a',b2=false,i=0) VALUES(10000)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@broken@b1=true/s=a/b2=false/i=0
 POSTHOOK: query: INSERT INTO TABLE broken PARTITION(b1=true,s='a',b2=false,i=0) VALUES(10000)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@broken@b1=true/s=a/b2=false/i=0
-POSTHOOK: Lineage: broken PARTITION(b1=true,s=a,b2=false,i=0).c EXPRESSION [(values__tmp__table__11)values__tmp__table__11.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: broken PARTITION(b1=true,s=a,b2=false,i=0).c SCRIPT []
 PREHOOK: query: INSERT INTO TABLE broken PARTITION(b1=tRUe,s='a',b2=fALSe,i=0) VALUES(100000)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@broken@b1=true/s=a/b2=false/i=0
 POSTHOOK: query: INSERT INTO TABLE broken PARTITION(b1=tRUe,s='a',b2=fALSe,i=0) VALUES(100000)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@broken@b1=true/s=a/b2=false/i=0
-POSTHOOK: Lineage: broken PARTITION(b1=true,s=a,b2=false,i=0).c EXPRESSION [(values__tmp__table__12)values__tmp__table__12.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: broken PARTITION(b1=true,s=a,b2=false,i=0).c SCRIPT []
 PREHOOK: query: select * from broken where b1 is true and b2=false
 PREHOOK: type: QUERY
 PREHOOK: Input: default@broken

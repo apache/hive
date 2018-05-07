@@ -50,7 +50,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (UDFToDouble(key) = 86.0) (type: boolean)
+              predicate: (UDFToDouble(key) = 86.0D) (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: 'TRUE' (type: string), 'FALSE' (type: string), 'TRUE' (type: string), 'TRUE' (type: string), 'TRUE' (type: string), 'FALSE' (type: string), 'FALSE' (type: string), 'FALSE' (type: string), 'TRUE' (type: string), 'TRUE' (type: string), 'FALSE' (type: string), 'TRUE' (type: string), 'TRUE' (type: string), 'acc' (type: string), 'abc' (type: string), 'abb' (type: string), 'hive' (type: string), 'hadoop' (type: string), 'AaAbAcA' (type: string), 'FALSE' (type: string)

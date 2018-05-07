@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -25,21 +25,22 @@ import org.apache.hadoop.hive.metastore.messaging.AddPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.AddPrimaryKeyMessage;
 import org.apache.hadoop.hive.metastore.messaging.AddUniqueConstraintMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterDatabaseMessage;
-import org.apache.hadoop.hive.metastore.messaging.AlterIndexMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
 import org.apache.hadoop.hive.metastore.messaging.CreateDatabaseMessage;
 import org.apache.hadoop.hive.metastore.messaging.CreateFunctionMessage;
-import org.apache.hadoop.hive.metastore.messaging.CreateIndexMessage;
 import org.apache.hadoop.hive.metastore.messaging.CreateTableMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropConstraintMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropDatabaseMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropFunctionMessage;
-import org.apache.hadoop.hive.metastore.messaging.DropIndexMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropTableMessage;
 import org.apache.hadoop.hive.metastore.messaging.InsertMessage;
 import org.apache.hadoop.hive.metastore.messaging.MessageDeserializer;
+import org.apache.hadoop.hive.metastore.messaging.OpenTxnMessage;
+import org.apache.hadoop.hive.metastore.messaging.CommitTxnMessage;
+import org.apache.hadoop.hive.metastore.messaging.AbortTxnMessage;
+import org.apache.hadoop.hive.metastore.messaging.AllocWriteIdMessage;
 import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
@@ -171,36 +172,6 @@ public class JSONMessageDeserializer extends MessageDeserializer {
   }
 
   @Override
-  public CreateIndexMessage getCreateIndexMessage(String messageBody) {
-    try {
-      return mapper.readValue(messageBody, JSONCreateIndexMessage.class);
-    }
-    catch (Exception exception) {
-      throw new IllegalArgumentException("Could not construct JSONCreateIndexMessage.", exception);
-    }
-  }
-
-  @Override
-  public DropIndexMessage getDropIndexMessage(String messageBody) {
-    try {
-      return mapper.readValue(messageBody, JSONDropIndexMessage.class);
-    }
-    catch (Exception exception) {
-      throw new IllegalArgumentException("Could not construct JSONDropIndexMessage.", exception);
-    }
-  }
-
-  @Override
-  public AlterIndexMessage getAlterIndexMessage(String messageBody) {
-    try {
-      return mapper.readValue(messageBody, JSONAlterIndexMessage.class);
-    }
-    catch (Exception exception) {
-      throw new IllegalArgumentException("Could not construct JSONAlterIndexMessage.", exception);
-    }
-  }
-
-  @Override
   public InsertMessage getInsertMessage(String messageBody) {
     try {
       return mapper.readValue(messageBody, JSONInsertMessage.class);
@@ -251,6 +222,41 @@ public class JSONMessageDeserializer extends MessageDeserializer {
       return mapper.readValue(messageBody, JSONDropConstraintMessage.class);
     } catch (Exception e) {
       throw new IllegalArgumentException("Could not construct DropConstraintMessage", e);
+    }
+  }
+
+  @Override
+  public OpenTxnMessage getOpenTxnMessage(String messageBody) {
+    try {
+      return mapper.readValue(messageBody, JSONOpenTxnMessage.class);
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Could not construct OpenTxnMessage", e);
+    }
+  }
+
+  @Override
+  public CommitTxnMessage getCommitTxnMessage(String messageBody) {
+    try {
+      return mapper.readValue(messageBody, JSONCommitTxnMessage.class);
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Could not construct CommitTxnMessage", e);
+    }
+  }
+
+  @Override
+  public AbortTxnMessage getAbortTxnMessage(String messageBody) {
+    try {
+      return mapper.readValue(messageBody, JSONAbortTxnMessage.class);
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Could not construct AbortTxnMessage", e);
+    }
+  }
+
+  public AllocWriteIdMessage getAllocWriteIdMessage(String messageBody) {
+    try {
+      return mapper.readValue(messageBody, JSONAllocWriteIdMessage.class);
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Could not construct AllocWriteIdMessage", e);
     }
   }
 }

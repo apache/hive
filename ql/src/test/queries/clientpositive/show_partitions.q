@@ -1,3 +1,4 @@
+--! qt:dataset:srcpart
 SHOW PARTITIONS srcpart;
 SHOW PARTITIONS default.srcpart;
 SHOW PARTITIONS srcpart PARTITION(hr='11');

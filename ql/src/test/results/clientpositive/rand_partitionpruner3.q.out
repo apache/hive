@@ -41,6 +41,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 'default','default'
@@ -63,7 +64,7 @@ STAGE PLANS:
           GatherStats: false
           Filter Operator
             isSamplingPred: false
-            predicate: ((UDFToDouble(key) <= 50.0) and (UDFToDouble(key) >= 10.0) and (rand(1) < 0.1)) (type: boolean)
+            predicate: ((UDFToDouble(key) <= 50.0D) and (UDFToDouble(key) >= 10.0D) and (rand(1) < 0.1D)) (type: boolean)
             Statistics: Num rows: 18 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), value (type: string), '2008-04-08' (type: string), hr (type: string)
@@ -129,6 +130,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 'default','default'
@@ -151,7 +153,7 @@ STAGE PLANS:
           GatherStats: false
           Filter Operator
             isSamplingPred: false
-            predicate: ((UDFToDouble(key) <= 50.0) and (UDFToDouble(key) >= 10.0)) (type: boolean)
+            predicate: ((UDFToDouble(key) <= 50.0D) and (UDFToDouble(key) >= 10.0D)) (type: boolean)
             Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), value (type: string), '2008-04-08' (type: string), hr (type: string)

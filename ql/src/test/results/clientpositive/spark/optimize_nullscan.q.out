@@ -73,7 +73,9 @@ STAGE PLANS:
                         tag: -1
                         value expressions: _col1 (type: bigint)
                         auto parallelism: false
+            Execution mode: vectorized
         Reducer 2 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -163,6 +165,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                         tag: 0
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
               nullscan://null/default.src/part_ [a:src]
             Path -> Partition:
@@ -173,6 +176,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 'default','default'
@@ -194,6 +198,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
@@ -233,6 +238,7 @@ STAGE PLANS:
                         tag: -1
                         value expressions: _col0 (type: string)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
               nullscan://null/default.srcpart/part_ds=2008-04-08_hr=11_ [b:srcpart]
               nullscan://null/default.srcpart/part_ds=2008-04-08_hr=12_ [b:srcpart]
@@ -271,6 +277,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
@@ -318,6 +325,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
@@ -365,6 +373,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
@@ -412,6 +421,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
@@ -466,6 +476,7 @@ STAGE PLANS:
                   GatherStats: false
                   MultiFileSpray: false
         Reducer 4 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
@@ -548,6 +559,7 @@ STAGE PLANS:
                         tag: -1
                         value expressions: _col0 (type: bigint)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
               nullscan://null/default.src/part_ [null-subquery1:_u1-subquery1:src]
             Path -> Partition:
@@ -558,6 +570,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 'default','default'
@@ -579,6 +592,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
@@ -620,6 +634,7 @@ STAGE PLANS:
                         tag: -1
                         value expressions: _col0 (type: bigint)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -656,6 +671,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
@@ -704,6 +720,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
@@ -752,6 +769,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
@@ -800,6 +818,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
@@ -821,6 +840,7 @@ STAGE PLANS:
               /srcpart/ds=2008-04-09/hr=11 [null-subquery2:_u1-subquery2:srcpart]
               /srcpart/ds=2008-04-09/hr=12 [null-subquery2:_u1-subquery2:srcpart]
         Reducer 2 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -851,6 +871,7 @@ STAGE PLANS:
                   GatherStats: false
                   MultiFileSpray: false
         Reducer 4 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator
@@ -947,6 +968,7 @@ STAGE PLANS:
                         tag: 0
                         value expressions: _col0 (type: string)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
               nullscan://null/default.src/part_ [a:src]
             Path -> Partition:
@@ -957,6 +979,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 'default','default'
@@ -978,6 +1001,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
@@ -1017,6 +1041,7 @@ STAGE PLANS:
                         tag: -1
                         value expressions: _col0 (type: string)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
               nullscan://null/default.srcpart/part_ds=2008-04-08_hr=11_ [b:srcpart]
               nullscan://null/default.srcpart/part_ds=2008-04-08_hr=12_ [b:srcpart]
@@ -1055,6 +1080,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
@@ -1102,6 +1128,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
@@ -1149,6 +1176,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
@@ -1196,6 +1224,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
@@ -1250,6 +1279,7 @@ STAGE PLANS:
                   GatherStats: false
                   MultiFileSpray: false
         Reducer 4 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Select Operator
@@ -1345,6 +1375,7 @@ STAGE PLANS:
                         TotalFiles: 1
                         GatherStats: false
                         MultiFileSpray: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -1356,6 +1387,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 'default','default'
@@ -1377,6 +1409,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
@@ -1414,6 +1447,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                       tag: 0
                       auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
               nullscan://null/default.src/part_ [a-subquery2:_u1-subquery2:src]
             Path -> Partition:
@@ -1424,6 +1458,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 'default','default'
@@ -1445,6 +1480,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
@@ -1482,6 +1518,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                       tag: 1
                       auto parallelism: false
+            Execution mode: vectorized
         Reducer 3 
             Needs Tagging: true
             Reduce Operator Tree:
@@ -1565,6 +1602,7 @@ STAGE PLANS:
                       tag: 0
                       value expressions: key (type: string)
                       auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
               nullscan://null/default.src/part_ [s1]
             Path -> Partition:
@@ -1575,6 +1613,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 'default','default'
@@ -1596,6 +1635,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
@@ -1634,6 +1674,7 @@ STAGE PLANS:
                       tag: 1
                       value expressions: key (type: string)
                       auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
               nullscan://null/default.src/part_ [s2]
             Path -> Partition:
@@ -1644,6 +1685,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 'default','default'
@@ -1665,6 +1707,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
@@ -1775,6 +1818,7 @@ STAGE PLANS:
                         tag: -1
                         value expressions: _col0 (type: bigint)
                         auto parallelism: false
+            Execution mode: vectorized
             Path -> Alias:
               nullscan://null/default.src/part_ [src]
             Path -> Partition:
@@ -1785,6 +1829,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 'default','default'
@@ -1806,6 +1851,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
@@ -1826,6 +1872,7 @@ STAGE PLANS:
             Truncated Path -> Alias:
               nullscan://null/default.src/part_ [src]
         Reducer 2 
+            Execution mode: vectorized
             Needs Tagging: false
             Reduce Operator Tree:
               Group By Operator

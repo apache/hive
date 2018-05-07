@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,6 +21,7 @@ package org.apache.hive.http;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -45,6 +46,11 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authentication.server.AuthenticationFilter;
 import org.apache.hadoop.security.authorize.AccessControlList;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.security.http.CrossOriginFilter;
+import org.apache.hive.http.security.PamAuthenticator;
+import org.apache.hive.http.security.PamConstraint;
+import org.apache.hive.http.security.PamConstraintMapping;
+import org.apache.hive.http.security.PamLoginService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.Logger;
@@ -54,7 +60,11 @@ import org.apache.logging.log4j.core.appender.FileManager;
 import org.apache.logging.log4j.core.appender.OutputStreamManager;
 import org.eclipse.jetty.rewrite.handler.RewriteHandler;
 import org.eclipse.jetty.rewrite.handler.RewriteRegexRule;
+import org.eclipse.jetty.security.ConstraintMapping;
+import org.eclipse.jetty.security.ConstraintSecurityHandler;
+import org.eclipse.jetty.security.LoginService;
 import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.LowResourceMonitor;
@@ -68,6 +78,7 @@ import org.eclipse.jetty.servlet.FilterMapping;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.security.Constraint;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.jetty.webapp.WebAppContext;
@@ -114,6 +125,12 @@ public class HttpServer {
     private String spnegoKeytab;
     private boolean useSPNEGO;
     private boolean useSSL;
+    private boolean usePAM;
+    private boolean enableCORS;
+    private String allowedOrigins;
+    private String allowedMethods;
+    private String allowedHeaders;
+    private PamAuthenticator pamAuthenticator;
     private String contextRootRewriteTarget = "/index.html";
     private final List<Pair<String, Class<? extends HttpServlet>>> servlets =
         new LinkedList<Pair<String, Class<? extends HttpServlet>>>();
@@ -172,8 +189,38 @@ public class HttpServer {
       return this;
     }
 
+    public Builder setUsePAM(boolean usePAM) {
+      this.usePAM = usePAM;
+      return this;
+    }
+
+    public Builder setPAMAuthenticator(PamAuthenticator pamAuthenticator){
+      this.pamAuthenticator = pamAuthenticator;
+      return this;
+    }
+
     public Builder setUseSPNEGO(boolean useSPNEGO) {
       this.useSPNEGO = useSPNEGO;
+      return this;
+    }
+
+    public Builder setEnableCORS(boolean enableCORS) {
+      this.enableCORS = enableCORS;
+      return this;
+    }
+
+    public Builder setAllowedOrigins(String allowedOrigins) {
+      this.allowedOrigins = allowedOrigins;
+      return this;
+    }
+
+    public Builder setAllowedMethods(String allowedMethods) {
+      this.allowedMethods = allowedMethods;
+      return this;
+    }
+
+    public Builder setAllowedHeaders(String allowedHeaders) {
+      this.allowedHeaders = allowedHeaders;
       return this;
     }
 
@@ -246,6 +293,28 @@ public class HttpServer {
       false);
     if (adminAccess) {
       access = hasAdministratorAccess(servletContext, request, response);
+    }
+    return access;
+  }
+
+  /**
+   * Same as {@link HttpServer#isInstrumentationAccessAllowed(ServletContext, HttpServletRequest, HttpServletResponse)}
+   * except that it returns true only if <code>hadoop.security.instrumentation.requires.admin</code> is set to true.
+   */
+  @InterfaceAudience.LimitedPrivate("hive")
+  public static boolean isInstrumentationAccessAllowedStrict(
+    ServletContext servletContext, HttpServletRequest request,
+    HttpServletResponse response) throws IOException {
+    Configuration conf =
+      (Configuration) servletContext.getAttribute(CONF_CONTEXT_ATTRIBUTE);
+
+    boolean access;
+    boolean adminAccess = conf.getBoolean(
+      CommonConfigurationKeys.HADOOP_SECURITY_INSTRUMENTATION_REQUIRES_ADMIN, false);
+    if (adminAccess) {
+      access = hasAdministratorAccess(servletContext, request, response);
+    } else {
+      return false;
     }
     return access;
   }
@@ -357,6 +426,23 @@ public class HttpServer {
   }
 
   /**
+   * Setup cross-origin requests (CORS) filter.
+   * @param b - builder
+   */
+  private void setupCORSFilter(Builder b) {
+    FilterHolder holder = new FilterHolder();
+    holder.setClassName(CrossOriginFilter.class.getName());
+    Map<String, String> params = new HashMap<>();
+    params.put(CrossOriginFilter.ALLOWED_ORIGINS, b.allowedOrigins);
+    params.put(CrossOriginFilter.ALLOWED_METHODS, b.allowedMethods);
+    params.put(CrossOriginFilter.ALLOWED_HEADERS, b.allowedHeaders);
+    holder.setInitParameters(params);
+
+    ServletHandler handler = webAppContext.getServletHandler();
+    handler.addFilterWithMapping(holder, "/*", FilterMapping.ALL);
+  }
+
+  /**
    * Create a channel connector for "http/https" requests
    */
   Connector createChannelConnector(int queueSize, Builder b) {
@@ -388,6 +474,22 @@ public class HttpServer {
   }
 
   /**
+   * Secure the web server with PAM.
+   */
+  void setupPam(Builder b, Handler handler) {
+    LoginService loginService = new PamLoginService();
+    webServer.addBean(loginService);
+    ConstraintSecurityHandler security = new ConstraintSecurityHandler();
+    Constraint constraint = new PamConstraint();
+    ConstraintMapping mapping = new PamConstraintMapping(constraint);
+    security.setConstraintMappings(Collections.singletonList(mapping));
+    security.setAuthenticator(b.pamAuthenticator);
+    security.setLoginService(loginService);
+    security.setHandler(handler);
+    webServer.setHandler(security);
+  }
+
+  /**
    * Set servlet context attributes that can be used in jsp.
    */
   void setContextAttributes(Context ctx, Map<String, Object> contextAttrs) {
@@ -414,10 +516,14 @@ public class HttpServer {
       setupSpnegoFilter(b);
     }
 
+    if (b.enableCORS) {
+      setupCORSFilter(b);
+    }
+
     initializeWebServer(b, threadPool.getMaxThreads());
   }
 
-  private void initializeWebServer(final Builder b, int queueSize) {
+  private void initializeWebServer(final Builder b, int queueSize) throws IOException {
     // Set handling for low resource conditions.
     final LowResourceMonitor low = new LowResourceMonitor(webServer);
     low.setLowResourcesIdleTimeout(10000);
@@ -442,6 +548,11 @@ public class HttpServer {
     ContextHandlerCollection contexts = new ContextHandlerCollection();
     contexts.addHandler(rwHandler);
     webServer.setHandler(contexts);
+
+    if(b.usePAM){
+      setupPam(b, contexts);
+    }
+
 
     addServlet("jmx", "/jmx", JMXJsonServlet.class);
     addServlet("conf", "/conf", ConfServlet.class);

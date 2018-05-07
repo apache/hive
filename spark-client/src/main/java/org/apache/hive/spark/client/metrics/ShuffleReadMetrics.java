@@ -73,4 +73,13 @@ public class ShuffleReadMetrics implements Serializable {
     return remoteBlocksFetched + localBlocksFetched;
   }
 
+  @Override
+  public String toString() {
+    return "ShuffleReadMetrics{" +
+            "remoteBlocksFetched=" + remoteBlocksFetched +
+            ", localBlocksFetched=" + localBlocksFetched +
+            ", fetchWaitTime=" + fetchWaitTime +
+            ", remoteBytesRead=" + remoteBytesRead +
+            '}';
+  }
 }

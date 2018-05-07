@@ -1,3 +1,4 @@
+--! qt:dataset:src
 DROP TABLE users;
 
 CREATE TABLE users(key string, state string, country string, country_id int)

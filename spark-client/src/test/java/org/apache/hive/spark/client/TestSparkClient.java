@@ -34,12 +34,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.io.Serializable;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -67,19 +69,18 @@ public class TestSparkClient {
   private static final long TIMEOUT = 20;
   private static final HiveConf HIVECONF = new HiveConf();
 
-  private Map<String, String> createConf(boolean local) {
+  static {
+    HIVECONF.set("hive.spark.client.connect.timeout", "30000ms");
+  }
+
+  private Map<String, String> createConf() {
     Map<String, String> conf = new HashMap<String, String>();
-    if (local) {
-      conf.put(SparkClientFactory.CONF_KEY_IN_PROCESS, "true");
-      conf.put("spark.master", "local");
-      conf.put("spark.app.name", "SparkClientSuite Local App");
-    } else {
-      String classpath = System.getProperty("java.class.path");
-      conf.put("spark.master", "local");
-      conf.put("spark.app.name", "SparkClientSuite Remote App");
-      conf.put("spark.driver.extraClassPath", classpath);
-      conf.put("spark.executor.extraClassPath", classpath);
-    }
+
+    String classpath = System.getProperty("java.class.path");
+    conf.put("spark.master", "local");
+    conf.put("spark.app.name", "SparkClientSuite Remote App");
+    conf.put("spark.driver.extraClassPath", classpath);
+    conf.put("spark.executor.extraClassPath", classpath);
 
     if (!Strings.isNullOrEmpty(System.getProperty("spark.home"))) {
       conf.put("spark.home", System.getProperty("spark.home"));
@@ -90,7 +91,7 @@ public class TestSparkClient {
 
   @Test
   public void testJobSubmission() throws Exception {
-    runTest(true, new TestFunction() {
+    runTest(new TestFunction() {
       @Override
       public void call(SparkClient client) throws Exception {
         JobHandle.Listener<String> listener = newListener();
@@ -111,7 +112,7 @@ public class TestSparkClient {
 
   @Test
   public void testSimpleSparkJob() throws Exception {
-    runTest(true, new TestFunction() {
+    runTest(new TestFunction() {
       @Override
       public void call(SparkClient client) throws Exception {
         JobHandle<Long> handle = client.submit(new SparkJob());
@@ -122,7 +123,7 @@ public class TestSparkClient {
 
   @Test
   public void testErrorJob() throws Exception {
-    runTest(true, new TestFunction() {
+    runTest(new TestFunction() {
       @Override
       public void call(SparkClient client) throws Exception {
         JobHandle.Listener<String> listener = newListener();
@@ -132,8 +133,36 @@ public class TestSparkClient {
           handle.get(TIMEOUT, TimeUnit.SECONDS);
           fail("Should have thrown an exception.");
         } catch (ExecutionException ee) {
-          assertTrue(ee.getCause() instanceof SparkException);
-          assertTrue(ee.getCause().getMessage().contains("IllegalStateException: Hello"));
+          assertTrue(ee.getCause() instanceof IllegalStateException);
+          assertTrue(ee.getCause().getMessage().contains("Hello"));
+        }
+
+        // Try an invalid state transition on the handle. This ensures that the actual state
+        // change we're interested in actually happened, since internally the handle serializes
+        // state changes.
+        assertFalse(((JobHandleImpl<String>)handle).changeState(JobHandle.State.SENT));
+
+        verify(listener).onJobQueued(handle);
+        verify(listener).onJobStarted(handle);
+        verify(listener).onJobFailed(same(handle), any(Throwable.class));
+      }
+    });
+  }
+
+  @Test
+  public void testErrorJobNotSerializable() throws Exception {
+    runTest(new TestFunction() {
+      @Override
+      public void call(SparkClient client) throws Exception {
+        JobHandle.Listener<String> listener = newListener();
+        List<JobHandle.Listener<String>> listeners = Lists.newArrayList(listener);
+        JobHandle<String> handle = client.submit(new ErrorJobNotSerializable(), listeners);
+        try {
+          handle.get(TIMEOUT, TimeUnit.SECONDS);
+          fail("Should have thrown an exception.");
+        } catch (ExecutionException ee) {
+          assertTrue(ee.getCause() instanceof RuntimeException);
+          assertTrue(ee.getCause().getMessage().contains("Hello"));
         }
 
         // Try an invalid state transition on the handle. This ensures that the actual state
@@ -150,7 +179,7 @@ public class TestSparkClient {
 
   @Test
   public void testSyncRpc() throws Exception {
-    runTest(true, new TestFunction() {
+    runTest(new TestFunction() {
       @Override
       public void call(SparkClient client) throws Exception {
         Future<String> result = client.run(new SyncRpc());
@@ -160,19 +189,8 @@ public class TestSparkClient {
   }
 
   @Test
-  public void testRemoteClient() throws Exception {
-    runTest(false, new TestFunction() {
-      @Override
-      public void call(SparkClient client) throws Exception {
-        JobHandle<Long> handle = client.submit(new SparkJob());
-        assertEquals(Long.valueOf(5L), handle.get(TIMEOUT, TimeUnit.SECONDS));
-      }
-    });
-  }
-
-  @Test
   public void testMetricsCollection() throws Exception {
-    runTest(true, new TestFunction() {
+    runTest(new TestFunction() {
       @Override
       public void call(SparkClient client) throws Exception {
         JobHandle.Listener<Integer> listener = newListener();
@@ -201,7 +219,7 @@ public class TestSparkClient {
 
   @Test
   public void testAddJarsAndFiles() throws Exception {
-    runTest(true, new TestFunction() {
+    runTest(new TestFunction() {
       @Override
       public void call(SparkClient client) throws Exception {
         File jar = null;
@@ -255,7 +273,7 @@ public class TestSparkClient {
 
   @Test
   public void testCounters() throws Exception {
-    runTest(true, new TestFunction() {
+    runTest(new TestFunction() {
       @Override
       public void call(SparkClient client) throws Exception {
         JobHandle<?> job = client.submit(new CounterIncrementJob());
@@ -307,13 +325,13 @@ public class TestSparkClient {
     }).when(listener);
   }
 
-  private void runTest(boolean local, TestFunction test) throws Exception {
-    Map<String, String> conf = createConf(local);
+  private void runTest(TestFunction test) throws Exception {
+    Map<String, String> conf = createConf();
     SparkClientFactory.initialize(conf);
     SparkClient client = null;
     try {
       test.config(conf);
-      client = SparkClientFactory.createClient(conf, HIVECONF);
+      client = SparkClientFactory.createClient(conf, HIVECONF, UUID.randomUUID().toString());
       test.call(client);
     } finally {
       if (client != null) {
@@ -339,6 +357,35 @@ public class TestSparkClient {
       throw new IllegalStateException("Hello");
     }
 
+  }
+
+  private static class ErrorJobNotSerializable implements Job<String> {
+
+    private static final class NonSerializableException extends Exception {
+
+      private static final long serialVersionUID = 2548414562750016219L;
+
+      private final NonSerializableObject nonSerializableObject;
+
+      private NonSerializableException(String content) {
+        super("Hello");
+        this.nonSerializableObject = new NonSerializableObject(content);
+      }
+    }
+
+    private static final class NonSerializableObject {
+
+      String content;
+
+      private NonSerializableObject(String content) {
+        this.content = content;
+      }
+    }
+
+    @Override
+    public String call(JobContext jc) throws NonSerializableException {
+      throw new NonSerializableException("Hello");
+    }
   }
 
   private static class SparkJob implements Job<Long> {

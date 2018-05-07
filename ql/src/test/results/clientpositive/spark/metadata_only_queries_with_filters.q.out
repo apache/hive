@@ -123,28 +123,28 @@ POSTHOOK: Output: default@stats_tbl_part
 POSTHOOK: Output: default@stats_tbl_part@dt=2010
 POSTHOOK: Output: default@stats_tbl_part@dt=2014
 PREHOOK: query: analyze table stats_tbl_part partition(dt=2010) compute statistics for columns t,si,i,b,f,d,bo,s,bin
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@stats_tbl_part
 PREHOOK: Input: default@stats_tbl_part@dt=2010
 PREHOOK: Output: default@stats_tbl_part
 PREHOOK: Output: default@stats_tbl_part@dt=2010
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table stats_tbl_part partition(dt=2010) compute statistics for columns t,si,i,b,f,d,bo,s,bin
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@stats_tbl_part
 POSTHOOK: Input: default@stats_tbl_part@dt=2010
 POSTHOOK: Output: default@stats_tbl_part
 POSTHOOK: Output: default@stats_tbl_part@dt=2010
 #### A masked pattern was here ####
 PREHOOK: query: analyze table stats_tbl_part partition(dt=2014) compute statistics for columns t,si,i,b,f,d,bo,s,bin
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@stats_tbl_part
 PREHOOK: Input: default@stats_tbl_part@dt=2014
 PREHOOK: Output: default@stats_tbl_part
 PREHOOK: Output: default@stats_tbl_part@dt=2014
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table stats_tbl_part partition(dt=2014) compute statistics for columns t,si,i,b,f,d,bo,s,bin
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@stats_tbl_part
 POSTHOOK: Input: default@stats_tbl_part@dt=2014
 POSTHOOK: Output: default@stats_tbl_part

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,7 +19,6 @@
 package org.apache.hive.service.cli.session;
 
 import java.util.Collections;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -33,6 +32,7 @@ import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.Semaphore;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.common.cli.HiveFileProcessor;
@@ -1011,6 +1011,14 @@ public class HiveSessionImpl implements HiveSession {
       throw e;
     } finally {
       release(true, true);
+    }
+  }
+
+  @Override
+  public void setApplicationName(String value) {
+    String oldName = sessionState.getHiveVariables().put("wmapp", value);
+    if (oldName != null && !oldName.equals(value)) {
+      LOG.info("ApplicationName changed from " + oldName + " to " + value);
     }
   }
 

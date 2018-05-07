@@ -149,7 +149,7 @@ STAGE PLANS:
             alias: srcpart_merge_dp_rc
             Statistics: Num rows: 1000 Data size: 9624 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: key (type: string), value (type: string), if(((UDFToDouble(key) % 2.0) = 0.0), 'a1', 'b1') (type: string)
+              expressions: key (type: string), value (type: string), if(((UDFToDouble(key) % 2.0D) = 0.0D), 'a1', 'b1') (type: string)
               outputColumnNames: _col0, _col1, _col2
               Statistics: Num rows: 1000 Data size: 9624 Basic stats: COMPLETE Column stats: NONE
               File Output Operator

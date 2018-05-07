@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.ql.plan.LoadTableDesc.LoadFileType;
 public class BasicStatsWork implements Serializable {
   private static final long serialVersionUID = 1L;
 
+  private boolean isExplicitAnalyze;
   private TableSpec tableSpecs;         // source table spec -- for TableScanOperator
   private LoadTableDesc loadTableDesc;  // same as MoveWork.loadTableDesc -- for FileSinkOperator
   private LoadFileDesc loadFileDesc;    // same as MoveWork.loadFileDesc -- for FileSinkOperator
@@ -164,7 +165,7 @@ public class BasicStatsWork implements Serializable {
 
   public boolean isExplicitAnalyze() {
     // ANALYZE TABLE
-    return (getTableSpecs() != null);
+    return isExplicitAnalyze;
   }
   public boolean isTargetRewritten() {
     // ANALYZE TABLE
@@ -172,9 +173,11 @@ public class BasicStatsWork implements Serializable {
       return true;
     }
     // INSERT OVERWRITE
-    if (getLoadTableDesc() != null && getLoadTableDesc().getLoadFileType() == LoadFileType.REPLACE_ALL) {
+    LoadTableDesc ltd = getLoadTableDesc();
+    if (ltd != null && (ltd.getLoadFileType() == LoadFileType.REPLACE_ALL || ltd.isInsertOverwrite())) {
       return true;
     }
+
     // CREATE TABLE ... AS
     if (getLoadFileDesc() != null && getLoadFileDesc().getCtasCreateTableDesc() != null) {
       return true;
@@ -198,6 +201,10 @@ public class BasicStatsWork implements Serializable {
     } else {
       return getLoadFileDesc().getCreateViewDesc().getViewName();
     }
+  }
+
+  public void setIsExplicitAnalyze(boolean b) {
+    this.isExplicitAnalyze = b;
   }
 
 }

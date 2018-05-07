@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -182,6 +182,11 @@ public class TableDesc implements Serializable, Cloneable {
 
   public boolean isNonNative() {
     return (properties.getProperty(hive_metastoreConstants.META_TABLE_STORAGE) != null);
+  }
+
+  public int getBucketingVersion() {
+    return Utilities.getBucketingVersion(
+        properties.getProperty(hive_metastoreConstants.TABLE_BUCKETING_VERSION));
   }
 
   @Override

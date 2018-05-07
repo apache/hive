@@ -80,12 +80,12 @@ STAGE PLANS:
                       tag: -1
                       value expressions: _col1 (type: string)
                       auto parallelism: false
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### [src]
             Path -> Partition:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### 
                 Partition
                   base file name: src
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -93,11 +93,13 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 'default','default'
                     columns.types string:string
 #### A masked pattern was here ####
+                    location hdfs://### HDFS PATH ###
                     name default.src
                     numFiles 1
                     numRows 500
@@ -114,11 +116,13 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
                       columns.types string:string
 #### A masked pattern was here ####
+                      location hdfs://### HDFS PATH ###
                       name default.src
                       numFiles 1
                       numRows 500
@@ -144,10 +148,10 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   GlobalTableId: 1
-#### A masked pattern was here ####
+                  directory: hdfs://### HDFS PATH ###
                   NumFilesPerFileSink: 1
                   Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
-#### A masked pattern was here ####
+                  Stats Publishing Key Prefix: hdfs://### HDFS PATH ###
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -156,11 +160,13 @@ STAGE PLANS:
                         SORTBUCKETCOLSPREFIX TRUE
                         bucket_count 2
                         bucket_field_name key
+                        bucketing_version 2
                         column.name.delimiter ,
                         columns key,value
                         columns.comments 
                         columns.types int:string
 #### A masked pattern was here ####
+                        location hdfs://### HDFS PATH ###
                         name default.bucketed_table
                         numFiles 0
                         numRows 0
@@ -203,10 +209,10 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
-#### A masked pattern was here ####
+                  directory: hdfs://### HDFS PATH ###
                   NumFilesPerFileSink: 1
                   Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
-#### A masked pattern was here ####
+                  Stats Publishing Key Prefix: hdfs://### HDFS PATH ###
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -233,21 +239,23 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   GlobalTableId: 2
-#### A masked pattern was here ####
+                  directory: hdfs://### HDFS PATH ###
                   NumFilesPerFileSink: 1
                   Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
-#### A masked pattern was here ####
+                  Stats Publishing Key Prefix: hdfs://### HDFS PATH ###
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       properties:
                         COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                         bucket_count -1
+                        bucketing_version 2
                         column.name.delimiter ,
                         columns key,value
                         columns.comments 
                         columns.types int:string
 #### A masked pattern was here ####
+                        location hdfs://### HDFS PATH ###
                         name default.unbucketed_table
                         numFiles 0
                         numRows 0
@@ -290,10 +298,10 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
-#### A masked pattern was here ####
+                  directory: hdfs://### HDFS PATH ###
                   NumFilesPerFileSink: 1
                   Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: COMPLETE
-#### A masked pattern was here ####
+                  Stats Publishing Key Prefix: hdfs://### HDFS PATH ###
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -317,7 +325,7 @@ STAGE PLANS:
     Move Operator
       tables:
           replace: true
-#### A masked pattern was here ####
+          source: hdfs://### HDFS PATH ###
           table:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -326,11 +334,13 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 2
                 bucket_field_name key
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
+                location hdfs://### HDFS PATH ###
                 name default.bucketed_table
                 numFiles 0
                 numRows 0
@@ -346,7 +356,7 @@ STAGE PLANS:
   Stage: Stage-4
     Stats Work
       Basic Stats Work:
-#### A masked pattern was here ####
+          Stats Aggregation Key Prefix: hdfs://### HDFS PATH ###
       Column Stats Desc:
           Columns: key, value
           Column Types: int, string
@@ -357,18 +367,20 @@ STAGE PLANS:
     Move Operator
       tables:
           replace: true
-#### A masked pattern was here ####
+          source: hdfs://### HDFS PATH ###
           table:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
+                location hdfs://### HDFS PATH ###
                 name default.unbucketed_table
                 numFiles 0
                 numRows 0
@@ -384,7 +396,7 @@ STAGE PLANS:
   Stage: Stage-5
     Stats Work
       Basic Stats Work:
-#### A masked pattern was here ####
+          Stats Aggregation Key Prefix: hdfs://### HDFS PATH ###
       Column Stats Desc:
           Columns: key, value
           Column Types: int, string
@@ -398,7 +410,8 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-#### A masked pattern was here ####
+          source: hdfs://### HDFS PATH ###
+          destination: hdfs://### HDFS PATH ###
 
   Stage: Stage-6
     Tez
@@ -411,7 +424,7 @@ STAGE PLANS:
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
-#### A masked pattern was here ####
+                    directory: hdfs://### HDFS PATH ###
                     NumFilesPerFileSink: 1
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
@@ -419,11 +432,13 @@ STAGE PLANS:
                         properties:
                           COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                           bucket_count -1
+                          bucketing_version 2
                           column.name.delimiter ,
                           columns key,value
                           columns.comments 
                           columns.types int:string
 #### A masked pattern was here ####
+                          location hdfs://### HDFS PATH ###
                           name default.unbucketed_table
                           numFiles 0
                           numRows 0
@@ -439,9 +454,9 @@ STAGE PLANS:
                     GatherStats: false
                     MultiFileSpray: false
             Path -> Alias:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### [hdfs://### HDFS PATH ###]
             Path -> Partition:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### 
                 Partition
                   base file name: -ext-10004
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -449,11 +464,13 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
+                    location hdfs://### HDFS PATH ###
                     name default.unbucketed_table
                     numFiles 0
                     numRows 0
@@ -470,11 +487,13 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:string
 #### A masked pattern was here ####
+                      location hdfs://### HDFS PATH ###
                       name default.unbucketed_table
                       numFiles 0
                       numRows 0
@@ -501,7 +520,7 @@ STAGE PLANS:
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
-#### A masked pattern was here ####
+                    directory: hdfs://### HDFS PATH ###
                     NumFilesPerFileSink: 1
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
@@ -509,11 +528,13 @@ STAGE PLANS:
                         properties:
                           COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                           bucket_count -1
+                          bucketing_version 2
                           column.name.delimiter ,
                           columns key,value
                           columns.comments 
                           columns.types int:string
 #### A masked pattern was here ####
+                          location hdfs://### HDFS PATH ###
                           name default.unbucketed_table
                           numFiles 0
                           numRows 0
@@ -529,9 +550,9 @@ STAGE PLANS:
                     GatherStats: false
                     MultiFileSpray: false
             Path -> Alias:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### [hdfs://### HDFS PATH ###]
             Path -> Partition:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### 
                 Partition
                   base file name: -ext-10004
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -539,11 +560,13 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    bucketing_version 2
                     column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
+                    location hdfs://### HDFS PATH ###
                     name default.unbucketed_table
                     numFiles 0
                     numRows 0
@@ -560,11 +583,13 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:string
 #### A masked pattern was here ####
+                      location hdfs://### HDFS PATH ###
                       name default.unbucketed_table
                       numFiles 0
                       numRows 0
@@ -584,7 +609,8 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-#### A masked pattern was here ####
+          source: hdfs://### HDFS PATH ###
+          destination: hdfs://### HDFS PATH ###
 
 PREHOOK: query: FROM src
 INSERT OVERWRITE TABLE bucketed_table SELECT key, value
@@ -623,6 +649,7 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
 	SORTBUCKETCOLSPREFIX	TRUE                
+	bucketing_version   	2                   
 	numFiles            	2                   
 	numRows             	500                 
 	rawDataSize         	5312                
@@ -642,54 +669,54 @@ Storage Desc Params:
 PREHOOK: query: SELECT * FROM bucketed_table TABLESAMPLE (BUCKET 1 OUT OF 2) s LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucketed_table
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT * FROM bucketed_table TABLESAMPLE (BUCKET 1 OUT OF 2) s LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucketed_table
-#### A masked pattern was here ####
-0	val_0
-0	val_0
-0	val_0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 2	val_2
-4	val_4
-8	val_8
 10	val_10
-12	val_12
-12	val_12
-18	val_18
+17	val_17
+19	val_19
+20	val_20
+27	val_27
+30	val_30
+41	val_41
+43	val_43
+51	val_51
 PREHOOK: query: SELECT * FROM bucketed_table TABLESAMPLE (BUCKET 2 OUT OF 2) s LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucketed_table
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT * FROM bucketed_table TABLESAMPLE (BUCKET 2 OUT OF 2) s LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucketed_table
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0	val_0
+0	val_0
+0	val_0
+4	val_4
 5	val_5
 5	val_5
 5	val_5
+8	val_8
 9	val_9
 11	val_11
-15	val_15
-15	val_15
-17	val_17
-19	val_19
-27	val_27
 PREHOOK: query: SELECT COUNT(DISTINCT INPUT__FILE__NAME) FROM bucketed_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucketed_table
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT COUNT(DISTINCT INPUT__FILE__NAME) FROM bucketed_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucketed_table
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 2
 PREHOOK: query: SELECT COUNT(DISTINCT INPUT__FILE__NAME) FROM unbucketed_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@unbucketed_table
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT COUNT(DISTINCT INPUT__FILE__NAME) FROM unbucketed_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@unbucketed_table
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1

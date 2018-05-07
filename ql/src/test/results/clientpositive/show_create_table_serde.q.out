@@ -36,6 +36,7 @@ OUTPUTFORMAT
 LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
+  'bucketing_version'='2', 
 #### A masked pattern was here ####
 PREHOOK: query: DROP TABLE tmp_showcrt1
 PREHOOK: type: DROPTABLE
@@ -81,6 +82,7 @@ OUTPUTFORMAT
 LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
+  'bucketing_version'='2', 
 #### A masked pattern was here ####
 PREHOOK: query: DROP TABLE tmp_showcrt1
 PREHOOK: type: DROPTABLE
@@ -128,6 +130,7 @@ OUTPUTFORMAT
 LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
+  'bucketing_version'='2', 
 #### A masked pattern was here ####
 PREHOOK: query: DROP TABLE tmp_showcrt1
 PREHOOK: type: DROPTABLE
@@ -170,6 +173,7 @@ WITH SERDEPROPERTIES (
 LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
+  'bucketing_version'='2', 
 #### A masked pattern was here ####
 PREHOOK: query: DROP TABLE tmp_showcrt1
 PREHOOK: type: DROPTABLE

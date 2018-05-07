@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -28,8 +28,7 @@ import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.PathFilter;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,12 +37,6 @@ import org.slf4j.LoggerFactory;
  * Hive.
  */
 public final class JavaUtils {
-
-  public static final String BASE_PREFIX =  "base";
-  public static final String DELTA_PREFIX = "delta";
-  public static final String DELTA_DIGITS = "%07d";
-  public static final int DELTA_DIGITS_LEN = 7;
-  public static final String STATEMENT_DIGITS = "%04d";
   private static final Logger LOG = LoggerFactory.getLogger(JavaUtils.class);
   private static final Method SUN_MISC_UTIL_RELEASE;
 
@@ -150,12 +143,13 @@ public final class JavaUtils {
   public static String lockIdToString(long extLockId) {
     return "lockid:" + extLockId;
   }
-  /**
-   * Utility method for ACID to normalize logging info.  Matches
-   * org.apache.hadoop.hive.metastore.api.LockResponse#toString
-   */
+
   public static String txnIdToString(long txnId) {
     return "txnid:" + txnId;
+  }
+
+  public static String writeIdToString(long writeId) {
+    return "writeid:" + writeId;
   }
 
   public static String txnIdsToString(List<Long> txnIds) {
@@ -164,84 +158,5 @@ public final class JavaUtils {
 
   private JavaUtils() {
     // prevent instantiation
-  }
-
-  public static Long extractTxnId(Path file) {
-    String fileName = file.getName();
-    String[] parts = fileName.split("_", 4);  // e.g. delta_0000001_0000001_0000 or base_0000022
-    if (parts.length < 2 || !(DELTA_PREFIX.equals(parts[0]) || BASE_PREFIX.equals(parts[0]))) {
-      LOG.debug("Cannot extract transaction ID for a MM table: " + file
-          + " (" + Arrays.toString(parts) + ")");
-      return null;
-    }
-    long writeId = -1;
-    try {
-      writeId = Long.parseLong(parts[1]);
-    } catch (NumberFormatException ex) {
-      LOG.debug("Cannot extract transaction ID for a MM table: " + file
-          + "; parsing " + parts[1] + " got " + ex.getMessage());
-      return null;
-    }
-    return writeId;
-  }
-
-  public static class IdPathFilter implements PathFilter {
-    private String mmDirName;
-    private final boolean isMatch, isIgnoreTemp, isPrefix;
-
-    public IdPathFilter(long writeId, int stmtId, boolean isMatch) {
-      this(writeId, stmtId, isMatch, false, false);
-    }
-    public IdPathFilter(long writeId, int stmtId, boolean isMatch, boolean isIgnoreTemp) {
-      this(writeId, stmtId, isMatch, isIgnoreTemp, false);
-    }
-    public IdPathFilter(long writeId, int stmtId, boolean isMatch, boolean isIgnoreTemp, boolean isBaseDir) {
-      String mmDirName = null;
-      if (!isBaseDir) {
-        mmDirName = DELTA_PREFIX + "_" + String.format(DELTA_DIGITS, writeId) + "_" +
-                String.format(DELTA_DIGITS, writeId) + "_";
-        if (stmtId >= 0) {
-          mmDirName += String.format(STATEMENT_DIGITS, stmtId);
-          isPrefix = false;
-        } else {
-          isPrefix = true;
-        }
-      } else {
-        mmDirName = BASE_PREFIX + "_" + String.format(DELTA_DIGITS, writeId);
-        isPrefix = false;
-      }
-
-      this.mmDirName = mmDirName;
-      this.isMatch = isMatch;
-      this.isIgnoreTemp = isIgnoreTemp;
-    }
-
-    @Override
-    public boolean accept(Path path) {
-      String name = path.getName();
-      if ((isPrefix && name.startsWith(mmDirName)) || (!isPrefix && name.equals(mmDirName))) {
-        return isMatch;
-      }
-      if (isIgnoreTemp && name.length() > 0) {
-        char c = name.charAt(0);
-        if (c == '.' || c == '_') return false; // Regardless of isMatch, ignore this.
-      }
-      return !isMatch;
-    }
-  }
-
-  public static class AnyIdDirFilter implements PathFilter {
-    @Override
-    public boolean accept(Path path) {
-      String name = path.getName();
-      if (!name.startsWith(DELTA_PREFIX + "_")) return false;
-      String idStr = name.substring(DELTA_PREFIX.length() + 1, DELTA_PREFIX.length() + 1 + DELTA_DIGITS_LEN);
-      try {
-        Long.parseLong(idStr);
-      } catch (NumberFormatException ex) {
-        return false;
-      }
-      return true;
-    }
   }
 }

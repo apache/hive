@@ -12,13 +12,15 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@emps
 PREHOOK: query: insert into table emps values (1,2,"11"),(1,2,"11"),(3,4,"33"),(1,3,"11"),(2,5,"22"),(2,5,"22")
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@emps
 POSTHOOK: query: insert into table emps values (1,2,"11"),(1,2,"11"),(3,4,"33"),(1,3,"11"),(2,5,"22"),(2,5,"22")
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@emps
-POSTHOOK: Lineage: emps.deptno EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: emps.empname SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: emps.empno EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: emps.deptno SCRIPT []
+POSTHOOK: Lineage: emps.empname SCRIPT []
+POSTHOOK: Lineage: emps.empno SCRIPT []
 PREHOOK: query: select * from emps
 PREHOOK: type: QUERY
 PREHOOK: Input: default@emps
@@ -303,8 +305,8 @@ select * from emps where (empno,deptno) in ((1,2),(3,2))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@emps
 #### A masked pattern was here ####
-2	5	22
 1	2	11
+2	5	22
 PREHOOK: query: drop view v
 PREHOOK: type: DROPVIEW
 POSTHOOK: query: drop view v
@@ -340,8 +342,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@emps
 POSTHOOK: Input: default@v
 #### A masked pattern was here ####
-2	5	22
 1	2	11
+2	5	22
 PREHOOK: query: select subq.e1 from 
 (select (empno*2)|1 as e1, substr(empname,1,1) as n1 from emps)subq
 join

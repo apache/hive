@@ -1,3 +1,4 @@
+--! qt:dataset:src
 create table t(category int, live int, comments int);
 insert into table t select key, 0, 2 from src tablesample(3 rows);
 

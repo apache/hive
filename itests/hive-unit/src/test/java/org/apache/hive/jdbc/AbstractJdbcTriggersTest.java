@@ -66,10 +66,11 @@ public abstract class AbstractJdbcTriggersTest {
     System.out.println("Setting hive-site: " + HiveConf.getHiveSiteLocation());
 
     conf = new HiveConf();
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
     conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     conf.setBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS, false);
     conf.setVar(ConfVars.HIVE_SERVER2_TEZ_DEFAULT_QUEUES, "default");
-    conf.setTimeVar(ConfVars.HIVE_TRIGGER_VALIDATION_INTERVAL_MS, 100, TimeUnit.MILLISECONDS);
+    conf.setTimeVar(ConfVars.HIVE_TRIGGER_VALIDATION_INTERVAL, 100, TimeUnit.MILLISECONDS);
     conf.setBoolVar(ConfVars.HIVE_SERVER2_TEZ_INITIALIZE_DEFAULT_SESSIONS, true);
     conf.setBoolVar(ConfVars.TEZ_EXEC_SUMMARY, true);
     conf.setBoolVar(ConfVars.HIVE_STRICT_CHECKS_CARTESIAN, false);
@@ -160,7 +161,7 @@ public abstract class AbstractJdbcTriggersTest {
       if (errCaptureExpect != null && !errCaptureExpect.isEmpty()) {
         // failure hooks are run after HiveStatement is closed. wait sometime for failure hook to execute
         String stdErrStr = "";
-        while (!stdErrStr.contains(errCaptureExpect.get(0))) {
+        while (!stdErrStr.contains(errCaptureExpect.get(errCaptureExpect.size() - 1))) {
           baos.flush();
           stdErrStr = baos.toString();
           Thread.sleep(500);

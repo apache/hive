@@ -10,8 +10,6 @@ set mapred.reduce.tasks = 2;
 
 drop table if exists bucket_nr_acid2;
 create table bucket_nr_acid2 (a int, b int) clustered by (a) into 4 buckets stored as orc TBLPROPERTIES ('transactional'='true');
-set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.VerifyNumReducersHook;
-set VerifyNumReducersHook.num.reducers=2;
 
 -- txn X write to b0 + b1
 insert into bucket_nr_acid2 values(0,1),(1,1);
@@ -27,7 +25,6 @@ insert into bucket_nr_acid2 values(2,4),(3,4);
 
 
 update bucket_nr_acid2 set b = -1;
-set hive.exec.post.hooks=;
 select * from bucket_nr_acid2 order by a, b;
 
 drop table bucket_nr_acid2;

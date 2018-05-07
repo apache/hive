@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -31,8 +31,6 @@ import org.antlr.runtime.tree.CommonTreeAdaptor;
 import org.antlr.runtime.tree.TreeAdaptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.sun.tools.extcheck.Main;
 
 import org.apache.hadoop.hive.ql.Context;
 
@@ -294,7 +292,7 @@ public class ParseDriver {
       throw new ParseException(parser.errors);
     }
 
-    return (ASTNode) r.getTree();
+    return r.getTree();
   }
   public ASTNode parseExpression(String command) throws ParseException {
     LOG.info("Parsing expression: " + command);
@@ -320,5 +318,47 @@ public class ParseDriver {
     }
 
     return (ASTNode) r.getTree();
+  }
+
+  public ASTNode parseTriggerExpression(String command) throws ParseException {
+    HiveLexerX lexer = new HiveLexerX(new ANTLRNoCaseStringStream(command));
+    TokenRewriteStream tokens = new TokenRewriteStream(lexer);
+    HiveParser parser = new HiveParser(tokens);
+    parser.setTreeAdaptor(adaptor);
+    HiveParser_ResourcePlanParser.triggerExpressionStandalone_return r = null;
+    try {
+      r = parser.gResourcePlanParser.triggerExpressionStandalone();
+    } catch (RecognitionException e) {
+      e.printStackTrace();
+      throw new ParseException(parser.errors);
+    }
+    if (lexer.getErrors().size() != 0) {
+      throw new ParseException(lexer.getErrors());
+    } else if (parser.errors.size() != 0) {
+      throw new ParseException(parser.errors);
+    }
+
+    return r.getTree();
+  }
+
+  public ASTNode parseTriggerActionExpression(String command) throws ParseException {
+    HiveLexerX lexer = new HiveLexerX(new ANTLRNoCaseStringStream(command));
+    TokenRewriteStream tokens = new TokenRewriteStream(lexer);
+    HiveParser parser = new HiveParser(tokens);
+    parser.setTreeAdaptor(adaptor);
+    HiveParser_ResourcePlanParser.triggerActionExpressionStandalone_return r = null;
+    try {
+      r = parser.gResourcePlanParser.triggerActionExpressionStandalone();
+    } catch (RecognitionException e) {
+      e.printStackTrace();
+      throw new ParseException(parser.errors);
+    }
+    if (lexer.getErrors().size() != 0) {
+      throw new ParseException(lexer.getErrors());
+    } else if (parser.errors.size() != 0) {
+      throw new ParseException(parser.errors);
+    }
+
+    return r.getTree();
   }
 }

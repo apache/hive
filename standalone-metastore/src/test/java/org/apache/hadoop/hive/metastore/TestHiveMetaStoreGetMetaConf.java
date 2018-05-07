@@ -18,9 +18,8 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import java.security.Permission;
-
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
@@ -31,6 +30,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.Rule;
+import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import static org.junit.Assert.*;
 import org.junit.Before;
 
+@Category(MetastoreUnitTest.class)
 public class TestHiveMetaStoreGetMetaConf {
 
   @Rule
@@ -45,40 +46,17 @@ public class TestHiveMetaStoreGetMetaConf {
 
   private static final Logger LOG = LoggerFactory.getLogger(TestHiveMetaStoreGetMetaConf.class);
   private static Configuration conf;
-  private static SecurityManager securityManager;
 
   private HiveMetaStoreClient hmsc;
-
-  public static class NoExitSecurityManager extends SecurityManager {
-
-    @Override
-    public void checkPermission(Permission perm) {
-      // allow anything.
-    }
-
-    @Override
-    public void checkPermission(Permission perm, Object context) {
-      // allow anything.
-    }
-
-    @Override
-    public void checkExit(int status) {
-      super.checkExit(status);
-      throw new RuntimeException("System.exit() was called. Raising exception.");
-    }
-  }
 
   @AfterClass
   public static void tearDown() throws Exception {
     LOG.info("Shutting down metastore.");
-    System.setSecurityManager(securityManager);
   }
 
   @BeforeClass
   public static void startMetaStoreServer() throws Exception {
 
-    securityManager = System.getSecurityManager();
-    System.setSecurityManager(new NoExitSecurityManager());
     Configuration metastoreConf = MetastoreConf.newMetastoreConf();
     MetastoreConf.setClass(metastoreConf, ConfVars.EXPRESSION_PROXY_CLASS,
       MockPartitionExpressionForMetastore.class, PartitionExpressionProxy.class);

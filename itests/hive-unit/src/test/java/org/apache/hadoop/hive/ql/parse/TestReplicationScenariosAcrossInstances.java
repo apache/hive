@@ -1,22 +1,23 @@
 /*
-  Licensed to the Apache Software Foundation (ASF) under one
-  or more contributor license agreements.  See the NOTICE file
-  distributed with this work for additional information
-  regarding copyright ownership.  The ASF licenses this file
-  to you under the Apache License, Version 2.0 (the
-  "License"); you may not use this file except in compliance
-  with the License.  You may obtain a copy of the License at
-  <p>
-  http://www.apache.org/licenses/LICENSE-2.0
-  <p>
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -26,6 +27,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
 import org.apache.hadoop.hive.ql.util.DependencyResolver;
 import org.apache.hadoop.hive.shims.Utils;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -41,6 +43,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -57,8 +61,8 @@ public class TestReplicationScenariosAcrossInstances {
   public TestRule replV1BackwardCompat;
 
   protected static final Logger LOG = LoggerFactory.getLogger(TestReplicationScenarios.class);
-
   private static WarehouseInstance primary, replica;
+  private String primaryDbName, replicatedDbName;
 
   @BeforeClass
   public static void classLevelSetup() throws Exception {
@@ -67,8 +71,12 @@ public class TestReplicationScenariosAcrossInstances {
     conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
     MiniDFSCluster miniDFSCluster =
         new MiniDFSCluster.Builder(conf).numDataNodes(1).format(true).build();
-    primary = new WarehouseInstance(LOG, miniDFSCluster);
-    replica = new WarehouseInstance(LOG, miniDFSCluster);
+    HashMap<String, String> overridesForHiveConf = new HashMap<String, String>() {{
+      put("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());
+      put(HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname, "true");
+    }};
+    primary = new WarehouseInstance(LOG, miniDFSCluster, overridesForHiveConf);
+    replica = new WarehouseInstance(LOG, miniDFSCluster, overridesForHiveConf);
   }
 
   @AfterClass
@@ -77,14 +85,18 @@ public class TestReplicationScenariosAcrossInstances {
     replica.close();
   }
 
-  private String primaryDbName, replicatedDbName;
-
   @Before
   public void setup() throws Throwable {
     replV1BackwardCompat = primary.getReplivationV1CompatRule(new ArrayList<>());
     primaryDbName = testName.getMethodName() + "_" + +System.currentTimeMillis();
     replicatedDbName = "replicated_" + primaryDbName;
     primary.run("create database " + primaryDbName);
+  }
+
+  @After
+  public void tearDown() throws Throwable {
+    primary.run("drop database if exists " + primaryDbName + " cascade");
+    replica.run("drop database if exists " + replicatedDbName + " cascade");
   }
 
   @Test
@@ -95,7 +107,7 @@ public class TestReplicationScenariosAcrossInstances {
         .verifyResult(bootStrapDump.lastReplicationId);
 
     primary.run("CREATE FUNCTION " + primaryDbName
-        + ".testFunction as 'hivemall.tools.string.StopwordUDF' "
+        + ".testFunctionOne as 'hivemall.tools.string.StopwordUDF' "
         + "using jar  'ivy://io.github.myui:hivemall:0.4.0-2'");
 
     WarehouseInstance.Tuple incrementalDump =
@@ -104,41 +116,41 @@ public class TestReplicationScenariosAcrossInstances {
         .run("REPL STATUS " + replicatedDbName)
         .verifyResult(incrementalDump.lastReplicationId)
         .run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "*'")
-        .verifyResult(replicatedDbName + ".testFunction");
+        .verifyResult(replicatedDbName + ".testFunctionOne");
 
     // Test the idempotent behavior of CREATE FUNCTION
     replica.load(replicatedDbName, incrementalDump.dumpLocation)
-            .run("REPL STATUS " + replicatedDbName)
+        .run("REPL STATUS " + replicatedDbName)
         .verifyResult(incrementalDump.lastReplicationId)
-            .run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "*'")
-        .verifyResult(replicatedDbName + ".testFunction");
+        .run("SHOW FUNCTIONS LIKE '" + replicatedDbName + "*'")
+        .verifyResult(replicatedDbName + ".testFunctionOne");
   }
 
   @Test
   public void testDropFunctionIncrementalReplication() throws Throwable {
     primary.run("CREATE FUNCTION " + primaryDbName
-        + ".testFunction as 'hivemall.tools.string.StopwordUDF' "
+        + ".testFunctionAnother as 'hivemall.tools.string.StopwordUDF' "
         + "using jar  'ivy://io.github.myui:hivemall:0.4.0-2'");
     WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, null);
     replica.load(replicatedDbName, bootStrapDump.dumpLocation)
         .run("REPL STATUS " + replicatedDbName)
         .verifyResult(bootStrapDump.lastReplicationId);
 
-    primary.run("Drop FUNCTION " + primaryDbName + ".testFunction ");
+    primary.run("Drop FUNCTION " + primaryDbName + ".testFunctionAnother ");
 
     WarehouseInstance.Tuple incrementalDump =
         primary.dump(primaryDbName, bootStrapDump.lastReplicationId);
     replica.load(replicatedDbName, incrementalDump.dumpLocation)
         .run("REPL STATUS " + replicatedDbName)
         .verifyResult(incrementalDump.lastReplicationId)
-        .run("SHOW FUNCTIONS LIKE '*testfunction*'")
+        .run("SHOW FUNCTIONS LIKE '*testfunctionanother*'")
         .verifyResult(null);
 
     // Test the idempotent behavior of DROP FUNCTION
     replica.load(replicatedDbName, incrementalDump.dumpLocation)
-            .run("REPL STATUS " + replicatedDbName)
+        .run("REPL STATUS " + replicatedDbName)
         .verifyResult(incrementalDump.lastReplicationId)
-            .run("SHOW FUNCTIONS LIKE '*testfunction*'")
+        .run("SHOW FUNCTIONS LIKE '*testfunctionanother*'")
         .verifyResult(null);
   }
 
@@ -252,7 +264,7 @@ public class TestReplicationScenariosAcrossInstances {
   }
 
   @Test
-  public void parallelExecutionOfReplicationBootStrapLoad() throws Throwable {
+  public void testParallelExecutionOfReplicationBootStrapLoad() throws Throwable {
     WarehouseInstance.Tuple tuple = primary
         .run("use " + primaryDbName)
         .run("create table t1 (id int)")
@@ -278,5 +290,389 @@ public class TestReplicationScenariosAcrossInstances {
         .run("select country from t2")
         .verifyResults(Arrays.asList("india", "australia", "russia", "uk", "us", "france", "japan",
             "china"));
+    replica.hiveConf.setBoolVar(HiveConf.ConfVars.EXECPARALLEL, false);
+  }
+
+  @Test
+  public void testMetadataBootstrapDump() throws Throwable {
+    WarehouseInstance.Tuple tuple = primary.run("use " + primaryDbName)
+        .run("create table  acid_table (key int, value int) partitioned by (load_date date) " +
+            "clustered by(key) into 2 buckets stored as orc tblproperties ('transactional'='true')")
+        .run("create table table1 (i int, j int)")
+        .run("insert into table1 values (1,2)")
+        .dump(primaryDbName, null, Arrays.asList("'hive.repl.dump.metadata.only'='true'",
+            "'hive.repl.dump.include.acid.tables'='true'"));
+
+    replica.load(replicatedDbName, tuple.dumpLocation)
+        .run("use " + replicatedDbName)
+        .run("show tables")
+        .verifyResults(new String[] { "acid_table", "table1" })
+        .run("select * from table1")
+        .verifyResults(Collections.emptyList());
+  }
+
+  @Test
+  public void testIncrementalMetadataReplication() throws Throwable {
+    ////////////  Bootstrap   ////////////
+    WarehouseInstance.Tuple bootstrapTuple = primary
+        .run("use " + primaryDbName)
+        .run("create table table1 (i int, j int)")
+        .run("create table table2 (a int, city string) partitioned by (country string)")
+        .run("create table table3 (i int, j int)")
+        .run("insert into table1 values (1,2)")
+        .dump(primaryDbName, null, Arrays.asList("'hive.repl.dump.metadata.only'='true'",
+            "'hive.repl.dump.include.acid.tables'='true'"));
+
+    replica.load(replicatedDbName, bootstrapTuple.dumpLocation)
+        .run("use " + replicatedDbName)
+        .run("show tables")
+        .verifyResults(new String[] { "table1", "table2", "table3" })
+        .run("select * from table1")
+        .verifyResults(Collections.emptyList());
+
+    ////////////  First Incremental ////////////
+    WarehouseInstance.Tuple incrementalOneTuple =
+        primary
+            .run("use " + primaryDbName)
+            .run("alter table table1 rename to renamed_table1")
+            .run("insert into table2 partition(country='india') values (1,'mumbai') ")
+            .run("create table table4 (i int, j int)")
+            .dump(
+                "repl dump " + primaryDbName + " from " + bootstrapTuple.lastReplicationId + " to "
+                    + Long.parseLong(bootstrapTuple.lastReplicationId) + 100L + " limit 100 "
+                    + "with ('hive.repl.dump.metadata.only'='true')"
+            );
+
+    replica.load(replicatedDbName, incrementalOneTuple.dumpLocation)
+        .run("use " + replicatedDbName)
+        .run("show tables")
+        .verifyResults(new String[] { "renamed_table1", "table2", "table3", "table4" })
+        .run("select * from renamed_table1")
+        .verifyResults(Collections.emptyList())
+        .run("select * from table2")
+        .verifyResults(Collections.emptyList());
+
+    ////////////  Second Incremental ////////////
+    WarehouseInstance.Tuple secondIncremental = primary
+        .run("alter table table2 add columns (zipcode int)")
+        .run("alter table table3 change i a string")
+        .run("alter table table3 set tblproperties('custom.property'='custom.value')")
+        .run("drop table renamed_table1")
+        .dump("repl dump " + primaryDbName + " from " + incrementalOneTuple.lastReplicationId
+            + " with ('hive.repl.dump.metadata.only'='true')"
+        );
+
+    replica.load(replicatedDbName, secondIncremental.dumpLocation)
+        .run("use " + replicatedDbName)
+        .run("show tables")
+        .verifyResults(new String[] { "table2", "table3", "table4" })
+        .run("desc table3")
+        .verifyResults(new String[] {
+            "a                   \tstring              \t                    ",
+            "j                   \tint                 \t                    "
+        })
+        .run("desc table2")
+        .verifyResults(new String[] {
+            "a                   \tint                 \t                    ",
+            "city                \tstring              \t                    ",
+            "country             \tstring              \t                    ",
+            "zipcode             \tint                 \t                    ",
+            "\t \t ",
+            "# Partition Information\t \t ",
+            "# col_name            \tdata_type           \tcomment             ",
+            "country             \tstring              \t                    ",
+        })
+        .run("show tblproperties table3('custom.property')")
+        .verifyResults(new String[] {
+            "custom.value\t "
+        });
+  }
+
+  @Test
+  public void testBootStrapDumpOfWarehouse() throws Throwable {
+    String randomOne = RandomStringUtils.random(10, true, false);
+    String randomTwo = RandomStringUtils.random(10, true, false);
+    String dbOne = primaryDbName + randomOne;
+    String dbTwo = primaryDbName + randomTwo;
+    WarehouseInstance.Tuple tuple = primary
+        .run("use " + primaryDbName)
+        .run("create table t1 (i int, j int)")
+        .run("create database " + dbOne)
+        .run("use " + dbOne)
+    // TODO: this is wrong; this test sets up dummy txn manager and so it cannot create ACID tables.
+    //       This used to work by accident, now this works due a test flag. The test needs to be fixed.
+    //       Also applies for a couple more tests.
+        .run("create table t1 (i int, j int) partitioned by (load_date date) "
+            + "clustered by(i) into 2 buckets stored as orc tblproperties ('transactional'='true') ")
+        .run("create database " + dbTwo)
+        .run("use " + dbTwo)
+        .run("create table t1 (i int, j int)")
+        .dump("`*`", null, Arrays.asList("'hive.repl.dump.metadata.only'='true'",
+            "'hive.repl.dump.include.acid.tables'='true'"));
+
+    /*
+      Due to the limitation that we can only have one instance of Persistence Manager Factory in a JVM
+      we are not able to create multiple embedded derby instances for two different MetaStore instances.
+    */
+
+    primary.run("drop database " + primaryDbName + " cascade");
+    primary.run("drop database " + dbOne + " cascade");
+    primary.run("drop database " + dbTwo + " cascade");
+
+    /*
+       End of additional steps
+    */
+
+    replica.run("show databases")
+        .verifyFailure(new String[] { primaryDbName, dbOne, dbTwo })
+        .load("", tuple.dumpLocation)
+        .run("show databases")
+        .verifyResults(new String[] { "default", primaryDbName, dbOne, dbTwo })
+        .run("use " + primaryDbName)
+        .run("show tables")
+        .verifyResults(new String[] { "t1" })
+        .run("use " + dbOne)
+        .run("show tables")
+        .verifyResults(new String[] { "t1" })
+        .run("use " + dbTwo)
+        .run("show tables")
+        .verifyResults(new String[] { "t1" });
+    /*
+      Start of cleanup
+    */
+
+    replica.run("drop database " + primaryDbName + " cascade");
+    replica.run("drop database " + dbOne + " cascade");
+    replica.run("drop database " + dbTwo + " cascade");
+
+    /*
+       End of cleanup
+    */
+  }
+
+  @Test
+  public void testIncrementalDumpOfWarehouse() throws Throwable {
+    String randomOne = RandomStringUtils.random(10, true, false);
+    String randomTwo = RandomStringUtils.random(10, true, false);
+    String dbOne = primaryDbName + randomOne;
+    WarehouseInstance.Tuple bootstrapTuple = primary
+        .run("use " + primaryDbName)
+        .run("create table t1 (i int, j int)")
+        .run("create database " + dbOne)
+        .run("use " + dbOne)
+        .run("create table t1 (i int, j int) partitioned by (load_date date) "
+            + "clustered by(i) into 2 buckets stored as orc tblproperties ('transactional'='true') ")
+        .dump("`*`", null, Arrays.asList("'hive.repl.dump.metadata.only'='true'",
+            "'hive.repl.dump.include.acid.tables'='true'"));
+
+    String dbTwo = primaryDbName + randomTwo;
+    WarehouseInstance.Tuple incrementalTuple = primary
+        .run("create database " + dbTwo)
+        .run("use " + dbTwo)
+        .run("create table t1 (i int, j int)")
+        .run("use " + dbOne)
+        .run("create table t2 (a int, b int)")
+        .dump("`*`", bootstrapTuple.lastReplicationId,
+            Arrays.asList("'hive.repl.dump.metadata.only'='true'",
+                "'hive.repl.dump.include.acid.tables'='true'"));
+
+    /*
+      Due to the limitation that we can only have one instance of Persistence Manager Factory in a JVM
+      we are not able to create multiple embedded derby instances for two different MetaStore instances.
+    */
+
+    primary.run("drop database " + primaryDbName + " cascade");
+    primary.run("drop database " + dbOne + " cascade");
+    primary.run("drop database " + dbTwo + " cascade");
+
+    /*
+      End of additional steps
+    */
+
+    replica.run("show databases")
+        .verifyFailure(new String[] { primaryDbName, dbOne, dbTwo })
+        .load("", bootstrapTuple.dumpLocation)
+        .run("show databases")
+        .verifyResults(new String[] { "default", primaryDbName, dbOne })
+        .run("use " + primaryDbName)
+        .run("show tables")
+        .verifyResults(new String[] { "t1" })
+        .run("use " + dbOne)
+        .run("show tables")
+        .verifyResults(new String[] { "t1" });
+
+    replica.load("", incrementalTuple.dumpLocation)
+        .run("show databases")
+        .verifyResults(new String[] { "default", primaryDbName, dbOne, dbTwo })
+        .run("use " + dbTwo)
+        .run("show tables")
+        .verifyResults(new String[] { "t1" })
+        .run("use " + dbOne)
+        .run("show tables")
+        .verifyResults(new String[] { "t1", "t2" });
+
+    /*
+       Start of cleanup
+    */
+
+    replica.run("drop database " + primaryDbName + " cascade");
+    replica.run("drop database " + dbOne + " cascade");
+    replica.run("drop database " + dbTwo + " cascade");
+
+    /*
+       End of cleanup
+    */
+
+  }
+
+  @Test
+  public void testReplLoadFromSourceUsingWithClause() throws Throwable {
+    HiveConf replicaConf = replica.getConf();
+    List<String> withConfigs = Arrays.asList(
+            "'hive.metastore.warehouse.dir'='" + replicaConf.getVar(HiveConf.ConfVars.METASTOREWAREHOUSE) + "'",
+            "'hive.metastore.uris'='" + replicaConf.getVar(HiveConf.ConfVars.METASTOREURIS) + "'",
+            "'hive.repl.replica.functions.root.dir'='" + replicaConf.getVar(HiveConf.ConfVars.REPL_FUNCTIONS_ROOT_DIR) + "'");
+
+    ////////////  Bootstrap   ////////////
+    WarehouseInstance.Tuple bootstrapTuple = primary
+            .run("use " + primaryDbName)
+            .run("create table table1 (i int)")
+            .run("create table table2 (id int) partitioned by (country string)")
+            .run("insert into table1 values (1)")
+            .dump(primaryDbName, null);
+
+    // Run load on primary itself
+    primary.load(replicatedDbName, bootstrapTuple.dumpLocation, withConfigs)
+            .status(replicatedDbName, withConfigs)
+            .verifyResult(bootstrapTuple.lastReplicationId);
+
+    replica.run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[] { "table1", "table2" })
+            .run("select * from table1")
+            .verifyResults(new String[]{ "1" });
+
+    ////////////  First Incremental ////////////
+    WarehouseInstance.Tuple incrementalOneTuple = primary
+                    .run("use " + primaryDbName)
+                    .run("alter table table1 rename to renamed_table1")
+                    .run("insert into table2 partition(country='india') values (1) ")
+                    .run("insert into table2 partition(country='usa') values (2) ")
+                    .run("create table table3 (i int)")
+                    .run("insert into table3 values(10)")
+                    .run("create function " + primaryDbName
+                      + ".testFunctionOne as 'hivemall.tools.string.StopwordUDF' "
+                      + "using jar  'ivy://io.github.myui:hivemall:0.4.0-2'")
+                    .dump(primaryDbName, bootstrapTuple.lastReplicationId);
+
+    // Run load on primary itself
+    primary.load(replicatedDbName, incrementalOneTuple.dumpLocation, withConfigs)
+            .status(replicatedDbName, withConfigs)
+            .verifyResult(incrementalOneTuple.lastReplicationId);
+
+    replica.run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[] { "renamed_table1", "table2", "table3" })
+            .run("select * from renamed_table1")
+            .verifyResults(new String[] { "1" })
+            .run("select id from table2 order by id")
+            .verifyResults(new String[] { "1", "2" })
+            .run("select * from table3")
+            .verifyResults(new String[] { "10" })
+            .run("show functions like '" + replicatedDbName + "*'")
+            .verifyResult(replicatedDbName + ".testFunctionOne");
+
+    ////////////  Second Incremental ////////////
+    WarehouseInstance.Tuple secondIncremental = primary
+            .run("use " + primaryDbName)
+            .run("alter table table2 add columns (zipcode int)")
+            .run("alter table table3 set tblproperties('custom.property'='custom.value')")
+            .run("drop table renamed_table1")
+            .run("alter table table2 drop partition(country='usa')")
+            .run("truncate table table3")
+            .run("drop function " + primaryDbName + ".testFunctionOne ")
+            .dump(primaryDbName, incrementalOneTuple.lastReplicationId);
+
+    // Run load on primary itself
+    primary.load(replicatedDbName, secondIncremental.dumpLocation, withConfigs)
+            .status(replicatedDbName, withConfigs)
+            .verifyResult(secondIncremental.lastReplicationId);
+
+    replica.run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[] { "table2", "table3"})
+            .run("desc table2")
+            .verifyResults(new String[] {
+                    "id                  \tint                 \t                    ",
+                    "country             \tstring              \t                    ",
+                    "zipcode             \tint                 \t                    ",
+                    "\t \t ",
+                    "# Partition Information\t \t ",
+                    "# col_name            \tdata_type           \tcomment             ",
+                    "country             \tstring              \t                    ",
+            })
+            .run("show tblproperties table3('custom.property')")
+            .verifyResults(new String[] { "custom.value\t " })
+            .run("select id from table2 order by id")
+            .verifyResults(new String[] { "1" })
+            .run("select * from table3")
+            .verifyResults(Collections.emptyList())
+            .run("show functions like '" + replicatedDbName + "*'")
+            .verifyResult(null);
+  }
+
+  @Test
+  public void testIncrementalReplWithEventsBatchHavingDropCreateTable() throws Throwable {
+    // Bootstrap dump with empty db
+    WarehouseInstance.Tuple bootstrapTuple = primary.dump(primaryDbName, null);
+
+    // Bootstrap load in replica
+    replica.load(replicatedDbName, bootstrapTuple.dumpLocation)
+            .status(replicatedDbName)
+            .verifyResult(bootstrapTuple.lastReplicationId);
+
+    // First incremental dump
+    WarehouseInstance.Tuple firstIncremental = primary.run("use " + primaryDbName)
+            .run("create table table1 (i int)")
+            .run("create table table2 (id int) partitioned by (country string)")
+            .run("insert into table1 values (1)")
+            .run("insert into table2 partition(country='india') values(1)")
+            .dump(primaryDbName, bootstrapTuple.lastReplicationId);
+
+    // Second incremental dump
+    WarehouseInstance.Tuple secondIncremental = primary.run("use " + primaryDbName)
+            .run("drop table table1")
+            .run("drop table table2")
+            .run("create table table2 (id int) partitioned by (country string)")
+            .run("alter table table2 add partition(country='india')")
+            .run("alter table table2 drop partition(country='india')")
+            .run("insert into table2 partition(country='us') values(2)")
+            .run("create table table1 (i int)")
+            .run("insert into table1 values (2)")
+            .dump(primaryDbName, firstIncremental.lastReplicationId);
+
+    // First incremental load
+    replica.load(replicatedDbName, firstIncremental.dumpLocation)
+            .status(replicatedDbName)
+            .verifyResult(firstIncremental.lastReplicationId)
+            .run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[] {"table1", "table2"})
+            .run("select * from table1")
+            .verifyResults(new String[] {"1"})
+            .run("select id from table2 order by id")
+            .verifyResults(new String[] {"1"});
+
+    // Second incremental load
+    replica.load(replicatedDbName, secondIncremental.dumpLocation)
+            .status(replicatedDbName)
+            .verifyResult(secondIncremental.lastReplicationId)
+            .run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[] {"table1", "table2"})
+            .run("select * from table1")
+            .verifyResults(new String[] {"2"})
+            .run("select id from table2 order by id")
+            .verifyResults(new String[] {"2"});
   }
 }

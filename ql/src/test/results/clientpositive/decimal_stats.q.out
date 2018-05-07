@@ -33,12 +33,12 @@ POSTHOOK: Lineage: decimal_1.t SIMPLE []
 POSTHOOK: Lineage: decimal_1.u EXPRESSION []
 POSTHOOK: Lineage: decimal_1.v EXPRESSION []
 PREHOOK: query: analyze table decimal_1 compute statistics for columns
-PREHOOK: type: QUERY
+PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@decimal_1
 PREHOOK: Output: default@decimal_1
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table decimal_1 compute statistics for columns
-POSTHOOK: type: QUERY
+POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@decimal_1
 POSTHOOK: Output: default@decimal_1
 #### A masked pattern was here ####
@@ -86,6 +86,7 @@ STAGE PLANS:
                 Statistics: Num rows: 500 Data size: 112112 Basic stats: COMPLETE Column stats: COMPLETE
                 TopN Hash Memory Usage: 0.1
                 value expressions: _col1 (type: decimal(5,0)), _col2 (type: decimal(10,0))
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: decimal(4,2)), VALUE._col0 (type: decimal(5,0)), VALUE._col1 (type: decimal(10,0))

@@ -66,6 +66,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"lst\":\"true\",\"mp\":\"true\",\"str\":\"true\",\"strct\":\"true\"}}
+	bucketing_version   	2                   
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
@@ -119,6 +120,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
 	numFiles            	0                   
 	numPartitions       	0                   
 	numRows             	0                   
@@ -176,6 +178,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
 	numFiles            	0                   
 	numPartitions       	0                   
 	numRows             	0                   
@@ -223,6 +226,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
 #### A masked pattern was here ####
 	numFiles            	0                   
 	numPartitions       	0                   
@@ -281,6 +285,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
 	numFiles            	0                   
 	numPartitions       	0                   
 	numRows             	0                   
@@ -336,6 +341,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"lst\":\"true\",\"mp\":\"true\",\"str\":\"true\",\"strct\":\"true\"}}
+	bucketing_version   	2                   
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
@@ -391,7 +397,7 @@ POSTHOOK: query: SELECT * from orc_create_complex
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_create_complex
 #### A masked pattern was here ####
-line1	{"key13":"value13","key11":"value11","key12":"value12"}	["a","b","c"]	{"A":"one","B":"two"}
+line1	{"key11":"value11","key12":"value12","key13":"value13"}	["a","b","c"]	{"A":"one","B":"two"}
 line2	{"key21":"value21","key22":"value22","key23":"value23"}	["d","e","f"]	{"A":"three","B":"four"}
 line3	{"key31":"value31","key32":"value32","key33":"value33"}	["g","h","i"]	{"A":"five","B":"six"}
 PREHOOK: query: SELECT str from orc_create_complex
@@ -413,7 +419,7 @@ POSTHOOK: query: SELECT mp from orc_create_complex
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_create_complex
 #### A masked pattern was here ####
-{"key13":"value13","key11":"value11","key12":"value12"}
+{"key11":"value11","key12":"value12","key13":"value13"}
 {"key21":"value21","key22":"value22","key23":"value23"}
 {"key31":"value31","key32":"value32","key33":"value33"}
 PREHOOK: query: SELECT lst from orc_create_complex

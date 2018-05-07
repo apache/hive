@@ -1,3 +1,5 @@
+set hive.vectorized.execution.enabled=false;
+
 create table if not exists alltypes (
  bo boolean,
  ti tinyint,

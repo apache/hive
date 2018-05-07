@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -155,14 +155,15 @@ public class TezTask extends Task<TezWork> {
       // We only need a username for UGI to use for groups; getGroups will fetch the groups
       // based on Hadoop configuration, as documented at
       // https://hadoop.apache.org/docs/r2.8.0/hadoop-project-dist/hadoop-common/GroupsMapping.html
-      String userName = ss.getUserName();
+      String userName = getUserNameForGroups(ss);
       List<String> groups = null;
       if (userName == null) {
         userName = "anonymous";
       } else {
-        groups = UserGroupInformation.createRemoteUser(ss.getUserName()).getGroups();
+        groups = UserGroupInformation.createRemoteUser(userName).getGroups();
       }
-      MappingInput mi = new MappingInput(userName, groups, ss.getHiveVariables().get("wmpool"));
+      MappingInput mi = new MappingInput(userName, groups,
+          ss.getHiveVariables().get("wmpool"), ss.getHiveVariables().get("wmapp"));
 
       WmContext wmContext = ctx.getWmContext();
       // jobConf will hold all the configuration for hadoop, tez, and hive
@@ -175,8 +176,10 @@ public class TezTask extends Task<TezWork> {
       CallerContext callerContext = CallerContext.create(
           "HIVE", queryPlan.getQueryId(), "HIVE_QUERY_ID", queryPlan.getQueryStr());
 
+      perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_GET_SESSION);
       session = sessionRef.value = WorkloadManagerFederation.getSession(
           sessionRef.value, conf, mi, getWork().getLlapMode(), wmContext);
+      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_GET_SESSION);
 
       try {
         ss.setTezSession(session);
@@ -310,6 +313,15 @@ public class TezTask extends Task<TezWork> {
       }
     }
     return rc;
+  }
+
+  private String getUserNameForGroups(SessionState ss) {
+    // This should be removed when authenticator and the 2-username mess is cleaned up.
+    if (ss.getAuthenticator() != null) {
+      String userName = ss.getAuthenticator().getUserName();
+      if (userName != null) return userName;
+    }
+    return ss.getUserName();
   }
 
   private void closeDagClientOnCancellation(DAGClient dagClient) {
@@ -513,7 +525,6 @@ public class TezTask extends Task<TezWork> {
   }
 
   DAGClient submit(JobConf conf, DAG dag, Ref<TezSessionState> sessionStateRef) throws Exception {
-
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_SUBMIT_DAG);
     DAGClient dagClient = null;
     TezSessionState sessionState = sessionStateRef.value;
@@ -523,6 +534,7 @@ public class TezTask extends Task<TezWork> {
         dagClient = sessionState.getSession().submitDAG(dag);
       } catch (SessionNotRunning nr) {
         console.printInfo("Tez session was closed. Reopening...");
+        sessionStateRef.value = null;
         sessionStateRef.value = sessionState = getNewTezSessionOnError(sessionState);
         console.printInfo("Session re-established.");
         dagClient = sessionState.getSession().submitDAG(dag);
@@ -532,12 +544,13 @@ public class TezTask extends Task<TezWork> {
       try {
         console.printInfo("Dag submit failed due to " + e.getMessage() + " stack trace: "
             + Arrays.toString(e.getStackTrace()) + " retrying...");
+        sessionStateRef.value = null;
         sessionStateRef.value = sessionState = getNewTezSessionOnError(sessionState);
         dagClient = sessionState.getSession().submitDAG(dag);
       } catch (Exception retryException) {
         // we failed to submit after retrying. Destroy session and bail.
-        sessionState.destroy();
         sessionStateRef.value = null;
+        sessionState.destroy();
         throw retryException;
       }
     }

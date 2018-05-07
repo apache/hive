@@ -46,25 +46,31 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bucketoutput2
 PREHOOK: query: insert into table bucketinput values ("firstinsert1")
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@bucketinput
 POSTHOOK: query: insert into table bucketinput values ("firstinsert1")
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@bucketinput
-POSTHOOK: Lineage: bucketinput.data SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: bucketinput.data SCRIPT []
 PREHOOK: query: insert into table bucketinput values ("firstinsert2")
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@bucketinput
 POSTHOOK: query: insert into table bucketinput values ("firstinsert2")
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@bucketinput
-POSTHOOK: Lineage: bucketinput.data SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: bucketinput.data SCRIPT []
 PREHOOK: query: insert into table bucketinput values ("firstinsert3")
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@bucketinput
 POSTHOOK: query: insert into table bucketinput values ("firstinsert3")
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@bucketinput
-POSTHOOK: Lineage: bucketinput.data SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: bucketinput.data SCRIPT []
 PREHOOK: query: insert overwrite table bucketoutput1 select * from bucketinput where data like 'first%'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucketinput
@@ -118,6 +124,7 @@ STAGE PLANS:
                 sort order: +
                 Map-reduce partition columns: _col1 (type: string)
                 Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey0 (type: string)
@@ -173,6 +180,7 @@ STAGE PLANS:
               sort order: 
               Statistics: Num rows: 1 Data size: 880 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
@@ -240,6 +248,7 @@ STAGE PLANS:
                 Map-reduce partition columns: _col0 (type: string)
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                 value expressions: _col0 (type: string)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: VALUE._col0 (type: string), VALUE._col0 (type: string), KEY.reducesinkkey0 (type: string)
@@ -295,6 +304,7 @@ STAGE PLANS:
               sort order: 
               Statistics: Num rows: 1 Data size: 1320 Basic stats: PARTIAL Column stats: NONE
               value expressions: _col0 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>), _col2 (type: struct<columntype:string,maxlength:bigint,sumlength:bigint,count:bigint,countnulls:bigint,bitvector:binary>)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1), compute_stats(VALUE._col2)

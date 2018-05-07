@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -264,6 +264,9 @@ public final class OperatorFactory {
       T conf, Operator oplist0, Operator... oplist) {
     Operator<T> ret = get(oplist0.getCompilationOpContext(), (Class<T>) conf.getClass());
     ret.setConf(conf);
+
+    // Set the bucketing Version
+    ret.setBucketingVersion(oplist0.getBucketingVersion());
 
     // Add the new operator as child of each of the passed in operators
     List<Operator> children = oplist0.getChildOperators();

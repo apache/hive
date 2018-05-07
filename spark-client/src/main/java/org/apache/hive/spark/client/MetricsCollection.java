@@ -25,7 +25,6 @@ import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
-import org.apache.hive.spark.client.metrics.DataReadMethod;
 import org.apache.hive.spark.client.metrics.InputMetrics;
 import org.apache.hive.spark.client.metrics.Metrics;
 import org.apache.hive.spark.client.metrics.ShuffleReadMetrics;
@@ -142,12 +141,15 @@ public class MetricsCollection {
     try {
       // Task metrics.
       long executorDeserializeTime = 0L;
+      long executorDeserializeCpuTime = 0L;
       long executorRunTime = 0L;
+      long executorCpuTime = 0L;
       long resultSize = 0L;
       long jvmGCTime = 0L;
       long resultSerializationTime = 0L;
       long memoryBytesSpilled = 0L;
       long diskBytesSpilled = 0L;
+      long taskDurationTime = 0L;
 
       // Input metrics.
       boolean hasInputMetrics = false;
@@ -167,12 +169,15 @@ public class MetricsCollection {
       for (TaskInfo info : Collections2.filter(taskMetrics, filter)) {
         Metrics m = info.metrics;
         executorDeserializeTime += m.executorDeserializeTime;
+        executorDeserializeCpuTime += m.executorDeserializeCpuTime;
         executorRunTime += m.executorRunTime;
+        executorCpuTime += m.executorCpuTime;
         resultSize += m.resultSize;
         jvmGCTime += m.jvmGCTime;
         resultSerializationTime += m.resultSerializationTime;
         memoryBytesSpilled += m.memoryBytesSpilled;
         diskBytesSpilled += m.diskBytesSpilled;
+        taskDurationTime += m.taskDurationTime;
 
         if (m.inputMetrics != null) {
           hasInputMetrics = true;
@@ -216,12 +221,15 @@ public class MetricsCollection {
 
       return new Metrics(
         executorDeserializeTime,
+        executorDeserializeCpuTime,
         executorRunTime,
+        executorCpuTime,
         resultSize,
         jvmGCTime,
         resultSerializationTime,
         memoryBytesSpilled,
         diskBytesSpilled,
+        taskDurationTime,
         inputMetrics,
         shuffleReadMetrics,
         shuffleWriteMetrics);

@@ -18,11 +18,39 @@ set -e
 set -x
 date +"%Y-%m-%d %T.%3N"
 
+# Download FindBugs
+
+FINDBUGS_VERSION="3.0.1"
+FINDBUGS_BASEURL="http://prdownloads.sourceforge.net/findbugs"
+FINDBUGS_TARBALL="findbugs-${FINDBUGS_VERSION}.tar"
+
+pushd ${yetusBuildScratchDir}
+
+curl -f -s -L -O "${FINDBUGS_BASEURL}/${FINDBUGS_TARBALL}.gz"
+
+if [[ $? != 0 ]]; then
+  echo "ERROR: unable to download ${FINDBUGS_BASEURL}/${FINDBUGS_TARBALL}.gz"
+  exit 1
+fi
+
+gunzip -c "${FINDBUGS_TARBALL}.gz" | tar xpf -
+
+if [[ $? != 0 ]]; then
+    echo "ERROR: ${FINDBUGS_TARBALL}.gz is corrupt."
+    exit 1
+fi
+
+popd
+
+export FINDBUGS_HOME=${yetusBuildScratchDir}/findbugs-${FINDBUGS_VERSION}
+
 pushd ${workingDir}
 export JIRA_ISSUE=${jiraName}
 export JAVA_HOME=${javaHome}
+export PATH=$JAVA_HOME/bin/:$PATH
 ./dev-support/test-patch.sh ${patchFile} --jenkins --jira-base-url=${jiraUrl} --jira-user=${jiraUser} \
  --jira-password=${jiraPass} --patch-dir=${outputDir} --build-url=${buildUrl} --build-url-console=${buildUrlLog} \
- --build-url-artifacts=${buildUrlOutputDir} 2>&1 > ${logFile}
+ --build-url-artifacts=${buildUrlOutputDir} 2>&1 > ${logFile} || true
 popd
+rm -rf ${workingDir}
 

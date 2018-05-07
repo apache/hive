@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 package org.apache.hadoop.hive.cli.control;
 
 
@@ -23,10 +23,13 @@ package org.apache.hadoop.hive.cli.control;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.File;
+
 import com.google.common.base.Strings;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
+import org.apache.hadoop.hive.ql.MetaStoreDumpUtility;
 import org.junit.After;
 import org.junit.AfterClass;
 /**
@@ -61,14 +64,15 @@ public class CorePerfCliDriver extends CliAdapter{
       String hadoopVer = cliConfig.getHadoopVersion();
       qt = new QTestUtil(cliConfig.getResultsDir(), cliConfig.getLogDir(), miniMR, hiveConfDir,
           hadoopVer, initScript,
-          cleanupScript, false);
+          cleanupScript, false, null);
 
       // do a one time initialization
       qt.cleanUp();
       qt.createSources();
       // Manually modify the underlying metastore db to reflect statistics corresponding to
       // the 30TB TPCDS scale set. This way the optimizer will generate plans for a 30 TB set.
-      QTestUtil.setupMetaStoreTableColumnStatsFor30TBTPCDSWorkload(qt.getConf());
+      MetaStoreDumpUtility.setupMetaStoreTableColumnStatsFor30TBTPCDSWorkload(qt.getConf(),
+          System.getProperty(QTestUtil.TEST_TMP_DIR_PROPERTY));
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
@@ -126,7 +130,7 @@ public class CorePerfCliDriver extends CliAdapter{
         return;
       }
 
-      qt.cliInit(fname, false);
+      qt.cliInit(new File(fpath), false);
 
       int ecode = qt.executeClient(fname);
       if (ecode != 0) {

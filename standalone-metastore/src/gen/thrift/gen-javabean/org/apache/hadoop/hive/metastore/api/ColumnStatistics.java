@@ -451,14 +451,14 @@ import org.slf4j.LoggerFactory;
           case 2: // STATS_OBJ
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list270 = iprot.readListBegin();
-                struct.statsObj = new ArrayList<ColumnStatisticsObj>(_list270.size);
-                ColumnStatisticsObj _elem271;
-                for (int _i272 = 0; _i272 < _list270.size; ++_i272)
+                org.apache.thrift.protocol.TList _list268 = iprot.readListBegin();
+                struct.statsObj = new ArrayList<ColumnStatisticsObj>(_list268.size);
+                ColumnStatisticsObj _elem269;
+                for (int _i270 = 0; _i270 < _list268.size; ++_i270)
                 {
-                  _elem271 = new ColumnStatisticsObj();
-                  _elem271.read(iprot);
-                  struct.statsObj.add(_elem271);
+                  _elem269 = new ColumnStatisticsObj();
+                  _elem269.read(iprot);
+                  struct.statsObj.add(_elem269);
                 }
                 iprot.readListEnd();
               }
@@ -489,9 +489,9 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(STATS_OBJ_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.statsObj.size()));
-          for (ColumnStatisticsObj _iter273 : struct.statsObj)
+          for (ColumnStatisticsObj _iter271 : struct.statsObj)
           {
-            _iter273.write(oprot);
+            _iter271.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -517,9 +517,9 @@ import org.slf4j.LoggerFactory;
       struct.statsDesc.write(oprot);
       {
         oprot.writeI32(struct.statsObj.size());
-        for (ColumnStatisticsObj _iter274 : struct.statsObj)
+        for (ColumnStatisticsObj _iter272 : struct.statsObj)
         {
-          _iter274.write(oprot);
+          _iter272.write(oprot);
         }
       }
     }
@@ -531,14 +531,14 @@ import org.slf4j.LoggerFactory;
       struct.statsDesc.read(iprot);
       struct.setStatsDescIsSet(true);
       {
-        org.apache.thrift.protocol.TList _list275 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.statsObj = new ArrayList<ColumnStatisticsObj>(_list275.size);
-        ColumnStatisticsObj _elem276;
-        for (int _i277 = 0; _i277 < _list275.size; ++_i277)
+        org.apache.thrift.protocol.TList _list273 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.statsObj = new ArrayList<ColumnStatisticsObj>(_list273.size);
+        ColumnStatisticsObj _elem274;
+        for (int _i275 = 0; _i275 < _list273.size; ++_i275)
         {
-          _elem276 = new ColumnStatisticsObj();
-          _elem276.read(iprot);
-          struct.statsObj.add(_elem276);
+          _elem274 = new ColumnStatisticsObj();
+          _elem274.read(iprot);
+          struct.statsObj.add(_elem274);
         }
       }
       struct.setStatsObjIsSet(true);

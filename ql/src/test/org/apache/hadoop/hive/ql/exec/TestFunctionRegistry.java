@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.ql.exec.FunctionInfo.FunctionType;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.udf.UDFAscii;
 import org.apache.hadoop.hive.ql.udf.UDFLn;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMax;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
@@ -507,5 +508,41 @@ public class TestFunctionRegistry extends TestCase {
         GenericUDFCurrentTimestamp.class.getName(), true, emptyResources);
 
     assertTrue("Function should now be recognized as permanent function", FunctionRegistry.isPermanentFunction(fnExpr));
+  }
+
+  private GenericUDF getUDF(String udfName) throws Exception {
+    return FunctionRegistry.getFunctionInfo(udfName).getGenericUDF();
+  }
+
+  private void checkRuntimeConstant(GenericUDF udf) {
+    assertFalse(FunctionRegistry.isDeterministic(udf));
+    assertTrue(FunctionRegistry.isRuntimeConstant(udf));
+    assertTrue(FunctionRegistry.isConsistentWithinQuery(udf));
+  }
+
+  private void checkDeterministicFn(GenericUDF udf) {
+    assertTrue(FunctionRegistry.isDeterministic(udf));
+    assertFalse(FunctionRegistry.isRuntimeConstant(udf));
+    assertTrue(FunctionRegistry.isConsistentWithinQuery(udf));
+  }
+
+  private void checkNondeterministicFn(GenericUDF udf) {
+    assertFalse(FunctionRegistry.isDeterministic(udf));
+    assertFalse(FunctionRegistry.isRuntimeConstant(udf));
+    assertFalse(FunctionRegistry.isConsistentWithinQuery(udf));
+  }
+
+  public void testDeterminism() throws Exception {
+    checkDeterministicFn(getUDF("+"));
+    checkDeterministicFn(getUDF("ascii"));
+
+    checkNondeterministicFn(getUDF("rand"));
+    checkNondeterministicFn(getUDF("uuid"));
+
+    checkRuntimeConstant(getUDF("current_database"));
+    checkRuntimeConstant(getUDF("current_date"));
+    checkRuntimeConstant(getUDF("current_timestamp"));
+    checkRuntimeConstant(getUDF("current_user"));
+    checkRuntimeConstant(getUDF("logged_in_user"));
   }
 }

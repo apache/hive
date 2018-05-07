@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 drop table pcr_t1;
 
@@ -15,11 +16,21 @@ from pcr_t1
 where (ds1='2000-04-08' and ds2='2001-04-08' and key=1) or (ds1='2000-04-09' and ds2='2001-04-09' and key=2)
 order by key, value, ds1, ds2;
 
+select key, value, ds1, ds2
+from pcr_t1
+where (ds1='2000-04-08' and ds2='2001-04-08' and key=1) or (ds1='2000-04-09' and ds2='2001-04-09' and key=2)
+order by key, value, ds1, ds2;
+
 set hive.optimize.point.lookup=true;
 set hive.optimize.point.lookup.min=0;
 set hive.optimize.partition.columns.separate=true;
 
 explain extended
+select key, value, ds1, ds2
+from pcr_t1
+where (ds1='2000-04-08' and ds2='2001-04-08' and key=1) or (ds1='2000-04-09' and ds2='2001-04-09' and key=2)
+order by key, value, ds1, ds2;
+
 select key, value, ds1, ds2
 from pcr_t1
 where (ds1='2000-04-08' and ds2='2001-04-08' and key=1) or (ds1='2000-04-09' and ds2='2001-04-09' and key=2)

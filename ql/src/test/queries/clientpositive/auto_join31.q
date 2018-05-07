@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.auto.convert.join = true;
 
 explain

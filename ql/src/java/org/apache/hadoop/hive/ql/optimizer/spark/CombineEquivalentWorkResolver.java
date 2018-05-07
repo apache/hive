@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,24 +18,27 @@
 
 package org.apache.hadoop.hive.ql.optimizer.spark;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import java.util.stream.Collectors;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.ql.exec.OperatorUtils;
-import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.spark.SparkUtilities;
+import org.apache.hadoop.hive.ql.lib.GraphWalker;
+import org.apache.hadoop.hive.ql.lib.PreOrderWalker;
 import org.apache.hadoop.hive.ql.parse.spark.SparkPartitionPruningSinkOperator;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -46,7 +49,6 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.TaskGraphWalker;
 import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalContext;
 import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalPlanResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -63,14 +65,14 @@ import org.apache.hadoop.hive.ql.plan.SparkWork;
  */
 public class CombineEquivalentWorkResolver implements PhysicalPlanResolver {
   protected static transient Logger LOG = LoggerFactory.getLogger(CombineEquivalentWorkResolver.class);
-  private List<String> removedMapWorkNames = new ArrayList<String>();
   private PhysicalContext pctx;
   @Override
   public PhysicalContext resolve(PhysicalContext pctx) throws SemanticException {
     this.pctx = pctx;
     List<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(pctx.getRootTasks());
-    TaskGraphWalker taskWalker = new TaskGraphWalker(new EquivalentWorkMatcher());
+    // use a pre-order walker so that DPP sink works are visited (and combined) first
+    GraphWalker taskWalker = new PreOrderWalker(new EquivalentWorkMatcher());
     HashMap<Node, Object> nodeOutput = Maps.newHashMap();
     taskWalker.startWalking(topNodes, nodeOutput);
     return pctx;
@@ -84,30 +86,37 @@ public class CombineEquivalentWorkResolver implements PhysicalPlanResolver {
       }
     };
 
-    // maps from a work to the DPPs it contains
+    // maps from a work to the DPPs it contains -- used to combine equivalent DPP sinks
     private Map<BaseWork, List<SparkPartitionPruningSinkOperator>> workToDpps = new HashMap<>();
+
+    // maps from unique id to DPP sink -- used to update the DPP sinks when
+    // target map works are removed
+    private Map<String, SparkPartitionPruningSinkOperator> idToDpps = new HashMap<>();
 
     @Override
     public Object dispatch(Node nd, Stack<Node> stack, Object... nodeOutputs) throws SemanticException {
       if (nd instanceof SparkTask) {
         SparkTask sparkTask = (SparkTask) nd;
         SparkWork sparkWork = sparkTask.getWork();
-        // For dpp case, dpp sink will appear in Task1 and the target work of dpp sink will appear in Task2.
-        // Task2 is the child task of Task1. Task2 will be traversed before task1 because TaskGraphWalker will first
-        // put children task in the front of task queue.
-        // If a spark work which is equal to other is found and removed in Task2, the dpp sink can be removed when Task1
-        // is traversed(More detailed see HIVE-16948)
-        if (removedMapWorkNames.size() > 0) {
-          removeDynamicPartitionPruningSink(removedMapWorkNames, sparkWork);
-          if (sparkWork.getAllWork().size() == 0) {
-            removeEmptySparkTask(sparkTask);
-          }
-        }
+        collectDPPInfos(sparkWork);
 
         Set<BaseWork> roots = sparkWork.getRoots();
         compareWorksRecursively(roots, sparkWork);
       }
       return null;
+    }
+
+    private void collectDPPInfos(SparkWork sparkWork) {
+      for (BaseWork work : sparkWork.getAllWork()) {
+        Set<Operator<?>> seen = new HashSet<>();
+        for (Operator root : work.getAllRootOperators()) {
+          List<SparkPartitionPruningSinkOperator> sinks = new ArrayList<>();
+          SparkUtilities.collectOp(root, SparkPartitionPruningSinkOperator.class, sinks, seen);
+          for (SparkPartitionPruningSinkOperator sink : sinks) {
+            idToDpps.put(sink.getUniqueId(), sink);
+          }
+        }
+      }
     }
 
     private void compareWorksRecursively(Set<BaseWork> works, SparkWork sparkWork) {
@@ -161,54 +170,6 @@ public class CombineEquivalentWorkResolver implements PhysicalPlanResolver {
       return false;
     }
 
-    // merge the second into the first
-    private void combineEquivalentDPPSinks(SparkPartitionPruningSinkDesc first,
-        SparkPartitionPruningSinkDesc second, String firstId, String secondId) {
-      MapWork target2 = second.getTargetMapWork();
-
-      first.addTarget(second.getTargetColumnName(), second.getTargetColumnType(),
-          second.getTargetPartKey(), target2);
-
-      // update the target map work of the second
-      target2.setTmpPathForPartitionPruning(first.getTmpPathOfTargetWork());
-
-      List<ExprNodeDesc> partKey = target2.getEventSourcePartKeyExprMap().get(secondId);
-      partKey.remove(second.getTargetPartKey());
-      if (partKey.isEmpty()) {
-        target2.getEventSourcePartKeyExprMap().remove(secondId);
-      }
-      List<ExprNodeDesc> newPartKey = target2.getEventSourcePartKeyExprMap().computeIfAbsent(
-          firstId, v -> new ArrayList<>());
-      newPartKey.add(second.getTargetPartKey());
-
-      List<TableDesc> tableDesc = target2.getEventSourceTableDescMap().get(secondId);
-      tableDesc.remove(second.getTable());
-      if (tableDesc.isEmpty()) {
-        target2.getEventSourceTableDescMap().remove(secondId);
-      }
-      List<TableDesc> newTableDesc = target2.getEventSourceTableDescMap().computeIfAbsent(
-          firstId, v -> new ArrayList<>());
-      newTableDesc.add(second.getTable());
-
-      List<String> columnName = target2.getEventSourceColumnNameMap().get(secondId);
-      columnName.remove(second.getTargetColumnName());
-      if (columnName.isEmpty()) {
-        target2.getEventSourceColumnNameMap().remove(secondId);
-      }
-      List<String> newColumnName = target2.getEventSourceColumnNameMap().computeIfAbsent(
-          firstId, v -> new ArrayList<>());
-      newColumnName.add(second.getTargetColumnName());
-
-      List<String> columnType = target2.getEventSourceColumnTypeMap().get(secondId);
-      columnType.remove(second.getTargetColumnType());
-      if (columnType.isEmpty()) {
-        target2.getEventSourceColumnTypeMap().remove(secondId);
-      }
-      List<String> newColumnType = target2.getEventSourceColumnTypeMap().computeIfAbsent(
-          firstId, v -> new ArrayList<>());
-      newColumnType.add(second.getTargetColumnType());
-    }
-
     private Set<BaseWork> combineEquivalentWorks(Set<Set<BaseWork>> equivalentWorks, SparkWork sparkWork) {
       Set<BaseWork> removedWorks = Sets.newHashSet();
       for (Set<BaseWork> workSet : equivalentWorks) {
@@ -222,8 +183,8 @@ public class CombineEquivalentWorkResolver implements PhysicalPlanResolver {
               List<SparkPartitionPruningSinkOperator> dppList2 = workToDpps.get(next);
               // equivalent works must have dpp lists of same size
               for (int i = 0; i < dppList1.size(); i++) {
-                combineEquivalentDPPSinks(dppList1.get(i).getConf(), dppList2.get(i).getConf(),
-                    dppList1.get(i).getUniqueId(), dppList2.get(i).getUniqueId());
+                combineEquivalentDPPSinks(dppList1.get(i), dppList2.get(i));
+                idToDpps.remove(dppList2.get(i).getUniqueId());
               }
             }
             replaceWork(next, first, sparkWork);
@@ -254,7 +215,22 @@ public class CombineEquivalentWorkResolver implements PhysicalPlanResolver {
       sparkWork.remove(previous);
       // In order to fix HIVE-16948
       if (previous instanceof MapWork) {
-        removedMapWorkNames.add(previous.getName());
+        removeTargetFromDPP((MapWork) previous);
+      }
+    }
+
+    // Remove the map work from DPP sinks that have it as a target
+    private void removeTargetFromDPP(MapWork target) {
+      Set<String> dppIds = target.getEventSourceColumnNameMap().keySet();
+      for (String dppId : dppIds) {
+        SparkPartitionPruningSinkOperator sink = idToDpps.get(dppId);
+        Preconditions.checkNotNull(sink, "Unable to find DPP sink whose target work is removed.");
+        SparkPartitionPruningSinkDesc desc = sink.getConf();
+        desc.removeTarget(target.getName());
+        // If the target can be removed, it means there's another MapWork that shares the same
+        // DPP sink, and therefore it cannot be the only target.
+        Preconditions.checkState(!desc.getTargetInfos().isEmpty(),
+            "The removed target work is the only target.");
       }
     }
 
@@ -330,6 +306,10 @@ public class CombineEquivalentWorkResolver implements PhysicalPlanResolver {
     }
 
     private boolean compareMapWork(MapWork first, MapWork second) {
+      return hasSamePathToPartition(first, second) && targetsOfSameDPPSink(first, second);
+    }
+
+    private boolean hasSamePathToPartition(MapWork first, MapWork second) {
       Map<Path, PartitionDesc> pathToPartition1 = first.getPathToPartitionInfo();
       Map<Path, PartitionDesc> pathToPartition2 = second.getPathToPartitionInfo();
       if (pathToPartition1.size() == pathToPartition2.size()) {
@@ -344,6 +324,49 @@ public class CombineEquivalentWorkResolver implements PhysicalPlanResolver {
         return true;
       }
       return false;
+    }
+
+    // Checks whether two MapWorks will be pruned by the same DPP sink
+    private boolean targetsOfSameDPPSink(MapWork first, MapWork second) {
+      Set<String> sources1 = first.getEventSourceColumnNameMap().keySet();
+      Set<String> sources2 = second.getEventSourceColumnNameMap().keySet();
+      if (!sources1.equals(sources2)) {
+        return false;
+      }
+      // check whether each DPP sink target same columns
+      for (String source : sources1) {
+        Set<String> names1 = first.getEventSourceColumnNameMap().get(source).stream().map(
+            SparkPartitionPruningSinkDesc::stripOffTargetId).collect(Collectors.toSet());
+        Set<String> names2 = second.getEventSourceColumnNameMap().get(source).stream().map(
+            SparkPartitionPruningSinkDesc::stripOffTargetId).collect(Collectors.toSet());
+        if (!names1.equals(names2)) {
+          return false;
+        }
+
+        Set<String> types1 = new HashSet<>(first.getEventSourceColumnTypeMap().get(source));
+        Set<String> types2 = new HashSet<>(second.getEventSourceColumnTypeMap().get(source));
+        if (!types1.equals(types2)) {
+          return false;
+        }
+
+        Set<TableDesc> tableDescs1 = new HashSet<>(first.getEventSourceTableDescMap().get(source));
+        Set<TableDesc> tableDescs2 = new HashSet<>(second.getEventSourceTableDescMap().get(source));
+        if (!tableDescs1.equals(tableDescs2)) {
+          return false;
+        }
+
+        List<ExprNodeDesc> descs1 = first.getEventSourcePartKeyExprMap().get(source);
+        List<ExprNodeDesc> descs2 = second.getEventSourcePartKeyExprMap().get(source);
+        if (descs1.size() != descs2.size()) {
+          return false;
+        }
+        for (ExprNodeDesc desc : descs1) {
+          if (descs2.stream().noneMatch(d -> ExprNodeDescUtils.isSame(d, desc))) {
+            return false;
+          }
+        }
+      }
+      return true;
     }
 
     private boolean hasSameParent(BaseWork first, BaseWork second, SparkWork sparkWork) {
@@ -409,55 +432,26 @@ public class CombineEquivalentWorkResolver implements PhysicalPlanResolver {
     private boolean compareCurrentOperator(Operator<?> firstOperator, Operator<?> secondOperator) {
       return firstOperator.logicalEquals(secondOperator);
     }
+  }
 
-    /**
-     * traverse the children in sparkWork to find the dpp sink operator which target work is included in
-     * removedMapWorkList
-     * If there is branch, remove prune sink operator branch in the BaseWork
-     * If there is no branch, remove the whole BaseWork
-     *
-     * @param removedMapWorkList: the name of the map work has been deleted because they are equals to other works.
-     * @param sparkWork:          current spark work
-     */
-    private void removeDynamicPartitionPruningSink(List<String> removedMapWorkList, SparkWork sparkWork) {
-      List<BaseWork> allWorks = sparkWork.getAllWork();
-      for (BaseWork baseWork : allWorks) {
-        Set<Operator<?>> rootOperators = baseWork.getAllRootOperators();
-        for (Operator root : rootOperators) {
-          List<Operator<?>> pruningList = new ArrayList<>();
-          SparkUtilities.collectOp(pruningList, root, SparkPartitionPruningSinkOperator.class);
-          for (Operator pruneSinkOp : pruningList) {
-            SparkPartitionPruningSinkOperator sparkPruneSinkOp = (SparkPartitionPruningSinkOperator) pruneSinkOp;
-            if (removedMapWorkList.contains(sparkPruneSinkOp.getConf().getTargetMapWork().getName())) {
-              LOG.debug("ready to remove the sparkPruneSinkOp which target work is " +
-                  sparkPruneSinkOp.getConf().getTargetWorks() + " because the MapWork is equals to other map work and " +
-                  "has been deleted!");
-              // If there is branch, remove prune sink operator branch in the baseWork
-              // If there is no branch, remove the whole baseWork
-              if (OperatorUtils.isInBranch(sparkPruneSinkOp)) {
-                OperatorUtils.removeBranch(sparkPruneSinkOp);
-              } else {
-                sparkWork.remove(baseWork);
-              }
-            }
-          }
-        }
-      }
-    }
+  // Merge the target works of the second DPP sink into the first DPP sink.
+  public static void combineEquivalentDPPSinks(SparkPartitionPruningSinkOperator first,
+      SparkPartitionPruningSinkOperator second) {
+    SparkPartitionPruningSinkDesc firstConf = first.getConf();
+    SparkPartitionPruningSinkDesc secondConf = second.getConf();
+    for (SparkPartitionPruningSinkDesc.DPPTargetInfo targetInfo : secondConf.getTargetInfos()) {
+      MapWork target = targetInfo.work;
+      firstConf.addTarget(targetInfo.columnName, targetInfo.columnType, targetInfo.partKey, target,
+          targetInfo.tableScan);
 
-    private void removeEmptySparkTask(SparkTask currTask) {
-      // If currTask is rootTasks, remove it and add its children to the rootTasks which currTask is its only parent
-      // task
-      if (pctx.getRootTasks().contains(currTask)) {
-        pctx.removeFromRootTask(currTask);
-        List<Task<? extends Serializable>> newRoots = currTask.getChildTasks();
-        for (Task newRoot : newRoots) {
-          if (newRoot.getParentTasks().size() == 1) {
-            pctx.addToRootTask(newRoot);
-          }
-        }
+      if (target != null) {
+        // update the target map work of the second
+        first.addAsSourceEvent(target, targetInfo.partKey, targetInfo.columnName,
+            targetInfo.columnType);
+        second.removeFromSourceEvent(target, targetInfo.partKey, targetInfo.columnName,
+            targetInfo.columnType);
+        target.setTmpPathForPartitionPruning(firstConf.getTmpPathOfTargetWork());
       }
-      SparkUtilities.removeEmptySparkTask(currTask);
     }
   }
 }

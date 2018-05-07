@@ -1,3 +1,7 @@
+--! qt:dataset:src
+--! qt:dataset:part
+
+set hive.vectorized.execution.enabled=false;
 set hive.mapred.mode=nonstrict;
 set mapred.max.split.size=100;
 set mapred.min.split.size=1;

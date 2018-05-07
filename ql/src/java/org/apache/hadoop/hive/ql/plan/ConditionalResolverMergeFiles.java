@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -231,7 +231,8 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
       throws IOException {
     DynamicPartitionCtx dpCtx = ctx.getDPCtx();
     // get list of dynamic partitions
-    FileStatus[] status = HiveStatsUtils.getFileStatusRecurse(dirPath, dpLbLevel, inpFs);
+    List<FileStatus> statusList = HiveStatsUtils.getFileStatusRecurse(dirPath, dpLbLevel, inpFs);
+    FileStatus[] status = statusList.toArray(new FileStatus[statusList.size()]);
 
     // cleanup pathToPartitionInfo
     Map<Path, PartitionDesc> ptpi = work.getPathToPartitionInfo();
@@ -408,7 +409,7 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
    */
   private long getMergeSize(FileSystem inpFs, Path dirPath, long avgSize) {
     AverageSize averageSize = getAverageSize(inpFs, dirPath);
-    if (averageSize.getTotalSize() <= 0) {
+    if (averageSize.getTotalSize() < 0) {
       return -1;
     }
 

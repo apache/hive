@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
@@ -11,6 +12,9 @@ create table char_2 (
 ) stored as orc;
 
 insert overwrite table char_2 select * from src;
+
+-- Add a single NULL row that will come from ORC as isRepeated.
+insert into char_2 values (NULL, NULL);
 
 select value, sum(cast(key as int)), count(*) numrows
 from src

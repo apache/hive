@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -28,7 +28,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator.Counter;
 import org.apache.hadoop.hive.ql.exec.TerminalOperator;
 import org.apache.hadoop.hive.ql.exec.TopNHash;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -36,9 +35,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorSerializeRow;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContextRegion;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationOperator;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
-import org.apache.hadoop.hive.ql.exec.vector.keyseries.VectorKeySeriesSerialized;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
@@ -56,10 +53,7 @@ import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableSerialize
 import org.apache.hadoop.hive.serde2.lazybinary.fast.LazyBinarySerializeWrite;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.OutputCollector;
-import org.apache.hive.common.util.HashCodeUtil;
 
 import com.google.common.base.Preconditions;
 
@@ -136,10 +130,8 @@ public abstract class VectorReduceSinkCommonOperator extends TerminalOperator<Re
   // Where to write our key and value pairs.
   private transient OutputCollector out;
 
-  private transient long numRows = 0;
   private transient long cntr = 1;
   private transient long logEveryNRows = 0;
-  private final transient LongWritable recordCounter = new LongWritable();
 
   // For debug tracing: the name of the map or reduce task.
   protected transient String taskName;
@@ -161,8 +153,6 @@ public abstract class VectorReduceSinkCommonOperator extends TerminalOperator<Re
   public VectorReduceSinkCommonOperator(CompilationOpContext ctx, OperatorDesc conf,
       VectorizationContext vContext, VectorDesc vectorDesc) throws HiveException {
     this(ctx);
-
-    LOG.info("VectorReduceSinkCommonOperator constructor");
 
     ReduceSinkDesc desc = (ReduceSinkDesc) conf;
     this.conf = desc;
@@ -274,7 +264,6 @@ public abstract class VectorReduceSinkCommonOperator extends TerminalOperator<Re
     if (context != null && !context.isEmpty()) {
       context = "_" + context.replace(" ","_");
     }
-    statsMap.put(Counter.RECORDS_OUT_INTERMEDIATE + context, recordCounter);
 
     reduceSkipTag = conf.getSkipTag();
     reduceTagByte = (byte) conf.getTag();
@@ -355,7 +344,9 @@ public abstract class VectorReduceSinkCommonOperator extends TerminalOperator<Re
       final int firstIndex =
           reducerHash.tryStoreKey(keyWritable, /* partColsIsNull */ false);
 
-      if (firstIndex == TopNHash.EXCLUDE) return;   // Nothing to do.
+      if (firstIndex == TopNHash.EXCLUDE) {
+        return; // Nothing to do.
+      }
 
       if (firstIndex == TopNHash.FORWARD) {
         doCollect(keyWritable, valueWritable);
@@ -399,13 +390,14 @@ public abstract class VectorReduceSinkCommonOperator extends TerminalOperator<Re
     if (!abort && reducerHash != null) {
       reducerHash.flush();
     }
+    runTimeNumRows = numRows;
     super.closeOp(abort);
     out = null;
     reducerHash = null;
     if (LOG.isInfoEnabled()) {
       LOG.info(toString() + ": records written - " + numRows);
     }
-    recordCounter.set(numRows);
+    this.runTimeNumRows = numRows;
   }
 
   /**

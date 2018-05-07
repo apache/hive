@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -257,6 +257,7 @@ public class RexNodeConverter {
             func.getChildren().size() != 0;
     boolean isBetween = !isNumeric && tgtUdf instanceof GenericUDFBetween;
     boolean isIN = !isNumeric && tgtUdf instanceof GenericUDFIn;
+    boolean isAllPrimitive = true;
 
     if (isNumeric) {
       tgtDT = func.getTypeInfo();
@@ -312,6 +313,8 @@ public class RexNodeConverter {
         }
       }
 
+      isAllPrimitive =
+          isAllPrimitive && tmpExprNode.getTypeInfo().getCategory() == Category.PRIMITIVE;
       argTypeBldr.add(TypeConverter.convert(tmpExprNode.getTypeInfo(), cluster.getTypeFactory()));
       tmpRN = convert(tmpExprNode);
       childRexNodeLst.add(tmpRN);
@@ -336,8 +339,15 @@ public class RexNodeConverter {
       } else if (HiveFloorDate.ALL_FUNCTIONS.contains(calciteOp)) {
         // If it is a floor <date> operator, we need to rewrite it
         childRexNodeLst = rewriteFloorDateChildren(calciteOp, childRexNodeLst);
+      } else if (calciteOp.getKind() == SqlKind.IN && childRexNodeLst.size() == 2 && isAllPrimitive) {
+        // if it is a single item in an IN clause, transform A IN (B) to A = B
+        // from IN [A,B] => EQUALS [A,B]
+        // except complex types
+        calciteOp =
+            SqlFunctionConverter.getCalciteOperator("=", FunctionRegistry.getFunctionInfo("=")
+                .getGenericUDF(), argTypeBldr.build(), retType);
       }
-      expr = cluster.getRexBuilder().makeCall(calciteOp, childRexNodeLst);
+      expr = cluster.getRexBuilder().makeCall(retType, calciteOp, childRexNodeLst);
     } else {
       retType = expr.getType();
     }

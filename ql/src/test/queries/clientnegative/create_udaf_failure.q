@@ -1,3 +1,4 @@
+--! qt:dataset:src
 CREATE TEMPORARY FUNCTION test_udaf AS 'org.apache.hadoop.hive.ql.udf.UDAFWrongArgLengthForTestCase';
 
 EXPLAIN

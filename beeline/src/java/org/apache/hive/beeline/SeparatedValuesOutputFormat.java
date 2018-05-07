@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,112 +22,111 @@
  */
 package org.apache.hive.beeline;
 
-import java.io.IOException;
-import java.io.StringWriter;
-
-import org.apache.hadoop.io.IOUtils;
+import org.apache.commons.io.output.StringBuilderWriter;
+import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang.StringUtils;
 import org.supercsv.encoder.CsvEncoder;
+import org.supercsv.encoder.DefaultCsvEncoder;
 import org.supercsv.encoder.SelectiveCsvEncoder;
 import org.supercsv.io.CsvListWriter;
 import org.supercsv.prefs.CsvPreference;
 
 /**
- * OutputFormat for values separated by a delimiter.
+ * OutputFormat for values separated by a configurable delimiter
  */
 class SeparatedValuesOutputFormat implements OutputFormat {
+
+  public final static String DSV_OPT_OUTPUT_FORMAT = "dsv";
   public final static String DISABLE_QUOTING_FOR_SV = "disable.quoting.for.sv";
+  private final static char DEFAULT_QUOTE_CHAR = '"';
   private final BeeLine beeLine;
-  private CsvPreference quotedCsvPreference;
-  private CsvPreference unquotedCsvPreference;
+  private final StringBuilderWriter buffer;
+  private final char defaultSeparator;
 
   SeparatedValuesOutputFormat(BeeLine beeLine, char separator) {
     this.beeLine = beeLine;
-    unquotedCsvPreference = getUnquotedCsvPreference(separator);
-    quotedCsvPreference = new CsvPreference.Builder('"', separator, "").build();
+    this.defaultSeparator = separator;
+    this.buffer = new StringBuilderWriter();
   }
 
-  private static CsvPreference getUnquotedCsvPreference(char delimiter) {
-    CsvEncoder noEncoder = new SelectiveCsvEncoder();
-    return new CsvPreference.Builder('\0', delimiter, "").useEncoder(noEncoder).build();
-  }
+  private CsvPreference getCsvPreference() {
+    char separator = this.defaultSeparator;
+    char quoteChar = DEFAULT_QUOTE_CHAR;
+    CsvEncoder encoder;
 
-  private void updateCsvPreference() {
-    if (beeLine.getOpts().getOutputFormat().equals("dsv")) {
-      // check whether delimiter changed by user
-      char curDel = (char) getCsvPreference().getDelimiterChar();
-      char newDel = beeLine.getOpts().getDelimiterForDSV();
-      // if delimiter changed, rebuild the csv preference
-      if (newDel != curDel) {
-        // "" is passed as the end of line symbol in following function, as
-        // beeline itself adds newline
-        if (isQuotingDisabled()) {
-          unquotedCsvPreference = getUnquotedCsvPreference(newDel);
-        } else {
-          quotedCsvPreference = new CsvPreference.Builder('"', newDel, "").build();
-        }
-      }
+    if (DSV_OPT_OUTPUT_FORMAT.equals(beeLine.getOpts().getOutputFormat())) {
+      separator = beeLine.getOpts().getDelimiterForDSV();
     }
+
+    if (isQuotingDisabled()) {
+      quoteChar = '\0';
+      encoder = new SelectiveCsvEncoder();
+    } else {
+      encoder = new DefaultCsvEncoder();
+    }
+
+    return new CsvPreference.Builder(quoteChar, separator, StringUtils.EMPTY).useEncoder(encoder).build();
   }
 
   @Override
   public int print(Rows rows) {
-    updateCsvPreference();
-
+    CsvPreference csvPreference = getCsvPreference();
+    CsvListWriter writer = new CsvListWriter(this.buffer, csvPreference);
     int count = 0;
+
+    Rows.Row labels = (Rows.Row) rows.next();
+    if (beeLine.getOpts().getShowHeader()) {
+      fillBuffer(writer, labels);
+      String line = getLine(this.buffer);
+      beeLine.output(line);
+    }
+
     while (rows.hasNext()) {
-      if (count == 0 && !beeLine.getOpts().getShowHeader()) {
-        rows.next();
-        count++;
-        continue;
-      }
-      printRow((Rows.Row) rows.next());
+      fillBuffer(writer, (Rows.Row) rows.next());
+      String line = getLine(this.buffer);
+      beeLine.output(line);
       count++;
     }
-    return count - 1; // sans header row
+
+    return count;
   }
 
-  private String getFormattedStr(String[] vals) {
-    StringWriter strWriter = new StringWriter();
-    CsvListWriter writer = new CsvListWriter(strWriter, getCsvPreference());
-    if (vals.length > 0) {
-      try {
-        writer.write(vals);
-      } catch (IOException e) {
-        beeLine.error(e);
-      } finally {
-        IOUtils.closeStream(writer);
+  /**
+   * Fills the class's internal buffer with a DSV line
+   */
+  private void fillBuffer(CsvListWriter writer, Rows.Row row) {
+    String[] vals = row.values;
+
+    try {
+      writer.write(vals);
+      writer.flush();
+    } catch (Exception e) {
+      beeLine.error(e);
+    }
+  }
+
+  private String getLine(StringBuilderWriter buf) {
+    String line = buf.toString();
+    buf.getBuilder().setLength(0);
+    return line;
+  }
+
+  /**
+   * Default is disabling the double quoting for separated value
+   */
+  private boolean isQuotingDisabled() {
+    Boolean quotingDisabled = Boolean.TRUE;
+    String quotingDisabledStr = System.getProperty(SeparatedValuesOutputFormat.DISABLE_QUOTING_FOR_SV);
+
+    if (StringUtils.isNotBlank(quotingDisabledStr)) {
+      quotingDisabled = BooleanUtils.toBooleanObject(quotingDisabledStr);
+
+      if (quotingDisabled == null) {
+        beeLine.error("System Property " + SeparatedValuesOutputFormat.DISABLE_QUOTING_FOR_SV + " is now "
+          + quotingDisabledStr + " which only accepts boolean values");
+        quotingDisabled = Boolean.TRUE;
       }
     }
-    return strWriter.toString();
-  }
-
-  private void printRow(Rows.Row row) {
-    String[] vals = row.values;
-    String formattedStr = getFormattedStr(vals);
-    beeLine.output(formattedStr);
-  }
-
-  private boolean isQuotingDisabled() {
-    String quotingDisabledStr = System.getProperty(SeparatedValuesOutputFormat.DISABLE_QUOTING_FOR_SV);
-    if (quotingDisabledStr == null || quotingDisabledStr.isEmpty()) {
-      // default is disabling the double quoting for separated value
-      return true;
-    }
-    String parsedOptionStr = quotingDisabledStr.toLowerCase();
-    if (parsedOptionStr.equals("false") || parsedOptionStr.equals("true")) {
-      return Boolean.parseBoolean(parsedOptionStr);
-    } else {
-      beeLine.error("System Property disable.quoting.for.sv is now " + parsedOptionStr
-          + " which only accepts boolean value");
-      return true;
-    }
-  }
-
-  private CsvPreference getCsvPreference() {
-    if (isQuotingDisabled()) {
-      return unquotedCsvPreference;
-    } else {
-      return quotedCsvPreference;
-    }
+    return quotingDisabled;
   }
 }

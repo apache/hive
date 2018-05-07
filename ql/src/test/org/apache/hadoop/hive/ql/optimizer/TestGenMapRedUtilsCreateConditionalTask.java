@@ -164,7 +164,7 @@ public class TestGenMapRedUtilsCreateConditionalTask {
     TableDesc tableDesc = new TableDesc();
     reset(mockWork);
     when(mockWork.getLoadTableWork()).thenReturn(new LoadTableDesc(
-        condOutputPath, tableDesc, null, null));
+        condOutputPath, tableDesc, null));
     newWork = GenMapRedUtils.mergeMovePaths(condInputPath, mockWork, lineageState);
     assertNotNull(newWork);
     assertNotEquals(newWork, mockWork);

@@ -30,7 +30,7 @@ STAGE PLANS:
             alias: src2
             Statistics: Num rows: 1000 Data size: 10603 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (86 = key) (type: boolean)
+              predicate: (key = 86) (type: boolean)
               Statistics: Num rows: 500 Data size: 5301 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: value (type: string)
@@ -88,7 +88,7 @@ STAGE PLANS:
             alias: src1
             Statistics: Num rows: 1000 Data size: 10603 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (UDFToDouble(key) = 86.0) (type: boolean)
+              predicate: (UDFToDouble(key) = 86.0D) (type: boolean)
               Statistics: Num rows: 500 Data size: 5301 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 Statistics: Num rows: 500 Data size: 5301 Basic stats: COMPLETE Column stats: NONE
@@ -99,7 +99,7 @@ STAGE PLANS:
             alias: src2
             Statistics: Num rows: 1000 Data size: 10603 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (86 = key) (type: boolean)
+              predicate: (key = 86) (type: boolean)
               Statistics: Num rows: 500 Data size: 5301 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: value (type: string)

@@ -1,0 +1,556 @@
+PREHOOK: query: drop table intermediate
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table intermediate
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table intermediate(key int) partitioned by (p int) stored as orc tblproperties("transactional"="false")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@intermediate
+POSTHOOK: query: create table intermediate(key int) partitioned by (p int) stored as orc tblproperties("transactional"="false")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@intermediate
+PREHOOK: query: insert into table intermediate partition(p='455') select distinct key from src where key >= 0 order by key desc limit 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@intermediate@p=455
+POSTHOOK: query: insert into table intermediate partition(p='455') select distinct key from src where key >= 0 order by key desc limit 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@intermediate@p=455
+POSTHOOK: Lineage: intermediate PARTITION(p=455).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: insert into table intermediate partition(p='456') select distinct key from src where key is not null order by key asc limit 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@intermediate@p=456
+POSTHOOK: query: insert into table intermediate partition(p='456') select distinct key from src where key is not null order by key asc limit 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@intermediate@p=456
+POSTHOOK: Lineage: intermediate PARTITION(p=456).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: insert into table intermediate partition(p='457') select distinct key from src where key >= 100 order by key asc limit 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@intermediate@p=457
+POSTHOOK: query: insert into table intermediate partition(p='457') select distinct key from src where key >= 100 order by key asc limit 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@intermediate@p=457
+POSTHOOK: Lineage: intermediate PARTITION(p=457).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: drop table intermediate_nonpart
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table intermediate_nonpart
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table intermmediate_part
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table intermmediate_part
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table intermmediate_nonpart
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table intermmediate_nonpart
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table intermediate_nonpart(key int, p int) tblproperties("transactional"="false")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@intermediate_nonpart
+POSTHOOK: query: create table intermediate_nonpart(key int, p int) tblproperties("transactional"="false")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@intermediate_nonpart
+PREHOOK: query: insert into intermediate_nonpart select * from intermediate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate
+PREHOOK: Input: default@intermediate@p=455
+PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Output: default@intermediate_nonpart
+POSTHOOK: query: insert into intermediate_nonpart select * from intermediate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate
+POSTHOOK: Input: default@intermediate@p=455
+POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Output: default@intermediate_nonpart
+POSTHOOK: Lineage: intermediate_nonpart.key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: intermediate_nonpart.p SIMPLE [(intermediate)intermediate.FieldSchema(name:p, type:int, comment:null), ]
+PREHOOK: query: create table intermmediate_nonpart(key int, p int) tblproperties("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@intermmediate_nonpart
+POSTHOOK: query: create table intermmediate_nonpart(key int, p int) tblproperties("transactional"="true", "transactional_properties"="insert_only")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@intermmediate_nonpart
+PREHOOK: query: insert into intermmediate_nonpart select * from intermediate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate
+PREHOOK: Input: default@intermediate@p=455
+PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Output: default@intermmediate_nonpart
+POSTHOOK: query: insert into intermmediate_nonpart select * from intermediate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate
+POSTHOOK: Input: default@intermediate@p=455
+POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Output: default@intermmediate_nonpart
+POSTHOOK: Lineage: intermmediate_nonpart.key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: intermmediate_nonpart.p SIMPLE [(intermediate)intermediate.FieldSchema(name:p, type:int, comment:null), ]
+PREHOOK: query: create table intermmediate(key int) partitioned by (p int) tblproperties("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@intermmediate
+POSTHOOK: query: create table intermmediate(key int) partitioned by (p int) tblproperties("transactional"="true", "transactional_properties"="insert_only")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@intermmediate
+PREHOOK: query: insert into table intermmediate partition(p) select key, p from intermediate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate
+PREHOOK: Input: default@intermediate@p=455
+PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Output: default@intermmediate
+POSTHOOK: query: insert into table intermmediate partition(p) select key, p from intermediate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate
+POSTHOOK: Input: default@intermediate@p=455
+POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Output: default@intermmediate@p=455
+POSTHOOK: Output: default@intermmediate@p=456
+POSTHOOK: Output: default@intermmediate@p=457
+POSTHOOK: Lineage: intermmediate PARTITION(p=455).key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: intermmediate PARTITION(p=456).key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: intermmediate PARTITION(p=457).key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: export table intermediate_nonpart to 'ql/test/data/exports/intermediate_nonpart'
+PREHOOK: type: EXPORT
+PREHOOK: Input: default@intermediate_nonpart
+#### A masked pattern was here ####
+POSTHOOK: query: export table intermediate_nonpart to 'ql/test/data/exports/intermediate_nonpart'
+POSTHOOK: type: EXPORT
+POSTHOOK: Input: default@intermediate_nonpart
+#### A masked pattern was here ####
+PREHOOK: query: export table intermmediate_nonpart to 'ql/test/data/exports/intermmediate_nonpart'
+PREHOOK: type: EXPORT
+PREHOOK: Input: default@intermmediate_nonpart
+#### A masked pattern was here ####
+POSTHOOK: query: export table intermmediate_nonpart to 'ql/test/data/exports/intermmediate_nonpart'
+POSTHOOK: type: EXPORT
+POSTHOOK: Input: default@intermmediate_nonpart
+#### A masked pattern was here ####
+PREHOOK: query: export table intermediate to 'ql/test/data/exports/intermediate_part'
+PREHOOK: type: EXPORT
+PREHOOK: Input: default@intermediate@p=455
+PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Input: default@intermediate@p=457
+#### A masked pattern was here ####
+POSTHOOK: query: export table intermediate to 'ql/test/data/exports/intermediate_part'
+POSTHOOK: type: EXPORT
+POSTHOOK: Input: default@intermediate@p=455
+POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Input: default@intermediate@p=457
+#### A masked pattern was here ####
+PREHOOK: query: export table intermmediate to 'ql/test/data/exports/intermmediate_part'
+PREHOOK: type: EXPORT
+PREHOOK: Input: default@intermmediate@p=455
+PREHOOK: Input: default@intermmediate@p=456
+PREHOOK: Input: default@intermmediate@p=457
+#### A masked pattern was here ####
+POSTHOOK: query: export table intermmediate to 'ql/test/data/exports/intermmediate_part'
+POSTHOOK: type: EXPORT
+POSTHOOK: Input: default@intermmediate@p=455
+POSTHOOK: Input: default@intermmediate@p=456
+POSTHOOK: Input: default@intermmediate@p=457
+#### A masked pattern was here ####
+PREHOOK: query: drop table intermediate_nonpart
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@intermediate_nonpart
+PREHOOK: Output: default@intermediate_nonpart
+POSTHOOK: query: drop table intermediate_nonpart
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@intermediate_nonpart
+POSTHOOK: Output: default@intermediate_nonpart
+PREHOOK: query: drop table intermmediate_part
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table intermmediate_part
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table intermmediate_nonpart
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@intermmediate_nonpart
+PREHOOK: Output: default@intermmediate_nonpart
+POSTHOOK: query: drop table intermmediate_nonpart
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@intermmediate_nonpart
+POSTHOOK: Output: default@intermmediate_nonpart
+PREHOOK: query: drop table import0_mm
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table import0_mm
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table import0_mm(key int, p int) tblproperties("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@import0_mm
+POSTHOOK: query: create table import0_mm(key int, p int) tblproperties("transactional"="true", "transactional_properties"="insert_only")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@import0_mm
+PREHOOK: query: import table import0_mm from 'ql/test/data/exports/intermediate_nonpart'
+PREHOOK: type: IMPORT
+#### A masked pattern was here ####
+PREHOOK: Output: default@import0_mm
+POSTHOOK: query: import table import0_mm from 'ql/test/data/exports/intermediate_nonpart'
+POSTHOOK: type: IMPORT
+#### A masked pattern was here ####
+POSTHOOK: Output: default@import0_mm
+PREHOOK: query: select * from import0_mm order by key, p
+PREHOOK: type: QUERY
+PREHOOK: Input: default@import0_mm
+#### A masked pattern was here ####
+POSTHOOK: query: select * from import0_mm order by key, p
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@import0_mm
+#### A masked pattern was here ####
+0	456
+10	456
+97	455
+98	455
+100	457
+103	457
+PREHOOK: query: drop table import0_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@import0_mm
+PREHOOK: Output: default@import0_mm
+POSTHOOK: query: drop table import0_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@import0_mm
+POSTHOOK: Output: default@import0_mm
+PREHOOK: query: drop table import1_mm
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table import1_mm
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table import1_mm(key int) partitioned by (p int)
+  stored as orc tblproperties("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@import1_mm
+POSTHOOK: query: create table import1_mm(key int) partitioned by (p int)
+  stored as orc tblproperties("transactional"="true", "transactional_properties"="insert_only")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@import1_mm
+PREHOOK: query: import table import1_mm from 'ql/test/data/exports/intermediate_part'
+PREHOOK: type: IMPORT
+#### A masked pattern was here ####
+PREHOOK: Output: default@import1_mm
+POSTHOOK: query: import table import1_mm from 'ql/test/data/exports/intermediate_part'
+POSTHOOK: type: IMPORT
+#### A masked pattern was here ####
+POSTHOOK: Output: default@import1_mm
+POSTHOOK: Output: default@import1_mm@p=455
+POSTHOOK: Output: default@import1_mm@p=456
+POSTHOOK: Output: default@import1_mm@p=457
+PREHOOK: query: select * from import1_mm order by key, p
+PREHOOK: type: QUERY
+PREHOOK: Input: default@import1_mm
+PREHOOK: Input: default@import1_mm@p=455
+PREHOOK: Input: default@import1_mm@p=456
+PREHOOK: Input: default@import1_mm@p=457
+#### A masked pattern was here ####
+POSTHOOK: query: select * from import1_mm order by key, p
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@import1_mm
+POSTHOOK: Input: default@import1_mm@p=455
+POSTHOOK: Input: default@import1_mm@p=456
+POSTHOOK: Input: default@import1_mm@p=457
+#### A masked pattern was here ####
+0	456
+10	456
+97	455
+98	455
+100	457
+103	457
+PREHOOK: query: drop table import1_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@import1_mm
+PREHOOK: Output: default@import1_mm
+POSTHOOK: query: drop table import1_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@import1_mm
+POSTHOOK: Output: default@import1_mm
+PREHOOK: query: drop table import2_mm
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table import2_mm
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: import table import2_mm from 'ql/test/data/exports/intermmediate_nonpart'
+PREHOOK: type: IMPORT
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+POSTHOOK: query: import table import2_mm from 'ql/test/data/exports/intermmediate_nonpart'
+POSTHOOK: type: IMPORT
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@import2_mm
+PREHOOK: query: desc import2_mm
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@import2_mm
+POSTHOOK: query: desc import2_mm
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@import2_mm
+key                 	int                 	                    
+p                   	int                 	                    
+PREHOOK: query: select * from import2_mm order by key, p
+PREHOOK: type: QUERY
+PREHOOK: Input: default@import2_mm
+#### A masked pattern was here ####
+POSTHOOK: query: select * from import2_mm order by key, p
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@import2_mm
+#### A masked pattern was here ####
+0	456
+10	456
+97	455
+98	455
+100	457
+103	457
+PREHOOK: query: drop table import2_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@import2_mm
+PREHOOK: Output: default@import2_mm
+POSTHOOK: query: drop table import2_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@import2_mm
+POSTHOOK: Output: default@import2_mm
+PREHOOK: query: drop table import3_mm
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table import3_mm
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: import table import3_mm from 'ql/test/data/exports/intermmediate_part'
+PREHOOK: type: IMPORT
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+POSTHOOK: query: import table import3_mm from 'ql/test/data/exports/intermmediate_part'
+POSTHOOK: type: IMPORT
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@import3_mm
+POSTHOOK: Output: default@import3_mm@p=455
+POSTHOOK: Output: default@import3_mm@p=456
+POSTHOOK: Output: default@import3_mm@p=457
+PREHOOK: query: desc import3_mm
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@import3_mm
+POSTHOOK: query: desc import3_mm
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@import3_mm
+key                 	int                 	                    
+p                   	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p                   	int                 	                    
+PREHOOK: query: select * from import3_mm order by key, p
+PREHOOK: type: QUERY
+PREHOOK: Input: default@import3_mm
+PREHOOK: Input: default@import3_mm@p=455
+PREHOOK: Input: default@import3_mm@p=456
+PREHOOK: Input: default@import3_mm@p=457
+#### A masked pattern was here ####
+POSTHOOK: query: select * from import3_mm order by key, p
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@import3_mm
+POSTHOOK: Input: default@import3_mm@p=455
+POSTHOOK: Input: default@import3_mm@p=456
+POSTHOOK: Input: default@import3_mm@p=457
+#### A masked pattern was here ####
+0	456
+10	456
+97	455
+98	455
+100	457
+103	457
+PREHOOK: query: drop table import3_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@import3_mm
+PREHOOK: Output: default@import3_mm
+POSTHOOK: query: drop table import3_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@import3_mm
+POSTHOOK: Output: default@import3_mm
+PREHOOK: query: drop table import4_mm
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table import4_mm
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table import4_mm(key int, p int) tblproperties("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@import4_mm
+POSTHOOK: query: create table import4_mm(key int, p int) tblproperties("transactional"="true", "transactional_properties"="insert_only")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@import4_mm
+PREHOOK: query: import table import4_mm from 'ql/test/data/exports/intermmediate_nonpart'
+PREHOOK: type: IMPORT
+#### A masked pattern was here ####
+PREHOOK: Output: default@import4_mm
+POSTHOOK: query: import table import4_mm from 'ql/test/data/exports/intermmediate_nonpart'
+POSTHOOK: type: IMPORT
+#### A masked pattern was here ####
+POSTHOOK: Output: default@import4_mm
+PREHOOK: query: select * from import4_mm order by key, p
+PREHOOK: type: QUERY
+PREHOOK: Input: default@import4_mm
+#### A masked pattern was here ####
+POSTHOOK: query: select * from import4_mm order by key, p
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@import4_mm
+#### A masked pattern was here ####
+0	456
+10	456
+97	455
+98	455
+100	457
+103	457
+PREHOOK: query: drop table import4_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@import4_mm
+PREHOOK: Output: default@import4_mm
+POSTHOOK: query: drop table import4_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@import4_mm
+POSTHOOK: Output: default@import4_mm
+PREHOOK: query: drop table import5_mm
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table import5_mm
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table import5_mm(key int) partitioned by (p int) tblproperties("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@import5_mm
+POSTHOOK: query: create table import5_mm(key int) partitioned by (p int) tblproperties("transactional"="true", "transactional_properties"="insert_only")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@import5_mm
+PREHOOK: query: import table import5_mm partition(p=455) from 'ql/test/data/exports/intermmediate_part'
+PREHOOK: type: IMPORT
+#### A masked pattern was here ####
+PREHOOK: Output: default@import5_mm
+POSTHOOK: query: import table import5_mm partition(p=455) from 'ql/test/data/exports/intermmediate_part'
+POSTHOOK: type: IMPORT
+#### A masked pattern was here ####
+POSTHOOK: Output: default@import5_mm
+POSTHOOK: Output: default@import5_mm@p=455
+PREHOOK: query: select * from import5_mm order by key, p
+PREHOOK: type: QUERY
+PREHOOK: Input: default@import5_mm
+PREHOOK: Input: default@import5_mm@p=455
+#### A masked pattern was here ####
+POSTHOOK: query: select * from import5_mm order by key, p
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@import5_mm
+POSTHOOK: Input: default@import5_mm@p=455
+#### A masked pattern was here ####
+97	455
+98	455
+PREHOOK: query: drop table import5_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@import5_mm
+PREHOOK: Output: default@import5_mm
+POSTHOOK: query: drop table import5_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@import5_mm
+POSTHOOK: Output: default@import5_mm
+PREHOOK: query: drop table import6_mm
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table import6_mm
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table import6_mm(key int, p int) tblproperties("transactional"="false")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@import6_mm
+POSTHOOK: query: create table import6_mm(key int, p int) tblproperties("transactional"="false")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@import6_mm
+PREHOOK: query: import table import6_mm from 'ql/test/data/exports/intermmediate_nonpart'
+PREHOOK: type: IMPORT
+#### A masked pattern was here ####
+PREHOOK: Output: default@import6_mm
+POSTHOOK: query: import table import6_mm from 'ql/test/data/exports/intermmediate_nonpart'
+POSTHOOK: type: IMPORT
+#### A masked pattern was here ####
+POSTHOOK: Output: default@import6_mm
+PREHOOK: query: select * from import6_mm order by key, p
+PREHOOK: type: QUERY
+PREHOOK: Input: default@import6_mm
+#### A masked pattern was here ####
+POSTHOOK: query: select * from import6_mm order by key, p
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@import6_mm
+#### A masked pattern was here ####
+0	456
+10	456
+97	455
+98	455
+100	457
+103	457
+PREHOOK: query: drop table import6_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@import6_mm
+PREHOOK: Output: default@import6_mm
+POSTHOOK: query: drop table import6_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@import6_mm
+POSTHOOK: Output: default@import6_mm
+PREHOOK: query: drop table import7_mm
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table import7_mm
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table import7_mm(key int) partitioned by (p int) tblproperties("transactional"="false")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@import7_mm
+POSTHOOK: query: create table import7_mm(key int) partitioned by (p int) tblproperties("transactional"="false")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@import7_mm
+PREHOOK: query: import table import7_mm from 'ql/test/data/exports/intermmediate_part'
+PREHOOK: type: IMPORT
+#### A masked pattern was here ####
+PREHOOK: Output: default@import7_mm
+POSTHOOK: query: import table import7_mm from 'ql/test/data/exports/intermmediate_part'
+POSTHOOK: type: IMPORT
+#### A masked pattern was here ####
+POSTHOOK: Output: default@import7_mm
+POSTHOOK: Output: default@import7_mm@p=455
+POSTHOOK: Output: default@import7_mm@p=456
+POSTHOOK: Output: default@import7_mm@p=457
+PREHOOK: query: select * from import7_mm order by key, p
+PREHOOK: type: QUERY
+PREHOOK: Input: default@import7_mm
+PREHOOK: Input: default@import7_mm@p=455
+PREHOOK: Input: default@import7_mm@p=456
+PREHOOK: Input: default@import7_mm@p=457
+#### A masked pattern was here ####
+POSTHOOK: query: select * from import7_mm order by key, p
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@import7_mm
+POSTHOOK: Input: default@import7_mm@p=455
+POSTHOOK: Input: default@import7_mm@p=456
+POSTHOOK: Input: default@import7_mm@p=457
+#### A masked pattern was here ####
+0	456
+10	456
+97	455
+98	455
+100	457
+103	457
+PREHOOK: query: drop table import7_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@import7_mm
+PREHOOK: Output: default@import7_mm
+POSTHOOK: query: drop table import7_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@import7_mm
+POSTHOOK: Output: default@import7_mm

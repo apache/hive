@@ -51,4 +51,11 @@ public class ShuffleWriteMetrics implements Serializable {
       metrics.shuffleWriteMetrics().shuffleWriteTime());
   }
 
+  @Override
+  public String toString() {
+    return "ShuffleWriteMetrics{" +
+            "shuffleBytesWritten=" + shuffleBytesWritten +
+            ", shuffleWriteTime=" + shuffleWriteTime +
+            '}';
+  }
 }

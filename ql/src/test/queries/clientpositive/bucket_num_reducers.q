@@ -1,3 +1,6 @@
+--! qt:dataset:src
+
+set hive.vectorized.execution.enabled=false;
 set hive.stats.column.autogather=false;
 set hive.exec.mode.local.auto=false;
 set mapred.reduce.tasks = 10;
@@ -6,11 +9,10 @@ set mapred.reduce.tasks = 10;
 -- and uses a post-hook to confirm that 10 tasks were created
 
 CREATE TABLE bucket_nr(key int, value string) CLUSTERED BY (key) INTO 50 BUCKETS;
-set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.VerifyNumReducersHook;
-set VerifyNumReducersHook.num.reducers=10;
 
+explain extended insert overwrite table bucket_nr
+  select * from src;
 insert overwrite table bucket_nr
 select * from src;
 
-set hive.exec.post.hooks=;
 drop table bucket_nr;

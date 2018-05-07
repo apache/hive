@@ -206,11 +206,19 @@
         <include>**/*.py</include>
         <include>**/*.xml</include>
       </includes>
-      <outputDirectory>scripts/llap/slider</outputDirectory>
+      <outputDirectory>scripts/llap/yarn</outputDirectory>
     </fileSet>
 
     <fileSet>
       <directory>${project.parent.basedir}/metastore/scripts/upgrade</directory>
+      <includes>
+        <include>**/*</include>
+      </includes>
+      <outputDirectory>scripts/metastore/upgrade</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.parent.basedir}/standalone-metastore/src/main/sql</directory>
       <includes>
         <include>**/*</include>
       </includes>

@@ -1,4 +1,4 @@
-/**
+/*
  *  Licensed to the Apache Software Foundation (ASF) under one
  *  or more contributor license agreements.  See the NOTICE file
  *  distributed with this work for additional information
@@ -19,19 +19,19 @@
 package org.apache.hadoop.hive.ql.exec.spark;
 
 import org.apache.hadoop.hive.ql.io.HiveKey;
+import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.spark.api.java.JavaPairRDD;
 
 public class ReduceTran<V> extends CacheTran<HiveKey, V, HiveKey, BytesWritable> {
   private HiveReduceFunction<V> reduceFunc;
-  private String name = "Reduce";
 
   public ReduceTran() {
-    this(false);
+    this(false, "Reduce", null);
   }
 
-  public ReduceTran(boolean caching) {
-    super(caching);
+  public ReduceTran(boolean caching, String name, BaseWork baseWork) {
+    super(caching, name, baseWork);
   }
 
   @Override
@@ -42,15 +42,5 @@ public class ReduceTran<V> extends CacheTran<HiveKey, V, HiveKey, BytesWritable>
 
   public void setReduceFunction(HiveReduceFunction<V> redFunc) {
     this.reduceFunc = redFunc;
-  }
-
-  @Override
-  public String getName() {
-    return name;
-  }
-
-  @Override
-  public void setName(String name) {
-    this.name = name;
   }
 }

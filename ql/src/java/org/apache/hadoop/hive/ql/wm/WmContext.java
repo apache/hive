@@ -85,8 +85,7 @@ public class WmContext implements PrintSummary {
       for (Trigger trigger : triggers) {
         counters.add(trigger.getExpression().getCounterLimit().getName());
       }
-      setSubscribedCounters(counters);
-      setCurrentCounters(new HashMap<>());
+      addSubscribedCounters(counters);
     }
   }
 
@@ -104,6 +103,13 @@ public class WmContext implements PrintSummary {
 
   public void setSubscribedCounters(final Set<String> subscribedCounters) {
     this.subscribedCounters = subscribedCounters;
+  }
+
+  public void addSubscribedCounters(final Set<String> moreCounters) {
+    if (subscribedCounters == null) {
+      subscribedCounters = new HashSet<>();
+    }
+    subscribedCounters.addAll(moreCounters);
   }
 
   public Map<String, Long> getCurrentCounters() {
@@ -228,6 +234,12 @@ public class WmContext implements PrintSummary {
       console.printInfo("Event: " + wmEvent.getEventType() +
         " Pool: " + wmEvent.getWmTezSessionInfo().getPoolName() +
         " Cluster %: " + WmContext.DECIMAL_FORMAT.format(wmEvent.getWmTezSessionInfo().getClusterPercent()));
+    }
+  }
+
+  public void updateElapsedTimeCounter() {
+    if (subscribedCounters.contains(TimeCounterLimit.TimeCounter.ELAPSED_TIME.name())) {
+      currentCounters.put(TimeCounterLimit.TimeCounter.ELAPSED_TIME.name(), getElapsedTime());
     }
   }
 }

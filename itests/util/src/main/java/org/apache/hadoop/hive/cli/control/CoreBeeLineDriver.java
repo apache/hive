@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,11 +19,27 @@ package org.apache.hadoop.hive.cli.control;
 
 import static org.junit.Assert.fail;
 
-import com.google.common.base.Strings;
+import java.io.File;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.stream.Stream;
+
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
+import org.apache.hadoop.hive.ql.dataset.Dataset;
+import org.apache.hadoop.hive.ql.dataset.DatasetCollection;
+import org.apache.hadoop.hive.ql.dataset.DatasetParser;
 import org.apache.hadoop.hive.ql.hooks.PreExecutePrinter;
 import org.apache.hive.beeline.ConvertedOutputFile.Converter;
 import org.apache.hive.beeline.QFile;
@@ -34,10 +50,8 @@ import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
-import java.io.File;
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.HashMap;
+import com.google.common.base.Strings;
+import com.google.common.collect.ObjectArrays;
 
 public class CoreBeeLineDriver extends CliAdapter {
   private final File hiveRootDirectory = new File(AbstractCliConfig.HIVE_ROOT);
@@ -48,11 +62,13 @@ public class CoreBeeLineDriver extends CliAdapter {
   private final File cleanupScript;
   private final File testDataDirectory;
   private final File testScriptDirectory;
+  private final File datasetDirectory;
   private boolean overwrite = false;
   private boolean useSharedDatabase = false;
   private MiniHS2 miniHS2;
   private QFileClientBuilder clientBuilder;
   private QFileBuilder fileBuilder;
+  private final Map<String, Set<String>> datasets = new HashMap<String, Set<String>>();
 
   public CoreBeeLineDriver(AbstractCliConfig testCliConfig) {
     super(testCliConfig);
@@ -71,6 +87,7 @@ public class CoreBeeLineDriver extends CliAdapter {
       testDataDirectory = new File(testDataDirectoryName);
     }
     testScriptDirectory = new File(hiveRootDirectory, "data" + File.separator + "scripts");
+    datasetDirectory = new File(testDataDirectory, "datasets");
     String initScriptFileName = System.getProperty("test.init.script");
     if (initScriptFileName != null) {
       initScript = new File(testScriptDirectory, initScriptFileName);
@@ -156,6 +173,23 @@ public class CoreBeeLineDriver extends CliAdapter {
           + "\nCheck the following logs for details:\n - " + beeLineOutput + "\n - " + log, e);
     }
   }
+  
+  protected void runInfraScript(String[] commands, File beeLineOutput, File log)
+      throws IOException, SQLException {
+    try (QFileBeeLineClient beeLineClient = clientBuilder.getClient(beeLineOutput)) {
+      String[] preCommands =
+          new String[] { "set hive.exec.pre.hooks=" + PreExecutePrinter.class.getName() + ";",
+              "set test.data.dir=" + testDataDirectory + ";",
+              "set test.script.dir=" + testScriptDirectory + ";" };
+
+      String[] allCommands =
+          Stream.concat(Arrays.stream(preCommands), Arrays.stream(commands)).toArray(String[]::new);
+      beeLineClient.execute(allCommands, log, Converter.NONE);
+    } catch (Exception e) {
+      throw new SQLException("Error running infra commands, "
+          + "\nCheck the following logs for details:\n - " + beeLineOutput + "\n - " + log, e);
+    }
+  }
 
   @Override
   @AfterClass
@@ -167,12 +201,12 @@ public class CoreBeeLineDriver extends CliAdapter {
     }
   }
 
-  public void runTest(QFile qFile) throws Exception {
+  private void runTest(QFile qFile, List<Callable<Void>> preCommands) throws Exception {
     try (QFileBeeLineClient beeLineClient = clientBuilder.getClient(qFile.getLogFile())) {
       long startTime = System.currentTimeMillis();
       System.err.println(">>> STARTED " + qFile.getName());
 
-      beeLineClient.execute(qFile);
+      beeLineClient.execute(qFile, preCommands);
 
       long queryEndTime = System.currentTimeMillis();
       System.err.println(">>> EXECUTED " + qFile.getName() + ": " + (queryEndTime - startTime)
@@ -207,6 +241,11 @@ public class CoreBeeLineDriver extends CliAdapter {
       throw new Exception("Exception running or analyzing the results of the query file: " + qFile
           + "\n" + qFile.getDebugHint(), e);
     }
+    
+  }
+  
+  public void runTest(QFile qFile) throws Exception {
+    runTest(qFile, null);
   }
 
   @Override
@@ -220,6 +259,58 @@ public class CoreBeeLineDriver extends CliAdapter {
   @Override
   public void runTest(String name, String name2, String absolutePath) throws Exception {
     QFile qFile = fileBuilder.getQFile(name);
-    runTest(qFile);
+    List<Callable<Void>> commands = initDataSetForTest(qFile);
+    runTest(qFile, commands);
+  }
+
+  private List<Callable<Void>> initDataSetForTest(QFile qFile) throws Exception {
+    DatasetParser parser = new DatasetParser();
+    parser.parse(qFile.getInputFile());
+
+    List<Callable<Void>> commands = new ArrayList<>();
+
+    DatasetCollection datasets = parser.getDatasets();
+    for (String table : datasets.getTables()) {
+      Callable<Void> command = initDataset(table, qFile);
+      if (command != null) {
+        commands.add(command);
+      }
+    }
+
+    return commands;
+  }
+
+  protected Callable<Void> initDataset(String table, QFile qFile) throws Exception {
+    if (datasetInitialized(table, qFile)) {
+      return null;
+    }
+
+    Callable<Void> command = new Callable<Void>() {
+      @Override
+      public Void call() throws Exception {
+        File tableFile = new File(new File(datasetDirectory, table), Dataset.INIT_FILE_NAME);
+        List<String> datasetLines = FileUtils.readLines(tableFile);
+        String[] datasetCommands = datasetLines.toArray(new String[datasetLines.size()]);
+
+        runInfraScript(
+            ObjectArrays.concat(String.format("use %s;", qFile.getDatabaseName()), datasetCommands),
+            new File(logDirectory, "dataset.beeline"), new File(logDirectory, "dataset.raw"));
+
+        return null;
+      }
+    };
+
+    datasets.get(qFile.getDatabaseName()).add(table);
+
+    return command;
+  }
+
+  private boolean datasetInitialized(String table, QFile qFile) {
+    if (datasets.get(qFile.getDatabaseName()) == null) {
+      datasets.put(qFile.getDatabaseName(), new HashSet<String>());
+      return false;
+    }
+
+    return datasets.get(qFile.getDatabaseName()).contains(table);
   }
 }

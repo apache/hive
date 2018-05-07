@@ -1,3 +1,4 @@
+--! qt:dataset:src1
 set hive.auto.convert.join = false;
 
 -- SORT_QUERY_RESULTS

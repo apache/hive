@@ -1,4 +1,4 @@
-/**
+/*
  *  Licensed to the Apache Software Foundation (ASF) under one
  *  or more contributor license agreements.  See the NOTICE file
  *  distributed with this work for additional information
@@ -126,11 +126,16 @@ public class SparkCompiler extends TaskCompiler {
     // Run Join releated optimizations
     runJoinOptimizations(procCtx);
 
-    // Remove DPP based on expected size of the output data
-    runRemoveDynamicPruning(procCtx);
+    if(conf.isSparkDPPAny()){
+      // Remove DPP based on expected size of the output data
+      runRemoveDynamicPruning(procCtx);
 
-    // Remove cyclic dependencies for DPP
-    runCycleAnalysisForPartitionPruning(procCtx);
+      // Remove cyclic dependencies for DPP
+      runCycleAnalysisForPartitionPruning(procCtx);
+
+      // Remove nested DPPs
+      SparkUtilities.removeNestedDPP(procCtx);
+    }
 
     // Re-run constant propagation so we fold any new constants introduced by the operator optimizers
     // Specifically necessary for DPP because we might have created lots of "and true and true" conditions
@@ -161,9 +166,6 @@ public class SparkCompiler extends TaskCompiler {
   }
 
   private void runCycleAnalysisForPartitionPruning(OptimizeSparkProcContext procCtx) {
-    if (!conf.isSparkDPPAny()) {
-      return;
-    }
 
     boolean cycleFree = false;
     while (!cycleFree) {
@@ -207,7 +209,7 @@ public class SparkCompiler extends TaskCompiler {
     OperatorUtils.removeBranch(toRemove);
     // at this point we've found the fork in the op pipeline that has the pruning as a child plan.
     LOG.info("Disabling dynamic pruning for: "
-        + toRemove.getConf().getTableScan().toString() + ". Needed to break cyclic dependency");
+        + toRemove.getConf().getTableScanNames() + ". Needed to break cyclic dependency");
   }
 
   // Tarjan's algo
@@ -239,9 +241,12 @@ public class SparkCompiler extends TaskCompiler {
     if (o instanceof SparkPartitionPruningSinkOperator) {
       children = new ArrayList<>();
       children.addAll(o.getChildOperators());
-      TableScanOperator ts = ((SparkPartitionPruningSinkDesc) o.getConf()).getTableScan();
-      LOG.debug("Adding special edge: " + o.getName() + " --> " + ts.toString());
-      children.add(ts);
+      SparkPartitionPruningSinkDesc dppDesc = ((SparkPartitionPruningSinkOperator) o).getConf();
+      for (SparkPartitionPruningSinkDesc.DPPTargetInfo targetInfo : dppDesc.getTargetInfos()) {
+        TableScanOperator ts = targetInfo.tableScan;
+        LOG.debug("Adding special edge: " + o.getName() + " --> " + ts.toString());
+        children.add(ts);
+      }
     } else {
       children = o.getChildOperators();
     }
@@ -586,8 +591,7 @@ public class SparkCompiler extends TaskCompiler {
       LOG.debug("Skipping cross product analysis");
     }
 
-    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED)
-        && ctx.getExplainAnalyze() == null) {
+    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED)) {
       (new Vectorizer()).resolve(physicalCtx);
     } else {
       LOG.debug("Skipping vectorization");

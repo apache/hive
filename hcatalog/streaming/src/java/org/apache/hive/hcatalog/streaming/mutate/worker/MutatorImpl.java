@@ -28,10 +28,13 @@ import org.apache.hadoop.hive.ql.io.RecordUpdater;
 import org.apache.hadoop.hive.ql.io.orc.OrcRecordUpdater;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
-/** Base {@link Mutator} implementation. Creates a suitable {@link RecordUpdater} and delegates mutation events. */
+/** Base {@link Mutator} implementation. Creates a suitable {@link RecordUpdater} and delegates mutation events.
+ * @deprecated as of Hive 3.0.0
+ */
+@Deprecated
 public class MutatorImpl implements Mutator {
 
-  private final long transactionId;
+  private final long writeId;
   private final Path partitionPath;
   private final int bucketProperty;
   private final Configuration configuration;
@@ -44,11 +47,11 @@ public class MutatorImpl implements Mutator {
    * @throws IOException
    */
   public MutatorImpl(Configuration configuration, int recordIdColumn, ObjectInspector objectInspector,
-      AcidOutputFormat<?, ?> outputFormat, long transactionId, Path partitionPath, int bucketProperty) throws IOException {
+      AcidOutputFormat<?, ?> outputFormat, long writeId, Path partitionPath, int bucketProperty) throws IOException {
     this.configuration = configuration;
     this.recordIdColumn = recordIdColumn;
     this.objectInspector = objectInspector;
-    this.transactionId = transactionId;
+    this.writeId = writeId;
     this.partitionPath = partitionPath;
     this.bucketProperty = bucketProperty;
 
@@ -57,17 +60,17 @@ public class MutatorImpl implements Mutator {
 
   @Override
   public void insert(Object record) throws IOException {
-    updater.insert(transactionId, record);
+    updater.insert(writeId, record);
   }
 
   @Override
   public void update(Object record) throws IOException {
-    updater.update(transactionId, record);
+    updater.update(writeId, record);
   }
 
   @Override
   public void delete(Object record) throws IOException {
-    updater.delete(transactionId, record);
+    updater.delete(writeId, record);
   }
 
   /**
@@ -89,7 +92,7 @@ public class MutatorImpl implements Mutator {
 
   @Override
   public String toString() {
-    return "ObjectInspectorMutator [transactionId=" + transactionId + ", partitionPath=" + partitionPath
+    return "ObjectInspectorMutator [writeId=" + writeId + ", partitionPath=" + partitionPath
         + ", bucketId=" + bucketProperty + "]";
   }
 
@@ -101,8 +104,8 @@ public class MutatorImpl implements Mutator {
         new AcidOutputFormat.Options(configuration)
             .inspector(objectInspector)
             .bucket(bucketId)
-            .minimumTransactionId(transactionId)
-            .maximumTransactionId(transactionId)
+            .minimumWriteId(writeId)
+            .maximumWriteId(writeId)
             .recordIdColumn(recordIdColumn)
             .finalDestination(partitionPath)
             .statementId(-1));

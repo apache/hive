@@ -58,4 +58,4 @@ POSTHOOK: Output: default@masking_acid_no_masking
 POSTHOOK: Output: default@merge_tmp_table
 POSTHOOK: Lineage: masking_acid_no_masking.key SIMPLE [(nonacid)s.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: masking_acid_no_masking.value SIMPLE [(nonacid)s.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(masking_acid_no_masking)t.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
+POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(masking_acid_no_masking)t.FieldSchema(name:ROW__ID, type:struct<writeId:bigint,bucketId:int,rowId:bigint>, comment:), ]

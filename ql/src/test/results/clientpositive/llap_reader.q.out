@@ -4,6 +4,7 @@ PREHOOK: Output: database:default
 PREHOOK: Output: default@test
 PREHOOK: query: INSERT INTO TABLE test VALUES (1,1,1), (2,2,2), (3,3,3), (4,4,4)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test
 PREHOOK: query: ALTER TABLE test CHANGE f1 f1 bigint
 PREHOOK: type: ALTERTABLE_RENAMECOL
@@ -75,6 +76,7 @@ PREHOOK: Output: database:default
 PREHOOK: Output: default@test_acid
 PREHOOK: query: INSERT INTO TABLE test_acid VALUES (1,1,'b1'), (2,2,'b2'), (3,3,'b3'), (4,4,'b4')
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test_acid
 PREHOOK: query: SELECT count(f1) FROM test_acid GROUP BY f1
 PREHOOK: type: QUERY

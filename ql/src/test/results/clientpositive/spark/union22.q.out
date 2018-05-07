@@ -89,7 +89,7 @@ STAGE PLANS:
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: ((UDFToDouble(k0) > 50.0) and (UDFToDouble(k1) > 20.0)) (type: boolean)
+                    predicate: ((UDFToDouble(k0) > 50.0D) and (UDFToDouble(k1) > 20.0D)) (type: boolean)
                     Statistics: Num rows: 55 Data size: 1862 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: k1 (type: string), k3 (type: string), k4 (type: string)
@@ -105,6 +105,7 @@ STAGE PLANS:
                           0 _col0 (type: string)
                           1 _col0 (type: string)
                         Position of Big Table: 0
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
             Path -> Alias:
@@ -142,6 +143,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns k0,k1,k2,k3,k4,k5
                       columns.comments 
@@ -172,7 +174,7 @@ STAGE PLANS:
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (UDFToDouble(k0) <= 50.0) (type: boolean)
+                    predicate: (UDFToDouble(k0) <= 50.0D) (type: boolean)
                     Statistics: Num rows: 166 Data size: 5622 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: k1 (type: string), k2 (type: string), k3 (type: string), k4 (type: string)
@@ -191,6 +193,7 @@ STAGE PLANS:
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             properties:
                               bucket_count -1
+                              bucketing_version 2
                               column.name.delimiter ,
                               columns k1,k2,k3,k4
                               columns.comments 
@@ -208,6 +211,7 @@ STAGE PLANS:
                         TotalFiles: 1
                         GatherStats: true
                         MultiFileSpray: false
+            Execution mode: vectorized
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -243,6 +247,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns k0,k1,k2,k3,k4,k5
                       columns.comments 
@@ -268,7 +273,7 @@ STAGE PLANS:
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (UDFToDouble(k1) > 20.0) (type: boolean)
+                    predicate: (UDFToDouble(k1) > 20.0D) (type: boolean)
                     Statistics: Num rows: 166 Data size: 3693 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: k1 (type: string), k2 (type: string), ds (type: string)
@@ -307,6 +312,7 @@ STAGE PLANS:
                                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                                 properties:
                                   bucket_count -1
+                                  bucketing_version 2
                                   column.name.delimiter ,
                                   columns k1,k2,k3,k4
                                   columns.comments 
@@ -324,6 +330,7 @@ STAGE PLANS:
                             TotalFiles: 1
                             GatherStats: true
                             MultiFileSpray: false
+            Execution mode: vectorized
             Local Work:
               Map Reduce Local Work
             Path -> Alias:
@@ -361,6 +368,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      bucketing_version 2
                       column.name.delimiter ,
                       columns k1,k2,k3,k4
                       columns.comments 
@@ -391,6 +399,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                bucketing_version 2
                 column.name.delimiter ,
                 columns k1,k2,k3,k4
                 columns.comments 

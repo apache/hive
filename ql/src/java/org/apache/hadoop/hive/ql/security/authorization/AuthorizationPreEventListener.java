@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -441,8 +441,6 @@ public class AuthorizationPreEventListener extends MetaStorePreEventListener {
         // TableType specified was null, we need to figure out what type it was.
         if (MetaStoreUtils.isExternalTable(wrapperApiTable)){
           wrapperApiTable.setTableType(TableType.EXTERNAL_TABLE.toString());
-        } else if (MetaStoreUtils.isIndexTable(wrapperApiTable)) {
-          wrapperApiTable.setTableType(TableType.INDEX_TABLE.toString());
         } else if (MetaStoreUtils.isMaterializedViewTable(wrapperApiTable)) {
           wrapperApiTable.setTableType(TableType.MATERIALIZED_VIEW.toString());
         } else if ((wrapperApiTable.getSd() == null) || (wrapperApiTable.getSd().getLocation() == null)) {

@@ -52,6 +52,7 @@ STAGE PLANS:
                 Map-reduce partition columns: key (type: string)
                 Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                 value expressions: substr(value, 5) (type: string)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Forward
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
@@ -90,6 +91,7 @@ STAGE PLANS:
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               TopN Hash Memory Usage: 0.1
               value expressions: _col1 (type: double)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: double)
@@ -147,6 +149,7 @@ STAGE PLANS:
               sort order: 
               Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
               value expressions: key (type: int), value (type: string)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0, 'hll'), compute_stats(VALUE._col2, 'hll')
@@ -179,6 +182,7 @@ STAGE PLANS:
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               TopN Hash Memory Usage: 0.1
               value expressions: _col1 (type: double)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: double)
@@ -228,6 +232,7 @@ STAGE PLANS:
               sort order: 
               Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
               value expressions: key (type: int), value (type: string)
+      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: compute_stats(VALUE._col0, 'hll'), compute_stats(VALUE._col2, 'hll')

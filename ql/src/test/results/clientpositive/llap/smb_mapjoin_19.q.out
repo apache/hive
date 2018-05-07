@@ -66,7 +66,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: default.test_table2
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
 
   Stage: Stage-2
@@ -169,7 +169,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table1
 POSTHOOK: Input: default@test_table1@ds=1
 #### A masked pattern was here ####
-40
+19
 PREHOOK: query: select count(*) from test_table1 tablesample (bucket 13 out of 16) s where ds = '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_table1
@@ -180,7 +180,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table1
 POSTHOOK: Input: default@test_table1@ds=1
 #### A masked pattern was here ####
-29
+33
 PREHOOK: query: select count(*) from test_table2 where ds = '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_table2
@@ -244,7 +244,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table2
 POSTHOOK: Input: default@test_table2@ds=1
 #### A masked pattern was here ####
-40
+19
 PREHOOK: query: select count(*) from test_table2 tablesample (bucket 13 out of 16) s where ds = '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_table2
@@ -255,4 +255,4 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table2
 POSTHOOK: Input: default@test_table2@ds=1
 #### A masked pattern was here ####
-29
+33

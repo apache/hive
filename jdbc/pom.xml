@@ -19,7 +19,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
-    <version>3.0.0-SNAPSHOT</version>
+    <version>3.1.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -255,7 +255,6 @@
                       <exclude>org.apache.directory.server:*</exclude>
                       <exclude>org.apache.geronimo.specs:*</exclude>
                       <exclude>org.apache.htrace:*</exclude>
-                      <exclude>org.apache.slider:*</exclude>
                       <exclude>org.codehaus.jackson:*</exclude>
                       <exclude>org.codehaus.jettison:*</exclude>
                       <exclude>org.datanucleus:*</exclude>

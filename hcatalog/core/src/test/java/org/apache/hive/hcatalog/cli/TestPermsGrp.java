@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,14 +18,15 @@
  */
 package org.apache.hive.hcatalog.cli;
 
+import java.io.BufferedReader;
 import java.io.FileNotFoundException;
+import java.io.InputStreamReader;
+import java.security.Policy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
-import junit.framework.TestCase;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
@@ -44,13 +45,13 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Type;
-import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
-import org.apache.hive.hcatalog.ExitException;
+import org.apache.hive.hcatalog.DerbyPolicy;
 import org.apache.hive.hcatalog.NoExitSecurityManager;
 import org.apache.hive.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
 import org.apache.hive.hcatalog.common.HCatConstants;
@@ -58,10 +59,11 @@ import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import junit.framework.TestCase;
+
 public class TestPermsGrp extends TestCase {
 
   private boolean isServerRunning = false;
-  private int msPort;
   private HiveConf hcatConf;
   private Warehouse clientWH;
   private HiveMetaStoreClient msc;
@@ -79,27 +81,27 @@ public class TestPermsGrp extends TestCase {
       return;
     }
 
-    msPort = MetaStoreTestUtils.startMetaStoreWithRetry();
+    hcatConf = new HiveConf(this.getClass());
+    MetaStoreTestUtils.startMetaStoreWithRetry(hcatConf);
 
     isServerRunning = true;
 
     securityManager = System.getSecurityManager();
     System.setSecurityManager(new NoExitSecurityManager());
+    Policy.setPolicy(new DerbyPolicy());
 
-    hcatConf = new HiveConf(this.getClass());
-    hcatConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://127.0.0.1:" + msPort);
     hcatConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
     hcatConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTFAILURERETRIES, 3);
-
-    hcatConf.set(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK.varname, HCatSemanticAnalyzer.class.getName());
-    hcatConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
-    hcatConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
     hcatConf.setTimeVar(HiveConf.ConfVars.METASTORE_CLIENT_SOCKET_TIMEOUT, 60, TimeUnit.SECONDS);
     hcatConf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
+    hcatConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname,
+        MetastoreConf.getVar(hcatConf, MetastoreConf.ConfVars.WAREHOUSE));
+    hcatConf.set(HiveConf.ConfVars.METASTORECONNECTURLKEY.varname,
+        MetastoreConf.getVar(hcatConf, MetastoreConf.ConfVars.CONNECT_URL_KEY));
+    hcatConf.set(HiveConf.ConfVars.METASTOREURIS.varname,
+        MetastoreConf.getVar(hcatConf, MetastoreConf.ConfVars.THRIFT_URIS));
     clientWH = new Warehouse(hcatConf);
     msc = new HiveMetaStoreClient(hcatConf);
-    System.setProperty(HiveConf.ConfVars.PREEXECHOOKS.varname, " ");
-    System.setProperty(HiveConf.ConfVars.POSTEXECHOOKS.varname, " ");
   }
 
   public void testCustomPerms() throws Exception {
@@ -118,31 +120,25 @@ public class TestPermsGrp extends TestCase {
       cleanupTbl(dbName, tblName, typeName);
 
       // Next user did specify perms.
-      try {
-        callHCatCli(new String[]{"-e", "create table simptbl (name string) stored as RCFILE", "-p", "rwx-wx---"});
-      } catch (Exception e) {
-        assertTrue(e instanceof ExitException);
-        assertEquals(((ExitException) e).getStatus(), 0);
-      }
+      int ret = callHCatCli(new String[]{"-e", "create table simptbl (name string) stored as RCFILE",
+          "-p", "rwx-wx---"});
+      assertEquals(ret, 0);
       dfsPath = clientWH.getDefaultTablePath(db, tblName);
-      assertTrue(dfsPath.getFileSystem(hcatConf).getFileStatus(dfsPath).getPermission().equals(FsPermission.valueOf("drwx-wx---")));
+      assertEquals(FsPermission.valueOf("drwx-wx---"), dfsPath.getFileSystem(hcatConf).getFileStatus(dfsPath).getPermission());
 
       cleanupTbl(dbName, tblName, typeName);
 
       // User specified perms in invalid format.
       hcatConf.set(HCatConstants.HCAT_PERMS, "rwx");
       // make sure create table fails.
-      try {
-        callHCatCli(new String[]{"-e", "create table simptbl (name string) stored as RCFILE", "-p", "rwx"});
-        assert false;
-      } catch (Exception me) {
-        assertTrue(me instanceof ExitException);
-      }
+      ret = callHCatCli(new String[]{"-e", "create table simptbl (name string) stored as RCFILE", "-p", "rwx"});
+      assertFalse(ret == 0);
+
       // No physical dir gets created.
       dfsPath = clientWH.getDefaultTablePath(db, tblName);
       try {
         dfsPath.getFileSystem(hcatConf).getFileStatus(dfsPath);
-        assert false;
+        fail();
       } catch (Exception fnfe) {
         assertTrue(fnfe instanceof FileNotFoundException);
       }
@@ -150,36 +146,32 @@ public class TestPermsGrp extends TestCase {
       // And no metadata gets created.
       try {
         msc.getTable(Warehouse.DEFAULT_DATABASE_NAME, tblName);
-        assert false;
+        fail();
       } catch (Exception e) {
         assertTrue(e instanceof NoSuchObjectException);
-        assertEquals("default.simptbl table not found", e.getMessage());
+        assertEquals("hive.default.simptbl table not found", e.getMessage());
       }
 
       // test for invalid group name
       hcatConf.set(HCatConstants.HCAT_PERMS, "drw-rw-rw-");
       hcatConf.set(HCatConstants.HCAT_GROUP, "THIS_CANNOT_BE_A_VALID_GRP_NAME_EVER");
 
-      try {
-        // create table must fail.
-        callHCatCli(new String[]{"-e", "create table simptbl (name string) stored as RCFILE", "-p", "rw-rw-rw-", "-g", "THIS_CANNOT_BE_A_VALID_GRP_NAME_EVER"});
-        assert false;
-      } catch (Exception me) {
-        assertTrue(me instanceof SecurityException);
-      }
+      // create table must fail.
+      ret = callHCatCli(new String[]{"-e", "create table simptbl (name string) stored as RCFILE", "-p", "rw-rw-rw-", "-g", "THIS_CANNOT_BE_A_VALID_GRP_NAME_EVER"});
+      assertFalse(ret == 0);
 
       try {
         // no metadata should get created.
         msc.getTable(dbName, tblName);
-        assert false;
+        fail();
       } catch (Exception e) {
         assertTrue(e instanceof NoSuchObjectException);
-        assertEquals("default.simptbl table not found", e.getMessage());
+        assertEquals("hive.default.simptbl table not found", e.getMessage());
       }
       try {
         // neither dir should get created.
         dfsPath.getFileSystem(hcatConf).getFileStatus(dfsPath);
-        assert false;
+        fail();
       } catch (Exception e) {
         assertTrue(e instanceof FileNotFoundException);
       }
@@ -190,13 +182,50 @@ public class TestPermsGrp extends TestCase {
     }
   }
 
-  private void callHCatCli(String[] args) {
+  private int callHCatCli(String[] args) throws Exception {
     List<String> argsList = new ArrayList<String>();
+    argsList.add(System.getProperty("java.home") + "/bin/java");
+    argsList.add(HCatCli.class.getName());
     argsList.add("-Dhive.support.concurrency=false");
     argsList
         .add("-Dhive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
+    argsList.add("-D" + HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES.varname + "=3");
+    argsList.add("-D" + HiveConf.ConfVars.METASTORETHRIFTFAILURERETRIES.varname + "=3");
+    argsList.add("-D" + HiveConf.ConfVars.METASTORE_CLIENT_SOCKET_TIMEOUT.varname + "=60");
+    argsList.add("-D" + HiveConf.ConfVars.METASTOREWAREHOUSE.varname + "="
+        + MetastoreConf.getVar(hcatConf, MetastoreConf.ConfVars.WAREHOUSE));
+    argsList.add("-D" + HiveConf.ConfVars.METASTORECONNECTURLKEY.varname + "="
+        + MetastoreConf.getVar(hcatConf, MetastoreConf.ConfVars.CONNECT_URL_KEY));
+    argsList.add("-D" + HiveConf.ConfVars.METASTOREURIS.varname + "="
+        + MetastoreConf.getVar(hcatConf, MetastoreConf.ConfVars.THRIFT_URIS));
+    argsList.add("-D" + HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK.varname + "=" + HCatSemanticAnalyzer.class.getName());
+    argsList.add("-D" + HiveConf.ConfVars.PREEXECHOOKS.varname + "=");
+    argsList.add("-D" + HiveConf.ConfVars.POSTEXECHOOKS.varname + "=");
+    argsList.add("-D" + HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname + "=false");
+
+    argsList.add("-D" + "test.warehouse.dir=" + System.getProperty("test.warehouse.dir"));
     argsList.addAll(Arrays.asList(args));
-    HCatCli.main(argsList.toArray(new String[]{}));
+    ProcessBuilder builder = new ProcessBuilder().command(argsList.toArray(new String[] {}));
+    builder.environment().put("CLASSPATH", System.getProperty("java.class.path"));
+
+    Process p = builder.start();
+
+    String line;
+    BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
+    while ((line = r.readLine()) != null) {
+        System.out.println(line);
+    }
+    r.close();
+
+    r = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+    while ((line = r.readLine()) != null) {
+        System.err.println(line);
+    }
+    r.close();
+
+    int ret = p.waitFor();
+
+    return ret;
   }
 
   private void silentDropDatabase(String dbName) throws MetaException, TException {

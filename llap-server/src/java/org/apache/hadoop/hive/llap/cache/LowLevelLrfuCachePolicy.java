@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,9 +20,11 @@ package org.apache.hadoop.hive.llap.cache;
 
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 
@@ -153,7 +155,7 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
         } finally {
           listLock.unlock();
         }
-        // Now insert the buffer in its place and restore heap property.
+        // Now insert the new buffer in its place and restore heap property.
         buffer.indexInHeap = 0;
         heapifyDownUnderLock(buffer, time);
       } else {
@@ -174,6 +176,13 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
   @Override
   public void setParentDebugDumper(LlapOomDebugDump dumper) {
     this.parentDebugDump = dumper;
+  }
+
+  @Override
+  public long purge() {
+    long evicted = evictSomeBlocks(Long.MAX_VALUE);
+    LlapIoImpl.LOG.info("PURGE: evicted {} from LRFU policy", LlapUtil.humanReadableByteCount(evicted));
+    return evicted;
   }
 
 

@@ -18,7 +18,9 @@
 package org.apache.hadoop.hive.metastore.txn;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.junit.experimental.categories.Category;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.junit.Test;
@@ -26,6 +28,7 @@ import org.junit.Test;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
 
+@Category(MetastoreUnitTest.class)
 public class TestTxnHandlerNegative {
   static final private Logger LOG = LoggerFactory.getLogger(TestTxnHandlerNegative.class);
 
@@ -37,7 +40,7 @@ public class TestTxnHandlerNegative {
   @Test
   public void testBadConnection() throws Exception {
     Configuration conf = MetastoreConf.newMetastoreConf();
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CONNECTURLKEY, "blah");
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CONNECT_URL_KEY, "blah");
     RuntimeException e = null;
     try {
       TxnUtils.getTxnStore(conf);

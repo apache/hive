@@ -1,3 +1,4 @@
+--! qt:dataset:src_thrift
 -- Describe a list structure in a thrift table
 describe src_thrift lint;
 

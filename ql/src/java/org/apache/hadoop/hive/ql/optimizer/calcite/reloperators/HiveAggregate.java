@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -75,7 +75,7 @@ public class HiveAggregate extends Aggregate implements HiveRelNode {
 
   public boolean isBucketedInput() {
     final RelMetadataQuery mq = this.getInput().getCluster().getMetadataQuery();
-    return mq.distribution(this.getInput()).getKeys().
+    return mq.distribution(this).getKeys().
             containsAll(groupSet.asList());
   }
 

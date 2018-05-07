@@ -1,3 +1,5 @@
+SET hive.vectorized.execution.enabled=false;
+
 CREATE TABLE T1(key INT, value INT) STORED AS TEXTFILE;
 
 LOAD DATA LOCAL INPATH '../../data/files/groupby_groupingid.txt' INTO TABLE T1;

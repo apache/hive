@@ -232,17 +232,17 @@ POSTHOOK: query: select fl_date, count(*) from flights_tiny_orc group by fl_date
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@flights_tiny_orc
 #### A masked pattern was here ####
-2010-10-20	11
 2010-10-21	12
-2010-10-26	13
-2010-10-30	11
-2010-10-23	12
 2010-10-24	12
-2010-10-25	12
-2010-10-22	11
+2010-10-26	13
 2010-10-28	12
+2010-10-22	11
 2010-10-29	12
+2010-10-20	11
+2010-10-23	12
+2010-10-25	12
 2010-10-27	11
+2010-10-30	11
 2010-10-31	8
 PREHOOK: query: explain vectorization expression
 select * from flights_tiny_orc sort by fl_num, fl_date limit 25
@@ -529,17 +529,17 @@ POSTHOOK: query: select fl_date, count(*) from flights_tiny_orc group by fl_date
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@flights_tiny_orc
 #### A masked pattern was here ####
-2010-10-20	11
 2010-10-21	12
-2010-10-26	13
-2010-10-30	11
-2010-10-23	12
 2010-10-24	12
-2010-10-25	12
-2010-10-22	11
+2010-10-26	13
 2010-10-28	12
+2010-10-22	11
 2010-10-29	12
+2010-10-20	11
+2010-10-23	12
+2010-10-25	12
 2010-10-27	11
+2010-10-30	11
 2010-10-31	8
 PREHOOK: query: CREATE TABLE flights_tiny_orc_partitioned_date (
   origin_city_name STRING,
@@ -908,17 +908,17 @@ POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-29
 POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-30
 POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-31
 #### A masked pattern was here ####
-2010-10-20	11
 2010-10-21	12
-2010-10-26	13
-2010-10-30	11
-2010-10-23	12
 2010-10-24	12
-2010-10-25	12
-2010-10-22	11
+2010-10-26	13
 2010-10-28	12
+2010-10-22	11
 2010-10-29	12
+2010-10-20	11
+2010-10-23	12
+2010-10-25	12
 2010-10-27	11
+2010-10-30	11
 2010-10-31	8
 PREHOOK: query: explain vectorization expression
 select * from flights_tiny_orc_partitioned_date
@@ -1366,7 +1366,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: flights_tiny_orc_partitioned_date
-                  Statistics: Num rows: 137 Data size: 325432 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 137 Data size: 39448 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -1376,7 +1376,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [5]
-                    Statistics: Num rows: 137 Data size: 325432 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 137 Data size: 39448 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       Group By Vectorization:
@@ -1484,17 +1484,17 @@ POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-29
 POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-30
 POSTHOOK: Input: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-31
 #### A masked pattern was here ####
-2010-10-20	11
 2010-10-21	12
-2010-10-26	13
-2010-10-30	11
-2010-10-23	12
 2010-10-24	12
-2010-10-25	12
-2010-10-22	11
+2010-10-26	13
 2010-10-28	12
+2010-10-22	11
 2010-10-29	12
+2010-10-20	11
+2010-10-23	12
+2010-10-25	12
 2010-10-27	11
+2010-10-30	11
 2010-10-31	8
 PREHOOK: query: CREATE TABLE flights_tiny_orc_partitioned_timestamp (
   origin_city_name STRING,
@@ -1863,18 +1863,18 @@ POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-
 POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-30 07%3A00%3A00
 POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-31 07%3A00%3A00
 #### A masked pattern was here ####
-2010-10-20 07:00:00	11
 2010-10-23 07:00:00	12
 2010-10-25 07:00:00	12
 2010-10-22 07:00:00	11
+2010-10-24 07:00:00	12
 2010-10-26 07:00:00	13
+2010-10-20 07:00:00	11
+2010-10-28 07:00:00	12
 2010-10-29 07:00:00	12
+2010-10-30 07:00:00	11
 2010-10-31 07:00:00	8
 2010-10-21 07:00:00	12
-2010-10-24 07:00:00	12
 2010-10-27 07:00:00	11
-2010-10-28 07:00:00	12
-2010-10-30 07:00:00	11
 PREHOOK: query: explain vectorization expression
 select * from flights_tiny_orc_partitioned_timestamp
 PREHOOK: type: QUERY
@@ -2321,7 +2321,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: flights_tiny_orc_partitioned_timestamp
-                  Statistics: Num rows: 137 Data size: 345160 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 137 Data size: 39448 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -2331,7 +2331,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [5]
-                    Statistics: Num rows: 137 Data size: 345160 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 137 Data size: 39448 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       Group By Vectorization:
@@ -2439,18 +2439,18 @@ POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-
 POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-30 07%3A00%3A00
 POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-31 07%3A00%3A00
 #### A masked pattern was here ####
-2010-10-20 07:00:00	11
 2010-10-23 07:00:00	12
 2010-10-25 07:00:00	12
 2010-10-22 07:00:00	11
+2010-10-24 07:00:00	12
 2010-10-26 07:00:00	13
+2010-10-20 07:00:00	11
+2010-10-28 07:00:00	12
 2010-10-29 07:00:00	12
+2010-10-30 07:00:00	11
 2010-10-31 07:00:00	8
 2010-10-21 07:00:00	12
-2010-10-24 07:00:00	12
 2010-10-27 07:00:00	11
-2010-10-28 07:00:00	12
-2010-10-30 07:00:00	11
 PREHOOK: query: CREATE TABLE flights_tiny_parquet STORED AS PARQUET AS
 SELECT origin_city_name, dest_city_name, fl_date, to_utc_timestamp(fl_date, 'America/Los_Angeles') as fl_time, arr_delay, fl_num
 FROM flights_tiny
@@ -2657,17 +2657,17 @@ POSTHOOK: query: select fl_date, count(*) from flights_tiny_parquet group by fl_
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@flights_tiny_parquet
 #### A masked pattern was here ####
-2010-10-20	11
 2010-10-21	12
-2010-10-26	13
-2010-10-30	11
-2010-10-23	12
 2010-10-24	12
-2010-10-25	12
-2010-10-22	11
+2010-10-26	13
 2010-10-28	12
+2010-10-22	11
 2010-10-29	12
+2010-10-20	11
+2010-10-23	12
+2010-10-25	12
 2010-10-27	11
+2010-10-30	11
 2010-10-31	8
 PREHOOK: query: explain vectorization expression
 select * from flights_tiny_parquet sort by fl_num, fl_date limit 25
@@ -2954,17 +2954,17 @@ POSTHOOK: query: select fl_date, count(*) from flights_tiny_parquet group by fl_
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@flights_tiny_parquet
 #### A masked pattern was here ####
-2010-10-20	11
 2010-10-21	12
-2010-10-26	13
-2010-10-30	11
-2010-10-23	12
 2010-10-24	12
-2010-10-25	12
-2010-10-22	11
+2010-10-26	13
 2010-10-28	12
+2010-10-22	11
 2010-10-29	12
+2010-10-20	11
+2010-10-23	12
+2010-10-25	12
 2010-10-27	11
+2010-10-30	11
 2010-10-31	8
 PREHOOK: query: CREATE TABLE flights_tiny_parquet_partitioned_date (
   origin_city_name STRING,
@@ -3333,17 +3333,17 @@ POSTHOOK: Input: default@flights_tiny_parquet_partitioned_date@fl_date=2010-10-2
 POSTHOOK: Input: default@flights_tiny_parquet_partitioned_date@fl_date=2010-10-30
 POSTHOOK: Input: default@flights_tiny_parquet_partitioned_date@fl_date=2010-10-31
 #### A masked pattern was here ####
-2010-10-20	11
 2010-10-21	12
-2010-10-26	13
-2010-10-30	11
-2010-10-23	12
 2010-10-24	12
-2010-10-25	12
-2010-10-22	11
+2010-10-26	13
 2010-10-28	12
+2010-10-22	11
 2010-10-29	12
+2010-10-20	11
+2010-10-23	12
+2010-10-25	12
 2010-10-27	11
+2010-10-30	11
 2010-10-31	8
 PREHOOK: query: explain vectorization expression
 select * from flights_tiny_parquet_partitioned_date
@@ -3791,7 +3791,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: flights_tiny_parquet_partitioned_date
-                  Statistics: Num rows: 137 Data size: 14522 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 137 Data size: 8357 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -3801,7 +3801,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [5]
-                    Statistics: Num rows: 137 Data size: 14522 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 137 Data size: 8357 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       Group By Vectorization:
@@ -3909,17 +3909,17 @@ POSTHOOK: Input: default@flights_tiny_parquet_partitioned_date@fl_date=2010-10-2
 POSTHOOK: Input: default@flights_tiny_parquet_partitioned_date@fl_date=2010-10-30
 POSTHOOK: Input: default@flights_tiny_parquet_partitioned_date@fl_date=2010-10-31
 #### A masked pattern was here ####
-2010-10-20	11
 2010-10-21	12
-2010-10-26	13
-2010-10-30	11
-2010-10-23	12
 2010-10-24	12
-2010-10-25	12
-2010-10-22	11
+2010-10-26	13
 2010-10-28	12
+2010-10-22	11
 2010-10-29	12
+2010-10-20	11
+2010-10-23	12
+2010-10-25	12
 2010-10-27	11
+2010-10-30	11
 2010-10-31	8
 PREHOOK: query: CREATE TABLE flights_tiny_parquet_partitioned_timestamp (
   origin_city_name STRING,
@@ -4288,18 +4288,18 @@ POSTHOOK: Input: default@flights_tiny_parquet_partitioned_timestamp@fl_time=2010
 POSTHOOK: Input: default@flights_tiny_parquet_partitioned_timestamp@fl_time=2010-10-30 07%3A00%3A00
 POSTHOOK: Input: default@flights_tiny_parquet_partitioned_timestamp@fl_time=2010-10-31 07%3A00%3A00
 #### A masked pattern was here ####
-2010-10-20 07:00:00	11
 2010-10-23 07:00:00	12
 2010-10-25 07:00:00	12
 2010-10-22 07:00:00	11
+2010-10-24 07:00:00	12
 2010-10-26 07:00:00	13
+2010-10-20 07:00:00	11
+2010-10-28 07:00:00	12
 2010-10-29 07:00:00	12
+2010-10-30 07:00:00	11
 2010-10-31 07:00:00	8
 2010-10-21 07:00:00	12
-2010-10-24 07:00:00	12
 2010-10-27 07:00:00	11
-2010-10-28 07:00:00	12
-2010-10-30 07:00:00	11
 PREHOOK: query: explain vectorization expression
 select * from flights_tiny_parquet_partitioned_timestamp
 PREHOOK: type: QUERY
@@ -4746,7 +4746,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: flights_tiny_parquet_partitioned_timestamp
-                  Statistics: Num rows: 137 Data size: 12330 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 137 Data size: 6165 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                   Select Operator
@@ -4756,7 +4756,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [5]
-                    Statistics: Num rows: 137 Data size: 12330 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 137 Data size: 6165 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       Group By Vectorization:
@@ -4864,15 +4864,15 @@ POSTHOOK: Input: default@flights_tiny_parquet_partitioned_timestamp@fl_time=2010
 POSTHOOK: Input: default@flights_tiny_parquet_partitioned_timestamp@fl_time=2010-10-30 07%3A00%3A00
 POSTHOOK: Input: default@flights_tiny_parquet_partitioned_timestamp@fl_time=2010-10-31 07%3A00%3A00
 #### A masked pattern was here ####
-2010-10-20 07:00:00	11
 2010-10-23 07:00:00	12
 2010-10-25 07:00:00	12
 2010-10-22 07:00:00	11
+2010-10-24 07:00:00	12
 2010-10-26 07:00:00	13
+2010-10-20 07:00:00	11
+2010-10-28 07:00:00	12
 2010-10-29 07:00:00	12
+2010-10-30 07:00:00	11
 2010-10-31 07:00:00	8
 2010-10-21 07:00:00	12
-2010-10-24 07:00:00	12
 2010-10-27 07:00:00	11
-2010-10-28 07:00:00	12
-2010-10-30 07:00:00	11

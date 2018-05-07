@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -40,8 +40,8 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
-import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.BlobStorageUtils;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.TaskRunner;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -58,12 +58,16 @@ import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.QB;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
+import org.apache.hadoop.hive.ql.plan.mapper.EmptyStatsSource;
+import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
+import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.wm.WmContext;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 
 /**
  * Context for Semantic Analyzers. Usage: not reusable - construct a new one for
@@ -94,14 +98,12 @@ public class Context {
   // Keeps track of scratch directories created for different scheme/authority
   private final Map<String, Path> fsScratchDirs = new HashMap<String, Path>();
 
-  private final Configuration conf;
+  private Configuration conf;
   protected int pathid = 10000;
   protected ExplainConfiguration explainConfig = null;
   protected String cboInfo;
   protected boolean cboSucceeded;
   protected String cmd = "";
-  // number of previous attempts
-  protected int tryCount = 0;
   private TokenRewriteStream tokenRewriteStream;
   // Holds the qualified name to tokenRewriteStream for the views
   // referenced by the query. This is used to rewrite the view AST
@@ -141,6 +143,9 @@ public class Context {
   // Identify whether the query involves an UPDATE, DELETE or MERGE
   private boolean isUpdateDeleteMerge;
 
+  // Whether the analyzer has been instantiated to read and load materialized view plans
+  private boolean isLoadingMaterializedView;
+
   /**
    * This determines the prefix of the
    * {@link org.apache.hadoop.hive.ql.parse.SemanticAnalyzer.Phase1Ctx#dest}
@@ -151,6 +156,14 @@ public class Context {
   private Map<Integer, DestClausePrefix> insertBranchToNamePrefix = new HashMap<>();
   private Operation operation = Operation.OTHER;
   private WmContext wmContext;
+
+  private boolean isExplainPlan = false;
+  private PlanMapper planMapper = new PlanMapper();
+  private StatsSource statsSource;
+  private int executionIndex;
+
+  // Load data rewrite
+  private Table tempTableForLoad;
 
   public void setOperation(Operation operation) {
     this.operation = operation;
@@ -175,6 +188,7 @@ public class Context {
     DestClausePrefix(String prefix) {
       this.prefix = prefix;
     }
+    @Override
     public String toString() {
       return prefix;
     }
@@ -227,7 +241,7 @@ public class Context {
       }
       if(!thisIsInASubquery) {
         throw new IllegalStateException("Expected '" + getMatchedText(curNode) + "' to be in sub-query or set operation.");
-      } 
+      }
       return DestClausePrefix.INSERT;
     }
     switch (operation) {
@@ -250,7 +264,7 @@ public class Context {
         assert insert != null && insert.getType() == HiveParser.TOK_INSERT;
         ASTNode query = (ASTNode) insert.getParent();
         assert query != null && query.getType() == HiveParser.TOK_QUERY;
-        
+
         for(int childIdx = 1; childIdx < query.getChildCount(); childIdx++) {//1st child is TOK_FROM
           assert query.getChild(childIdx).getType() == HiveParser.TOK_INSERT;
           if(insert == query.getChild(childIdx)) {
@@ -505,7 +519,6 @@ public class Context {
    * - If path is on HDFS, then create a staging directory inside the path
    *
    * @param path Path used to verify the Filesystem to use for temporary directory
-   * @param isFinalJob true if the required {@link Path} will be used for the final job (e.g. the final FSOP)
    *
    * @return A path to the new temporary directory
    */
@@ -938,14 +951,6 @@ public class Context {
     this.needLockMgr = needLockMgr;
   }
 
-  public int getTryCount() {
-    return tryCount;
-  }
-
-  public void setTryCount(int tryCount) {
-    this.tryCount = tryCount;
-  }
-
   public String getCboInfo() {
     return cboInfo;
   }
@@ -1003,7 +1008,7 @@ public class Context {
   public ExplainConfiguration getExplainConfig() {
     return explainConfig;
   }
-  private boolean isExplainPlan = false;
+
   public boolean isExplainPlan() {
     return isExplainPlan;
   }
@@ -1027,7 +1032,53 @@ public class Context {
   public void setIsUpdateDeleteMerge(boolean isUpdate) {
     this.isUpdateDeleteMerge = isUpdate;
   }
+
+  public boolean isLoadingMaterializedView() {
+    return isLoadingMaterializedView;
+  }
+
+  public void setIsLoadingMaterializedView(boolean isLoadingMaterializedView) {
+    this.isLoadingMaterializedView = isLoadingMaterializedView;
+  }
+
   public String getExecutionId() {
     return executionId;
+  }
+
+  public PlanMapper getPlanMapper() {
+    return planMapper;
+  }
+
+  public void setStatsSource(StatsSource statsSource) {
+    this.statsSource = statsSource;
+  }
+
+  public StatsSource getStatsSource() {
+    if (statsSource != null) {
+      return statsSource;
+    } else {
+      // hierarchical; add def stats also here
+      return EmptyStatsSource.INSTANCE;
+    }
+  }
+
+  public int getExecutionIndex() {
+    return executionIndex;
+  }
+
+  public void setExecutionIndex(int executionIndex) {
+    this.executionIndex = executionIndex;
+  }
+
+  public void setConf(HiveConf conf) {
+    this.conf = conf;
+  }
+
+  public Table getTempTableForLoad() {
+    return tempTableForLoad;
+  }
+
+  public void setTempTableForLoad(Table tempTableForLoad) {
+    this.tempTableForLoad = tempTableForLoad;
   }
 }

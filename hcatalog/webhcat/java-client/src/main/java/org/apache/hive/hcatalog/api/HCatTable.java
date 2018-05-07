@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -174,6 +174,10 @@ public class HCatTable {
 
     if (StringUtils.isNotBlank(this.comment)) {
       newTable.putToParameters("comment", comment);
+    }
+
+    if (newTable.getParameters().get("bucketing_version") == null) {
+      newTable.putToParameters("bucketing_version", "2");
     }
 
     newTable.setSd(sd);
