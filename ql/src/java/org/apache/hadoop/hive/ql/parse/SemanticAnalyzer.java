@@ -13126,7 +13126,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             throw new SemanticException("No current SessionState, cannot create temporary table "
                 + dbName + "." + tblName);
           }
-          Map<String, Table> tables = SessionHiveMetaStoreClient.getTempTablesForDatabase(dbName);
+          Map<String, Table> tables = SessionHiveMetaStoreClient.
+              getTempTablesForDatabase(dbName, tblName);
           if (tables != null && tables.containsKey(tblName)) {
             throw new SemanticException("Temporary table " + dbName + "." + tblName
                 + " already exists");
