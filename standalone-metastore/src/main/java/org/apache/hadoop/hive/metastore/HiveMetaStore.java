@@ -6186,6 +6186,24 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
+    public GrantRevokePrivilegeResponse refresh_privileges(HiveObjectRef objToRefresh,
+        GrantRevokePrivilegeRequest grantRequest)
+        throws TException {
+      incrementCounter("refresh_privileges");
+      firePreEvent(new PreAuthorizationCallEvent(this));
+      GrantRevokePrivilegeResponse response = new GrantRevokePrivilegeResponse();
+      try {
+        boolean result = getMS().refreshPrivileges(objToRefresh, grantRequest.getPrivileges());
+        response.setSuccess(result);
+      } catch (MetaException e) {
+        throw e;
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+      return response;
+    }
+
+    @Override
     public boolean revoke_privileges(final PrivilegeBag privileges) throws TException {
       return revoke_privileges(privileges, false);
     }

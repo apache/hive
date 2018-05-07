@@ -49,6 +49,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -227,6 +228,7 @@ import org.slf4j.LoggerFactory;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -6064,6 +6066,88 @@ public class ObjectStore implements RawStore, Configurable {
         } else {
           pm.deletePersistentAll(persistentObjs);
         }
+      }
+      committed = commitTransaction();
+    } finally {
+      if (!committed) {
+        rollbackTransaction();
+      }
+    }
+    return committed;
+  }
+
+  class PrivilegeWithoutCreateTimeComparator implements Comparator<HiveObjectPrivilege> {
+    @Override
+    public int compare(HiveObjectPrivilege o1, HiveObjectPrivilege o2) {
+      int createTime1 = o1.getGrantInfo().getCreateTime();
+      int createTime2 = o2.getGrantInfo().getCreateTime();
+      o1.getGrantInfo().setCreateTime(0);
+      o2.getGrantInfo().setCreateTime(0);
+      int result = o1.compareTo(o2);
+      o1.getGrantInfo().setCreateTime(createTime1);
+      o2.getGrantInfo().setCreateTime(createTime2);
+      return result;
+    }
+  }
+
+  @Override
+  public boolean refreshPrivileges(HiveObjectRef objToRefresh, PrivilegeBag grantPrivileges)
+      throws InvalidObjectException, MetaException, NoSuchObjectException {
+    boolean committed = false;
+    try {
+      openTransaction();
+      Set<HiveObjectPrivilege> revokePrivilegeSet
+          = new TreeSet<HiveObjectPrivilege>(new PrivilegeWithoutCreateTimeComparator());
+      Set<HiveObjectPrivilege> grantPrivilegeSet
+          = new TreeSet<HiveObjectPrivilege>(new PrivilegeWithoutCreateTimeComparator());
+
+      List<HiveObjectPrivilege> grants = null;
+      String catName = objToRefresh.isSetCatName() ? objToRefresh.getCatName() :
+          getDefaultCatalog(conf);
+      switch (objToRefresh.getObjectType()) {
+      case DATABASE:
+        grants = this.listDBGrantsAll(catName, objToRefresh.getDbName());
+        break;
+      case TABLE:
+        grants = listTableGrantsAll(catName, objToRefresh.getDbName(), objToRefresh.getObjectName());
+        break;
+      case COLUMN:
+        Preconditions.checkArgument(objToRefresh.getColumnName()==null, "columnName must be null");
+        grants = convertTableCols(listTableAllColumnGrants(catName,
+            objToRefresh.getDbName(), objToRefresh.getObjectName()));
+        break;
+      default:
+        throw new MetaException("Unexpected object type " + objToRefresh.getObjectType());
+      }
+      if (grants != null) {
+        for (HiveObjectPrivilege grant : grants) {
+          revokePrivilegeSet.add(grant);
+        }
+      }
+
+      // Optimize revoke/grant list, remove the overlapping
+      if (grantPrivileges.getPrivileges() != null) {
+        for (HiveObjectPrivilege grantPrivilege : grantPrivileges.getPrivileges()) {
+          if (revokePrivilegeSet.contains(grantPrivilege)) {
+            revokePrivilegeSet.remove(grantPrivilege);
+          } else {
+            grantPrivilegeSet.add(grantPrivilege);
+          }
+        }
+      }
+      if (!revokePrivilegeSet.isEmpty()) {
+        PrivilegeBag remainingRevokePrivileges = new PrivilegeBag();
+        for (HiveObjectPrivilege revokePrivilege : revokePrivilegeSet) {
+          remainingRevokePrivileges.addToPrivileges(revokePrivilege);
+        }
+        revokePrivileges(remainingRevokePrivileges, false);
+      }
+      if (!grantPrivilegeSet.isEmpty()) {
+        PrivilegeBag remainingGrantPrivileges = new PrivilegeBag();
+        for (HiveObjectPrivilege grantPrivilege : grantPrivilegeSet) {
+          remainingGrantPrivileges.addToPrivileges(grantPrivilege);
+        }
+        grantPrivileges(remainingGrantPrivileges);
       }
       committed = commitTransaction();
     } finally {

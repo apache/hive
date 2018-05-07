@@ -356,7 +356,9 @@ public final class FunctionRegistry {
     system.registerGenericUDF("current_date", GenericUDFCurrentDate.class);
     system.registerGenericUDF("current_timestamp", GenericUDFCurrentTimestamp.class);
     system.registerGenericUDF("current_user", GenericUDFCurrentUser.class);
+    system.registerGenericUDF("current_groups", GenericUDFCurrentGroups.class);
     system.registerGenericUDF("logged_in_user", GenericUDFLoggedInUser.class);
+    system.registerGenericUDF("restrict_information_schema", GenericUDFRestrictInformationSchema.class);
 
     system.registerGenericUDF("isnull", GenericUDFOPNull.class);
     system.registerGenericUDF("isnotnull", GenericUDFOPNotNull.class);
