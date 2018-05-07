@@ -178,6 +178,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
       InputFormat<?, ?> sourceInputFormat, Deserializer sourceSerDe,
       QueryFragmentCounters counters, TypeDescription schema, Map<Path, PartitionDesc> parts)
           throws IOException {
+    assert cache != null;
     this.cache = cache;
     this.bufferManager = bufferManager;
     this.bufferFactory = new BufferObjectFactory() {
