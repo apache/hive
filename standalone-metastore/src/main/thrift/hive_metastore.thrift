@@ -2021,6 +2021,8 @@ service ThriftHiveMetastore extends fb303.FacebookService
   // Deprecated, use grant_revoke_privileges()
   bool revoke_privileges(1:PrivilegeBag privileges) throws(1:MetaException o1)
   GrantRevokePrivilegeResponse grant_revoke_privileges(1:GrantRevokePrivilegeRequest request) throws(1:MetaException o1);
+  // Revokes all privileges for the object and adds the newly granted privileges for it.
+  GrantRevokePrivilegeResponse refresh_privileges(1:HiveObjectRef objToRefresh, 2:GrantRevokePrivilegeRequest grantRequest) throws(1:MetaException o1);
 
   // this is used by metastore client to send UGI information to metastore server immediately
   // after setting up a connection.

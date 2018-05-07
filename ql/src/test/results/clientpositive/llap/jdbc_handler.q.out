@@ -101,7 +101,7 @@ WHERE 100 < "kkey"
 FROM "SIMPLE_DERBY_TABLE"
 WHERE 100 < "kkey"
           Select Operator
-            expressions: kkey (type: int)
+            expressions: kkey (type: bigint)
             outputColumnNames: _col0
             ListSink
 

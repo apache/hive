@@ -2566,6 +2566,16 @@ public interface IMetaStoreClient {
       throws MetaException, TException;
 
   /**
+   * @param revokePrivileges
+   * @param objToRefresh
+   * @return true on success
+   * @throws MetaException
+   * @throws TException
+   */
+  boolean refresh_privileges(HiveObjectRef objToRefresh, PrivilegeBag grantPrivileges)
+      throws MetaException, TException;
+
+  /**
    * This is expected to be a no-op when in local mode,
    * which means that the implementation will return null.
    * @param owner the intended owner for the token

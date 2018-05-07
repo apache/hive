@@ -261,7 +261,7 @@ TBLPROPERTIES (
   \"OWNER_NAME\",
   \"OWNER_TYPE\"
 FROM
-  DBS"
+  \"DBS\""
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@DBS
@@ -285,7 +285,7 @@ TBLPROPERTIES (
   \"OWNER_NAME\",
   \"OWNER_TYPE\"
 FROM
-  DBS"
+  \"DBS\""
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@DBS
@@ -1358,7 +1358,7 @@ TBLPROPERTIES (
   \"VIEW_EXPANDED_TEXT\",
   \"VIEW_ORIGINAL_TEXT\",
   \"IS_REWRITE_ENABLED\"
-FROM TBLS"
+FROM \"TBLS\""
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@TBLS
@@ -1395,7 +1395,7 @@ TBLPROPERTIES (
   \"VIEW_EXPANDED_TEXT\",
   \"VIEW_ORIGINAL_TEXT\",
   \"IS_REWRITE_ENABLED\"
-FROM TBLS"
+FROM \"TBLS\""
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@TBLS
@@ -1416,7 +1416,7 @@ TBLPROPERTIES (
   \"DB_NAME\",
   \"TBL_NAME\",
   \"TXN_LIST\"
-FROM MV_CREATION_METADATA"
+FROM \"MV_CREATION_METADATA\""
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@MV_CREATION_METADATA
@@ -1437,7 +1437,7 @@ TBLPROPERTIES (
   \"DB_NAME\",
   \"TBL_NAME\",
   \"TXN_LIST\"
-FROM MV_CREATION_METADATA"
+FROM \"MV_CREATION_METADATA\""
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@MV_CREATION_METADATA
@@ -1453,7 +1453,7 @@ TBLPROPERTIES (
 "SELECT
   \"MV_CREATION_METADATA_ID\",
   \"TBL_ID\"
-FROM MV_TABLES_USED"
+FROM \"MV_TABLES_USED\""
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@MV_TABLES_USED
@@ -1469,7 +1469,7 @@ TBLPROPERTIES (
 "SELECT
   \"MV_CREATION_METADATA_ID\",
   \"TBL_ID\"
-FROM MV_TABLES_USED"
+FROM \"MV_TABLES_USED\""
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@MV_TABLES_USED
@@ -2152,16 +2152,16 @@ TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
 "hive.sql.query" =
 "SELECT
-  r.NAME RP_NAME,
-  t.NAME NAME,
-  TRIGGER_EXPRESSION,
-  ACTION_EXPRESSION
+  r.\"NAME\" AS RP_NAME,
+  t.\"NAME\" AS NAME,
+  \"TRIGGER_EXPRESSION\",
+  \"ACTION_EXPRESSION\"
 FROM
-  WM_TRIGGER t
+  \"WM_TRIGGER\" t
 JOIN
-  WM_RESOURCEPLAN r
+  \"WM_RESOURCEPLAN\" r
 ON
-  t.RP_ID = r.RP_ID"
+  t.\"RP_ID\" = r.\"RP_ID\""
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@WM_TRIGGERS
@@ -2177,16 +2177,16 @@ TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
 "hive.sql.query" =
 "SELECT
-  r.NAME RP_NAME,
-  t.NAME NAME,
-  TRIGGER_EXPRESSION,
-  ACTION_EXPRESSION
+  r.\"NAME\" AS RP_NAME,
+  t.\"NAME\" AS NAME,
+  \"TRIGGER_EXPRESSION\",
+  \"ACTION_EXPRESSION\"
 FROM
-  WM_TRIGGER t
+  \"WM_TRIGGER\" t
 JOIN
-  WM_RESOURCEPLAN r
+  \"WM_RESOURCEPLAN\" r
 ON
-  t.RP_ID = r.RP_ID"
+  t.\"RP_ID\" = r.\"RP_ID\""
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@WM_TRIGGERS
@@ -2203,17 +2203,17 @@ TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
 "hive.sql.query" =
 "SELECT
-  WM_RESOURCEPLAN.NAME,
-  WM_POOL.PATH,
-  WM_POOL.ALLOC_FRACTION,
-  WM_POOL.QUERY_PARALLELISM,
-  WM_POOL.SCHEDULING_POLICY
+  \"WM_RESOURCEPLAN\".\"NAME\",
+  \"WM_POOL\".\"PATH\",
+  \"WM_POOL\".\"ALLOC_FRACTION\",
+  \"WM_POOL\".\"QUERY_PARALLELISM\",
+  \"WM_POOL\".\"SCHEDULING_POLICY\"
 FROM
-  WM_POOL
+  \"WM_POOL\"
 JOIN
-  WM_RESOURCEPLAN
+  \"WM_RESOURCEPLAN\"
 ON
-  WM_POOL.RP_ID = WM_RESOURCEPLAN.RP_ID"
+  \"WM_POOL\".\"RP_ID\" = \"WM_RESOURCEPLAN\".\"RP_ID\""
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: SYS@WM_POOLS
@@ -2230,17 +2230,17 @@ TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
 "hive.sql.query" =
 "SELECT
-  WM_RESOURCEPLAN.NAME,
-  WM_POOL.PATH,
-  WM_POOL.ALLOC_FRACTION,
-  WM_POOL.QUERY_PARALLELISM,
-  WM_POOL.SCHEDULING_POLICY
+  \"WM_RESOURCEPLAN\".\"NAME\",
+  \"WM_POOL\".\"PATH\",
+  \"WM_POOL\".\"ALLOC_FRACTION\",
+  \"WM_POOL\".\"QUERY_PARALLELISM\",
+  \"WM_POOL\".\"SCHEDULING_POLICY\"
 FROM
-  WM_POOL
+  \"WM_POOL\"
 JOIN
-  WM_RESOURCEPLAN
+  \"WM_RESOURCEPLAN\"
 ON
-  WM_POOL.RP_ID = WM_RESOURCEPLAN.RP_ID"
+  \"WM_POOL\".\"RP_ID\" = \"WM_RESOURCEPLAN\".\"RP_ID\""
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@WM_POOLS
@@ -2255,21 +2255,21 @@ TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
 "hive.sql.query" =
 "SELECT
-  WM_RESOURCEPLAN.NAME RP_NAME,
-  WM_POOL.PATH POOL_PATH,
-  WM_TRIGGER.NAME TRIGGER_NAME
-FROM WM_POOL_TO_TRIGGER
-  JOIN WM_POOL ON WM_POOL_TO_TRIGGER.POOL_ID = WM_POOL.POOL_ID
-  JOIN WM_TRIGGER ON WM_POOL_TO_TRIGGER.TRIGGER_ID = WM_TRIGGER.TRIGGER_ID
-  JOIN WM_RESOURCEPLAN ON WM_POOL.RP_ID = WM_RESOURCEPLAN.RP_ID
+  \"WM_RESOURCEPLAN\".\"NAME\" AS RP_NAME,
+  \"WM_POOL\".\"PATH\" AS POOL_PATH,
+  \"WM_TRIGGER\".\"NAME\" AS TRIGGER_NAME
+FROM \"WM_POOL_TO_TRIGGER\"
+  JOIN \"WM_POOL\" ON \"WM_POOL_TO_TRIGGER\".\"POOL_ID\" = \"WM_POOL\".\"POOL_ID\"
+  JOIN \"WM_TRIGGER\" ON \"WM_POOL_TO_TRIGGER\".\"TRIGGER_ID\" = \"WM_TRIGGER\".\"TRIGGER_ID\"
+  JOIN \"WM_RESOURCEPLAN\" ON \"WM_POOL\".\"RP_ID\" = \"WM_RESOURCEPLAN\".\"RP_ID\"
 UNION
 SELECT
-  WM_RESOURCEPLAN.NAME RP_NAME,
-  '<unmanaged queries>' POOL_PATH,
-  WM_TRIGGER.NAME TRIGGER_NAME
-FROM WM_TRIGGER
-  JOIN WM_RESOURCEPLAN ON WM_TRIGGER.RP_ID = WM_RESOURCEPLAN.RP_ID
-WHERE WM_TRIGGER.IS_IN_UNMANAGED = 1
+  \"WM_RESOURCEPLAN\".\"NAME\" AS RP_NAME,
+  '<unmanaged queries>' AS POOL_PATH,
+  \"WM_TRIGGER\".\"NAME\" AS TRIGGER_NAME
+FROM \"WM_TRIGGER\"
+  JOIN \"WM_RESOURCEPLAN\" ON \"WM_TRIGGER\".\"RP_ID\" = \"WM_RESOURCEPLAN\".\"RP_ID\"
+WHERE CAST(\"WM_TRIGGER\".\"IS_IN_UNMANAGED\" AS CHAR) IN ('1', 't')
 "
 )
 PREHOOK: type: CREATETABLE
@@ -2285,21 +2285,21 @@ TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
 "hive.sql.query" =
 "SELECT
-  WM_RESOURCEPLAN.NAME RP_NAME,
-  WM_POOL.PATH POOL_PATH,
-  WM_TRIGGER.NAME TRIGGER_NAME
-FROM WM_POOL_TO_TRIGGER
-  JOIN WM_POOL ON WM_POOL_TO_TRIGGER.POOL_ID = WM_POOL.POOL_ID
-  JOIN WM_TRIGGER ON WM_POOL_TO_TRIGGER.TRIGGER_ID = WM_TRIGGER.TRIGGER_ID
-  JOIN WM_RESOURCEPLAN ON WM_POOL.RP_ID = WM_RESOURCEPLAN.RP_ID
+  \"WM_RESOURCEPLAN\".\"NAME\" AS RP_NAME,
+  \"WM_POOL\".\"PATH\" AS POOL_PATH,
+  \"WM_TRIGGER\".\"NAME\" AS TRIGGER_NAME
+FROM \"WM_POOL_TO_TRIGGER\"
+  JOIN \"WM_POOL\" ON \"WM_POOL_TO_TRIGGER\".\"POOL_ID\" = \"WM_POOL\".\"POOL_ID\"
+  JOIN \"WM_TRIGGER\" ON \"WM_POOL_TO_TRIGGER\".\"TRIGGER_ID\" = \"WM_TRIGGER\".\"TRIGGER_ID\"
+  JOIN \"WM_RESOURCEPLAN\" ON \"WM_POOL\".\"RP_ID\" = \"WM_RESOURCEPLAN\".\"RP_ID\"
 UNION
 SELECT
-  WM_RESOURCEPLAN.NAME RP_NAME,
-  '<unmanaged queries>' POOL_PATH,
-  WM_TRIGGER.NAME TRIGGER_NAME
-FROM WM_TRIGGER
-  JOIN WM_RESOURCEPLAN ON WM_TRIGGER.RP_ID = WM_RESOURCEPLAN.RP_ID
-WHERE WM_TRIGGER.IS_IN_UNMANAGED = 1
+  \"WM_RESOURCEPLAN\".\"NAME\" AS RP_NAME,
+  '<unmanaged queries>' AS POOL_PATH,
+  \"WM_TRIGGER\".\"NAME\" AS TRIGGER_NAME
+FROM \"WM_TRIGGER\"
+  JOIN \"WM_RESOURCEPLAN\" ON \"WM_TRIGGER\".\"RP_ID\" = \"WM_RESOURCEPLAN\".\"RP_ID\"
+WHERE CAST(\"WM_TRIGGER\".\"IS_IN_UNMANAGED\" AS CHAR) IN ('1', 't')
 "
 )
 POSTHOOK: type: CREATETABLE
@@ -2317,14 +2317,14 @@ TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
 "hive.sql.query" =
 "SELECT
-  WM_RESOURCEPLAN.NAME,
-  ENTITY_TYPE,
-  ENTITY_NAME,
-  case when WM_POOL.PATH is null then '<unmanaged>' else WM_POOL.PATH end,
-  ORDERING
-FROM WM_MAPPING
-JOIN WM_RESOURCEPLAN ON WM_MAPPING.RP_ID = WM_RESOURCEPLAN.RP_ID
-LEFT OUTER JOIN WM_POOL ON WM_POOL.POOL_ID = WM_MAPPING.POOL_ID
+  \"WM_RESOURCEPLAN\".\"NAME\",
+  \"ENTITY_TYPE\",
+  \"ENTITY_NAME\",
+  case when \"WM_POOL\".\"PATH\" is null then '<unmanaged>' else \"WM_POOL\".\"PATH\" end,
+  \"ORDERING\"
+FROM \"WM_MAPPING\"
+JOIN \"WM_RESOURCEPLAN\" ON \"WM_MAPPING\".\"RP_ID\" = \"WM_RESOURCEPLAN\".\"RP_ID\"
+LEFT OUTER JOIN \"WM_POOL\" ON \"WM_POOL\".\"POOL_ID\" = \"WM_MAPPING\".\"POOL_ID\"
 "
 )
 PREHOOK: type: CREATETABLE
@@ -2342,14 +2342,14 @@ TBLPROPERTIES (
 "hive.sql.database.type" = "METASTORE",
 "hive.sql.query" =
 "SELECT
-  WM_RESOURCEPLAN.NAME,
-  ENTITY_TYPE,
-  ENTITY_NAME,
-  case when WM_POOL.PATH is null then '<unmanaged>' else WM_POOL.PATH end,
-  ORDERING
-FROM WM_MAPPING
-JOIN WM_RESOURCEPLAN ON WM_MAPPING.RP_ID = WM_RESOURCEPLAN.RP_ID
-LEFT OUTER JOIN WM_POOL ON WM_POOL.POOL_ID = WM_MAPPING.POOL_ID
+  \"WM_RESOURCEPLAN\".\"NAME\",
+  \"ENTITY_TYPE\",
+  \"ENTITY_NAME\",
+  case when \"WM_POOL\".\"PATH\" is null then '<unmanaged>' else \"WM_POOL\".\"PATH\" end,
+  \"ORDERING\"
+FROM \"WM_MAPPING\"
+JOIN \"WM_RESOURCEPLAN\" ON \"WM_MAPPING\".\"RP_ID\" = \"WM_RESOURCEPLAN\".\"RP_ID\"
+LEFT OUTER JOIN \"WM_POOL\" ON \"WM_POOL\".\"POOL_ID\" = \"WM_MAPPING\".\"POOL_ID\"
 "
 )
 POSTHOOK: type: CREATETABLE
@@ -2381,18 +2381,26 @@ PREHOOK: query: CREATE VIEW IF NOT EXISTS `SCHEMATA`
   `DEFAULT_CHARACTER_SET_NAME`,
   `SQL_PATH`
 ) AS
-SELECT
+SELECT DISTINCT
   'default',
-  `NAME`,
-  `OWNER_NAME`,
+  D.`NAME`,
+  D.`OWNER_NAME`,
   cast(null as string),
   cast(null as string),
   cast(null as string),
   `DB_LOCATION_URI`
 FROM
-  sys.DBS
+  `sys`.`DBS` D, `sys`.`TBLS` T, `sys`.`TBL_PRIVS` P
+WHERE
+  NOT restrict_information_schema() OR
+  D.`DB_ID` = T.`DB_ID`
+  AND T.`TBL_ID` = P.`TBL_ID`
+  AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
+    OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: sys@dbs
+PREHOOK: Input: sys@tbl_privs
+PREHOOK: Input: sys@tbls
 PREHOOK: Output: INFORMATION_SCHEMA@SCHEMATA
 PREHOOK: Output: database:information_schema
 POSTHOOK: query: CREATE VIEW IF NOT EXISTS `SCHEMATA`
@@ -2405,27 +2413,35 @@ POSTHOOK: query: CREATE VIEW IF NOT EXISTS `SCHEMATA`
   `DEFAULT_CHARACTER_SET_NAME`,
   `SQL_PATH`
 ) AS
-SELECT
+SELECT DISTINCT
   'default',
-  `NAME`,
-  `OWNER_NAME`,
+  D.`NAME`,
+  D.`OWNER_NAME`,
   cast(null as string),
   cast(null as string),
   cast(null as string),
   `DB_LOCATION_URI`
 FROM
-  sys.DBS
+  `sys`.`DBS` D, `sys`.`TBLS` T, `sys`.`TBL_PRIVS` P
+WHERE
+  NOT restrict_information_schema() OR
+  D.`DB_ID` = T.`DB_ID`
+  AND T.`TBL_ID` = P.`TBL_ID`
+  AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
+    OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: sys@dbs
+POSTHOOK: Input: sys@tbl_privs
+POSTHOOK: Input: sys@tbls
 POSTHOOK: Output: INFORMATION_SCHEMA@SCHEMATA
 POSTHOOK: Output: database:information_schema
 POSTHOOK: Lineage: SCHEMATA.catalog_name SIMPLE []
 POSTHOOK: Lineage: SCHEMATA.default_character_set_catalog EXPRESSION []
 POSTHOOK: Lineage: SCHEMATA.default_character_set_name EXPRESSION []
 POSTHOOK: Lineage: SCHEMATA.default_character_set_schema EXPRESSION []
-POSTHOOK: Lineage: SCHEMATA.schema_name SIMPLE [(dbs)dbs.FieldSchema(name:name, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: SCHEMATA.schema_name SIMPLE [(dbs)d.FieldSchema(name:name, type:string, comment:from deserializer), ]
 #### A masked pattern was here ####
-POSTHOOK: Lineage: SCHEMATA.sql_path SIMPLE [(dbs)dbs.FieldSchema(name:db_location_uri, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: SCHEMATA.sql_path SIMPLE [(dbs)d.FieldSchema(name:db_location_uri, type:string, comment:from deserializer), ]
 PREHOOK: query: CREATE VIEW IF NOT EXISTS `TABLES`
 (
   `TABLE_CATALOG`,
@@ -2441,7 +2457,7 @@ PREHOOK: query: CREATE VIEW IF NOT EXISTS `TABLES`
   `IS_TYPED`,
   `COMMIT_ACTION`
 ) AS
-SELECT
+SELECT DISTINCT
   'default',
   D.NAME,
   T.TBL_NAME,
@@ -2455,11 +2471,16 @@ SELECT
   'NO',
   cast(null as string)
 FROM
-  `sys`.`TBLS` T, `sys`.`DBS` D
+  `sys`.`TBLS` T, `sys`.`DBS` D, `sys`.`TBL_PRIVS` P
 WHERE
   D.`DB_ID` = T.`DB_ID`
+  AND (NOT restrict_information_schema() OR T.`TBL_ID` = P.`TBL_ID`
+  AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
+    OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
+  AND P.`TBL_PRIV`='SELECT')
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: sys@dbs
+PREHOOK: Input: sys@tbl_privs
 PREHOOK: Input: sys@tbls
 PREHOOK: Output: INFORMATION_SCHEMA@TABLES
 PREHOOK: Output: database:information_schema
@@ -2478,7 +2499,7 @@ POSTHOOK: query: CREATE VIEW IF NOT EXISTS `TABLES`
   `IS_TYPED`,
   `COMMIT_ACTION`
 ) AS
-SELECT
+SELECT DISTINCT
   'default',
   D.NAME,
   T.TBL_NAME,
@@ -2492,11 +2513,16 @@ SELECT
   'NO',
   cast(null as string)
 FROM
-  `sys`.`TBLS` T, `sys`.`DBS` D
+  `sys`.`TBLS` T, `sys`.`DBS` D, `sys`.`TBL_PRIVS` P
 WHERE
   D.`DB_ID` = T.`DB_ID`
+  AND (NOT restrict_information_schema() OR T.`TBL_ID` = P.`TBL_ID`
+  AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
+    OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
+  AND P.`TBL_PRIV`='SELECT')
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: sys@dbs
+POSTHOOK: Input: sys@tbl_privs
 POSTHOOK: Input: sys@tbls
 POSTHOOK: Output: INFORMATION_SCHEMA@TABLES
 POSTHOOK: Output: database:information_schema
@@ -2523,9 +2549,9 @@ PREHOOK: query: CREATE VIEW IF NOT EXISTS `TABLE_PRIVILEGES`
   `IS_GRANTABLE`,
   `WITH_HIERARCHY`
 ) AS
-SELECT
-  `GRANTOR`,
-  `PRINCIPAL_NAME`,
+SELECT DISTINCT
+  P.`GRANTOR`,
+  P.`PRINCIPAL_NAME`,
   'default',
   D.`NAME`,
   T.`TBL_NAME`,
@@ -2533,12 +2559,18 @@ SELECT
   IF (P.`GRANT_OPTION` == 0, 'NO', 'YES'),
   'NO'
 FROM
-  sys.`TBL_PRIVS` P,
-  sys.`TBLS` T,
-  sys.`DBS` D
+  `sys`.`TBL_PRIVS` P,
+  `sys`.`TBLS` T,
+  `sys`.`DBS` D,
+  `sys`.`TBL_PRIVS` P2
 WHERE
-  P.TBL_ID = T.TBL_ID
-  AND T.DB_ID = D.DB_ID
+  P.`TBL_ID` = T.`TBL_ID`
+  AND T.`DB_ID` = D.`DB_ID`
+  AND (NOT restrict_information_schema() OR
+  P.`TBL_ID` = P2.`TBL_ID` AND P.`PRINCIPAL_NAME` = P2.`PRINCIPAL_NAME` AND P.`PRINCIPAL_TYPE` = P2.`PRINCIPAL_TYPE`
+  AND (P2.`PRINCIPAL_NAME`=current_user() AND P2.`PRINCIPAL_TYPE`='USER'
+    OR ((array_contains(current_groups(), P2.`PRINCIPAL_NAME`) OR P2.`PRINCIPAL_NAME` = 'public') AND P2.`PRINCIPAL_TYPE`='GROUP'))
+  AND P2.`TBL_PRIV`='SELECT')
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: sys@dbs
 PREHOOK: Input: sys@tbl_privs
@@ -2556,9 +2588,9 @@ POSTHOOK: query: CREATE VIEW IF NOT EXISTS `TABLE_PRIVILEGES`
   `IS_GRANTABLE`,
   `WITH_HIERARCHY`
 ) AS
-SELECT
-  `GRANTOR`,
-  `PRINCIPAL_NAME`,
+SELECT DISTINCT
+  P.`GRANTOR`,
+  P.`PRINCIPAL_NAME`,
   'default',
   D.`NAME`,
   T.`TBL_NAME`,
@@ -2566,12 +2598,18 @@ SELECT
   IF (P.`GRANT_OPTION` == 0, 'NO', 'YES'),
   'NO'
 FROM
-  sys.`TBL_PRIVS` P,
-  sys.`TBLS` T,
-  sys.`DBS` D
+  `sys`.`TBL_PRIVS` P,
+  `sys`.`TBLS` T,
+  `sys`.`DBS` D,
+  `sys`.`TBL_PRIVS` P2
 WHERE
-  P.TBL_ID = T.TBL_ID
-  AND T.DB_ID = D.DB_ID
+  P.`TBL_ID` = T.`TBL_ID`
+  AND T.`DB_ID` = D.`DB_ID`
+  AND (NOT restrict_information_schema() OR
+  P.`TBL_ID` = P2.`TBL_ID` AND P.`PRINCIPAL_NAME` = P2.`PRINCIPAL_NAME` AND P.`PRINCIPAL_TYPE` = P2.`PRINCIPAL_TYPE`
+  AND (P2.`PRINCIPAL_NAME`=current_user() AND P2.`PRINCIPAL_TYPE`='USER'
+    OR ((array_contains(current_groups(), P2.`PRINCIPAL_NAME`) OR P2.`PRINCIPAL_NAME` = 'public') AND P2.`PRINCIPAL_TYPE`='GROUP'))
+  AND P2.`TBL_PRIV`='SELECT')
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: sys@dbs
 POSTHOOK: Input: sys@tbl_privs
@@ -2636,7 +2674,7 @@ PREHOOK: query: CREATE VIEW IF NOT EXISTS `COLUMNS`
   `DECLARED_NUMERIC_PRECISION`,
   `DECLARED_NUMERIC_SCALE`
 ) AS
-SELECT
+SELECT DISTINCT
   'default',
   D.NAME,
   T.TBL_NAME,
@@ -2725,18 +2763,26 @@ SELECT
        WHEN lower(C.TYPE_NAME) like 'numeric%' THEN 10
        ELSE null END
 FROM
-  sys.`COLUMNS_V2` C,
-  sys.`SDS` S,
-  sys.`TBLS` T,
-  sys.`DBS` D
+  `sys`.`COLUMNS_V2` C,
+  `sys`.`SDS` S,
+  `sys`.`TBLS` T,
+  `sys`.`DBS` D,
+  `sys`.`TBL_COL_PRIVS` P
 WHERE
   S.`SD_ID` = T.`SD_ID`
   AND T.`DB_ID` = D.`DB_ID`
   AND C.`CD_ID` = S.`CD_ID`
+  AND (NOT restrict_information_schema() OR
+  T.`TBL_ID` = P.`TBL_ID`
+  AND C.`COLUMN_NAME` = P.`COLUMN_NAME`
+  AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
+    OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
+  AND P.`TBL_COL_PRIV`='SELECT')
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: sys@columns_v2
 PREHOOK: Input: sys@dbs
 PREHOOK: Input: sys@sds
+PREHOOK: Input: sys@tbl_col_privs
 PREHOOK: Input: sys@tbls
 PREHOOK: Output: INFORMATION_SCHEMA@COLUMNS
 PREHOOK: Output: database:information_schema
@@ -2790,7 +2836,7 @@ POSTHOOK: query: CREATE VIEW IF NOT EXISTS `COLUMNS`
   `DECLARED_NUMERIC_PRECISION`,
   `DECLARED_NUMERIC_SCALE`
 ) AS
-SELECT
+SELECT DISTINCT
   'default',
   D.NAME,
   T.TBL_NAME,
@@ -2879,18 +2925,26 @@ SELECT
        WHEN lower(C.TYPE_NAME) like 'numeric%' THEN 10
        ELSE null END
 FROM
-  sys.`COLUMNS_V2` C,
-  sys.`SDS` S,
-  sys.`TBLS` T,
-  sys.`DBS` D
+  `sys`.`COLUMNS_V2` C,
+  `sys`.`SDS` S,
+  `sys`.`TBLS` T,
+  `sys`.`DBS` D,
+  `sys`.`TBL_COL_PRIVS` P
 WHERE
   S.`SD_ID` = T.`SD_ID`
   AND T.`DB_ID` = D.`DB_ID`
   AND C.`CD_ID` = S.`CD_ID`
+  AND (NOT restrict_information_schema() OR
+  T.`TBL_ID` = P.`TBL_ID`
+  AND C.`COLUMN_NAME` = P.`COLUMN_NAME`
+  AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
+    OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
+  AND P.`TBL_COL_PRIV`='SELECT')
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: sys@columns_v2
 POSTHOOK: Input: sys@dbs
 POSTHOOK: Input: sys@sds
+POSTHOOK: Input: sys@tbl_col_privs
 POSTHOOK: Input: sys@tbls
 POSTHOOK: Output: INFORMATION_SCHEMA@COLUMNS
 POSTHOOK: Output: database:information_schema
@@ -2952,32 +3006,35 @@ PREHOOK: query: CREATE VIEW IF NOT EXISTS `COLUMN_PRIVILEGES`
   `PRIVILEGE_TYPE`,
   `IS_GRANTABLE`
 ) AS
-SELECT
-  `GRANTOR`,
-  `PRINCIPAL_NAME`,
+SELECT DISTINCT
+  P.`GRANTOR`,
+  P.`PRINCIPAL_NAME`,
   'default',
   D.`NAME`,
   T.`TBL_NAME`,
-  C.`COLUMN_NAME`,
+  P.`COLUMN_NAME`,
   P.`TBL_COL_PRIV`,
   IF (P.`GRANT_OPTION` == 0, 'NO', 'YES')
 FROM
-  sys.`TBL_COL_PRIVS` P,
-  sys.`TBLS` T,
-  sys.`DBS` D,
-  sys.`COLUMNS_V2` C,
-  sys.`SDS` S
+  `sys`.`TBL_COL_PRIVS` P,
+  `sys`.`TBLS` T,
+  `sys`.`DBS` D,
+  `sys`.`SDS` S,
+  `sys`.`TBL_PRIVS` P2
 WHERE
   S.`SD_ID` = T.`SD_ID`
   AND T.`DB_ID` = D.`DB_ID`
   AND P.`TBL_ID` = T.`TBL_ID`
-  AND P.`COLUMN_NAME` = C.`COLUMN_NAME`
-  AND C.`CD_ID` = S.`CD_ID`
+  AND (NOT restrict_information_schema() OR
+  P.`TBL_ID` = P2.`TBL_ID` AND P.`PRINCIPAL_NAME` = P2.`PRINCIPAL_NAME` AND P.`PRINCIPAL_TYPE` = P2.`PRINCIPAL_TYPE`
+  AND (P2.`PRINCIPAL_NAME`=current_user() AND P2.`PRINCIPAL_TYPE`='USER'
+    OR ((array_contains(current_groups(), P2.`PRINCIPAL_NAME`) OR P2.`PRINCIPAL_NAME` = 'public') AND P2.`PRINCIPAL_TYPE`='GROUP'))
+  AND P2.`TBL_PRIV`='SELECT')
 PREHOOK: type: CREATEVIEW
-PREHOOK: Input: sys@columns_v2
 PREHOOK: Input: sys@dbs
 PREHOOK: Input: sys@sds
 PREHOOK: Input: sys@tbl_col_privs
+PREHOOK: Input: sys@tbl_privs
 PREHOOK: Input: sys@tbls
 PREHOOK: Output: INFORMATION_SCHEMA@COLUMN_PRIVILEGES
 PREHOOK: Output: database:information_schema
@@ -2992,36 +3049,39 @@ POSTHOOK: query: CREATE VIEW IF NOT EXISTS `COLUMN_PRIVILEGES`
   `PRIVILEGE_TYPE`,
   `IS_GRANTABLE`
 ) AS
-SELECT
-  `GRANTOR`,
-  `PRINCIPAL_NAME`,
+SELECT DISTINCT
+  P.`GRANTOR`,
+  P.`PRINCIPAL_NAME`,
   'default',
   D.`NAME`,
   T.`TBL_NAME`,
-  C.`COLUMN_NAME`,
+  P.`COLUMN_NAME`,
   P.`TBL_COL_PRIV`,
   IF (P.`GRANT_OPTION` == 0, 'NO', 'YES')
 FROM
-  sys.`TBL_COL_PRIVS` P,
-  sys.`TBLS` T,
-  sys.`DBS` D,
-  sys.`COLUMNS_V2` C,
-  sys.`SDS` S
+  `sys`.`TBL_COL_PRIVS` P,
+  `sys`.`TBLS` T,
+  `sys`.`DBS` D,
+  `sys`.`SDS` S,
+  `sys`.`TBL_PRIVS` P2
 WHERE
   S.`SD_ID` = T.`SD_ID`
   AND T.`DB_ID` = D.`DB_ID`
   AND P.`TBL_ID` = T.`TBL_ID`
-  AND P.`COLUMN_NAME` = C.`COLUMN_NAME`
-  AND C.`CD_ID` = S.`CD_ID`
+  AND (NOT restrict_information_schema() OR
+  P.`TBL_ID` = P2.`TBL_ID` AND P.`PRINCIPAL_NAME` = P2.`PRINCIPAL_NAME` AND P.`PRINCIPAL_TYPE` = P2.`PRINCIPAL_TYPE`
+  AND (P2.`PRINCIPAL_NAME`=current_user() AND P2.`PRINCIPAL_TYPE`='USER'
+    OR ((array_contains(current_groups(), P2.`PRINCIPAL_NAME`) OR P2.`PRINCIPAL_NAME` = 'public') AND P2.`PRINCIPAL_TYPE`='GROUP'))
+  AND P2.`TBL_PRIV`='SELECT')
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Input: sys@columns_v2
 POSTHOOK: Input: sys@dbs
 POSTHOOK: Input: sys@sds
 POSTHOOK: Input: sys@tbl_col_privs
+POSTHOOK: Input: sys@tbl_privs
 POSTHOOK: Input: sys@tbls
 POSTHOOK: Output: INFORMATION_SCHEMA@COLUMN_PRIVILEGES
 POSTHOOK: Output: database:information_schema
-POSTHOOK: Lineage: COLUMN_PRIVILEGES.column_name SIMPLE [(columns_v2)c.FieldSchema(name:column_name, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: COLUMN_PRIVILEGES.column_name SIMPLE [(tbl_col_privs)p.FieldSchema(name:column_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMN_PRIVILEGES.grantee SIMPLE [(tbl_col_privs)p.FieldSchema(name:principal_name, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMN_PRIVILEGES.grantor SIMPLE [(tbl_col_privs)p.FieldSchema(name:grantor, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: COLUMN_PRIVILEGES.is_grantable EXPRESSION [(tbl_col_privs)p.FieldSchema(name:grant_option, type:int, comment:from deserializer), ]
@@ -3042,7 +3102,7 @@ PREHOOK: query: CREATE VIEW IF NOT EXISTS `VIEWS`
   `IS_TRIGGER_DELETABLE`,
   `IS_TRIGGER_INSERTABLE_INTO`
 ) AS
-SELECT
+SELECT DISTINCT
   'default',
   D.NAME,
   T.TBL_NAME,
@@ -3055,12 +3115,19 @@ SELECT
   false
 FROM
   `sys`.`DBS` D,
-  `sys`.`TBLS` T
+  `sys`.`TBLS` T,
+  `sys`.`TBL_PRIVS` P
 WHERE
-   D.`DB_ID` = T.`DB_ID` AND
-   length(T.VIEW_ORIGINAL_TEXT) > 0
+  D.`DB_ID` = T.`DB_ID`
+  AND length(T.VIEW_ORIGINAL_TEXT) > 0
+  AND (NOT restrict_information_schema() OR
+  T.`TBL_ID` = P.`TBL_ID`
+  AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
+    OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
+  AND P.`TBL_PRIV`='SELECT')
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: sys@dbs
+PREHOOK: Input: sys@tbl_privs
 PREHOOK: Input: sys@tbls
 PREHOOK: Output: INFORMATION_SCHEMA@VIEWS
 PREHOOK: Output: database:information_schema
@@ -3077,7 +3144,7 @@ POSTHOOK: query: CREATE VIEW IF NOT EXISTS `VIEWS`
   `IS_TRIGGER_DELETABLE`,
   `IS_TRIGGER_INSERTABLE_INTO`
 ) AS
-SELECT
+SELECT DISTINCT
   'default',
   D.NAME,
   T.TBL_NAME,
@@ -3090,12 +3157,19 @@ SELECT
   false
 FROM
   `sys`.`DBS` D,
-  `sys`.`TBLS` T
+  `sys`.`TBLS` T,
+  `sys`.`TBL_PRIVS` P
 WHERE
-   D.`DB_ID` = T.`DB_ID` AND
-   length(T.VIEW_ORIGINAL_TEXT) > 0
+  D.`DB_ID` = T.`DB_ID`
+  AND length(T.VIEW_ORIGINAL_TEXT) > 0
+  AND (NOT restrict_information_schema() OR
+  T.`TBL_ID` = P.`TBL_ID`
+  AND (P.`PRINCIPAL_NAME`=current_user() AND P.`PRINCIPAL_TYPE`='USER'
+    OR ((array_contains(current_groups(), P.`PRINCIPAL_NAME`) OR P.`PRINCIPAL_NAME` = 'public') AND P.`PRINCIPAL_TYPE`='GROUP'))
+  AND P.`TBL_PRIV`='SELECT')
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: sys@dbs
+POSTHOOK: Input: sys@tbl_privs
 POSTHOOK: Input: sys@tbls
 POSTHOOK: Output: INFORMATION_SCHEMA@VIEWS
 POSTHOOK: Output: database:information_schema
@@ -3149,7 +3223,7 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_1	DISABLED	NULL	default
+plan_1	DISABLED	0	default
 PREHOOK: query: CREATE RESOURCE PLAN plan_2 WITH QUERY_PARALLELISM=5
 PREHOOK: type: CREATE RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3183,7 +3257,7 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_1	DISABLED	NULL	default
+plan_1	DISABLED	0	default
 plan_2	DISABLED	10	default
 FAILED: SemanticException Invalid create arguments (tok_create_rp plan_3 (tok_query_parallelism 5) (tok_default_pool all))
 PREHOOK: query: ALTER RESOURCE PLAN plan_1 RENAME TO plan_2
@@ -3198,7 +3272,7 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_1	DISABLED	NULL	default
+plan_1	DISABLED	0	default
 plan_2	DISABLED	10	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_1 RENAME TO plan_3
 PREHOOK: type: ALTER RESOURCEPLAN
@@ -3214,7 +3288,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	DISABLED	10	default
-plan_3	DISABLED	NULL	default
+plan_3	DISABLED	0	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 SET QUERY_PARALLELISM = 4
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3244,7 +3318,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	DISABLED	10	default
-plan_3	DISABLED	NULL	default
+plan_3	DISABLED	0	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 SET QUERY_PARALLELISM = 30, DEFAULT POOL = default1
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3258,7 +3332,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	DISABLED	10	default
-plan_3	DISABLED	NULL	default
+plan_3	DISABLED	0	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 ENABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3286,7 +3360,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	DISABLED	10	default
-plan_3	DISABLED	NULL	default
+plan_3	DISABLED	0	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 ACTIVATE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3300,7 +3374,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	DISABLED	10	default
-plan_3	DISABLED	NULL	default
+plan_3	DISABLED	0	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 DISABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3315,7 +3389,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	DISABLED	10	default
-plan_3	DISABLED	NULL	default
+plan_3	DISABLED	0	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 ENABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3330,7 +3404,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	DISABLED	10	default
-plan_3	ENABLED	NULL	default
+plan_3	ENABLED	0	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 ACTIVATE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3345,7 +3419,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	DISABLED	10	default
-plan_3	ACTIVE	NULL	default
+plan_3	ACTIVE	0	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 ACTIVATE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3360,7 +3434,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	DISABLED	10	default
-plan_3	ACTIVE	NULL	default
+plan_3	ACTIVE	0	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 ENABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3374,7 +3448,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	DISABLED	10	default
-plan_3	ACTIVE	NULL	default
+plan_3	ACTIVE	0	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 DISABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3388,7 +3462,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	DISABLED	10	default
-plan_3	ACTIVE	NULL	default
+plan_3	ACTIVE	0	default
 PREHOOK: query: DISABLE WORKLOAD MANAGEMENT
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3403,7 +3477,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	DISABLED	10	default
-plan_3	ENABLED	NULL	default
+plan_3	ENABLED	0	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 DISABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3423,7 +3497,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	DISABLED	10	default
-plan_3	ACTIVE	NULL	default
+plan_3	ACTIVE	0	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_2 ENABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3438,7 +3512,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	ENABLED	10	default
-plan_3	ACTIVE	NULL	default
+plan_3	ACTIVE	0	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_2 ACTIVATE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3453,7 +3527,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	ACTIVE	10	default
-plan_3	ENABLED	NULL	default
+plan_3	ENABLED	0	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 ENABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3468,7 +3542,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	ACTIVE	10	default
-plan_3	ENABLED	NULL	default
+plan_3	ENABLED	0	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 DISABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3483,7 +3557,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	ACTIVE	10	default
-plan_3	DISABLED	NULL	default
+plan_3	DISABLED	0	default
 PREHOOK: query: DROP RESOURCE PLAN plan_2
 PREHOOK: type: DROP RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -3669,7 +3743,7 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_1	ENABLED	NULL	default
+plan_1	ENABLED	0	default
 plan_2	ACTIVE	10	default
 table	DISABLED	1	default
 PREHOOK: query: DROP TRIGGER plan_1.trigger_2
@@ -3693,7 +3767,7 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_1	ACTIVE	NULL	default
+plan_1	ACTIVE	0	default
 plan_2	ENABLED	10	default
 table	DISABLED	1	default
 PREHOOK: query: DROP TRIGGER plan_1.trigger_2
@@ -3999,7 +4073,7 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_1	ACTIVE	NULL	default
+plan_1	ACTIVE	0	default
 plan_2	DISABLED	10	def
 table	DISABLED	1	default
 PREHOOK: query: ALTER RESOURCE PLAN `table` SET DEFAULT POOL = `table`.pool
@@ -4041,7 +4115,7 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_1	ACTIVE	NULL	default
+plan_1	ACTIVE	0	default
 plan_2	DISABLED	10	def
 table	DISABLED	1	NULL
 PREHOOK: query: ALTER POOL plan_2.def.c1 ADD TRIGGER trigger_1
@@ -4337,9 +4411,9 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_1	ENABLED	NULL	default
-plan_2	DISABLED	NULL	default
-plan_4	ACTIVE	NULL	default
+plan_1	ENABLED	0	default
+plan_2	DISABLED	0	default
+plan_4	ACTIVE	0	default
 table	DISABLED	1	NULL
 PREHOOK: query: SELECT * FROM SYS.WM_POOLS
 PREHOOK: type: QUERY
@@ -4432,11 +4506,11 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_1	ENABLED	NULL	default
-plan_2	DISABLED	NULL	default
-plan_4	ACTIVE	NULL	default
-plan_4a	DISABLED	NULL	default
-plan_4b	DISABLED	NULL	default
+plan_1	ENABLED	0	default
+plan_2	DISABLED	0	default
+plan_4	ACTIVE	0	default
+plan_4a	DISABLED	0	default
+plan_4b	DISABLED	0	default
 table	DISABLED	1	NULL
 PREHOOK: query: SELECT * FROM SYS.WM_POOLS
 PREHOOK: type: QUERY
@@ -4507,11 +4581,11 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_1	ENABLED	NULL	default
-plan_2	DISABLED	NULL	default
-plan_4	ACTIVE	NULL	default
-plan_4a	DISABLED	NULL	default
-plan_4a_old_0	DISABLED	NULL	default
+plan_1	ENABLED	0	default
+plan_2	DISABLED	0	default
+plan_4	ACTIVE	0	default
+plan_4a	DISABLED	0	default
+plan_4a_old_0	DISABLED	0	default
 table	DISABLED	1	NULL
 PREHOOK: query: SELECT * FROM SYS.WM_POOLS
 PREHOOK: type: QUERY
@@ -4557,11 +4631,11 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_1	ENABLED	NULL	default
-plan_2	DISABLED	NULL	default
-plan_4	ACTIVE	NULL	default
-plan_4_old_0	DISABLED	NULL	default
-plan_4a_old_0	DISABLED	NULL	default
+plan_1	ENABLED	0	default
+plan_2	DISABLED	0	default
+plan_4	ACTIVE	0	default
+plan_4_old_0	DISABLED	0	default
+plan_4a_old_0	DISABLED	0	default
 table	DISABLED	1	NULL
 PREHOOK: query: CREATE RESOURCE PLAN plan_4a LIKE plan_4
 PREHOOK: type: CREATE RESOURCEPLAN
@@ -4586,12 +4660,12 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
-plan_1	ENABLED	NULL	default
-plan_2	DISABLED	NULL	default
-plan_4	ACTIVE	NULL	default
-plan_4_old_0	DISABLED	NULL	default
-plan_4_old_1	DISABLED	NULL	default
-plan_4a_old_0	DISABLED	NULL	default
+plan_1	ENABLED	0	default
+plan_2	DISABLED	0	default
+plan_4	ACTIVE	0	default
+plan_4_old_0	DISABLED	0	default
+plan_4_old_1	DISABLED	0	default
+plan_4a_old_0	DISABLED	0	default
 table	DISABLED	1	NULL
 PREHOOK: query: SELECT * FROM SYS.WM_POOLS
 PREHOOK: type: QUERY

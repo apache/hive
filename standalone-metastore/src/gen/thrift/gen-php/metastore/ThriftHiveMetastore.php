@@ -1061,6 +1061,13 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf {
    */
   public function grant_revoke_privileges(\metastore\GrantRevokePrivilegeRequest $request);
   /**
+   * @param \metastore\HiveObjectRef $objToRefresh
+   * @param \metastore\GrantRevokePrivilegeRequest $grantRequest
+   * @return \metastore\GrantRevokePrivilegeResponse
+   * @throws \metastore\MetaException
+   */
+  public function refresh_privileges(\metastore\HiveObjectRef $objToRefresh, \metastore\GrantRevokePrivilegeRequest $grantRequest);
+  /**
    * @param string $user_name
    * @param string[] $group_names
    * @return string[]
@@ -8918,6 +8925,61 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
       throw $result->o1;
     }
     throw new \Exception("grant_revoke_privileges failed: unknown result");
+  }
+
+  public function refresh_privileges(\metastore\HiveObjectRef $objToRefresh, \metastore\GrantRevokePrivilegeRequest $grantRequest)
+  {
+    $this->send_refresh_privileges($objToRefresh, $grantRequest);
+    return $this->recv_refresh_privileges();
+  }
+
+  public function send_refresh_privileges(\metastore\HiveObjectRef $objToRefresh, \metastore\GrantRevokePrivilegeRequest $grantRequest)
+  {
+    $args = new \metastore\ThriftHiveMetastore_refresh_privileges_args();
+    $args->objToRefresh = $objToRefresh;
+    $args->grantRequest = $grantRequest;
+    $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
+    if ($bin_accel)
+    {
+      thrift_protocol_write_binary($this->output_, 'refresh_privileges', TMessageType::CALL, $args, $this->seqid_, $this->output_->isStrictWrite());
+    }
+    else
+    {
+      $this->output_->writeMessageBegin('refresh_privileges', TMessageType::CALL, $this->seqid_);
+      $args->write($this->output_);
+      $this->output_->writeMessageEnd();
+      $this->output_->getTransport()->flush();
+    }
+  }
+
+  public function recv_refresh_privileges()
+  {
+    $bin_accel = ($this->input_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_read_binary');
+    if ($bin_accel) $result = thrift_protocol_read_binary($this->input_, '\metastore\ThriftHiveMetastore_refresh_privileges_result', $this->input_->isStrictRead());
+    else
+    {
+      $rseqid = 0;
+      $fname = null;
+      $mtype = 0;
+
+      $this->input_->readMessageBegin($fname, $mtype, $rseqid);
+      if ($mtype == TMessageType::EXCEPTION) {
+        $x = new TApplicationException();
+        $x->read($this->input_);
+        $this->input_->readMessageEnd();
+        throw $x;
+      }
+      $result = new \metastore\ThriftHiveMetastore_refresh_privileges_result();
+      $result->read($this->input_);
+      $this->input_->readMessageEnd();
+    }
+    if ($result->success !== null) {
+      return $result->success;
+    }
+    if ($result->o1 !== null) {
+      throw $result->o1;
+    }
+    throw new \Exception("refresh_privileges failed: unknown result");
   }
 
   public function set_ugi($user_name, array $group_names)
@@ -44423,6 +44485,219 @@ class ThriftHiveMetastore_grant_revoke_privileges_result {
   public function write($output) {
     $xfer = 0;
     $xfer += $output->writeStructBegin('ThriftHiveMetastore_grant_revoke_privileges_result');
+    if ($this->success !== null) {
+      if (!is_object($this->success)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('success', TType::STRUCT, 0);
+      $xfer += $this->success->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->o1 !== null) {
+      $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
+      $xfer += $this->o1->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class ThriftHiveMetastore_refresh_privileges_args {
+  static $_TSPEC;
+
+  /**
+   * @var \metastore\HiveObjectRef
+   */
+  public $objToRefresh = null;
+  /**
+   * @var \metastore\GrantRevokePrivilegeRequest
+   */
+  public $grantRequest = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'objToRefresh',
+          'type' => TType::STRUCT,
+          'class' => '\metastore\HiveObjectRef',
+          ),
+        2 => array(
+          'var' => 'grantRequest',
+          'type' => TType::STRUCT,
+          'class' => '\metastore\GrantRevokePrivilegeRequest',
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['objToRefresh'])) {
+        $this->objToRefresh = $vals['objToRefresh'];
+      }
+      if (isset($vals['grantRequest'])) {
+        $this->grantRequest = $vals['grantRequest'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'ThriftHiveMetastore_refresh_privileges_args';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRUCT) {
+            $this->objToRefresh = new \metastore\HiveObjectRef();
+            $xfer += $this->objToRefresh->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRUCT) {
+            $this->grantRequest = new \metastore\GrantRevokePrivilegeRequest();
+            $xfer += $this->grantRequest->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('ThriftHiveMetastore_refresh_privileges_args');
+    if ($this->objToRefresh !== null) {
+      if (!is_object($this->objToRefresh)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('objToRefresh', TType::STRUCT, 1);
+      $xfer += $this->objToRefresh->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->grantRequest !== null) {
+      if (!is_object($this->grantRequest)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('grantRequest', TType::STRUCT, 2);
+      $xfer += $this->grantRequest->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class ThriftHiveMetastore_refresh_privileges_result {
+  static $_TSPEC;
+
+  /**
+   * @var \metastore\GrantRevokePrivilegeResponse
+   */
+  public $success = null;
+  /**
+   * @var \metastore\MetaException
+   */
+  public $o1 = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        0 => array(
+          'var' => 'success',
+          'type' => TType::STRUCT,
+          'class' => '\metastore\GrantRevokePrivilegeResponse',
+          ),
+        1 => array(
+          'var' => 'o1',
+          'type' => TType::STRUCT,
+          'class' => '\metastore\MetaException',
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['success'])) {
+        $this->success = $vals['success'];
+      }
+      if (isset($vals['o1'])) {
+        $this->o1 = $vals['o1'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'ThriftHiveMetastore_refresh_privileges_result';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 0:
+          if ($ftype == TType::STRUCT) {
+            $this->success = new \metastore\GrantRevokePrivilegeResponse();
+            $xfer += $this->success->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 1:
+          if ($ftype == TType::STRUCT) {
+            $this->o1 = new \metastore\MetaException();
+            $xfer += $this->o1->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('ThriftHiveMetastore_refresh_privileges_result');
     if ($this->success !== null) {
       if (!is_object($this->success)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
