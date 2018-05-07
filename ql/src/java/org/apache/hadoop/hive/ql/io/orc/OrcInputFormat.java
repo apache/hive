@@ -26,7 +26,6 @@ import org.apache.hadoop.hdfs.DistributedFileSystem;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.security.PrivilegedExceptionAction;
-
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletionService;
@@ -482,7 +481,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
                                              Configuration conf) {
      if (!ColumnProjectionUtils.isReadAllColumns(conf)) {
       List<Integer> included = ColumnProjectionUtils.getReadColumnIDs(conf);
-       return genIncludedColumns(conf,readerSchema,included);
+      return genIncludedColumns(conf,readerSchema,included);
     } else {
       return null;
     }
