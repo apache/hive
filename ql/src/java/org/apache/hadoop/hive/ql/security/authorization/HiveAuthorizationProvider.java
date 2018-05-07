@@ -28,6 +28,8 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginException;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePolicyProvider;
 
 /**
  * Hive's pluggable authorization provider interface
@@ -124,4 +126,11 @@ public interface HiveAuthorizationProvider extends Configurable{
       Privilege[] readRequiredPriv, Privilege[] writeRequiredPriv)
       throws HiveException, AuthorizationException;
 
+  /**
+   * @return HivePolicyProvider instance (expected to be a singleton)
+   * @throws HiveAuthzPluginException
+   */
+  default HivePolicyProvider getHivePolicyProvider() throws HiveAuthzPluginException {
+    return null;
+  }
 }
