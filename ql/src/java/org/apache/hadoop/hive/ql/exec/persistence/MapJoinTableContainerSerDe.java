@@ -110,14 +110,14 @@ public class MapJoinTableContainerSerDe {
     try {
 
       if (!fs.exists(folder)) {
-        return getDefaultEmptyContainer(keyContext, valueContext);
+        return getDefaultEmptyContainer(hconf, keyContext, valueContext);
       }
       if (!fs.isDirectory(folder)) {
         throw new HiveException("Error, not a directory: " + folder);
       }
       FileStatus[] fileStatuses = fs.listStatus(folder);
       if (fileStatuses == null || fileStatuses.length == 0) {
-        return getDefaultEmptyContainer(keyContext, valueContext);
+        return getDefaultEmptyContainer(hconf, keyContext, valueContext);
       }
 
       AbstractSerDe keySerDe = keyContext.getSerDe();
@@ -319,8 +319,13 @@ public class MapJoinTableContainerSerDe {
   }
 
   // Get an empty container when the small table is empty.
-  private static MapJoinTableContainer getDefaultEmptyContainer(MapJoinObjectSerDeContext keyCtx,
-      MapJoinObjectSerDeContext valCtx) throws SerDeException {
+  private static MapJoinTableContainer getDefaultEmptyContainer(Configuration hconf,
+      MapJoinObjectSerDeContext keyCtx, MapJoinObjectSerDeContext valCtx) throws SerDeException {
+    boolean useOptimizedContainer = HiveConf.getBoolVar(
+        hconf, HiveConf.ConfVars.HIVEMAPJOINUSEOPTIMIZEDTABLE);
+    if (useOptimizedContainer) {
+      return new MapJoinBytesTableContainer(hconf, valCtx, -1, 0);
+    }
     MapJoinTableContainer container = new HashMapWrapper();
     container.setSerde(keyCtx, valCtx);
     container.seal();
