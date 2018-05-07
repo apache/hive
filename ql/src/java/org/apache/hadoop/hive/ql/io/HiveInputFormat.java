@@ -478,18 +478,9 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       InputFormat inputFormat, Class<? extends InputFormat> inputFormatClass, int splits,
       TableDesc table, List<InputSplit> result)
           throws IOException {
-    ValidWriteIdList validWriteIdList = AcidUtils.getTableValidWriteIdList(conf, table.getTableName());
-    ValidWriteIdList validMmWriteIdList;
-    if (AcidUtils.isInsertOnlyTable(table.getProperties())) {
-      if (validWriteIdList == null) {
-        throw new IOException("Insert-Only table: " + table.getTableName()
-                + " is missing from the ValidWriteIdList config: "
-                + conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
-      }
-      validMmWriteIdList = validWriteIdList;
-    } else {
-      validMmWriteIdList = null;  // for non-MM case
-    }
+    ValidWriteIdList validWriteIdList = AcidUtils.getTableValidWriteIdList(
+        conf, table.getTableName());
+    ValidWriteIdList validMmWriteIdList = getMmValidWriteIds(conf, table, validWriteIdList);
 
     try {
       Utilities.copyTablePropertiesToConf(table, conf);
@@ -553,6 +544,20 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
                 ZeroRowsInputFormat.class.getName()));
       }
     }
+  }
+
+  protected ValidWriteIdList getMmValidWriteIds(
+      JobConf conf, TableDesc table, ValidWriteIdList validWriteIdList) throws IOException {
+    if (!AcidUtils.isInsertOnlyTable(table.getProperties())) return null;
+    if (validWriteIdList == null) {
+      validWriteIdList = AcidUtils.getTableValidWriteIdList( conf, table.getTableName());
+      if (validWriteIdList == null) {
+        throw new IOException("Insert-Only table: " + table.getTableName()
+                + " is missing from the ValidWriteIdList config: "
+                + conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
+      }
+    }
+    return validWriteIdList;
   }
 
   public static Path[] processPathsForMmRead(List<Path> dirs, JobConf conf,
