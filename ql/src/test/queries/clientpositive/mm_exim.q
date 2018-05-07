@@ -59,13 +59,13 @@ drop table import1_mm;
 
 drop table import2_mm;
 import table import2_mm from 'ql/test/data/exports/intermmediate_nonpart';
-desc import2_mm;
+desc formatted import2_mm;
 select * from import2_mm order by key, p;
 drop table import2_mm;
 
 drop table import3_mm;
 import table import3_mm from 'ql/test/data/exports/intermmediate_part';
-desc import3_mm;
+desc formatted import3_mm;
 select * from import3_mm order by key, p;
 drop table import3_mm;
 

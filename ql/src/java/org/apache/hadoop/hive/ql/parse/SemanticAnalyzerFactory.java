@@ -215,7 +215,7 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_LOAD:
         return new LoadSemanticAnalyzer(queryState);
       case HiveParser.TOK_EXPORT:
-        if(UpdateDeleteSemanticAnalyzer.isAcidExport(tree)) {
+        if (UpdateDeleteSemanticAnalyzer.isAcidExport(tree)) {
           return new UpdateDeleteSemanticAnalyzer(queryState);
         }
         return new ExportSemanticAnalyzer(queryState);

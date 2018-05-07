@@ -63,14 +63,25 @@ public class CopyTask extends Task<CopyWork> implements Serializable {
   protected int copyOnePath(Path fromPath, Path toPath) {
     FileSystem dstFs = null;
     try {
-      Utilities.FILE_OP_LOGGER.trace("Copying data from {} to {} " + fromPath);
+      Utilities.FILE_OP_LOGGER.trace("Copying data from {} to {} ", fromPath, toPath);
       console.printInfo("Copying data from " + fromPath.toString(), " to "
           + toPath.toString());
 
       FileSystem srcFs = fromPath.getFileSystem(conf);
       dstFs = toPath.getFileSystem(conf);
 
-      FileStatus[] srcs = matchFilesOrDir(srcFs, fromPath, work.doSkipSourceMmDirs());
+      FileStatus[] srcs = srcFs.globStatus(fromPath, new EximPathFilter());
+
+      // TODO: this is very brittle given that Hive supports nested directories in the tables.
+      //       The caller should pass a flag explicitly telling us if the directories in the
+      //       input are data, or parent of data. For now, retain this for backward compat.
+      if (srcs != null && srcs.length == 1 && srcs[0].isDirectory()
+          /*&& srcs[0].getPath().getName().equals(EximUtil.DATA_PATH_NAME) -  still broken for partitions*/) {
+        Utilities.FILE_OP_LOGGER.debug(
+            "Recursing into a single child directory {}", srcs[0].getPath().getName());
+        srcs = srcFs.listStatus(srcs[0].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
+      }
+
       if (srcs == null || srcs.length == 0) {
         if (work.isErrorOnSrcEmpty()) {
           console.printError("No files matching path: " + fromPath.toString());
@@ -105,40 +116,6 @@ public class CopyTask extends Task<CopyWork> implements Serializable {
           + StringUtils.stringifyException(e));
       return (1);
     }
-  }
-
-  // Note: initially copied from LoadSemanticAnalyzer.
-  private static FileStatus[] matchFilesOrDir(
-      FileSystem fs, Path path, boolean isSourceMm) throws IOException {
-    if (!fs.exists(path)) return null;
-    if (!isSourceMm) return matchFilesOneDir(fs, path, null);
-    // Note: this doesn't handle list bucketing properly; neither does the original code.
-    FileStatus[] mmDirs = fs.listStatus(path, new AcidUtils.AnyIdDirFilter());
-    if (mmDirs == null || mmDirs.length == 0) return null;
-    List<FileStatus> allFiles = new ArrayList<FileStatus>();
-    for (FileStatus mmDir : mmDirs) {
-      if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
-        Utilities.FILE_OP_LOGGER.trace("Found source MM directory " + mmDir.getPath());
-      }
-      matchFilesOneDir(fs, mmDir.getPath(), allFiles);
-    }
-    return allFiles.toArray(new FileStatus[allFiles.size()]);
-  }
-
-  private static FileStatus[] matchFilesOneDir(
-      FileSystem fs, Path path, List<FileStatus> result) throws IOException {
-    FileStatus[] srcs = fs.globStatus(path, new EximPathFilter());
-    if (srcs != null && srcs.length == 1) {
-      if (srcs[0].isDirectory()) {
-        srcs = fs.listStatus(srcs[0].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
-      }
-    }
-    if (result != null && srcs != null) {
-      for (int i = 0; i < srcs.length; ++i) {
-        result.add(srcs[i]);
-      }
-    }
-    return srcs;
   }
 
   private static final class EximPathFilter implements PathFilter {
