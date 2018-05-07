@@ -891,14 +891,14 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private static Table createNewTableMetadataObject(ImportTableDesc tblDesk)
+  private static Table createNewTableMetadataObject(ImportTableDesc tblDesc)
       throws SemanticException {
-    Table newTable = new Table(tblDesk.getDatabaseName(), tblDesk.getTableName());
+    Table newTable = new Table(tblDesc.getDatabaseName(), tblDesc.getTableName());
     //so that we know the type of table we are creating: acid/MM to match what was exported
-    newTable.setParameters(tblDesk.getTblProps());
-    if(tblDesk.isExternal() && AcidUtils.isTransactionalTable(newTable)) {
+    newTable.setParameters(tblDesc.getTblProps());
+    if(tblDesc.isExternal() && AcidUtils.isTransactionalTable(newTable)) {
       throw new SemanticException("External tables may not be transactional: " +
-          Warehouse.getQualifiedName(tblDesk.getDatabaseName(), tblDesk.getTableName()));
+          Warehouse.getQualifiedName(tblDesc.getDatabaseName(), tblDesc.getTableName()));
     }
     return newTable;
   }
@@ -1019,14 +1019,36 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         x.getTasks().add(t);
       }
     } else {
+      // If table of current event has partition flag different from existing table, it means, some
+      // of the previous events in same batch have drop and create table events with same same but
+      // different partition flag. In this case, should go with current event's table type and so
+      // create the dummy table object for adding repl tasks.
+      boolean isOldTableValid = true;
+      if (table.isPartitioned() != isPartitioned(tblDesc)) {
+        table = createNewTableMetadataObject(tblDesc);
+        isOldTableValid = false;
+      }
+
       // Table existed, and is okay to replicate into, not dropping and re-creating.
-      if (table.isPartitioned()) {
+      if (isPartitioned(tblDesc)) {
         x.getLOG().debug("table partitioned");
         for (AddPartitionDesc addPartitionDesc : partitionDescs) {
           addPartitionDesc.setReplicationSpec(replicationSpec);
           Map<String, String> partSpec = addPartitionDesc.getPartition(0).getPartSpec();
           org.apache.hadoop.hive.ql.metadata.Partition ptn = null;
-          if ((ptn = x.getHive().getPartition(table, partSpec, false)) == null) {
+          if (isOldTableValid) {
+            // If existing table is valid but the partition spec is different, then ignore partition
+            // validation and create new partition.
+            try {
+              ptn = x.getHive().getPartition(table, partSpec, false);
+            } catch (HiveException ex) {
+              ptn = null;
+              table = createNewTableMetadataObject(tblDesc);
+              isOldTableValid = false;
+            }
+          }
+
+          if (ptn == null) {
             if (!replicationSpec.isMetadataOnly()){
               x.getTasks().add(addSinglePartition(
                   fromURI, fs, tblDesc, table, wh, addPartitionDesc, replicationSpec, x, writeId, stmtId));
@@ -1071,7 +1093,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         x.getLOG().debug("table non-partitioned");
         if (!replicationSpec.isMetadataOnly()) {
           // repl-imports are replace-into unless the event is insert-into
-          loadTable(fromURI, table, replicationSpec.isReplace(), table.getDataLocation(),
+          loadTable(fromURI, table, replicationSpec.isReplace(), new Path(tblDesc.getLocation()),
             replicationSpec, x, writeId, stmtId);
         } else {
           x.getTasks().add(alterTableTask(tblDesc, x, replicationSpec));
