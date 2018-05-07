@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.dump.io.FileOperations;
+import org.apache.hadoop.hive.ql.plan.ExportWork.MmContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,6 +51,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.toWriteEntity;
 
+// TODO: this object is created once to call one method and then immediately destroyed.
+//       So it's basically just a roundabout way to pass arguments to a static method. Simplify?
 public class TableExport {
   private static final Logger logger = LoggerFactory.getLogger(TableExport.class);
 
@@ -59,9 +62,10 @@ public class TableExport {
   private final String distCpDoAsUser;
   private final HiveConf conf;
   private final Paths paths;
+  private final MmContext mmCtx;
 
   public TableExport(Paths paths, TableSpec tableSpec, ReplicationSpec replicationSpec, Hive db,
-      String distCpDoAsUser, HiveConf conf) {
+      String distCpDoAsUser, HiveConf conf, MmContext mmCtx) {
     this.tableSpec = (tableSpec != null
         && tableSpec.tableHandle.isTemporary()
         && replicationSpec.isInReplicationScope())
@@ -76,6 +80,7 @@ public class TableExport {
     this.distCpDoAsUser = distCpDoAsUser;
     this.conf = conf;
     this.paths = paths;
+    this.mmCtx = mmCtx;
   }
 
   public boolean write() throws SemanticException {
@@ -147,13 +152,13 @@ public class TableExport {
           throw new IllegalStateException("partitions cannot be null for partitionTable :"
               + tableSpec.tableName);
         }
-        new PartitionExport(paths, partitions, distCpDoAsUser, conf).write(replicationSpec);
+        new PartitionExport(paths, partitions, distCpDoAsUser, conf, mmCtx).write(replicationSpec);
       } else {
         List<Path> dataPathList = Utils.getDataPathList(tableSpec.tableHandle.getDataLocation(),
                 replicationSpec, conf);
 
         // this is the data copy
-        new FileOperations(dataPathList, paths.dataExportDir(), distCpDoAsUser, conf)
+        new FileOperations(dataPathList, paths.dataExportDir(), distCpDoAsUser, conf, mmCtx)
             .export(replicationSpec);
       }
     } catch (Exception e) {
