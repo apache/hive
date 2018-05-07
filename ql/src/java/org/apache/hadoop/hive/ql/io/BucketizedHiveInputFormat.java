@@ -18,10 +18,12 @@
 
 package org.apache.hadoop.hive.ql.io;
 
+import org.apache.curator.shaded.com.google.common.collect.Lists;
+
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
@@ -50,8 +52,7 @@ import org.apache.hadoop.mapred.Reporter;
 public class BucketizedHiveInputFormat<K extends WritableComparable, V extends Writable>
     extends HiveInputFormat<K, V> {
 
-  public static final Logger LOG = LoggerFactory
-      .getLogger("org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat");
+  public static final Logger LOG = LoggerFactory.getLogger(BucketizedHiveInputFormat.class);
 
   @Override
   public RecordReader getRecordReader(InputSplit split, JobConf job,
@@ -123,30 +124,53 @@ public class BucketizedHiveInputFormat<K extends WritableComparable, V extends W
     // for each dir, get all files under the dir, do getSplits to each
     // individual file,
     // and then create a BucketizedHiveInputSplit on it
+
+    ArrayList<Path> currentDir = null;
     for (Path dir : dirs) {
       PartitionDesc part = getPartitionDescFromPath(pathToPartitionInfo, dir);
-      // create a new InputFormat instance if this is the first time to see this
-      // class
+      // create a new InputFormat instance if this is the first time to see this class
       Class inputFormatClass = part.getInputFileFormatClass();
       InputFormat inputFormat = getInputFormatFromCache(inputFormatClass, job);
       newjob.setInputFormat(inputFormat.getClass());
 
-      FileStatus[] listStatus = listStatus(newjob, dir);
+      ValidWriteIdList mmIds = null;
+      if (part.getTableDesc() != null) {
+        // This can happen for truncate table case for non-MM tables.
+        mmIds = getMmValidWriteIds(newjob, part.getTableDesc(), null);
+        throw new AssertionError(dir + ": " + part);
+      }
+      // TODO: should this also handle ACID operation, etc.? seems to miss a lot of stuff from HIF.
+      Path[] finalDirs = (mmIds == null) ? new Path[] { dir }
+        : processPathsForMmRead(Lists.newArrayList(dir), newjob, mmIds);
+      if (finalDirs == null) {
+        continue; // No valid inputs - possible in MM case.
+      }
 
-      for (FileStatus status : listStatus) {
-        LOG.info("block size: " + status.getBlockSize());
-        LOG.info("file length: " + status.getLen());
-        FileInputFormat.setInputPaths(newjob, status.getPath());
-        InputSplit[] iss = inputFormat.getSplits(newjob, 0);
-        if (iss != null && iss.length > 0) {
-          numOrigSplits += iss.length;
-          result.add(new BucketizedHiveInputSplit(iss, inputFormatClass
-              .getName()));
+      for (Path finalDir : finalDirs) {
+        FileStatus[] listStatus = listStatus(newjob, finalDir);
+
+        for (FileStatus status : listStatus) {
+          numOrigSplits = addBHISplit(
+              status, inputFormat, inputFormatClass, numOrigSplits, newjob, result);
         }
       }
     }
     LOG.info(result.size() + " bucketized splits generated from "
         + numOrigSplits + " original splits.");
     return result.toArray(new BucketizedHiveInputSplit[result.size()]);
+  }
+
+  private int addBHISplit(FileStatus status, InputFormat inputFormat, Class inputFormatClass,
+      int numOrigSplits, JobConf newjob, ArrayList<InputSplit> result) throws IOException {
+    LOG.info("block size: " + status.getBlockSize());
+    LOG.info("file length: " + status.getLen());
+    FileInputFormat.setInputPaths(newjob, status.getPath());
+    InputSplit[] iss = inputFormat.getSplits(newjob, 0);
+    if (iss != null && iss.length > 0) {
+      numOrigSplits += iss.length;
+      result.add(new BucketizedHiveInputSplit(iss, inputFormatClass
+          .getName()));
+    }
+    return numOrigSplits;
   }
 }
