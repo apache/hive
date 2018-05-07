@@ -26,6 +26,7 @@ import org.apache.hadoop.hdfs.DistributedFileSystem;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.security.PrivilegedExceptionAction;
+
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletionService;
@@ -359,8 +360,6 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     return result;
   }
 
-<<<<<<< HEAD
-=======
   /**
    * Generate list of columnId which is to be read from the file.
    *
@@ -370,8 +369,8 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
    *
    * @return boolean array which corresponds to list of columnIds need to be read.
    */
-  private static boolean[] genIncludedColumns(TypeDescription readerSchema,
-                                              List<Integer> included, Configuration conf) {
+  private static boolean[] genIncludedColumns( Configuration conf,TypeDescription readerSchema,
+                                              List<Integer> included) {
     boolean[] result = new boolean[readerSchema.getMaximumId() + 1];
     if (included != null) {
       /* Include nested column only which are present in conf "hive.io.file.readNestedColumn.paths"  */
@@ -435,7 +434,6 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     return include;
   }
 
->>>>>>> 3f27ce06d0... FDPIN-2939: comments added
   /**
    * Reverses genIncludedColumns; produces the table columns indexes from ORC included columns.
    * @param readerSchema The ORC reader schema for the table.
@@ -489,58 +487,6 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       return null;
     }
   }
-
-  public static boolean[] genIncludedColumns(Configuration conf, TypeDescription readerSchema,
-                                             List<Integer> included) {
-
-    boolean[] result = new boolean[readerSchema.getMaximumId() + 1];
-    if (included == null) {
-      Arrays.fill(result, true);
-      return result;
-    }
-
-    List<String> nestedColumnPaths = new ArrayList<>(ColumnProjectionUtils.getNestedColumnPaths(conf));
-
-    if(nestedColumnPaths.size() == 0) {
-      return  genIncludedColumns(readerSchema,included);
-    }
-
-    result[0] = true;
-    for(String column : nestedColumnPaths)
-    {
-      String[] columnpath = column.split("\\.");
-      result = setIncludeForNestedColumns(columnpath,0,readerSchema,result);
-    }
-
-    return result;
-  }
-
-  private static boolean[] setIncludeForNestedColumns(String[] columnPath,int postion,TypeDescription readerSchema,boolean[] include )
-  {
-    if(postion == (columnPath.length) && readerSchema.getChildren() != null)
-    {
-      for(int col = readerSchema.getId(); col <= readerSchema.getMaximumId(); ++col) {
-        include[col] = true;
-      }
-    }
-    else if(postion == (columnPath.length) && readerSchema.getChildren() == null)
-    {
-      include[readerSchema.getId()] = true;
-    }
-    else {
-      int fieldId=0;
-      String columnName = columnPath[postion];
-      while(!columnName.equalsIgnoreCase(readerSchema.getFieldNames().get(fieldId))) {
-        fieldId++;
-      }
-      TypeDescription childSchema = readerSchema.getChildren().get(fieldId);
-      include = setIncludeForNestedColumns(columnPath,++postion,childSchema,include);
-      include[childSchema.getId()] = true;
-    }
-    return include;
-  }
-
-
 
   private static String[] getSargColumnNames(String[] originalColumnNames,
       List<OrcProto.Type> types, boolean[] includedColumns, boolean isOriginal) {
