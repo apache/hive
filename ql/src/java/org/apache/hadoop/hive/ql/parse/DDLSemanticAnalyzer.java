@@ -1964,9 +1964,19 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     try {
       tblObj = getTable(tableName);
-      // TODO: we should probably block all ACID tables here.
-      if (AcidUtils.isInsertOnlyTable(tblObj.getParameters())) {
-        throw new SemanticException("Merge is not supported for MM tables");
+      if(AcidUtils.isTransactionalTable(tblObj)) {
+        LinkedHashMap<String, String> newPartSpec = null;
+        if (partSpec != null) {
+          newPartSpec = new LinkedHashMap<>(partSpec);
+        }
+
+        boolean isBlocking = !HiveConf.getBoolVar(conf,
+            ConfVars.TRANSACTIONAL_CONCATENATE_NOBLOCK, false);
+        AlterTableSimpleDesc desc = new AlterTableSimpleDesc(
+            tableName, newPartSpec, "MAJOR", isBlocking);
+
+        rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
+        return;
       }
       mergeDesc.setTableDesc(Utilities.getTableDesc(tblObj));
 
@@ -2039,11 +2049,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         throw new SemanticException(ErrorMsg.CONCATENATE_UNSUPPORTED_TABLE_NOT_MANAGED.getMsg());
       }
 
-      // transactional tables are compacted and no longer needs to be bucketed, so not safe for merge/concatenation
-      boolean isAcid = AcidUtils.isTransactionalTable(tblObj);
-      if (isAcid) {
-        throw new SemanticException(ErrorMsg.CONCATENATE_UNSUPPORTED_TABLE_TRANSACTIONAL.getMsg());
-      }
       inputDir.add(oldTblPartLoc);
 
       mergeDesc.setInputDir(inputDir);
