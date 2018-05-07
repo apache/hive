@@ -17,9 +17,6 @@
  */
 package org.apache.hadoop.hive.metastore.utils;
 
-import com.google.common.collect.Interner;
-import com.google.common.collect.Interners;
-
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -119,16 +116,7 @@ public class StringUtils {
    * @return hex string representation of the byte array
    */
   public static String byteToHexString(byte[] bytes, int start, int end) {
-    if(bytes == null) {
-      throw new IllegalArgumentException("bytes == null");
-    } else {
-      StringBuilder s = new StringBuilder();
-
-      for(int i = start; i < end; ++i) {
-        s.append(String.format("%02x", bytes[i]));
-      }
-      return s.toString();
-    }
+    return org.apache.hadoop.util.StringUtils.byteToHexString(bytes, start, end);
   }
 
   /**

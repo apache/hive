@@ -83,7 +83,7 @@ public class CopyUtils {
           throw new IOException("Destination directory creation failed");
         }
 
-		    // Copy files with retry logic on failure
+		    // Copy files with retry logic on failure or source file is dropped or changed.
         doCopyRetry(sourceFs, fileInfoList, destinationFs, destination, useRegularCopy);
       }
     }
@@ -108,8 +108,8 @@ public class CopyUtils {
       repeat++;
     }
 
-    // If files copy fail after several attempts, then throw error
-    if (!pathList.isEmpty() || isCopyError) {
+    // If still files remains to be copied due to failure/checksum mismatch after several attempts, then throw error
+    if (!pathList.isEmpty()) {
       LOG.error("File copy failed even after several attempts. Files list: " + srcFileList);
       throw new IOException("File copy failed even after several attempts.");
     }
@@ -176,7 +176,7 @@ public class CopyUtils {
                 + "Source File: " + srcFile.getSourcePath());
         throw new IOException("File copy failed and likely source file is deleted or modified.");
       }
-      pathList.add(srcFile.getEffectivePath());
+      pathList.add(srcPath);
     }
     return pathList;
   }

@@ -430,8 +430,9 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       try {
         result = ReplChangeManager.encodeFileUri(files.get(i), chksums != null ? chksums.get(i) : null, null);
       } catch (IOException e) {
-        // If thrown IOException, it means, CM root is not set. So, just return original path.
-        result = files.get(i);
+        // File operations failed
+        LOG.error("Encoding file URI failed with error " + e.getMessage());
+        throw new RuntimeException(e.getMessage());
       }
       i++;
       return result;
