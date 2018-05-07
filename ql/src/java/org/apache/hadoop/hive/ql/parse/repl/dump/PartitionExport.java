@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.repl.dump.io.FileOperations;
+import org.apache.hadoop.hive.ql.plan.ExportWork.MmContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,22 +45,26 @@ import static org.apache.hadoop.hive.ql.parse.repl.dump.TableExport.Paths;
  * it has a blocking queue that stores partitions to be dumped via a producer thread.
  * it has a worker thread pool that reads of the queue to perform the various tasks.
  */
+// TODO: this object is created once to call one method and then immediately destroyed.
+//       So it's basically just a roundabout way to pass arguments to a static method. Simplify?
 class PartitionExport {
   private final Paths paths;
   private final PartitionIterable partitionIterable;
   private final String distCpDoAsUser;
   private final HiveConf hiveConf;
   private final int nThreads;
+  private final MmContext mmCtx;
 
   private static final Logger LOG = LoggerFactory.getLogger(PartitionExport.class);
   private BlockingQueue<Partition> queue;
 
   PartitionExport(Paths paths, PartitionIterable partitionIterable, String distCpDoAsUser,
-      HiveConf hiveConf) {
+      HiveConf hiveConf, MmContext mmCtx) {
     this.paths = paths;
     this.partitionIterable = partitionIterable;
     this.distCpDoAsUser = distCpDoAsUser;
     this.hiveConf = hiveConf;
+    this.mmCtx = mmCtx;
     this.nThreads = hiveConf.getIntVar(HiveConf.ConfVars.REPL_PARTITIONS_DUMP_PARALLELISM);
     this.queue = new ArrayBlockingQueue<>(2 * nThreads);
   }
@@ -103,7 +108,7 @@ class PartitionExport {
           List<Path> dataPathList = Utils.getDataPathList(partition.getDataLocation(),
                   forReplicationSpec, hiveConf);
           Path rootDataDumpDir = paths.partitionExportDir(partitionName);
-          new FileOperations(dataPathList, rootDataDumpDir, distCpDoAsUser, hiveConf)
+          new FileOperations(dataPathList, rootDataDumpDir, distCpDoAsUser, hiveConf, mmCtx)
                   .export(forReplicationSpec);
           LOG.debug("Thread: {}, finish partition dump {}", threadName, partitionName);
         } catch (Exception e) {

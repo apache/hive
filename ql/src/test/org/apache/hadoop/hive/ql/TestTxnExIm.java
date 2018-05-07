@@ -477,6 +477,7 @@ target/tmp/org.apache.hadoop.hive.ql.TestTxnCommands-1521148657811/
   }
   private void testMM(boolean existingTable, boolean isSourceMM) throws Exception {
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_CREATE_TABLES_AS_INSERT_ONLY, true);
+    hiveConf.setBoolean("mapred.input.dir.recursive", true);
 
     int[][] data = {{1,2}, {3, 4}, {5, 6}};
     runStatementOnDriver("drop table if exists T");
@@ -500,9 +501,10 @@ target/tmp/org.apache.hadoop.hive.ql.TestTxnCommands-1521148657811/
     //verify that we are indeed doing an Acid write (import)
     rs = runStatementOnDriver("select INPUT__FILE__NAME from T order by INPUT__FILE__NAME");
     Assert.assertEquals(3, rs.size());
-    Assert.assertTrue(rs.get(0).endsWith("t/delta_0000001_0000001_0000/000000_0"));
-    Assert.assertTrue(rs.get(1).endsWith("t/delta_0000001_0000001_0000/000000_0"));
-    Assert.assertTrue(rs.get(2).endsWith("t/delta_0000001_0000001_0000/000000_0"));
+    for (String s : rs) {
+      Assert.assertTrue(s, s.contains("/delta_0000001_0000001_0000/"));
+      Assert.assertTrue(s, s.endsWith("/000000_0"));
+    }
   }
   private void checkResult(String[][] expectedResult, String query, boolean isVectorized,
       String msg) throws Exception{
@@ -516,6 +518,7 @@ target/tmp/org.apache.hadoop.hive.ql.TestTxnCommands-1521148657811/
   @Test
   public void testMMExportAborted() throws Exception {
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_CREATE_TABLES_AS_INSERT_ONLY, true);
+    hiveConf.setBoolean("mapred.input.dir.recursive", true);
     int[][] data = {{1, 2}, {3, 4}, {5, 6}};
     int[][] dataAbort = {{10, 2}};
     runStatementOnDriver("drop table if exists T");

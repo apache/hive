@@ -47,15 +47,13 @@ public class ExportTask extends Task<ExportWork> implements Serializable {
   protected int execute(DriverContext driverContext) {
     try {
       // Also creates the root directory
-      TableExport.Paths exportPaths =
-          new TableExport.Paths(work.getAstRepresentationForErrorMsg(), work.getExportRootDir(),
-              conf, false);
+      TableExport.Paths exportPaths = new TableExport.Paths(
+          work.getAstRepresentationForErrorMsg(), work.getExportRootDir(), conf, false);
       Hive db = getHive();
       LOG.debug("Exporting data to: {}", exportPaths.getExportRootDir());
       work.acidPostProcess(db);
-      TableExport tableExport = new TableExport(
-          exportPaths, work.getTableSpec(), work.getReplicationSpec(), db, null, conf
-      );
+      TableExport tableExport = new TableExport(exportPaths, work.getTableSpec(),
+          work.getReplicationSpec(), db, null, conf, work.getMmContext());
       if (!tableExport.write()) {
         throw new SemanticException(ErrorMsg.EXIM_FOR_NON_NATIVE.getMsg());
       }
