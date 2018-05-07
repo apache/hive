@@ -2512,4 +2512,19 @@ public class TestDbTxnManager2 {
     Assert.assertEquals("Unexpected lock count", 1, locks.size());
     checkLock(LockType.EXCLUSIVE, LockState.ACQUIRED, "default", "T", null, locks);
   }
+  @Test
+  public void testTruncate() throws Exception {
+    dropTable(new String[] {"T"});
+    CommandProcessorResponse cpr = driver.run("create table T (a int, b int) stored as" +
+        " orc tblproperties('transactional'='true')");
+    checkCmdOnDriver(cpr);
+    checkCmdOnDriver(driver.run("insert into T values(0,2),(1,4)"));
+    checkCmdOnDriver(driver.run("truncate table T"));
+    cpr = driver.compileAndRespond("truncate table T");
+    checkCmdOnDriver(cpr);
+    txnMgr.acquireLocks(driver.getPlan(), ctx, "Fifer");//gets X lock on T
+    List<ShowLocksResponseElement> locks = getLocks();
+    Assert.assertEquals("Unexpected lock count", 1, locks.size());
+    checkLock(LockType.EXCLUSIVE, LockState.ACQUIRED, "default", "T", null, locks);
+  }
 }
