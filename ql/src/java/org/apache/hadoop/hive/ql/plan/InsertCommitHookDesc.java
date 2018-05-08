@@ -20,12 +20,13 @@ package org.apache.hadoop.hive.ql.plan;
 
 import org.apache.hadoop.hive.ql.metadata.Table;
 
-@Explain(displayName = "Insert", explainLevels = { Explain.Level.USER, Explain.Level.DEFAULT, Explain.Level.EXTENDED })
-public class InsertTableDesc extends DDLDesc {
+@Explain(displayName = "Commit-Insert-Hook", explainLevels = { Explain.Level.USER,
+    Explain.Level.DEFAULT, Explain.Level.EXTENDED })
+public class InsertCommitHookDesc extends DDLDesc {
   private final Table table;
   private final boolean overwrite;
 
-  public InsertTableDesc(Table table, boolean overwrite) {
+  public InsertCommitHookDesc(Table table, boolean overwrite) {
     this.table = table;
     this.overwrite = overwrite;
   }

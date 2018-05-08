@@ -17,14 +17,14 @@
  */
 package org.apache.hadoop.hive.ql.plan;
 
-import java.io.Serializable;
-import java.util.HashSet;
-
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.parse.AlterTablePartMergeFilesDesc;
 import org.apache.hadoop.hive.ql.parse.PreInsertTableDesc;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
+import java.io.Serializable;
+import java.util.HashSet;
 
 /**
  * DDLWork.
@@ -35,7 +35,7 @@ public class DDLWork implements Serializable {
 
   // TODO: this can probably be replaced with much less code via dynamic dispatch and/or templates.
   private PreInsertTableDesc preInsertTableDesc;
-  private InsertTableDesc insertTableDesc;
+  private InsertCommitHookDesc insertCommitHookDesc;
   private AlterMaterializedViewDesc alterMVDesc;
   private CreateDatabaseDesc createDatabaseDesc;
   private SwitchDatabaseDesc switchDatabaseDesc;
@@ -522,9 +522,10 @@ public class DDLWork implements Serializable {
   }
 
   public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-          InsertTableDesc insertTableDesc) {
+          InsertCommitHookDesc insertCommitHookDesc
+  ) {
     this(inputs, outputs);
-    this.insertTableDesc = insertTableDesc;
+    this.insertCommitHookDesc = insertCommitHookDesc;
   }
 
   public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
@@ -1241,12 +1242,12 @@ public class DDLWork implements Serializable {
   }
 
   @Explain(displayName = "Insert operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public InsertTableDesc getInsertTableDesc() {
-    return insertTableDesc;
+  public InsertCommitHookDesc getInsertCommitHookDesc() {
+    return insertCommitHookDesc;
   }
 
-  public void setInsertTableDesc(InsertTableDesc insertTableDesc) {
-    this.insertTableDesc = insertTableDesc;
+  public void setInsertCommitHookDesc(InsertCommitHookDesc insertCommitHookDesc) {
+    this.insertCommitHookDesc = insertCommitHookDesc;
   }
 
   @Explain(displayName = "Pre Insert operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
