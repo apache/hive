@@ -23,7 +23,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
 
 public abstract class DefaultHiveMetaHook implements HiveMetaHook {
   /**
-   * Called after successfully after INSERT [OVERWRITE] statement is executed.
+   * Called after successfully INSERT [OVERWRITE] statement is executed.
    * @param table table definition
    * @param overwrite true if it is INSERT OVERWRITE
    *
