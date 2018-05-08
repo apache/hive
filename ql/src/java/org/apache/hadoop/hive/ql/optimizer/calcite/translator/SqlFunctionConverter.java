@@ -17,10 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 
-import java.lang.annotation.Annotation;
-import java.util.List;
-import java.util.Map;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlFunction;
@@ -75,9 +74,9 @@ import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
+import java.lang.annotation.Annotation;
+import java.util.List;
+import java.util.Map;
 
 public class SqlFunctionConverter {
   private static final Logger LOG = LoggerFactory.getLogger(SqlFunctionConverter.class);
@@ -431,11 +430,11 @@ public class SqlFunctionConverter {
       registerFunction("lower", SqlStdOperatorTable.LOWER, hToken(HiveParser.Identifier, "lower"));
       registerFunction("upper", SqlStdOperatorTable.UPPER, hToken(HiveParser.Identifier, "upper"));
       registerFunction("abs", SqlStdOperatorTable.ABS, hToken(HiveParser.Identifier, "abs"));
-      registerFunction("char_length", SqlStdOperatorTable.CHAR_LENGTH,
-          hToken(HiveParser.Identifier, "char_length")
+      registerFunction("character_length", SqlStdOperatorTable.CHAR_LENGTH,
+          hToken(HiveParser.Identifier, "character_length")
       );
-      registerDuplicateFunction("character_length", SqlStdOperatorTable.CHAR_LENGTH,
-          hToken(HiveParser.Identifier, "char_length")
+      registerDuplicateFunction("char_length", SqlStdOperatorTable.CHAR_LENGTH,
+          hToken(HiveParser.Identifier, "character_length")
       );
       registerFunction("length", SqlStdOperatorTable.CHARACTER_LENGTH,
           hToken(HiveParser.Identifier, "length")
