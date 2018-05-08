@@ -488,11 +488,12 @@ public final class QueryResultsCache {
    * @param queryInfo
    * @return
    */
-  public CacheEntry addToCache(QueryInfo queryInfo) {
+  public CacheEntry addToCache(QueryInfo queryInfo, ValidTxnWriteIdList txnWriteIdList) {
     // Create placeholder entry with PENDING state.
     String queryText = queryInfo.getLookupInfo().getQueryText();
     CacheEntry addedEntry = new CacheEntry();
     addedEntry.queryInfo = queryInfo;
+    addedEntry.txnWriteIdList = txnWriteIdList;
 
     Lock writeLock = rwLock.writeLock();
     try {
@@ -522,7 +523,7 @@ public final class QueryResultsCache {
    * @param fetchWork
    * @return
    */
-  public boolean setEntryValid(CacheEntry cacheEntry, FetchWork fetchWork, ValidTxnWriteIdList txnWriteIdList) {
+  public boolean setEntryValid(CacheEntry cacheEntry, FetchWork fetchWork) {
     String queryText = cacheEntry.getQueryText();
     boolean dataDirMoved = false;
     Path queryResultsPath = null;
@@ -571,7 +572,6 @@ public final class QueryResultsCache {
         cacheEntry.cachedResultsPath = cachedResultsPath;
         cacheEntry.size = resultSize;
         this.cacheSize += resultSize;
-        cacheEntry.txnWriteIdList = txnWriteIdList;
 
         cacheEntry.setStatus(CacheEntryStatus.VALID);
         // Mark this entry as being in use. Caller will need to release later.
@@ -700,6 +700,14 @@ public final class QueryResultsCache {
           boolean writeIdCheckPassed = false;
           String tableName = tableUsed.getFullyQualifiedName();
           ValidTxnWriteIdList currentTxnWriteIdList = lookupInfo.txnWriteIdListProvider.get();
+          if (currentTxnWriteIdList == null) {
+            LOG.warn("Current query's txnWriteIdList is null!");
+            return false;
+          }
+          if (entry.txnWriteIdList == null) {
+            LOG.warn("Cache entry's txnWriteIdList is null!");
+            return false;
+          }
           ValidWriteIdList currentWriteIdForTable =
               currentTxnWriteIdList.getTableValidWriteIdList(tableName);
           ValidWriteIdList cachedWriteIdForTable = entry.txnWriteIdList.getTableValidWriteIdList(tableName);

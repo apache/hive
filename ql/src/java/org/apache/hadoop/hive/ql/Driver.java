@@ -1977,10 +1977,14 @@ public class Driver implements IDriver {
     if (cacheUsage != null) {
       if (cacheUsage.getStatus() == CacheUsage.CacheStatus.CAN_CACHE_QUERY_RESULTS &&
           plan.getFetchTask() != null) {
+        ValidTxnWriteIdList txnWriteIdList = null;
+        if (plan.hasAcidResourcesInQuery()) {
+          txnWriteIdList = AcidUtils.getValidTxnWriteIdList(conf);
+        }
         // The results of this query execution might be cacheable.
         // Add a placeholder entry in the cache so other queries know this result is pending.
         CacheEntry pendingCacheEntry =
-            QueryResultsCache.getInstance().addToCache(cacheUsage.getQueryInfo());
+            QueryResultsCache.getInstance().addToCache(cacheUsage.getQueryInfo(), txnWriteIdList);
         if (pendingCacheEntry != null) {
           // Update cacheUsage to reference the pending entry.
           this.cacheUsage.setCacheEntry(pendingCacheEntry);
@@ -2011,8 +2015,7 @@ public class Driver implements IDriver {
         }
         boolean savedToCache = QueryResultsCache.getInstance().setEntryValid(
             cacheUsage.getCacheEntry(),
-            plan.getFetchTask().getWork(),
-            txnWriteIdList);
+            plan.getFetchTask().getWork());
         LOG.info("savedToCache: {}", savedToCache);
         if (savedToCache) {
           useFetchFromCache(cacheUsage.getCacheEntry());
