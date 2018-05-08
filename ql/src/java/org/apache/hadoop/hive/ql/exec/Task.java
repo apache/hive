@@ -68,7 +68,6 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   protected static transient Logger LOG = LoggerFactory.getLogger(Task.class);
   protected int taskTag;
   private boolean isLocalMode =false;
-  private boolean retryCmdWhenFail = false;
 
   public static final int NO_TAG = 0;
   public static final int COMMON_JOIN = 1;

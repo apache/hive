@@ -323,9 +323,9 @@ SELECT cast (`ctimestamp2` as timestamp with local time zone) as `__time`,
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
-  Stage-2
   Stage-1 is a root stage
-  Stage-3 is a root stage
+  Stage-2 is a root stage
+  Stage-4 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-0
@@ -336,15 +336,11 @@ STAGE PLANS:
           properties:
             COLUMN_STATS_ACCURATE 
 
-  Stage: Stage-2
-      Insert operator:
-        Insert
-
   Stage: Stage-1
       Pre Insert operator:
         Pre-Insert task
 
-  Stage: Stage-3
+  Stage: Stage-2
     Tez
 #### A masked pattern was here ####
       Edges:
@@ -388,6 +384,10 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.druid.io.DruidOutputFormat
                       serde: org.apache.hadoop.hive.druid.serde.DruidSerDe
                       name: default.druid_partitioned_table
+
+  Stage: Stage-4
+      Insert operator:
+        Commit-Insert-Hook
 
 PREHOOK: query: INSERT INTO TABLE druid_partitioned_table
 SELECT cast (`ctimestamp2` as timestamp with local time zone) as `__time`,
@@ -460,9 +460,9 @@ POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE druid_partitioned_table
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
-  Stage-2
   Stage-1 is a root stage
-  Stage-3 is a root stage
+  Stage-2 is a root stage
+  Stage-4 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-0
@@ -473,15 +473,11 @@ STAGE PLANS:
           properties:
             COLUMN_STATS_ACCURATE 
 
-  Stage: Stage-2
-      Insert operator:
-        Insert
-
   Stage: Stage-1
       Pre Insert operator:
         Pre-Insert task
 
-  Stage: Stage-3
+  Stage: Stage-2
     Tez
 #### A masked pattern was here ####
       Edges:
@@ -525,6 +521,10 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.druid.io.DruidOutputFormat
                       serde: org.apache.hadoop.hive.druid.serde.DruidSerDe
                       name: default.druid_partitioned_table
+
+  Stage: Stage-4
+      Insert operator:
+        Commit-Insert-Hook
 
 PREHOOK: query: INSERT OVERWRITE TABLE druid_partitioned_table
   SELECT cast (`ctimestamp1` as timestamp with local time zone) as `__time`,
