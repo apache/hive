@@ -6738,6 +6738,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                                             final String tblName, final String filter)
             throws TException {
       String[] parsedDbName = parseDbName(dbName, conf);
+      if (parsedDbName[DB_NAME] == null || tblName == null) {
+        throw new MetaException("The DB and table name cannot be null.");
+      }
       startTableFunction("get_num_partitions_by_filter", parsedDbName[CAT_NAME],
           parsedDbName[DB_NAME], tblName);
 

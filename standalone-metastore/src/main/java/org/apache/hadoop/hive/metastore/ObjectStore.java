@@ -3394,7 +3394,7 @@ public class ObjectStore implements RawStore, Configurable {
           "table.tableName == t1 && table.database.name == t2 && table.database.catalogName == t3");
       query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3");
       query.setOrdering("partitionName ascending");
-      if (max > 0) {
+      if (max >= 0) {
         query.setRange(0, max);
       }
       mparts = (List<MPartition>) query.execute(tableName, dbName, catName);
