@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.ql.exec.vector.<OutputColumnVectorType>;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.NullUtil;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
  * Generated from template ColumnArithmeticScalar.txt, which covers binary arithmetic
@@ -53,7 +54,7 @@ public class <ClassName> extends VectorExpression {
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
 
     // return immediately if batch is empty
     final int n = batch.size;

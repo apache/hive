@@ -23,6 +23,7 @@ import java.util.Arrays;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.MathExpr;
 import org.apache.hadoop.hive.ql.exec.vector.*;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 public class CastTimestampToLong extends VectorExpression {
   private static final long serialVersionUID = 1L;
@@ -39,7 +40,7 @@ public class CastTimestampToLong extends VectorExpression {
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
 
     if (childExpressions != null) {
       this.evaluateChildren(batch);

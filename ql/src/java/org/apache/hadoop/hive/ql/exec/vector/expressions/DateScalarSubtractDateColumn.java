@@ -61,7 +61,7 @@ public class DateScalarSubtractDateColumn extends VectorExpression {
    *
    * @batch a package of rows with each column stored in a vector
    */
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
 
     if (childExpressions != null) {
       super.evaluateChildren(batch);
