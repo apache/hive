@@ -37,8 +37,8 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
+import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,7 +52,6 @@ public class ReplChangeManager {
   private static Configuration conf;
   private String msUser;
   private String msGroup;
-  private FileSystem fs;
 
   private static final String ORIG_LOC_TAG = "user.original-loc";
   static final String REMAIN_IN_TRASH_TAG = "user.remain-in-trash";
@@ -70,6 +69,7 @@ public class ReplChangeManager {
     private String checkSum;
     private boolean useSourcePath;
     private String subDir;
+    private boolean copyDone;
 
     public FileInfo(FileSystem srcFs, Path sourcePath, String subDir) {
       this(srcFs, sourcePath, null, null, true, subDir);
@@ -82,6 +82,7 @@ public class ReplChangeManager {
       this.checkSum = checkSum;
       this.useSourcePath = useSourcePath;
       this.subDir = subDir;
+      this.copyDone = false;
     }
     public FileSystem getSrcFs() {
       return srcFs;
@@ -103,6 +104,12 @@ public class ReplChangeManager {
     }
     public String getSubDir() {
       return subDir;
+    }
+    public boolean isCopyDone() {
+      return copyDone;
+    }
+    public void setCopyDone(boolean copyDone) {
+      this.copyDone = copyDone;
     }
     public Path getEffectivePath() {
       if (useSourcePath) {
@@ -128,11 +135,11 @@ public class ReplChangeManager {
           ReplChangeManager.cmroot = new Path(MetastoreConf.getVar(conf, ConfVars.REPLCMDIR));
           ReplChangeManager.conf = conf;
 
-          fs = cmroot.getFileSystem(conf);
+          FileSystem cmFs = cmroot.getFileSystem(conf);
           // Create cmroot with permission 700 if not exist
-          if (!fs.exists(cmroot)) {
-            fs.mkdirs(cmroot);
-            fs.setPermission(cmroot, new FsPermission("700"));
+          if (!cmFs.exists(cmroot)) {
+            cmFs.mkdirs(cmroot);
+            cmFs.setPermission(cmroot, new FsPermission("700"));
           }
           UserGroupInformation usergroupInfo = UserGroupInformation.getCurrentUser();
           msUser = usergroupInfo.getShortUserName();
@@ -173,6 +180,7 @@ public class ReplChangeManager {
     }
 
     int count = 0;
+    FileSystem fs = path.getFileSystem(conf);
     if (fs.isDirectory(path)) {
       FileStatus[] files = fs.listStatus(path, hiddenFileFilter);
       for (FileStatus file : files) {
@@ -180,7 +188,7 @@ public class ReplChangeManager {
       }
     } else {
       String fileCheckSum = checksumFor(path, fs);
-      Path cmPath = getCMPath(conf, path.getName(), fileCheckSum);
+      Path cmPath = getCMPath(conf, path.getName(), fileCheckSum, cmroot.toString());
 
       // set timestamp before moving to cmroot, so we can
       // avoid race condition CM remove the file before setting
@@ -198,17 +206,15 @@ public class ReplChangeManager {
       } else {
         switch (type) {
         case MOVE: {
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("Moving {} to {}", path.toString(), cmPath.toString());
-          }
+          LOG.info("Moving {} to {}", path.toString(), cmPath.toString());
+
           // Rename fails if the file with same name already exist.
           success = fs.rename(path, cmPath);
           break;
         }
         case COPY: {
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("Copying {} to {}", path.toString(), cmPath.toString());
-          }
+          LOG.info("Copying {} to {}", path.toString(), cmPath.toString());
+
           // It is possible to have a file with same checksum in cmPath but the content is
           // partially copied or corrupted. In this case, just overwrite the existing file with
           // new one.
@@ -273,20 +279,17 @@ public class ReplChangeManager {
     return checksumString;
   }
 
-  static public void setCmRoot(Path cmRoot) {
-    ReplChangeManager.cmroot = cmRoot;
-  }
-
   /***
    * Convert a path of file inside a partition or table (if non-partitioned)
    *   to a deterministic location of cmroot. So user can retrieve the file back
    *   with the original location plus checksum.
-   * @param conf
+   * @param conf Hive configuration
    * @param name original filename
    * @param checkSum checksum of the file, can be retrieved by {@link #checksumFor(Path, FileSystem)}
+   * @param cmRootUri CM Root URI. (From remote source if REPL LOAD flow. From local config if recycle.)
    * @return Path
    */
-  static Path getCMPath(Configuration conf, String name, String checkSum) {
+  static Path getCMPath(Configuration conf, String name, String checkSum, String cmRootUri) {
     String newFileName = name + "_" + checkSum;
     int maxLength = conf.getInt(DFSConfigKeys.DFS_NAMENODE_MAX_COMPONENT_LENGTH_KEY,
         DFSConfigKeys.DFS_NAMENODE_MAX_COMPONENT_LENGTH_DEFAULT);
@@ -295,7 +298,7 @@ public class ReplChangeManager {
       newFileName = newFileName.substring(0, maxLength-1);
     }
 
-    return new Path(cmroot, newFileName);
+    return new Path(cmRootUri, newFileName);
   }
 
   /***
@@ -303,19 +306,20 @@ public class ReplChangeManager {
    * matches, return the file; otherwise, use chksumString to retrieve it from cmroot
    * @param src Original file location
    * @param checksumString Checksum of the original file
+   * @param srcCMRootURI CM root URI of the source cluster
    * @param subDir Sub directory to which the source file belongs to
-   * @param conf
+   * @param conf Hive configuration
    * @return Corresponding FileInfo object
    */
-  public static FileInfo getFileInfo(Path src, String checksumString, String subDir, Configuration conf)
-          throws MetaException {
+  public static FileInfo getFileInfo(Path src, String checksumString, String srcCMRootURI, String subDir,
+                                     Configuration conf) throws MetaException {
     try {
       FileSystem srcFs = src.getFileSystem(conf);
       if (checksumString == null) {
         return new FileInfo(srcFs, src, subDir);
       }
 
-      Path cmPath = getCMPath(conf, src.getName(), checksumString);
+      Path cmPath = getCMPath(conf, src.getName(), checksumString, srcCMRootURI);
       if (!srcFs.exists(src)) {
         return new FileInfo(srcFs, src, cmPath, checksumString, false, subDir);
       }
@@ -338,7 +342,7 @@ public class ReplChangeManager {
   }
 
   /***
-   * Concatenate filename, checksum  and subdirectory with "#"
+   * Concatenate filename, checksum, source cmroot uri and subdirectory with "#"
    * @param fileUriStr Filename string
    * @param fileChecksum Checksum string
    * @param encodedSubDir sub directory path into which this file belongs to. Here encoded means,
@@ -346,38 +350,50 @@ public class ReplChangeManager {
    * @return Concatenated Uri string
    */
   // TODO: this needs to be enhanced once change management based filesystem is implemented
-  // Currently using fileuri#checksum#subdirs as the format
-  public static String encodeFileUri(String fileUriStr, String fileChecksum, String encodedSubDir) {
+  // Currently using fileuri#checksum#cmrooturi#subdirs as the format
+  public static String encodeFileUri(String fileUriStr, String fileChecksum, String encodedSubDir)
+          throws IOException {
     String encodedUri = fileUriStr;
-    if (fileChecksum != null) {
-      encodedUri = encodedUri + URI_FRAGMENT_SEPARATOR + fileChecksum;
+    if ((fileChecksum != null) && (cmroot != null)) {
+      encodedUri = encodedUri + URI_FRAGMENT_SEPARATOR + fileChecksum
+              + URI_FRAGMENT_SEPARATOR + FileUtils.makeQualified(cmroot, conf);
+    } else {
+      encodedUri = encodedUri + URI_FRAGMENT_SEPARATOR + URI_FRAGMENT_SEPARATOR;
     }
-    if (encodedSubDir != null) {
-      encodedUri = encodedUri + URI_FRAGMENT_SEPARATOR + encodedSubDir;
+    encodedUri = encodedUri + URI_FRAGMENT_SEPARATOR + ((encodedSubDir != null) ? encodedSubDir : "");
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Encoded URI: " + encodedUri);
     }
     return encodedUri;
   }
 
   /***
-   * Split uri with fragment into file uri and checksum
+   * Split uri with fragment into file uri, subdirs, checksum and source cmroot uri.
+   * Currently using fileuri#checksum#cmrooturi#subdirs as the format.
    * @param fileURIStr uri with fragment
-   * @return array of file name and checksum
+   * @return array of file name, subdirs, checksum and source CM root URI
    */
-  static public String[] getFileWithChksumFromURI(String fileURIStr) {
+  public static String[] decodeFileUri(String fileURIStr) {
     String[] uriAndFragment = fileURIStr.split(URI_FRAGMENT_SEPARATOR);
-    String[] result = new String[3];
+    String[] result = new String[4];
     result[0] = uriAndFragment[0];
-    if (uriAndFragment.length>1) {
+    if ((uriAndFragment.length > 1) && !StringUtils.isEmpty(uriAndFragment[1])) {
       result[1] = uriAndFragment[1];
     }
-    if (uriAndFragment.length>2) {
+    if ((uriAndFragment.length > 2)  && !StringUtils.isEmpty(uriAndFragment[2])) {
       result[2] = uriAndFragment[2];
+    }
+    if ((uriAndFragment.length > 3)  && !StringUtils.isEmpty(uriAndFragment[3])) {
+      result[3] = uriAndFragment[3];
+    }
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Reading Encoded URI: " + result[0] + ":: " + result[1] + ":: " + result[2] + ":: " + result[3]);
     }
     return result;
   }
 
-  public static boolean isCMFileUri(Path fromPath, FileSystem srcFs) {
-    String[] result = getFileWithChksumFromURI(fromPath.toString());
+  public static boolean isCMFileUri(Path fromPath) {
+    String[] result = decodeFileUri(fromPath.toString());
     return result[1] != null;
   }
 

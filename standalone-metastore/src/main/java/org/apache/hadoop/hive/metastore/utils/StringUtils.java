@@ -17,9 +17,6 @@
  */
 package org.apache.hadoop.hive.metastore.utils;
 
-import com.google.common.collect.Interner;
-import com.google.common.collect.Interners;
-
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -108,5 +105,26 @@ public class StringUtils {
     e.printStackTrace(wrt);
     wrt.close();
     return stm.toString();
+  }
+
+  /**
+   * Given an array of bytes it will convert the bytes to a hex string
+   * representation of the bytes.
+   * @param bytes Input bytes
+   * @param start start index, inclusively
+   * @param end end index, exclusively
+   * @return hex string representation of the byte array
+   */
+  public static String byteToHexString(byte[] bytes, int start, int end) {
+    return org.apache.hadoop.util.StringUtils.byteToHexString(bytes, start, end);
+  }
+
+  /**
+   * Checks if the input string/char sequence is empty
+   * @param cs Input char sequence
+   * @return true if empty and false if not
+   */
+  public static boolean isEmpty(CharSequence cs) {
+    return cs == null || cs.length() == 0;
   }
 }

@@ -181,14 +181,14 @@ public class CreateFunctionHandler extends AbstractMessageHandler {
     ResourceUri destinationResourceUri(ResourceUri resourceUri)
         throws IOException, SemanticException {
       String sourceUri = resourceUri.getUri();
-      String[] split = sourceUri.split(Path.SEPARATOR);
+      String[] split = ReplChangeManager.decodeFileUri(sourceUri)[0].split(Path.SEPARATOR);
       PathBuilder pathBuilder = new PathBuilder(functionsRootDir);
       Path qualifiedDestinationPath = PathBuilder.fullyQualifiedHDFSUri(
           pathBuilder
               .addDescendant(destinationDbName.toLowerCase())
               .addDescendant(metadata.function.getFunctionName().toLowerCase())
               .addDescendant(String.valueOf(System.nanoTime()))
-              .addDescendant(ReplChangeManager.getFileWithChksumFromURI(split[split.length - 1])[0])
+              .addDescendant(split[split.length - 1])
               .build(),
           new Path(functionsRootDir).getFileSystem(context.hiveConf)
       );
