@@ -137,7 +137,6 @@ public class BucketizedHiveInputFormat<K extends WritableComparable, V extends W
       if (part.getTableDesc() != null) {
         // This can happen for truncate table case for non-MM tables.
         mmIds = getMmValidWriteIds(newjob, part.getTableDesc(), null);
-        throw new AssertionError(dir + ": " + part);
       }
       // TODO: should this also handle ACID operation, etc.? seems to miss a lot of stuff from HIF.
       Path[] finalDirs = (mmIds == null) ? new Path[] { dir }
