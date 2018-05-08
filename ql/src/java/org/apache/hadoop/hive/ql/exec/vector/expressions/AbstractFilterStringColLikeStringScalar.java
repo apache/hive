@@ -90,7 +90,7 @@ public abstract class AbstractFilterStringColLikeStringScalar extends VectorExpr
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
 
     if (childExpressions != null) {
       super.evaluateChildren(batch);

@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
  * Do conditional execution of a NULL THEN and a ELSE vector expression of a SQL IF statement.
@@ -41,7 +42,7 @@ public class IfExprNullCondExpr extends IfExprCondExprBase {
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
 
     int n = batch.size;
     if (n <= 0) {

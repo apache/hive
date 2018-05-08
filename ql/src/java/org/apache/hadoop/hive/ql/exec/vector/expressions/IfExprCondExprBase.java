@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
  * Base class that supports conditional execution of the THEN/ELSE vector expressions of
@@ -54,7 +55,7 @@ public abstract class IfExprCondExprBase extends VectorExpression {
   }
 
   public void conditionalEvaluate(VectorizedRowBatch batch, VectorExpression condVecExpr,
-      int[] condSelected, int condSize) {
+      int[] condSelected, int condSize) throws HiveException {
 
     int saveSize = batch.size;
     boolean saveSelectedInUse = batch.selectedInUse;
@@ -72,7 +73,7 @@ public abstract class IfExprCondExprBase extends VectorExpression {
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
 
     // NOTE: We do conditional vector expression so we do not call super.evaluateChildren(batch).
 

@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
  * This vector expression implements a Checked variant of LongColModuloLongColumn
@@ -36,7 +37,7 @@ public class LongColModuloLongColumnChecked extends LongColModuloLongColumn {
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
     super.evaluate(batch);
     //checked for overflow based on the outputTypeInfo
     OverflowUtils

@@ -60,7 +60,7 @@ public class StringColumnInList extends VectorExpression implements IStringInExp
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
 
     if (childExpressions != null) {
       super.evaluateChildren(batch);

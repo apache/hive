@@ -74,7 +74,7 @@ public abstract class VectorUDFTimestampFieldDate extends VectorExpression {
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
 
     Preconditions.checkState(
         ((PrimitiveTypeInfo) inputTypeInfos[0]).getPrimitiveCategory() == PrimitiveCategory.DATE);
