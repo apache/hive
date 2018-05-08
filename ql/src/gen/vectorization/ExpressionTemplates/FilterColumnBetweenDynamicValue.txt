@@ -83,7 +83,7 @@ public class <ClassName> extends Filter<TypeName>ColumnBetween {
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
     if (!initialized) {
       Object lVal = leftDynamicValue.getValue();
       Object rVal = rightDynamicValue.getValue();

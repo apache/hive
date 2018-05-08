@@ -63,7 +63,7 @@ public class StructColumnInList extends StringColumnInList implements IStructInE
   }
 
   @Override
-  public void evaluate(VectorizedRowBatch batch) {
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
 
     final int logicalSize = batch.size;
     if (logicalSize == 0) {

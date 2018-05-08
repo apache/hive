@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.exec.vector.TestVectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongScalarModuloLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongScalarSubtractLongColumn;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.junit.Test;
 
 /**
@@ -67,7 +68,7 @@ public class TestVectorScalarColArithmetic {
   }
 
   @Test
-  public void testLongScalarModuloLongColNoNulls()  {
+  public void testLongScalarModuloLongColNoNulls() throws HiveException {
     VectorizedRowBatch batch = getBatchSingleLongVectorPositiveNonZero();
     LongScalarModuloLongColumn expr = new LongScalarModuloLongColumn(100, 0, 1);
     expr.evaluate(batch);
@@ -81,7 +82,7 @@ public class TestVectorScalarColArithmetic {
   }
 
   @Test
-  public void testLongScalarSubtractLongColNoNulls()  {
+  public void testLongScalarSubtractLongColNoNulls() throws HiveException {
     VectorizedRowBatch batch = getVectorizedRowBatchSingleLongVector(
         VectorizedRowBatch.DEFAULT_SIZE);
     LongScalarSubtractLongColumn expr = new LongScalarSubtractLongColumn(100, 0, 1);
@@ -96,7 +97,7 @@ public class TestVectorScalarColArithmetic {
   }
 
   @Test
-  public void testLongScalarSubtractLongColWithNulls()  {
+  public void testLongScalarSubtractLongColWithNulls() throws HiveException {
     VectorizedRowBatch batch = getVectorizedRowBatchSingleLongVector(
         VectorizedRowBatch.DEFAULT_SIZE);
     LongColumnVector lcv = (LongColumnVector) batch.cols[0];
@@ -119,7 +120,7 @@ public class TestVectorScalarColArithmetic {
   }
 
   @Test
-  public void testLongScalarSubtractLongColWithRepeating() {
+  public void testLongScalarSubtractLongColWithRepeating() throws HiveException {
     LongColumnVector in, out;
     VectorizedRowBatch batch;
     LongScalarSubtractLongColumn expr;
@@ -167,7 +168,7 @@ public class TestVectorScalarColArithmetic {
   }
 
   @Test
-  public void testLongScalarDivide() {
+  public void testLongScalarDivide() throws HiveException {
     VectorizedRowBatch batch =
         TestVectorArithmeticExpressions.getVectorizedRowBatch2LongInDoubleOut();
     LongColDivideLongScalar expr = new LongColDivideLongScalar(0, 100, 2);
@@ -191,7 +192,7 @@ public class TestVectorScalarColArithmetic {
   }
 
   @Test
-  public void testScalarLongDivide() {
+  public void testScalarLongDivide() throws HiveException {
     VectorizedRowBatch batch =
         TestVectorArithmeticExpressions.getVectorizedRowBatch2LongInDoubleOut();
     LongScalarDivideLongColumn expr = new LongScalarDivideLongColumn(100, 0, 2);
@@ -219,7 +220,7 @@ public class TestVectorScalarColArithmetic {
   }
 
   @Test
-  public void testBooleanValuedLongIn() {
+  public void testBooleanValuedLongIn() throws HiveException {
     VectorizedRowBatch batch = getBatch();
     long[] a = new long[2];
     a[0] = 20;
