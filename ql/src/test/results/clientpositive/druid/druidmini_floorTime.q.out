@@ -72,65 +72,24 @@ WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyi
 AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY floor(`__time` to SECOND)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Tez
-#### A masked pattern was here ####
-      Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: druid_table_n2
-                  filterExpr: (character_length(UDFToString(ctinyint)) < 10) (type: boolean)
-                  properties:
-                    druid.fieldNames vc,ctinyint
-                    druid.fieldTypes timestamp with local time zone,tinyint
-                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table_n2","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"and","fields":[{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) > 1)"},{"type":"expression","expression":"((pow(\"cfloat\",2) * pow(\"csmallint\",3)) > 1)"},{"type":"expression","expression":"(sqrt(abs(\"ctinyint\")) > 3)"}]},"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc","ctinyint"],"resultFormat":"compactedList"}
-                    druid.query.type scan
-                  Statistics: Num rows: 9173 Data size: 383504 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (character_length(UDFToString(ctinyint)) < 10) (type: boolean)
-                    Statistics: Num rows: 3057 Data size: 127806 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: floor_second(vc) (type: timestamp with local time zone)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 3057 Data size: 127806 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: timestamp with local time zone)
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 3057 Data size: 127806 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: timestamp with local time zone)
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: timestamp with local time zone)
-                          Statistics: Num rows: 3057 Data size: 127806 Basic stats: COMPLETE Column stats: NONE
-        Reducer 2 
-            Reduce Operator Tree:
-              Group By Operator
-                keys: KEY._col0 (type: timestamp with local time zone)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1528 Data size: 63882 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1528 Data size: 63882 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
       Processor Tree:
-        ListSink
+        TableScan
+          alias: druid_table_n2
+          properties:
+            druid.fieldNames timestamp
+            druid.fieldTypes timestamp with local time zone
+            druid.query.json {"queryType":"timeseries","dataSource":"default.druid_table_n2","descending":false,"granularity":{"type":"period","period":"PT1S","timeZone":"US/Pacific"},"filter":{"type":"and","fields":[{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) > 1)"},{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) < 10)"},{"type":"expression","expression":"((pow(\"cfloat\",2) * pow(\"csmallint\",3)) > 1)"},{"type":"expression","expression":"(sqrt(abs(\"ctinyint\")) > 3)"}]},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"context":{"skipEmptyBuckets":true}}
+            druid.query.type timeseries
+          Select Operator
+            expressions: timestamp (type: timestamp with local time zone)
+            outputColumnNames: _col0
+            ListSink
 
 PREHOOK: query: SELECT floor(`__time` to MINUTE) FROM druid_table_n2
 WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
@@ -155,65 +114,24 @@ WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyi
 AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY floor(`__time` to MINUTE)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Tez
-#### A masked pattern was here ####
-      Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: druid_table_n2
-                  filterExpr: (character_length(UDFToString(ctinyint)) < 10) (type: boolean)
-                  properties:
-                    druid.fieldNames vc,ctinyint
-                    druid.fieldTypes timestamp with local time zone,tinyint
-                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table_n2","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"and","fields":[{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) > 1)"},{"type":"expression","expression":"((pow(\"cfloat\",2) * pow(\"csmallint\",3)) > 1)"},{"type":"expression","expression":"(sqrt(abs(\"ctinyint\")) > 3)"}]},"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc","ctinyint"],"resultFormat":"compactedList"}
-                    druid.query.type scan
-                  Statistics: Num rows: 9173 Data size: 383504 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (character_length(UDFToString(ctinyint)) < 10) (type: boolean)
-                    Statistics: Num rows: 3057 Data size: 127806 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: floor_minute(vc) (type: timestamp with local time zone)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 3057 Data size: 127806 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: timestamp with local time zone)
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 3057 Data size: 127806 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: timestamp with local time zone)
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: timestamp with local time zone)
-                          Statistics: Num rows: 3057 Data size: 127806 Basic stats: COMPLETE Column stats: NONE
-        Reducer 2 
-            Reduce Operator Tree:
-              Group By Operator
-                keys: KEY._col0 (type: timestamp with local time zone)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1528 Data size: 63882 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1528 Data size: 63882 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
       Processor Tree:
-        ListSink
+        TableScan
+          alias: druid_table_n2
+          properties:
+            druid.fieldNames timestamp
+            druid.fieldTypes timestamp with local time zone
+            druid.query.json {"queryType":"timeseries","dataSource":"default.druid_table_n2","descending":false,"granularity":{"type":"period","period":"PT1M","timeZone":"US/Pacific"},"filter":{"type":"and","fields":[{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) > 1)"},{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) < 10)"},{"type":"expression","expression":"((pow(\"cfloat\",2) * pow(\"csmallint\",3)) > 1)"},{"type":"expression","expression":"(sqrt(abs(\"ctinyint\")) > 3)"}]},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"context":{"skipEmptyBuckets":true}}
+            druid.query.type timeseries
+          Select Operator
+            expressions: timestamp (type: timestamp with local time zone)
+            outputColumnNames: _col0
+            ListSink
 
 PREHOOK: query: SELECT floor(`__time` to HOUR) FROM druid_table_n2
 WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
@@ -238,65 +156,24 @@ WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyi
 AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY floor(`__time` to HOUR)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Tez
-#### A masked pattern was here ####
-      Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: druid_table_n2
-                  filterExpr: (character_length(UDFToString(ctinyint)) < 10) (type: boolean)
-                  properties:
-                    druid.fieldNames vc,ctinyint
-                    druid.fieldTypes timestamp with local time zone,tinyint
-                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table_n2","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"and","fields":[{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) > 1)"},{"type":"expression","expression":"((pow(\"cfloat\",2) * pow(\"csmallint\",3)) > 1)"},{"type":"expression","expression":"(sqrt(abs(\"ctinyint\")) > 3)"}]},"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc","ctinyint"],"resultFormat":"compactedList"}
-                    druid.query.type scan
-                  Statistics: Num rows: 9173 Data size: 383504 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (character_length(UDFToString(ctinyint)) < 10) (type: boolean)
-                    Statistics: Num rows: 3057 Data size: 127806 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: floor_hour(vc) (type: timestamp with local time zone)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 3057 Data size: 127806 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: timestamp with local time zone)
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 3057 Data size: 127806 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: timestamp with local time zone)
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: timestamp with local time zone)
-                          Statistics: Num rows: 3057 Data size: 127806 Basic stats: COMPLETE Column stats: NONE
-        Reducer 2 
-            Reduce Operator Tree:
-              Group By Operator
-                keys: KEY._col0 (type: timestamp with local time zone)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1528 Data size: 63882 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1528 Data size: 63882 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
       Processor Tree:
-        ListSink
+        TableScan
+          alias: druid_table_n2
+          properties:
+            druid.fieldNames timestamp
+            druid.fieldTypes timestamp with local time zone
+            druid.query.json {"queryType":"timeseries","dataSource":"default.druid_table_n2","descending":false,"granularity":{"type":"period","period":"PT1H","timeZone":"US/Pacific"},"filter":{"type":"and","fields":[{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) > 1)"},{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) < 10)"},{"type":"expression","expression":"((pow(\"cfloat\",2) * pow(\"csmallint\",3)) > 1)"},{"type":"expression","expression":"(sqrt(abs(\"ctinyint\")) > 3)"}]},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"context":{"skipEmptyBuckets":true}}
+            druid.query.type timeseries
+          Select Operator
+            expressions: timestamp (type: timestamp with local time zone)
+            outputColumnNames: _col0
+            ListSink
 
 PREHOOK: query: SELECT EXTRACT(DAY from `__time`) FROM druid_table_n2
 WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
@@ -320,65 +197,24 @@ WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyi
 AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY EXTRACT(DAY from `__time`)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Tez
-#### A masked pattern was here ####
-      Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: druid_table_n2
-                  filterExpr: (character_length(UDFToString(ctinyint)) < 10) (type: boolean)
-                  properties:
-                    druid.fieldNames vc,ctinyint
-                    druid.fieldTypes timestamp with local time zone,tinyint
-                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table_n2","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"and","fields":[{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) > 1)"},{"type":"expression","expression":"((pow(\"cfloat\",2) * pow(\"csmallint\",3)) > 1)"},{"type":"expression","expression":"(sqrt(abs(\"ctinyint\")) > 3)"}]},"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc","ctinyint"],"resultFormat":"compactedList"}
-                    druid.query.type scan
-                  Statistics: Num rows: 9173 Data size: 383504 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (character_length(UDFToString(ctinyint)) < 10) (type: boolean)
-                    Statistics: Num rows: 3057 Data size: 127806 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: day(vc) (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 3057 Data size: 127806 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: int)
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 3057 Data size: 127806 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: int)
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: int)
-                          Statistics: Num rows: 3057 Data size: 127806 Basic stats: COMPLETE Column stats: NONE
-        Reducer 2 
-            Reduce Operator Tree:
-              Group By Operator
-                keys: KEY._col0 (type: int)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1528 Data size: 63882 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1528 Data size: 63882 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
       Processor Tree:
-        ListSink
+        TableScan
+          alias: druid_table_n2
+          properties:
+            druid.fieldNames extract_day
+            druid.fieldTypes int
+            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_n2","granularity":"all","dimensions":[{"type":"extraction","dimension":"__time","outputName":"extract_day","extractionFn":{"type":"timeFormat","format":"d","timeZone":"US/Pacific","locale":"en-US"}}],"limitSpec":{"type":"default"},"filter":{"type":"and","fields":[{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) > 1)"},{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) < 10)"},{"type":"expression","expression":"((pow(\"cfloat\",2) * pow(\"csmallint\",3)) > 1)"},{"type":"expression","expression":"(sqrt(abs(\"ctinyint\")) > 3)"}]},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.type groupBy
+          Select Operator
+            expressions: extract_day (type: int)
+            outputColumnNames: _col0
+            ListSink
 
 PREHOOK: query: SELECT EXTRACT(WEEK from `__time`) FROM druid_table_n2
 WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
@@ -402,65 +238,24 @@ WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyi
 AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY EXTRACT(WEEK from `__time`)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Tez
-#### A masked pattern was here ####
-      Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: druid_table_n2
-                  filterExpr: (character_length(UDFToString(ctinyint)) < 10) (type: boolean)
-                  properties:
-                    druid.fieldNames vc,ctinyint
-                    druid.fieldTypes timestamp with local time zone,tinyint
-                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table_n2","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"and","fields":[{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) > 1)"},{"type":"expression","expression":"((pow(\"cfloat\",2) * pow(\"csmallint\",3)) > 1)"},{"type":"expression","expression":"(sqrt(abs(\"ctinyint\")) > 3)"}]},"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc","ctinyint"],"resultFormat":"compactedList"}
-                    druid.query.type scan
-                  Statistics: Num rows: 9173 Data size: 383504 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (character_length(UDFToString(ctinyint)) < 10) (type: boolean)
-                    Statistics: Num rows: 3057 Data size: 127806 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: weekofyear(vc) (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 3057 Data size: 127806 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: int)
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 3057 Data size: 127806 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: int)
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: int)
-                          Statistics: Num rows: 3057 Data size: 127806 Basic stats: COMPLETE Column stats: NONE
-        Reducer 2 
-            Reduce Operator Tree:
-              Group By Operator
-                keys: KEY._col0 (type: int)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1528 Data size: 63882 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1528 Data size: 63882 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
       Processor Tree:
-        ListSink
+        TableScan
+          alias: druid_table_n2
+          properties:
+            druid.fieldNames extract_week
+            druid.fieldTypes int
+            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_n2","granularity":"all","dimensions":[{"type":"extraction","dimension":"__time","outputName":"extract_week","extractionFn":{"type":"timeFormat","format":"w","timeZone":"US/Pacific","locale":"en-US"}}],"limitSpec":{"type":"default"},"filter":{"type":"and","fields":[{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) > 1)"},{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) < 10)"},{"type":"expression","expression":"((pow(\"cfloat\",2) * pow(\"csmallint\",3)) > 1)"},{"type":"expression","expression":"(sqrt(abs(\"ctinyint\")) > 3)"}]},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.type groupBy
+          Select Operator
+            expressions: extract_week (type: int)
+            outputColumnNames: _col0
+            ListSink
 
 PREHOOK: query: SELECT EXTRACT(MONTH from `__time`) FROM druid_table_n2
 WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
@@ -484,65 +279,24 @@ WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyi
 AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY EXTRACT(MONTH from `__time`)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Tez
-#### A masked pattern was here ####
-      Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: druid_table_n2
-                  filterExpr: (character_length(UDFToString(ctinyint)) < 10) (type: boolean)
-                  properties:
-                    druid.fieldNames vc,ctinyint
-                    druid.fieldTypes timestamp with local time zone,tinyint
-                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table_n2","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"and","fields":[{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) > 1)"},{"type":"expression","expression":"((pow(\"cfloat\",2) * pow(\"csmallint\",3)) > 1)"},{"type":"expression","expression":"(sqrt(abs(\"ctinyint\")) > 3)"}]},"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc","ctinyint"],"resultFormat":"compactedList"}
-                    druid.query.type scan
-                  Statistics: Num rows: 9173 Data size: 383504 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (character_length(UDFToString(ctinyint)) < 10) (type: boolean)
-                    Statistics: Num rows: 3057 Data size: 127806 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: month(vc) (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 3057 Data size: 127806 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: int)
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 3057 Data size: 127806 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: int)
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: int)
-                          Statistics: Num rows: 3057 Data size: 127806 Basic stats: COMPLETE Column stats: NONE
-        Reducer 2 
-            Reduce Operator Tree:
-              Group By Operator
-                keys: KEY._col0 (type: int)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1528 Data size: 63882 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1528 Data size: 63882 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
       Processor Tree:
-        ListSink
+        TableScan
+          alias: druid_table_n2
+          properties:
+            druid.fieldNames extract_month
+            druid.fieldTypes int
+            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_n2","granularity":"all","dimensions":[{"type":"extraction","dimension":"__time","outputName":"extract_month","extractionFn":{"type":"timeFormat","format":"M","timeZone":"US/Pacific","locale":"en-US"}}],"limitSpec":{"type":"default"},"filter":{"type":"and","fields":[{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) > 1)"},{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) < 10)"},{"type":"expression","expression":"((pow(\"cfloat\",2) * pow(\"csmallint\",3)) > 1)"},{"type":"expression","expression":"(sqrt(abs(\"ctinyint\")) > 3)"}]},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.type groupBy
+          Select Operator
+            expressions: extract_month (type: int)
+            outputColumnNames: _col0
+            ListSink
 
 PREHOOK: query: SELECT EXTRACT(QUARTER from `__time`) FROM druid_table_n2
 WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
@@ -566,65 +320,24 @@ WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyi
 AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY EXTRACT(QUARTER from `__time`)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Tez
-#### A masked pattern was here ####
-      Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: druid_table_n2
-                  filterExpr: (character_length(UDFToString(ctinyint)) < 10) (type: boolean)
-                  properties:
-                    druid.fieldNames vc,ctinyint
-                    druid.fieldTypes timestamp with local time zone,tinyint
-                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table_n2","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"and","fields":[{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) > 1)"},{"type":"expression","expression":"((pow(\"cfloat\",2) * pow(\"csmallint\",3)) > 1)"},{"type":"expression","expression":"(sqrt(abs(\"ctinyint\")) > 3)"}]},"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc","ctinyint"],"resultFormat":"compactedList"}
-                    druid.query.type scan
-                  Statistics: Num rows: 9173 Data size: 383504 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (character_length(UDFToString(ctinyint)) < 10) (type: boolean)
-                    Statistics: Num rows: 3057 Data size: 127806 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: quarter(vc) (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 3057 Data size: 127806 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: int)
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 3057 Data size: 127806 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: int)
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: int)
-                          Statistics: Num rows: 3057 Data size: 127806 Basic stats: COMPLETE Column stats: NONE
-        Reducer 2 
-            Reduce Operator Tree:
-              Group By Operator
-                keys: KEY._col0 (type: int)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1528 Data size: 63882 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1528 Data size: 63882 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
       Processor Tree:
-        ListSink
+        TableScan
+          alias: druid_table_n2
+          properties:
+            druid.fieldNames vc
+            druid.fieldTypes int
+            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_n2","granularity":"all","dimensions":[{"type":"default","dimension":"vc","outputName":"vc","outputType":"LONG"}],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_extract(\"__time\",'QUARTER','US/Pacific')","outputType":"LONG"}],"limitSpec":{"type":"default"},"filter":{"type":"and","fields":[{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) > 1)"},{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) < 10)"},{"type":"expression","expression":"((pow(\"cfloat\",2) * pow(\"csmallint\",3)) > 1)"},{"type":"expression","expression":"(sqrt(abs(\"ctinyint\")) > 3)"}]},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.type groupBy
+          Select Operator
+            expressions: vc (type: int)
+            outputColumnNames: _col0
+            ListSink
 
 PREHOOK: query: SELECT EXTRACT(YEAR from `__time`) FROM druid_table_n2
 WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
@@ -648,65 +361,24 @@ WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyi
 AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3 GROUP BY EXTRACT(YEAR from `__time`)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Tez
-#### A masked pattern was here ####
-      Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: druid_table_n2
-                  filterExpr: (character_length(UDFToString(ctinyint)) < 10) (type: boolean)
-                  properties:
-                    druid.fieldNames vc,ctinyint
-                    druid.fieldTypes timestamp with local time zone,tinyint
-                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table_n2","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"and","fields":[{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) > 1)"},{"type":"expression","expression":"((pow(\"cfloat\",2) * pow(\"csmallint\",3)) > 1)"},{"type":"expression","expression":"(sqrt(abs(\"ctinyint\")) > 3)"}]},"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc","ctinyint"],"resultFormat":"compactedList"}
-                    druid.query.type scan
-                  Statistics: Num rows: 9173 Data size: 383504 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (character_length(UDFToString(ctinyint)) < 10) (type: boolean)
-                    Statistics: Num rows: 3057 Data size: 127806 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: year(vc) (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 3057 Data size: 127806 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: int)
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 3057 Data size: 127806 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: int)
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: int)
-                          Statistics: Num rows: 3057 Data size: 127806 Basic stats: COMPLETE Column stats: NONE
-        Reducer 2 
-            Reduce Operator Tree:
-              Group By Operator
-                keys: KEY._col0 (type: int)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1528 Data size: 63882 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1528 Data size: 63882 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
       Processor Tree:
-        ListSink
+        TableScan
+          alias: druid_table_n2
+          properties:
+            druid.fieldNames extract_year
+            druid.fieldTypes int
+            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_n2","granularity":"all","dimensions":[{"type":"extraction","dimension":"__time","outputName":"extract_year","extractionFn":{"type":"timeFormat","format":"yyyy","timeZone":"US/Pacific","locale":"en-US"}}],"limitSpec":{"type":"default"},"filter":{"type":"and","fields":[{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) > 1)"},{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) < 10)"},{"type":"expression","expression":"((pow(\"cfloat\",2) * pow(\"csmallint\",3)) > 1)"},{"type":"expression","expression":"(sqrt(abs(\"ctinyint\")) > 3)"}]},"aggregations":[],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.type groupBy
+          Select Operator
+            expressions: extract_year (type: int)
+            outputColumnNames: _col0
+            ListSink
 
 PREHOOK: query: EXPLAIN SELECT EXTRACT(SECOND from `__time`) FROM druid_table_n2 WHERE EXTRACT(SECOND from `__time`) = 0  LIMIT 1
 PREHOOK: type: QUERY
@@ -793,24 +465,19 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
-      limit: 1
+      limit: -1
       Processor Tree:
         TableScan
           alias: druid_table_n2
-          filterExpr: (character_length(UDFToString(ctinyint)) < 10) (type: boolean)
           properties:
-            druid.fieldNames vc,ctinyint
-            druid.fieldTypes timestamp with local time zone,tinyint
-            druid.query.json {"queryType":"scan","dataSource":"default.druid_table_n2","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"and","fields":[{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) > 1)"},{"type":"expression","expression":"((pow(\"cfloat\",2) * pow(\"csmallint\",3)) > 1)"},{"type":"expression","expression":"(sqrt(abs(\"ctinyint\")) > 3)"}]},"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc","ctinyint"],"resultFormat":"compactedList"}
+            druid.fieldNames vc
+            druid.fieldTypes int
+            druid.query.json {"queryType":"scan","dataSource":"default.druid_table_n2","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"and","fields":[{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) > 1)"},{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) < 10)"},{"type":"expression","expression":"((pow(\"cfloat\",2) * pow(\"csmallint\",3)) > 1)"},{"type":"expression","expression":"(sqrt(abs(\"ctinyint\")) > 3)"}]},"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_extract(\"__time\",'HOUR','US/Pacific')","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList","limit":1}
             druid.query.type scan
-          Filter Operator
-            predicate: (character_length(UDFToString(ctinyint)) < 10) (type: boolean)
-            Select Operator
-              expressions: hour(vc) (type: int)
-              outputColumnNames: _col0
-              Limit
-                Number of rows: 1
-                ListSink
+          Select Operator
+            expressions: vc (type: int)
+            outputColumnNames: _col0
+            ListSink
 
 PREHOOK: query: SELECT EXTRACT(HOUR from `__time`) FROM druid_table_n2
 WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
