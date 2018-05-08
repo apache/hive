@@ -31,6 +31,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
@@ -128,6 +130,8 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
       String query = ctx.getTokenRewriteStream().toString(input.getTokenStartIndex(),
           input.getTokenStopIndex());
       LOG.info("Explain analyze (running phase) for query " + query);
+      conf.unset(ValidTxnList.VALID_TXNS_KEY);
+      conf.unset(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY);
       Context runCtx = null;
       try {
         runCtx = new Context(conf);
