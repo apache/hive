@@ -40,9 +40,8 @@ POSTHOOK: query: EXPLAIN FROM src INSERT OVERWRITE TABLE hbase_table_1 SELECT * 
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
-  Stage-2
   Stage-1 is a root stage
-  Stage-3 is a root stage
+  Stage-2 is a root stage
 
 STAGE PLANS:
   Stage: Stage-0
@@ -53,15 +52,11 @@ STAGE PLANS:
           properties:
             COLUMN_STATS_ACCURATE 
 
-  Stage: Stage-2
-      Insert operator:
-        Insert
-
   Stage: Stage-1
       Pre Insert operator:
         Pre-Insert task
 
-  Stage: Stage-3
+  Stage: Stage-2
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -506,10 +501,9 @@ ON (x.key = Y.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
-  Stage-2
   Stage-1 is a root stage
-  Stage-4 is a root stage
-  Stage-3 depends on stages: Stage-4
+  Stage-3 is a root stage
+  Stage-2 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-0
@@ -520,15 +514,11 @@ STAGE PLANS:
           properties:
             COLUMN_STATS_ACCURATE 
 
-  Stage: Stage-2
-      Insert operator:
-        Insert
-
   Stage: Stage-1
       Pre Insert operator:
         Pre-Insert task
 
-  Stage: Stage-4
+  Stage: Stage-3
     Map Reduce
       Map Operator Tree:
           TableScan
@@ -564,7 +554,7 @@ STAGE PLANS:
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-  Stage: Stage-3
+  Stage: Stage-2
     Map Reduce
       Map Operator Tree:
           TableScan

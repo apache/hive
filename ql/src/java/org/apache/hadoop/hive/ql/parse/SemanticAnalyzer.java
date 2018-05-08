@@ -18,33 +18,12 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVESTATSDBCLASS;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.Serializable;
-import java.security.AccessControlException;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Queue;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.UUID;
-import java.util.function.Supplier;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
-import java.util.stream.Collectors;
-
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
+import com.google.common.math.IntMath;
+import com.google.common.math.LongMath;
 import org.antlr.runtime.ClassicToken;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.Token;
@@ -65,9 +44,9 @@ import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.StatsSetupConst.StatDB;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
-import org.apache.hadoop.hive.common.StatsSetupConst.StatDB;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -121,6 +100,7 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.hooks.Entity;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
@@ -185,6 +165,7 @@ import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowType;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
+import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
 import org.apache.hadoop.hive.ql.plan.CreateTableLikeDesc;
 import org.apache.hadoop.hive.ql.plan.CreateViewDesc;
@@ -203,7 +184,7 @@ import org.apache.hadoop.hive.ql.plan.FilterDesc.SampleDesc;
 import org.apache.hadoop.hive.ql.plan.ForwardDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
-import org.apache.hadoop.hive.ql.plan.InsertTableDesc;
+import org.apache.hadoop.hive.ql.plan.InsertCommitHookDesc;
 import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.LateralViewForwardDesc;
@@ -230,9 +211,9 @@ import org.apache.hadoop.hive.ql.plan.ptf.PartitionedTableFunctionDef;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.ResourceType;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFArray;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFArray;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCardinalityViolation;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFHash;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFMurmurHash;
@@ -270,12 +251,33 @@ import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
 
-import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
-import com.google.common.math.IntMath;
-import com.google.common.math.LongMath;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.Serializable;
+import java.security.AccessControlException;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.Queue;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.UUID;
+import java.util.function.Supplier;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+import java.util.stream.Collectors;
+
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVESTATSDBCLASS;
 
 /**
  * Implementation of the semantic analyzer. It generates the query plan.
@@ -7293,7 +7295,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // true if it is insert overwrite.
         boolean overwrite = !qb.getParseInfo().isInsertIntoTable(
             String.format("%s.%s", dest_tab.getDbName(), dest_tab.getTableName()));
-        createInsertDesc(dest_tab, overwrite);
+        createPreInsertDesc(dest_tab, overwrite);
       }
 
       if (dest_tab.isMaterializedView()) {
@@ -7571,7 +7573,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         ltd.setInsertOverwrite(true);
       }
     }
-
     if (SessionState.get().isHiveServerQuery() &&
         null != table_desc &&
         table_desc.getSerdeClassName().equalsIgnoreCase(ThriftJDBCBinarySerDe.class.getName()) &&
@@ -7886,16 +7887,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return dpCtx;
   }
 
-  private void createInsertDesc(Table table, boolean overwrite) {
-    Task<? extends Serializable>[] tasks = new Task[this.rootTasks.size()];
-    tasks = this.rootTasks.toArray(tasks);
+  private void createPreInsertDesc(Table table, boolean overwrite) {
     PreInsertTableDesc preInsertTableDesc = new PreInsertTableDesc(table, overwrite);
-    InsertTableDesc insertTableDesc = new InsertTableDesc(table, overwrite);
     this.rootTasks
         .add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), preInsertTableDesc)));
-    TaskFactory
-        .getAndMakeChild(new DDLWork(getInputs(), getOutputs(), insertTableDesc), conf, tasks);
+
   }
+
 
   private void genAutoColumnStatsGatheringPipeline(QB qb, TableDesc table_desc,
                                                    Map<String, String> partSpec, Operator curr, boolean isInsertInto) throws SemanticException {
@@ -12232,9 +12230,27 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     //find all Acid FileSinkOperatorS
     QueryPlanPostProcessor qp = new QueryPlanPostProcessor(rootTasks, acidFileSinks, ctx.getExecutionId());
+
+    // 10. Attach CTAS/Insert-Commit-hooks for Storage Handlers
+    final Optional<TezTask> optionalTezTask =
+        rootTasks.stream().filter(task -> task instanceof TezTask).map(task -> (TezTask) task)
+            .findFirst();
+    if (optionalTezTask.isPresent()) {
+      final TezTask tezTask = optionalTezTask.get();
+      rootTasks.stream()
+          .filter(task -> task.getWork() instanceof DDLWork)
+          .map(task -> (DDLWork) task.getWork())
+          .filter(ddlWork -> ddlWork.getPreInsertTableDesc() != null)
+          .map(ddlWork -> ddlWork.getPreInsertTableDesc())
+          .map(ddlPreInsertTask -> new InsertCommitHookDesc(ddlPreInsertTask.getTable(),
+              ddlPreInsertTask.isOverwrite()))
+          .forEach(insertCommitHookDesc -> tezTask.addDependentTask(
+              TaskFactory.get(new DDLWork(getInputs(), getOutputs(), insertCommitHookDesc), conf)));
+    }
+
     LOG.info("Completed plan generation");
 
-    // 10. put accessed columns to readEntity
+    // 11. put accessed columns to readEntity
     if (HiveConf.getBoolVar(this.conf, HiveConf.ConfVars.HIVE_STATS_COLLECT_SCANCOLS)) {
       putAccessedColumnsToReadEntity(inputs, columnAccessInfo);
     }

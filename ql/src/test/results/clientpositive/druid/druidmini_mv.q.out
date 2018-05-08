@@ -422,10 +422,10 @@ ALTER MATERIALIZED VIEW cmv_mat_view2 REBUILD
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
-  Stage-2
-  Stage-5 depends on stages: Stage-2, Stage-1, Stage-3
+  Stage-4 depends on stages: Stage-0, Stage-1, Stage-2
   Stage-1 is a root stage
-  Stage-3 is a root stage
+  Stage-2 is a root stage
+  Stage-5 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-0
@@ -436,18 +436,14 @@ STAGE PLANS:
           properties:
             COLUMN_STATS_ACCURATE 
 
-  Stage: Stage-2
-      Insert operator:
-        Insert
-
-  Stage: Stage-5
+  Stage: Stage-4
     Materialized View Work
 
   Stage: Stage-1
       Pre Insert operator:
         Pre-Insert task
 
-  Stage: Stage-3
+  Stage: Stage-2
     Tez
 #### A masked pattern was here ####
       Edges:
@@ -491,6 +487,10 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.druid.io.DruidOutputFormat
                       serde: org.apache.hadoop.hive.druid.serde.DruidSerDe
                       name: default.cmv_mat_view2
+
+  Stage: Stage-5
+      Insert operator:
+        Commit-Insert-Hook
 
 PREHOOK: query: ALTER MATERIALIZED VIEW cmv_mat_view2 REBUILD
 PREHOOK: type: QUERY
