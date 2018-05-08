@@ -426,7 +426,14 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
 
     @Override
     public String next() {
-      String result = encodeFileUri(files.get(i), chksums != null? chksums.get(i) : null);
+      String result;
+      try {
+        result = ReplChangeManager.encodeFileUri(files.get(i), chksums != null ? chksums.get(i) : null, null);
+      } catch (IOException e) {
+        // File operations failed
+        LOG.error("Encoding file URI failed with error " + e.getMessage());
+        throw new RuntimeException(e.getMessage());
+      }
       i++;
       return result;
     }
@@ -787,15 +794,5 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       }
     }
 
-  }
-
-  // TODO: this needs to be enhanced once change management based filesystem is implemented
-  // Currently using fileuri#checksum as the format
-  private String encodeFileUri(String fileUriStr, String fileChecksum) {
-    if (fileChecksum != null) {
-      return fileUriStr + "#" + fileChecksum;
-    } else {
-      return fileUriStr;
-    }
   }
 }
