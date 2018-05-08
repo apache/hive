@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IdentityExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 
@@ -72,14 +73,14 @@ public abstract class VectorPTFEvaluatorBase {
   }
 
   // Evaluate the aggregation input argument expression.
-  public void evaluateInputExpr(VectorizedRowBatch batch) {
+  public void evaluateInputExpr(VectorizedRowBatch batch) throws HiveException {
     if (inputVecExpr != null) {
       inputVecExpr.evaluate(batch);
     }
   }
 
   // Evaluate the aggregation over one of the group's batches.
-  public abstract void evaluateGroupBatch(VectorizedRowBatch batch, boolean isLastGroupBatch);
+  public abstract void evaluateGroupBatch(VectorizedRowBatch batch, boolean isLastGroupBatch) throws HiveException;
 
   // Returns true if the aggregation result will be streamed.
   public boolean streamsResult() {

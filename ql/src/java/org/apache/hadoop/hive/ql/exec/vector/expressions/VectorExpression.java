@@ -247,8 +247,9 @@ public abstract class VectorExpression implements Serializable {
   /**
    * This is the primary method to implement expression logic.
    * @param batch
+   * @throws HiveException 
    */
-  public abstract void evaluate(VectorizedRowBatch batch);
+  public abstract void evaluate(VectorizedRowBatch batch) throws HiveException;
 
   public void init(Configuration conf) {
     if (childExpressions != null) {
@@ -264,7 +265,7 @@ public abstract class VectorExpression implements Serializable {
    * Evaluate the child expressions on the given input batch.
    * @param vrg {@link VectorizedRowBatch}
    */
-  final protected void evaluateChildren(VectorizedRowBatch vrg) {
+  final protected void evaluateChildren(VectorizedRowBatch vrg) throws HiveException {
     if (childExpressions != null) {
       for (VectorExpression ve : childExpressions) {
         ve.evaluate(vrg);

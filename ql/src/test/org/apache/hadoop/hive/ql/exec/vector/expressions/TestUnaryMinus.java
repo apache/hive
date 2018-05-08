@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColUnaryMinus;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColUnaryMinusChecked;
 import org.apache.hadoop.hive.ql.exec.vector.util.VectorizedRowGroupGenUtil;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.junit.Test;
 
@@ -34,7 +35,7 @@ import org.junit.Test;
 public class TestUnaryMinus {
 
   @Test
-  public void testUnaryMinus() {
+  public void testUnaryMinus() throws HiveException {
     VectorizedRowBatch vrg = VectorizedRowGroupGenUtil.getVectorizedRowBatch(1024, 2, 23);
     LongColUnaryMinus expr = new LongColUnaryMinus(0, 1);
     expr.evaluate(vrg);
@@ -48,7 +49,7 @@ public class TestUnaryMinus {
 
 
   @Test
-  public void testUnaryMinusCheckedOverflow() {
+  public void testUnaryMinusCheckedOverflow() throws HiveException {
     VectorizedRowBatch vrg = VectorizedRowGroupGenUtil.getVectorizedRowBatch(1, 2, 0);
     //set value to MIN_VALUE so that -MIN_VALUE overflows and gets set to MIN_VALUE again
     ((LongColumnVector)vrg.cols[0]).vector[0] = Integer.MIN_VALUE;
@@ -64,7 +65,7 @@ public class TestUnaryMinus {
   }
 
   @Test
-  public void testUnaryMinusChecked() {
+  public void testUnaryMinusChecked() throws HiveException {
     VectorizedRowBatch vrg = VectorizedRowGroupGenUtil.getVectorizedRowBatch(1024, 2, 23);
     LongColUnaryMinusChecked expr = new LongColUnaryMinusChecked(0, 1);
     expr.setOutputTypeInfo(TypeInfoFactory.getPrimitiveTypeInfo("bigint"));

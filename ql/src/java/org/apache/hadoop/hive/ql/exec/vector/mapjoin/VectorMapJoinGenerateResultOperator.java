@@ -134,7 +134,7 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
   //------------------------------------------------------------------------------------------------
 
   protected void performValueExpressions(VectorizedRowBatch batch,
-      int[] allMatchs, int allMatchCount) {
+      int[] allMatchs, int allMatchCount) throws HiveException {
     /*
      *  For the moment, pretend all matched are selected so we can evaluate the value
      *  expressions.
