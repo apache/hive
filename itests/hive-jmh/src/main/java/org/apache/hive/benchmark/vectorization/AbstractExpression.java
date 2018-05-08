@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -58,7 +59,7 @@ public abstract class AbstractExpression {
   @Benchmark
   @Warmup(iterations = 2, time = 2, timeUnit = TimeUnit.MILLISECONDS)
   @Measurement(iterations = 2, time = 2, timeUnit = TimeUnit.MILLISECONDS)
-  public void bench() {
+  public void bench() throws HiveException {
     for (int i = 0; i < DEFAULT_ITER_TIME; i++) {
       rowBatch.selectedInUse = false;
       rowBatch.size = VectorizedRowBatch.DEFAULT_SIZE;

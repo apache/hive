@@ -15,7 +15,7 @@
    limitations under the License.
 -->
   @Test
-  public void <TestName>() {
+  public void <TestName>() throws HiveException {
 
     Random rand = new Random(SEED);
 
