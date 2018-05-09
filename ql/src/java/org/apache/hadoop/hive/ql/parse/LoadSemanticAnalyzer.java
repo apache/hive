@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.net.URLCodec;
 import org.apache.hadoop.hive.conf.HiveConf.StrictChecks;
 
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -31,7 +33,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.antlr.runtime.tree.Tree;
-import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -90,8 +91,8 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     return (srcs);
   }
 
-  private URI initializeFromURI(String fromPath, boolean isLocal) throws IOException,
-      URISyntaxException {
+  private URI initializeFromURI(String fromPath, boolean isLocal)
+      throws IOException, URISyntaxException, SemanticException {
     URI fromURI = new Path(fromPath).toUri();
 
     String fromScheme = fromURI.getScheme();
@@ -102,8 +103,13 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     // directory
     if (!path.startsWith("/")) {
       if (isLocal) {
-        path = URIUtil.decode(
-            new Path(System.getProperty("user.dir"), fromPath).toUri().toString());
+        try {
+          path = new String(URLCodec.decodeUrl(
+              new Path(System.getProperty("user.dir"), fromPath).toUri().toString()
+                  .getBytes("US-ASCII")), "US-ASCII");
+        } catch (DecoderException de) {
+          throw new SemanticException("URL Decode failed", de);
+        }
       } else {
         path = new Path(new Path("/user/" + System.getProperty("user.name")),
           path).toString();
