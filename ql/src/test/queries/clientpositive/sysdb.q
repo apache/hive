@@ -7,6 +7,8 @@ set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 
 set hive.cbo.enable=false;
 
+-- SORT_QUERY_RESULTS
+
 create table src_buck (key int, value string) clustered by(value) into 2 buckets;
 
 create table src_skew (key int) skewed by (key) on (1,2,3);
@@ -58,6 +60,9 @@ select grantor, principal_name from part_privs order by grantor, principal_name 
 select role_name from roles order by role_name limit 5;
 
 select principal_name, grantor from role_map order by principal_name, grantor limit 5;
+
+explain vectorization detail
+select count(*) from sds;
 
 select count(*) from sds;
 
