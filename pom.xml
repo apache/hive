@@ -135,7 +135,6 @@
     <commons-collections.version>3.2.2</commons-collections.version>
     <commons-compress.version>1.9</commons-compress.version>
     <commons-exec.version>1.1</commons-exec.version>
-    <commons-httpclient.version>3.0.1</commons-httpclient.version>
     <commons-io.version>2.4</commons-io.version>
     <commons-lang.version>2.6</commons-lang.version>
     <commons-lang3.version>3.2</commons-lang3.version>
@@ -359,11 +358,6 @@
         <groupId>commons-collections</groupId>
         <artifactId>commons-collections</artifactId>
         <version>${commons-collections.version}</version>
-      </dependency>
-     <dependency>
-        <groupId>commons-httpclient</groupId>
-        <artifactId>commons-httpclient</artifactId>
-        <version>${commons-httpclient.version}</version>
       </dependency>
       <dependency>
         <groupId>commons-io</groupId>

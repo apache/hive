@@ -45,9 +45,6 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpMethodBase;
-import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.curator.framework.CuratorFramework;
@@ -113,7 +110,12 @@ import org.apache.hive.service.cli.thrift.ThriftHttpCLIService;
 import org.apache.hive.service.servlet.HS2LeadershipStatus;
 import org.apache.hive.service.servlet.HS2Peers;
 import org.apache.hive.service.servlet.QueryProfileServlet;
-import org.apache.http.HttpHeaders;
+import org.apache.http.StatusLine;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
@@ -1425,22 +1427,38 @@ public class HiveServer2 extends CompositeService {
 
         // invoke DELETE /leader endpoint for failover
         String webEndpoint = "http://" + targetInstance.getHost() + ":" + webPort + "/leader";
-        HttpClient client = new HttpClient();
-        HttpMethodBase method = new DeleteMethod(webEndpoint);
-        try {
-          int statusCode = client.executeMethod(method);
-          if (statusCode == 200) {
-            System.out.println(method.getResponseBodyAsString());
-          } else {
-            String response = method.getStatusLine().getReasonPhrase();
-            LOG.error("Unable to failover HiveServer2 instance: " + workerIdentity + ". status code: " +
-              statusCode + "error: " + response);
-            System.err.println("Unable to failover HiveServer2 instance: " + workerIdentity + ". status code: " +
-              statusCode + " error: " + response);
+        HttpDelete httpDelete = new HttpDelete(webEndpoint);
+        CloseableHttpResponse httpResponse = null;
+        try (
+          CloseableHttpClient client = HttpClients.createDefault();
+        ) {
+          int statusCode = -1;
+          String response = "Response unavailable";
+          httpResponse = client.execute(httpDelete);
+          if (httpResponse != null) {
+            StatusLine statusLine = httpResponse.getStatusLine();
+            if (statusLine != null) {
+              response = httpResponse.getStatusLine().getReasonPhrase();
+              statusCode = httpResponse.getStatusLine().getStatusCode();
+
+              if (statusCode == 200) {
+                System.out.println(EntityUtils.toString(httpResponse.getEntity()));
+              }
+            }
+          }
+
+          if (statusCode != 200) {
+            // Failover didn't succeed - log error and exit
+            LOG.error("Unable to failover HiveServer2 instance: " + workerIdentity +
+                ". status code: " + statusCode + "error: " + response);
+            System.err.println("Unable to failover HiveServer2 instance: " + workerIdentity +
+                ". status code: " + statusCode + " error: " + response);
             System.exit(-1);
           }
         } finally {
-          method.releaseConnection();
+          if (httpResponse != null) {
+            httpResponse.close();
+          }
         }
       } catch (IOException e) {
         LOG.error("Error listing HiveServer2 HA instances from ZooKeeper", e);
