@@ -362,6 +362,7 @@
                       <include>org.roaringbitmap:*</include>
                       <include>org.apache.derby:*</include>
                       <include>org.asynchttpclient:*</include>
+                      <include>org.antlr:*</include>
                     </includes>
                   </artifactSet>
                   <filters>
