@@ -422,6 +422,7 @@ TOK_ADD_TRIGGER;
 TOK_REPLACE;
 TOK_LIKERP;
 TOK_UNMANAGED;
+TOK_INPUTFORMAT;
 }
 
 
@@ -835,8 +836,8 @@ execStatement
 loadStatement
 @init { pushMsg("load statement", state); }
 @after { popMsg(state); }
-    : KW_LOAD KW_DATA (islocal=KW_LOCAL)? KW_INPATH (path=StringLiteral) (isoverwrite=KW_OVERWRITE)? KW_INTO KW_TABLE (tab=tableOrPartition)
-    -> ^(TOK_LOAD $path $tab $islocal? $isoverwrite?)
+    : KW_LOAD KW_DATA (islocal=KW_LOCAL)? KW_INPATH (path=StringLiteral) (isoverwrite=KW_OVERWRITE)? KW_INTO KW_TABLE (tab=tableOrPartition) inputFileFormat?
+    -> ^(TOK_LOAD $path $tab $islocal? $isoverwrite? inputFileFormat?)
     ;
 
 replicationClause
@@ -1487,6 +1488,13 @@ fileFormat
     : KW_INPUTFORMAT inFmt=StringLiteral KW_OUTPUTFORMAT outFmt=StringLiteral KW_SERDE serdeCls=StringLiteral (KW_INPUTDRIVER inDriver=StringLiteral KW_OUTPUTDRIVER outDriver=StringLiteral)?
       -> ^(TOK_TABLEFILEFORMAT $inFmt $outFmt $serdeCls $inDriver? $outDriver?)
     | genericSpec=identifier -> ^(TOK_FILEFORMAT_GENERIC $genericSpec)
+    ;
+
+inputFileFormat
+@init { pushMsg("Load Data input file format specification", state); }
+@after { popMsg(state); }
+    : KW_INPUTFORMAT inFmt=StringLiteral KW_SERDE serdeCls=StringLiteral
+      -> ^(TOK_INPUTFORMAT $inFmt $serdeCls)
     ;
 
 tabTypeExpr

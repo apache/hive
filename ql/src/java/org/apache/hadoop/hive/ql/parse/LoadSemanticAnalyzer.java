@@ -79,6 +79,8 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
   // AST specific data
   private Tree fromTree, tableTree;
   private boolean isLocal = false, isOverWrite = false;
+  private String inputFormatClassName = null;
+  private String serDeClassName = null;
 
   public LoadSemanticAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
@@ -257,12 +259,30 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
     fromTree = ast.getChild(0);
     tableTree = ast.getChild(1);
 
-    if (ast.getChildCount() == 4) {
+    boolean inputInfo = false;
+    // Check the last node
+    ASTNode child = (ASTNode)ast.getChild(ast.getChildCount() - 1);
+    if (child.getToken().getType() == HiveParser.TOK_INPUTFORMAT) {
+      if (child.getChildCount() != 2) {
+        throw new SemanticException("FileFormat should contain both input format and Serde");
+      }
+      try {
+        inputFormatClassName = stripQuotes(child.getChild(0).getText());
+        serDeClassName = stripQuotes(child.getChild(1).getText());
+        inputInfo = true;
+      } catch (Exception e) {
+        throw new SemanticException("FileFormat inputFormatClassName or serDeClassName is incorrect");
+      }
+    }
+
+    if ((!inputInfo && ast.getChildCount() == 4) ||
+        (inputInfo && ast.getChildCount() == 5)) {
       isLocal = true;
       isOverWrite = true;
     }
 
-    if (ast.getChildCount() == 3) {
+    if ((!inputInfo && ast.getChildCount() == 3) ||
+        (inputInfo && ast.getChildCount() == 4)) {
       if (ast.getChild(2).getText().toLowerCase().equals("local")) {
         isLocal = true;
       } else {
@@ -450,7 +470,14 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
 
     // Set data location and input format, it must be text
     tempTableObj.setDataLocation(new Path(fromURI));
-    tempTableObj.setInputFormatClass(TextInputFormat.class);
+    if (inputFormatClassName != null && serDeClassName != null) {
+      try {
+        tempTableObj.setInputFormatClass(inputFormatClassName);
+        tempTableObj.setSerializationLib(serDeClassName);
+      } catch (HiveException e) {
+        throw new SemanticException("Load Data: Failed to set inputFormat or SerDe");
+      }
+    }
 
     // Step 2 : create the Insert query
     StringBuilder rewrittenQueryStr = new StringBuilder();
