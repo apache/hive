@@ -36,11 +36,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpMethodBase;
-import org.apache.commons.httpclient.methods.DeleteMethod;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.OptionsMethod;
 import org.apache.curator.test.TestingServer;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -54,9 +49,22 @@ import org.apache.hive.service.server.HS2ActivePassiveHARegistryClient;
 import org.apache.hive.service.server.HiveServer2Instance;
 import org.apache.hive.service.server.TestHS2HttpServerPam;
 import org.apache.hive.service.servlet.HS2Peers;
+import org.apache.http.Header;
 import org.apache.http.HttpException;
 import org.apache.http.HttpHeaders;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpOptions;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.StatusLine;
+import org.apache.http.util.EntityUtils;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.eclipse.jetty.http.HttpHeader;
+import org.eclipse.jetty.util.B64Code;
+import org.eclipse.jetty.util.StringUtil;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -406,7 +414,7 @@ public class TestActivePassiveHA {
       assertEquals("true", sendGet(url1, true));
 
       // trigger failover on miniHS2_1 without authorization header
-      assertEquals("Unauthorized", sendDelete(url1, false));
+      assertTrue(sendDelete(url1, false).contains("Unauthorized"));
       assertTrue(sendDelete(url1, true).contains("Failover successful!"));
       assertEquals(true, miniHS2_1.getNotLeaderTestFuture().get());
       assertEquals(false, miniHS2_1.isLeader());
@@ -541,56 +549,79 @@ public class TestActivePassiveHA {
   }
 
   private String sendGet(String url, boolean enableAuth) throws Exception {
-    return sendAuthMethod(new GetMethod(url), enableAuth, false);
+    return sendAuthMethod(new HttpGet(url), enableAuth, false);
   }
 
   private String sendGet(String url, boolean enableAuth, boolean enableCORS) throws Exception {
-    return sendAuthMethod(new GetMethod(url), enableAuth, enableCORS);
+    return sendAuthMethod(new HttpGet(url), enableAuth, enableCORS);
   }
 
   private String sendDelete(String url, boolean enableAuth) throws Exception {
-    return sendAuthMethod(new DeleteMethod(url), enableAuth, false);
+    return sendAuthMethod(new HttpDelete(url), enableAuth, false);
   }
 
   private String sendDelete(String url, boolean enableAuth, boolean enableCORS) throws Exception {
-    return sendAuthMethod(new DeleteMethod(url), enableAuth, enableCORS);
+    return sendAuthMethod(new HttpDelete(url), enableAuth, enableCORS);
   }
 
-  private String sendAuthMethod(HttpMethodBase method, boolean enableAuth, boolean enableCORS) throws Exception {
-    HttpClient client = new HttpClient();
-    try {
-      if (enableAuth) {
-        setupAuthHeaders(method);
-      }
+  private String sendAuthMethod(HttpRequestBase method, boolean enableAuth, boolean enableCORS) throws Exception {
+    CloseableHttpResponse httpResponse = null;
+
+    try (
+        CloseableHttpClient client = HttpClients.createDefault();
+    ) {
+
       // CORS check
       if (enableCORS) {
         String origin = "http://example.com";
-        OptionsMethod optionsMethod = new OptionsMethod(method.getURI().toString());
-        optionsMethod.addRequestHeader("Origin", origin);
-        setupAuthHeaders(optionsMethod);
-        int statusCode = client.executeMethod(optionsMethod);
-        if (statusCode == 200) {
-          assertNotNull(optionsMethod.getResponseHeader("Access-Control-Allow-Origin"));
-          assertEquals(origin, optionsMethod.getResponseHeader("Access-Control-Allow-Origin").getValue());
+
+        HttpOptions optionsMethod = new HttpOptions(method.getURI().toString());
+
+        optionsMethod.addHeader("Origin", origin);
+
+        if (enableAuth) {
+          setupAuthHeaders(optionsMethod);
+        }
+
+        httpResponse = client.execute(optionsMethod);
+
+        if (httpResponse != null) {
+          StatusLine statusLine = httpResponse.getStatusLine();
+          if (statusLine != null) {
+            String response = httpResponse.getStatusLine().getReasonPhrase();
+            int statusCode = httpResponse.getStatusLine().getStatusCode();
+
+            if (statusCode == 200) {
+              Header originHeader = httpResponse.getFirstHeader("Access-Control-Allow-Origin");
+              assertNotNull(originHeader);
+              assertEquals(origin, originHeader.getValue());
+            } else {
+              fail("CORS returned: " + statusCode + " Error: " + response);
+            }
+          } else {
+            fail("Status line is null");
+          }
         } else {
-          fail("CORS returned: " + statusCode + " Error: " + optionsMethod.getStatusLine().getReasonPhrase());
+          fail("No http Response");
         }
       }
-      int statusCode = client.executeMethod(method);
-      if (statusCode == 200) {
-        return method.getResponseBodyAsString();
-      } else {
-        return method.getStatusLine().getReasonPhrase();
+
+      if (enableAuth) {
+        setupAuthHeaders(method);
       }
+
+      httpResponse = client.execute(method);
+
+      return EntityUtils.toString(httpResponse.getEntity());
     } finally {
-      method.releaseConnection();
+      httpResponse.close();
     }
   }
 
-  private void setupAuthHeaders(final HttpMethodBase method) {
-    String userPass = ADMIN_USER + ":" + ADMIN_PASSWORD;
-    method.addRequestHeader(HttpHeaders.AUTHORIZATION,
-      "Basic " + new String(Base64.getEncoder().encode(userPass.getBytes())));
+  private void setupAuthHeaders(final HttpRequestBase method) {
+    String authB64Code =
+        B64Code.encode(ADMIN_USER + ":" + ADMIN_PASSWORD, StringUtil.__ISO_8859_1);
+    method.setHeader(HttpHeader.AUTHORIZATION.asString(), "Basic " + authB64Code);
   }
 
   private Map<String, String> getConfOverlay(final String instanceId) {
