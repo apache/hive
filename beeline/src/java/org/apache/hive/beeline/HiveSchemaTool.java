@@ -110,6 +110,13 @@ public class HiveSchemaTool {
     this.needsQuotedIdentifier = parser.needsQuotedIdentifier();
     this.quoteCharacter = parser.getQuoteCharacter();
     this.metaStoreSchemaInfo = MetaStoreSchemaInfoFactory.get(hiveConf, hiveHome, dbType);
+    // If the dbType is "hive", this is setting up the information schema in Hive. 
+    // We will set the default jdbc url and driver.
+    // It is overriden by command line options if passed (-url and -driver
+    if (dbType.equalsIgnoreCase(HiveSchemaHelper.DB_HIVE)) {
+      url = HiveSchemaHelper.EMBEDDED_HS2_URL;
+      driver = HiveSchemaHelper.HIVE_JDBC_DRIVER;
+    }
   }
 
   public HiveConf getHiveConf() {
