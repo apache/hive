@@ -80,10 +80,10 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
 
       // This should only be true for copy tasks created from functions, otherwise there should never
       // be a CM uri in the from path.
-      if (ReplChangeManager.isCMFileUri(fromPath, srcFs)) {
-        String[] result = ReplChangeManager.getFileWithChksumFromURI(fromPath.toString());
+      if (ReplChangeManager.isCMFileUri(fromPath)) {
+        String[] result = ReplChangeManager.decodeFileUri(fromPath.toString());
         ReplChangeManager.FileInfo sourceInfo = ReplChangeManager
-            .getFileInfo(new Path(result[0]), result[1], result[2], conf);
+            .getFileInfo(new Path(result[0]), result[1], result[2], result[3], conf);
         if (FileUtils.copy(
             sourceInfo.getSrcFs(), sourceInfo.getSourcePath(),
             dstFs, toPath, false, false, conf)) {
@@ -187,14 +187,14 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
       while ((line = br.readLine()) != null) {
         LOG.debug("ReplCopyTask :_filesReadLine: {}", line);
 
-        String[] fileWithChksum = ReplChangeManager.getFileWithChksumFromURI(line);
+        String[] fragments = ReplChangeManager.decodeFileUri(line);
         try {
           ReplChangeManager.FileInfo f = ReplChangeManager
-              .getFileInfo(new Path(fileWithChksum[0]), fileWithChksum[1], fileWithChksum[2], conf);
+              .getFileInfo(new Path(fragments[0]), fragments[1], fragments[2], fragments[3], conf);
           filePaths.add(f);
         } catch (MetaException e) {
           // issue warning for missing file and throw exception
-          LOG.warn("Cannot find {} in source repo or cmroot", fileWithChksum[0]);
+          LOG.warn("Cannot find {} in source repo or cmroot", fragments[0]);
           throw new IOException(e.getMessage());
         }
         // Note - we need srcFs rather than fs, because it is possible that the _files lists files
