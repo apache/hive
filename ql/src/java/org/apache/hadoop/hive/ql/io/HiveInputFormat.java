@@ -42,7 +42,6 @@ import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hive.common.util.Ref;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -81,6 +80,8 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobConfigurable;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.ReflectionUtil;
 
@@ -533,7 +534,18 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         }
       }
 
-      InputSplit[] iss = inputFormat.getSplits(conf, splits);
+      InputSplit[] iss = null;
+      try {
+        iss = inputFormat.getSplits(conf, splits);
+      } catch (Exception ex) {
+        UserGroupInformation ugi = UserGroupInformation.getCurrentUser();
+        String tokenDump = "";
+        for (Token<?> t : ugi.getCredentials().getAllTokens()) {
+          tokenDump += t + ", ";
+        }
+        LOG.error("Failed; user " + ugi.getShortUserName() + " tokens " + tokenDump);
+        throw ex;
+      }
       for (InputSplit is : iss) {
         result.add(new HiveInputSplit(is, inputFormatClass.getName()));
       }
