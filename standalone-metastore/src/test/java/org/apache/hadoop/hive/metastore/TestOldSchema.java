@@ -98,6 +98,7 @@ public class TestOldSchema {
   public void setUp() throws Exception {
     conf = MetastoreConf.newMetastoreConf();
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.STATS_FETCH_BITVECTOR, false);
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.HIVE_IN_TEST, true);
     MetaStoreTestUtils.setConfForStandloneMode(conf);
 
     store = new ObjectStore();
