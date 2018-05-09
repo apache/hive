@@ -20,12 +20,12 @@ package org.apache.hadoop.hive.ql.parse.repl.dump;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.repl.dump.io.FileOperations;
 import org.apache.hadoop.hive.ql.plan.ExportWork.MmContext;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +37,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.hadoop.hive.ql.parse.repl.dump.TableExport.AuthEntities;
 import static org.apache.hadoop.hive.ql.parse.repl.dump.TableExport.Paths;
 
 /**
@@ -53,6 +52,7 @@ class PartitionExport {
   private final String distCpDoAsUser;
   private final HiveConf hiveConf;
   private final int nThreads;
+  private final SessionState callersSession;
   private final MmContext mmCtx;
 
   private static final Logger LOG = LoggerFactory.getLogger(PartitionExport.class);
@@ -67,11 +67,14 @@ class PartitionExport {
     this.mmCtx = mmCtx;
     this.nThreads = hiveConf.getIntVar(HiveConf.ConfVars.REPL_PARTITIONS_DUMP_PARALLELISM);
     this.queue = new ArrayBlockingQueue<>(2 * nThreads);
+    this.callersSession = SessionState.get();
   }
 
   void write(final ReplicationSpec forReplicationSpec) throws InterruptedException {
-    ExecutorService producer = Executors.newFixedThreadPool(1);
+    ExecutorService producer = Executors.newFixedThreadPool(1,
+        new ThreadFactoryBuilder().setNameFormat("partition-submitter-thread-%d").build());
     producer.submit(() -> {
+      SessionState.setCurrentSessionState(callersSession);
       for (Partition partition : partitionIterable) {
         try {
           queue.put(partition);
