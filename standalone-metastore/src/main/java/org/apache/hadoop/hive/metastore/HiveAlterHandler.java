@@ -242,7 +242,7 @@ public class HiveAlterHandler implements AlterHandler {
                       " already exists : " + destPath);
             }
             // check that src exists and also checks permissions necessary, rename src to dest
-            if (srcFs.exists(srcPath) && wh.renameDir(srcPath, destPath, true)) {
+            if (srcFs.exists(srcPath) && wh.renameDir(srcPath, destPath, ReplChangeManager.isReplPolicySet(olddb))) {
               dataWasMoved = true;
             }
           } catch (IOException | MetaException e) {
@@ -633,7 +633,7 @@ public class HiveAlterHandler implements AlterHandler {
               }
 
               //rename the data directory
-              wh.renameDir(srcPath, destPath, true);
+              wh.renameDir(srcPath, destPath, ReplChangeManager.isReplPolicySet(msdb.getDatabase(catName, dbname)));
               LOG.info("Partition directory rename from " + srcPath + " to " + destPath + " done.");
               dataWasMoved = true;
             }
@@ -641,9 +641,9 @@ public class HiveAlterHandler implements AlterHandler {
             LOG.error("Cannot rename partition directory from " + srcPath + " to " + destPath, e);
             throw new InvalidOperationException("Unable to access src or dest location for partition "
                 + tbl.getDbName() + "." + tbl.getTableName() + " " + new_part.getValues());
-          } catch (MetaException me) {
+          } catch (MetaException | NoSuchObjectException me) {
             LOG.error("Cannot rename partition directory from " + srcPath + " to " + destPath, me);
-            throw me;
+            throw new MetaException(me.getMessage());
           }
 
           new_part.getSd().setLocation(newPartLoc);

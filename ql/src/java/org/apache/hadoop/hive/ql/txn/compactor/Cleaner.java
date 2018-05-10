@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
@@ -320,7 +322,7 @@ public class Cleaner extends CompactorThread {
     return " id=" + ci.id;
   }
   private void removeFiles(String location, ValidWriteIdList writeIdList, CompactionInfo ci)
-      throws IOException {
+          throws IOException, HiveException {
     Path locPath = new Path(location);
     AcidUtils.Directory dir = AcidUtils.getAcidState(locPath, conf, writeIdList);
     List<FileStatus> obsoleteDirs = dir.getObsolete();
@@ -349,7 +351,9 @@ public class Cleaner extends CompactorThread {
 
     for (Path dead : filesToDelete) {
       LOG.debug("Going to delete path " + dead.toString());
-      replChangeManager.recycle(dead, ReplChangeManager.RecycleType.MOVE, true);
+      if (ReplChangeManager.isReplPolicySet(Hive.get().getDatabase(ci.dbname))) {
+        replChangeManager.recycle(dead, ReplChangeManager.RecycleType.MOVE, true);
+      }
       fs.delete(dead, true);
     }
   }

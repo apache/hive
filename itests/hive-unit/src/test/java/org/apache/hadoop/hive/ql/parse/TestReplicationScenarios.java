@@ -89,6 +89,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 
 public class TestReplicationScenarios {
 
@@ -3156,7 +3157,55 @@ public class TestReplicationScenarios {
     assertTrue(fileCount == fileCountAfter);
   }
 
+  @Test
+  public void testRecycleFileNonReplDatabase() throws IOException {
+    String dbName = createDBNonRepl(testName.getMethodName(), driver);
+
+    String cmDir = hconf.getVar(HiveConf.ConfVars.REPLCMDIR);
+    Path path = new Path(cmDir);
+    FileSystem fs = path.getFileSystem(hconf);
+    ContentSummary cs = fs.getContentSummary(path);
+    long fileCount = cs.getFileCount();
+
+    run("CREATE TABLE " + dbName + ".normal(a int)", driver);
+    run("INSERT INTO " + dbName + ".normal values (1)", driver);
+
+    cs = fs.getContentSummary(path);
+    long fileCountAfter = cs.getFileCount();
+    assertTrue(fileCount == fileCountAfter);
+
+    run("INSERT INTO " + dbName + ".normal values (3)", driver);
+    run("TRUNCATE TABLE " + dbName + ".normal", driver);
+
+    cs = fs.getContentSummary(path);
+    fileCountAfter = cs.getFileCount();
+    assertTrue(fileCount == fileCountAfter);
+
+    run("INSERT INTO " + dbName + ".normal values (4)", driver);
+    run("ALTER TABLE " + dbName + ".normal RENAME to " + dbName + ".normal1", driver);
+    verifyRun("SELECT count(*) from " + dbName + ".normal1", new String[]{"1"}, driver);
+
+    cs = fs.getContentSummary(path);
+    fileCountAfter = cs.getFileCount();
+    assertTrue(fileCount == fileCountAfter);
+
+    run("INSERT INTO " + dbName + ".normal1 values (5)", driver);
+    run("DROP TABLE " + dbName + ".normal1", driver);
+
+    cs = fs.getContentSummary(path);
+    fileCountAfter = cs.getFileCount();
+    assertTrue(fileCount == fileCountAfter);
+  }
+
   private static String createDB(String name, IDriver myDriver) {
+    LOG.info("Testing " + name);
+    String dbName = name + "_" + tid;
+    run("CREATE DATABASE " + dbName + " WITH DBPROPERTIES ( '" +
+            SOURCE_OF_REPLICATION + "' = '1,2,3')", myDriver);
+    return dbName;
+  }
+
+  private static String createDBNonRepl(String name, IDriver myDriver) {
     LOG.info("Testing " + name);
     String dbName = name + "_" + tid;
     run("CREATE DATABASE " + dbName, myDriver);
