@@ -159,6 +159,10 @@ public class CompressionUtils {
     TarArchiveEntry entry = null;
     while ((entry = (TarArchiveEntry) debInputStream.getNextEntry()) != null) {
       final File outputFile = new File(outputDir, entry.getName());
+      if (!outputFile.toPath().toAbsolutePath().normalize()
+          .startsWith(outputDir.toPath().toAbsolutePath().normalize())) {
+        throw new IOException("Untarred file is not under the output directory");
+      }
       if (entry.isDirectory()) {
         if (flatten) {
           // no sub-directories
