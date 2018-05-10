@@ -373,7 +373,7 @@ public class HiveStreamingConnection implements StreamingConnection {
       exists = true;
     } catch (HiveException | TException e) {
       throw new StreamingException("Unable to creation partition for values: " + partitionValues + " connection: " +
-        toConnectionInfoString());
+        toConnectionInfoString(), e);
     }
     return new PartitionInfo(partName, partLocation, exists);
   }
@@ -460,7 +460,7 @@ public class HiveStreamingConnection implements StreamingConnection {
     }
 
     if (currentTransactionBatch.isClosed()) {
-      throw new IllegalStateException("Cannot begin next transaction on a closed streaming connection");
+      throw new StreamingException("Cannot begin next transaction on a closed streaming connection");
     }
 
     if (currentTransactionBatch.remainingTransactions() == 0) {
