@@ -529,7 +529,7 @@ STAGE PLANS:
                   className: VectorSelectOperator
                   native: true
                   projectedOutputColumnNums: [4]
-                  selectExpressions: CastDecimalToDouble(col 0:decimal(4,2)) -> 4:float
+                  selectExpressions: CastDecimalToFloat(col 0:decimal(4,2)) -> 4:float
               Statistics: Num rows: 2 Data size: 336 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: float)
