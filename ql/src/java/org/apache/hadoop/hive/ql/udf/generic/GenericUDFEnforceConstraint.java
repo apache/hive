@@ -33,9 +33,9 @@ import org.apache.hadoop.io.BooleanWritable;
  *
  */
 @Description(name = "enforce_constraint",
-    value = "_FUNC_(x) - Internal UDF to enforce NOT NULL constraint",
+    value = "_FUNC_(x) - Internal UDF to enforce CHECK and NOT NULL constraint",
     extended = "For internal use only")
-public class GenericUDFEnforceNotNullConstraint extends GenericUDF {
+public class GenericUDFEnforceConstraint extends GenericUDF {
   private final BooleanWritable resultBool = new BooleanWritable();
   private transient BooleanObjectInspector boi;
 
@@ -59,7 +59,7 @@ public class GenericUDFEnforceNotNullConstraint extends GenericUDF {
 
     if(!result) {
       throw new DataConstraintViolationError(
-          "NOT NULL constraint violated!");
+          "Either CHECK or NOT NULL constraint violated!");
     }
     resultBool.set(true);
     return resultBool;
