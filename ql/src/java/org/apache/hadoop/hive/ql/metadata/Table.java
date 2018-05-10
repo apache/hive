@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -744,6 +745,12 @@ public class Table implements Serializable {
   }
 
   /**
+   * @return The owner type of the table.
+   * @see org.apache.hadoop.hive.metastore.api.Table#getOwnerType()
+   */
+  public PrincipalType getOwnerType() { return tTable.getOwnerType(); }
+
+  /**
    * @return The table parameters.
    * @see org.apache.hadoop.hive.metastore.api.Table#getParameters()
    */
@@ -765,6 +772,14 @@ public class Table implements Serializable {
    */
   public void setOwner(String owner) {
     tTable.setOwner(owner);
+  }
+
+  /**
+   * @param ownerType
+   * @see org.apache.hadoop.hive.metastore.api.Table#setOwnerType(org.apache.hadoop.hive.metastore.api.PrincipalType)
+   */
+  public void setOwnerType(PrincipalType ownerType) {
+    tTable.setOwnerType(ownerType);
   }
 
   /**
