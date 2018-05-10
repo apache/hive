@@ -439,6 +439,19 @@ public class TestJdbcWithMiniLlap {
     assertArrayEquals("X'01FF'".getBytes("UTF-8"), (byte[]) rowValues[22]);
   }
 
+
+  @Test(timeout = 60000)
+  public void testComplexQuery() throws Exception {
+    createTestTable("testtab1");
+
+    RowCollector rowCollector = new RowCollector();
+    String query = "select value, count(*) from testtab1 where under_col=0 group by value";
+    int rowCount = processQuery(query, 1, rowCollector);
+    assertEquals(1, rowCount);
+
+    assertArrayEquals(new String[] {"val_0", "3"}, rowCollector.rows.get(0));
+  }
+
   private interface RowProcessor {
     void process(Row row);
   }
