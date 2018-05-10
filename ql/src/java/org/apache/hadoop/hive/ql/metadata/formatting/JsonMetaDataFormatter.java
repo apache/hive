@@ -189,6 +189,7 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
     MapBuilder builder = MapBuilder.create();
 
     builder.put("tableName", tbl.getTableName());
+    builder.put("ownerType", (tbl.getOwnerType() != null) ? tbl.getOwnerType().name() : "null");
     builder.put("owner", tbl.getOwner());
     builder.put("location", tblLoc);
     builder.put("inputFormat", inputFormattCls);

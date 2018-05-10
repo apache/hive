@@ -58,7 +58,8 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
     DROPPARTITION("drop partition"), RENAMEPARTITION("rename partition"), ADDSKEWEDBY("add skew column"),
     ALTERSKEWEDLOCATION("alter skew location"), ALTERBUCKETNUM("alter bucket number"),
     ALTERPARTITION("alter partition"), COMPACT("compact"),
-    TRUNCATE("truncate"), MERGEFILES("merge files"), DROPCONSTRAINT("drop constraint"), ADDCONSTRAINT("add constraint");
+    TRUNCATE("truncate"), MERGEFILES("merge files"), DROPCONSTRAINT("drop constraint"), ADDCONSTRAINT("add constraint"),
+    OWNER("set owner");
     ;
 
     private final String name;
@@ -121,6 +122,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
   String dropConstraintName;
   List<SQLPrimaryKey> primaryKeyCols;
   List<SQLForeignKey> foreignKeyCols;
+  PrincipalDesc ownerPrincipal;
 
   public AlterTableDesc() {
   }
@@ -279,6 +281,24 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
     this.primaryKeyCols = primaryKeyCols;
     this.foreignKeyCols = foreignKeyCols;
     op = AlterTableTypes.ADDCONSTRAINT;
+  }
+
+  public AlterTableDesc(String tableName, PrincipalDesc ownerPrincipal) {
+    op  = AlterTableTypes.OWNER;
+    this.oldName = tableName;
+    this.ownerPrincipal = ownerPrincipal;
+  }
+
+  /**
+   * @param ownerPrincipal the owner principal of the table
+   */
+  public void setOwnerPrincipal(PrincipalDesc ownerPrincipal) {
+    this.ownerPrincipal = ownerPrincipal;
+  }
+
+  @Explain(displayName="owner")
+  public PrincipalDesc getOwnerPrincipal() {
+    return this.ownerPrincipal;
   }
 
   @Explain(displayName = "new columns", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })

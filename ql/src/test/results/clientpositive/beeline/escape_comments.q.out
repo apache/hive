@@ -220,6 +220,7 @@ Shutting down query describe formatted escape_comments_tbl1
 '','NULL','NULL'
 '# Detailed Table Information','NULL','NULL'
 'Database:           ','escape_comments_db  ','NULL'
+'OwnerType:          ','USER                ','NULL'
 'Owner:              ','user                ','NULL'
 'CreateTime:         ','!!TIMESTAMP!!','NULL'
 'LastAccessTime:     ','UNKNOWN             ','NULL'
@@ -246,7 +247,7 @@ Shutting down query describe formatted escape_comments_tbl1
 'Sort Columns:       ','[]                  ','NULL'
 'Storage Desc Params:','NULL','NULL'
 '','serialization.format','1                   '
-37 rows selected 
+38 rows selected 
 >>>  describe pretty escape_comments_tbl1;
 Acquired the compile lock.
 Compiling commandqueryId=(!!{queryId}!!): describe pretty escape_comments_tbl1
@@ -348,6 +349,7 @@ Shutting down query describe formatted escape_comments_view1
 '','NULL','NULL'
 '# Detailed Table Information','NULL','NULL'
 'Database:           ','escape_comments_db  ','NULL'
+'OwnerType:          ','USER                ','NULL'
 'Owner:              ','user                ','NULL'
 'CreateTime:         ','!!TIMESTAMP!!','NULL'
 'LastAccessTime:     ','UNKNOWN             ','NULL'
@@ -370,7 +372,7 @@ Shutting down query describe formatted escape_comments_view1
 'View Original Text: ','select col1 from escape_comments_tbl1','NULL'
 'View Expanded Text: ','SELECT `col1` AS `col1` FROM (select `escape_comments_tbl1`.`col1` from `escape_comments_db`.`escape_comments_tbl1`) `escape_comments_db.escape_comments_view1`','NULL'
 'View Rewrite Enabled:','No                  ','NULL'
-28 rows selected 
+29 rows selected 
 >>>  show formatted index on escape_comments_tbl1;
 Acquired the compile lock.
 Compiling commandqueryId=(!!{queryId}!!): show formatted index on escape_comments_tbl1
