@@ -26,13 +26,13 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.io.BooleanWritable;
 
 /**
- * Test class for {@link GenericUDFEnforceNotNullConstraint}.
+ * Test class for {@link GenericUDFEnforceConstraint}.
  */
-public class TestGenericUDFEnforceNotNullConstraint extends TestCase {
+public class TestGenericUDFEnforceConstraint extends TestCase {
 
   public void testNull() throws HiveException {
     try {
-      GenericUDFEnforceNotNullConstraint udf = new GenericUDFEnforceNotNullConstraint();
+      GenericUDFEnforceConstraint udf = new GenericUDFEnforceConstraint();
       ObjectInspector valueOI = PrimitiveObjectInspectorFactory.writableBooleanObjectInspector;
       ObjectInspector[] arguments = {valueOI };
       udf.initialize(arguments);
@@ -49,7 +49,7 @@ public class TestGenericUDFEnforceNotNullConstraint extends TestCase {
 
   public void testInvalidArgumentsLength() throws HiveException {
     try {
-      GenericUDFEnforceNotNullConstraint udf = new GenericUDFEnforceNotNullConstraint();
+      GenericUDFEnforceConstraint udf = new GenericUDFEnforceConstraint();
       ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.writableBooleanObjectInspector;
       ObjectInspector valueOI2 = PrimitiveObjectInspectorFactory.writableBooleanObjectInspector;
       ObjectInspector[] arguments = {valueOI1, valueOI2 };
@@ -62,7 +62,7 @@ public class TestGenericUDFEnforceNotNullConstraint extends TestCase {
   }
 
   public void testCorrect() throws HiveException {
-    GenericUDFEnforceNotNullConstraint udf = new GenericUDFEnforceNotNullConstraint();
+    GenericUDFEnforceConstraint udf = new GenericUDFEnforceConstraint();
     ObjectInspector valueOI = PrimitiveObjectInspectorFactory.writableBooleanObjectInspector;
     ObjectInspector[] arguments = {valueOI };
     udf.initialize(arguments);

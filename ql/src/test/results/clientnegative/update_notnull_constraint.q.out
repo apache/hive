@@ -21,4 +21,4 @@ POSTHOOK: Output: default@acid_uami
 POSTHOOK: Lineage: acid_uami.de SCRIPT []
 POSTHOOK: Lineage: acid_uami.i SCRIPT []
 POSTHOOK: Lineage: acid_uami.vc SCRIPT []
-FAILED: DataConstraintViolationError org.apache.hadoop.hive.ql.exec.errors.DataConstraintViolationError: NOT NULL constraint violated!
+FAILED: DataConstraintViolationError org.apache.hadoop.hive.ql.exec.errors.DataConstraintViolationError: Either CHECK or NOT NULL constraint violated!
