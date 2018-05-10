@@ -66,7 +66,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable, DDLDesc.DDL
     ALTERSKEWEDLOCATION("alter skew location"), ALTERBUCKETNUM("alter bucket number"),
     ALTERPARTITION("alter partition"), COMPACT("compact"),
     TRUNCATE("truncate"), MERGEFILES("merge files"), DROPCONSTRAINT("drop constraint"), ADDCONSTRAINT("add constraint"),
-    UPDATECOLUMNS("update columns");
+    UPDATECOLUMNS("update columns"), OWNER("set owner");
     ;
 
     private final String name;
@@ -138,6 +138,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable, DDLDesc.DDL
   List<SQLCheckConstraint> checkConstraintsCols;
   ReplicationSpec replicationSpec;
   private Long writeId = null;
+  PrincipalDesc ownerPrincipal;
 
   public AlterTableDesc() {
   }
@@ -365,6 +366,24 @@ public class AlterTableDesc extends DDLDesc implements Serializable, DDLDesc.DDL
     this.checkConstraintsCols = checkConstraints;
     this.replicationSpec = replicationSpec;
     op = AlterTableTypes.ADDCONSTRAINT;
+  }
+
+  public AlterTableDesc(String tableName, PrincipalDesc ownerPrincipal) {
+    op  = AlterTableTypes.OWNER;
+    this.oldName = tableName;
+    this.ownerPrincipal = ownerPrincipal;
+  }
+
+  /**
+   * @param ownerPrincipal the owner principal of the table
+   */
+  public void setOwnerPrincipal(PrincipalDesc ownerPrincipal) {
+    this.ownerPrincipal = ownerPrincipal;
+  }
+
+  @Explain(displayName="owner")
+  public PrincipalDesc getOwnerPrincipal() {
+    return this.ownerPrincipal;
   }
 
   @Explain(displayName = "new columns", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
