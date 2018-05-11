@@ -435,12 +435,12 @@ class EncodedReaderImpl implements EncodedReader {
               try {
                 if (RecordReaderUtils.isDictionary(sctx.kind, ctx.encoding) || index == null) {
                   // This stream is for entire stripe and needed for every RG; uncompress once and reuse.
-                  if (isTracingEnabled) {
-                    LOG.trace("Getting stripe-level stream [" + sctx.kind + ", " + ctx.encoding + "] for"
-                        + " column " + ctx.colIx + " RG " + rgIx + " at " + sctx.offset + ", " + sctx.length);
-                  }
-                  trace.logStartStripeStream(sctx.kind);
                   if (sctx.stripeLevelStream == null) {
+                    if (isTracingEnabled) {
+                      LOG.trace("Getting stripe-level stream [" + sctx.kind + ", " + ctx.encoding + "] for"
+                          + " column " + ctx.colIx + " RG " + rgIx + " at " + sctx.offset + ", " + sctx.length);
+                    }
+                    trace.logStartStripeStream(sctx.kind);
                     sctx.stripeLevelStream = POOLS.csdPool.take();
                     // We will be using this for each RG while also sending RGs to processing.
                     // To avoid buffers being unlocked, run refcount one ahead; so each RG 
