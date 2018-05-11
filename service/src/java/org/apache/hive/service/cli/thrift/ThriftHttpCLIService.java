@@ -23,14 +23,17 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.TimeUnit;
 
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
 import javax.ws.rs.HttpMethod;
 
+import org.apache.hadoop.hive.common.metrics.common.Metrics;
+import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
+import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hadoop.util.Shell;
 import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.cli.CLIService;
 import org.apache.hive.service.rpc.thrift.TCLIService;
@@ -152,6 +155,33 @@ public class ThriftHttpCLIService extends ThriftCLIService {
       } else {
         LOG.warn("XSRF filter disabled");
       }
+
+      context.addEventListener(new ServletContextListener() {
+        @Override
+        public void contextInitialized(ServletContextEvent servletContextEvent) {
+          Metrics metrics = MetricsFactory.getInstance();
+          if (metrics != null) {
+            try {
+              metrics.incrementCounter(MetricsConstant.OPEN_CONNECTIONS);
+              metrics.incrementCounter(MetricsConstant.CUMULATIVE_CONNECTION_COUNT);
+            } catch (Exception e) {
+              LOG.warn("Error reporting HS2 open connection operation to Metrics system", e);
+            }
+          }
+        }
+
+        @Override
+        public void contextDestroyed(ServletContextEvent servletContextEvent) {
+          Metrics metrics = MetricsFactory.getInstance();
+          if (metrics != null) {
+            try {
+              metrics.decrementCounter(MetricsConstant.OPEN_CONNECTIONS);
+            } catch (Exception e) {
+              LOG.warn("Error reporting HS2 close connection operation to Metrics system", e);
+            }
+          }
+        }
+      });
 
       final String httpPath = getHttpPath(hiveConf
           .getVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_PATH));
