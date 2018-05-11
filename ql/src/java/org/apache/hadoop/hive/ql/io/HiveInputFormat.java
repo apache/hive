@@ -285,7 +285,11 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         }
         return inputFormat;
       }
-      serde = findSerDeForLlapSerDeIf(conf, part);
+      try {
+        serde = part.getDeserializer(conf);
+      } catch (Exception e) {
+        throw new HiveException("Error creating SerDe for LLAP IO", e);
+      }
     }
     if (isSupported && isVectorized) {
       InputFormat<?, ?> wrappedIf = llapIo.getInputFormat(inputFormat, serde);
@@ -318,27 +322,6 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       }
     }
     return false;
-  }
-
-  private static Deserializer findSerDeForLlapSerDeIf(
-      Configuration conf, PartitionDesc part) throws HiveException {
-    VectorPartitionDesc vpart =  part.getVectorPartitionDesc();
-    if (vpart != null) {
-      VectorMapOperatorReadType old = vpart.getVectorMapOperatorReadType();
-      if (old != VectorMapOperatorReadType.VECTORIZED_INPUT_FILE_FORMAT) {
-        if (LOG.isInfoEnabled()) {
-          LOG.info("Resetting VectorMapOperatorReadType from " + old + " for partition "
-            + part.getTableName() + " " + part.getPartSpec());
-        }
-        vpart.setVectorMapOperatorReadType(
-            VectorMapOperatorReadType.VECTORIZED_INPUT_FILE_FORMAT);
-      }
-    }
-    try {
-      return part.getDeserializer(conf);
-    } catch (Exception e) {
-      throw new HiveException("Error creating SerDe for LLAP IO", e);
-    }
   }
 
   public static void injectLlapCaches(InputFormat<WritableComparable, Writable> inputFormat,
