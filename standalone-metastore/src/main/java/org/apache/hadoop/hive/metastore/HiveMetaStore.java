@@ -242,6 +242,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     private final Configuration conf; // stores datastore (jpox) properties,
                                      // right now they come from jpox.properties
 
+    // Flag to control that always threads are initialized only once
+    // instead of multiple times
+    private final static AtomicBoolean alwaysThreadsInitialized =
+        new AtomicBoolean(false);
+
     private static String currentUrl;
     private FileMetadataManager fileMetadataManager;
     private PartitionExpressionProxy expressionProxy;
@@ -559,19 +564,21 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         partitionValidationPattern = null;
       }
 
-      ThreadPool.initialize(conf);
-      Collection<String> taskNames =
-          MetastoreConf.getStringCollection(conf, ConfVars.TASK_THREADS_ALWAYS);
-      for (String taskName : taskNames) {
-        MetastoreTaskThread task =
-            JavaUtils.newInstance(JavaUtils.getClass(taskName, MetastoreTaskThread.class));
-        task.setConf(conf);
-        long freq = task.runFrequency(TimeUnit.MILLISECONDS);
-        // For backwards compatibility, since some threads used to be hard coded but only run if
-        // frequency was > 0
-        if (freq > 0) {
-          ThreadPool.getPool().scheduleAtFixedRate(task, freq, freq, TimeUnit.MILLISECONDS);
-
+      // We only initialize once the tasks that need to be run periodically
+      if (alwaysThreadsInitialized.compareAndSet(false, true)) {
+        ThreadPool.initialize(conf);
+        Collection<String> taskNames =
+            MetastoreConf.getStringCollection(conf, ConfVars.TASK_THREADS_ALWAYS);
+        for (String taskName : taskNames) {
+          MetastoreTaskThread task =
+              JavaUtils.newInstance(JavaUtils.getClass(taskName, MetastoreTaskThread.class));
+          task.setConf(conf);
+          long freq = task.runFrequency(TimeUnit.MILLISECONDS);
+          // For backwards compatibility, since some threads used to be hard coded but only run if
+          // frequency was > 0
+          if (freq > 0) {
+            ThreadPool.getPool().scheduleAtFixedRate(task, freq, freq, TimeUnit.MILLISECONDS);
+          }
         }
       }
       expressionProxy = PartFilterExprUtil.createExpressionProxy(conf);
