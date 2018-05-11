@@ -349,6 +349,7 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
     StatsPublisher statsPublisher = Utilities.getStatsPublisher(jc);
     StatsCollectionContext sc = new StatsCollectionContext(jc);
     sc.setStatsTmpDir(conf.getTmpStatsDir());
+    sc.setContextSuffix(getOperatorId());
     if (!statsPublisher.connect(sc)) {
       // just return, stats gathering should not block the main query.
       if (LOG.isInfoEnabled()) {
