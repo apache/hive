@@ -34,10 +34,18 @@ this\.inputFormat\ \=\ inputFormat;=this.inputFormat\ \=\ org.apache.hive.common
 this\.outputFormat\ \=\ outputFormat;=this.outputFormat\ \=\ org.apache.hive.common.util.HiveStringUtils.intern(outputFormat);
 this\.dbName\ \=\ dbName;=this.dbName\ \=\ org.apache.hive.common.util.HiveStringUtils.intern(dbName);
 this\.tableName\ \=\ tableName;=this.tableName\ \=\ org.apache.hive.common.util.HiveStringUtils.intern(tableName);
+this\.serializerClass\ \=\ serializerClass;=this\.serializerClass\ \=\ org.apache.hive.common.util.HiveStringUtils.intern(serializerClass);
+this\.deserializerClass\ \=\ deserializerClass;=this\.deserializerClass\ \=\ org.apache.hive.common.util.HiveStringUtils.intern(deserializerClass);
+this\.colName\ \=\ colName;=this\.colName\ \=\ org.apache.hive.common.util.HiveStringUtils.intern(colName);
+this\.colType\ \=\ colType;=this\.colType\ \=\ org.apache.hive.common.util.HiveStringUtils.intern(colType);
 
 # Fix constructors and setters of List<String> instance fields
 
 this\.bucketCols\ \=\ bucketCols;=this.bucketCols\ \=\ org.apache.hive.common.util.HiveStringUtils.intern(bucketCols);
+this\.serializerClass\ \=\ other\.serializerClass;=this\.serializerClass\ \=\ org.apache.hive.common.util.HiveStringUtils.intern(other.serializerClass);
+this\.deserializerClass\ \=\ other\.deserializerClass;=this\.deserializerClass\ \=\ org.apache.hive.common.util.HiveStringUtils.intern(other.deserializerClass);
+this\.colName\ \=\ other\.colName;=this\.colName\ \=\ org.apache.hive.common.util.HiveStringUtils.intern(other.colName);
+this\.colType\ \=\ other\.colType;=this\.colType\ \=\ org.apache.hive.common.util.HiveStringUtils.intern(other.colType);
 
 # Fix constructors and setters of Map<String, String> instance fields
 
@@ -58,3 +66,30 @@ this\.tableName\ \=\ other\.tableName;=this.tableName\ \=\ org.apache.hive.commo
 __this__parameters_copy_key\ \=\ other_element_key;=__this__parameters_copy_key\ \=\ org.apache.hive.common.util.HiveStringUtils.intern(other_element_key);
 __this__parameters_copy_value\ \=\ other_element_value;=__this__parameters_copy_value\ \=\ org.apache.hive.common.util.HiveStringUtils.intern(other_element_value);
 __this_values\.add(other_element);=__this_values.add(org.apache.hive.common.util.HiveStringUtils.intern(other_element));
+
+
+# Fix the StandardScheme read method which deserializes the fields into the thrift objects
+
+# PartitionStandardScheme - parameters are already interned above
+struct\.dbName\ \=\ iprot\.readString\(\);=struct\.dbName\ \=\ org.apache.hive.common.util.HiveStringUtils.intern(iprot\.readString\(\));
+struct\.tableName\ \=\ iprot\.readString\(\);=struct\.tableName\ \=\ org.apache.hive.common.util.HiveStringUtils.intern(iprot\.readString\(\));
+
+# StorageDescriptorStandardScheme - parameters are already interned above
+struct\.location\ \=\ iprot\.readString\(\);=struct\.location\ \=\ org.apache.hive.common.util.HiveStringUtils.intern(iprot\.readString\(\));
+struct\.inputFormat\ \=\ iprot\.readString\(\);=struct\.inputFormat\ \=\ org.apache.hive.common.util.HiveStringUtils.intern(iprot\.readString\(\));
+struct\.outputFormat\ \=\ iprot\.readString\(\);=struct\.outputFormat\ \=\ org.apache.hive.common.util.HiveStringUtils.intern(iprot\.readString\(\));
+struct\.setBucketColsIsSet\(true\);=struct\.bucketCols\ \=\ org.apache.hive.common.util.HiveStringUtils.intern(struct.bucketCols);\ struct.setBucketColsIsSet(true);
+
+# SerDeInfoStandardScheme - parameters are already interned above
+struct\.name\ \=\ iprot\.readString\(\);=struct\.name\ \=\ org.apache.hive.common.util.HiveStringUtils.intern(iprot\.readString\(\));
+struct\.serializationLib\ \=\ iprot\.readString\(\);=struct\.serializationLib\ \=\ org.apache.hive.common.util.HiveStringUtils.intern(iprot\.readString\(\));
+struct\.serializerClass\ \=\ iprot\.readString\(\);=struct\.serializerClass\ \=\ org.apache.hive.common.util.HiveStringUtils.intern(iprot\.readString\(\));
+struct\.deserializerClass\ \=\ iprot\.readString\(\);=struct\.deserializerClass\ \=\ org.apache.hive.common.util.HiveStringUtils.intern(iprot\.readString\(\));
+
+# FieldSchemaStandardScheme - name field gets automatically handled above
+struct\.type\ \=\ iprot\.readString\(\);=struct\.type\ \=\ org.apache.hive.common.util.HiveStringUtils.intern(iprot\.readString\(\));
+struct\.comment\ \=\ iprot\.readString\(\);=struct\.comment\ \=\ org.apache.hive.common.util.HiveStringUtils.intern(iprot\.readString\(\));
+
+# ColumnStatisticsObjStandardScheme
+struct\.colName\ \=\ iprot\.readString\(\);=struct\.colName\ \=\ org.apache.hive.common.util.HiveStringUtils.intern(iprot\.readString\(\));
+struct\.colType\ \=\ iprot\.readString\(\);=struct\.colType\ \=\ org.apache.hive.common.util.HiveStringUtils.intern(iprot\.readString\(\));

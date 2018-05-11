@@ -505,7 +505,7 @@ public class SerDeInfo implements org.apache.thrift.TBase<SerDeInfo, SerDeInfo._
         switch (schemeField.id) {
           case 1: // NAME
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.name = iprot.readString();
+              struct.name = org.apache.hive.common.util.HiveStringUtils.intern(iprot.readString());
               struct.setNameIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
@@ -513,7 +513,7 @@ public class SerDeInfo implements org.apache.thrift.TBase<SerDeInfo, SerDeInfo._
             break;
           case 2: // SERIALIZATION_LIB
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.serializationLib = iprot.readString();
+              struct.serializationLib = org.apache.hive.common.util.HiveStringUtils.intern(iprot.readString());
               struct.setSerializationLibIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
@@ -626,11 +626,11 @@ public class SerDeInfo implements org.apache.thrift.TBase<SerDeInfo, SerDeInfo._
       TTupleProtocol iprot = (TTupleProtocol) prot;
       BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
-        struct.name = iprot.readString();
+        struct.name = org.apache.hive.common.util.HiveStringUtils.intern(iprot.readString());
         struct.setNameIsSet(true);
       }
       if (incoming.get(1)) {
-        struct.serializationLib = iprot.readString();
+        struct.serializationLib = org.apache.hive.common.util.HiveStringUtils.intern(iprot.readString());
         struct.setSerializationLibIsSet(true);
       }
       if (incoming.get(2)) {

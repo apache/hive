@@ -159,8 +159,8 @@ public class ColumnStatisticsDesc implements org.apache.thrift.TBase<ColumnStati
     this();
     this.isTblLevel = isTblLevel;
     setIsTblLevelIsSet(true);
-    this.dbName = dbName;
-    this.tableName = tableName;
+    this.dbName = org.apache.hive.common.util.HiveStringUtils.intern(dbName);
+    this.tableName = org.apache.hive.common.util.HiveStringUtils.intern(tableName);
   }
 
   /**
@@ -170,10 +170,10 @@ public class ColumnStatisticsDesc implements org.apache.thrift.TBase<ColumnStati
     __isset_bitfield = other.__isset_bitfield;
     this.isTblLevel = other.isTblLevel;
     if (other.isSetDbName()) {
-      this.dbName = other.dbName;
+      this.dbName = org.apache.hive.common.util.HiveStringUtils.intern(other.dbName);
     }
     if (other.isSetTableName()) {
-      this.tableName = other.tableName;
+      this.tableName = org.apache.hive.common.util.HiveStringUtils.intern(other.tableName);
     }
     if (other.isSetPartName()) {
       this.partName = other.partName;
@@ -223,7 +223,7 @@ public class ColumnStatisticsDesc implements org.apache.thrift.TBase<ColumnStati
   }
 
   public void setDbName(String dbName) {
-    this.dbName = dbName;
+    this.dbName = org.apache.hive.common.util.HiveStringUtils.intern(dbName);
   }
 
   public void unsetDbName() {
@@ -246,7 +246,7 @@ public class ColumnStatisticsDesc implements org.apache.thrift.TBase<ColumnStati
   }
 
   public void setTableName(String tableName) {
-    this.tableName = tableName;
+    this.tableName = org.apache.hive.common.util.HiveStringUtils.intern(tableName);
   }
 
   public void unsetTableName() {
@@ -669,7 +669,7 @@ public class ColumnStatisticsDesc implements org.apache.thrift.TBase<ColumnStati
             break;
           case 2: // DB_NAME
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.dbName = iprot.readString();
+              struct.dbName = org.apache.hive.common.util.HiveStringUtils.intern(iprot.readString());
               struct.setDbNameIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
@@ -677,7 +677,7 @@ public class ColumnStatisticsDesc implements org.apache.thrift.TBase<ColumnStati
             break;
           case 3: // TABLE_NAME
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.tableName = iprot.readString();
+              struct.tableName = org.apache.hive.common.util.HiveStringUtils.intern(iprot.readString());
               struct.setTableNameIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
@@ -778,9 +778,9 @@ public class ColumnStatisticsDesc implements org.apache.thrift.TBase<ColumnStati
       TTupleProtocol iprot = (TTupleProtocol) prot;
       struct.isTblLevel = iprot.readBool();
       struct.setIsTblLevelIsSet(true);
-      struct.dbName = iprot.readString();
+      struct.dbName = org.apache.hive.common.util.HiveStringUtils.intern(iprot.readString());
       struct.setDbNameIsSet(true);
-      struct.tableName = iprot.readString();
+      struct.tableName = org.apache.hive.common.util.HiveStringUtils.intern(iprot.readString());
       struct.setTableNameIsSet(true);
       BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {

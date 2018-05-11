@@ -139,8 +139,8 @@ public class ColumnStatisticsObj implements org.apache.thrift.TBase<ColumnStatis
     ColumnStatisticsData statsData)
   {
     this();
-    this.colName = colName;
-    this.colType = colType;
+    this.colName = org.apache.hive.common.util.HiveStringUtils.intern(colName);
+    this.colType = org.apache.hive.common.util.HiveStringUtils.intern(colType);
     this.statsData = statsData;
   }
 
@@ -149,10 +149,10 @@ public class ColumnStatisticsObj implements org.apache.thrift.TBase<ColumnStatis
    */
   public ColumnStatisticsObj(ColumnStatisticsObj other) {
     if (other.isSetColName()) {
-      this.colName = other.colName;
+      this.colName = org.apache.hive.common.util.HiveStringUtils.intern(other.colName);
     }
     if (other.isSetColType()) {
-      this.colType = other.colType;
+      this.colType = org.apache.hive.common.util.HiveStringUtils.intern(other.colType);
     }
     if (other.isSetStatsData()) {
       this.statsData = new ColumnStatisticsData(other.statsData);
@@ -175,7 +175,7 @@ public class ColumnStatisticsObj implements org.apache.thrift.TBase<ColumnStatis
   }
 
   public void setColName(String colName) {
-    this.colName = colName;
+    this.colName = org.apache.hive.common.util.HiveStringUtils.intern(colName);
   }
 
   public void unsetColName() {
@@ -198,7 +198,7 @@ public class ColumnStatisticsObj implements org.apache.thrift.TBase<ColumnStatis
   }
 
   public void setColType(String colType) {
-    this.colType = colType;
+    this.colType = org.apache.hive.common.util.HiveStringUtils.intern(colType);
   }
 
   public void unsetColType() {
@@ -503,7 +503,7 @@ public class ColumnStatisticsObj implements org.apache.thrift.TBase<ColumnStatis
         switch (schemeField.id) {
           case 1: // COL_NAME
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.colName = iprot.readString();
+              struct.colName = org.apache.hive.common.util.HiveStringUtils.intern(iprot.readString());
               struct.setColNameIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
@@ -511,7 +511,7 @@ public class ColumnStatisticsObj implements org.apache.thrift.TBase<ColumnStatis
             break;
           case 2: // COL_TYPE
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.colType = iprot.readString();
+              struct.colType = org.apache.hive.common.util.HiveStringUtils.intern(iprot.readString());
               struct.setColTypeIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
@@ -579,9 +579,9 @@ public class ColumnStatisticsObj implements org.apache.thrift.TBase<ColumnStatis
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, ColumnStatisticsObj struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      struct.colName = iprot.readString();
+      struct.colName = org.apache.hive.common.util.HiveStringUtils.intern(iprot.readString());
       struct.setColNameIsSet(true);
-      struct.colType = iprot.readString();
+      struct.colType = org.apache.hive.common.util.HiveStringUtils.intern(iprot.readString());
       struct.setColTypeIsSet(true);
       struct.statsData = new ColumnStatisticsData();
       struct.statsData.read(iprot);

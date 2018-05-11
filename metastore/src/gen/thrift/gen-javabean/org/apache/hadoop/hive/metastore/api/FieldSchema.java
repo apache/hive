@@ -491,7 +491,7 @@ public class FieldSchema implements org.apache.thrift.TBase<FieldSchema, FieldSc
         switch (schemeField.id) {
           case 1: // NAME
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.name = iprot.readString();
+              struct.name = org.apache.hive.common.util.HiveStringUtils.intern(iprot.readString());
               struct.setNameIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
@@ -499,7 +499,7 @@ public class FieldSchema implements org.apache.thrift.TBase<FieldSchema, FieldSc
             break;
           case 2: // TYPE
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.type = iprot.readString();
+              struct.type = org.apache.hive.common.util.HiveStringUtils.intern(iprot.readString());
               struct.setTypeIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
@@ -507,7 +507,7 @@ public class FieldSchema implements org.apache.thrift.TBase<FieldSchema, FieldSc
             break;
           case 3: // COMMENT
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.comment = iprot.readString();
+              struct.comment = org.apache.hive.common.util.HiveStringUtils.intern(iprot.readString());
               struct.setCommentIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
@@ -585,15 +585,15 @@ public class FieldSchema implements org.apache.thrift.TBase<FieldSchema, FieldSc
       TTupleProtocol iprot = (TTupleProtocol) prot;
       BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
-        struct.name = iprot.readString();
+        struct.name = org.apache.hive.common.util.HiveStringUtils.intern(iprot.readString());
         struct.setNameIsSet(true);
       }
       if (incoming.get(1)) {
-        struct.type = iprot.readString();
+        struct.type = org.apache.hive.common.util.HiveStringUtils.intern(iprot.readString());
         struct.setTypeIsSet(true);
       }
       if (incoming.get(2)) {
-        struct.comment = iprot.readString();
+        struct.comment = org.apache.hive.common.util.HiveStringUtils.intern(iprot.readString());
         struct.setCommentIsSet(true);
       }
     }
