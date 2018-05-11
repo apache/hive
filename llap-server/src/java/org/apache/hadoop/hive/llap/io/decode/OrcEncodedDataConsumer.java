@@ -296,6 +296,9 @@ public class OrcEncodedDataConsumer
       ConsumerStripeMetadata stripeMetadata) throws IOException {
     PositionProvider[] pps = createPositionProviders(
         columnReaders, batch.getBatchKey(), stripeMetadata);
+    if (LlapIoImpl.ORC_LOGGER.isTraceEnabled()) {
+      LlapIoImpl.ORC_LOGGER.trace("Created pps {}", Arrays.toString(pps));
+    }
     if (pps == null) return;
     for (int i = 0; i < columnReaders.length; i++) {
       TreeReader reader = columnReaders[i];
