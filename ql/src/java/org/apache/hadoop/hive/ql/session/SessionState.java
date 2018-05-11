@@ -1924,6 +1924,7 @@ public class SessionState {
    */
   public void setupQueryCurrentTimestamp() {
     queryCurrentTimestamp = new Timestamp(System.currentTimeMillis());
+    sessionConf.setLongVar(ConfVars.HIVE_QUERY_TIMESTAMP, queryCurrentTimestamp.getTime());
 
     // Provide a facility to set current timestamp during tests
     if (sessionConf.getBoolVar(ConfVars.HIVE_IN_TEST)) {

@@ -1843,6 +1843,7 @@ public class HiveConf extends Configuration {
     TESTMODE_BUCKET_CODEC_VERSION("hive.test.bucketcodec.version", 1,
       "For testing only.  Will make ACID subsystem write RecordIdentifier.bucketId in specified\n" +
         "format", false),
+    HIVE_QUERY_TIMESTAMP("hive.query.timestamp", System.currentTimeMillis(), "query execute time."),
 
     HIVEMERGEMAPFILES("hive.merge.mapfiles", true,
         "Merge small files at the end of a map-only job"),
