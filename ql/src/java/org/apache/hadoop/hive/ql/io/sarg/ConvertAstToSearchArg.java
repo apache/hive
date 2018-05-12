@@ -29,12 +29,7 @@ import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
-import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicValueDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.plan.TableScanDesc;
+import org.apache.hadoop.hive.ql.plan.*;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
@@ -155,10 +150,42 @@ public class ConvertAstToSearchArg {
       return null;
     }
     ExprNodeDesc child = children.get(variable);
+
     if (child instanceof ExprNodeColumnDesc) {
+    /* If the instance of ExprNodeGenericFuncDesc is ExprNodeColumnDesc means it is top level column name.
+     * Name of the column is fully qualified Column name so return column name.
+     * */
       return ((ExprNodeColumnDesc) child).getColumn();
     }
+    else if(child instanceof ExprNodeFieldDesc) {
+    /* If the instance of ExprNodeGenericFuncDesc is ExprNodeFieldDesc means it is nested level column name.
+     * So generate and return fully qualified Column name.
+     * */
+       return getFullyQualifiedColumnName(child);
+    }
     return null;
+  }
+
+  /**
+   * Recursively parse ExprNodeDesc and generate fully qualified Column name.
+   * @param expr Instance
+   *
+   * @return fully qualified Column name.
+   */
+  private static String getFullyQualifiedColumnName(ExprNodeDesc expr)
+  {
+    if(expr instanceof ExprNodeColumnDesc) {
+    /* If the instance of ExprNodeGenericFuncDesc is ExprNodeColumnDesc means it is top level column name.
+     * So return column name.
+     * */
+      return ((ExprNodeColumnDesc) expr).getColumn();
+    }
+    else {
+    /* If the instance of ExprNodeGenericFuncDesc is ExprNodeFieldDesc means it is nested level column name.
+     * So call recursion.
+     * */
+      return getFullyQualifiedColumnName(((ExprNodeFieldDesc) expr).getDesc()) + "." + ((ExprNodeFieldDesc) expr).getFieldName();
+    }
   }
 
   private static Object boxLiteral(ExprNodeConstantDesc constantDesc,
@@ -365,7 +392,7 @@ public class ConvertAstToSearchArg {
     List<ExprNodeDesc> children = expr.getChildren();
     for(int i = 0; i < children.size(); ++i) {
       ExprNodeDesc child = children.get(i);
-      if (child instanceof ExprNodeColumnDesc) {
+      if (child instanceof ExprNodeColumnDesc || child instanceof ExprNodeFieldDesc) {
         // if we already found a variable, this isn't a sarg
         if (result != -1) {
           return -1;
@@ -413,9 +440,21 @@ public class ConvertAstToSearchArg {
         }
       }
 
-      // otherwise, we don't know what to do so make it a maybe
-      builder.literal(SearchArgument.TruthValue.YES_NO_NULL);
-      return;
+      // if it is a reference to a boolean nested column, covert it to a truth test.
+      else if (expression instanceof ExprNodeFieldDesc) {
+        ExprNodeFieldDesc nodeFieldDesc = (ExprNodeFieldDesc) expression;
+        if (nodeFieldDesc.getTypeString().equals("boolean")) {
+          builder.equals(getFullyQualifiedColumnName(nodeFieldDesc), PredicateLeaf.Type.BOOLEAN,
+                  true);
+          return;
+        }
+      }
+
+      else {
+        // otherwise, we don't know what to do so make it a maybe
+        builder.literal(SearchArgument.TruthValue.YES_NO_NULL);
+        return;
+      }
     }
 
     // get the kind of expression
