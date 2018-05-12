@@ -137,28 +137,17 @@ public class FileOperations {
   }
 
 
-
   /**
    * This needs the root data directory to which the data needs to be exported to.
    * The data export here is a list of files either in table/partition that are written to the _files
-   * in the exportRootDataDir provided.
+   * in the exportRootDataDir provided. In case of MM/ACID tables, we expect this pathlist to be
+   * already passed as valid paths by caller based on ValidWriteIdList. So, mmCtx is ignored here.
    */
   private void exportFilesAsList() throws SemanticException, IOException {
     // This is only called for replication that handles MM tables; no need for mmCtx.
     try (BufferedWriter writer = writer()) {
-      if (mmCtx != null) {
-        assert dataPathList.size() == 1;
-        Path dataPath = dataPathList.get(0);
-        ValidWriteIdList ids = AcidUtils.getTableValidWriteIdList(
-            hiveConf, mmCtx.getFqTableName());
-        List<Path> validPaths = getMmValidPaths(ids, dataPath);
-        for (Path mmPath : validPaths) {
-          writeFilesList(listFilesInDir(mmPath), writer, AcidUtils.getAcidSubDir(dataPath));
-        }
-      } else {
-        for (Path dataPath : dataPathList) {
-          writeFilesList(listFilesInDir(dataPath), writer, AcidUtils.getAcidSubDir(dataPath));
-        }
+      for (Path dataPath : dataPathList) {
+        writeFilesList(listFilesInDir(dataPath), writer, AcidUtils.getAcidSubDir(dataPath));
       }
     }
   }
