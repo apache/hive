@@ -22,8 +22,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -102,6 +104,7 @@ public class ExecutionPhase extends Phase {
     try {
       int expectedNumHosts = hostExecutors.size();
       initalizeHosts();
+      resetPerfMetrics();
       do {
         replaceBadHosts(expectedNumHosts);
         List<ListenableFuture<Void>> results = Lists.newArrayList();
@@ -145,10 +148,21 @@ public class ExecutionPhase extends Phase {
       }
     } finally {
       long elapsed = System.currentTimeMillis() - start;
+      addAggregatePerfMetrics();
       logger.info("PERF: exec phase " +
           TimeUnit.MINUTES.convert(elapsed, TimeUnit.MILLISECONDS) + " minutes");
     }
   }
+
+  public static final String TOTAL_RSYNC_TIME = "TotalRsyncElapsedTime";
+  private void addAggregatePerfMetrics() {
+    long totalRsycTime = 0L;
+    for (HostExecutor hostExecutor : ImmutableList.copyOf(hostExecutors)) {
+      totalRsycTime += hostExecutor.getTotalRsyncTimeInMs();
+    }
+    addPerfMetric(TOTAL_RSYNC_TIME, totalRsycTime);
+  }
+
   private void replaceBadHosts(int expectedNumHosts)
       throws Exception {
     Set<Host> goodHosts = Sets.newHashSet();
