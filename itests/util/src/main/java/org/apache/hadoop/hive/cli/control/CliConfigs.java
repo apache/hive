@@ -360,6 +360,8 @@ public class CliConfigs {
         excludeQuery("authorization_uri_import.q");
         excludeQuery("spark_job_max_tasks.q");
         excludeQuery("spark_stage_max_tasks.q");
+        excludeQuery("merge_negative_5.q");
+        excludeQuery("mm_concatenate.q");
 
         setResultsDir("ql/src/test/results/clientnegative");
         setLogDir("itests/qtest/target/qfile-results/clientnegative");
