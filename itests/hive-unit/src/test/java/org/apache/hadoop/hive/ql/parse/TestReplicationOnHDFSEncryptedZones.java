@@ -94,6 +94,8 @@ public class TestReplicationOnHDFSEncryptedZones {
         new HashMap<String, String>() {{
           put(HiveConf.ConfVars.HIVE_IN_TEST.varname, "false");
           put(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS.varname, "false");
+          put(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname,
+                  UserGroupInformation.getCurrentUser().getUserName());
         }}, "test_key123");
 
     WarehouseInstance.Tuple tuple =
@@ -105,7 +107,8 @@ public class TestReplicationOnHDFSEncryptedZones {
 
     replica
         .run("repl load " + replicatedDbName + " from '" + tuple.dumpLocation
-            + "' with('hive.repl.add.raw.reserved.namespace'='true')")
+                + "' with('hive.repl.add.raw.reserved.namespace'='true', "
+                + "'distcp.options.pugpbx'='', 'distcp.options.skipcrccheck'='', 'distcp.options.update'='')")
         .run("use " + replicatedDbName)
         .run("repl status " + replicatedDbName)
         .verifyResult(tuple.lastReplicationId)
