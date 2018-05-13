@@ -360,6 +360,8 @@ public class CliConfigs {
         excludesFrom(testConfigProps, "minimr.query.negative.files");
         excludesFrom(testConfigProps, "spark.only.query.negative.files");
         excludeQuery("authorization_uri_import.q");
+        excludeQuery("merge_negative_5.q");
+        excludeQuery("mm_concatenate.q");
 
         setResultsDir("ql/src/test/results/clientnegative");
         setLogDir("itests/qtest/target/qfile-results/clientnegative");
