@@ -72,4 +72,3 @@ FROM druid_kafka_test) b
 ) order by b.`user`;
 
 DROP TABLE druid_kafka_test;
-DROP TABLE druid_table_1;
