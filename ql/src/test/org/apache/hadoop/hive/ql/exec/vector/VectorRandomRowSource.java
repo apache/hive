@@ -24,7 +24,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
+import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
@@ -32,6 +34,7 @@ import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.common.type.RandomTypeUtil;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
@@ -71,6 +74,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
@@ -95,6 +99,8 @@ public class VectorRandomRowSource {
   private Category[] categories;
 
   private TypeInfo[] typeInfos;
+
+  private DataTypePhysicalVariation[] dataTypePhysicalVariations;
 
   private List<ObjectInspector> objectInspectorList;
 
@@ -125,6 +131,10 @@ public class VectorRandomRowSource {
 
   public TypeInfo[] typeInfos() {
     return typeInfos;
+  }
+
+  public DataTypePhysicalVariation[] dataTypePhysicalVariations() {
+    return dataTypePhysicalVariations;
   }
 
   public PrimitiveCategory[] primitiveCategories() {
@@ -163,7 +173,22 @@ public class VectorRandomRowSource {
   public void init(Random r, SupportedTypes supportedTypes, int maxComplexDepth, boolean allowNull) {
     this.r = r;
     this.allowNull = allowNull;
-    chooseSchema(supportedTypes, maxComplexDepth);
+    chooseSchema(supportedTypes, null, null, null, maxComplexDepth);
+  }
+
+  public void init(Random r, Set<String> allowedTypeNameSet, int maxComplexDepth, boolean allowNull) {
+    this.r = r;
+    this.allowNull = allowNull;
+    chooseSchema(SupportedTypes.ALL, allowedTypeNameSet, null, null, maxComplexDepth);
+  }
+
+  public void initExplicitSchema(Random r, List<String> explicitTypeNameList, int maxComplexDepth,
+      boolean allowNull, List<DataTypePhysicalVariation> explicitDataTypePhysicalVariationList) {
+    this.r = r;
+    this.allowNull = allowNull;
+    chooseSchema(
+        SupportedTypes.ALL, null, explicitTypeNameList, explicitDataTypePhysicalVariationList,
+        maxComplexDepth);
   }
 
   /*
@@ -180,7 +205,7 @@ public class VectorRandomRowSource {
       "float",
       "double",
       "string",
-//    "char",
+      "char",
       "varchar",
       "binary",
       "date",
@@ -197,27 +222,30 @@ public class VectorRandomRowSource {
       "map"
   };
 
-  private String getRandomTypeName(SupportedTypes supportedTypes) {
+  private String getRandomTypeName(SupportedTypes supportedTypes, Set<String> allowedTypeNameSet) {
     String typeName = null;
-    if (r.nextInt(10 ) != 0) {
-      typeName = possibleHivePrimitiveTypeNames[r.nextInt(possibleHivePrimitiveTypeNames.length)];
-    } else {
-      switch (supportedTypes) {
-      case PRIMITIVES:
+    do {
+      if (r.nextInt(10 ) != 0) {
         typeName = possibleHivePrimitiveTypeNames[r.nextInt(possibleHivePrimitiveTypeNames.length)];
-        break;
-      case ALL_EXCEPT_MAP:
-        typeName = possibleHiveComplexTypeNames[r.nextInt(possibleHiveComplexTypeNames.length - 1)];
-        break;
-      case ALL:
-        typeName = possibleHiveComplexTypeNames[r.nextInt(possibleHiveComplexTypeNames.length)];
-        break;
+      } else {
+        switch (supportedTypes) {
+        case PRIMITIVES:
+          typeName = possibleHivePrimitiveTypeNames[r.nextInt(possibleHivePrimitiveTypeNames.length)];
+          break;
+        case ALL_EXCEPT_MAP:
+          typeName = possibleHiveComplexTypeNames[r.nextInt(possibleHiveComplexTypeNames.length - 1)];
+          break;
+        case ALL:
+          typeName = possibleHiveComplexTypeNames[r.nextInt(possibleHiveComplexTypeNames.length)];
+          break;
+        }
       }
-    }
+    } while (allowedTypeNameSet != null && !allowedTypeNameSet.contains(typeName));
     return typeName;
   }
 
-  private String getDecoratedTypeName(String typeName, SupportedTypes supportedTypes, int depth, int maxDepth) {
+  private String getDecoratedTypeName(String typeName, SupportedTypes supportedTypes,
+      Set<String> allowedTypeNameSet, int depth, int maxDepth) {
     depth++;
     if (depth < maxDepth) {
       supportedTypes = SupportedTypes.PRIMITIVES;
@@ -229,23 +257,32 @@ public class VectorRandomRowSource {
       final int maxLength = 1 + r.nextInt(100);
       typeName = String.format("varchar(%d)", maxLength);
     } else if (typeName.equals("decimal")) {
-      typeName = String.format("decimal(%d,%d)", HiveDecimal.SYSTEM_DEFAULT_PRECISION, HiveDecimal.SYSTEM_DEFAULT_SCALE);
+      typeName =
+          String.format(
+              "decimal(%d,%d)",
+              HiveDecimal.SYSTEM_DEFAULT_PRECISION,
+              HiveDecimal.SYSTEM_DEFAULT_SCALE);
     } else if (typeName.equals("array")) {
-      String elementTypeName = getRandomTypeName(supportedTypes);
-      elementTypeName = getDecoratedTypeName(elementTypeName, supportedTypes, depth, maxDepth);
+      String elementTypeName = getRandomTypeName(supportedTypes, allowedTypeNameSet);
+      elementTypeName =
+          getDecoratedTypeName(elementTypeName, supportedTypes, allowedTypeNameSet, depth, maxDepth);
       typeName = String.format("array<%s>", elementTypeName);
     } else if (typeName.equals("map")) {
-      String keyTypeName = getRandomTypeName(SupportedTypes.PRIMITIVES);
-      keyTypeName = getDecoratedTypeName(keyTypeName, supportedTypes, depth, maxDepth);
-      String valueTypeName = getRandomTypeName(supportedTypes);
-      valueTypeName = getDecoratedTypeName(valueTypeName, supportedTypes, depth, maxDepth);
+      String keyTypeName = getRandomTypeName(SupportedTypes.PRIMITIVES, allowedTypeNameSet);
+      keyTypeName =
+          getDecoratedTypeName(keyTypeName, supportedTypes, allowedTypeNameSet, depth, maxDepth);
+      String valueTypeName = getRandomTypeName(supportedTypes, allowedTypeNameSet);
+      valueTypeName =
+          getDecoratedTypeName(valueTypeName, supportedTypes, allowedTypeNameSet, depth, maxDepth);
       typeName = String.format("map<%s,%s>", keyTypeName, valueTypeName);
     } else if (typeName.equals("struct")) {
       final int fieldCount = 1 + r.nextInt(10);
       final StringBuilder sb = new StringBuilder();
       for (int i = 0; i < fieldCount; i++) {
-        String fieldTypeName = getRandomTypeName(supportedTypes);
-        fieldTypeName = getDecoratedTypeName(fieldTypeName, supportedTypes, depth, maxDepth);
+        String fieldTypeName = getRandomTypeName(supportedTypes, allowedTypeNameSet);
+        fieldTypeName =
+            getDecoratedTypeName(
+                fieldTypeName, supportedTypes, allowedTypeNameSet, depth, maxDepth);
         if (i > 0) {
           sb.append(",");
         }
@@ -260,8 +297,10 @@ public class VectorRandomRowSource {
       final int fieldCount = 1 + r.nextInt(10);
       final StringBuilder sb = new StringBuilder();
       for (int i = 0; i < fieldCount; i++) {
-        String fieldTypeName = getRandomTypeName(supportedTypes);
-        fieldTypeName = getDecoratedTypeName(fieldTypeName, supportedTypes, depth, maxDepth);
+        String fieldTypeName = getRandomTypeName(supportedTypes, allowedTypeNameSet);
+        fieldTypeName =
+            getDecoratedTypeName(
+                fieldTypeName, supportedTypes, allowedTypeNameSet, depth, maxDepth);
         if (i > 0) {
           sb.append(",");
         }
@@ -273,14 +312,29 @@ public class VectorRandomRowSource {
   }
 
   private ObjectInspector getObjectInspector(TypeInfo typeInfo) {
+    return getObjectInspector(typeInfo, DataTypePhysicalVariation.NONE);
+  }
+
+  private ObjectInspector getObjectInspector(TypeInfo typeInfo,
+      DataTypePhysicalVariation dataTypePhysicalVariation) {
+
     final ObjectInspector objectInspector;
     switch (typeInfo.getCategory()) {
     case PRIMITIVE:
       {
-        final PrimitiveTypeInfo primitiveType = (PrimitiveTypeInfo) typeInfo;
-        objectInspector =
-            PrimitiveObjectInspectorFactory.
-                getPrimitiveWritableObjectInspector(primitiveType);
+        final PrimitiveTypeInfo primitiveTypeInfo = (PrimitiveTypeInfo) typeInfo;
+        if (primitiveTypeInfo instanceof DecimalTypeInfo &&
+            dataTypePhysicalVariation == DataTypePhysicalVariation.DECIMAL_64) {
+          objectInspector =
+              PrimitiveObjectInspectorFactory.
+                  getPrimitiveWritableObjectInspector(
+                      TypeInfoFactory.longTypeInfo);
+        } else {
+          objectInspector =
+              PrimitiveObjectInspectorFactory.
+                  getPrimitiveWritableObjectInspector(
+                      primitiveTypeInfo);
+        }
       }
       break;
     case MAP:
@@ -341,35 +395,50 @@ public class VectorRandomRowSource {
     return objectInspector;
   }
 
-  private void chooseSchema(SupportedTypes supportedTypes, int maxComplexDepth) {
-    HashSet hashSet = null;
+  private void chooseSchema(SupportedTypes supportedTypes, Set<String> allowedTypeNameSet,
+      List<String> explicitTypeNameList,
+      List<DataTypePhysicalVariation> explicitDataTypePhysicalVariationList,
+      int maxComplexDepth) {
+    HashSet<Integer> hashSet = null;
     final boolean allTypes;
-    final boolean onlyOne = (r.nextInt(100) == 7);
-    if (onlyOne) {
-      columnCount = 1;
+    final boolean onlyOne;
+    if (explicitTypeNameList != null) {
+      columnCount = explicitTypeNameList.size();
       allTypes = false;
+      onlyOne = false;
+    } else if (allowedTypeNameSet != null) {
+      columnCount = 1 + r.nextInt(20);
+      allTypes = false;
+      onlyOne = false;
     } else {
-      allTypes = r.nextBoolean();
-      if (allTypes) {
-        switch (supportedTypes) {
-        case ALL:
-          columnCount = possibleHivePrimitiveTypeNames.length + possibleHiveComplexTypeNames.length;
-          break;
-        case ALL_EXCEPT_MAP:
-          columnCount = possibleHivePrimitiveTypeNames.length + possibleHiveComplexTypeNames.length - 1;
-          break;
-        case PRIMITIVES:
-          columnCount = possibleHivePrimitiveTypeNames.length;
-          break;
-        }
-        hashSet = new HashSet<Integer>();
+      onlyOne = (r.nextInt(100) == 7);
+      if (onlyOne) {
+        columnCount = 1;
+        allTypes = false;
       } else {
-        columnCount = 1 + r.nextInt(20);
+        allTypes = r.nextBoolean();
+        if (allTypes) {
+          switch (supportedTypes) {
+          case ALL:
+            columnCount = possibleHivePrimitiveTypeNames.length + possibleHiveComplexTypeNames.length;
+            break;
+          case ALL_EXCEPT_MAP:
+            columnCount = possibleHivePrimitiveTypeNames.length + possibleHiveComplexTypeNames.length - 1;
+            break;
+          case PRIMITIVES:
+            columnCount = possibleHivePrimitiveTypeNames.length;
+            break;
+          }
+          hashSet = new HashSet<Integer>();
+        } else {
+          columnCount = 1 + r.nextInt(20);
+        }
       }
     }
     typeNames = new ArrayList<String>(columnCount);
     categories = new Category[columnCount];
     typeInfos = new TypeInfo[columnCount];
+    dataTypePhysicalVariations = new DataTypePhysicalVariation[columnCount];
     objectInspectorList = new ArrayList<ObjectInspector>(columnCount);
 
     primitiveCategories = new PrimitiveCategory[columnCount];
@@ -379,9 +448,13 @@ public class VectorRandomRowSource {
     for (int c = 0; c < columnCount; c++) {
       columnNames.add(String.format("col%d", c));
       final String typeName;
+      DataTypePhysicalVariation dataTypePhysicalVariation = DataTypePhysicalVariation.NONE;
 
-      if (onlyOne) {
-        typeName = getRandomTypeName(supportedTypes);
+      if (explicitTypeNameList != null) {
+        typeName = explicitTypeNameList.get(c);
+        dataTypePhysicalVariation = explicitDataTypePhysicalVariationList.get(c);
+      } else if (onlyOne || allowedTypeNameSet != null) {
+        typeName = getRandomTypeName(supportedTypes, allowedTypeNameSet);
       } else {
         int typeNum;
         if (allTypes) {
@@ -425,7 +498,8 @@ public class VectorRandomRowSource {
 
       }
 
-      String decoratedTypeName = getDecoratedTypeName(typeName, supportedTypes, 0, maxComplexDepth);
+      String decoratedTypeName =
+          getDecoratedTypeName(typeName, supportedTypes, allowedTypeNameSet, 0, maxComplexDepth);
 
       final TypeInfo typeInfo;
       try {
@@ -435,15 +509,14 @@ public class VectorRandomRowSource {
       }
 
       typeInfos[c] = typeInfo;
+      dataTypePhysicalVariations[c] = dataTypePhysicalVariation;
       final Category category = typeInfo.getCategory();
       categories[c] = category;
-      ObjectInspector objectInspector = getObjectInspector(typeInfo);
+      ObjectInspector objectInspector = getObjectInspector(typeInfo, dataTypePhysicalVariation);
       switch (category) {
       case PRIMITIVE:
         {
           final PrimitiveTypeInfo primitiveTypeInfo = (PrimitiveTypeInfo) typeInfo;
-          objectInspector = PrimitiveObjectInspectorFactory.
-              getPrimitiveWritableObjectInspector(primitiveTypeInfo);
           primitiveTypeInfos[c] = primitiveTypeInfo;
           PrimitiveCategory primitiveCategory = primitiveTypeInfo.getPrimitiveCategory();
           primitiveCategories[c] = primitiveCategory;
@@ -498,27 +571,46 @@ public class VectorRandomRowSource {
   }
 
   public Object[] randomPrimitiveRow(int columnCount) {
-    return randomPrimitiveRow(columnCount, r, primitiveTypeInfos);
+    return randomPrimitiveRow(columnCount, r, primitiveTypeInfos, dataTypePhysicalVariations);
   }
 
   public static Object[] randomPrimitiveRow(int columnCount, Random r,
-      PrimitiveTypeInfo[] primitiveTypeInfos) {
+      PrimitiveTypeInfo[] primitiveTypeInfos,
+      DataTypePhysicalVariation[] dataTypePhysicalVariations) {
 
     final Object row[] = new Object[columnCount];
     for (int c = 0; c < columnCount; c++) {
-      row[c] = randomPrimitiveObject(r, primitiveTypeInfos[c]);
+      row[c] = randomPrimitiveObject(r, primitiveTypeInfos[c], dataTypePhysicalVariations[c]);
     }
     return row;
   }
 
   public static Object[] randomWritablePrimitiveRow(int columnCount, Random r,
       PrimitiveTypeInfo[] primitiveTypeInfos) {
+    return randomWritablePrimitiveRow(columnCount, r, primitiveTypeInfos, null);
+  }
+
+  public static Object[] randomWritablePrimitiveRow(int columnCount, Random r,
+      PrimitiveTypeInfo[] primitiveTypeInfos,
+      DataTypePhysicalVariation[] dataTypePhysicalVariations) {
 
     final Object row[] = new Object[columnCount];
     for (int c = 0; c < columnCount; c++) {
       final PrimitiveTypeInfo primitiveTypeInfo = primitiveTypeInfos[c];
-      final ObjectInspector objectInspector =
-          PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(primitiveTypeInfo);
+      final DataTypePhysicalVariation dataTypePhysicalVariation =
+          (dataTypePhysicalVariations != null ?
+              dataTypePhysicalVariations[c] : DataTypePhysicalVariation.NONE);
+      final ObjectInspector objectInspector;
+      if (primitiveTypeInfo instanceof DecimalTypeInfo &&
+          dataTypePhysicalVariation == DataTypePhysicalVariation.DECIMAL_64) {
+        objectInspector =
+            PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
+                TypeInfoFactory.longTypeInfo);
+      } else {
+        objectInspector =
+            PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
+                primitiveTypeInfo);
+      }
       final Object object = randomPrimitiveObject(r, primitiveTypeInfo);
       row[c] = getWritablePrimitiveObject(primitiveTypeInfo, objectInspector, object);
     }
@@ -575,6 +667,14 @@ public class VectorRandomRowSource {
 
   public static Object getWritablePrimitiveObject(PrimitiveTypeInfo primitiveTypeInfo,
       ObjectInspector objectInspector, Object object) {
+    return
+        getWritablePrimitiveObject(
+            primitiveTypeInfo, objectInspector, DataTypePhysicalVariation.NONE, object);
+  }
+
+  public static Object getWritablePrimitiveObject(PrimitiveTypeInfo primitiveTypeInfo,
+      ObjectInspector objectInspector, DataTypePhysicalVariation dataTypePhysicalVariation,
+      Object object) {
 
     switch (primitiveTypeInfo.getPrimitiveCategory()) {
     case BOOLEAN:
@@ -596,17 +696,17 @@ public class VectorRandomRowSource {
     case STRING:
       return ((WritableStringObjectInspector) objectInspector).create((String) object);
     case CHAR:
-    {
-      WritableHiveCharObjectInspector writableCharObjectInspector =
-          new WritableHiveCharObjectInspector( (CharTypeInfo) primitiveTypeInfo);
-      return writableCharObjectInspector.create((HiveChar) object);
-    }
+      {
+        WritableHiveCharObjectInspector writableCharObjectInspector =
+            new WritableHiveCharObjectInspector( (CharTypeInfo) primitiveTypeInfo);
+        return writableCharObjectInspector.create((HiveChar) object);
+      }
     case VARCHAR:
-    {
-      WritableHiveVarcharObjectInspector writableVarcharObjectInspector =
-          new WritableHiveVarcharObjectInspector( (VarcharTypeInfo) primitiveTypeInfo);
-      return writableVarcharObjectInspector.create((HiveVarchar) object);
-    }
+      {
+        WritableHiveVarcharObjectInspector writableVarcharObjectInspector =
+            new WritableHiveVarcharObjectInspector( (VarcharTypeInfo) primitiveTypeInfo);
+        return writableVarcharObjectInspector.create((HiveVarchar) object);
+      }
     case BINARY:
       return PrimitiveObjectInspectorFactory.writableBinaryObjectInspector.create((byte[]) object);
     case TIMESTAMP:
@@ -616,31 +716,55 @@ public class VectorRandomRowSource {
     case INTERVAL_DAY_TIME:
       return ((WritableHiveIntervalDayTimeObjectInspector) objectInspector).create((HiveIntervalDayTime) object);
     case DECIMAL:
-    {
-      WritableHiveDecimalObjectInspector writableDecimalObjectInspector =
-          new WritableHiveDecimalObjectInspector((DecimalTypeInfo) primitiveTypeInfo);
-      return writableDecimalObjectInspector.create((HiveDecimal) object);
-    }
+      {
+        if (dataTypePhysicalVariation == dataTypePhysicalVariation.DECIMAL_64) {
+          final long value;
+          if (object instanceof HiveDecimal) {
+            DecimalTypeInfo decimalTypeInfo = (DecimalTypeInfo) primitiveTypeInfo;
+            value = new HiveDecimalWritable((HiveDecimal) object).serialize64(
+                decimalTypeInfo.getScale());
+          } else {
+            value = (long) object;
+          }
+          return ((WritableLongObjectInspector) objectInspector).create(value);
+        } else {
+          WritableHiveDecimalObjectInspector writableDecimalObjectInspector =
+              new WritableHiveDecimalObjectInspector((DecimalTypeInfo) primitiveTypeInfo);
+          return writableDecimalObjectInspector.create((HiveDecimal) object);
+        }
+      }
     default:
       throw new Error("Unknown primitive category " + primitiveTypeInfo.getPrimitiveCategory());
     }
   }
 
   public Object randomWritable(int column) {
-    return randomWritable(typeInfos[column], objectInspectorList.get(column));
+    return randomWritable(
+        typeInfos[column], objectInspectorList.get(column), dataTypePhysicalVariations[column],
+        allowNull);
   }
 
   public Object randomWritable(TypeInfo typeInfo, ObjectInspector objectInspector) {
-    return randomWritable(typeInfo, objectInspector, allowNull);
+    return randomWritable(typeInfo, objectInspector, DataTypePhysicalVariation.NONE, allowNull);
   }
 
-  public Object randomWritable(TypeInfo typeInfo, ObjectInspector objectInspector, boolean allowNull) {
+  public Object randomWritable(TypeInfo typeInfo, ObjectInspector objectInspector,
+      boolean allowNull) {
+    return randomWritable(typeInfo, objectInspector, DataTypePhysicalVariation.NONE, allowNull);
+  }
+
+  public Object randomWritable(TypeInfo typeInfo, ObjectInspector objectInspector,
+      DataTypePhysicalVariation dataTypePhysicalVariation, boolean allowNull) {
 
     switch (typeInfo.getCategory()) {
     case PRIMITIVE:
       {
+        if (allowNull && r.nextInt(20) == 0) {
+          return null;
+        }
         final Object object = randomPrimitiveObject(r, (PrimitiveTypeInfo) typeInfo);
-        return getWritablePrimitiveObject((PrimitiveTypeInfo) typeInfo, objectInspector, object);
+        return getWritablePrimitiveObject(
+            (PrimitiveTypeInfo) typeInfo, objectInspector, dataTypePhysicalVariation, object);
       }
     case LIST:
       {
@@ -780,6 +904,11 @@ public class VectorRandomRowSource {
   }
 
   public static Object randomPrimitiveObject(Random r, PrimitiveTypeInfo primitiveTypeInfo) {
+    return randomPrimitiveObject(r, primitiveTypeInfo, DataTypePhysicalVariation.NONE);
+  }
+
+  public static Object randomPrimitiveObject(Random r, PrimitiveTypeInfo primitiveTypeInfo,
+      DataTypePhysicalVariation dataTypePhysicalVariation) {
 
     switch (primitiveTypeInfo.getPrimitiveCategory()) {
     case BOOLEAN:
@@ -813,9 +942,14 @@ public class VectorRandomRowSource {
     case INTERVAL_DAY_TIME:
       return getRandIntervalDayTime(r);
     case DECIMAL:
-    {
-      return getRandHiveDecimal(r, (DecimalTypeInfo) primitiveTypeInfo);
-    }
+      {
+        DecimalTypeInfo decimalTypeInfo = (DecimalTypeInfo) primitiveTypeInfo;
+        HiveDecimal hiveDecimal = getRandHiveDecimal(r, decimalTypeInfo);
+        if (dataTypePhysicalVariation == DataTypePhysicalVariation.DECIMAL_64) {
+          return new HiveDecimalWritable(hiveDecimal).serialize64(decimalTypeInfo.getScale());
+        }
+        return hiveDecimal;
+      }
     default:
       throw new Error("Unknown primitive category " + primitiveTypeInfo.getCategory());
     }
@@ -869,7 +1003,13 @@ public class VectorRandomRowSource {
         sb.append(RandomTypeUtil.getRandString(r, DECIMAL_CHARS, scale));
       }
 
-      return HiveDecimal.create(sb.toString());
+      HiveDecimal dec = HiveDecimal.create(sb.toString());
+      dec =
+          HiveDecimal.enforcePrecisionScale(
+              dec, decimalTypeInfo.getPrecision(), decimalTypeInfo.getScale());
+      if (dec != null) {
+        return dec;
+      }
     }
   }
 
