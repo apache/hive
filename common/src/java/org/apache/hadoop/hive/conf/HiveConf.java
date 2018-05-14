@@ -1170,7 +1170,7 @@ public class HiveConf extends Configuration {
     HIVE_MATERIALIZED_VIEW_FILE_FORMAT("hive.materializedview.fileformat", "ORC",
         new StringSet("none", "TextFile", "SequenceFile", "RCfile", "ORC"),
         "Default file format for CREATE MATERIALIZED VIEW statement"),
-    HIVE_MATERIALIZED_VIEW_SERDE("hive.materializedview.serde",
+    HIVE_MATERIALIZED_VIEW_SERDE("hive.materializedview.serdes",
         "org.apache.hadoop.hive.ql.io.orc.OrcSerde", "Default SerDe used for materialized views"),
 
     // hive.mapjoin.bucket.cache.size has been replaced by hive.smbjoin.cache.row,
@@ -1265,12 +1265,12 @@ public class HiveConf extends Configuration {
         "Default file format for storing result of the query."),
     HIVECHECKFILEFORMAT("hive.fileformat.check", true, "Whether to check file format or not when loading data files"),
 
-    // default serde for rcfile
-    HIVEDEFAULTRCFILESERDE("hive.default.rcfile.serde",
+    // default serdes for rcfile
+    HIVEDEFAULTRCFILESERDE("hive.default.rcfile.serdes",
         "org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe",
         "The default SerDe Hive will use for the RCFile format"),
 
-    HIVEDEFAULTSERDE("hive.default.serde",
+    HIVEDEFAULTSERDE("hive.default.serdes",
         "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe",
         "The default SerDe Hive will use for storage formats that do not specify a SerDe."),
 
@@ -1281,7 +1281,7 @@ public class HiveConf extends Configuration {
         "org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe," +
         "org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe," +
         "org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe," +
-        "org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe," +
+        "org.apache.hadoop.hive.ql.io.parquet.serdes.ParquetHiveSerDe," +
         "org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe",
         "SerDes retrieving schema from metastore. This is an internal parameter."),
 
@@ -1310,7 +1310,7 @@ public class HiveConf extends Configuration {
         "logged less frequently than specified.\n" +
         "This only has an effect if hive.querylog.enable.plan.progress is set to true."),
 
-    HIVESCRIPTSERDE("hive.script.serde", "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe",
+    HIVESCRIPTSERDE("hive.script.serdes", "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe",
         "The default SerDe for transmitting input data to and reading output data from the user scripts. "),
     HIVESCRIPTRECORDREADER("hive.script.recordreader",
         "org.apache.hadoop.hive.ql.exec.TextRecordReader",
@@ -1741,12 +1741,12 @@ public class HiveConf extends Configuration {
         "Whether to remove an extra join with sq_count_check for scalar subqueries "
             + "with constant group by keys."),
 
-    HIVE_OPTIMIZE_TABLE_PROPERTIES_FROM_SERDE("hive.optimize.update.table.properties.from.serde", false,
+    HIVE_OPTIMIZE_TABLE_PROPERTIES_FROM_SERDE("hive.optimize.update.table.properties.from.serdes", false,
         "Whether to update table-properties by initializing tables' SerDe instances during logical-optimization. \n" +
             "By doing so, certain SerDe classes (like AvroSerDe) can pre-calculate table-specific information, and \n" +
             "store it in table-properties, to be used later in the SerDe, while running the job."),
 
-    HIVE_OPTIMIZE_TABLE_PROPERTIES_FROM_SERDE_LIST("hive.optimize.update.table.properties.from.serde.list",
+    HIVE_OPTIMIZE_TABLE_PROPERTIES_FROM_SERDE_LIST("hive.optimize.update.table.properties.from.serdes.list",
         "org.apache.hadoop.hive.serde2.avro.AvroSerDe",
         "The comma-separated list of SerDe classes that are considered when enhancing table-properties \n" +
             "during logical optimization."),
@@ -2162,7 +2162,7 @@ public class HiveConf extends Configuration {
         "For more advanced stats collection need to run analyze table queries."),
 
     // Serde for FetchTask
-    HIVEFETCHOUTPUTSERDE("hive.fetch.output.serde", "org.apache.hadoop.hive.serde2.DelimitedJSONSerDe",
+    HIVEFETCHOUTPUTSERDE("hive.fetch.output.serdes", "org.apache.hadoop.hive.serde2.DelimitedJSONSerDe",
         "The SerDe used by FetchTask to serialize the fetch output."),
 
     HIVEEXPREVALUATIONCACHE("hive.cache.expr.evaluation", true,
@@ -2938,14 +2938,14 @@ public class HiveConf extends Configuration {
     HIVE_VECTORIZATION_VECTORIZED_INPUT_FILE_FORMAT_EXCLUDES("hive.vectorized.input.format.excludes","",
         "This configuration should be set to fully described input format class names for which \n"
             + " vectorized input format should not be used for vectorized execution."),
-    HIVE_VECTORIZATION_USE_VECTOR_DESERIALIZE("hive.vectorized.use.vector.serde.deserialize", true,
+    HIVE_VECTORIZATION_USE_VECTOR_DESERIALIZE("hive.vectorized.use.vector.serdes.deserialize", true,
         "This flag should be set to true to enable vectorizing rows using vector deserialize.\n" +
         "The default value is true."),
-    HIVE_VECTORIZATION_USE_ROW_DESERIALIZE("hive.vectorized.use.row.serde.deserialize", true,
+    HIVE_VECTORIZATION_USE_ROW_DESERIALIZE("hive.vectorized.use.row.serdes.deserialize", true,
         "This flag should be set to true to enable vectorizing using row deserialize.\n" +
         "The default value is false."),
     HIVE_VECTORIZATION_ROW_DESERIALIZE_INPUTFORMAT_EXCLUDES(
-        "hive.vectorized.row.serde.inputformat.excludes",
+        "hive.vectorized.row.serdes.inputformat.excludes",
         "org.apache.parquet.hadoop.ParquetInputFormat,org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat",
         "The input formats not supported by row deserialize vectorization."),
     HIVE_VECTOR_ADAPTOR_USAGE_MODE("hive.vectorized.adaptor.usage.mode", "all", new StringSet("none", "chosen", "all"),
@@ -3218,9 +3218,9 @@ public class HiveConf extends Configuration {
         "Allocation size for the buffers used to cache encoded data from non-ORC files. Must\n" +
         "be a power of two between " + LLAP_ALLOCATOR_MIN_ALLOC + " and\n" +
         LLAP_ALLOCATOR_MAX_ALLOC + "."),
-    LLAP_IO_ENCODE_VECTOR_SERDE_ENABLED("hive.llap.io.encode.vector.serde.enabled", true,
+    LLAP_IO_ENCODE_VECTOR_SERDE_ENABLED("hive.llap.io.encode.vector.serdes.enabled", true,
         "Whether LLAP should use vectorized SerDe reader to read text data when re-encoding."),
-    LLAP_IO_ENCODE_VECTOR_SERDE_ASYNC_ENABLED("hive.llap.io.encode.vector.serde.async.enabled",
+    LLAP_IO_ENCODE_VECTOR_SERDE_ASYNC_ENABLED("hive.llap.io.encode.vector.serdes.async.enabled",
         true,
         "Whether LLAP should use async mode in vectorized SerDe reader to read text data."),
     LLAP_IO_ENCODE_SLICE_ROW_COUNT("hive.llap.io.encode.slice.row.count", 100000,
@@ -3553,7 +3553,7 @@ public class HiveConf extends Configuration {
         "If this is set to true, mapjoin optimization in Hive/Spark will use statistics from\n" +
         "TableScan operators at the root of operator tree, instead of parent ReduceSink\n" +
         "operators of the Join operator."),
-    SPARK_OPTIMIZE_SHUFFLE_SERDE("hive.spark.optimize.shuffle.serde", false,
+    SPARK_OPTIMIZE_SHUFFLE_SERDE("hive.spark.optimize.shuffle.serdes", false,
         "If this is set to true, Hive on Spark will register custom serializers for data types\n" +
         "in shuffle. This should result in less shuffled data."),
     SPARK_CLIENT_FUTURE_TIMEOUT("hive.spark.client.future.timeout",

@@ -959,7 +959,7 @@ public class Hive {
    * @param idxProps
    *          idx
    * @param serdeProps
-   *          serde properties
+   *          serdes properties
    * @param collItemDelim
    * @param fieldDelim
    * @param fieldEscape
@@ -1786,7 +1786,7 @@ public class Hive {
    *          if REPLACE_ALL - replace files in the table,
    *          otherwise add files to table (KEEP_EXISTING, OVERWRITE_EXISTING)
    * @param inheritTableSpecs if true, on [re]creating the partition, take the
-   *          location/inputformat/outputformat/serde details from table spec
+   *          location/inputformat/outputformat/serdes details from table spec
    * @param isSrcLocal
    *          If the source directory is LOCAL
    * @param isAcidIUDoperation
@@ -2612,7 +2612,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    *          if this is true and partition doesn't exist then a partition is
    *          created
    * @param partPath the path where the partition data is located
-   * @param inheritTableSpecs whether to copy over the table specs for if/of/serde
+   * @param inheritTableSpecs whether to copy over the table specs for if/of/serdes
    * @param newFiles An optional list of new files that were moved into this partition.  If
    *                 non-null these will be included in the DML event sent to the metastore.
    * @return result partition object or null if there is no partition
@@ -4334,10 +4334,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
     try {
       return HiveMetaStoreUtils.getFieldsFromDeserializer(name, serde);
     } catch (SerDeException e) {
-      throw new HiveException("Error in getting fields from serde. "
+      throw new HiveException("Error in getting fields from serdes. "
           + e.getMessage(), e);
     } catch (MetaException e) {
-      throw new HiveException("Error in getting fields from serde."
+      throw new HiveException("Error in getting fields from serdes."
           + e.getMessage(), e);
     }
   }

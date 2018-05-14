@@ -96,7 +96,7 @@ public class GenericColumnVectorProducer implements ColumnVectorProducer {
     }
     edc.setFileMetadata(fm);
     // Note that we pass job config to the record reader, but use global config for LLAP IO.
-    // TODO: add tracing to serde reader
+    // TODO: add tracing to serdes reader
     SerDeEncodedDataReader reader = new SerDeEncodedDataReader(cache,
         bufferManager, conf, split, columnIds, edc, job, reporter, sourceInputFormat,
         sourceSerDe, counters, fm.getSchema(), parts);

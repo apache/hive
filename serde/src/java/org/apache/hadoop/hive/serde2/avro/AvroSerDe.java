@@ -181,9 +181,9 @@ public class AvroSerDe extends AbstractSerDe {
   /**
    * Attempt to determine the schema via the usual means, but do not throw
    * an exception if we fail.  Instead, signal failure via a special
-   * schema.  This is used because Hive calls init on the serde during
-   * any call, including calls to update the serde properties, meaning
-   * if the serde is in a bad state, there is no way to update that state.
+   * schema.  This is used because Hive calls init on the serdes during
+   * any call, including calls to update the serdes properties, meaning
+   * if the serdes is in a bad state, there is no way to update that state.
    */
   public Schema determineSchemaOrReturnErrorSchema(Configuration conf, Properties props) {
     try {

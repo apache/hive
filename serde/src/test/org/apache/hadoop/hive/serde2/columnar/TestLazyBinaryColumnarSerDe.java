@@ -258,7 +258,7 @@ public class TestLazyBinaryColumnarSerDe extends TestCase {
    * missing from the data but which are required by metadata are interpreted as null.
    * <p>
    * This tests the use-case of altering columns of a table with already some data, then adding more data
-   * in the new schema, and seeing if this serde can to read both types of data from the resultant table.
+   * in the new schema, and seeing if this serdes can to read both types of data from the resultant table.
    * @throws SerDeException
    */
   public void testHandlingAlteredSchemas() throws SerDeException {

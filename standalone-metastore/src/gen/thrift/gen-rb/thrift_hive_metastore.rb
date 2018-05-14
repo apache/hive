@@ -3033,7 +3033,7 @@ module ThriftHiveMetastore
 
     def create_ischema(schema)
       send_create_ischema(schema)
-      recv_create_ischema()
+      return recv_create_ischema()
     end
 
     def send_create_ischema(schema)
@@ -3042,10 +3042,11 @@ module ThriftHiveMetastore
 
     def recv_create_ischema()
       result = receive_message(Create_ischema_result)
+      return result.success unless result.success.nil?
       raise result.o1 unless result.o1.nil?
       raise result.o2 unless result.o2.nil?
       raise result.o3 unless result.o3.nil?
-      return
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'create_ischema failed: unknown result')
     end
 
     def alter_ischema(schemaName, newSchema)
@@ -3064,13 +3065,30 @@ module ThriftHiveMetastore
       return
     end
 
-    def get_ischema(schemaName)
-      send_get_ischema(schemaName)
+    def get_ischema_by_name(schemaName)
+      send_get_ischema_by_name(schemaName)
+      return recv_get_ischema_by_name()
+    end
+
+    def send_get_ischema_by_name(schemaName)
+      send_message('get_ischema_by_name', Get_ischema_by_name_args, :schemaName => schemaName)
+    end
+
+    def recv_get_ischema_by_name()
+      result = receive_message(Get_ischema_by_name_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_ischema_by_name failed: unknown result')
+    end
+
+    def get_ischema(schemaId)
+      send_get_ischema(schemaId)
       return recv_get_ischema()
     end
 
-    def send_get_ischema(schemaName)
-      send_message('get_ischema', Get_ischema_args, :schemaName => schemaName)
+    def send_get_ischema(schemaId)
+      send_message('get_ischema', Get_ischema_args, :schemaId => schemaId)
     end
 
     def recv_get_ischema()
@@ -3100,7 +3118,7 @@ module ThriftHiveMetastore
 
     def add_schema_version(schemaVersion)
       send_add_schema_version(schemaVersion)
-      recv_add_schema_version()
+      return recv_add_schema_version()
     end
 
     def send_add_schema_version(schemaVersion)
@@ -3109,10 +3127,11 @@ module ThriftHiveMetastore
 
     def recv_add_schema_version()
       result = receive_message(Add_schema_version_result)
+      return result.success unless result.success.nil?
       raise result.o1 unless result.o1.nil?
       raise result.o2 unless result.o2.nil?
       raise result.o3 unless result.o3.nil?
-      return
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'add_schema_version failed: unknown result')
     end
 
     def get_schema_version(schemaName, version)
@@ -3147,6 +3166,40 @@ module ThriftHiveMetastore
       raise result.o1 unless result.o1.nil?
       raise result.o2 unless result.o2.nil?
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_schema_latest_version failed: unknown result')
+    end
+
+    def get_schema_version_by_id(schemaVersionid)
+      send_get_schema_version_by_id(schemaVersionid)
+      return recv_get_schema_version_by_id()
+    end
+
+    def send_get_schema_version_by_id(schemaVersionid)
+      send_message('get_schema_version_by_id', Get_schema_version_by_id_args, :schemaVersionid => schemaVersionid)
+    end
+
+    def recv_get_schema_version_by_id()
+      result = receive_message(Get_schema_version_by_id_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_schema_version_by_id failed: unknown result')
+    end
+
+    def get_schema_versions_by_name_and_fingerprint(schemaName, fingerPrint)
+      send_get_schema_versions_by_name_and_fingerprint(schemaName, fingerPrint)
+      return recv_get_schema_versions_by_name_and_fingerprint()
+    end
+
+    def send_get_schema_versions_by_name_and_fingerprint(schemaName, fingerPrint)
+      send_message('get_schema_versions_by_name_and_fingerprint', Get_schema_versions_by_name_and_fingerprint_args, :schemaName => schemaName, :fingerPrint => fingerPrint)
+    end
+
+    def recv_get_schema_versions_by_name_and_fingerprint()
+      result = receive_message(Get_schema_versions_by_name_and_fingerprint_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_schema_versions_by_name_and_fingerprint failed: unknown result')
     end
 
     def get_schema_all_versions(schemaName)
@@ -3196,6 +3249,108 @@ module ThriftHiveMetastore
       return result.success unless result.success.nil?
       raise result.o1 unless result.o1.nil?
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_schemas_by_cols failed: unknown result')
+    end
+
+    def add_schema_branch(schemaBranch)
+      send_add_schema_branch(schemaBranch)
+      recv_add_schema_branch()
+    end
+
+    def send_add_schema_branch(schemaBranch)
+      send_message('add_schema_branch', Add_schema_branch_args, :schemaBranch => schemaBranch)
+    end
+
+    def recv_add_schema_branch()
+      result = receive_message(Add_schema_branch_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      return
+    end
+
+    def map_schema_branch_to_schema_version(schemaBranchId, schemaVersionId)
+      send_map_schema_branch_to_schema_version(schemaBranchId, schemaVersionId)
+      recv_map_schema_branch_to_schema_version()
+    end
+
+    def send_map_schema_branch_to_schema_version(schemaBranchId, schemaVersionId)
+      send_message('map_schema_branch_to_schema_version', Map_schema_branch_to_schema_version_args, :schemaBranchId => schemaBranchId, :schemaVersionId => schemaVersionId)
+    end
+
+    def recv_map_schema_branch_to_schema_version()
+      result = receive_message(Map_schema_branch_to_schema_version_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      return
+    end
+
+    def get_schema_branch(schemaBranchId)
+      send_get_schema_branch(schemaBranchId)
+      return recv_get_schema_branch()
+    end
+
+    def send_get_schema_branch(schemaBranchId)
+      send_message('get_schema_branch', Get_schema_branch_args, :schemaBranchId => schemaBranchId)
+    end
+
+    def recv_get_schema_branch()
+      result = receive_message(Get_schema_branch_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_schema_branch failed: unknown result')
+    end
+
+    def get_schema_branch_by_schema_name(schemaName)
+      send_get_schema_branch_by_schema_name(schemaName)
+      return recv_get_schema_branch_by_schema_name()
+    end
+
+    def send_get_schema_branch_by_schema_name(schemaName)
+      send_message('get_schema_branch_by_schema_name', Get_schema_branch_by_schema_name_args, :schemaName => schemaName)
+    end
+
+    def recv_get_schema_branch_by_schema_name()
+      result = receive_message(Get_schema_branch_by_schema_name_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_schema_branch_by_schema_name failed: unknown result')
+    end
+
+    def get_schema_branch_by_schema_version_id(schemaVersionId)
+      send_get_schema_branch_by_schema_version_id(schemaVersionId)
+      return recv_get_schema_branch_by_schema_version_id()
+    end
+
+    def send_get_schema_branch_by_schema_version_id(schemaVersionId)
+      send_message('get_schema_branch_by_schema_version_id', Get_schema_branch_by_schema_version_id_args, :schemaVersionId => schemaVersionId)
+    end
+
+    def recv_get_schema_branch_by_schema_version_id()
+      result = receive_message(Get_schema_branch_by_schema_version_id_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_schema_branch_by_schema_version_id failed: unknown result')
+    end
+
+    def get_schema_versions_by_schema_branch_id(schemaBranchId)
+      send_get_schema_versions_by_schema_branch_id(schemaBranchId)
+      return recv_get_schema_versions_by_schema_branch_id()
+    end
+
+    def send_get_schema_versions_by_schema_branch_id(schemaBranchId)
+      send_message('get_schema_versions_by_schema_branch_id', Get_schema_versions_by_schema_branch_id_args, :schemaBranchId => schemaBranchId)
+    end
+
+    def recv_get_schema_versions_by_schema_branch_id()
+      result = receive_message(Get_schema_versions_by_schema_branch_id_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_schema_versions_by_schema_branch_id failed: unknown result')
     end
 
     def map_schema_version_to_serde(schemaName, version, serdeName)
@@ -5536,7 +5691,7 @@ module ThriftHiveMetastore
       args = read_args(iprot, Create_ischema_args)
       result = Create_ischema_result.new()
       begin
-        @handler.create_ischema(args.schema)
+        result.success = @handler.create_ischema(args.schema)
       rescue ::AlreadyExistsException => o1
         result.o1 = o1
       rescue ::NoSuchObjectException => o2
@@ -5560,11 +5715,24 @@ module ThriftHiveMetastore
       write_result(result, oprot, 'alter_ischema', seqid)
     end
 
+    def process_get_ischema_by_name(seqid, iprot, oprot)
+      args = read_args(iprot, Get_ischema_by_name_args)
+      result = Get_ischema_by_name_result.new()
+      begin
+        result.success = @handler.get_ischema_by_name(args.schemaName)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_ischema_by_name', seqid)
+    end
+
     def process_get_ischema(seqid, iprot, oprot)
       args = read_args(iprot, Get_ischema_args)
       result = Get_ischema_result.new()
       begin
-        result.success = @handler.get_ischema(args.schemaName)
+        result.success = @handler.get_ischema(args.schemaId)
       rescue ::NoSuchObjectException => o1
         result.o1 = o1
       rescue ::MetaException => o2
@@ -5592,7 +5760,7 @@ module ThriftHiveMetastore
       args = read_args(iprot, Add_schema_version_args)
       result = Add_schema_version_result.new()
       begin
-        @handler.add_schema_version(args.schemaVersion)
+        result.success = @handler.add_schema_version(args.schemaVersion)
       rescue ::AlreadyExistsException => o1
         result.o1 = o1
       rescue ::NoSuchObjectException => o2
@@ -5627,6 +5795,32 @@ module ThriftHiveMetastore
         result.o2 = o2
       end
       write_result(result, oprot, 'get_schema_latest_version', seqid)
+    end
+
+    def process_get_schema_version_by_id(seqid, iprot, oprot)
+      args = read_args(iprot, Get_schema_version_by_id_args)
+      result = Get_schema_version_by_id_result.new()
+      begin
+        result.success = @handler.get_schema_version_by_id(args.schemaVersionid)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_schema_version_by_id', seqid)
+    end
+
+    def process_get_schema_versions_by_name_and_fingerprint(seqid, iprot, oprot)
+      args = read_args(iprot, Get_schema_versions_by_name_and_fingerprint_args)
+      result = Get_schema_versions_by_name_and_fingerprint_result.new()
+      begin
+        result.success = @handler.get_schema_versions_by_name_and_fingerprint(args.schemaName, args.fingerPrint)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_schema_versions_by_name_and_fingerprint', seqid)
     end
 
     def process_get_schema_all_versions(seqid, iprot, oprot)
@@ -5664,6 +5858,88 @@ module ThriftHiveMetastore
         result.o1 = o1
       end
       write_result(result, oprot, 'get_schemas_by_cols', seqid)
+    end
+
+    def process_add_schema_branch(seqid, iprot, oprot)
+      args = read_args(iprot, Add_schema_branch_args)
+      result = Add_schema_branch_result.new()
+      begin
+        @handler.add_schema_branch(args.schemaBranch)
+      rescue ::AlreadyExistsException => o1
+        result.o1 = o1
+      rescue ::NoSuchObjectException => o2
+        result.o2 = o2
+      rescue ::MetaException => o3
+        result.o3 = o3
+      end
+      write_result(result, oprot, 'add_schema_branch', seqid)
+    end
+
+    def process_map_schema_branch_to_schema_version(seqid, iprot, oprot)
+      args = read_args(iprot, Map_schema_branch_to_schema_version_args)
+      result = Map_schema_branch_to_schema_version_result.new()
+      begin
+        @handler.map_schema_branch_to_schema_version(args.schemaBranchId, args.schemaVersionId)
+      rescue ::AlreadyExistsException => o1
+        result.o1 = o1
+      rescue ::NoSuchObjectException => o2
+        result.o2 = o2
+      rescue ::MetaException => o3
+        result.o3 = o3
+      end
+      write_result(result, oprot, 'map_schema_branch_to_schema_version', seqid)
+    end
+
+    def process_get_schema_branch(seqid, iprot, oprot)
+      args = read_args(iprot, Get_schema_branch_args)
+      result = Get_schema_branch_result.new()
+      begin
+        result.success = @handler.get_schema_branch(args.schemaBranchId)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_schema_branch', seqid)
+    end
+
+    def process_get_schema_branch_by_schema_name(seqid, iprot, oprot)
+      args = read_args(iprot, Get_schema_branch_by_schema_name_args)
+      result = Get_schema_branch_by_schema_name_result.new()
+      begin
+        result.success = @handler.get_schema_branch_by_schema_name(args.schemaName)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_schema_branch_by_schema_name', seqid)
+    end
+
+    def process_get_schema_branch_by_schema_version_id(seqid, iprot, oprot)
+      args = read_args(iprot, Get_schema_branch_by_schema_version_id_args)
+      result = Get_schema_branch_by_schema_version_id_result.new()
+      begin
+        result.success = @handler.get_schema_branch_by_schema_version_id(args.schemaVersionId)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_schema_branch_by_schema_version_id', seqid)
+    end
+
+    def process_get_schema_versions_by_schema_branch_id(seqid, iprot, oprot)
+      args = read_args(iprot, Get_schema_versions_by_schema_branch_id_args)
+      result = Get_schema_versions_by_schema_branch_id_result.new()
+      begin
+        result.success = @handler.get_schema_versions_by_schema_branch_id(args.schemaBranchId)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_schema_versions_by_schema_branch_id', seqid)
     end
 
     def process_map_schema_version_to_serde(seqid, iprot, oprot)
@@ -12509,11 +12785,13 @@ module ThriftHiveMetastore
 
   class Create_ischema_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
     O1 = 1
     O2 = -1
     O3 = 3
 
     FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::I64, :name => 'success'},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::AlreadyExistsException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException},
       O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException}
@@ -12563,12 +12841,48 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
-  class Get_ischema_args
+  class Get_ischema_by_name_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
     SCHEMANAME = 1
 
     FIELDS = {
       SCHEMANAME => {:type => ::Thrift::Types::STRING, :name => 'schemaName'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_ischema_by_name_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::ISchema},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_ischema_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SCHEMAID = 1
+
+    FIELDS = {
+      SCHEMAID => {:type => ::Thrift::Types::I64, :name => 'schemaId'}
     }
 
     def struct_fields; FIELDS; end
@@ -12640,7 +12954,7 @@ module ThriftHiveMetastore
     SCHEMAVERSION = 1
 
     FIELDS = {
-      SCHEMAVERSION => {:type => ::Thrift::Types::STRUCT, :name => 'schemaVersion', :class => ::SchemaVersion}
+      SCHEMAVERSION => {:type => ::Thrift::Types::STRUCT, :name => 'schemaVersion', :class => ::ISchemaVersion}
     }
 
     def struct_fields; FIELDS; end
@@ -12653,11 +12967,13 @@ module ThriftHiveMetastore
 
   class Add_schema_version_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
     O1 = 1
     O2 = 2
     O3 = 3
 
     FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::I64, :name => 'success'},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::AlreadyExistsException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException},
       O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException}
@@ -12696,7 +13012,7 @@ module ThriftHiveMetastore
     O2 = 2
 
     FIELDS = {
-      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::SchemaVersion},
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::ISchemaVersion},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
     }
@@ -12732,7 +13048,81 @@ module ThriftHiveMetastore
     O2 = 2
 
     FIELDS = {
-      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::SchemaVersion},
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::ISchemaVersion},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_schema_version_by_id_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SCHEMAVERSIONID = 1
+
+    FIELDS = {
+      SCHEMAVERSIONID => {:type => ::Thrift::Types::I64, :name => 'schemaVersionid'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_schema_version_by_id_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::ISchemaVersion},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_schema_versions_by_name_and_fingerprint_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SCHEMANAME = 1
+    FINGERPRINT = 2
+
+    FIELDS = {
+      SCHEMANAME => {:type => ::Thrift::Types::STRING, :name => 'schemaName'},
+      FINGERPRINT => {:type => ::Thrift::Types::STRING, :name => 'fingerPrint'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_schema_versions_by_name_and_fingerprint_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::ISchemaVersion}},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
     }
@@ -12768,7 +13158,7 @@ module ThriftHiveMetastore
     O2 = 2
 
     FIELDS = {
-      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::SchemaVersion}},
+      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::ISchemaVersion}},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
     }
@@ -12841,6 +13231,224 @@ module ThriftHiveMetastore
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::FindSchemasByColsResp},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Add_schema_branch_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SCHEMABRANCH = 1
+
+    FIELDS = {
+      SCHEMABRANCH => {:type => ::Thrift::Types::STRUCT, :name => 'schemaBranch', :class => ::ISchemaBranch}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Add_schema_branch_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+    O3 = 3
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::AlreadyExistsException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Map_schema_branch_to_schema_version_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SCHEMABRANCHID = 1
+    SCHEMAVERSIONID = 2
+
+    FIELDS = {
+      SCHEMABRANCHID => {:type => ::Thrift::Types::I64, :name => 'schemaBranchId'},
+      SCHEMAVERSIONID => {:type => ::Thrift::Types::I64, :name => 'schemaVersionId'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Map_schema_branch_to_schema_version_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+    O3 = 3
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::AlreadyExistsException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_schema_branch_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SCHEMABRANCHID = 1
+
+    FIELDS = {
+      SCHEMABRANCHID => {:type => ::Thrift::Types::I64, :name => 'schemaBranchId'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_schema_branch_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::ISchemaBranch},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_schema_branch_by_schema_name_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SCHEMANAME = 1
+
+    FIELDS = {
+      SCHEMANAME => {:type => ::Thrift::Types::STRING, :name => 'schemaName'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_schema_branch_by_schema_name_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::ISchemaBranch}},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_schema_branch_by_schema_version_id_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SCHEMAVERSIONID = 1
+
+    FIELDS = {
+      SCHEMAVERSIONID => {:type => ::Thrift::Types::I64, :name => 'schemaVersionId'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_schema_branch_by_schema_version_id_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::ISchemaBranch}},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_schema_versions_by_schema_branch_id_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SCHEMABRANCHID = 1
+
+    FIELDS = {
+      SCHEMABRANCHID => {:type => ::Thrift::Types::I64, :name => 'schemaBranchId'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_schema_versions_by_schema_branch_id_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::ISchemaBranchToISchemaVersion}},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
     }
 
     def struct_fields; FIELDS; end

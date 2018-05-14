@@ -1,0 +1,227 @@
+#!/bin/bash
+
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Home Dir
+base_dir=$(dirname $0)/..
+
+#if HDP_DIR is not set its a dev env.
+if [ "x$HDP_DIR" = "x" ]; then
+    REGISTRY_HOME=$base_dir
+    PID_DIR=$base_dir/logs
+    LOG_DIR=$base_dir/logs
+    mkdir -p $LOG_DIR
+else
+    REGISTRY_HOME=$HDP_DIR/iotas
+fi
+
+
+[ -z $MAX_WAIT_TIME ] && MAX_WAIT_TIME=120
+
+. $REGISTRY_HOME/conf/registry-env.sh
+
+#Iotas PID
+PID=0
+
+# Start, stop, status
+REGISTRY_LAUNCH_COMMAND=$1
+
+# User Name for setup parameter
+[ -z $REGISTRY_USER ] && REGISTRY_USER=registry
+
+
+#App name
+APP_NAME=registry
+
+REGISTRY_START_CMD="$REGISTRY_HOME/bin/registry-server-start.sh $REGISTRY_HOME/conf/registry.yaml"
+
+#Name of PID file
+[ -z $PID_DIR ] && PID_DIR="/var/run/$APP_NAME"
+[ -z $LOG_DIR ] && LOG_DIR="/var/log/$APP_NAME"
+
+#Name of PID file
+PID_FILE="$PID_DIR/$APP_NAME.pid"
+#Name of LOG/OUT/ERR file
+OUT_FILE="$LOG_DIR/$APP_NAME.out"
+ERR_FILE="$LOG_DIR/$APP_NAME.err"
+
+
+function main {
+   case "$1" in
+      start)
+         registryStart
+         ;;
+      stop)
+         registryStop
+         ;;
+      status)
+         registryStatus
+         ;;
+      clean)
+         registryClean
+          ;;
+      *)
+         printf "Usage: $0 {start|stop|status|clean}\n"
+         ;;
+   esac
+}
+
+function registryStart {
+
+   getPID
+   registryIsRunning $PID
+   if [ $? -eq 1 ]; then
+     printf "Registry is already running with PID=$PID.\n"
+     exit 0
+   fi
+
+   printf "Starting Registry "
+
+   rm -f $PID_FILE
+   su $REGISTRY_USER -c "nohup $REGISTRY_START_CMD >>$OUT_FILE 2>>$ERR_FILE & echo \$! > $PID_FILE"
+
+   getPID
+   registryIsRunning $PID
+   if [ $? -ne 1 ]; then
+      printf "failed.\n"
+      exit 1
+   fi
+
+   printf "succeeded with PID=$PID.\n"
+   return 0
+}
+
+function registryStop {
+   getPID
+   registryIsRunning $PID
+   if [ $? -eq 0 ]; then
+     printf "Registry is not running.\n"
+     rm -f $PID_FILE
+     return 0
+   fi
+
+   printf "Stopping Registry [$PID] "
+   registryKill $PID >>$OUT_FILE 2>>$ERR_FILE
+
+   if [ $? -ne 0 ]; then
+     printf "failed. \n"
+     exit 1
+   else
+     rm -f $PID_FILE
+     printf "succeeded.\n"
+     return 0
+   fi
+}
+
+function registryStatus {
+   printf "Registry "
+   getPID
+   if [ $? -eq 1 ]; then
+     printf "is not running. No pid file found.\n"
+     return 0
+   fi
+
+   registryIsRunning $PID
+   if [ $? -eq 1 ]; then
+     printf "is running with PID=$PID.\n"
+     exit 1
+   else
+     printf "is not running.\n"
+     return 0
+   fi
+}
+
+# Removed the Registry PID file if Registry is not running
+function registryClean {
+   getPID
+   registryIsRunning $PID
+   if [ $? -eq 0 ]; then
+     deleteLogFiles
+     return 0
+   else
+     printf "Can't clean files.  Registry is running with PID=$PID.\n"
+     exit 1
+   fi
+}
+
+# Returns 0 if the Knox is running and sets the $PID variable.
+function getPID {
+   if [ ! -d $PID_DIR ]; then
+      printf "Can't find pid dir.\n"
+      exit 1
+   fi
+   if [ ! -f $PID_FILE ]; then
+     PID=0
+     return 1
+   fi
+
+   PID="$(<$PID_FILE)"
+   return 0
+}
+
+function registryIsRunning {
+   if [ $1 -eq 0 ]; then return 0; fi
+
+   ps -p $1 > /dev/null
+
+   if [ $? -eq 1 ]; then
+     return 0
+   else
+     return 1
+   fi
+}
+
+function registryKill {
+   local localPID=$1
+   kill $localPID || return 1
+   for ((i=0; i<MAX_WAIT_TIME; i++)); do
+      registryIsRunning $localPID
+      if [ $? -eq 0 ]; then return 0; fi
+      sleep 1
+   done
+
+   kill -s KILL $localPID || return 1
+   for ((i=0; i<MAX_WAIT_TIME; i++)); do
+      registryIsRunning $localPID
+      if [ $? -eq 0 ]; then return 0; fi
+      sleep 1
+   done
+
+   return 1
+}
+
+function createLogFiles {
+   if [ ! -d "$LOG_DIR" ]; then
+      printf "Can't find log dir.  Run sudo $0 setup.\n"
+      exit 1
+   fi
+   if [ ! -f "$OUT_FILE" ]; then su $REGISTRY_USER -c "touch $OUT_FILE"; fi
+   if [ ! -f "$ERR_FILE" ]; then su $REGISTRY_USER -c "touch $ERR_FILE"; fi
+}
+
+function deleteLogFiles {
+     rm -f $PID_FILE
+     printf "Removed the REGISTRY PID file: $PID_FILE.\n"
+
+     rm -f $OUT_FILE
+     printf "Removed the REGISTRY OUT file: $OUT_FILE.\n"
+
+     rm -f $ERR_FILE
+     printf "Removed the REGISTRY ERR file: $ERR_FILE.\n"
+}
+
+#Starting main
+main $REGISTRY_LAUNCH_COMMAND

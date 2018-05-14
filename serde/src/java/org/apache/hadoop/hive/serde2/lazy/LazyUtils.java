@@ -447,7 +447,7 @@ public final class LazyUtils {
           "LazySimpleSerde is " + (separators.length - 1) +
           " Unable to work with level " + level;
       
-      String txt = ". Use %s serde property for tables using LazySimpleSerde.";
+      String txt = ". Use %s serdes property for tables using LazySimpleSerde.";
       
       if(separators.length < 9){
         msg += String.format(txt, LazySerDeParameters.SERIALIZATION_EXTEND_NESTING_LEVELS);

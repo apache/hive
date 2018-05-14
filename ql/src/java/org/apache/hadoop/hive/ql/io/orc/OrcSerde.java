@@ -42,7 +42,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.Writable;
 
 /**
- * A serde class for ORC.
+ * A serdes class for ORC.
  * It transparently passes the object to/from the ORC file reader/writer.
  */
 @SerDeSpec(schemaProps = {serdeConstants.LIST_COLUMNS, serdeConstants.LIST_COLUMN_TYPES, OrcSerde.COMPRESSION})
@@ -111,7 +111,7 @@ public class OrcSerde extends VectorizedSerde {
     ArrayList<TypeInfo> fieldTypes =
         TypeInfoUtils.getTypeInfosFromTypeString(columnTypeProperty);
     StructTypeInfo rootType = new StructTypeInfo();
-    // The source column names for ORC serde that will be used in the schema.
+    // The source column names for ORC serdes that will be used in the schema.
     rootType.setAllStructFieldNames(columnNames);
     rootType.setAllStructFieldTypeInfos(fieldTypes);
     inspector = OrcStruct.createObjectInspector(rootType);

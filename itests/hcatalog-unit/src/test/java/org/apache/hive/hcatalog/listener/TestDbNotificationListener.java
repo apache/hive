@@ -380,7 +380,7 @@ public class TestDbNotificationListener {
     FieldSchema col1 = new FieldSchema("col1", "int", "no comment");
     List<FieldSchema> cols = new ArrayList<FieldSchema>();
     cols.add(col1);
-    SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
+    SerDeInfo serde = new SerDeInfo("serdes", "seriallib", null);
     StorageDescriptor sd =
         new StorageDescriptor(cols, serdeLocation, "input", "output", false, 0, serde, null, null,
             emptyParameters);
@@ -435,7 +435,7 @@ public class TestDbNotificationListener {
     FieldSchema col2 = new FieldSchema("col2", "int", "no comment");
     List<FieldSchema> cols = new ArrayList<FieldSchema>();
     cols.add(col1);
-    SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
+    SerDeInfo serde = new SerDeInfo("serdes", "seriallib", null);
     StorageDescriptor sd =
         new StorageDescriptor(cols, serdeLocation, "input", "output", false, 0, serde, null, null,
             emptyParameters);
@@ -492,7 +492,7 @@ public class TestDbNotificationListener {
     FieldSchema col1 = new FieldSchema("col1", "int", "no comment");
     List<FieldSchema> cols = new ArrayList<FieldSchema>();
     cols.add(col1);
-    SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
+    SerDeInfo serde = new SerDeInfo("serdes", "seriallib", null);
     StorageDescriptor sd =
         new StorageDescriptor(cols, serdeLocation, "input", "output", false, 0, serde, null, null,
             emptyParameters);
@@ -558,7 +558,7 @@ public class TestDbNotificationListener {
     FieldSchema col1 = new FieldSchema("col1", "int", "no comment");
     List<FieldSchema> cols = new ArrayList<FieldSchema>();
     cols.add(col1);
-    SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
+    SerDeInfo serde = new SerDeInfo("serdes", "seriallib", null);
     StorageDescriptor sd =
         new StorageDescriptor(cols, serdeLocation, "input", "output", false, 0, serde, null, null,
             emptyParameters);
@@ -626,7 +626,7 @@ public class TestDbNotificationListener {
     FieldSchema col1 = new FieldSchema("col1", "int", "no comment");
     List<FieldSchema> cols = new ArrayList<FieldSchema>();
     cols.add(col1);
-    SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
+    SerDeInfo serde = new SerDeInfo("serdes", "seriallib", null);
     StorageDescriptor sd =
         new StorageDescriptor(cols, serdeLocation, "input", "output", false, 0, serde, null, null,
             emptyParameters);
@@ -694,7 +694,7 @@ public class TestDbNotificationListener {
     FieldSchema col1 = new FieldSchema("col1", "int", "no comment");
     List<FieldSchema> cols = new ArrayList<FieldSchema>();
     cols.add(col1);
-    SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
+    SerDeInfo serde = new SerDeInfo("serdes", "seriallib", null);
     StorageDescriptor sd =
         new StorageDescriptor(cols, serdeLocation, "input", "output", false, 0, serde, null, null,
             emptyParameters);
@@ -766,7 +766,7 @@ public class TestDbNotificationListener {
     cols.add(new FieldSchema("col1", "int", "nocomment"));
     List<FieldSchema> partCols = new ArrayList<FieldSchema>();
     partCols.add(new FieldSchema("part", "int", ""));
-    SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
+    SerDeInfo serde = new SerDeInfo("serdes", "seriallib", null);
     StorageDescriptor sd1 = new StorageDescriptor(cols, "file:/tmp/1", "input", "output", false, 0,
         serde, null, null, emptyParameters);
     Table tab1 = new Table("tab1", dbName, "me", startTime, startTime, 0, sd1, partCols,
@@ -970,7 +970,7 @@ public class TestDbNotificationListener {
     int startTime = (int) (System.currentTimeMillis() / 1000);
     List<FieldSchema> cols = new ArrayList<FieldSchema>();
     cols.add(new FieldSchema("col1", "int", ""));
-    SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
+    SerDeInfo serde = new SerDeInfo("serdes", "seriallib", null);
     Map<String, String> params = new HashMap<String, String>();
     params.put("key", "value");
     StorageDescriptor sd =
@@ -1041,7 +1041,7 @@ public class TestDbNotificationListener {
     int startTime = (int) (System.currentTimeMillis() / 1000);
     List<FieldSchema> cols = new ArrayList<FieldSchema>();
     cols.add(new FieldSchema("col1", "int", ""));
-    SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
+    SerDeInfo serde = new SerDeInfo("serdes", "seriallib", null);
     Map<String, String> params = new HashMap<String, String>();
     params.put("key", "value");
     StorageDescriptor sd =
@@ -1116,7 +1116,7 @@ public class TestDbNotificationListener {
     int startTime = (int) (System.currentTimeMillis() / 1000);
     List<FieldSchema> cols = new ArrayList<FieldSchema>();
     cols.add(new FieldSchema("col1", "int", ""));
-    SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
+    SerDeInfo serde = new SerDeInfo("serdes", "seriallib", null);
     Map<String, String> params = new HashMap<String, String>();
     params.put("key", "value");
     StorageDescriptor sd =
@@ -1189,7 +1189,7 @@ public class TestDbNotificationListener {
     FieldSchema col1 = new FieldSchema("col1", "int", "no comment");
     List<FieldSchema> cols = new ArrayList<FieldSchema>();
     cols.add(col1);
-    SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
+    SerDeInfo serde = new SerDeInfo("serdes", "seriallib", null);
     StorageDescriptor sd =
         new StorageDescriptor(cols, serdeLocation, "input", "output", false, 0, serde, null, null,
             emptyParameters);
@@ -1244,7 +1244,7 @@ public class TestDbNotificationListener {
     FieldSchema col1 = new FieldSchema("col1", "int", "no comment");
     List<FieldSchema> cols = new ArrayList<FieldSchema>();
     cols.add(col1);
-    SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
+    SerDeInfo serde = new SerDeInfo("serdes", "seriallib", null);
     StorageDescriptor sd =
         new StorageDescriptor(cols, serdeLocation, "input", "output", false, 0, serde, null, null,
             emptyParameters);

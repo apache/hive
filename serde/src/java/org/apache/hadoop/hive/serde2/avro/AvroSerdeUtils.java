@@ -67,7 +67,7 @@ public class AvroSerdeUtils {
     SCHEMA_NAMESPACE("avro.schema.namespace"),
     SCHEMA_NAME("avro.schema.name"),
     SCHEMA_DOC("avro.schema.doc"),
-    AVRO_SERDE_SCHEMA("avro.serde.schema"),
+    AVRO_SERDE_SCHEMA("avro.serdes.schema"),
     SCHEMA_RETRIEVER("avro.schema.retriever");
 
     private final String propName;
@@ -98,7 +98,7 @@ public class AvroSerdeUtils {
 
 
   /**
-   * Determine the schema to that's been provided for Avro serde work.
+   * Determine the schema to that's been provided for Avro serdes work.
    * @param properties containing a key pointing to the schema, one way or another
    * @return schema to use while serdeing the avro file
    * @throws IOException if error while trying to read the schema from another location

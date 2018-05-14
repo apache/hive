@@ -84,17 +84,17 @@ public class HiveMetaTool {
                     "old-loc should be valid URIs with valid host names and schemes." +
                     "When run with the dryRun option changes are displayed but are not " +
                     "persisted. When run with the serdepropKey/tablePropKey option " +
-                    "updateLocation looks for the serde-prop-key/table-prop-key that is " +
+                    "updateLocation looks for the serdes-prop-key/table-prop-key that is " +
                     "specified and updates its value if found.")
                     .create("updateLocation");
     Option dryRun = new Option("dryRun" , "Perform a dry run of updateLocation changes.When " +
       "run with the dryRun option updateLocation changes are displayed but not persisted. " +
       "dryRun is valid only with the updateLocation option.");
     Option serdePropKey =
-        OptionBuilder.withArgName("serde-prop-key")
+        OptionBuilder.withArgName("serdes-prop-key")
         .hasArgs()
         .withValueSeparator()
-        .withDescription("Specify the key for serde property to be updated. serdePropKey option " +
+        .withDescription("Specify the key for serdes property to be updated. serdePropKey option " +
            "is valid only with updateLocation option.")
         .create("serdePropKey");
     Option tablePropKey =

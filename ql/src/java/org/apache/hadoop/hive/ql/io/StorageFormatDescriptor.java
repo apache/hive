@@ -41,7 +41,7 @@ public interface StorageFormatDescriptor {
    */
   String getOutputFormat();
   /**
-   * Return the name of the serde as a string or null
+   * Return the name of the serdes as a string or null
    */
   @Nullable String getSerde();
 

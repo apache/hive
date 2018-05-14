@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.metastore.model;
 
 public class MISchema {
+  private Long schemaId;
   private int schemaType;
   private String name;
   private MDatabase db;
@@ -26,9 +27,11 @@ public class MISchema {
   private boolean canEvolve;
   private String schemaGroup;
   private String description;
+  private Long timestamp;
 
-  public MISchema(int schemaType, String name, MDatabase db, int compatibility,
-                  int validationLevel, boolean canEvolve, String schemaGroup, String description) {
+  public MISchema(Long schemaId, int schemaType, String name, MDatabase db, int compatibility,
+                  int validationLevel, boolean canEvolve, String schemaGroup, String description, Long timestamp) {
+    this.schemaId = schemaId;
     this.schemaType = schemaType;
     this.name = name;
     this.db= db;
@@ -37,7 +40,25 @@ public class MISchema {
     this.canEvolve = canEvolve;
     this.schemaGroup = schemaGroup;
     this.description = description;
+    this.timestamp = timestamp;
   }
+
+  public MISchema(int schemaType, String name, MDatabase db, int compatibility,
+                  int validationLevel, boolean canEvolve, String schemaGroup, String description, Long timestamp) {
+    this.schemaType = schemaType;
+    this.name = name;
+    this.db= db;
+    this.compatibility = compatibility;
+    this.validationLevel = validationLevel;
+    this.canEvolve = canEvolve;
+    this.schemaGroup = schemaGroup;
+    this.description = description;
+    this.timestamp = timestamp;
+  }
+
+  public Long getSchemaId() { return schemaId; }
+
+  public void setSchemaId(Long schemaId) { this.schemaId = schemaId; }
 
   public int getSchemaType() {
     return schemaType;
@@ -103,5 +124,9 @@ public class MISchema {
   public void setDescription(String description) {
     this.description = description;
   }
+
+  public Long getTimestamp() { return timestamp; }
+
+  public void setTimestamp(Long timestamp) { this.timestamp = timestamp; }
 }
 

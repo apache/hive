@@ -61,7 +61,7 @@ public class ParquetRecordWriterWrapper implements RecordWriter<NullWritable, Pa
       }
       taskContext = ContextUtil.newTaskAttemptContext(jobConf, taskAttemptID);
 
-      LOG.info("initialize serde with table properties.");
+      LOG.info("initialize serdes with table properties.");
       initializeSerProperties(taskContext, tableProperties);
 
       LOG.info("creating real writer to write at " + name);

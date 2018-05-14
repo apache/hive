@@ -78,7 +78,7 @@ public class DruidGroupByQueryRecordReader
   }
 
   private void initDimensionTypes() throws IOException {
-    //@TODO move this out of here to org.apache.hadoop.hive.druid.serde.DruidSerDe
+    //@TODO move this out of here to org.apache.hadoop.hive.druid.serdes.DruidSerDe
     List<DimensionSpec> dimensionSpecList = ((GroupByQuery) query).getDimensions();
     List<DimensionSpec> extractionDimensionSpecList = dimensionSpecList.stream()
             .filter(dimensionSpecs -> dimensionSpecs instanceof ExtractionDimensionSpec)
@@ -105,7 +105,7 @@ public class DruidGroupByQueryRecordReader
       final Row row = queryResultsIterator.next();
       // currently druid supports only MapBasedRow as Jackson SerDe so it should safe to cast without check
       currentRow = (MapBasedRow) row;
-      //@TODO move this out of here to org.apache.hadoop.hive.druid.serde.DruidSerDe
+      //@TODO move this out of here to org.apache.hadoop.hive.druid.serdes.DruidSerDe
       currentEvent = Maps.transformEntries(currentRow.getEvent(),
               (key, value1) -> {
                 if (timeExtractionFields.contains(key)) {

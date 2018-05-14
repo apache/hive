@@ -1482,7 +1482,7 @@ public class Vectorizer implements PhysicalPlanResolver {
           isFirst = false;
         }
 
-        // We need to get the partition's column names from the partition serde.
+        // We need to get the partition's column names from the partition serdes.
         // (e.g. Avro provides the table schema and ignores the partition schema..).
         //
         Deserializer deserializer;

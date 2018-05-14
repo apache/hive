@@ -4159,16 +4159,19 @@ end
 
 class ISchema
   include ::Thrift::Struct, ::Thrift::Struct_Union
-  SCHEMATYPE = 1
-  NAME = 2
-  DBNAME = 3
-  COMPATIBILITY = 4
-  VALIDATIONLEVEL = 5
-  CANEVOLVE = 6
-  SCHEMAGROUP = 7
-  DESCRIPTION = 8
+  SCHEMAID = 1
+  SCHEMATYPE = 2
+  NAME = 3
+  DBNAME = 4
+  COMPATIBILITY = 5
+  VALIDATIONLEVEL = 6
+  CANEVOLVE = 7
+  SCHEMAGROUP = 8
+  DESCRIPTION = 9
+  TIMESTAMP = 10
 
   FIELDS = {
+    SCHEMAID => {:type => ::Thrift::Types::I64, :name => 'schemaId', :optional => true},
     SCHEMATYPE => {:type => ::Thrift::Types::I32, :name => 'schemaType', :enum_class => ::SchemaType},
     NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
@@ -4176,7 +4179,8 @@ class ISchema
     VALIDATIONLEVEL => {:type => ::Thrift::Types::I32, :name => 'validationLevel', :enum_class => ::SchemaValidation},
     CANEVOLVE => {:type => ::Thrift::Types::BOOL, :name => 'canEvolve'},
     SCHEMAGROUP => {:type => ::Thrift::Types::STRING, :name => 'schemaGroup', :optional => true},
-    DESCRIPTION => {:type => ::Thrift::Types::STRING, :name => 'description', :optional => true}
+    DESCRIPTION => {:type => ::Thrift::Types::STRING, :name => 'description', :optional => true},
+    TIMESTAMP => {:type => ::Thrift::Types::I64, :name => 'timestamp', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4196,20 +4200,22 @@ class ISchema
   ::Thrift::Struct.generate_accessors self
 end
 
-class SchemaVersion
+class ISchemaVersion
   include ::Thrift::Struct, ::Thrift::Struct_Union
-  SCHEMANAME = 1
-  VERSION = 2
-  CREATEDAT = 3
-  COLS = 4
-  STATE = 5
-  DESCRIPTION = 6
-  SCHEMATEXT = 7
-  FINGERPRINT = 8
-  NAME = 9
-  SERDE = 10
+  SCHEMAVERSIONID = 1
+  SCHEMANAME = 2
+  VERSION = 3
+  CREATEDAT = 4
+  COLS = 5
+  STATE = 6
+  DESCRIPTION = 7
+  SCHEMATEXT = 8
+  FINGERPRINT = 9
+  NAME = 10
+  SERDE = 11
 
   FIELDS = {
+    SCHEMAVERSIONID => {:type => ::Thrift::Types::I64, :name => 'schemaVersionId', :optional => true},
     SCHEMANAME => {:type => ::Thrift::Types::STRING, :name => 'schemaName'},
     VERSION => {:type => ::Thrift::Types::I32, :name => 'version'},
     CREATEDAT => {:type => ::Thrift::Types::I64, :name => 'createdAt'},
@@ -4228,6 +4234,48 @@ class SchemaVersion
     unless @state.nil? || ::SchemaVersionState::VALID_VALUES.include?(@state)
       raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field state!')
     end
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class ISchemaBranch
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  SCHEMABRANCHID = 1
+  NAME = 2
+  SCHEMAMETADATANAME = 3
+  DESCRIPTION = 4
+  TIMESTAMP = 5
+
+  FIELDS = {
+    SCHEMABRANCHID => {:type => ::Thrift::Types::I64, :name => 'schemaBranchId', :optional => true},
+    NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
+    SCHEMAMETADATANAME => {:type => ::Thrift::Types::STRING, :name => 'schemaMetadataName'},
+    DESCRIPTION => {:type => ::Thrift::Types::STRING, :name => 'description', :optional => true},
+    TIMESTAMP => {:type => ::Thrift::Types::I64, :name => 'timestamp', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class ISchemaBranchToISchemaVersion
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  SCHEMABRANCHID = 1
+  SCHEMAVERSIONID = 2
+
+  FIELDS = {
+    SCHEMABRANCHID => {:type => ::Thrift::Types::I64, :name => 'schemaBranchId'},
+    SCHEMAVERSIONID => {:type => ::Thrift::Types::I64, :name => 'schemaVersionId'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
   end
 
   ::Thrift::Struct.generate_accessors self

@@ -1,0 +1,94 @@
+{
+  "type": "record",
+  "namespace": "org.apache.hadoop.hive.registry.schemas",
+  "name": "ComplexDevice",
+  "fields": [
+    {
+      "name": "xid",
+      "type": "long"
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "default": "default"
+    },
+    {
+      "name": "version",
+      "type": "int"
+    },
+    {
+      "name": "longArrayFields",
+      "type": {
+        "type": "array",
+        "items": "long"
+      }
+    },
+    {
+      "name": "complexArrayFields",
+      "type": {
+        "type": "array",
+        "items": {
+          "type": "record",
+          "name": "field_element",
+          "fields": [
+            {
+              "name": "arr_f_11",
+              "type": "string"
+            },
+            {
+              "name": "arr_f_2",
+              "type": "int"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "daysField",
+      "type": {
+        "name": "days",
+        "type": "enum",
+        "symbols": [
+          "SUN",
+          "MON",
+          "TUES",
+          "WED",
+          "THURS",
+          "FRI",
+          "SAT"
+        ]
+      }
+    },
+    {
+      "name": "md5",
+      "type": {
+        "name": "MD5",
+        "type": "fixed",
+        "size": 16
+      }
+    },
+    {
+      "name": "unionField",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    {
+      "name": "longMapRecord",
+      "type": {
+        "name": "longMapRecordEntry",
+        "type": "record",
+        "fields": [
+          {
+            "name": "map_f_1",
+            "type": {
+              "type": "map",
+              "values": "long"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -17,6 +17,6 @@
  */
 
 /**
- * accumulo serde classes
+ * accumulo serdes classes
  */
 package org.apache.hadoop.hive.accumulo.serde;

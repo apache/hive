@@ -39,8 +39,6 @@
       <useStrictFiltering>true</useStrictFiltering>
       <useTransitiveFiltering>true</useTransitiveFiltering>
       <excludes>
-        <exclude>org.apache.hadoop:*</exclude>
-        <exclude>org.slf4j:*</exclude>
         <exclude>log4j:*</exclude>
       </excludes>
     </dependencySet>
@@ -84,6 +82,8 @@
         <include>schematool</include>
         <include>start-metastore</include>
         <include>metastore-config.sh</include>
+        <include>registry</include>
+        <include>registry-server-start.sh</include>
         <include>ext/**/*</include>
       </includes>
       <outputDirectory>bin</outputDirectory>
@@ -120,6 +120,8 @@
       <includes>
         <include>metastore-site.xml</include>
         <include>metastore-log4j2.properties</include>
+        <include>registry.yaml</include>
+        <include>registry-env.sh</include>
       </includes>
       <outputDirectory>conf</outputDirectory>
     </fileSet>

@@ -22,13 +22,13 @@ import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.ISchema;
+import org.apache.hadoop.hive.metastore.api.ISchemaVersion;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.SchemaCompatibility;
 import org.apache.hadoop.hive.metastore.api.SchemaType;
 import org.apache.hadoop.hive.metastore.api.SchemaValidation;
-import org.apache.hadoop.hive.metastore.api.SchemaVersion;
 import org.apache.hadoop.hive.metastore.api.SchemaVersionState;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
@@ -60,7 +60,7 @@ public class TestObjectStoreSchemaMethods {
   @Test
   public void iSchema() throws TException {
     String dbName = createUniqueDatabaseForTest();
-    ISchema schema = objectStore.getISchema("no.such.schema");
+    ISchema schema = objectStore.getISchemaByName("no.such.schema");
     Assert.assertNull(schema);
 
     String schemaName = "schema1";
@@ -78,7 +78,7 @@ public class TestObjectStoreSchemaMethods {
         .build();
     objectStore.createISchema(schema);
 
-    schema = objectStore.getISchema(schemaName);
+    schema = objectStore.getISchemaByName(schemaName);
     Assert.assertNotNull(schema);
 
     Assert.assertEquals(SchemaType.AVRO, schema.getSchemaType());
@@ -98,7 +98,7 @@ public class TestObjectStoreSchemaMethods {
     schema.setDescription(description);
     objectStore.alterISchema(schemaName, schema);
 
-    schema = objectStore.getISchema(schemaName);
+    schema = objectStore.getISchemaByName(schemaName);
     Assert.assertNotNull(schema);
 
     Assert.assertEquals(SchemaType.AVRO, schema.getSchemaType());
@@ -110,7 +110,7 @@ public class TestObjectStoreSchemaMethods {
     Assert.assertEquals(description, schema.getDescription());
 
     objectStore.dropISchema(schemaName);
-    schema = objectStore.getISchema(schemaName);
+    schema = objectStore.getISchemaByName(schemaName);
     Assert.assertNull(schema);
   }
 
@@ -136,7 +136,7 @@ public class TestObjectStoreSchemaMethods {
         .build();
     objectStore.createISchema(schema);
 
-    schema = objectStore.getISchema(schemaName);
+    schema = objectStore.getISchemaByName(schemaName);
     Assert.assertNotNull(schema);
 
     Assert.assertEquals(SchemaType.HIVE, schema.getSchemaType());
@@ -168,7 +168,7 @@ public class TestObjectStoreSchemaMethods {
   @Test(expected = NoSuchObjectException.class)
   public void createVersionOfNonExistentSchema() throws MetaException, AlreadyExistsException,
       NoSuchObjectException {
-    SchemaVersion schemaVersion = new SchemaVersionBuilder()
+    ISchemaVersion schemaVersion = new SchemaVersionBuilder()
         .setSchemaName("noSchemaOfThisNameExists")
         .setVersion(1)
         .addCol("a", ColumnType.STRING_TYPE_NAME)
@@ -181,7 +181,7 @@ public class TestObjectStoreSchemaMethods {
     String dbName = createUniqueDatabaseForTest();
     String schemaName = "schema37";
     int version = 1;
-    SchemaVersion schemaVersion = objectStore.getSchemaVersion(schemaName, version);
+    ISchemaVersion schemaVersion = objectStore.getSchemaVersion(schemaName, version);
     Assert.assertNull(schemaVersion);
 
     ISchema schema = new ISchemaBuilder()
@@ -199,7 +199,7 @@ public class TestObjectStoreSchemaMethods {
     String serdeName = "serde_for_schema37";
     String serializer = "org.apache.hadoop.hive.metastore.test.Serializer";
     String deserializer = "org.apache.hadoop.hive.metastore.test.Deserializer";
-    String serdeDescription = "how do you describe a serde?";
+    String serdeDescription = "how do you describe a serdes?";
     schemaVersion = new SchemaVersionBuilder()
         .setSchemaName(schemaName)
         .setVersion(version)
@@ -257,7 +257,7 @@ public class TestObjectStoreSchemaMethods {
         .setDbName(dbName)
         .build();
     objectStore.createISchema(schema);
-    SchemaVersion schemaVersion = new SchemaVersionBuilder()
+    ISchemaVersion schemaVersion = new SchemaVersionBuilder()
         .setSchemaName(schemaName)
         .setVersion(1)
         .addCol("a", ColumnType.BIGINT_TYPE_NAME)
@@ -296,13 +296,13 @@ public class TestObjectStoreSchemaMethods {
     schemaVersion = objectStore.getLatestSchemaVersion("no.such.schema.with.this.name");
     Assert.assertNull(schemaVersion);
 
-    List<SchemaVersion> versions =
+    List<ISchemaVersion> versions =
         objectStore.getAllSchemaVersion("there.really.isnt.a.schema.named.this");
     Assert.assertNull(versions);
 
     versions = objectStore.getAllSchemaVersion(schemaName);
     Assert.assertEquals(3, versions.size());
-    versions.sort(Comparator.comparingInt(SchemaVersion::getVersion));
+    versions.sort(Comparator.comparingInt(ISchemaVersion::getVersion));
     Assert.assertEquals(1, versions.get(0).getVersion());
     Assert.assertEquals(1, versions.get(0).getColsSize());
     Assert.assertEquals(ColumnType.BIGINT_TYPE_NAME, versions.get(0).getCols().get(0).getType());
@@ -333,7 +333,7 @@ public class TestObjectStoreSchemaMethods {
     String dbName = createUniqueDatabaseForTest();
     String schemaName = "schema1234";
     int version = 1;
-    SchemaVersion schemaVersion = objectStore.getSchemaVersion(schemaName, version);
+    ISchemaVersion schemaVersion = objectStore.getSchemaVersion(schemaName, version);
     Assert.assertNull(schemaVersion);
 
     ISchema schema = new ISchemaBuilder()
@@ -359,7 +359,7 @@ public class TestObjectStoreSchemaMethods {
     String dbName = createUniqueDatabaseForTest();
     String schemaName = "schema371234";
     int version = 1;
-    SchemaVersion schemaVersion = objectStore.getSchemaVersion(schemaName, version);
+    ISchemaVersion schemaVersion = objectStore.getSchemaVersion(schemaName, version);
     Assert.assertNull(schemaVersion);
 
     ISchema schema = new ISchemaBuilder()
@@ -385,7 +385,7 @@ public class TestObjectStoreSchemaMethods {
     Assert.assertEquals(SchemaVersionState.INITIATED, schemaVersion.getState());
 
     schemaVersion.setState(SchemaVersionState.REVIEWED);
-    String serdeName = "serde for " + schemaName;
+    String serdeName = "serdes for " + schemaName;
     SerDeInfo serde = new SerDeInfo(serdeName, "", Collections.emptyMap());
     String serializer = "org.apache.hadoop.hive.metastore.test.Serializer";
     String deserializer = "org.apache.hadoop.hive.metastore.test.Deserializer";
@@ -409,7 +409,7 @@ public class TestObjectStoreSchemaMethods {
       NoSuchObjectException {
     String schemaName = "schema3723asdflj";
     int version = 37;
-    SchemaVersion schemaVersion = new SchemaVersionBuilder()
+    ISchemaVersion schemaVersion = new SchemaVersionBuilder()
         .setSchemaName(schemaName)
         .setVersion(version)
         .addCol("a", ColumnType.INT_TYPE_NAME)
@@ -443,7 +443,7 @@ public class TestObjectStoreSchemaMethods {
         .build();
     objectStore.createISchema(schema2);
 
-    SchemaVersion schemaVersion1_1 = new SchemaVersionBuilder()
+    ISchemaVersion schemaVersion1_1 = new SchemaVersionBuilder()
         .setSchemaName(schemaName1)
         .setVersion(1)
         .addCol("alpha", ColumnType.BIGINT_TYPE_NAME)
@@ -451,7 +451,7 @@ public class TestObjectStoreSchemaMethods {
         .build();
     objectStore.addSchemaVersion(schemaVersion1_1);
 
-    SchemaVersion schemaVersion1_2 = new SchemaVersionBuilder()
+    ISchemaVersion schemaVersion1_2 = new SchemaVersionBuilder()
         .setSchemaName(schemaName1)
         .setVersion(2)
         .addCol("alpha", ColumnType.BIGINT_TYPE_NAME)
@@ -460,7 +460,7 @@ public class TestObjectStoreSchemaMethods {
         .build();
     objectStore.addSchemaVersion(schemaVersion1_2);
 
-    SchemaVersion schemaVersion2_1 = new SchemaVersionBuilder()
+    ISchemaVersion schemaVersion2_1 = new SchemaVersionBuilder()
         .setSchemaName(schemaName2)
         .setVersion(1)
         .addCol("ALPHA", ColumnType.SMALLINT_TYPE_NAME)
@@ -468,7 +468,7 @@ public class TestObjectStoreSchemaMethods {
         .build();
     objectStore.addSchemaVersion(schemaVersion2_1);
 
-    SchemaVersion schemaVersion2_2 = new SchemaVersionBuilder()
+    ISchemaVersion schemaVersion2_2 = new SchemaVersionBuilder()
         .setSchemaName(schemaName2)
         .setVersion(2)
         .addCol("ALPHA", ColumnType.SMALLINT_TYPE_NAME)
@@ -478,7 +478,7 @@ public class TestObjectStoreSchemaMethods {
     objectStore.addSchemaVersion(schemaVersion2_2);
 
     // Query that should return nothing
-    List<SchemaVersion> results = objectStore.getSchemaVersionsByColumns("x", "y", "z");
+    List<ISchemaVersion> results = objectStore.getSchemaVersionsByColumns("x", "y", "z");
     Assert.assertEquals(0, results.size());
 
     // Query that should fetch one column

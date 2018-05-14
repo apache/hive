@@ -392,7 +392,7 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
             serDeClassName, getViewName());
         }
       } else {
-        // let's validate that the serde exists
+        // let's validate that the serdes exists
         serDeClassName = getSerde();
         DDLTask.validateSerDe(serDeClassName, conf);
       }

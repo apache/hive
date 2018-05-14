@@ -416,7 +416,7 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
   /**
    * @return the serDeName
    */
-  @Explain(displayName = "serde name")
+  @Explain(displayName = "serdes name")
   public String getSerName() {
     return serName;
   }
@@ -432,14 +432,14 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
   /**
    * @return the serDe properties
    */
-  @Explain(displayName = "serde properties")
+  @Explain(displayName = "serdes properties")
   public Map<String, String> getSerdeProps() {
     return serdeProps;
   }
 
   /**
    * @param serdeProps
-   *          the serde properties to set
+   *          the serdes properties to set
    */
   public void setSerdeProps(Map<String, String> serdeProps) {
     this.serdeProps = serdeProps;
@@ -493,7 +493,7 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
       throws SemanticException {
 
     if ((this.getCols() == null) || (this.getCols().size() == 0)) {
-      // for now make sure that serde exists
+      // for now make sure that serdes exists
       if (Table.hasMetastoreBasedSchema(conf, serName) &&
               StringUtils.isEmpty(getStorageHandler())) {
         throw new SemanticException(ErrorMsg.INVALID_TBL_DDL_SERDE.getMsg());
@@ -731,7 +731,7 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
                 + " for table " + tableName);
       }
     } else {
-      // let's validate that the serde exists
+      // let's validate that the serdes exists
       serDeClassName = getSerName();
       DDLTask.validateSerDe(serDeClassName, conf);
     }

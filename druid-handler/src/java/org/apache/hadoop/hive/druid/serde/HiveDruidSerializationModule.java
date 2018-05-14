@@ -26,7 +26,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.joda.time.Interval;
 
 /**
- * This class is used to define/override any serde behavior for classes from druid.
+ * This class is used to define/override any serdes behavior for classes from druid.
  * Currently it is used to override the default behavior when serializing PeriodGranularity to include user timezone.
  */
 public class HiveDruidSerializationModule extends SimpleModule {

@@ -77,76 +77,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.MetaStoreDirectSql.SqlFilterForPushdown;
-import org.apache.hadoop.hive.metastore.api.AggrStats;
-import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
-import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
-import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
-import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
-import org.apache.hadoop.hive.metastore.api.CreationMetadata;
-import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
-import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
-import org.apache.hadoop.hive.metastore.api.Function;
-import org.apache.hadoop.hive.metastore.api.FunctionType;
-import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
-import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
-import org.apache.hadoop.hive.metastore.api.HiveObjectType;
-import org.apache.hadoop.hive.metastore.api.ISchema;
-import org.apache.hadoop.hive.metastore.api.Index;
-import org.apache.hadoop.hive.metastore.api.InvalidInputException;
-import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
-import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
-import org.apache.hadoop.hive.metastore.api.InvalidPartitionException;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
-import org.apache.hadoop.hive.metastore.api.NotificationEvent;
-import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
-import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
-import org.apache.hadoop.hive.metastore.api.NotificationEventsCountRequest;
-import org.apache.hadoop.hive.metastore.api.NotificationEventsCountResponse;
-import org.apache.hadoop.hive.metastore.api.Order;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.PartitionEventType;
-import org.apache.hadoop.hive.metastore.api.PartitionValuesResponse;
-import org.apache.hadoop.hive.metastore.api.PartitionValuesRow;
-import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
-import org.apache.hadoop.hive.metastore.api.PrincipalType;
-import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
-import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
-import org.apache.hadoop.hive.metastore.api.ResourceType;
-import org.apache.hadoop.hive.metastore.api.ResourceUri;
-import org.apache.hadoop.hive.metastore.api.Role;
-import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
-import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
-import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
-import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
-import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
-import org.apache.hadoop.hive.metastore.api.SchemaCompatibility;
-import org.apache.hadoop.hive.metastore.api.SchemaType;
-import org.apache.hadoop.hive.metastore.api.SchemaValidation;
-import org.apache.hadoop.hive.metastore.api.SchemaVersion;
-import org.apache.hadoop.hive.metastore.api.SchemaVersionState;
-import org.apache.hadoop.hive.metastore.api.SerDeInfo;
-import org.apache.hadoop.hive.metastore.api.SerdeType;
-import org.apache.hadoop.hive.metastore.api.SkewedInfo;
-import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
-import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.TableMeta;
-import org.apache.hadoop.hive.metastore.api.Type;
-import org.apache.hadoop.hive.metastore.api.UnknownDBException;
-import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
-import org.apache.hadoop.hive.metastore.api.UnknownTableException;
-import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
-import org.apache.hadoop.hive.metastore.api.WMMapping;
-import org.apache.hadoop.hive.metastore.api.WMNullablePool;
-import org.apache.hadoop.hive.metastore.api.WMNullableResourcePlan;
-import org.apache.hadoop.hive.metastore.api.WMPool;
-import org.apache.hadoop.hive.metastore.api.WMPoolTrigger;
-import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
-import org.apache.hadoop.hive.metastore.api.WMResourcePlanStatus;
-import org.apache.hadoop.hive.metastore.api.WMTrigger;
-import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
+import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.datasource.DataSourceProvider;
@@ -177,6 +108,8 @@ import org.apache.hadoop.hive.metastore.model.MPartitionPrivilege;
 import org.apache.hadoop.hive.metastore.model.MResourceUri;
 import org.apache.hadoop.hive.metastore.model.MRole;
 import org.apache.hadoop.hive.metastore.model.MRoleMap;
+import org.apache.hadoop.hive.metastore.model.MSchemaBranch;
+import org.apache.hadoop.hive.metastore.model.MSchemaBranchToSchemaVersion;
 import org.apache.hadoop.hive.metastore.model.MSchemaVersion;
 import org.apache.hadoop.hive.metastore.model.MSerDeInfo;
 import org.apache.hadoop.hive.metastore.model.MStorageDescriptor;
@@ -9653,7 +9586,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public void createISchema(ISchema schema) throws AlreadyExistsException, MetaException,
+  public Long createISchema(ISchema schema) throws AlreadyExistsException, MetaException,
       NoSuchObjectException {
     boolean committed = false;
     MISchema mSchema = convertToMISchema(schema);
@@ -9667,6 +9600,7 @@ public class ObjectStore implements RawStore, Configurable {
     } finally {
       if (!committed) rollbackTransaction();
     }
+    return mSchema.getSchemaId();
   }
 
   @Override
@@ -9693,7 +9627,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public ISchema getISchema(String schemaName) throws MetaException {
+  public ISchema getISchemaByName(String schemaName) throws MetaException {
     boolean committed = false;
     try {
       openTransaction();
@@ -9704,6 +9638,34 @@ public class ObjectStore implements RawStore, Configurable {
       if (!committed) rollbackTransaction();
     }
   }
+
+  @Override
+  public ISchema getISchema(Long schemaName) throws MetaException {
+    boolean committed = false;
+    try {
+      openTransaction();
+      ISchema schema = convertToISchema(getMISchema(schemaName));
+      committed = commitTransaction();
+      return schema;
+    } finally {
+      if (!committed) rollbackTransaction();
+    }
+  }
+
+  private MISchema getMISchema(Long schemaId) {
+    Query query = null;
+    try {
+      query = pm.newQuery(MISchema.class, "id == schemaId");
+      query.declareParameters("java.lang.Long schemaId");
+      query.setUnique(true);
+      MISchema mSchema = (MISchema)query.execute(schemaId);
+      pm.retrieve(mSchema);
+      return mSchema;
+    } finally {
+      if (query != null) query.closeAll();
+    }
+  }
+
 
   private MISchema getMISchema(String schemaName) {
     Query query = null;
@@ -9719,6 +9681,7 @@ public class ObjectStore implements RawStore, Configurable {
       if (query != null) query.closeAll();
     }
   }
+
 
   @Override
   public void dropISchema(String schemaName) throws NoSuchObjectException, MetaException {
@@ -9738,7 +9701,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public void addSchemaVersion(SchemaVersion schemaVersion)
+  public Long addSchemaVersion(ISchemaVersion schemaVersion)
       throws AlreadyExistsException, NoSuchObjectException, MetaException {
     boolean committed = false;
     MSchemaVersion mSchemaVersion = convertToMSchemaVersion(schemaVersion);
@@ -9758,10 +9721,11 @@ public class ObjectStore implements RawStore, Configurable {
     } finally {
       if (!committed) rollbackTransaction();;
     }
+    return mSchemaVersion.getSchemaVersionId();
   }
 
   @Override
-  public void alterSchemaVersion(String schemaName, int version, SchemaVersion newVersion)
+  public void alterSchemaVersion(String schemaName, int version, ISchemaVersion newVersion)
       throws NoSuchObjectException, MetaException {
     boolean committed = false;
     try {
@@ -9782,11 +9746,11 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public SchemaVersion getSchemaVersion(String schemaName, int version) throws MetaException {
+  public ISchemaVersion getSchemaVersion(String schemaName, int version) throws MetaException {
     boolean committed = false;
     try {
       openTransaction();
-      SchemaVersion schemaVersion = convertToSchemaVersion(getMSchemaVersion(schemaName, version));
+      ISchemaVersion schemaVersion = convertToSchemaVersion(getMSchemaVersion(schemaName, version));
       committed = commitTransaction();
       return schemaVersion;
     } finally {
@@ -9814,7 +9778,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public SchemaVersion getLatestSchemaVersion(String schemaName) throws MetaException {
+  public ISchemaVersion getLatestSchemaVersion(String schemaName) throws MetaException {
     boolean committed = false;
     Query query = null;
     try {
@@ -9839,19 +9803,44 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public List<SchemaVersion> getAllSchemaVersion(String schemaName) throws MetaException {
+  public ISchemaVersion getSchemaVersionById(Long schemaVersionId) throws MetaException {
+    boolean committed = false;
+    Query query = null;
+    try {
+      openTransaction();
+      query = pm.newQuery(MSchemaVersion.class, "iSchema.schemaVersionId == schemaVersionId");
+      query.declareParameters("java.lang.String schemaName");
+      query.setUnique(true);
+      query.setOrdering("version descending");
+      query.setRange(0, 1);
+      MSchemaVersion mSchemaVersion = (MSchemaVersion)query.execute(schemaVersionId);
+      pm.retrieve(mSchemaVersion);
+      if (mSchemaVersion != null) {
+        pm.retrieveAll(mSchemaVersion.getCols());
+        if (mSchemaVersion.getSerDe() != null) pm.retrieve(mSchemaVersion.getSerDe());
+      }
+      committed = commitTransaction();
+      return mSchemaVersion == null ? null : convertToSchemaVersion(mSchemaVersion);
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
+  }
+
+  @Override
+  public List<ISchemaVersion> getSchemaVersionsByNameAndFingerprint(String schemaName, String fingerPrint)
+    throws MetaException {
     boolean committed = false;
     Query query = null;
     try {
       openTransaction();
       schemaName = normalizeIdentifier(schemaName);
-      query = pm.newQuery(MSchemaVersion.class, "iSchema.name == schemaName");
-      query.declareParameters("java.lang.String schemaName");
+      query = pm.newQuery(MSchemaVersion.class, "iSchema.name == schemaName && iScheam.fingerPrint == fingerPrint");
+      query.declareParameters("java.lang.String schemaName, java.lang.String fingerPrint");
       query.setOrdering("version descending");
-      List<MSchemaVersion> mSchemaVersions = query.setParameters(schemaName).executeList();
+      List<MSchemaVersion> mSchemaVersions = query.setParameters(schemaName, fingerPrint).executeList();
       pm.retrieveAll(mSchemaVersions);
       if (mSchemaVersions == null || mSchemaVersions.isEmpty()) return null;
-      List<SchemaVersion> schemaVersions = new ArrayList<>(mSchemaVersions.size());
+      List<ISchemaVersion> schemaVersions = new ArrayList<>(mSchemaVersions.size());
       for (MSchemaVersion mSchemaVersion : mSchemaVersions) {
         pm.retrieveAll(mSchemaVersion.getCols());
         if (mSchemaVersion.getSerDe() != null) pm.retrieve(mSchemaVersion.getSerDe());
@@ -9865,7 +9854,33 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public List<SchemaVersion> getSchemaVersionsByColumns(String colName, String colNamespace,
+  public List<ISchemaVersion> getAllSchemaVersion(String schemaName) throws MetaException {
+    boolean committed = false;
+    Query query = null;
+    try {
+      openTransaction();
+      schemaName = normalizeIdentifier(schemaName);
+      query = pm.newQuery(MSchemaVersion.class, "iSchema.name == schemaName");
+      query.declareParameters("java.lang.String schemaName");
+      query.setOrdering("version descending");
+      List<MSchemaVersion> mSchemaVersions = query.setParameters(schemaName).executeList();
+      pm.retrieveAll(mSchemaVersions);
+      if (mSchemaVersions == null || mSchemaVersions.isEmpty()) return null;
+      List<ISchemaVersion> schemaVersions = new ArrayList<>(mSchemaVersions.size());
+      for (MSchemaVersion mSchemaVersion : mSchemaVersions) {
+        pm.retrieveAll(mSchemaVersion.getCols());
+        if (mSchemaVersion.getSerDe() != null) pm.retrieve(mSchemaVersion.getSerDe());
+        schemaVersions.add(convertToSchemaVersion(mSchemaVersion));
+      }
+      committed = commitTransaction();
+      return schemaVersions;
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
+  }
+
+  @Override
+  public List<ISchemaVersion> getSchemaVersionsByColumns(String colName, String colNamespace,
                                                         String type) throws MetaException {
     if (colName == null && colNamespace == null) {
       // Don't allow a query that returns everything, it will blow stuff up.
@@ -9905,7 +9920,7 @@ public class ObjectStore implements RawStore, Configurable {
       List<MSchemaVersion> mSchemaVersions = query.setNamedParameters(parameters).executeList();
       if (mSchemaVersions == null || mSchemaVersions.isEmpty()) return Collections.emptyList();
       pm.retrieveAll(mSchemaVersions);
-      List<SchemaVersion> schemaVersions = new ArrayList<>(mSchemaVersions.size());
+      List<ISchemaVersion> schemaVersions = new ArrayList<>(mSchemaVersions.size());
       for (MSchemaVersion mSchemaVersion : mSchemaVersions) {
         pm.retrieveAll(mSchemaVersion.getCols());
         if (mSchemaVersion.getSerDe() != null) pm.retrieve(mSchemaVersion.getSerDe());
@@ -9935,6 +9950,130 @@ public class ObjectStore implements RawStore, Configurable {
       committed = commitTransaction();
     } finally {
       if (!committed) rollbackTransaction();
+    }
+  }
+
+  @Override
+  public Long addSchemaBranch(ISchemaBranch schemaBranch) throws NoSuchObjectException, MetaException {
+    boolean committed = false;
+    MSchemaBranch mSchemaBranch = convertToMSchemaBranch(schemaBranch);
+    try {
+      openTransaction();
+      pm.makePersistent(mSchemaBranch);
+      committed = commitTransaction();
+    } finally {
+      if (!committed) rollbackTransaction();
+    }
+    return mSchemaBranch.getSchemaBranchId();
+  }
+
+  @Override
+  public void mapSchemaBranchToSchemaVersion(Long schemaBranchId, Long schemaVersionId) throws NoSuchObjectException, MetaException {
+    boolean committed = false;
+    MSchemaBranchToSchemaVersion mSchemaBranchToSchemaVersion = new MSchemaBranchToSchemaVersion(schemaBranchId,schemaVersionId);
+    try {
+      openTransaction();
+      pm.makePersistent(mSchemaBranchToSchemaVersion);
+      committed = commitTransaction();
+    } finally {
+      if (!committed) rollbackTransaction();
+    }
+  }
+
+
+  @Override
+  public ISchemaBranch getSchemaBranch(Long schemaBranchId) throws MetaException {
+    boolean committed = false;
+    Query query = null;
+    try {
+      openTransaction();
+      query = pm.newQuery(MSchemaBranch.class, "schemaBranchId == schemaBranchId");
+      query.declareParameters("java.lang.Long schemaBranchId");
+
+      query.setUnique(true);
+      query.setRange(0, 1);
+      MSchemaBranch mSchemaBranch = (MSchemaBranch)query.execute(schemaBranchId);
+      pm.retrieve(mSchemaBranch);
+      committed = commitTransaction();
+      return mSchemaBranch == null ? null : convertToSchemaBranch(mSchemaBranch);
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
+  }
+
+  @Override
+  public List<ISchemaBranch> getSchemaBranchBySchemaName(String schemaName) throws MetaException {
+    boolean committed = false;
+    Query query = null;
+    try {
+      openTransaction();
+      schemaName = normalizeIdentifier(schemaName);
+      query = pm.newQuery(MSchemaBranch.class, "schemaMetadataName == schemaName");
+      query.declareParameters("java.lang.String schemaName");
+      query.setOrdering("timestamp descending");
+      List<MSchemaBranch> mSchemaBranches = query.setParameters(schemaName).executeList();
+      pm.retrieveAll(mSchemaBranches);
+      if (mSchemaBranches == null || mSchemaBranches.isEmpty()) return null;
+      List<ISchemaBranch> schemaBranches = new ArrayList<>(mSchemaBranches.size());
+      for (MSchemaBranch mSchemaBranch : mSchemaBranches) {
+        schemaBranches.add(convertToSchemaBranch(mSchemaBranch));
+      }
+      committed = commitTransaction();
+      return schemaBranches;
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
+  }
+
+  @Override
+  public List<ISchemaBranch> getSchemaBranchBySchemaVersionId(Long schemaVersionId) throws MetaException {
+    boolean committed = false;
+    Query query = null;
+    try {
+      Map<String, String> parameters = new HashMap<>(1);
+      StringBuilder sql = new StringBuilder("select SCHEMA_BRANCH.SCHEMA_BRANCH_ID as SCHEMA_BRANCH_ID from " +
+          "SCHEMA_BRANCH, SCHEMA_BRANCH_VERSION_MAPPING" +
+          " where SCHEMA_BRANCH.SCHEMA_BRANCH_ID = SCHEMA_BRANCH_VERSION_MAPPING.SCHEMA_BRANCH_ID" +
+          " and SCHEMA_BRANCH_VERSION_MAPPING.SCHEMA_VERSION_ID = :schemaVersionId");
+      parameters.put("schemaVersionId", schemaVersionId.toString());
+      openTransaction();
+      query = pm.newQuery("javax.jdo.query.SQL", sql.toString());
+      query.setClass(MSchemaBranch.class);
+      List<MSchemaBranch> mSchemaBranches = query.setNamedParameters(parameters).executeList();
+      pm.retrieveAll(mSchemaBranches);
+      if (mSchemaBranches == null || mSchemaBranches.isEmpty()) return null;
+      List<ISchemaBranch> schemaBranches = new ArrayList<>(mSchemaBranches.size());
+      for (MSchemaBranch mSchemaBranch : mSchemaBranches) {
+        schemaBranches.add(convertToSchemaBranch(mSchemaBranch));
+      }
+      committed = commitTransaction();
+      return schemaBranches;
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
+  }
+
+
+  @Override
+  public List<ISchemaBranchToISchemaVersion> getSchemaVersionsBySchemaBranchId(Long schemaBranchId) throws MetaException {
+    boolean committed = false;
+    Query query = null;
+    try {
+      openTransaction();
+      query = pm.newQuery(MSchemaBranchToSchemaVersion.class, "schemaBranchId == schemaBranchId");
+      query.declareParameters("java.lang.String schemaName");
+      query.setOrdering("scheamVersionId ascending");
+      List<MSchemaBranchToSchemaVersion> mSchemaBranchToSchemaVersions = query.setParameters(schemaBranchId).executeList();
+      pm.retrieveAll(mSchemaBranchToSchemaVersions);
+      if (mSchemaBranchToSchemaVersions == null || mSchemaBranchToSchemaVersions.isEmpty()) return null;
+      List<ISchemaBranchToISchemaVersion> schemaBranchToSchemaVersions = new ArrayList<>(mSchemaBranchToSchemaVersions.size());
+      for (MSchemaBranchToSchemaVersion mSchemaBranchToSchemaVersion : mSchemaBranchToSchemaVersions) {
+        schemaBranchToSchemaVersions.add(convertToISchemaBranchToISchemaVersion(mSchemaBranchToSchemaVersion));
+      }
+      committed = commitTransaction();
+      return schemaBranchToSchemaVersions;
+    } finally {
+      rollbackAndCleanup(committed, query);
     }
   }
 
@@ -9994,7 +10133,8 @@ public class ObjectStore implements RawStore, Configurable {
                         schema.getValidationLevel().getValue(),
                         schema.isCanEvolve(),
                         schema.isSetSchemaGroup() ? schema.getSchemaGroup() : null,
-                        schema.isSetDescription() ? schema.getDescription() : null);
+                        schema.isSetDescription() ? schema.getDescription() : null,
+                        schema.isSetTimestamp() ? schema.getTimestamp(): System.currentTimeMillis());
   }
 
   private ISchema convertToISchema(MISchema mSchema) {
@@ -10005,12 +10145,14 @@ public class ObjectStore implements RawStore, Configurable {
                                  SchemaCompatibility.findByValue(mSchema.getCompatibility()),
                                  SchemaValidation.findByValue(mSchema.getValidationLevel()),
                                  mSchema.getCanEvolve());
+    if (mSchema.getSchemaId() != null)  schema.setSchemaId(mSchema.getSchemaId());
+    if (mSchema.getTimestamp() != null) schema.setTimestamp(mSchema.getTimestamp());
     if (mSchema.getDescription() != null) schema.setDescription(mSchema.getDescription());
     if (mSchema.getSchemaGroup() != null) schema.setSchemaGroup(mSchema.getSchemaGroup());
     return schema;
   }
 
-  private MSchemaVersion convertToMSchemaVersion(SchemaVersion schemaVersion) throws MetaException {
+  private MSchemaVersion convertToMSchemaVersion(ISchemaVersion schemaVersion) throws MetaException {
     return new MSchemaVersion(getMISchema(normalizeIdentifier(schemaVersion.getSchemaName())),
                               schemaVersion.getVersion(),
                               schemaVersion.getCreatedAt(),
@@ -10023,12 +10165,13 @@ public class ObjectStore implements RawStore, Configurable {
                               schemaVersion.isSetSerDe() ? convertToMSerDeInfo(schemaVersion.getSerDe()) : null);
   }
 
-  private SchemaVersion convertToSchemaVersion(MSchemaVersion mSchemaVersion) throws MetaException {
+  private ISchemaVersion convertToSchemaVersion(MSchemaVersion mSchemaVersion) throws MetaException {
     if (mSchemaVersion == null) return null;
-    SchemaVersion schemaVersion = new SchemaVersion(mSchemaVersion.getiSchema().getName(),
+    ISchemaVersion schemaVersion = new ISchemaVersion(mSchemaVersion.getiSchema().getName(),
                                                     mSchemaVersion.getVersion(),
                                                     mSchemaVersion.getCreatedAt(),
                                                     convertToFieldSchemas(mSchemaVersion.getCols().getCols()));
+    if (mSchemaVersion.getSchemaVersionId() != null) schemaVersion.setSchemaVersionId(mSchemaVersion.getSchemaVersionId());
     if (mSchemaVersion.getState() > 0) schemaVersion.setState(SchemaVersionState.findByValue(mSchemaVersion.getState()));
     if (mSchemaVersion.getDescription() != null) schemaVersion.setDescription(mSchemaVersion.getDescription());
     if (mSchemaVersion.getSchemaText() != null) schemaVersion.setSchemaText(mSchemaVersion.getSchemaText());
@@ -10036,6 +10179,34 @@ public class ObjectStore implements RawStore, Configurable {
     if (mSchemaVersion.getName() != null) schemaVersion.setName(mSchemaVersion.getName());
     if (mSchemaVersion.getSerDe() != null) schemaVersion.setSerDe(convertToSerDeInfo(mSchemaVersion.getSerDe()));
     return schemaVersion;
+  }
+
+  private MSchemaBranch convertToMSchemaBranch(ISchemaBranch schemaBranch) {
+    return new MSchemaBranch(schemaBranch.isSetSchemaBranchId() ? schemaBranch.getSchemaBranchId() : null,
+                             schemaBranch.getName(),
+                             schemaBranch.getSchemaMetadataName(),
+                             schemaBranch.isSetDescription() ? schemaBranch.getDescription() : null,
+                             schemaBranch.isSetTimestamp() ? schemaBranch.getTimestamp(): System.currentTimeMillis());
+
+  }
+
+  private ISchemaBranch convertToSchemaBranch(MSchemaBranch mSchemaBranch) {
+    if (mSchemaBranch == null) return null;
+    ISchemaBranch schemaBranch = new ISchemaBranch(mSchemaBranch.getName(),
+                                                  mSchemaBranch.getSchemaMetadataName());
+    if (mSchemaBranch.getSchemaBranchId() != null) schemaBranch.setSchemaBranchId(mSchemaBranch.getSchemaBranchId());
+    if (mSchemaBranch.getDescription() != null) schemaBranch.setDescription(mSchemaBranch.getDescription());
+    schemaBranch.setTimestamp(mSchemaBranch.getTimestamp());
+    return schemaBranch;
+  }
+
+  private ISchemaBranchToISchemaVersion convertToISchemaBranchToISchemaVersion(MSchemaBranchToSchemaVersion mSchemaBranchToSchemaVersion) {
+    if (mSchemaBranchToSchemaVersion == null) return null;
+    ISchemaBranchToISchemaVersion schemaBranchToSchemaVersion = new ISchemaBranchToISchemaVersion(
+        mSchemaBranchToSchemaVersion.getSchemaBranchId(),
+        mSchemaBranchToSchemaVersion.getSchemaVersionId()
+    );
+    return schemaBranchToSchemaVersion;
   }
 
   /**

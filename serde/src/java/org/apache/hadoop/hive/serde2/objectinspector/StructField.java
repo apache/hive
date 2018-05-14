@@ -23,7 +23,7 @@ import org.apache.hadoop.hive.common.classification.InterfaceStability;
 
 /**
  * Classes implementing this interface are considered to represent a field of a
- * struct for this serde package.
+ * struct for this serdes package.
  */
 @InterfaceAudience.Public
 @InterfaceStability.Stable

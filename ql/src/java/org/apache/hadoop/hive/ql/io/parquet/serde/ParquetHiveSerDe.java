@@ -184,7 +184,7 @@ public class ParquetHiveSerDe extends AbstractSerDe {
 
   /**
    * @param table
-   * @return true if the table has the parquet serde defined
+   * @return true if the table has the parquet serdes defined
    */
   public static boolean isParquetTable(Table table) {
     return  table == null ? false : ParquetHiveSerDe.class.getName().equals(table.getSerializationLib());

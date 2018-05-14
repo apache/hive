@@ -27,7 +27,7 @@ import org.apache.hadoop.io.ObjectWritable;
 import org.apache.hadoop.io.Writable;
 
 /**
- * A serde class for ORC.
+ * A serdes class for ORC.
  * It transparently passes the object to/from the ORC file reader/writer.
  */
 public class VectorizedOrcSerde extends OrcSerde {

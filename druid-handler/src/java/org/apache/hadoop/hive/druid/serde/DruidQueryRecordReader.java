@@ -165,7 +165,7 @@ public abstract class DruidQueryRecordReader<T extends BaseQuery<R>, R extends C
 
   /**
    * This is a helper wrapper class used to create an iterator of druid rows out of InputStream.
-   * The type of the rows is defined by org.apache.hadoop.hive.druid.serde.DruidQueryRecordReader.JsonParserIterator#typeRef
+   * The type of the rows is defined by org.apache.hadoop.hive.druid.serdes.DruidQueryRecordReader.JsonParserIterator#typeRef
    *
    * @param <R> druid Row type returned as result
    */
@@ -182,7 +182,7 @@ public abstract class DruidQueryRecordReader<T extends BaseQuery<R>, R extends C
     /**
      * @param mapper mapper used to deserialize the stream of data (we use smile factory)
      * @param typeRef Type definition of the results objects
-     * @param future Future holding the input stream (the input stream is not owned but it will be closed when org.apache.hadoop.hive.druid.serde.DruidQueryRecordReader.JsonParserIterator#close() is called or reach the end of the steam)
+     * @param future Future holding the input stream (the input stream is not owned but it will be closed when org.apache.hadoop.hive.druid.serdes.DruidQueryRecordReader.JsonParserIterator#close() is called or reach the end of the steam)
      * @param url URL used to fetch the data, used mostly as message with exception stack to identify the faulty stream, thus this can be empty string.
      * @param query Query used to fetch the data, used mostly as message with exception stack, thus can be empty string.
      */

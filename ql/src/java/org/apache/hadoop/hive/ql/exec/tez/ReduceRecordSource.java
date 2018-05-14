@@ -79,7 +79,7 @@ public class ReduceRecordSource implements RecordSource {
 
   private Deserializer inputKeyDeserializer;
 
-  // Input value serde needs to be an array to support different SerDe
+  // Input value serdes needs to be an array to support different SerDe
   // for different tags
   private AbstractSerDe inputValueDeserializer;
 

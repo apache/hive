@@ -18110,6 +18110,7 @@ class WMCreateOrDropTriggerToPoolMappingResponse:
 class ISchema:
   """
   Attributes:
+   - schemaId
    - schemaType
    - name
    - dbName
@@ -18118,21 +18119,25 @@ class ISchema:
    - canEvolve
    - schemaGroup
    - description
+   - timestamp
   """
 
   thrift_spec = (
     None, # 0
-    (1, TType.I32, 'schemaType', None, None, ), # 1
-    (2, TType.STRING, 'name', None, None, ), # 2
-    (3, TType.STRING, 'dbName', None, None, ), # 3
-    (4, TType.I32, 'compatibility', None, None, ), # 4
-    (5, TType.I32, 'validationLevel', None, None, ), # 5
-    (6, TType.BOOL, 'canEvolve', None, None, ), # 6
-    (7, TType.STRING, 'schemaGroup', None, None, ), # 7
-    (8, TType.STRING, 'description', None, None, ), # 8
+    (1, TType.I64, 'schemaId', None, None, ), # 1
+    (2, TType.I32, 'schemaType', None, None, ), # 2
+    (3, TType.STRING, 'name', None, None, ), # 3
+    (4, TType.STRING, 'dbName', None, None, ), # 4
+    (5, TType.I32, 'compatibility', None, None, ), # 5
+    (6, TType.I32, 'validationLevel', None, None, ), # 6
+    (7, TType.BOOL, 'canEvolve', None, None, ), # 7
+    (8, TType.STRING, 'schemaGroup', None, None, ), # 8
+    (9, TType.STRING, 'description', None, None, ), # 9
+    (10, TType.I64, 'timestamp', None, None, ), # 10
   )
 
-  def __init__(self, schemaType=None, name=None, dbName=None, compatibility=None, validationLevel=None, canEvolve=None, schemaGroup=None, description=None,):
+  def __init__(self, schemaId=None, schemaType=None, name=None, dbName=None, compatibility=None, validationLevel=None, canEvolve=None, schemaGroup=None, description=None, timestamp=None,):
+    self.schemaId = schemaId
     self.schemaType = schemaType
     self.name = name
     self.dbName = dbName
@@ -18141,6 +18146,7 @@ class ISchema:
     self.canEvolve = canEvolve
     self.schemaGroup = schemaGroup
     self.description = description
+    self.timestamp = timestamp
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -18152,43 +18158,53 @@ class ISchema:
       if ftype == TType.STOP:
         break
       if fid == 1:
+        if ftype == TType.I64:
+          self.schemaId = iprot.readI64()
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
         if ftype == TType.I32:
           self.schemaType = iprot.readI32()
         else:
           iprot.skip(ftype)
-      elif fid == 2:
+      elif fid == 3:
         if ftype == TType.STRING:
           self.name = iprot.readString()
         else:
           iprot.skip(ftype)
-      elif fid == 3:
+      elif fid == 4:
         if ftype == TType.STRING:
           self.dbName = iprot.readString()
         else:
           iprot.skip(ftype)
-      elif fid == 4:
+      elif fid == 5:
         if ftype == TType.I32:
           self.compatibility = iprot.readI32()
         else:
           iprot.skip(ftype)
-      elif fid == 5:
+      elif fid == 6:
         if ftype == TType.I32:
           self.validationLevel = iprot.readI32()
         else:
           iprot.skip(ftype)
-      elif fid == 6:
+      elif fid == 7:
         if ftype == TType.BOOL:
           self.canEvolve = iprot.readBool()
         else:
           iprot.skip(ftype)
-      elif fid == 7:
+      elif fid == 8:
         if ftype == TType.STRING:
           self.schemaGroup = iprot.readString()
         else:
           iprot.skip(ftype)
-      elif fid == 8:
+      elif fid == 9:
         if ftype == TType.STRING:
           self.description = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 10:
+        if ftype == TType.I64:
+          self.timestamp = iprot.readI64()
         else:
           iprot.skip(ftype)
       else:
@@ -18201,37 +18217,45 @@ class ISchema:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('ISchema')
+    if self.schemaId is not None:
+      oprot.writeFieldBegin('schemaId', TType.I64, 1)
+      oprot.writeI64(self.schemaId)
+      oprot.writeFieldEnd()
     if self.schemaType is not None:
-      oprot.writeFieldBegin('schemaType', TType.I32, 1)
+      oprot.writeFieldBegin('schemaType', TType.I32, 2)
       oprot.writeI32(self.schemaType)
       oprot.writeFieldEnd()
     if self.name is not None:
-      oprot.writeFieldBegin('name', TType.STRING, 2)
+      oprot.writeFieldBegin('name', TType.STRING, 3)
       oprot.writeString(self.name)
       oprot.writeFieldEnd()
     if self.dbName is not None:
-      oprot.writeFieldBegin('dbName', TType.STRING, 3)
+      oprot.writeFieldBegin('dbName', TType.STRING, 4)
       oprot.writeString(self.dbName)
       oprot.writeFieldEnd()
     if self.compatibility is not None:
-      oprot.writeFieldBegin('compatibility', TType.I32, 4)
+      oprot.writeFieldBegin('compatibility', TType.I32, 5)
       oprot.writeI32(self.compatibility)
       oprot.writeFieldEnd()
     if self.validationLevel is not None:
-      oprot.writeFieldBegin('validationLevel', TType.I32, 5)
+      oprot.writeFieldBegin('validationLevel', TType.I32, 6)
       oprot.writeI32(self.validationLevel)
       oprot.writeFieldEnd()
     if self.canEvolve is not None:
-      oprot.writeFieldBegin('canEvolve', TType.BOOL, 6)
+      oprot.writeFieldBegin('canEvolve', TType.BOOL, 7)
       oprot.writeBool(self.canEvolve)
       oprot.writeFieldEnd()
     if self.schemaGroup is not None:
-      oprot.writeFieldBegin('schemaGroup', TType.STRING, 7)
+      oprot.writeFieldBegin('schemaGroup', TType.STRING, 8)
       oprot.writeString(self.schemaGroup)
       oprot.writeFieldEnd()
     if self.description is not None:
-      oprot.writeFieldBegin('description', TType.STRING, 8)
+      oprot.writeFieldBegin('description', TType.STRING, 9)
       oprot.writeString(self.description)
+      oprot.writeFieldEnd()
+    if self.timestamp is not None:
+      oprot.writeFieldBegin('timestamp', TType.I64, 10)
+      oprot.writeI64(self.timestamp)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -18242,6 +18266,7 @@ class ISchema:
 
   def __hash__(self):
     value = 17
+    value = (value * 31) ^ hash(self.schemaId)
     value = (value * 31) ^ hash(self.schemaType)
     value = (value * 31) ^ hash(self.name)
     value = (value * 31) ^ hash(self.dbName)
@@ -18250,6 +18275,7 @@ class ISchema:
     value = (value * 31) ^ hash(self.canEvolve)
     value = (value * 31) ^ hash(self.schemaGroup)
     value = (value * 31) ^ hash(self.description)
+    value = (value * 31) ^ hash(self.timestamp)
     return value
 
   def __repr__(self):
@@ -18263,9 +18289,10 @@ class ISchema:
   def __ne__(self, other):
     return not (self == other)
 
-class SchemaVersion:
+class ISchemaVersion:
   """
   Attributes:
+   - schemaVersionId
    - schemaName
    - version
    - createdAt
@@ -18280,19 +18307,21 @@ class SchemaVersion:
 
   thrift_spec = (
     None, # 0
-    (1, TType.STRING, 'schemaName', None, None, ), # 1
-    (2, TType.I32, 'version', None, None, ), # 2
-    (3, TType.I64, 'createdAt', None, None, ), # 3
-    (4, TType.LIST, 'cols', (TType.STRUCT,(FieldSchema, FieldSchema.thrift_spec)), None, ), # 4
-    (5, TType.I32, 'state', None, None, ), # 5
-    (6, TType.STRING, 'description', None, None, ), # 6
-    (7, TType.STRING, 'schemaText', None, None, ), # 7
-    (8, TType.STRING, 'fingerprint', None, None, ), # 8
-    (9, TType.STRING, 'name', None, None, ), # 9
-    (10, TType.STRUCT, 'serDe', (SerDeInfo, SerDeInfo.thrift_spec), None, ), # 10
+    (1, TType.I64, 'schemaVersionId', None, None, ), # 1
+    (2, TType.STRING, 'schemaName', None, None, ), # 2
+    (3, TType.I32, 'version', None, None, ), # 3
+    (4, TType.I64, 'createdAt', None, None, ), # 4
+    (5, TType.LIST, 'cols', (TType.STRUCT,(FieldSchema, FieldSchema.thrift_spec)), None, ), # 5
+    (6, TType.I32, 'state', None, None, ), # 6
+    (7, TType.STRING, 'description', None, None, ), # 7
+    (8, TType.STRING, 'schemaText', None, None, ), # 8
+    (9, TType.STRING, 'fingerprint', None, None, ), # 9
+    (10, TType.STRING, 'name', None, None, ), # 10
+    (11, TType.STRUCT, 'serDe', (SerDeInfo, SerDeInfo.thrift_spec), None, ), # 11
   )
 
-  def __init__(self, schemaName=None, version=None, createdAt=None, cols=None, state=None, description=None, schemaText=None, fingerprint=None, name=None, serDe=None,):
+  def __init__(self, schemaVersionId=None, schemaName=None, version=None, createdAt=None, cols=None, state=None, description=None, schemaText=None, fingerprint=None, name=None, serDe=None,):
+    self.schemaVersionId = schemaVersionId
     self.schemaName = schemaName
     self.version = version
     self.createdAt = createdAt
@@ -18314,21 +18343,26 @@ class SchemaVersion:
       if ftype == TType.STOP:
         break
       if fid == 1:
+        if ftype == TType.I64:
+          self.schemaVersionId = iprot.readI64()
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
         if ftype == TType.STRING:
           self.schemaName = iprot.readString()
         else:
           iprot.skip(ftype)
-      elif fid == 2:
+      elif fid == 3:
         if ftype == TType.I32:
           self.version = iprot.readI32()
         else:
           iprot.skip(ftype)
-      elif fid == 3:
+      elif fid == 4:
         if ftype == TType.I64:
           self.createdAt = iprot.readI64()
         else:
           iprot.skip(ftype)
-      elif fid == 4:
+      elif fid == 5:
         if ftype == TType.LIST:
           self.cols = []
           (_etype723, _size720) = iprot.readListBegin()
@@ -18339,32 +18373,32 @@ class SchemaVersion:
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
-      elif fid == 5:
+      elif fid == 6:
         if ftype == TType.I32:
           self.state = iprot.readI32()
         else:
           iprot.skip(ftype)
-      elif fid == 6:
+      elif fid == 7:
         if ftype == TType.STRING:
           self.description = iprot.readString()
         else:
           iprot.skip(ftype)
-      elif fid == 7:
+      elif fid == 8:
         if ftype == TType.STRING:
           self.schemaText = iprot.readString()
         else:
           iprot.skip(ftype)
-      elif fid == 8:
+      elif fid == 9:
         if ftype == TType.STRING:
           self.fingerprint = iprot.readString()
         else:
           iprot.skip(ftype)
-      elif fid == 9:
+      elif fid == 10:
         if ftype == TType.STRING:
           self.name = iprot.readString()
         else:
           iprot.skip(ftype)
-      elif fid == 10:
+      elif fid == 11:
         if ftype == TType.STRUCT:
           self.serDe = SerDeInfo()
           self.serDe.read(iprot)
@@ -18379,48 +18413,52 @@ class SchemaVersion:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('SchemaVersion')
+    oprot.writeStructBegin('ISchemaVersion')
+    if self.schemaVersionId is not None:
+      oprot.writeFieldBegin('schemaVersionId', TType.I64, 1)
+      oprot.writeI64(self.schemaVersionId)
+      oprot.writeFieldEnd()
     if self.schemaName is not None:
-      oprot.writeFieldBegin('schemaName', TType.STRING, 1)
+      oprot.writeFieldBegin('schemaName', TType.STRING, 2)
       oprot.writeString(self.schemaName)
       oprot.writeFieldEnd()
     if self.version is not None:
-      oprot.writeFieldBegin('version', TType.I32, 2)
+      oprot.writeFieldBegin('version', TType.I32, 3)
       oprot.writeI32(self.version)
       oprot.writeFieldEnd()
     if self.createdAt is not None:
-      oprot.writeFieldBegin('createdAt', TType.I64, 3)
+      oprot.writeFieldBegin('createdAt', TType.I64, 4)
       oprot.writeI64(self.createdAt)
       oprot.writeFieldEnd()
     if self.cols is not None:
-      oprot.writeFieldBegin('cols', TType.LIST, 4)
+      oprot.writeFieldBegin('cols', TType.LIST, 5)
       oprot.writeListBegin(TType.STRUCT, len(self.cols))
       for iter726 in self.cols:
         iter726.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.state is not None:
-      oprot.writeFieldBegin('state', TType.I32, 5)
+      oprot.writeFieldBegin('state', TType.I32, 6)
       oprot.writeI32(self.state)
       oprot.writeFieldEnd()
     if self.description is not None:
-      oprot.writeFieldBegin('description', TType.STRING, 6)
+      oprot.writeFieldBegin('description', TType.STRING, 7)
       oprot.writeString(self.description)
       oprot.writeFieldEnd()
     if self.schemaText is not None:
-      oprot.writeFieldBegin('schemaText', TType.STRING, 7)
+      oprot.writeFieldBegin('schemaText', TType.STRING, 8)
       oprot.writeString(self.schemaText)
       oprot.writeFieldEnd()
     if self.fingerprint is not None:
-      oprot.writeFieldBegin('fingerprint', TType.STRING, 8)
+      oprot.writeFieldBegin('fingerprint', TType.STRING, 9)
       oprot.writeString(self.fingerprint)
       oprot.writeFieldEnd()
     if self.name is not None:
-      oprot.writeFieldBegin('name', TType.STRING, 9)
+      oprot.writeFieldBegin('name', TType.STRING, 10)
       oprot.writeString(self.name)
       oprot.writeFieldEnd()
     if self.serDe is not None:
-      oprot.writeFieldBegin('serDe', TType.STRUCT, 10)
+      oprot.writeFieldBegin('serDe', TType.STRUCT, 11)
       self.serDe.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -18432,6 +18470,7 @@ class SchemaVersion:
 
   def __hash__(self):
     value = 17
+    value = (value * 31) ^ hash(self.schemaVersionId)
     value = (value * 31) ^ hash(self.schemaName)
     value = (value * 31) ^ hash(self.version)
     value = (value * 31) ^ hash(self.createdAt)
@@ -18442,6 +18481,201 @@ class SchemaVersion:
     value = (value * 31) ^ hash(self.fingerprint)
     value = (value * 31) ^ hash(self.name)
     value = (value * 31) ^ hash(self.serDe)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class ISchemaBranch:
+  """
+  Attributes:
+   - schemaBranchId
+   - name
+   - schemaMetadataName
+   - description
+   - timestamp
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I64, 'schemaBranchId', None, None, ), # 1
+    (2, TType.STRING, 'name', None, None, ), # 2
+    (3, TType.STRING, 'schemaMetadataName', None, None, ), # 3
+    (4, TType.STRING, 'description', None, None, ), # 4
+    (5, TType.I64, 'timestamp', None, None, ), # 5
+  )
+
+  def __init__(self, schemaBranchId=None, name=None, schemaMetadataName=None, description=None, timestamp=None,):
+    self.schemaBranchId = schemaBranchId
+    self.name = name
+    self.schemaMetadataName = schemaMetadataName
+    self.description = description
+    self.timestamp = timestamp
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I64:
+          self.schemaBranchId = iprot.readI64()
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.name = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.STRING:
+          self.schemaMetadataName = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.STRING:
+          self.description = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.I64:
+          self.timestamp = iprot.readI64()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('ISchemaBranch')
+    if self.schemaBranchId is not None:
+      oprot.writeFieldBegin('schemaBranchId', TType.I64, 1)
+      oprot.writeI64(self.schemaBranchId)
+      oprot.writeFieldEnd()
+    if self.name is not None:
+      oprot.writeFieldBegin('name', TType.STRING, 2)
+      oprot.writeString(self.name)
+      oprot.writeFieldEnd()
+    if self.schemaMetadataName is not None:
+      oprot.writeFieldBegin('schemaMetadataName', TType.STRING, 3)
+      oprot.writeString(self.schemaMetadataName)
+      oprot.writeFieldEnd()
+    if self.description is not None:
+      oprot.writeFieldBegin('description', TType.STRING, 4)
+      oprot.writeString(self.description)
+      oprot.writeFieldEnd()
+    if self.timestamp is not None:
+      oprot.writeFieldBegin('timestamp', TType.I64, 5)
+      oprot.writeI64(self.timestamp)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.schemaBranchId)
+    value = (value * 31) ^ hash(self.name)
+    value = (value * 31) ^ hash(self.schemaMetadataName)
+    value = (value * 31) ^ hash(self.description)
+    value = (value * 31) ^ hash(self.timestamp)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class ISchemaBranchToISchemaVersion:
+  """
+  Attributes:
+   - schemaBranchId
+   - schemaVersionId
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I64, 'schemaBranchId', None, None, ), # 1
+    (2, TType.I64, 'schemaVersionId', None, None, ), # 2
+  )
+
+  def __init__(self, schemaBranchId=None, schemaVersionId=None,):
+    self.schemaBranchId = schemaBranchId
+    self.schemaVersionId = schemaVersionId
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I64:
+          self.schemaBranchId = iprot.readI64()
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.I64:
+          self.schemaVersionId = iprot.readI64()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('ISchemaBranchToISchemaVersion')
+    if self.schemaBranchId is not None:
+      oprot.writeFieldBegin('schemaBranchId', TType.I64, 1)
+      oprot.writeI64(self.schemaBranchId)
+      oprot.writeFieldEnd()
+    if self.schemaVersionId is not None:
+      oprot.writeFieldBegin('schemaVersionId', TType.I64, 2)
+      oprot.writeI64(self.schemaVersionId)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.schemaBranchId)
+    value = (value * 31) ^ hash(self.schemaVersionId)
     return value
 
   def __repr__(self):

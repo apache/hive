@@ -121,7 +121,7 @@ public class CreateTableLikeDesc extends DDLDesc implements Serializable {
   /**
    * @return the default serDeName
    */
-  @Explain(displayName = "default serde name")
+  @Explain(displayName = "default serdes name")
   public String getDefaultSerName() {
     return defaultSerName;
   }
@@ -137,14 +137,14 @@ public class CreateTableLikeDesc extends DDLDesc implements Serializable {
   /**
    * @return the default serDe properties
    */
-  @Explain(displayName = "serde properties")
+  @Explain(displayName = "serdes properties")
   public Map<String, String> getDefaultSerdeProps() {
     return defaultSerdeProps;
   }
 
   /**
    * @param serdeProps
-   *          the default serde properties to set
+   *          the default serdes properties to set
    */
   public void setDefaultSerdeProps(Map<String, String> serdeProps) {
     this.defaultSerdeProps = serdeProps;

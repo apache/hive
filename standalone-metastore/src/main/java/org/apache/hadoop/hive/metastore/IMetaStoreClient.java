@@ -31,92 +31,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.metastore.annotation.NoReconnect;
-import org.apache.hadoop.hive.metastore.api.AggrStats;
-import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
-import org.apache.hadoop.hive.metastore.api.BasicTxnInfo;
-import org.apache.hadoop.hive.metastore.api.CmRecycleRequest;
-import org.apache.hadoop.hive.metastore.api.CmRecycleResponse;
-import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
-import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
-import org.apache.hadoop.hive.metastore.api.CompactionResponse;
-import org.apache.hadoop.hive.metastore.api.CompactionType;
-import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
-import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
-import org.apache.hadoop.hive.metastore.api.DataOperationType;
-import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.FindSchemasByColsResp;
-import org.apache.hadoop.hive.metastore.api.FindSchemasByColsRqst;
-import org.apache.hadoop.hive.metastore.api.FireEventRequest;
-import org.apache.hadoop.hive.metastore.api.FireEventResponse;
-import org.apache.hadoop.hive.metastore.api.ForeignKeysRequest;
-import org.apache.hadoop.hive.metastore.api.Function;
-import org.apache.hadoop.hive.metastore.api.GetAllFunctionsResponse;
-import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
-import org.apache.hadoop.hive.metastore.api.GetPrincipalsInRoleRequest;
-import org.apache.hadoop.hive.metastore.api.GetPrincipalsInRoleResponse;
-import org.apache.hadoop.hive.metastore.api.GetRoleGrantsForPrincipalRequest;
-import org.apache.hadoop.hive.metastore.api.GetRoleGrantsForPrincipalResponse;
-import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeResponse;
-import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
-import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
-import org.apache.hadoop.hive.metastore.api.ISchema;
-import org.apache.hadoop.hive.metastore.api.Index;
-import org.apache.hadoop.hive.metastore.api.InvalidInputException;
-import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
-import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
-import org.apache.hadoop.hive.metastore.api.InvalidPartitionException;
-import org.apache.hadoop.hive.metastore.api.LockRequest;
-import org.apache.hadoop.hive.metastore.api.LockResponse;
-import org.apache.hadoop.hive.metastore.api.Materialization;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.MetadataPpdResult;
-import org.apache.hadoop.hive.metastore.api.NoSuchLockException;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
-import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
-import org.apache.hadoop.hive.metastore.api.NotNullConstraintsRequest;
-import org.apache.hadoop.hive.metastore.api.NotificationEvent;
-import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
-import org.apache.hadoop.hive.metastore.api.NotificationEventsCountRequest;
-import org.apache.hadoop.hive.metastore.api.NotificationEventsCountResponse;
-import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.PartitionEventType;
-import org.apache.hadoop.hive.metastore.api.PartitionValuesRequest;
-import org.apache.hadoop.hive.metastore.api.PartitionValuesResponse;
-import org.apache.hadoop.hive.metastore.api.PrimaryKeysRequest;
-import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
-import org.apache.hadoop.hive.metastore.api.PrincipalType;
-import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
-import org.apache.hadoop.hive.metastore.api.Role;
-import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
-import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
-import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
-import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
-import org.apache.hadoop.hive.metastore.api.SchemaVersion;
-import org.apache.hadoop.hive.metastore.api.SchemaVersionState;
-import org.apache.hadoop.hive.metastore.api.SerDeInfo;
-import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
-import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
-import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
-import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
-import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.TableMeta;
-import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
-import org.apache.hadoop.hive.metastore.api.TxnOpenException;
-import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
-import org.apache.hadoop.hive.metastore.api.UnknownDBException;
-import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
-import org.apache.hadoop.hive.metastore.api.UnknownTableException;
-import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
-import org.apache.hadoop.hive.metastore.api.WMMapping;
-import org.apache.hadoop.hive.metastore.api.WMNullablePool;
-import org.apache.hadoop.hive.metastore.api.WMNullableResourcePlan;
-import org.apache.hadoop.hive.metastore.api.WMPool;
-import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
-import org.apache.hadoop.hive.metastore.api.WMTrigger;
-import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
+import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.ObjectPair;
 import org.apache.thrift.TException;
@@ -1859,7 +1774,7 @@ public interface IMetaStoreClient {
    * @throws MetaException general metastore error
    * @throws TException general thrift error
    */
-  void createISchema(ISchema schema) throws TException;
+  Long createISchema(ISchema schema) throws TException;
 
   /**
    * Alter an existing schema.
@@ -1879,7 +1794,18 @@ public interface IMetaStoreClient {
    * @throws MetaException general metastore error
    * @throws TException general thrift error
    */
-  ISchema getISchema(String name) throws TException;
+  ISchema getISchemaByName(String name) throws TException;
+
+
+  /**
+   * Fetch a schema.
+   * @param schemaId id of the schema
+   * @return the schema or null if no such schema
+   * @throws NoSuchObjectException no schema matching this name exists
+   * @throws MetaException general metastore error
+   * @throws TException general thrift error
+   */
+  ISchema getISchema(Long schemaId) throws TException;
 
   /**
    * Drop an existing schema.  If there are schema versions of this, this call will fail.
@@ -1899,7 +1825,7 @@ public interface IMetaStoreClient {
    * @throws MetaException general metastore error
    * @throws TException general thrift error
    */
-  void addSchemaVersion(SchemaVersion schemaVersion) throws TException;
+  Long addSchemaVersion(ISchemaVersion schemaVersion) throws TException;
 
   /**
    * Get a specific version of a schema.
@@ -1910,7 +1836,28 @@ public interface IMetaStoreClient {
    * @throws MetaException general metastore error
    * @throws TException general thrift error
    */
-  SchemaVersion getSchemaVersion(String schemaName, int version) throws TException;
+  ISchemaVersion getSchemaVersion(String schemaName, int version) throws TException;
+
+  /**
+   * Get a specific version of a schema.
+   * @param schemaVersionId id of the schemaVersion
+   * @return the schema version or null if no such schema version
+   * @throws NoSuchObjectException no schema matching this name and version exists
+   * @throws MetaException general metastore error
+   * @throws TException general thrift error
+   */
+  ISchemaVersion getSchemaVersionById(Long schemaVersionId) throws TException;
+
+  /**
+   * Get all versions of a schema that matches schemaName and schemaText.
+   * @param schemaName name of the schemaName
+   * @param fingerPrint fingerPrint of schemaText
+   * @return the schema version or null if no such schema version
+   * @throws NoSuchObjectException no schema matching this name and version exists
+   * @throws MetaException general metastore error
+   * @throws TException general thrift error
+   */
+  List<ISchemaVersion> getSchemaVersionByNameAndFingerprint(String schemaName, String fingerPrint) throws TException;
 
   /**
    * Get the latest version of a schema.
@@ -1921,7 +1868,7 @@ public interface IMetaStoreClient {
    * @throws MetaException general metastore error
    * @throws TException general thrift error
    */
-  SchemaVersion getSchemaLatestVersion(String schemaName) throws TException;
+  ISchemaVersion getSchemaLatestVersion(String schemaName) throws TException;
 
   /**
    * Get all the extant versions of a schema.
@@ -1932,7 +1879,7 @@ public interface IMetaStoreClient {
    * @throws MetaException general metastore error
    * @throws TException general thrift error
    */
-  List<SchemaVersion> getSchemaAllVersions(String schemaName) throws TException;
+  List<ISchemaVersion> getSchemaAllVersions(String schemaName) throws TException;
 
   /**
    * Drop a version of a schema.  Given that versions are supposed to be immutable you should
@@ -1956,13 +1903,25 @@ public interface IMetaStoreClient {
    */
   FindSchemasByColsResp getSchemaByCols(FindSchemasByColsRqst rqst) throws TException;
 
+
   /**
-   * Map a schema version to a serde.  This mapping is one-to-one, thus this will destroy any
+   * Map a schema version to a branch.
+   * @param schemaBranchId id of the schema branch
+   * @param schemaVersionId if of the schema version
+   * @throws NoSuchObjectException no matching version of the schema could be found or no serdes
+   * of the provided name could be found
+   * @throws MetaException general metastore error
+   * @throws TException general thrift error
+   */
+  void mapSchemaBranchToSchemaVersion(Long schemaBranchId, Long schemaVersionId) throws TException;
+
+  /**
+   * Map a schema version to a serdes.  This mapping is one-to-one, thus this will destroy any
    * previous mappings for this schema version.
    * @param schemaName name of the schema
    * @param version version of the schema
-   * @param serdeName name of the serde
-   * @throws NoSuchObjectException no matching version of the schema could be found or no serde
+   * @param serdeName name of the serdes
+   * @throws NoSuchObjectException no matching version of the schema could be found or no serdes
    * of the provided name could be found
    * @throws MetaException general metastore error
    * @throws TException general thrift error
@@ -1982,23 +1941,78 @@ public interface IMetaStoreClient {
   void setSchemaVersionState(String schemaName, int version, SchemaVersionState state) throws TException;
 
   /**
-   * Add a serde.  This is primarily intended for use with SchemaRegistry objects, since serdes
+   * Add a serdes.  This is primarily intended for use with SchemaRegistry objects, since serdes
    * are automatically added when needed as part of creating and altering tables and partitions.
-   * @param serDeInfo serde to add
-   * @throws AlreadyExistsException serde of this name already exists
+   * @param serDeInfo serdes to add
+   * @throws AlreadyExistsException serdes of this name already exists
    * @throws MetaException general metastore error
    * @throws TException general thrift error
    */
   void addSerDe(SerDeInfo serDeInfo) throws TException;
 
   /**
-   * Fetch a serde.  This is primarily intended for use with SchemaRegistry objects, since serdes
+   * Fetch a serdes.  This is primarily intended for use with SchemaRegistry objects, since serdes
    * are automatically fetched along with other information for tables and partitions.
-   * @param serDeName name of the serde
-   * @return the serde.
-   * @throws NoSuchObjectException no serde with this name exists.
+   * @param serDeName name of the serdes
+   * @return the serdes.
+   * @throws NoSuchObjectException no serdes with this name exists.
    * @throws MetaException general metastore error
    * @throws TException general thrift error
    */
   SerDeInfo getSerDe(String serDeName) throws TException;
+
+
+  /**
+   * Create a schema branch.
+   * @param schemaBranch to add.
+   * @throws AlreadyExistsException if a schema of this name already exists
+   * @throws NoSuchObjectException database references by this schema does not exist
+   * @throws MetaException general metastore error
+   * @throws TException general thrift error
+   */
+  void addSchemaBranch(ISchemaBranch schemaBranch) throws TException;
+
+
+  /**
+   * Get the SchemaBranch for a given ID.
+   * @param schemaBranchId ID of the schemaBranch
+   * @return SchemaBranch or null if the schemaBranch does not exist
+   * @throws NoSuchObjectException no versions of schema matching this name exist
+   * @throws MetaException general metastore error
+   * @throws TException general thrift error
+   */
+  ISchemaBranch getSchemaBranch(Long schemaBranchId) throws TException;
+
+
+  /**
+   * Get the SchemaBranch by name.
+   * @param schemaMetadataName name of the schemaMetadata
+   * @return SchemaBranch or null if the schemaBranch does not exist
+   * @throws NoSuchObjectException no versions of schema matching this name exist
+   * @throws MetaException general metastore error
+   * @throws TException general thrift error
+   */
+  List<ISchemaBranch> getSchemaBranchBySchemaName(String schemaMetadataName) throws TException;
+
+
+  /**
+   * Get the schema versions by schema branch.
+   * @param schemaBranchId id of schema branch
+   * @return schemaBranchToISchemaVersion or null if the schemaBranch does not exist
+   * @throws NoSuchObjectException no versions of schema matching the schema branch id
+   * @throws MetaException general metastore error
+   * @throws TException general thrift error
+   */
+  List<ISchemaBranchToISchemaVersion> getSchemaVersionsBySchemaBranchId(Long schemaBranchId) throws TException;
+
+
+  /**
+   * Get the schema branch by schema version id.
+   * @param schemaVersionId id of schema version
+   * @return schemaBranch or null if the schemaVersion does not exist
+   * @throws NoSuchObjectException no versions of schema matching the schema branch id
+   * @throws MetaException general metastore error
+   * @throws TException general thrift error
+   */
+  List<ISchemaBranch> getSchemaBranchBySchemaVersionId(Long schemaVersionId) throws TException;
 }

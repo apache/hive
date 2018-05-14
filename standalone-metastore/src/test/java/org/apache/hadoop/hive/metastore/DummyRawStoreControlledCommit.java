@@ -18,7 +18,8 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
+
+import org.apache.hadoop.hive.metastore.api.*;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -28,55 +29,6 @@ import java.util.Map;
 
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.api.AggrStats;
-import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
-import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
-import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
-import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
-import org.apache.hadoop.hive.metastore.api.Function;
-import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
-import org.apache.hadoop.hive.metastore.api.ISchema;
-import org.apache.hadoop.hive.metastore.api.Index;
-import org.apache.hadoop.hive.metastore.api.InvalidInputException;
-import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
-import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
-import org.apache.hadoop.hive.metastore.api.InvalidPartitionException;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
-import org.apache.hadoop.hive.metastore.api.NotificationEvent;
-import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
-import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
-import org.apache.hadoop.hive.metastore.api.NotificationEventsCountRequest;
-import org.apache.hadoop.hive.metastore.api.NotificationEventsCountResponse;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.PartitionEventType;
-import org.apache.hadoop.hive.metastore.api.PartitionValuesResponse;
-import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
-import org.apache.hadoop.hive.metastore.api.PrincipalType;
-import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
-import org.apache.hadoop.hive.metastore.api.WMNullablePool;
-import org.apache.hadoop.hive.metastore.api.WMNullableResourcePlan;
-import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
-import org.apache.hadoop.hive.metastore.api.WMTrigger;
-import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
-import org.apache.hadoop.hive.metastore.api.Role;
-import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
-import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
-import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
-import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
-import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
-import org.apache.hadoop.hive.metastore.api.SchemaVersion;
-import org.apache.hadoop.hive.metastore.api.SerDeInfo;
-import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.TableMeta;
-import org.apache.hadoop.hive.metastore.api.Type;
-import org.apache.hadoop.hive.metastore.api.UnknownDBException;
-import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
-import org.apache.hadoop.hive.metastore.api.UnknownTableException;
-import org.apache.hadoop.hive.metastore.api.WMMapping;
-import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.ColStatsObjWithSourceInfo;
 import org.apache.thrift.TException;
@@ -1064,9 +1016,9 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
     return null;
   }
 
-  public void createISchema(ISchema schema) throws AlreadyExistsException, MetaException,
+  public Long createISchema(ISchema schema) throws AlreadyExistsException, MetaException,
       NoSuchObjectException {
-    objectStore.createISchema(schema);
+    return objectStore.createISchema(schema);
   }
 
   @Override
@@ -1076,8 +1028,13 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public ISchema getISchema(String schemaName) throws MetaException {
-    return objectStore.getISchema(schemaName);
+  public ISchema getISchemaByName(String schemaName) throws MetaException {
+    return objectStore.getISchemaByName(schemaName);
+  }
+
+  @Override
+  public ISchema getISchema(Long schemaId) throws MetaException {
+    return objectStore.getISchema(schemaId);
   }
 
   @Override
@@ -1086,34 +1043,45 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public void addSchemaVersion(SchemaVersion schemaVersion) throws
+  public Long addSchemaVersion(ISchemaVersion schemaVersion) throws
       AlreadyExistsException, InvalidObjectException, NoSuchObjectException, MetaException {
-    objectStore.addSchemaVersion(schemaVersion);
+    return objectStore.addSchemaVersion(schemaVersion);
   }
 
   @Override
-  public void alterSchemaVersion(String schemaName, int version, SchemaVersion newVersion) throws
+  public void alterSchemaVersion(String schemaName, int version, ISchemaVersion newVersion) throws
       NoSuchObjectException, MetaException {
     objectStore.alterSchemaVersion(schemaName, version, newVersion);
   }
 
   @Override
-  public SchemaVersion getSchemaVersion(String schemaName, int version) throws MetaException {
+  public ISchemaVersion getSchemaVersion(String schemaName, int version) throws MetaException {
     return objectStore.getSchemaVersion(schemaName, version);
   }
 
   @Override
-  public SchemaVersion getLatestSchemaVersion(String schemaName) throws MetaException {
-    return objectStore.getLatestSchemaVersion(schemaName);
+  public ISchemaVersion getSchemaVersionById(Long schemaVersionId) throws MetaException {
+    return objectStore.getSchemaVersionById(schemaVersionId);
   }
 
   @Override
-  public List<SchemaVersion> getAllSchemaVersion(String schemaName) throws MetaException {
+  public ISchemaVersion getLatestSchemaVersion(String schemaName) throws MetaException {
+    return objectStore.getLatestSchemaVersion(schemaName);
+  }
+
+
+  @Override
+  public List<ISchemaVersion> getSchemaVersionsByNameAndFingerprint(String schemaName, String fingerPrint) throws MetaException {
+    return objectStore.getSchemaVersionsByNameAndFingerprint(schemaName, fingerPrint);
+  }
+
+  @Override
+  public List<ISchemaVersion> getAllSchemaVersion(String schemaName) throws MetaException {
     return objectStore.getAllSchemaVersion(schemaName);
   }
 
   @Override
-  public List<SchemaVersion> getSchemaVersionsByColumns(String colName, String colNamespace,
+  public List<ISchemaVersion> getSchemaVersionsByColumns(String colName, String colNamespace,
                                                         String type) throws MetaException {
     return objectStore.getSchemaVersionsByColumns(colName, colNamespace, type);
   }
@@ -1122,6 +1090,38 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   public void dropSchemaVersion(String schemaName, int version) throws NoSuchObjectException,
       MetaException {
     objectStore.dropSchemaVersion(schemaName, version);
+  }
+
+  @Override
+  public Long addSchemaBranch(ISchemaBranch schemaBranch)  throws AlreadyExistsException, InvalidObjectException,
+          NoSuchObjectException, MetaException {
+    return objectStore.addSchemaBranch(schemaBranch);
+  }
+
+  @Override
+  public void mapSchemaBranchToSchemaVersion(Long schemaBranchId, Long schemaVersionId) throws AlreadyExistsException,
+          InvalidObjectException, NoSuchObjectException, MetaException {
+    objectStore.mapSchemaBranchToSchemaVersion(schemaBranchId, schemaVersionId);
+  }
+
+  @Override
+  public ISchemaBranch getSchemaBranch(Long schemaBranchId) throws MetaException {
+    return objectStore.getSchemaBranch(schemaBranchId);
+  }
+
+  @Override
+  public List<ISchemaBranch> getSchemaBranchBySchemaVersionId(Long schemaVersionId) throws MetaException {
+    return objectStore.getSchemaBranchBySchemaVersionId(schemaVersionId);
+  }
+
+  @Override
+  public List<ISchemaBranch> getSchemaBranchBySchemaName(String schemaName) throws MetaException {
+    return objectStore.getSchemaBranchBySchemaName(schemaName);
+  }
+
+  @Override
+  public List<ISchemaBranchToISchemaVersion> getSchemaVersionsBySchemaBranchId(Long schemaBranchId) throws MetaException {
+    return objectStore.getSchemaVersionsBySchemaBranchId(schemaBranchId);
   }
 
   @Override

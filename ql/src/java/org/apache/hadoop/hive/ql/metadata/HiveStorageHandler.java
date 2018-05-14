@@ -39,7 +39,7 @@ import org.apache.hadoop.mapred.OutputFormat;
  *<ul>
  *<li>input format
  *<li>output format
- *<li>serde
+ *<li>serdes
  *<li>metadata hooks for keeping an external catalog in sync
  * with Hive's metastore
  *<li>rules for setting up the configuration properties on

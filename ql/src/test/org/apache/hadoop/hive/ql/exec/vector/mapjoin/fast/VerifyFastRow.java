@@ -66,7 +66,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
 /**
- * (Copy of VerifyFast from serde).
+ * (Copy of VerifyFast from serdes).
  *
  */
 public class VerifyFastRow {

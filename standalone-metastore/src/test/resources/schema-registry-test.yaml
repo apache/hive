@@ -1,0 +1,44 @@
+# registries configuration
+modules:
+  - name: schema-registry
+    className: org.apache.hadoop.hive.registry.webservice.SchemaRegistryModule
+    config:
+      schemaProviders:
+        - providerClass: "org.apache.hadoop.hive.registry.avro.AvroSchemaProvider"
+          defaultSerializerClass: "org.apache.hadoop.hive.registry.serdes.avro.AvroSnapshotSerializer"
+          defaultDeserializerClass: "org.apache.hadoop.hive.registry.serdes.avro.AvroSnapshotDeserializer"
+      # schema cache properties
+      # inmemory schema versions cache size
+      schemaCacheSize: 10000
+      # inmemory schema version cache entry expiry interval after access
+      schemaCacheExpiryInterval: 3600
+
+
+servletFilters:
+ - className: "org.apache.hadoop.hive.registry.webservice.RewriteUriFilter"
+   params:
+     # value format is [<targetpath>,<paths-should-be-redirected-to>,*|]*
+     # below /subjects and /schemas/ids are forwarded to /api/v1/confluent
+     forwardPaths: "/api/v1/confluent,/subjects/*,/schemas/ids/*"
+     redirectPaths: "/ui/,/"
+
+#swagger configuration
+swagger:
+  resourcePackage: org.apache.hadoop.hive.registry.webservice
+
+#enable CORS, may want to disable in production
+enableCors: false
+
+server:
+  applicationConnectors:
+    - type: http
+      port: 0
+  adminConnectors:
+    - type: http
+      port: 0
+
+# Logging settings.
+logging:
+  level: INFO
+  loggers:
+    org.apache.hadoop.hive.registry: INFO

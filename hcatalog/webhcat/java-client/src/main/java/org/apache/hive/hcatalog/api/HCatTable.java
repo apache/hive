@@ -492,9 +492,9 @@ public class HCatTable {
   }
 
   /**
-   * Gets the serde lib.
+   * Gets the serdes lib.
    *
-   * @return the serde lib
+   * @return the serdes lib
    */
   public String getSerdeLib() {
     return getSerDeInfo().getSerializationLib();
@@ -625,7 +625,7 @@ public class HCatTable {
         + "inputFormat=" + getInputFileFormat() + ", "
         + "outputFormat=" + getOutputFileFormat() + ", "
         + "storageHandler=" + getStorageHandler() + ", "
-        + "serde=" + getSerdeLib() + ", "
+        + "serdes=" + getSerdeLib() + ", "
         + "tblProps=" + getTblProps() + ", "
         + "location=" + getLocation() + ", "
         + "owner=" + owner() + " ]";

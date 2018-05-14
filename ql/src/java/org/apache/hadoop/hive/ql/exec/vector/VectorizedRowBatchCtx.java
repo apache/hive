@@ -61,7 +61,7 @@ import org.apache.hive.common.util.DateUtils;
 import com.google.common.base.Preconditions;
 
 /**
- * Context for Vectorized row batch. this class does eager deserialization of row data using serde
+ * Context for Vectorized row batch. this class does eager deserialization of row data using serdes
  * in the RecordReader layer.
  * It has supports partitions in this layer so that the vectorized batch is populated correctly
  * with the partition column.

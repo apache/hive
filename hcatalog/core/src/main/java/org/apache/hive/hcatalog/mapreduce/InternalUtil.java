@@ -141,7 +141,7 @@ class InternalUtil {
   }
 
   //TODO this has to find a better home, it's also hardcoded as default in hive would be nice
-  // if the default was decided by the serde
+  // if the default was decided by the serdes
   static void initializeOutputSerDe(AbstractSerDe serDe, Configuration conf, OutputJobInfo jobInfo)
     throws SerDeException {
     SerDeUtils.initializeSerDe(serDe, conf,

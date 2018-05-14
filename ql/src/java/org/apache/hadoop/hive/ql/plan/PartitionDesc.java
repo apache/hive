@@ -250,7 +250,7 @@ public class PartitionDesc implements Serializable, Cloneable {
   /**
    * @return the serdeClassName
    */
-  @Explain(displayName = "serde", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Explain(displayName = "serdes", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getSerdeClassName() {
     return getProperties().getProperty(serdeConstants.SERIALIZATION_LIB);
   }

@@ -1308,27 +1308,43 @@ struct WMCreateOrDropTriggerToPoolMappingResponse {
 // Schema objects
 // Schema is already taken, so for the moment I'm calling it an ISchema for Independent Schema
 struct ISchema {
-  1: SchemaType schemaType,
-  2: string name,
-  3: string dbName,
-  4: SchemaCompatibility compatibility,
-  5: SchemaValidation validationLevel,
-  6: bool canEvolve,
-  7: optional string schemaGroup,
-  8: optional string description
+  1:  optional i64 schemaId,
+  2:  SchemaType schemaType,
+  3:  string name,
+  4:  string dbName,
+  5:  SchemaCompatibility compatibility,
+  6:  SchemaValidation validationLevel,
+  7:  bool canEvolve,
+  8:  optional string schemaGroup,
+  9:  optional string description,
+  10: optional i64 timestamp
 }
 
-struct SchemaVersion {
-  1:  string schemaName,
-  2:  i32 version,
-  3:  i64 createdAt,
-  4:  list<FieldSchema> cols,
-  5:  optional SchemaVersionState state,
-  6:  optional string description,
-  7:  optional string schemaText,
-  8:  optional string fingerprint,
-  9:  optional string name,
-  10: optional SerDeInfo serDe
+struct ISchemaVersion {
+  1:  optional i64 schemaVersionId,
+  2:  string schemaName,
+  3:  i32 version,
+  4:  i64 createdAt,
+  5:  list<FieldSchema> cols,
+  6:  optional SchemaVersionState state,
+  7:  optional string description,
+  8:  optional string schemaText,
+  9:  optional string fingerprint,
+  10: optional string name,
+  11: optional SerDeInfo serDe
+}
+
+struct ISchemaBranch {
+  1: optional i64 schemaBranchId,
+  2: string name,
+  3: string schemaMetadataName,
+  4: optional string description,
+  5: optional i64 timestamp
+}
+
+struct ISchemaBranchToISchemaVersion {
+  1: i64 schemaBranchId,
+  2: i64 schemaVersionId
 }
 
 struct FindSchemasByColsRqst {
@@ -1345,6 +1361,7 @@ struct FindSchemasByColsRespEntry {
 struct FindSchemasByColsResp {
   1: list<FindSchemasByColsRespEntry> schemaVersions
 }
+
 
 // Exceptions.
 
@@ -1967,26 +1984,51 @@ service ThriftHiveMetastore extends fb303.FacebookService
       throws(1:AlreadyExistsException o1, 2:NoSuchObjectException o2, 3:InvalidObjectException o3, 4:MetaException o4)
 
   // Schema calls
-  void create_ischema(1:ISchema schema) throws(1:AlreadyExistsException o1,
+  i64 create_ischema(1:ISchema schema) throws(1:AlreadyExistsException o1,
         NoSuchObjectException o2, 3:MetaException o3)
   void alter_ischema(1:string schemaName, 2:ISchema newSchema)
         throws(1:NoSuchObjectException o1, 2:MetaException o2)
-  ISchema get_ischema(1:string schemaName) throws (1:NoSuchObjectException o1, 2:MetaException o2)
+  ISchema get_ischema_by_name(1:string schemaName) throws (1:NoSuchObjectException o1, 2:MetaException o2)
+  ISchema get_ischema(1:i64 schemaId) throws (1:NoSuchObjectException o1, 2:MetaException o2)
   void drop_ischema(1:string schemaName)
         throws(1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
 
-  void add_schema_version(1:SchemaVersion schemaVersion)
+  i64 add_schema_version(1:ISchemaVersion schemaVersion)
         throws(1:AlreadyExistsException o1, 2:NoSuchObjectException o2, 3:MetaException o3)
-  SchemaVersion get_schema_version(1: string schemaName, 2: i32 version)
+  ISchemaVersion get_schema_version(1: string schemaName, 2: i32 version)
         throws (1:NoSuchObjectException o1, 2:MetaException o2)
-  SchemaVersion get_schema_latest_version(1: string schemaName)
+  ISchemaVersion get_schema_latest_version(1: string schemaName)
         throws (1:NoSuchObjectException o1, 2:MetaException o2)
-  list<SchemaVersion> get_schema_all_versions(1: string schemaName)
+  ISchemaVersion get_schema_version_by_id(1:i64 schemaVersionid)
+        throws (1:NoSuchObjectException o1, 2:MetaException o2)
+
+  list<ISchemaVersion> get_schema_versions_by_name_and_fingerprint(1:string schemaName, 2:string fingerPrint)
+        throws (1:NoSuchObjectException o1, 2:MetaException o2)
+  list<ISchemaVersion> get_schema_all_versions(1: string schemaName)
         throws (1:NoSuchObjectException o1, 2:MetaException o2)
   void drop_schema_version(1: string schemaName, 2: i32 version)
         throws(1:NoSuchObjectException o1, 2:MetaException o2)
   FindSchemasByColsResp get_schemas_by_cols(1: FindSchemasByColsRqst rqst)
         throws(1:MetaException o1)
+
+  void add_schema_branch(1:ISchemaBranch schemaBranch)
+        throws(1:AlreadyExistsException o1, 2:NoSuchObjectException o2, 3:MetaException o3)
+
+  void map_schema_branch_to_schema_version(1: i64 schemaBranchId, 2: i64 schemaVersionId)
+        throws(1:AlreadyExistsException o1, 2:NoSuchObjectException o2, 3:MetaException o3)
+
+  ISchemaBranch get_schema_branch(1: i64 schemaBranchId)
+        throws (1:NoSuchObjectException o1, 2:MetaException o2)
+
+  list<ISchemaBranch> get_schema_branch_by_schema_name(1: string schemaName)
+        throws (1:NoSuchObjectException o1, 2:MetaException o2)
+
+  list<ISchemaBranch> get_schema_branch_by_schema_version_id(1: i64 schemaVersionId)
+        throws (1:NoSuchObjectException o1, 2:MetaException o2)
+
+  list<ISchemaBranchToISchemaVersion> get_schema_versions_by_schema_branch_id(1: i64 schemaBranchId)
+        throws (1:NoSuchObjectException o1, 2:MetaException o2)
+
   // There is no blanket update of SchemaVersion since it is (mostly) immutable.  The only
   // updates are the specific ones to associate a version with a serde and to change its state
   void map_schema_version_to_serde(1: string schemaName, 2: i32 version, 3: string serdeName)

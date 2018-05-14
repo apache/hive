@@ -1,0 +1,11 @@
+schema.registry.url : "__registry_url"
+schema.registry.client.local.jars.path : "/tmp/schema-registry/local-jars"
+schema.registry.client.class.loader.cache.size : 1024
+schema.registry.client.class.loader.cache.expiry.interval : 3600
+schema.registry.client.schema.version.cache.size : 1024
+schema.registry.client.schema.version.cache.expiry.interval : 300
+schema.registry.client.schema.metadata.cache.expiry.interval : 300
+schema.registry.client.schema.text.cache.size : 1024
+schema.registry.client.schema.text.cache.expiry.interval : 300
+schema.registry.client.url.selector : "org.apache.hadoop.hive.registry.client.FailoverUrlSelector"
+jersey.config.client.readTimeout: 300000

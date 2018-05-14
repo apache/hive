@@ -40,7 +40,7 @@ public class TestThatEvolvedSchemasActAsWeWant {
     // Need to verify that when reading a datum with an updated reader schema
     // that the datum then returns the reader schema as its own, since we
     // depend on this behavior in order to avoid re-encoding the datum
-    // in the serde.
+    // in the serdes.
     String v0 = "{\n" +
         "    \"namespace\": \"org.apache.hadoop.hive\",\n" +
         "    \"name\": \"SomeStuff\",\n" +

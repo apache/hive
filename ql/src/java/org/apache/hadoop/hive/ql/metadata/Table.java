@@ -646,7 +646,7 @@ public class Table implements Serializable {
         return HiveMetaStoreUtils.getFieldsFromDeserializer(getTableName(), getDeserializer());
       }
     } catch (Exception e) {
-      LOG.error("Unable to get field from serde: " + serializationLib, e);
+      LOG.error("Unable to get field from serdes: " + serializationLib, e);
     }
     return new ArrayList<FieldSchema>();
   }

@@ -262,7 +262,7 @@ public class OrcEncodedDataConsumer
   }
 
   /**
-   * Position provider used in absence of indexes, e.g. for serde-based reader, where each stream
+   * Position provider used in absence of indexes, e.g. for serdes-based reader, where each stream
    * is in its own physical 'container', always starting at 0, and there are no RGs.
    */
   private final static class IndexlessPositionProvider implements PositionProvider {

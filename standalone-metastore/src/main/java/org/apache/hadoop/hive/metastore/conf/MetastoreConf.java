@@ -657,7 +657,7 @@ public class MetastoreConf {
             "org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe," +
             "org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe," +
             "org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe," +
-            "org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe," +
+            "org.apache.hadoop.hive.ql.io.parquet.serdes.ParquetHiveSerDe," +
             "org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe",
         "SerDes retrieving schema from metastore. This is an internal parameter."),
     SERVER_MAX_MESSAGE_SIZE("metastore.server.max.message.size",

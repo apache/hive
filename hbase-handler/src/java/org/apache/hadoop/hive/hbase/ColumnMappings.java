@@ -169,7 +169,7 @@ public class ColumnMappings implements Iterable<ColumnMappings.ColumnMapping> {
         throw new SerDeException("Error: " + HBaseSerDe.HBASE_TABLE_DEFAULT_STORAGE_TYPE +
             " parameter must be specified as" +
             " 'string' or 'binary'; '" + hbaseTableDefaultStorageType +
-            "' is not a valid specification for this table/serde property.");
+            "' is not a valid specification for this table/serdes property.");
       }
     }
 

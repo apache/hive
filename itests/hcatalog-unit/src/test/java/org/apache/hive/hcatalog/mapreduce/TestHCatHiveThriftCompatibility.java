@@ -81,7 +81,7 @@ public class TestHCatHiveThriftCompatibility extends HCatBaseTest {
     Assert.assertEquals(0, driver.run(
         "create external table test_thrift " +
             "partitioned by (year string) " +
-            "row format serde 'org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer' " +
+            "row format serdes 'org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer' " +
             "with serdeproperties ( " +
             "  'serialization.class'='org.apache.hadoop.hive.serde2.thrift.test.IntString', " +
             "  'serialization.format'='org.apache.thrift.protocol.TBinaryProtocol') " +

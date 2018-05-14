@@ -247,9 +247,9 @@ public class HCatPartition {
   }
 
   /**
-   * Gets the serde.
+   * Gets the serdes.
    *
-   * @return the serde
+   * @return the serdes
    */
   public String getSerDe() {
     return this.sd.getSerdeInfo().getSerializationLib();

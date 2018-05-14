@@ -48,7 +48,7 @@ import static java.util.Collections.EMPTY_SET;
  * accumulo index tables defined as:
  * [rowid=field value] [cf=cfname_cqname] [cq=rowid] [visibility] [value=""]
  * <p>
- * This handler looks for the following hive serde properties:
+ * This handler looks for the following hive serdes properties:
  * 'accumulo.indextable.name' = 'table_idx' (required - name of the corresponding index table)
  * 'accumulo.indexed.columns' = 'name,age,phone' (optional - comma separated list of indexed
  *                      hive columns if not defined or defined as '*' all columns are

@@ -305,14 +305,14 @@ public class TestLazyBinaryFast extends TestCase {
     // if (doWriteFewerColumns) {
     //   testLazyBinaryFast(
     //       source, rows,
-    //       serde, rowStructObjectInspector,
+    //       serdes, rowStructObjectInspector,
     //       serde_fewer, writeRowStructObjectInspector,
     //       primitiveTypeInfos,
     //       /* useIncludeColumns */ false, /* doWriteFewerColumns */ true, r);
 
     //   testLazyBinaryFast(
     //       source, rows,
-    //       serde, rowStructObjectInspector,
+    //       serdes, rowStructObjectInspector,
     //       serde_fewer, writeRowStructObjectInspector,
     //       primitiveTypeInfos,
     //       /* useIncludeColumns */ true, /* doWriteFewerColumns */ true, r);

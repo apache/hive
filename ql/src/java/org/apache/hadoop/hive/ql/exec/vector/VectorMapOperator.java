@@ -361,7 +361,7 @@ public class VectorMapOperator extends AbstractMapOperator {
       if (partDeserializer instanceof OrcSerde) {
 
         // UNDONE: We need to get the table schema inspector from self-describing Input File
-        //         Formats like ORC.  Modify the ORC serde instead?  For now, this works.
+        //         Formats like ORC.  Modify the ORC serdes instead?  For now, this works.
 
         partRawRowObjectInspector =
             (StructObjectInspector) OrcStruct.createObjectInspector(tableStructTypeInfo);

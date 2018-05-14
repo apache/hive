@@ -55,7 +55,7 @@ public class LazySimpleSerDeBench {
    * benchmark tool using JMH command line in different ways:
    * <p/>
    * To run using default settings, use: 
-   * $ java -cp target/benchmarks.jar org.apache.hive.benchmark.serde.LazySimpleSerDeBench
+   * $ java -cp target/benchmarks.jar org.apache.hive.benchmark.serdes.LazySimpleSerDeBench
    * <p/>
    */
   public static final int DEFAULT_ITER_TIME = 1000000;

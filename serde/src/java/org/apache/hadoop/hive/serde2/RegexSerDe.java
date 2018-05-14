@@ -118,7 +118,7 @@ public class RegexSerDe extends AbstractSerDe {
     } else {
       inputPattern = null;
       throw new SerDeException(
-          "This table does not have serde property \"input.regex\"!");
+          "This table does not have serdes property \"input.regex\"!");
     }
 
     final String columnNameDelimiter = tbl.containsKey(serdeConstants.COLUMN_NAME_DELIMITER) ? tbl
