@@ -220,6 +220,10 @@ public class CliConfigs {
 
         includesFrom(testConfigProps, "minillaplocal.query.files");
         includesFrom(testConfigProps, "minillaplocal.shared.query.files");
+        excludeQuery("bucket_map_join_tez1.q");
+        excludeQuery("special_character_in_tabnames_1.q");
+        excludeQuery("sysdb.q");
+        excludeQuery("tez_smb_1.q");
 
         setResultsDir("ql/src/test/results/clientpositive/llap");
         setLogDir("itests/qtest/target/qfile-results/clientpositive");
