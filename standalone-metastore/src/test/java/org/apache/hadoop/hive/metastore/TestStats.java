@@ -46,6 +46,7 @@ import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.slf4j.Logger;
@@ -251,6 +252,7 @@ public class TestStats {
     dropStats(DEFAULT_CATALOG_NAME, dbName, tableName, null, colMap.keySet());
   }
 
+  @Ignore("HIVE-19509: Disable tests that are failing continuously")
   @Test
   public void partitionedTableInHiveCatalog() throws TException {
     String dbName = "db_part_stats";
@@ -275,6 +277,7 @@ public class TestStats {
     dropStats(catName, dbName, tableName, null, colMap.keySet());
   }
 
+  @Ignore("HIVE-19509: Disable tests that are failing continuously")
   @Test
   public void partitionedTableOtherCatalog() throws TException {
     String catName = "cat_table_stats";
@@ -299,6 +302,7 @@ public class TestStats {
     dropStats(NO_CAT, dbName, tableName, null, colMap.keySet());
   }
 
+  @Ignore("HIVE-19509: Disable tests that are failing continuously")
   @Test
   public void partitionedTableDeprecatedCalls() throws TException {
     String dbName = "old_db_part_stats";

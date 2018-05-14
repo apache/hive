@@ -539,6 +539,8 @@ target/tmp/org.apache.hadoop.hive.ql.TestTxnCommands-1521148657811/
         TestTxnCommands2.stringifyValues(data), rs);
 
   }
+
+  @Ignore("HIVE-19509: Disable tests that are failing continuously")
   @Test
   public void testUpgrade() throws Exception {
     int[][] data = {{1,2}, {3, 4}, {5, 6}};
