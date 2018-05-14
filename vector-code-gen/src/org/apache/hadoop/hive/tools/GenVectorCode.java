@@ -1063,6 +1063,15 @@ public class GenVectorCode extends Task {
       {"IfExprScalarScalar", "long", "double"},
       {"IfExprScalarScalar", "double", "double"},
 
+      {"IfExprObjectColumnColumn", "timestamp"},
+      {"IfExprObjectColumnColumn", "interval_day_time"},
+      {"IfExprObjectColumnScalar", "timestamp"},
+      {"IfExprObjectColumnScalar", "interval_day_time"},
+      {"IfExprObjectScalarColumn", "timestamp"},
+      {"IfExprObjectScalarColumn", "interval_day_time"},
+      {"IfExprObjectScalarScalar", "timestamp"},
+      {"IfExprObjectScalarScalar", "interval_day_time"},
+
       // template, <ClassName>, <ValueType>, <OperatorSymbol>, <DescriptionName>, <DescriptionValue>
       {"VectorUDAFMinMax", "VectorUDAFMinLong", "long", "<", "min",
           "_FUNC_(expr) - Returns the minimum value of expr (vectorized, type: long)"},
@@ -1385,6 +1394,12 @@ public class GenVectorCode extends Task {
         generateIfExprScalarColumn(tdesc);
       } else if (tdesc[0].equals("IfExprScalarScalar")) {
         generateIfExprScalarScalar(tdesc);
+      } else if (
+          tdesc[0].equals("IfExprObjectColumnColumn") ||
+          tdesc[0].equals("IfExprObjectColumnScalar") ||
+          tdesc[0].equals("IfExprObjectScalarColumn") ||
+          tdesc[0].equals("IfExprObjectScalarScalar")) {
+        generateIfExprObject(tdesc);
       } else if (tdesc[0].equals("FilterDecimalColumnCompareDecimalScalar")) {
         generateFilterDecimalColumnCompareDecimalScalar(tdesc);
       } else if (tdesc[0].equals("FilterDecimalScalarCompareDecimalColumn")) {
@@ -2255,6 +2270,46 @@ public class GenVectorCode extends Task {
     }
     templateString = templateString.replaceAll("<VectorExprArgType2>", vectorExprArgType2);
     templateString = templateString.replaceAll("<VectorExprArgType3>", vectorExprArgType3);
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+        className, templateString);
+  }
+
+  private void generateIfExprObject(String [] tdesc) throws Exception {
+    String typeName = tdesc[1];
+    String objectName;
+    String scalarType;
+    String scalarImport;
+    if (typeName.equals("timestamp")) {
+      objectName = "Timestamp";
+      scalarType = "Timestamp";
+      scalarImport = "java.sql.Timestamp";
+    } else if (typeName.equals("interval_day_time")) {
+      objectName = "IntervalDayTime";
+      scalarType = "HiveIntervalDayTime";
+      scalarImport = "org.apache.hadoop.hive.common.type.HiveIntervalDayTime";
+    } else {
+      objectName = "unknown";
+      scalarType = "unknown";
+      scalarImport = "unknown";
+    }
+    String classNameSuffix = tdesc[0].substring("IfExprObject".length());
+
+    String writableType = getOutputWritableType(typeName);
+    String columnVectorType = getColumnVectorType(typeName);
+
+    String className = "IfExpr" + objectName + classNameSuffix;
+
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    String templateString = readFile(templateFile);
+
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<ScalarType>", scalarType);
+    templateString = templateString.replaceAll("<ScalarImport>", scalarImport);
+    templateString = templateString.replaceAll("<TypeName>", typeName);
+    templateString = templateString.replaceAll("<ObjectName>", objectName);
+    templateString = templateString.replaceAll("<WritableType>", writableType);
+    templateString = templateString.replaceAll("<ColumnVectorType>", columnVectorType);
+
     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
         className, templateString);
   }

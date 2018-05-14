@@ -390,9 +390,6 @@ public class VectorizationContext {
     if (initialDataTypePhysicalVariations == null) {
       return null;
     }
-    if (columnNum < 0) {
-      fake++;
-    }
     if (columnNum < initialDataTypePhysicalVariations.size()) {
       return initialDataTypePhysicalVariations.get(columnNum);
     }
@@ -1681,8 +1678,6 @@ public class VectorizationContext {
 
     return vectorExpression;
   }
-
-  static int fake = 0;
 
   private VectorExpression getVectorExpressionForUdf(GenericUDF genericUdf,
       Class<?> udfClass, List<ExprNodeDesc> childExpr, VectorExpressionDescriptor.Mode mode,
