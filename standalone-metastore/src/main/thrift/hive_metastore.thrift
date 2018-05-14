@@ -875,9 +875,9 @@ struct WriteEventInfo {
     1: required i64    writeId,
     2: required string database,
     3: required string table,
-    4: required string partition,
-    5: optional string files,
-    6: optional string tableObj,
+    4: required string files,
+    5: optional string partition,
+    6: optional string tableObj, // repl txn task does not need table object for commit
     7: optional string partitionObj,
 }
 

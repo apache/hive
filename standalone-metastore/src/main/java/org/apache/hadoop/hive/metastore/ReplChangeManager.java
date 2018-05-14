@@ -472,7 +472,6 @@ public class ReplChangeManager {
   }
 
   public static boolean isSourceOfReplication(Database db) {
-    // Can not judge, so assuming replication is not enabled.
     assert (db != null);
     String replPolicyIds = getReplPolicyIdString(db);
     return  !StringUtils.isEmpty(replPolicyIds);
@@ -489,5 +488,13 @@ public class ReplChangeManager {
       LOG.debug("Repl policy is not set for database ", db.getName());
     }
     return null;
+  }
+
+  public static String joinWithSeparator(Iterable<?> strings) {
+    return org.apache.hadoop.util.StringUtils.join("]", strings);
+  }
+
+  public static String[] getListFromSeparatedString(String commaSeparatedString) {
+    return commaSeparatedString.split("\\s*]\\s*");
   }
 }

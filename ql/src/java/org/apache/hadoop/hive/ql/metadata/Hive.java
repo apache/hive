@@ -175,7 +175,6 @@ import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveAugmentMaterializationRule;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
-import org.apache.hadoop.hive.ql.parse.repl.dump.io.FileOperations;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.DropTableDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -1934,46 +1933,46 @@ public class Hive {
             ((null != oldPart) || AcidUtils.isTransactionalTable(tbl));
   }
 
-  private List<Path> listFilesCreatedByQuery(Path loadPath, long writeId, int stmtId,
-                                             boolean isInsertOverwrite) throws HiveException {
-    List<Path> newFiles = new ArrayList<Path>();
-    final String filePrefix = AcidUtils.baseOrDeltaSubdir(isInsertOverwrite, writeId, writeId, stmtId);;
-    FileStatus[] srcs;
-    FileSystem srcFs;
+  private void listFilesInsideAcidDirectory(Path acidDir, FileSystem srcFs, List<Path> newFiles) throws HiveException {
+    // list out all the files/directory in the path
+    FileStatus[] acidFiles;
     try {
-      srcFs = loadPath.getFileSystem(conf);
-      srcs = srcFs.listStatus(loadPath);
+      acidFiles = srcFs.listStatus(acidDir);
     } catch (IOException e) {
       LOG.error("Error listing files", e);
       throw new HiveException(e);
     }
-    if (srcs == null) {
-      LOG.info("No sources specified: " + loadPath);
-      return newFiles;
-    }
-    PathFilter subdirFilter = null;
 
-    // Note: just like the move path, we only do one level of recursion.
-    for (FileStatus src : srcs) {
-      if (src.isDirectory()) {
-        if (subdirFilter == null) {
-          subdirFilter = new PathFilter() {
-            @Override
-            public boolean accept(Path path) {
-              return path.getParent().getName().startsWith(filePrefix);
-            }
-          };
-        }
-        try {
-          for (FileStatus srcFile : srcFs.listStatus(src.getPath(), subdirFilter)) {
-            newFiles.add(srcFile.getPath());
-          }
-        } catch (IOException e) {
-          throw new HiveException(e);
-        }
-      } else if (src.getPath().getName().startsWith(filePrefix)) {
-        newFiles.add(src.getPath());
+    if (acidFiles == null) {
+      LOG.debug("No files added by this query in: " + acidDir);
+      return;
+    }
+    for (FileStatus acidFile : acidFiles) {
+      // need to list out only files, ignore folders.
+      if (!acidFile.isDirectory()) {
+        newFiles.add(acidFile.getPath());
+      } else {
+        listFilesInsideAcidDirectory(acidFile.getPath(), srcFs, newFiles);
       }
+    }
+  }
+
+  private List<Path> listFilesCreatedByQuery(Path loadPath, long writeId, int stmtId,
+                                             boolean isInsertOverwrite) throws HiveException {
+    List<Path> newFiles = new ArrayList<>();
+    Path acidDir = new Path(loadPath, AcidUtils.baseOrDeltaSubdir(isInsertOverwrite, writeId, writeId, stmtId));
+    try {
+      FileSystem srcFs = loadPath.getFileSystem(conf);
+      if (srcFs.exists(acidDir) && srcFs.isDirectory(acidDir)){
+        // list out all the files in the path
+        listFilesInsideAcidDirectory(acidDir, srcFs, newFiles);
+      } else {
+        LOG.info("directory does not exist: " + acidDir);
+        return newFiles;
+      }
+    } catch (IOException e) {
+      LOG.error("Error listing files", e);
+      throw new HiveException(e);
     }
     return newFiles;
   }
@@ -2790,7 +2789,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       InsertEventRequestData insertData) throws IOException {
     insertData.addToFilesAdded(p.toString());
     FileChecksum cksum = fileSystem.getFileChecksum(p);
-    String acidDir = AcidUtils.getFirstLevelAcidDir(p);
+    String acidDir = AcidUtils.getFirstLevelAcidDir(p.getParent(), fileSystem);
     // File checksum is not implemented for local filesystem (RawLocalFileSystem)
     if (cksum != null) {
       String checksumString =
@@ -3761,7 +3760,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
                   @Override
                   public Void call() throws HiveException {
                     SessionState.setCurrentSessionState(parentSession);
-                    final String group = srcStatus.getGroup();
                     try {
                       boolean success = false;
                       if (destFs instanceof DistributedFileSystem) {

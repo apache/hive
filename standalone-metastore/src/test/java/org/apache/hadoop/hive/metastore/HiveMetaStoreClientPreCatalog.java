@@ -2478,7 +2478,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   public void addWriteNotificationLog(WriteNotificationLogRequest rqst) throws TException {
     client.add_write_notification_log(rqst);
   }
-  
+
   /**
    * Creates a synchronized wrapper for any {@link IMetaStoreClient}.
    * This may be used by multi-threaded applications until we have

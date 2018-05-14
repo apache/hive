@@ -7173,16 +7173,42 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           return;
         }
         for (WriteEventInfo writeEventInfo : rqst.getWriteEventInfos()) {
+          String[] filesAdded = ReplChangeManager.getListFromSeparatedString(writeEventInfo.getFiles());
+          List<String> partitionValue = null;
+          Partition ptnObj = null;
+          String root;
+          Table tbl = getTblObject(writeEventInfo.getDatabase(), writeEventInfo.getTable());
+
+          if (writeEventInfo.getPartition() != null && !writeEventInfo.getPartition().isEmpty()) {
+            partitionValue = Warehouse.getPartValuesFromPartName(writeEventInfo.getPartition());
+            ptnObj = getPartitionObj(writeEventInfo.getDatabase(), writeEventInfo.getTable(), partitionValue, tbl);
+            root = ptnObj.getSd().getLocation();
+          } else {
+            root = tbl.getSd().getLocation();
+          }
+
           InsertEventRequestData insertData = new InsertEventRequestData();
           insertData.setReplace(true);
-          insertData.setFilesAdded(Collections.singletonList(writeEventInfo.getFiles()));
+          for (String file : filesAdded) {
+            String[] decodedPath = ReplChangeManager.decodeFileUri(file);
+            String name = (new Path(decodedPath[0])).getName();
+            Path newPath = FileUtils.getTransformedPath(name, decodedPath[3], root);
+            insertData.addToFilesAdded(newPath.toUri().toString());
+            insertData.addToSubDirectoryList(decodedPath[3]);
+            try {
+              insertData.addToFilesAddedChecksum(ReplChangeManager.checksumFor(newPath, newPath.getFileSystem(conf)));
+            } catch (IOException e) {
+              LOG.error("failed to get checksum for the file " + newPath + " with error: " + e.getMessage());
+              throw new TException(e.getMessage());
+            }
+          }
 
           WriteNotificationLogRequest wnRqst = new WriteNotificationLogRequest(targetTxnId,
                   writeEventInfo.getWriteId(), writeEventInfo.getDatabase(), writeEventInfo.getTable(), insertData);
-          if (writeEventInfo.getPartition() != null) {
-            wnRqst.setPartitionVals(Warehouse.getPartValuesFromPartName(writeEventInfo.getPartition()));
+          if (partitionValue != null) {
+            wnRqst.setPartitionVals(partitionValue);
           }
-          add_write_notification_log(wnRqst);
+          addTxnWriteNotificationLog(tbl, ptnObj, wnRqst);
         }
       }
       getTxnHandler().commitTxn(rqst);
@@ -7214,16 +7240,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return response;
     }
 
-    @Override
-    public WriteNotificationLogResponse add_write_notification_log(WriteNotificationLogRequest rqst)
-            throws MetaException, NoSuchObjectException {
-      Partition ptnObj = null;
-      String partition = null;
-      GetTableRequest req = new GetTableRequest(rqst.getDb(), rqst.getTable());
-      req.setCapabilities(new ClientCapabilities(Lists.newArrayList(ClientCapability.TEST_CAPABILITY)));
-      Table tableObj = get_table_req(req).getTable();
-      if (tableObj.isSetPartitionKeys() && !tableObj.getPartitionKeys().isEmpty()) {
-        ptnObj = get_partition(rqst.getDb(), rqst.getTable(), rqst.getPartitionVals());
+    private void addTxnWriteNotificationLog(Table tableObj, Partition ptnObj, WriteNotificationLogRequest rqst)
+            throws MetaException {
+      String partition = ""; //Empty string is an invalid partition name. Can be used for non partitioned table.
+      if (ptnObj != null) {
         partition = Warehouse.makePartName(tableObj.getPartitionKeys(), rqst.getPartitionVals());
       }
       AcidWriteEvent event = new AcidWriteEvent(partition, tableObj, ptnObj, rqst);
@@ -7231,6 +7251,28 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       if (listeners != null && !listeners.isEmpty()) {
         MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ACID_WRITE, event);
       }
+    }
+
+    private Table getTblObject(String db, String table) throws MetaException, NoSuchObjectException {
+      GetTableRequest req = new GetTableRequest(db, table);
+      req.setCapabilities(new ClientCapabilities(Lists.newArrayList(ClientCapability.TEST_CAPABILITY)));
+      return get_table_req(req).getTable();
+    }
+
+    private Partition getPartitionObj(String db, String table, List<String> partitionVals, Table tableObj)
+            throws MetaException, NoSuchObjectException {
+      if (tableObj.isSetPartitionKeys() && !tableObj.getPartitionKeys().isEmpty()) {
+        return get_partition(db, table, partitionVals);
+      }
+      return null;
+    }
+
+    @Override
+    public WriteNotificationLogResponse add_write_notification_log(WriteNotificationLogRequest rqst)
+            throws MetaException, NoSuchObjectException {
+      Table tableObj = getTblObject(rqst.getDb(), rqst.getTable());
+      Partition ptnObj = getPartitionObj(rqst.getDb(), rqst.getTable(), rqst.getPartitionVals(), tableObj);
+      addTxnWriteNotificationLog(tableObj, ptnObj, rqst);
       return new WriteNotificationLogResponse();
     }
 

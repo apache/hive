@@ -467,12 +467,6 @@ public class HiveConf extends Configuration {
         "TTL of dump dirs before cleanup."),
     REPL_DUMP_METADATA_ONLY("hive.repl.dump.metadata.only", false,
         "Indicates whether replication dump only metadata information or data + metadata."),
-    REPL_DUMP_INCLUDE_ACID_TABLES("hive.repl.dump.include.acid.tables", false,
-        "Indicates if repl dump should include information about ACID tables. It should be \n"
-            + "used in conjunction with 'hive.repl.dump.metadata.only' to enable copying of \n"
-            + "metadata for acid tables which do not require the corresponding transaction \n"
-            + "semantics to be applied on target. This can be removed when ACID table \n"
-            + "replication is supported."),
     REPL_BOOTSTRAP_DUMP_OPEN_TXN_TIMEOUT("hive.repl.bootstrap.dump.open.txn.timeout", "1h",
         new TimeValidator(TimeUnit.HOURS),
         "Indicates the timeout for all transactions which are opened before triggering bootstrap REPL DUMP. "

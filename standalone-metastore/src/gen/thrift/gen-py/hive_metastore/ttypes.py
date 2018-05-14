@@ -11665,8 +11665,8 @@ class WriteEventInfo:
    - writeId
    - database
    - table
-   - partition
    - files
+   - partition
    - tableObj
    - partitionObj
   """
@@ -11676,18 +11676,18 @@ class WriteEventInfo:
     (1, TType.I64, 'writeId', None, None, ), # 1
     (2, TType.STRING, 'database', None, None, ), # 2
     (3, TType.STRING, 'table', None, None, ), # 3
-    (4, TType.STRING, 'partition', None, None, ), # 4
-    (5, TType.STRING, 'files', None, None, ), # 5
+    (4, TType.STRING, 'files', None, None, ), # 4
+    (5, TType.STRING, 'partition', None, None, ), # 5
     (6, TType.STRING, 'tableObj', None, None, ), # 6
     (7, TType.STRING, 'partitionObj', None, None, ), # 7
   )
 
-  def __init__(self, writeId=None, database=None, table=None, partition=None, files=None, tableObj=None, partitionObj=None,):
+  def __init__(self, writeId=None, database=None, table=None, files=None, partition=None, tableObj=None, partitionObj=None,):
     self.writeId = writeId
     self.database = database
     self.table = table
-    self.partition = partition
     self.files = files
+    self.partition = partition
     self.tableObj = tableObj
     self.partitionObj = partitionObj
 
@@ -11717,12 +11717,12 @@ class WriteEventInfo:
           iprot.skip(ftype)
       elif fid == 4:
         if ftype == TType.STRING:
-          self.partition = iprot.readString()
+          self.files = iprot.readString()
         else:
           iprot.skip(ftype)
       elif fid == 5:
         if ftype == TType.STRING:
-          self.files = iprot.readString()
+          self.partition = iprot.readString()
         else:
           iprot.skip(ftype)
       elif fid == 6:
@@ -11757,13 +11757,13 @@ class WriteEventInfo:
       oprot.writeFieldBegin('table', TType.STRING, 3)
       oprot.writeString(self.table)
       oprot.writeFieldEnd()
-    if self.partition is not None:
-      oprot.writeFieldBegin('partition', TType.STRING, 4)
-      oprot.writeString(self.partition)
-      oprot.writeFieldEnd()
     if self.files is not None:
-      oprot.writeFieldBegin('files', TType.STRING, 5)
+      oprot.writeFieldBegin('files', TType.STRING, 4)
       oprot.writeString(self.files)
+      oprot.writeFieldEnd()
+    if self.partition is not None:
+      oprot.writeFieldBegin('partition', TType.STRING, 5)
+      oprot.writeString(self.partition)
       oprot.writeFieldEnd()
     if self.tableObj is not None:
       oprot.writeFieldBegin('tableObj', TType.STRING, 6)
@@ -11783,8 +11783,8 @@ class WriteEventInfo:
       raise TProtocol.TProtocolException(message='Required field database is unset!')
     if self.table is None:
       raise TProtocol.TProtocolException(message='Required field table is unset!')
-    if self.partition is None:
-      raise TProtocol.TProtocolException(message='Required field partition is unset!')
+    if self.files is None:
+      raise TProtocol.TProtocolException(message='Required field files is unset!')
     return
 
 
@@ -11793,8 +11793,8 @@ class WriteEventInfo:
     value = (value * 31) ^ hash(self.writeId)
     value = (value * 31) ^ hash(self.database)
     value = (value * 31) ^ hash(self.table)
-    value = (value * 31) ^ hash(self.partition)
     value = (value * 31) ^ hash(self.files)
+    value = (value * 31) ^ hash(self.partition)
     value = (value * 31) ^ hash(self.tableObj)
     value = (value * 31) ^ hash(self.partitionObj)
     return value

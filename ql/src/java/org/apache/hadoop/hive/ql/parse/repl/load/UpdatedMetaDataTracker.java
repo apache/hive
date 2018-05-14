@@ -17,7 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.load;
 
+import org.apache.hive.common.util.HiveStringUtils;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
 
@@ -25,52 +27,89 @@ import java.util.List;
  * Utility class to help track and return the metadata which are updated by repl load
  */
 public class UpdatedMetaDataTracker {
-  private String replState;
-  private String dbName;
-  private String tableName;
-  private List<Map <String, String>> partitionsList;
 
-  public UpdatedMetaDataTracker() {
-    this.replState = null;
-    this.dbName = null;
-    this.tableName = null;
-    this.partitionsList = new ArrayList<>();
-  }
+  /**
+   * Utility class to store replication state of a table.
+   */
+  public static class UpdateMetaData {
+    private String replState;
+    private String dbName;
+    private String tableName;
+    private List<Map <String, String>> partitionsList;
 
-  public void copyUpdatedMetadata(UpdatedMetaDataTracker other) {
-    this.replState = other.replState;
-    this.dbName = other.dbName;
-    this.tableName = other.tableName;
-    this.partitionsList = other.getPartitions();
-  }
+    UpdateMetaData(String replState, String dbName, String tableName, Map <String, String> partSpec) {
+      this.replState = replState;
+      this.dbName = dbName;
+      this.tableName = tableName;
+      this.partitionsList = new ArrayList<>();
+      if (partSpec != null) {
+        this.partitionsList.add(partSpec);
+      }
+    }
 
-  public void set(String replState, String dbName, String tableName, Map <String, String> partSpec) {
-    this.replState = replState;
-    this.dbName = dbName;
-    this.tableName = tableName;
-    if (partSpec != null) {
-      addPartition(partSpec);
+    public String getReplState() {
+      return replState;
+    }
+
+    public String getDbName() {
+      return dbName;
+    }
+
+    public String getTableName() {
+      return tableName;
+    }
+
+    public List<Map <String, String>> getPartitionsList() {
+      return partitionsList;
+    }
+
+    public void addPartition(Map<String, String> partSpec) {
+      this.partitionsList.add(partSpec);
     }
   }
 
-  public void addPartition(Map <String, String> partSpec) {
-    partitionsList.add(partSpec);
+  private List<UpdateMetaData> updateMetaDataList;
+  private Map<String, Integer> updateMetaDataMap;
+
+  public UpdatedMetaDataTracker() {
+    updateMetaDataList = new ArrayList<>();
+    updateMetaDataMap = new HashMap<>();
   }
 
-  public String getReplicationState() {
-    return replState;
+  public void copyUpdatedMetadata(UpdatedMetaDataTracker other) {
+    int size = updateMetaDataList.size();
+    for (UpdateMetaData updateMetaData : other.updateMetaDataList) {
+      updateMetaDataList.add(updateMetaData);
+      String key = getKey(normalizeIdentifier(updateMetaData.getDbName()),
+                            normalizeIdentifier(updateMetaData.getTableName()));
+      updateMetaDataMap.put(key, size++);
+    }
   }
 
-  public String getDatabase() {
-    return dbName;
+  public void set(String replState, String dbName, String tableName, Map <String, String> partSpec) {
+    updateMetaDataList.add(new UpdateMetaData(replState, dbName, tableName, partSpec));
+    String key = getKey(normalizeIdentifier(dbName), normalizeIdentifier(tableName));
+    updateMetaDataMap.put(key, updateMetaDataList.size() - 1);
   }
 
-  public String getTable() {
-    return tableName;
+  public void addPartition(String dbName, String tableName, Map <String, String> partSpec) {
+    String key = getKey(normalizeIdentifier(dbName), normalizeIdentifier(tableName));
+    updateMetaDataList.get(updateMetaDataMap.get(key)).addPartition(partSpec);
   }
 
-  public List<Map <String, String>> getPartitions() {
-    return partitionsList;
+  public List<UpdateMetaData> getUpdateMetaDataList() {
+    return updateMetaDataList;
+  }
+
+  private String getKey(String dbName, String tableName) {
+    if (tableName == null) {
+      return dbName + ".*";
+    }
+    return dbName + "." + tableName;
+  }
+
+  private String normalizeIdentifier(String name) {
+    return name == null ? null : HiveStringUtils.normalizeIdentifier(name);
   }
 
 }

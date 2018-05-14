@@ -38,7 +38,7 @@ public class JSONAcidWriteMessage extends AcidWriteMessage {
   private Long txnid, writeId, timestamp;
 
   @JsonProperty
-  private String server, servicePrincipal, database, table, partitions, tableObjJason, partitionObjJson;
+  private String server, servicePrincipal, database, table, partition, tableObjJson, partitionObjJson;
 
   @JsonProperty
   private List<String> files;
@@ -58,9 +58,9 @@ public class JSONAcidWriteMessage extends AcidWriteMessage {
     this.database = acidWriteEvent.getDatabase();
     this.table = acidWriteEvent.getTable();
     this.writeId = acidWriteEvent.getWriteId();
-    this.partitions = acidWriteEvent.getPartition();
+    this.partition = acidWriteEvent.getPartition();
     try {
-      this.tableObjJason = JSONMessageFactory.createTableObjJson(acidWriteEvent.getTableObj());
+      this.tableObjJson = JSONMessageFactory.createTableObjJson(acidWriteEvent.getTableObj());
       if (acidWriteEvent.getPartitionObj() != null) {
         this.partitionObjJson = JSONMessageFactory.createPartitionObjJson(acidWriteEvent.getPartitionObj());
       } else {
@@ -108,8 +108,8 @@ public class JSONAcidWriteMessage extends AcidWriteMessage {
   }
 
   @Override
-  public String getPartitions() {
-    return partitions;
+  public String getPartition() {
+    return partition;
   }
 
   @Override
@@ -119,7 +119,7 @@ public class JSONAcidWriteMessage extends AcidWriteMessage {
 
   @Override
   public Table getTableObj() throws Exception {
-    return (tableObjJason == null) ? null : (Table) JSONMessageFactory.getTObj(tableObjJason, Table.class);
+    return (tableObjJson == null) ? null : (Table) JSONMessageFactory.getTObj(tableObjJson, Table.class);
   }
 
   @Override
@@ -130,7 +130,7 @@ public class JSONAcidWriteMessage extends AcidWriteMessage {
 
   @Override
   public String getTableObjStr() {
-    return tableObjJason;
+    return tableObjJson;
   }
 
   @Override

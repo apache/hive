@@ -41,8 +41,8 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField WRITE_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("writeId", org.apache.thrift.protocol.TType.I64, (short)1);
   private static final org.apache.thrift.protocol.TField DATABASE_FIELD_DESC = new org.apache.thrift.protocol.TField("database", org.apache.thrift.protocol.TType.STRING, (short)2);
   private static final org.apache.thrift.protocol.TField TABLE_FIELD_DESC = new org.apache.thrift.protocol.TField("table", org.apache.thrift.protocol.TType.STRING, (short)3);
-  private static final org.apache.thrift.protocol.TField PARTITION_FIELD_DESC = new org.apache.thrift.protocol.TField("partition", org.apache.thrift.protocol.TType.STRING, (short)4);
-  private static final org.apache.thrift.protocol.TField FILES_FIELD_DESC = new org.apache.thrift.protocol.TField("files", org.apache.thrift.protocol.TType.STRING, (short)5);
+  private static final org.apache.thrift.protocol.TField FILES_FIELD_DESC = new org.apache.thrift.protocol.TField("files", org.apache.thrift.protocol.TType.STRING, (short)4);
+  private static final org.apache.thrift.protocol.TField PARTITION_FIELD_DESC = new org.apache.thrift.protocol.TField("partition", org.apache.thrift.protocol.TType.STRING, (short)5);
   private static final org.apache.thrift.protocol.TField TABLE_OBJ_FIELD_DESC = new org.apache.thrift.protocol.TField("tableObj", org.apache.thrift.protocol.TType.STRING, (short)6);
   private static final org.apache.thrift.protocol.TField PARTITION_OBJ_FIELD_DESC = new org.apache.thrift.protocol.TField("partitionObj", org.apache.thrift.protocol.TType.STRING, (short)7);
 
@@ -55,8 +55,8 @@ import org.slf4j.LoggerFactory;
   private long writeId; // required
   private String database; // required
   private String table; // required
-  private String partition; // required
-  private String files; // optional
+  private String files; // required
+  private String partition; // optional
   private String tableObj; // optional
   private String partitionObj; // optional
 
@@ -65,8 +65,8 @@ import org.slf4j.LoggerFactory;
     WRITE_ID((short)1, "writeId"),
     DATABASE((short)2, "database"),
     TABLE((short)3, "table"),
-    PARTITION((short)4, "partition"),
-    FILES((short)5, "files"),
+    FILES((short)4, "files"),
+    PARTITION((short)5, "partition"),
     TABLE_OBJ((short)6, "tableObj"),
     PARTITION_OBJ((short)7, "partitionObj");
 
@@ -89,10 +89,10 @@ import org.slf4j.LoggerFactory;
           return DATABASE;
         case 3: // TABLE
           return TABLE;
-        case 4: // PARTITION
-          return PARTITION;
-        case 5: // FILES
+        case 4: // FILES
           return FILES;
+        case 5: // PARTITION
+          return PARTITION;
         case 6: // TABLE_OBJ
           return TABLE_OBJ;
         case 7: // PARTITION_OBJ
@@ -139,7 +139,7 @@ import org.slf4j.LoggerFactory;
   // isset id assignments
   private static final int __WRITEID_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.FILES,_Fields.TABLE_OBJ,_Fields.PARTITION_OBJ};
+  private static final _Fields optionals[] = {_Fields.PARTITION,_Fields.TABLE_OBJ,_Fields.PARTITION_OBJ};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -149,9 +149,9 @@ import org.slf4j.LoggerFactory;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.TABLE, new org.apache.thrift.meta_data.FieldMetaData("table", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.PARTITION, new org.apache.thrift.meta_data.FieldMetaData("partition", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.FILES, new org.apache.thrift.meta_data.FieldMetaData("files", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.FILES, new org.apache.thrift.meta_data.FieldMetaData("files", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+    tmpMap.put(_Fields.PARTITION, new org.apache.thrift.meta_data.FieldMetaData("partition", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.TABLE_OBJ, new org.apache.thrift.meta_data.FieldMetaData("tableObj", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
@@ -168,14 +168,14 @@ import org.slf4j.LoggerFactory;
     long writeId,
     String database,
     String table,
-    String partition)
+    String files)
   {
     this();
     this.writeId = writeId;
     setWriteIdIsSet(true);
     this.database = database;
     this.table = table;
-    this.partition = partition;
+    this.files = files;
   }
 
   /**
@@ -190,11 +190,11 @@ import org.slf4j.LoggerFactory;
     if (other.isSetTable()) {
       this.table = other.table;
     }
-    if (other.isSetPartition()) {
-      this.partition = other.partition;
-    }
     if (other.isSetFiles()) {
       this.files = other.files;
+    }
+    if (other.isSetPartition()) {
+      this.partition = other.partition;
     }
     if (other.isSetTableObj()) {
       this.tableObj = other.tableObj;
@@ -214,8 +214,8 @@ import org.slf4j.LoggerFactory;
     this.writeId = 0;
     this.database = null;
     this.table = null;
-    this.partition = null;
     this.files = null;
+    this.partition = null;
     this.tableObj = null;
     this.partitionObj = null;
   }
@@ -288,29 +288,6 @@ import org.slf4j.LoggerFactory;
     }
   }
 
-  public String getPartition() {
-    return this.partition;
-  }
-
-  public void setPartition(String partition) {
-    this.partition = partition;
-  }
-
-  public void unsetPartition() {
-    this.partition = null;
-  }
-
-  /** Returns true if field partition is set (has been assigned a value) and false otherwise */
-  public boolean isSetPartition() {
-    return this.partition != null;
-  }
-
-  public void setPartitionIsSet(boolean value) {
-    if (!value) {
-      this.partition = null;
-    }
-  }
-
   public String getFiles() {
     return this.files;
   }
@@ -331,6 +308,29 @@ import org.slf4j.LoggerFactory;
   public void setFilesIsSet(boolean value) {
     if (!value) {
       this.files = null;
+    }
+  }
+
+  public String getPartition() {
+    return this.partition;
+  }
+
+  public void setPartition(String partition) {
+    this.partition = partition;
+  }
+
+  public void unsetPartition() {
+    this.partition = null;
+  }
+
+  /** Returns true if field partition is set (has been assigned a value) and false otherwise */
+  public boolean isSetPartition() {
+    return this.partition != null;
+  }
+
+  public void setPartitionIsSet(boolean value) {
+    if (!value) {
+      this.partition = null;
     }
   }
 
@@ -406,19 +406,19 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
-    case PARTITION:
-      if (value == null) {
-        unsetPartition();
-      } else {
-        setPartition((String)value);
-      }
-      break;
-
     case FILES:
       if (value == null) {
         unsetFiles();
       } else {
         setFiles((String)value);
+      }
+      break;
+
+    case PARTITION:
+      if (value == null) {
+        unsetPartition();
+      } else {
+        setPartition((String)value);
       }
       break;
 
@@ -452,11 +452,11 @@ import org.slf4j.LoggerFactory;
     case TABLE:
       return getTable();
 
-    case PARTITION:
-      return getPartition();
-
     case FILES:
       return getFiles();
+
+    case PARTITION:
+      return getPartition();
 
     case TABLE_OBJ:
       return getTableObj();
@@ -481,10 +481,10 @@ import org.slf4j.LoggerFactory;
       return isSetDatabase();
     case TABLE:
       return isSetTable();
-    case PARTITION:
-      return isSetPartition();
     case FILES:
       return isSetFiles();
+    case PARTITION:
+      return isSetPartition();
     case TABLE_OBJ:
       return isSetTableObj();
     case PARTITION_OBJ:
@@ -533,21 +533,21 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
-    boolean this_present_partition = true && this.isSetPartition();
-    boolean that_present_partition = true && that.isSetPartition();
-    if (this_present_partition || that_present_partition) {
-      if (!(this_present_partition && that_present_partition))
-        return false;
-      if (!this.partition.equals(that.partition))
-        return false;
-    }
-
     boolean this_present_files = true && this.isSetFiles();
     boolean that_present_files = true && that.isSetFiles();
     if (this_present_files || that_present_files) {
       if (!(this_present_files && that_present_files))
         return false;
       if (!this.files.equals(that.files))
+        return false;
+    }
+
+    boolean this_present_partition = true && this.isSetPartition();
+    boolean that_present_partition = true && that.isSetPartition();
+    if (this_present_partition || that_present_partition) {
+      if (!(this_present_partition && that_present_partition))
+        return false;
+      if (!this.partition.equals(that.partition))
         return false;
     }
 
@@ -591,15 +591,15 @@ import org.slf4j.LoggerFactory;
     if (present_table)
       list.add(table);
 
-    boolean present_partition = true && (isSetPartition());
-    list.add(present_partition);
-    if (present_partition)
-      list.add(partition);
-
     boolean present_files = true && (isSetFiles());
     list.add(present_files);
     if (present_files)
       list.add(files);
+
+    boolean present_partition = true && (isSetPartition());
+    list.add(present_partition);
+    if (present_partition)
+      list.add(partition);
 
     boolean present_tableObj = true && (isSetTableObj());
     list.add(present_tableObj);
@@ -652,22 +652,22 @@ import org.slf4j.LoggerFactory;
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetPartition()).compareTo(other.isSetPartition());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetPartition()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.partition, other.partition);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
     lastComparison = Boolean.valueOf(isSetFiles()).compareTo(other.isSetFiles());
     if (lastComparison != 0) {
       return lastComparison;
     }
     if (isSetFiles()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.files, other.files);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetPartition()).compareTo(other.isSetPartition());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetPartition()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.partition, other.partition);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -732,20 +732,20 @@ import org.slf4j.LoggerFactory;
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("partition:");
-    if (this.partition == null) {
+    sb.append("files:");
+    if (this.files == null) {
       sb.append("null");
     } else {
-      sb.append(this.partition);
+      sb.append(this.files);
     }
     first = false;
-    if (isSetFiles()) {
+    if (isSetPartition()) {
       if (!first) sb.append(", ");
-      sb.append("files:");
-      if (this.files == null) {
+      sb.append("partition:");
+      if (this.partition == null) {
         sb.append("null");
       } else {
-        sb.append(this.files);
+        sb.append(this.partition);
       }
       first = false;
     }
@@ -787,8 +787,8 @@ import org.slf4j.LoggerFactory;
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'table' is unset! Struct:" + toString());
     }
 
-    if (!isSetPartition()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'partition' is unset! Struct:" + toString());
+    if (!isSetFiles()) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'files' is unset! Struct:" + toString());
     }
 
     // check for sub-struct validity
@@ -854,18 +854,18 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 4: // PARTITION
+          case 4: // FILES
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.partition = iprot.readString();
-              struct.setPartitionIsSet(true);
+              struct.files = iprot.readString();
+              struct.setFilesIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 5: // FILES
+          case 5: // PARTITION
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.files = iprot.readString();
-              struct.setFilesIsSet(true);
+              struct.partition = iprot.readString();
+              struct.setPartitionIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -912,15 +912,15 @@ import org.slf4j.LoggerFactory;
         oprot.writeString(struct.table);
         oprot.writeFieldEnd();
       }
-      if (struct.partition != null) {
-        oprot.writeFieldBegin(PARTITION_FIELD_DESC);
-        oprot.writeString(struct.partition);
+      if (struct.files != null) {
+        oprot.writeFieldBegin(FILES_FIELD_DESC);
+        oprot.writeString(struct.files);
         oprot.writeFieldEnd();
       }
-      if (struct.files != null) {
-        if (struct.isSetFiles()) {
-          oprot.writeFieldBegin(FILES_FIELD_DESC);
-          oprot.writeString(struct.files);
+      if (struct.partition != null) {
+        if (struct.isSetPartition()) {
+          oprot.writeFieldBegin(PARTITION_FIELD_DESC);
+          oprot.writeString(struct.partition);
           oprot.writeFieldEnd();
         }
       }
@@ -958,9 +958,9 @@ import org.slf4j.LoggerFactory;
       oprot.writeI64(struct.writeId);
       oprot.writeString(struct.database);
       oprot.writeString(struct.table);
-      oprot.writeString(struct.partition);
+      oprot.writeString(struct.files);
       BitSet optionals = new BitSet();
-      if (struct.isSetFiles()) {
+      if (struct.isSetPartition()) {
         optionals.set(0);
       }
       if (struct.isSetTableObj()) {
@@ -970,8 +970,8 @@ import org.slf4j.LoggerFactory;
         optionals.set(2);
       }
       oprot.writeBitSet(optionals, 3);
-      if (struct.isSetFiles()) {
-        oprot.writeString(struct.files);
+      if (struct.isSetPartition()) {
+        oprot.writeString(struct.partition);
       }
       if (struct.isSetTableObj()) {
         oprot.writeString(struct.tableObj);
@@ -990,12 +990,12 @@ import org.slf4j.LoggerFactory;
       struct.setDatabaseIsSet(true);
       struct.table = iprot.readString();
       struct.setTableIsSet(true);
-      struct.partition = iprot.readString();
-      struct.setPartitionIsSet(true);
+      struct.files = iprot.readString();
+      struct.setFilesIsSet(true);
       BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
-        struct.files = iprot.readString();
-        struct.setFilesIsSet(true);
+        struct.partition = iprot.readString();
+        struct.setPartitionIsSet(true);
       }
       if (incoming.get(1)) {
         struct.tableObj = iprot.readString();

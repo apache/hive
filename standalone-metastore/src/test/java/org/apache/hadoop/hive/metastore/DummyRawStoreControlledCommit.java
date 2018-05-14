@@ -1193,7 +1193,7 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   @Override
   public int deleteRuntimeStats(int maxRetainSecs) throws MetaException {
     return objectStore.deleteRuntimeStats(maxRetainSecs);
-  }  
+  }
 
   @Override
   public void cleanWriteNotificationEvents(int olderThan) {

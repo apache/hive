@@ -23,6 +23,7 @@ import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.WriteNotificationLogRequest;
+import org.apache.hadoop.hive.metastore.utils.StringUtils;
 
 import java.util.List;
 
@@ -46,7 +47,7 @@ public class AcidWriteEvent extends ListenerEvent {
     this.tableObj = tableObj;
     this.partitionObj = partitionObj;
   }
-  
+
   public Long getTxnId() {
     return writeNotificationLogRequest.getTxnId();
   }
@@ -60,15 +61,15 @@ public class AcidWriteEvent extends ListenerEvent {
   }
 
   public String getDatabase() {
-    return writeNotificationLogRequest.getDb();
+    return StringUtils.normalizeIdentifier(writeNotificationLogRequest.getDb());
   }
 
   public String getTable() {
-    return writeNotificationLogRequest.getTable();
+    return StringUtils.normalizeIdentifier(writeNotificationLogRequest.getTable());
   }
 
   public String getPartition() {
-    return partition;
+    return partition == null ? null : StringUtils.normalizeIdentifier(partition);
   }
 
   public Long getWriteId() {

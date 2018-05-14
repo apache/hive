@@ -16748,13 +16748,13 @@ void WriteEventInfo::__set_table(const std::string& val) {
   this->table = val;
 }
 
-void WriteEventInfo::__set_partition(const std::string& val) {
-  this->partition = val;
-}
-
 void WriteEventInfo::__set_files(const std::string& val) {
   this->files = val;
-__isset.files = true;
+}
+
+void WriteEventInfo::__set_partition(const std::string& val) {
+  this->partition = val;
+__isset.partition = true;
 }
 
 void WriteEventInfo::__set_tableObj(const std::string& val) {
@@ -16782,7 +16782,7 @@ uint32_t WriteEventInfo::read(::apache::thrift::protocol::TProtocol* iprot) {
   bool isset_writeId = false;
   bool isset_database = false;
   bool isset_table = false;
-  bool isset_partition = false;
+  bool isset_files = false;
 
   while (true)
   {
@@ -16818,16 +16818,16 @@ uint32_t WriteEventInfo::read(::apache::thrift::protocol::TProtocol* iprot) {
         break;
       case 4:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->partition);
-          isset_partition = true;
+          xfer += iprot->readString(this->files);
+          isset_files = true;
         } else {
           xfer += iprot->skip(ftype);
         }
         break;
       case 5:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->files);
-          this->__isset.files = true;
+          xfer += iprot->readString(this->partition);
+          this->__isset.partition = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -16863,7 +16863,7 @@ uint32_t WriteEventInfo::read(::apache::thrift::protocol::TProtocol* iprot) {
     throw TProtocolException(TProtocolException::INVALID_DATA);
   if (!isset_table)
     throw TProtocolException(TProtocolException::INVALID_DATA);
-  if (!isset_partition)
+  if (!isset_files)
     throw TProtocolException(TProtocolException::INVALID_DATA);
   return xfer;
 }
@@ -16885,13 +16885,13 @@ uint32_t WriteEventInfo::write(::apache::thrift::protocol::TProtocol* oprot) con
   xfer += oprot->writeString(this->table);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("partition", ::apache::thrift::protocol::T_STRING, 4);
-  xfer += oprot->writeString(this->partition);
+  xfer += oprot->writeFieldBegin("files", ::apache::thrift::protocol::T_STRING, 4);
+  xfer += oprot->writeString(this->files);
   xfer += oprot->writeFieldEnd();
 
-  if (this->__isset.files) {
-    xfer += oprot->writeFieldBegin("files", ::apache::thrift::protocol::T_STRING, 5);
-    xfer += oprot->writeString(this->files);
+  if (this->__isset.partition) {
+    xfer += oprot->writeFieldBegin("partition", ::apache::thrift::protocol::T_STRING, 5);
+    xfer += oprot->writeString(this->partition);
     xfer += oprot->writeFieldEnd();
   }
   if (this->__isset.tableObj) {
@@ -16914,13 +16914,14 @@ void swap(WriteEventInfo &a, WriteEventInfo &b) {
   swap(a.writeId, b.writeId);
   swap(a.database, b.database);
   swap(a.table, b.table);
-  swap(a.partition, b.partition);
   swap(a.files, b.files);
+  swap(a.partition, b.partition);
   swap(a.tableObj, b.tableObj);
   swap(a.partitionObj, b.partitionObj);
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 WriteEventInfo::WriteEventInfo(const WriteEventInfo& other681) {
   writeId = other681.writeId;
   database = other681.database;
@@ -16940,6 +16941,27 @@ WriteEventInfo& WriteEventInfo::operator=(const WriteEventInfo& other682) {
   tableObj = other682.tableObj;
   partitionObj = other682.partitionObj;
   __isset = other682.__isset;
+=======
+WriteEventInfo::WriteEventInfo(const WriteEventInfo& other679) {
+  writeId = other679.writeId;
+  database = other679.database;
+  table = other679.table;
+  files = other679.files;
+  partition = other679.partition;
+  tableObj = other679.tableObj;
+  partitionObj = other679.partitionObj;
+  __isset = other679.__isset;
+}
+WriteEventInfo& WriteEventInfo::operator=(const WriteEventInfo& other680) {
+  writeId = other680.writeId;
+  database = other680.database;
+  table = other680.table;
+  files = other680.files;
+  partition = other680.partition;
+  tableObj = other680.tableObj;
+  partitionObj = other680.partitionObj;
+  __isset = other680.__isset;
+>>>>>>> HIVE-19267 : Create/Replicate ACID Write event : After review comment fix
   return *this;
 }
 void WriteEventInfo::printTo(std::ostream& out) const {
@@ -16948,8 +16970,8 @@ void WriteEventInfo::printTo(std::ostream& out) const {
   out << "writeId=" << to_string(writeId);
   out << ", " << "database=" << to_string(database);
   out << ", " << "table=" << to_string(table);
-  out << ", " << "partition=" << to_string(partition);
-  out << ", " << "files="; (__isset.files ? (out << to_string(files)) : (out << "<null>"));
+  out << ", " << "files=" << to_string(files);
+  out << ", " << "partition="; (__isset.partition ? (out << to_string(partition)) : (out << "<null>"));
   out << ", " << "tableObj="; (__isset.tableObj ? (out << to_string(tableObj)) : (out << "<null>"));
   out << ", " << "partitionObj="; (__isset.partitionObj ? (out << to_string(partitionObj)) : (out << "<null>"));
   out << ")";

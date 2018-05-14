@@ -84,7 +84,6 @@ import org.apache.hadoop.hive.metastore.messaging.OpenTxnMessage;
 import org.apache.hadoop.hive.metastore.messaging.PartitionFiles;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
-import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -696,23 +695,28 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     }
   }
 
-  private long getNextNLId(ResultSet rs, Statement stmt, SQLGenerator sqlGenerator, String sequence)
+  private long getNextNLId(Statement stmt, SQLGenerator sqlGenerator, String sequence)
           throws SQLException, MetaException {
     String s = sqlGenerator.addForUpdateClause("select \"NEXT_VAL\" from " +
             "\"SEQUENCE_TABLE\" where \"SEQUENCE_NAME\" = " + quoteString(sequence));
     LOG.debug("Going to execute query <" + s + ">");
-    rs = stmt.executeQuery(s);
-    if (!rs.next()) {
-      throw new MetaException("Transaction database not properly configured, can't find next NL id.");
-    }
+    ResultSet rs = null;
+    try {
+      rs = stmt.executeQuery(s);
+      if (!rs.next()) {
+        throw new MetaException("Transaction database not properly configured, can't find next NL id.");
+      }
 
-    long nextNLId = rs.getLong(1);
-    long updatedNLId = nextNLId + 1;
-    s = "update \"SEQUENCE_TABLE\" set \"NEXT_VAL\" = " + updatedNLId + " where \"SEQUENCE_NAME\" = " +
-            quoteString(sequence);
-    LOG.debug("Going to execute update <" + s + ">");
-    stmt.executeUpdate(s);
-    return nextNLId;
+      long nextNLId = rs.getLong(1);
+      long updatedNLId = nextNLId + 1;
+      s = "update \"SEQUENCE_TABLE\" set \"NEXT_VAL\" = " + updatedNLId + " where \"SEQUENCE_NAME\" = " +
+              quoteString(sequence);
+      LOG.debug("Going to execute update <" + s + ">");
+      stmt.executeUpdate(s);
+      return nextNLId;
+    }finally {
+      close(rs);
+    }
   }
 
   private void addWriteNotificationLog(NotificationEvent event, AcidWriteEvent acidWriteEvent, Connection dbConn,
@@ -720,11 +724,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     LOG.debug("DbNotificationListener: adding write notification log for : {}:{}", event.getEventId(),
             event.getMessage());
 
-    if ((dbConn == null) || (sqlGenerator == null)) {
-      LOG.info("connection : {} or sql generator : {} is not set so executing sql via DN ", dbConn, sqlGenerator);
-      process(event, acidWriteEvent);
-      return;
-    }
+    assert ((dbConn != null) && (sqlGenerator != null));
 
     Statement stmt =null;
     ResultSet rs = null;
@@ -733,7 +733,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     String partition = acidWriteEvent.getPartition();
     String tableObj = msg.getTableObjStr();
     String partitionObj = msg.getPartitionObjStr();
-    String files = HiveUtils.joinWithCommaSeparator(msg.getFiles());
+    String files = ReplChangeManager.joinWithSeparator(msg.getFiles());
 
     try {
       stmt = dbConn.createStatement();
@@ -749,7 +749,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       rs = stmt.executeQuery(s);
       if (!rs.next()) {
         // if rs is empty then no lock is taken and thus it can not cause deadlock.
-        long nextNLId = getNextNLId(rs, stmt, sqlGenerator,
+        long nextNLId = getNextNLId(stmt, sqlGenerator,
                 "org.apache.hadoop.hive.metastore.model.MWriteNotificationLog");
         s = "insert into WRITE_NOTIFICATION_LOG (WNL_ID, WNL_TXNID, WNL_WRITEID, WNL_DATABASE, WNL_TABLE," +
                 " WNL_PARTITION, WNL_TABLE_OBJ, WNL_PARTITION_OBJ, WNL_FILES, WNL_EVENT_TIME) values (" + nextNLId
@@ -767,7 +767,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
           return;
         }
         long nlId = rs.getLong(2);
-        files = HiveUtils.joinWithCommaSeparator(Lists.newArrayList(files, existingFiles));
+        files = ReplChangeManager.joinWithSeparator(Lists.newArrayList(files, existingFiles));
         s = "update WRITE_NOTIFICATION_LOG set WNL_TABLE_OBJ = " +  quoteString(tableObj) + "," +
                 " WNL_PARTITION_OBJ = " + quoteString(partitionObj) + "," +
                 " WNL_FILES = " + quoteString(files) + "," +
@@ -829,7 +829,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       LOG.debug("Going to execute update <" + s + ">");
       stmt.executeUpdate(s);
 
-      long nextNLId = getNextNLId(rs, stmt, sqlGenerator,
+      long nextNLId = getNextNLId(stmt, sqlGenerator,
               "org.apache.hadoop.hive.metastore.model.MNotificationLog");
 
       List<String> insert = new ArrayList<>();

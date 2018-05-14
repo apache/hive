@@ -16714,11 +16714,11 @@ class WriteEventInfo {
   /**
    * @var string
    */
-  public $partition = null;
+  public $files = null;
   /**
    * @var string
    */
-  public $files = null;
+  public $partition = null;
   /**
    * @var string
    */
@@ -16744,11 +16744,11 @@ class WriteEventInfo {
           'type' => TType::STRING,
           ),
         4 => array(
-          'var' => 'partition',
+          'var' => 'files',
           'type' => TType::STRING,
           ),
         5 => array(
-          'var' => 'files',
+          'var' => 'partition',
           'type' => TType::STRING,
           ),
         6 => array(
@@ -16771,11 +16771,11 @@ class WriteEventInfo {
       if (isset($vals['table'])) {
         $this->table = $vals['table'];
       }
-      if (isset($vals['partition'])) {
-        $this->partition = $vals['partition'];
-      }
       if (isset($vals['files'])) {
         $this->files = $vals['files'];
+      }
+      if (isset($vals['partition'])) {
+        $this->partition = $vals['partition'];
       }
       if (isset($vals['tableObj'])) {
         $this->tableObj = $vals['tableObj'];
@@ -16828,14 +16828,14 @@ class WriteEventInfo {
           break;
         case 4:
           if ($ftype == TType::STRING) {
-            $xfer += $input->readString($this->partition);
+            $xfer += $input->readString($this->files);
           } else {
             $xfer += $input->skip($ftype);
           }
           break;
         case 5:
           if ($ftype == TType::STRING) {
-            $xfer += $input->readString($this->files);
+            $xfer += $input->readString($this->partition);
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -16882,14 +16882,14 @@ class WriteEventInfo {
       $xfer += $output->writeString($this->table);
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->partition !== null) {
-      $xfer += $output->writeFieldBegin('partition', TType::STRING, 4);
-      $xfer += $output->writeString($this->partition);
+    if ($this->files !== null) {
+      $xfer += $output->writeFieldBegin('files', TType::STRING, 4);
+      $xfer += $output->writeString($this->files);
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->files !== null) {
-      $xfer += $output->writeFieldBegin('files', TType::STRING, 5);
-      $xfer += $output->writeString($this->files);
+    if ($this->partition !== null) {
+      $xfer += $output->writeFieldBegin('partition', TType::STRING, 5);
+      $xfer += $output->writeString($this->partition);
       $xfer += $output->writeFieldEnd();
     }
     if ($this->tableObj !== null) {

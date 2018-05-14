@@ -2604,8 +2604,8 @@ class WriteEventInfo
   WRITEID = 1
   DATABASE = 2
   TABLE = 3
-  PARTITION = 4
-  FILES = 5
+  FILES = 4
+  PARTITION = 5
   TABLEOBJ = 6
   PARTITIONOBJ = 7
 
@@ -2613,8 +2613,8 @@ class WriteEventInfo
     WRITEID => {:type => ::Thrift::Types::I64, :name => 'writeId'},
     DATABASE => {:type => ::Thrift::Types::STRING, :name => 'database'},
     TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
-    PARTITION => {:type => ::Thrift::Types::STRING, :name => 'partition'},
-    FILES => {:type => ::Thrift::Types::STRING, :name => 'files', :optional => true},
+    FILES => {:type => ::Thrift::Types::STRING, :name => 'files'},
+    PARTITION => {:type => ::Thrift::Types::STRING, :name => 'partition', :optional => true},
     TABLEOBJ => {:type => ::Thrift::Types::STRING, :name => 'tableObj', :optional => true},
     PARTITIONOBJ => {:type => ::Thrift::Types::STRING, :name => 'partitionObj', :optional => true}
   }
@@ -2625,7 +2625,7 @@ class WriteEventInfo
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field writeId is unset!') unless @writeId
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field database is unset!') unless @database
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field table is unset!') unless @table
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field partition is unset!') unless @partition
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field files is unset!') unless @files
   end
 
   ::Thrift::Struct.generate_accessors self

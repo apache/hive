@@ -1908,17 +1908,24 @@ public class AcidUtils {
   }
 
   //Get the first level acid directory (if any) from a given path
-  public static String getFirstLevelAcidDir(Path dataPath) {
-    Path parent  = dataPath;
-    String firstLevelAcidDir;
-    while (parent != null) {
-      firstLevelAcidDir = getAcidSubDir(parent);
-      if (firstLevelAcidDir != null) {
-        return firstLevelAcidDir;
-      }
-      parent = parent.getParent();
+  public static String getFirstLevelAcidDir(Path dataPath, FileSystem fileSystem) throws IOException {
+    if (dataPath == null) {
+      return null;
     }
-    return null;
+    String firstLevelAcidDir = getAcidSubDir(dataPath);
+    if (firstLevelAcidDir != null) {
+      return firstLevelAcidDir;
+    }
+
+    String acidDir = getFirstLevelAcidDir(dataPath.getParent(), fileSystem);
+    if (acidDir == null) {
+      return null;
+    }
+
+    if (fileSystem.isDirectory(dataPath)) {
+      return acidDir + Path.SEPARATOR + dataPath.getName();
+    }
+    return acidDir;
   }
 
   public static boolean isAcidEnabled(HiveConf hiveConf) {

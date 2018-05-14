@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.metadata;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.hadoop.fs.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -439,19 +440,11 @@ public final class HiveUtils {
     }
   }
 
-  public static String getDumpPath(String dbName, String tableName) {
+  public static Path getDumpPath(Path root, String dbName, String tableName) {
     assert (dbName != null);
     if ((tableName != null) && (!tableName.isEmpty())) {
-      return dbName + "." + tableName;
+      return new Path(root, dbName + "." + tableName);
     }
-    return dbName;
-  }
-
-  public static String joinWithCommaSeparator(Iterable<?> strings) {
-    return StringUtils.join(",", strings);
-  }
-
-  public static String[] getListFromCommaSeparated(String commaSeparatedString) {
-    return commaSeparatedString.split("\\s*,\\s*");
+    return new Path(root, dbName);
   }
 }

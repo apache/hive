@@ -64,7 +64,7 @@ public class MoveWork implements Serializable {
   private MoveWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs) {
     this.inputs = inputs;
     this.outputs = outputs;
-    this.needCleanTarget = false;
+    this.needCleanTarget = true;
   }
 
   public MoveWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,

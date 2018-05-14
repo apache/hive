@@ -22,6 +22,7 @@ import com.google.common.collect.Lists;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
+import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
 import org.apache.hadoop.hive.metastore.messaging.CommitTxnMessage;
@@ -61,7 +62,7 @@ class CommitTxnHandler extends AbstractEventHandler {
 
   private void createDumpFile(Context withinContext, org.apache.hadoop.hive.ql.metadata.Table qlMdTable,
                   List<Partition> qlPtns, List<List<String>> fileListArray) throws IOException, SemanticException {
-    if (fileListArray == null && fileListArray.isEmpty()) {
+    if (fileListArray == null || fileListArray.isEmpty()) {
       return;
     }
 
@@ -106,13 +107,17 @@ class CommitTxnHandler extends AbstractEventHandler {
       List<Partition> qlPtns = new ArrayList<>();
       List<List<String>> filesTobeAdded = new ArrayList<>();
 
+      // The below loop creates dump directory for each table. It reads through the list of write notification events,
+      // groups the entries per table and creates the lists of files to be replicated. The event directory in the dump
+      // path will have subdirectory for each table. This folder will have metadata for the table and the list of files
+      // to be replicated. The entries are added in the table with txn id, db name,table name, partition name
+      // combination as primary key, so the entries with same table will come together. Only basic table metadata is
+      // used during import, so we need not dump the latest table metadata.
       for (int idx = 0; idx < numEntry; idx++) {
         qlMdTable = new org.apache.hadoop.hive.ql.metadata.Table(commitTxnMessage.getTableObj(idx));
-        Path newPath = new Path(withinContext.eventRoot,
-                HiveUtils.getDumpPath(qlMdTable.getDbName(), qlMdTable.getTableName()));
-        context = new Context(newPath, withinContext.cmRoot,
-                withinContext.db, withinContext.hiveConf, withinContext.replicationSpec,
-                withinContext.dbName, withinContext.tableName);
+        Path newPath = HiveUtils.getDumpPath(withinContext.eventRoot, qlMdTable.getDbName(), qlMdTable.getTableName());
+        context = new Context(withinContext);
+        context.setEventRoot(newPath);
         if (qlMdTablePrev == null) {
           qlMdTablePrev = qlMdTable;
         }
@@ -130,7 +135,8 @@ class CommitTxnHandler extends AbstractEventHandler {
                   commitTxnMessage.getPartitionObj(idx)));
         }
 
-        filesTobeAdded.add(Lists.newArrayList(HiveUtils.getListFromCommaSeparated(commitTxnMessage.getFiles(idx))));
+        filesTobeAdded.add(Lists.newArrayList(
+                ReplChangeManager.getListFromSeparatedString(commitTxnMessage.getFiles(idx))));
       }
 
       //Dump last table in the list

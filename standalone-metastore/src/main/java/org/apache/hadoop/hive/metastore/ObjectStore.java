@@ -9649,16 +9649,17 @@ public class ObjectStore implements RawStore, Configurable {
         appendSimpleCondition(filterBuilder, "table", new String[]{tableName}, parameterVals);
       }
       query = pm.newQuery(MWriteNotificationLog.class, filterBuilder.toString());
-      List<MWriteNotificationLog> mplans = (List<MWriteNotificationLog>)query.executeWithArray
-              (parameterVals.toArray(new String[parameterVals.size()]));
+      query.setOrdering("table ascending");
+      List<MWriteNotificationLog> mplans = (List<MWriteNotificationLog>)query.executeWithArray(
+              parameterVals.toArray(new String[parameterVals.size()]));
       pm.retrieveAll(mplans);
       commited = commitTransaction();
       if (mplans != null && mplans.size() > 0) {
         writeEventInfoList = Lists.newArrayList();
         for (MWriteNotificationLog mplan : mplans) {
           WriteEventInfo writeEventInfo = new WriteEventInfo(mplan.getWriteId(), mplan.getDatabase(),
-                  mplan.getTable(), mplan.getPartition());
-          writeEventInfo.setFiles(mplan.getFiles());
+                  mplan.getTable(), mplan.getFiles());
+          writeEventInfo.setPartition(mplan.getPartition());
           writeEventInfo.setPartitionObj(mplan.getPartObject());
           writeEventInfo.setTableObj(mplan.getTableObject());
           writeEventInfoList.add(writeEventInfo);

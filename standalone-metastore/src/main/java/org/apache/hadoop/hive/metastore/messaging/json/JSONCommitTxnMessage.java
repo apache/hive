@@ -122,8 +122,8 @@ public class JSONCommitTxnMessage extends CommitTxnMessage {
 
   @Override
   public Partition getPartitionObj(int idx) throws Exception {
-    return partitionObjs == null ? null :
-            (Partition)JSONMessageFactory.getTObj(partitionObjs.get(idx), Partition.class);
+    return (partitionObjs == null ? null : (partitionObjs.get(idx) == null ? null :
+            (Partition)JSONMessageFactory.getTObj(partitionObjs.get(idx), Partition.class)));
   }
 
   @Override

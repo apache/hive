@@ -7052,8 +7052,8 @@ inline std::ostream& operator<<(std::ostream& out, const CommitTxnRequest& obj)
 }
 
 typedef struct _WriteEventInfo__isset {
-  _WriteEventInfo__isset() : files(false), tableObj(false), partitionObj(false) {}
-  bool files :1;
+  _WriteEventInfo__isset() : partition(false), tableObj(false), partitionObj(false) {}
+  bool partition :1;
   bool tableObj :1;
   bool partitionObj :1;
 } _WriteEventInfo__isset;
@@ -7063,15 +7063,15 @@ class WriteEventInfo {
 
   WriteEventInfo(const WriteEventInfo&);
   WriteEventInfo& operator=(const WriteEventInfo&);
-  WriteEventInfo() : writeId(0), database(), table(), partition(), files(), tableObj(), partitionObj() {
+  WriteEventInfo() : writeId(0), database(), table(), files(), partition(), tableObj(), partitionObj() {
   }
 
   virtual ~WriteEventInfo() throw();
   int64_t writeId;
   std::string database;
   std::string table;
-  std::string partition;
   std::string files;
+  std::string partition;
   std::string tableObj;
   std::string partitionObj;
 
@@ -7083,9 +7083,9 @@ class WriteEventInfo {
 
   void __set_table(const std::string& val);
 
-  void __set_partition(const std::string& val);
-
   void __set_files(const std::string& val);
+
+  void __set_partition(const std::string& val);
 
   void __set_tableObj(const std::string& val);
 
@@ -7099,11 +7099,11 @@ class WriteEventInfo {
       return false;
     if (!(table == rhs.table))
       return false;
-    if (!(partition == rhs.partition))
+    if (!(files == rhs.files))
       return false;
-    if (__isset.files != rhs.__isset.files)
+    if (__isset.partition != rhs.__isset.partition)
       return false;
-    else if (__isset.files && !(files == rhs.files))
+    else if (__isset.partition && !(partition == rhs.partition))
       return false;
     if (__isset.tableObj != rhs.__isset.tableObj)
       return false;

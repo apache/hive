@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.parse.repl.load.message;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
 import org.apache.hadoop.hive.metastore.messaging.CommitTxnMessage;
+import org.apache.hadoop.hive.ql.exec.repl.bootstrap.AddDependencyToLeaves;
+import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
 import org.apache.hadoop.hive.ql.plan.ReplTxnWork;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -64,11 +66,10 @@ public class CommitTxnHandler extends AbstractMessageHandler {
       //one import task per table
       if (tableNamePrev == null || !actualTblName.equals(tableNamePrev)) {
         // The data location is created by source, so the location should be formed based on the table name in msg.
-        String location = context.location + Path.SEPARATOR +
-                HiveUtils.getDumpPath(msg.getDatabases().get(idx), actualTblName);
+        Path location = HiveUtils.getDumpPath(new Path(context.location), msg.getDatabases().get(idx), actualTblName);
         tblName = context.isTableNameEmpty() ? actualTblName : context.tableName;
-        Context currentContext = new Context(dbName, tblName, location, context.precursor,
-                context.dmd, context.hiveConf, context.db, context.nestedContext, context.log);
+        Context currentContext = new Context(context, dbName, tblName);
+        currentContext.setLocation(location.toUri().toString());
 
         // Piggybacking in Import logic for now
         TableHandler tableHandler = new TableHandler();
@@ -81,8 +82,10 @@ public class CommitTxnHandler extends AbstractMessageHandler {
 
       try {
         WriteEventInfo writeEventInfo = new WriteEventInfo(msg.getWriteIds().get(idx),
-                dbName, tblName, msg.getPartitions().get(idx));
-        writeEventInfo.setFiles(msg.getFiles(idx));
+                dbName, tblName, msg.getFiles(idx));
+        if (msg.getPartitions().get(idx) != null && !msg.getPartitions().get(idx).isEmpty()) {
+          writeEventInfo.setPartition(msg.getPartitions().get(idx));
+        }
         work.addWriteEventInfo(writeEventInfo);
       } catch (Exception e) {
         throw new SemanticException("Failed to extract write event info from commit txn message : " + e.getMessage());
@@ -92,7 +95,7 @@ public class CommitTxnHandler extends AbstractMessageHandler {
     Task<ReplTxnWork> commitTxnTask = TaskFactory.get(work, context.hiveConf);
     updatedMetadata.set(context.dmd.getEventTo().toString(), context.dbName, context.tableName, null);
     context.log.debug("Added Commit txn task : {}", commitTxnTask.getId());
-    tasks.add(commitTxnTask);
+    DAGTraversal.traverse(tasks, new AddDependencyToLeaves(commitTxnTask));
     return tasks;
   }
 }

@@ -37,6 +37,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.junit.rules.TestName;
+
 import org.junit.rules.TestRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,14 +88,12 @@ public class TestReplicationScenariosAcidTables {
         put("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());
         put("hive.support.concurrency", "true");
         put("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
-        put("hive.repl.dump.include.acid.tables", "true");
         put("hive.metastore.client.capability.check", "false");
         put("hive.repl.bootstrap.dump.open.txn.timeout", "1s");
         put("hive.exec.dynamic.partition.mode", "nonstrict");
         put("hive.strict.checks.bucketing", "false");
         put("hive.mapred.mode", "nonstrict");
         put("hive.metastore.disallow.incompatible.col.type.changes", "false");
-        put("metastore.client.capability.check", "false");
     }};
     primary = new WarehouseInstance(LOG, miniDFSCluster, overridesForHiveConf);
     replica = new WarehouseInstance(LOG, miniDFSCluster, overridesForHiveConf);
@@ -102,7 +101,6 @@ public class TestReplicationScenariosAcidTables {
         put("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());
         put("hive.support.concurrency", "false");
         put("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager");
-        put("hive.repl.dump.include.acid.tables", "true");
         put("hive.metastore.client.capability.check", "false");
     }};
     replicaNonAcid = new WarehouseInstance(LOG, miniDFSCluster, overridesForHiveConf1);
@@ -542,7 +540,7 @@ public class TestReplicationScenariosAcidTables {
     insertRecords(tableName, null, false, OperationType.REPL_TEST_ACID_INSERT);
     updateRecords(tableName);
     incrementalDump = verifyIncrementalLoad(Collections.singletonList("select value from " + tableName),
-            Collections.singletonList(new String[] {"1", "100" , "100"}),
+            Collections.singletonList(new String[] {"1", "100", "100"}),
             bootStrapDump.lastReplicationId);
   }
 
@@ -607,9 +605,9 @@ public class TestReplicationScenariosAcidTables {
     incrementalDump = verifyIncrementalLoad(Lists.newArrayList("select last_update_user from " + tableName,
                                              "select key from " + tableNameMerge,
                                              "select ID from " + tableNameMerge),
-                          Lists.newArrayList(new String[] {"creation","creation","creation","creation","creation",
-                                          "creation","creation","merge_update","merge_insert","merge_insert"},
-                                  new String[] {"1","2","3","4","5","6"}, new String[] {"1", "4", "7", "8", "8", "11"}),
+                          Lists.newArrayList(new String[] {"creation", "creation", "creation", "creation", "creation",
+                                          "creation", "creation", "merge_update", "merge_insert", "merge_insert"},
+                            new String[] {"1", "2", "3", "4", "5", "6"}, new String[] {"1", "4", "7", "8", "8", "11"}),
                           bootStrapDump.lastReplicationId);
   }
 
@@ -678,7 +676,8 @@ public class TestReplicationScenariosAcidTables {
     incrementalDump = verifyLoad(tableNameMM, tableNameOWMM, incrementalDump.lastReplicationId);
   }
 
-  public void testLoodLocal() throws Throwable {
+  //TODO: need to check why its failing. Loading to acid table from local path is failing.
+  public void testLoadLocal() throws Throwable {
     String tableName = testName.getMethodName();
     String tableNameLL = testName.getMethodName() +"_LL";
     String tableNameMM = testName.getMethodName() + "_MM";
@@ -699,6 +698,7 @@ public class TestReplicationScenariosAcidTables {
     incrementalDump = verifyLoad(tableNameMM, tableNameLLMM, incrementalDump.lastReplicationId);
   }
 
+  @Test
   public void testInsertUnion() throws Throwable {
     String tableName = testName.getMethodName();
     String tableNameUnion = testName.getMethodName() +"_UNION";
@@ -720,68 +720,75 @@ public class TestReplicationScenariosAcidTables {
     incrementalDump = verifyLoad(tableNameMM, tableNameUnionMM, incrementalDump.lastReplicationId);
   }
 
-  /*@Test
-  public void testImportOverWrite() throws Throwable {
+  @Test
+  public void testReplCM() throws Throwable {
     String tableName = testName.getMethodName();
-    String path = "hdfs:///tmp/" + primaryDbName + "/";
-    String exportPath = "'" + path + tableName + "/'";
-    String importPath = "'" + path + tableName + "/data'";
+    String tableNameMM = testName.getMethodName() + "_MM";
+    String[] result = new String[]{"5"};
 
+    WarehouseInstance.Tuple incrementalDump;
     WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, null);
     replica.load(replicatedDbName, bootStrapDump.dumpLocation)
             .run("REPL STATUS " + replicatedDbName)
             .verifyResult(bootStrapDump.lastReplicationId);
 
-    primary.run("use " + primaryDbName)
-            .run("create table " + tableName + " (i int) CLUSTERED BY (i) into 5 buckets STORED AS ORC TBLPROPERTIES" +
-                     "('transactional'='true')")
-            .run("insert into table " + tableName + " values (1),(2)")
-            .run("export table " + tableName + " to " + exportPath)
-            .run("create table " + tableName + "_t2 like " + tableName)
-            .run("load data inpath " + importPath + " overwrite into table " + tableName + "_t2")
-            .run("select * from " + tableName + "_t2")
-            .verifyResults(new String[] { "1", "2" });
+    insertRecords(tableName, null, false, OperationType.REPL_TEST_ACID_INSERT);
+    incrementalDump = primary.dump(primaryDbName, bootStrapDump.lastReplicationId);
+    truncateTable(tableName);
+    replica.loadWithoutExplain(replicatedDbName, incrementalDump.dumpLocation)
+            .run("REPL STATUS " + replicatedDbName).verifyResult(incrementalDump.lastReplicationId);
+    verifyResultsInReplica(Lists.newArrayList("select count(*) from " + tableName,
+                                              "select count(*) from " + tableName + "_nopart"),
+                            Lists.newArrayList(result, result));
 
-    verifyIncrementalLoad(Collections.singletonList("select * from " + tableName + "_t2"),
-            Collections.singletonList(new String[] { "1", "2" }), bootStrapDump.lastReplicationId);
+    insertRecords(tableNameMM, null, true, OperationType.REPL_TEST_ACID_INSERT);
+    incrementalDump = primary.dump(primaryDbName, bootStrapDump.lastReplicationId);
+    truncateTable(tableNameMM);
+    replica.loadWithoutExplain(replicatedDbName, incrementalDump.dumpLocation)
+            .run("REPL STATUS " + replicatedDbName).verifyResult(incrementalDump.lastReplicationId);
+    verifyResultsInReplica(Lists.newArrayList("select count(*) from " + tableNameMM,
+            "select count(*) from " + tableNameMM + "_nopart"),
+            Lists.newArrayList(result, result));
   }
 
   @Test
-  public void testImportMetadataOnly() throws Throwable {
+  public void testMultiStatementTxn() throws Throwable {
     String tableName = testName.getMethodName();
-    String importTblname = tableName + "_import";
-    String path = "hdfs:///tmp/" + primaryDbName + "/";
-    String exportMDPath = "'" + path + tableName + "_1/'";
-    String exportDataPath = "'" + path + tableName + "_2/'";
-
+    String[] resultArray = new String[]{"1", "2", "3", "4", "5"};
+    String tableNameMM = testName.getMethodName() + "_MM";
+    String tableProperty = "'transactional'='true'";
+    WarehouseInstance.Tuple incrementalDump;
     WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, null);
     replica.load(replicatedDbName, bootStrapDump.dumpLocation)
             .run("REPL STATUS " + replicatedDbName)
             .verifyResult(bootStrapDump.lastReplicationId);
 
-    primary.run("use " + primaryDbName)
-            .run("create table " + tableName + " (i int) CLUSTERED BY (i) into 5 buckets STORED AS ORC TBLPROPERTIES" +
-                    "('transactional'='true')")
-            .run("insert into table " + tableName + " values (1),(2)")
-            .run("export table " + tableName + " to " + exportMDPath + " for metadata replication('1')")
-            .run("export table " + tableName + " to " + exportDataPath + " for replication('2')")
-            .run("import table " + importTblname + " from " + exportMDPath)
-            .run("import table " + importTblname + " from " + exportDataPath)
-            .run("select * from " + importTblname)
-            .verifyResults(new String[] { "1", "2" });
+    insertIntoDB(primaryDbName, tableName, tableProperty, resultArray, true);
+    incrementalDump = verifyLoad(tableName, tableName, bootStrapDump.lastReplicationId);
 
-    verifyIncrementalLoad(Collections.singletonList("select * from " + importTblname),
-            Collections.singletonList(new String[] { "1", "2" }), bootStrapDump.lastReplicationId);
-  }*/
+    tableProperty = setMMtableProperty(tableProperty);
+    insertIntoDB(primaryDbName, tableNameMM, tableProperty, resultArray, true);
+    incrementalDump = verifyLoad(tableNameMM, tableNameMM, incrementalDump.lastReplicationId);
+  }
+
+  private void verifyResultsInReplica(List<String> selectStmtList, List<String[]> expectedValues) throws Throwable  {
+    for (int idx = 0; idx > selectStmtList.size(); idx++) {
+      replica.run("use " + replicatedDbName)
+              .run(selectStmtList.get(idx))
+              .verifyResults(expectedValues.get(idx));
+    }
+  }
 
   private WarehouseInstance.Tuple verifyIncrementalLoad(List<String> selectStmtList,
                                                   List<String[]> expectedValues, String lastReplId) throws Throwable {
     WarehouseInstance.Tuple incrementalDump = primary.dump(primaryDbName, lastReplId);
     replica.loadWithoutExplain(replicatedDbName, incrementalDump.dumpLocation)
             .run("REPL STATUS " + replicatedDbName).verifyResult(incrementalDump.lastReplicationId);
-    for (int idx = 0; idx > selectStmtList.size(); idx++) {
-      replica.run("use " + replicatedDbName).run(selectStmtList.get(idx)).verifyResults(expectedValues.get(idx));
-    }
+    verifyResultsInReplica(selectStmtList, expectedValues);
+
+    replica.loadWithoutExplain(replicatedDbName, incrementalDump.dumpLocation)
+            .run("REPL STATUS " + replicatedDbName).verifyResult(incrementalDump.lastReplicationId);
+    verifyResultsInReplica(selectStmtList, expectedValues);
     return incrementalDump;
   }
 
@@ -803,41 +810,59 @@ public class TestReplicationScenariosAcidTables {
     primary.run("use " + primaryDbName)
             .run("truncate table " + tableName)
             .run("select count(*) from " + tableName)
+            .verifyResult("0")
+            .run("truncate table " + tableName + "_nopart")
+            .run("select count(*) from " + tableName + "_nopart")
             .verifyResult("0");
   }
 
   private WarehouseInstance.Tuple verifyLoad(String tableName, String tableNameOp, String lastReplId) throws Throwable {
     String[] resultArray = new String[]{"1", "2", "3", "4", "5"};
     if (tableNameOp == null) {
-      return verifyIncrementalLoad(Collections.singletonList("select key from " + tableName),
-              Collections.singletonList(resultArray), lastReplId);
+      return verifyIncrementalLoad(Lists.newArrayList("select key from " + tableName, "select key from " + tableNameOp),
+              Lists.newArrayList(resultArray, resultArray), lastReplId);
     }
-    return verifyIncrementalLoad(Lists.newArrayList("select key from " + tableName, "select key from " + tableNameOp),
-            Lists.newArrayList(resultArray, resultArray),
-            lastReplId);
+    return verifyIncrementalLoad(Lists.newArrayList("select key from " + tableName,
+                                                    "select key from " + tableNameOp,
+                                                    "select key from " + tableName + "_nopart",
+                                                    "select key from " + tableNameOp + "_nopart"),
+                    Lists.newArrayList(resultArray, resultArray, resultArray, resultArray), lastReplId);
   }
 
-  private void insertIntoDB(String dbName, String tableName, String tableProperty, String[] resultArray)
+  private void insertIntoDB(String dbName, String tableName, String tableProperty, String[] resultArray, boolean isTxn)
           throws Throwable {
+    String txnStrStart = "START TRANSACTION";
+    String txnStrCommit = "COMMIT";
+    if (!isTxn) {
+      txnStrStart = "use " + dbName; //dummy
+      txnStrCommit = "use " + dbName; //dummy
+    }
     primary.run("use " + dbName);
     primary.run("CREATE TABLE " + tableName + " (key int, value int) PARTITIONED BY (load_date date) " +
             "CLUSTERED BY(key) INTO 3 BUCKETS STORED AS ORC TBLPROPERTIES ( " + tableProperty + ")")
             .run("SHOW TABLES LIKE '" + tableName + "'")
             .verifyResult(tableName)
+            .run("CREATE TABLE " + tableName + "_nopart (key int, value int) " +
+                    "CLUSTERED BY(key) INTO 3 BUCKETS STORED AS ORC TBLPROPERTIES ( " + tableProperty + ")")
+            .run("SHOW TABLES LIKE '" + tableName + "_nopart'")
+            .run("ALTER TABLE " + tableName + " ADD PARTITION (load_date='2016-03-03')")
+            .run(txnStrStart)
             .run("INSERT INTO " + tableName + " partition (load_date='2016-03-01') VALUES (1, 1)")
             .run("INSERT INTO " + tableName + " partition (load_date='2016-03-01') VALUES (2, 2)")
             .run("INSERT INTO " + tableName + " partition (load_date='2016-03-02') VALUES (3, 3)")
-            .run("ALTER TABLE " + tableName + " ADD PARTITION (load_date='2016-03-03')")
             .run("INSERT INTO " + tableName + " partition (load_date='2016-03-03') VALUES (4, 4)")
             .run("INSERT INTO " + tableName + " partition (load_date='2016-03-02') VALUES (5, 5)")
             .run("select key from " + tableName)
             .verifyResults(resultArray)
-            .run("CREATE TABLE " + tableName + "_nopart (key int, value int) " +
-            "CLUSTERED BY(key) INTO 3 BUCKETS STORED AS ORC TBLPROPERTIES ( " + tableProperty + ")")
-            .run("SHOW TABLES LIKE '" + tableName + "_nopart'")
             .run("INSERT INTO " + tableName + "_nopart (key, value) select key, value from " + tableName)
             .run("select key from " + tableName + "_nopart")
-            .verifyResults(resultArray);
+            .verifyResults(resultArray)
+            .run(txnStrCommit);
+  }
+
+  private void insertIntoDB(String dbName, String tableName, String tableProperty, String[] resultArray)
+          throws Throwable {
+    insertIntoDB(dbName, tableName, tableProperty, resultArray, false);
   }
 
   private void insertRecords(String tableName, String tableNameOp, boolean isMMTable,
@@ -859,45 +884,73 @@ public class TestReplicationScenariosAcidTables {
               "CLUSTERED BY(key) INTO 3 BUCKETS STORED AS ORC TBLPROPERTIES ( "+ tableProperty + " )")
         .run("INSERT INTO " + tableNameOp + " partition (load_date='2016-03-01') VALUES (2, 2)")
         .run("INSERT INTO " + tableNameOp + " partition (load_date='2016-03-01') VALUES (10, 12)")
+        .run("INSERT INTO " + tableNameOp + " partition (load_date='2016-03-02') VALUES (11, 1)")
         .run("select key from " + tableNameOp)
-        .verifyResults(new String[]{"2", "10"})
-        .run("insert overwrite table " + tableNameOp + " partition (load_date) select * from " + tableName);
+        .verifyResults(new String[]{"2", "10", "11"})
+        .run("insert overwrite table " + tableNameOp + " select * from " + tableName)
+        .run("CREATE TABLE " + tableNameOp + "_nopart (key int, value int) " +
+                "CLUSTERED BY(key) INTO 3 BUCKETS STORED AS ORC TBLPROPERTIES ( "+ tableProperty + " )")
+        .run("INSERT INTO " + tableNameOp + "_nopart VALUES (2, 2)")
+        .run("INSERT INTO " + tableNameOp + "_nopart VALUES (10, 12)")
+        .run("INSERT INTO " + tableNameOp + "_nopart VALUES (11, 1)")
+        .run("select key from " + tableNameOp + "_nopart")
+        .verifyResults(new String[]{"2", "10", "11"})
+        .run("insert overwrite table " + tableNameOp + "_nopart select * from " + tableName + "_nopart")
+        .run("select key from " + tableNameOp + "_nopart");
         break;
       case REPL_TEST_ACID_INSERT_SELECT:
         primary.run("CREATE TABLE " + tableNameOp + " (key int, value int) PARTITIONED BY (load_date date) " +
-            "CLUSTERED BY(key) INTO 3 BUCKETS STORED AS ORC TBLPROPERTIES ( "+ tableProperty + " )")
-        .run("insert into " + tableNameOp + " partition (load_date) select * from " + tableName);
+            "CLUSTERED BY(key) INTO 3 BUCKETS STORED AS ORC TBLPROPERTIES ( " + tableProperty + " )")
+        .run("insert into " + tableNameOp + " partition (load_date) select * from " + tableName)
+        .run("CREATE TABLE " + tableNameOp + "_nopart (key int, value int) " +
+                "CLUSTERED BY(key) INTO 3 BUCKETS STORED AS ORC TBLPROPERTIES ( " + tableProperty + " )")
+        .run("insert into " + tableNameOp + "_nopart select * from " + tableName + "_nopart");
         break;
       case REPL_TEST_ACID_INSERT_IMPORT:
         String path = "hdfs:///tmp/" + primaryDbName + "/";
         String exportPath = "'" + path + tableName + "/'";
+        String exportPathNoPart = "'" + path + tableName + "_nopart/'";
         primary.run("export table " + tableName + " to " + exportPath)
-        .run("import table " + tableNameOp + " from " + exportPath);
+        .run("import table " + tableNameOp + " from " + exportPath)
+        .run("export table " + tableName + "_nopart to " + exportPathNoPart)
+        .run("import table " + tableNameOp + "_nopart from " + exportPathNoPart);
         break;
       case REPL_TEST_ACID_CTAS:
-        primary.run("create table " + tableNameOp + " as select * from " + tableName);
+        primary.run("create table " + tableNameOp + " as select * from " + tableName)
+                .run("create table " + tableNameOp + "_nopart as select * from " + tableName + "_nopart");
         break;
       case REPL_TEST_ACID_INSERT_LOADLOCAL:
         primary.run("CREATE TABLE " + tableNameOp + " (key int, value int) PARTITIONED BY (load_date date) " +
               "CLUSTERED BY(key) INTO 3 BUCKETS STORED AS ORC TBLPROPERTIES ( " + tableProperty + ")")
         .run("SHOW TABLES LIKE '" + tableNameOp + "'")
         .verifyResult(tableNameOp)
-        .run("INSERT OVERWRITE LOCAL DIRECTORY '/tmp/' SELECT a.* FROM" + tableName + " a")
-        .run("LOAD DATA LOCAL INPATH '/tmp/' OVERWRITE INTO TABLE " + tableNameOp +
-                " PARTITION (load_date='2008-08-15')");
+        .run("INSERT OVERWRITE LOCAL DIRECTORY './test.dat' SELECT a.* FROM " + tableName + " a")
+        .run("LOAD DATA LOCAL INPATH './test.dat' OVERWRITE INTO TABLE " + tableNameOp +
+                " PARTITION (load_date='2008-08-15')")
+        .run("CREATE TABLE " + tableNameOp + "_nopart (key int, value int) " +
+                      "CLUSTERED BY(key) INTO 3 BUCKETS STORED AS ORC TBLPROPERTIES ( " + tableProperty + ")")
+        .run("SHOW TABLES LIKE '" + tableNameOp + "_nopart'")
+        .verifyResult(tableNameOp + "_nopart")
+        .run("LOAD DATA LOCAL INPATH './test.dat' OVERWRITE INTO TABLE " + tableNameOp + "_nopart");
+        break;
       case REPL_TEST_ACID_INSERT_UNION:
         primary.run("CREATE TABLE " + tableNameOp + " (key int, value int) PARTITIONED BY (load_date date) " +
                 "CLUSTERED BY(key) INTO 3 BUCKETS STORED AS ORC TBLPROPERTIES ( " + tableProperty + ")")
                 .run("SHOW TABLES LIKE '" + tableNameOp + "'")
                 .verifyResult(tableNameOp)
                 .run("insert overwrite table " + tableNameOp + " partition (load_date) select * from " + tableName +
-                    " union all select * from " + tableName);
+                    " union all select * from " + tableName)
+                .run("CREATE TABLE " + tableNameOp + "_nopart (key int, value int) " +
+                "CLUSTERED BY(key) INTO 3 BUCKETS STORED AS ORC TBLPROPERTIES ( " + tableProperty + ")")
+                .run("insert overwrite table " + tableNameOp + "_nopart select * from " + tableName +
+                        "_nopart union all select * from " + tableName + "_nopart");
         resultArray = new String[]{"1", "2", "3", "4", "5", "1", "2", "3", "4", "5"};
         break;
       default:
         return;
     }
     primary.run("select key from " + tableNameOp).verifyResults(resultArray);
+    primary.run("select key from " + tableNameOp + "_nopart").verifyResults(resultArray);
   }
 
   private String setMMtableProperty(String tableProperty) throws Throwable  {
@@ -925,7 +978,7 @@ public class TestReplicationScenariosAcidTables {
                 " (8, 'value_08', 'creation', '20170413'), (9, 'value_09', 'creation', '20170413'), " +
                 " (10, 'value_10','creation', '20170413')")
         .run("select ID from " + tableName)
-        .verifyResults(new String[] {"1", "2" , "3", "4", "5", "6", "7", "8", "9", "10"})
+        .verifyResults(new String[] {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"})
         .run("INSERT INTO " + tableNameMerge + " VALUES (1, 'value_01', '20170410'), " +
                 " (4, NULL, '20170410'), (7, 'value_77777', '20170413'), " +
                 " (8, NULL, '20170413'), (8, 'value_08', '20170415'), " +
@@ -938,9 +991,7 @@ public class TestReplicationScenariosAcidTables {
                 " 'merge_update' WHEN MATCHED AND S.TranValue IS NULL THEN DELETE WHEN NOT MATCHED " +
                 " THEN INSERT VALUES (S.ID, S.TranValue,'merge_insert', S.tran_date)")
         .run("select last_update_user from " + tableName)
-        .verifyResults(new String[] {"creation","creation","creation","creation","creation",
-                "creation","creation","merge_update","merge_insert","merge_insert"});
->>>>>>> HIVE-19267 : Create/Replicate ACID Write event
->>>>>>> HIVE-19267 : Create/Replicate ACID Write event
+        .verifyResults(new String[] {"creation", "creation", "creation", "creation", "creation",
+                "creation", "creation", "merge_update", "merge_insert", "merge_insert"});
   }
 }

@@ -718,7 +718,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);
         checkRetryable(dbConn, e, "getTargetTxnId(" + replPolicy + sourceTxnId + ")");
-        throw new MetaException("Unable to update transaction database "
+        throw new MetaException("Unable to get target transaction id "
                 + StringUtils.stringifyException(e));
       } finally {
         close(null, stmt, dbConn);
@@ -1043,19 +1043,21 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             LOG.info("Expected to move at least one record from txn_components to " +
                     "completed_txn_components when committing txn! " + JavaUtils.txnIdToString(txnid));
           }
-        } else if (rqst.isSetWriteEventInfos()) {
-          List<String> rows = new ArrayList<>();
-          for (WriteEventInfo writeEventInfo : rqst.getWriteEventInfos()) {
-            rows.add(txnid + "," + quoteString(writeEventInfo.getDatabase()) + "," +
-                    quoteString(writeEventInfo.getTable()) + "," +
-                    quoteString(writeEventInfo.getPartition()) + "," +
-                    writeEventInfo.getWriteId());
-          }
-          List<String> queries = sqlGenerator.createInsertValuesStmt("COMPLETED_TXN_COMPONENTS (ctc_txnid," +
-                  " ctc_database, ctc_table, ctc_partition, ctc_writeid)", rows);
-          for (String q : queries) {
-            LOG.debug("Going to execute insert  <" + q + "> ");
-            stmt.execute(q);
+        } else {
+          if (rqst.isSetWriteEventInfos()) {
+            List<String> rows = new ArrayList<>();
+            for (WriteEventInfo writeEventInfo : rqst.getWriteEventInfos()) {
+              rows.add(txnid + "," + quoteString(writeEventInfo.getDatabase()) + "," +
+                      quoteString(writeEventInfo.getTable()) + "," +
+                      quoteString(writeEventInfo.getPartition()) + "," +
+                      writeEventInfo.getWriteId());
+            }
+            List<String> queries = sqlGenerator.createInsertValuesStmt("COMPLETED_TXN_COMPONENTS " +
+                    "(ctc_txnid," + " ctc_database, ctc_table, ctc_partition, ctc_writeid)", rows);
+            for (String q : queries) {
+              LOG.debug("Going to execute insert  <" + q + "> ");
+              stmt.execute(q);
+            }
           }
 
           s = "delete from REPL_TXN_MAP where RTM_SRC_TXN_ID = " + sourceTxnId +
@@ -1090,7 +1092,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         LOG.debug("Going to execute update <" + s + ">");
         stmt.executeUpdate(s);
         LOG.info("Removed committed transaction: (" + txnid + ") from MIN_HISTORY_LEVEL");
-        
         if (transactionalListeners != null) {
           MetaStoreListenerNotifier.notifyEventWithDirectSql(transactionalListeners,
                   EventMessage.EventType.COMMIT_TXN, new CommitTxnEvent(txnid, null), dbConn, sqlGenerator);
