@@ -817,8 +817,6 @@ public final class DruidStorageHandlerUtils {
     // Default, all columns that are not metrics or timestamp, are treated as dimensions
     final List<DimensionSchema> dimensions = new ArrayList<>();
     ImmutableList.Builder<AggregatorFactory> aggregatorFactoryBuilder = ImmutableList.builder();
-    final boolean approximationAllowed = HiveConf
-        .getBoolVar(jc, HiveConf.ConfVars.HIVE_DRUID_APPROX_RESULT);
     for (int i = 0; i < columnTypes.size(); i++) {
       final PrimitiveObjectInspector.PrimitiveCategory primitiveCategory = ((PrimitiveTypeInfo) columnTypes
           .get(i)).getPrimitiveCategory();
@@ -835,15 +833,10 @@ public final class DruidStorageHandlerUtils {
         af = new DoubleSumAggregatorFactory(columnNames.get(i), columnNames.get(i));
         break;
       case DECIMAL:
-        if (approximationAllowed) {
-          af = new DoubleSumAggregatorFactory(columnNames.get(i), columnNames.get(i));
-        } else {
-          throw new UnsupportedOperationException(
-              String.format("Druid does not support decimal column type." +
-                      "Either cast column [%s] to double or Enable Approximate Result for Druid by setting property [%s] to true",
-                  columnNames.get(i), HiveConf.ConfVars.HIVE_DRUID_APPROX_RESULT.varname));
-        }
-        break;
+        throw new UnsupportedOperationException(
+            String.format("Druid does not support decimal column type cast column "
+                + "[%s] to double", columnNames.get(i)));
+
       case TIMESTAMP:
         // Granularity column
         String tColumnName = columnNames.get(i);
