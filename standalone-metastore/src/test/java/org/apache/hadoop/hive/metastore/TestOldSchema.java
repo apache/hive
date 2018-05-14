@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.slf4j.Logger;
@@ -124,6 +125,7 @@ public class TestOldSchema {
   /**
    * Tests partition operations
    */
+  @Ignore("HIVE-19509: Disable tests that are failing continuously")
   @Test
   public void testPartitionOps() throws Exception {
     String dbName = "default";

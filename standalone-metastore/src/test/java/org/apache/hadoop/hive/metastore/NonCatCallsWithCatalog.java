@@ -66,6 +66,7 @@ import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -82,7 +83,7 @@ import java.util.TreeSet;
 
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 
-public abstract class TestNonCatCallsWithCatalog {
+public abstract class NonCatCallsWithCatalog {
 
   private static final String OTHER_DATABASE = "non_cat_other_db";
   private Table[] testTables = new Table[6];

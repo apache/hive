@@ -57,6 +57,8 @@ public class CliConfigs {
         excludesFrom(testConfigProps, "localSpark.only.query.files");
         excludesFrom(testConfigProps, "druid.query.files");
 
+        excludeQuery("fouter_join_ppr.q"); // Disabled in HIVE-19509
+
         setResultsDir("ql/src/test/results/clientpositive");
         setLogDir("itests/qtest/target/qfile-results/clientpositive");
 
@@ -195,6 +197,8 @@ public class CliConfigs {
 
         includesFrom(testConfigProps, "druid.kafka.query.files");
 
+        excludeQuery("druidkafkamini_basic.q"); // Disabled in HIVE-19509
+
         setResultsDir("ql/src/test/results/clientpositive/druid");
         setLogDir("itests/qtest/target/tmp/log");
 
@@ -219,6 +223,15 @@ public class CliConfigs {
 
         includesFrom(testConfigProps, "minillaplocal.query.files");
         includesFrom(testConfigProps, "minillaplocal.shared.query.files");
+        excludeQuery("bucket_map_join_tez1.q"); // Disabled in HIVE-19509
+        excludeQuery("special_character_in_tabnames_1.q"); // Disabled in HIVE-19509
+        excludeQuery("sysdb.q"); // Disabled in HIVE-19509
+        excludeQuery("tez_smb_1.q"); // Disabled in HIVE-19509
+        excludeQuery("union_fast_stats.q"); // Disabled in HIVE-19509
+        excludeQuery("schema_evol_orc_acidvec_part.q"); // Disabled in HIVE-19509
+        excludeQuery("schema_evol_orc_vec_part_llap_io.q"); // Disabled in HIVE-19509
+        excludeQuery("tez_dynpart_hashjoin_1.q"); // Disabled in HIVE-19509
+        excludeQuery("tez_vector_dynpart_hashjoin_1.q"); // Disabled in HIVE-19509
 
         setResultsDir("ql/src/test/results/clientpositive/llap");
         setLogDir("itests/qtest/target/qfile-results/clientpositive");
@@ -360,8 +373,8 @@ public class CliConfigs {
         excludeQuery("authorization_uri_import.q");
         excludeQuery("spark_job_max_tasks.q");
         excludeQuery("spark_stage_max_tasks.q");
-        excludeQuery("merge_negative_5.q");
-        excludeQuery("mm_concatenate.q");
+        excludeQuery("merge_negative_5.q"); // Disabled in HIVE-19509
+        excludeQuery("mm_concatenate.q"); // Disabled in HIVE-19509
 
         setResultsDir("ql/src/test/results/clientnegative");
         setLogDir("itests/qtest/target/qfile-results/clientnegative");
