@@ -224,6 +224,7 @@ public class CliConfigs {
         excludeQuery("special_character_in_tabnames_1.q");
         excludeQuery("sysdb.q");
         excludeQuery("tez_smb_1.q");
+        excludeQuery("union_fast_stats.q");
 
         setResultsDir("ql/src/test/results/clientpositive/llap");
         setLogDir("itests/qtest/target/qfile-results/clientpositive");
