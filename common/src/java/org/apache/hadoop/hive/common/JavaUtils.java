@@ -71,6 +71,10 @@ public final class JavaUtils {
     return classLoader;
   }
 
+  public static Class loadClass(String shadePrefix, String className) throws ClassNotFoundException {
+    return loadClass(shadePrefix + "." + className);
+  }
+
   public static Class loadClass(String className) throws ClassNotFoundException {
     return loadClass(className, true);
   }
