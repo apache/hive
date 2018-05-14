@@ -642,7 +642,7 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
         } else {
           computeNextMapping(iterationIdx.length - 1);
         }
-        return nextMapping != null;
+          return nextMapping != null;
       }
 
       public Mapping next() {
@@ -659,7 +659,9 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
           if (level == 0) {
             nextMapping = null;
           } else {
-            iterationIdx[level] = 0;
+            int tmp = columnSets[level].nextSetBit(0);
+            nextMapping.set(columns[level], tmp);
+            iterationIdx[level] = tmp + 1;
             computeNextMapping(level - 1);
           }
         } else {
