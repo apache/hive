@@ -128,31 +128,41 @@ public abstract class AbstractRecordWriter implements RecordWriter {
     if (conn == null) {
       throw new StreamingException("Streaming connection cannot be null during record writer initialization");
     }
+    this.conn = conn;
+    this.curBatchMinWriteId = minWriteId;
+    this.curBatchMaxWriteId = maxWriteId;
+    this.conf = conn.getHiveConf();
+    this.defaultPartitionName = conf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME);
+    this.table = conn.getTable();
+    this.inputColumns = table.getSd().getCols().stream().map(FieldSchema::getName).collect(Collectors.toList());
+    this.inputTypes = table.getSd().getCols().stream().map(FieldSchema::getType).collect(Collectors.toList());
+    if (conn.isPartitionedTable() && conn.isDynamicPartitioning()) {
+      this.partitionColumns = table.getPartitionKeys().stream().map(FieldSchema::getName)
+        .collect(Collectors.toList());
+      this.inputColumns.addAll(partitionColumns);
+      this.inputTypes
+        .addAll(table.getPartitionKeys().stream().map(FieldSchema::getType).collect(Collectors.toList()));
+    }
+    this.fullyQualifiedTableName = Warehouse.getQualifiedName(table.getDbName(), table.getTableName());
+    String outFormatName = this.table.getSd().getOutputFormat();
     try {
-      this.conn = conn;
-      this.curBatchMinWriteId = minWriteId;
-      this.curBatchMaxWriteId = maxWriteId;
-      this.conf = conn.getHiveConf();
-      this.defaultPartitionName = conf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME);
-      this.table = conn.getTable();
-      this.inputColumns = table.getSd().getCols().stream().map(FieldSchema::getName).collect(Collectors.toList());
-      this.inputTypes = table.getSd().getCols().stream().map(FieldSchema::getType).collect(Collectors.toList());
-      if (conn.isPartitionedTable() && conn.isDynamicPartitioning()) {
-        this.partitionColumns = table.getPartitionKeys().stream().map(FieldSchema::getName)
-          .collect(Collectors.toList());
-        this.inputColumns.addAll(partitionColumns);
-        this.inputTypes
-          .addAll(table.getPartitionKeys().stream().map(FieldSchema::getType).collect(Collectors.toList()));
-      }
-      this.fullyQualifiedTableName = Warehouse.getQualifiedName(table.getDbName(), table.getTableName());
-      String outFormatName = this.table.getSd().getOutputFormat();
       this.acidOutputFormat = (AcidOutputFormat<?, ?>) ReflectionUtils
         .newInstance(JavaUtils.loadClass(outFormatName), conf);
-      setupMemoryMonitoring();
     } catch (ClassNotFoundException e) {
-      throw new StreamingException(e.getMessage(), e);
+      String shadePrefix = conf.getVar(HiveConf.ConfVars.HIVE_CLASSLOADER_SHADE_PREFIX);
+      if (shadePrefix != null && !shadePrefix.trim().isEmpty()) {
+        try {
+          LOG.info("Shade prefix: {} specified. Using as fallback to load {}..", shadePrefix, outFormatName);
+          this.acidOutputFormat = (AcidOutputFormat<?, ?>) ReflectionUtils
+            .newInstance(JavaUtils.loadClass(shadePrefix, outFormatName), conf);
+        } catch (ClassNotFoundException e1) {
+          throw new StreamingException(e.getMessage(), e);
+        }
+      } else {
+        throw new StreamingException(e.getMessage(), e);
+      }
     }
-
+    setupMemoryMonitoring();
     try {
       final AbstractSerDe serDe = createSerde();
       this.inputRowObjectInspector = (StructObjectInspector) serDe.getObjectInspector();
