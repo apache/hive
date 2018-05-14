@@ -405,7 +405,6 @@ public class HiveConnection implements java.sql.Connection {
 
         final Registry<ConnectionSocketFactory> registry = registryBuilder.build();
 
-
         httpClientBuilder.setConnectionManager(new BasicHttpClientConnectionManager(registry));
       }
       catch (Exception e) {
@@ -414,7 +413,7 @@ public class HiveConnection implements java.sql.Connection {
         throw new SQLException(msg, " 08S01", e);
       }
     }
-    return httpClientBuilder.build();
+    return httpClientBuilder.useSystemProperties().build();
   }
 
   private HttpHost getProxySettings() {
@@ -425,39 +424,9 @@ public class HiveConnection implements java.sql.Connection {
       return HttpHost.create(httpProxyFromEnv);
     }
 
-    String http = System.getProperty(HTTP + ".proxyHost");
-
-    if (http != null) {
-      return getProxySettings(HTTP);
-    }
-
     LOG.warn("Proxy not settings");
 
     return null;
-  }
-
-  private HttpHost getProxySettings(String protocol) {
-    if (HTTP.equalsIgnoreCase(protocol)) {
-      String host = System.getProperty(protocol + ".proxyHost", "");
-      Integer port = getPortFromProxy(protocol);
-      return new HttpHost(host, port, protocol );
-    }
-
-    LOG.warn("Proxy not settings");
-
-    return null;
-
-  }
-
-  private Integer getPortFromProxy(String protocol) {
-    String port = System.getProperty(protocol + ".proxyPort");
-    if (port != null && NumberUtils.isNumber(port)) {
-      return Integer.valueOf(port);
-    }
-
-    LOG.warn("Proxy Port not defined or not a number");
-
-    return -1;
   }
 
 
