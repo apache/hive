@@ -42,7 +42,7 @@ public class TestMTQueries extends BaseTestQueries {
       // derby fails creating multiple stats aggregator concurrently
       util.getConf().setBoolean("hive.exec.submitviachild", true);
       util.getConf().setBoolean("hive.exec.submit.local.task.via.child", true);
-      util.getConf().setBoolean("hive.vectorized.execution.enabled", false);
+      util.getConf().setBoolean("hive.vectorized.execution.enabled", true);
       util.getConf().set("hive.stats.dbclass", "fs");
       util.getConf().set("hive.mapred.mode", "nonstrict");
       util.getConf().set("hive.stats.column.autogather", "false");
