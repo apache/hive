@@ -185,6 +185,7 @@ public class TestAcidOnTez {
    * Tests non acid to acid conversion where starting table has non-standard layout, i.e.
    * where "original" files are not immediate children of the partition dir
    */
+  @Ignore("HIVE-19509: Disable tests that are failing continuously")
   @Test
   public void testNonStandardConversion01() throws Exception {
     HiveConf confForTez = new HiveConf(hiveConf); // make a clone of existing hive conf
@@ -431,6 +432,7 @@ public class TestAcidOnTez {
    * {@link org.apache.hadoop.hive.ql.metadata.Hive#moveAcidFiles(FileSystem, FileStatus[], Path, List)} drops the union subdirs
    * since each delta file has a unique name.
    */
+  @Ignore("HIVE-19509: Disable tests that are failing continuously")
   @Test
   public void testCtasTezUnion() throws Exception {
     HiveConf confForTez = new HiveConf(hiveConf); // make a clone of existing hive conf

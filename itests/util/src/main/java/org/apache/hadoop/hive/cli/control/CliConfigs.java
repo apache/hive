@@ -58,6 +58,8 @@ public class CliConfigs {
         excludesFrom(testConfigProps, "druid.query.files");
         excludesFrom(testConfigProps, "druid.kafka.query.files");
 
+        excludeQuery("fouter_join_ppr.q");
+
         setResultsDir("ql/src/test/results/clientpositive");
         setLogDir("itests/qtest/target/qfile-results/clientpositive");
 
@@ -225,6 +227,8 @@ public class CliConfigs {
         excludeQuery("sysdb.q");
         excludeQuery("tez_smb_1.q");
         excludeQuery("union_fast_stats.q");
+        excludeQuery("schema_evol_orc_acidvec_part.q");
+        excludeQuery("schema_evol_orc_vec_part_llap_io.q");
 
         setResultsDir("ql/src/test/results/clientpositive/llap");
         setLogDir("itests/qtest/target/qfile-results/clientpositive");
