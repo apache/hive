@@ -18,12 +18,8 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.sql.Date;
-import java.sql.Timestamp;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Description;
-import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -43,13 +39,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 public class GenericUDFCurrentDate extends GenericUDF {
 
   protected DateWritable currentDate;
-  private Configuration conf;
-
-  @Override
-  public void configure(MapredContext context) {
-    super.configure(context);
-    conf = context.getJobConf();
-  }
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments)
@@ -61,21 +50,8 @@ public class GenericUDFCurrentDate extends GenericUDF {
     }
 
     if (currentDate == null) {
-      SessionState ss = SessionState.get();
-      Timestamp queryTimestamp;
-      if (ss == null) {
-        if (conf == null) {
-          queryTimestamp = new Timestamp(System.currentTimeMillis());
-        } else {
-          queryTimestamp = new Timestamp(
-                  HiveConf.getLongVar(conf, HiveConf.ConfVars.HIVE_QUERY_TIMESTAMP));
-        }
-      } else {
-        queryTimestamp = ss.getQueryCurrentTimestamp();
-      }
-
       Date dateVal =
-              Date.valueOf(queryTimestamp.toString().substring(0, 10));
+          Date.valueOf(SessionState.get().getQueryCurrentTimestamp().toString().substring(0, 10));
       currentDate = new DateWritable(dateVal);
     }
 
