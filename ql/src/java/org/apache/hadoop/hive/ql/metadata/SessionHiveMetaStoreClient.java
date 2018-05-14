@@ -166,7 +166,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
       return deepCopy(table);  // Original method used deepCopy(), do the same here.
     }
     // Try underlying client
-    return super.getTable(DEFAULT_CATALOG_NAME, dbname, name);
+    return super.getTable(MetaStoreUtils.getDefaultCatalog(conf), dbname, name);
   }
 
   // Need to override this one too or dropTable breaks because it doesn't find the table when checks
