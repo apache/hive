@@ -180,6 +180,70 @@ public class VectorizedRowBatch implements Writable {
     return b.toString();
   }
 
+  private void appendVectorType(StringBuilder b, ColumnVector cv) {
+    String colVectorType = null;
+    if (cv instanceof LongColumnVector) {
+      colVectorType = "LONG";
+    } else if (cv instanceof DoubleColumnVector) {
+      colVectorType = "DOUBLE";
+    } else if (cv instanceof BytesColumnVector) {
+      colVectorType = "BYTES";
+    } else if (cv instanceof DecimalColumnVector) {
+      colVectorType = "DECIMAL";
+    } else if (cv instanceof TimestampColumnVector) {
+      colVectorType = "TIMESTAMP";
+    } else if (cv instanceof IntervalDayTimeColumnVector) {
+      colVectorType = "INTERVAL_DAY_TIME";
+    } else if (cv instanceof ListColumnVector) {
+      colVectorType = "LIST";
+    } else if (cv instanceof MapColumnVector) {
+      colVectorType = "MAP";
+    } else if (cv instanceof StructColumnVector) {
+      colVectorType = "STRUCT";
+    } else if (cv instanceof UnionColumnVector) {
+      colVectorType = "UNION";
+    } else {
+      colVectorType = "Unknown";
+    }
+    b.append(colVectorType);
+
+    if (cv instanceof ListColumnVector) {
+      ListColumnVector listColumnVector = (ListColumnVector) cv;
+      b.append("<");
+      appendVectorType(b, listColumnVector.child);
+      b.append(">");
+    } else if (cv instanceof MapColumnVector) {
+      MapColumnVector mapColumnVector = (MapColumnVector) cv;
+      b.append("<");
+      appendVectorType(b, mapColumnVector.keys);
+      b.append(", ");
+      appendVectorType(b, mapColumnVector.values);
+      b.append(">");
+    } else if (cv instanceof StructColumnVector) {
+      StructColumnVector structColumnVector = (StructColumnVector) cv;
+      b.append("<");
+      final int fieldCount = structColumnVector.fields.length;
+      for (int i = 0; i < fieldCount; i++) {
+        if (i > 0) {
+          b.append(", ");
+        }
+        appendVectorType(b, structColumnVector.fields[i]);
+      }
+      b.append(">");
+    } else if (cv instanceof UnionColumnVector) {
+      UnionColumnVector unionColumnVector = (UnionColumnVector) cv;
+      b.append("<");
+      final int fieldCount = unionColumnVector.fields.length;
+      for (int i = 0; i < fieldCount; i++) {
+        if (i > 0) {
+          b.append(", ");
+        }
+        appendVectorType(b, unionColumnVector.fields[i]);
+      }
+      b.append(">");
+    }
+  }
+
   public String stringify(String prefix) {
     if (size == 0) {
       return "";
@@ -195,33 +259,10 @@ public class VectorizedRowBatch implements Writable {
       }
       b.append(projIndex);
       b.append(":");
-      String colVectorType = null;
-      if (cv instanceof LongColumnVector) {
-        colVectorType = "LONG";
-      } else if (cv instanceof DoubleColumnVector) {
-        colVectorType = "DOUBLE";
-      } else if (cv instanceof BytesColumnVector) {
-        colVectorType = "BYTES";
-      } else if (cv instanceof DecimalColumnVector) {
-        colVectorType = "DECIMAL";
-      } else if (cv instanceof TimestampColumnVector) {
-        colVectorType = "TIMESTAMP";
-      } else if (cv instanceof IntervalDayTimeColumnVector) {
-        colVectorType = "INTERVAL_DAY_TIME";
-      } else if (cv instanceof ListColumnVector) {
-        colVectorType = "LIST";
-      } else if (cv instanceof MapColumnVector) {
-        colVectorType = "MAP";
-      } else if (cv instanceof StructColumnVector) {
-        colVectorType = "STRUCT";
-      } else if (cv instanceof UnionColumnVector) {
-        colVectorType = "UNION";
-      } else {
-        colVectorType = "Unknown";
-      }
-      b.append(colVectorType);
+      appendVectorType(b, cv);
     }
     b.append('\n');
+    b.append(prefix);
 
     if (this.selectedInUse) {
       for (int j = 0; j < size; j++) {
