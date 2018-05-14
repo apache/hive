@@ -29,6 +29,10 @@
   <packaging>jar</packaging>
   <name>Hive Standalone Metastore</name>
 
+  <modules>
+    <module>client</module>
+  </modules>
+
   <properties>
     <hive.version.shortname>3.0.0</hive.version.shortname>
 
@@ -61,6 +65,7 @@
     <!-- Dependency versions -->
     <antlr.version>3.5.2</antlr.version>
     <bonecp.version>0.8.0.RELEASE</bonecp.version>
+    <commons.version>2.5</commons.version>
     <commons-cli.version>1.3.1</commons-cli.version>
     <commons-dbcp.version>1.4</commons-dbcp.version>
     <commons-lang3.version>3.2</commons-lang3.version>

@@ -1,0 +1,27 @@
+schema.registry.url : "http://localhost:9191/api/v1"
+schema.registry.client.local.jars.path : "/tmp/schema-registry/local-jars"
+schema.registry.client.class.loader.cache.size : 1024
+schema.registry.client.class.loader.cache.expiry.interval : 3600
+schema.registry.client.schema.version.cache.size : 1024
+schema.registry.client.schema.version.cache.expiry.interval : 300
+schema.registry.client.schema.metadata.cache.expiry.interval : 300
+schema.registry.client.schema.text.cache.size : 1024
+schema.registry.client.schema.text.cache.expiry.interval : 300
+schema.registry.client.url.selector : "com.hortonworks.registries.schemaregistry.client.FailoverUrlSelector"
+
+#schema.registry.client.ssl:
+#  protocol: SSL
+#  hostnameVerifierClass:
+#  keyStoreType:
+#  keyStorePath:
+#  keyStorePassword:
+#  keyStoreProvider:
+#  keyPassword:
+#  keyManagerFactoryProvider:
+#  keyManagerFactoryAlgorithm:
+#  trustStoreType:
+#  trustStorePath:
+#  trustStorePassword:
+#  trustStoreProvider:
+#  trustManagerFactoryProvider:
+#  trustManagerFactoryAlgorithm:
