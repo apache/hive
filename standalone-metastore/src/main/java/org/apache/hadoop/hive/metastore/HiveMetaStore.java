@@ -131,6 +131,7 @@ import org.apache.hadoop.hive.metastore.events.PreReadISchemaEvent;
 import org.apache.hadoop.hive.metastore.events.PreReadTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreReadhSchemaBranchEvent;
 import org.apache.hadoop.hive.metastore.events.PreReadhSchemaVersionEvent;
+import org.apache.hadoop.hive.metastore.events.PreReadhSchemaBranchToSchemaVersionEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
 import org.apache.hadoop.hive.metastore.metrics.JvmPauseMonitor;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
@@ -7888,6 +7889,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
+
     @Override
     public void drop_schema_version(String schemaName, int version) throws TException {
       startFunction("drop_schema_version", ": " + schemaName);
@@ -8176,6 +8178,28 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         endFunction("get_schema_branch_by_schema_name", schemaBranches != null, ex);
       }
     }
+
+    @Override
+    public List<ISchemaBranchToISchemaVersion> get_schema_versions_by_schema_branch_id(long schemaBranchId) throws TException {
+      startFunction("get_schema_versions_by_schema_branch_id", ": " + schemaBranchId);
+      Exception ex = null;
+      List<ISchemaBranchToISchemaVersion> schemaBranchToSchemaVersions = null;
+      try {
+        schemaBranchToSchemaVersions = getMS().getSchemaVersionsBySchemaBranchId(schemaBranchId);
+        if (schemaBranchToSchemaVersions == null) {
+          throw new NoSuchObjectException("No schemaVersions for " + schemaBranchId + "exist");
+        }
+        firePreEvent(new PreReadhSchemaBranchToSchemaVersionEvent(this, schemaBranchToSchemaVersions));
+        return schemaBranchToSchemaVersions;
+      } catch (MetaException e) {
+        LOG.error("Caught exception getting schema versions for the schemaBranchId " + schemaBranchId, e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("get_schema_versions_by_schema_branch_id", schemaBranchToSchemaVersions != null, ex);
+      }
+    }
+
 
     @Override
     public void add_serde(SerDeInfo serde) throws TException {

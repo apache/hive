@@ -2926,4 +2926,14 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     client.map_schema_branch_to_schema_version(schemaBranchId, schemaVersionId);
   }
 
+  @Override
+  public List<ISchemaBranchToISchemaVersion> getSchemaVersionsBySchemaBranchId(Long schemaBranchId) throws TException {
+    return client.get_schema_versions_by_schema_branch_id(schemaBranchId);
+  }
+
+  @Override
+  public List<ISchemaBranch> getSchemaBranchBySchemaVersionId(Long schemaVersionId) throws TException {
+    return client.get_schema_branch_by_schema_version_id(schemaVersionId);
+  }
+
 }

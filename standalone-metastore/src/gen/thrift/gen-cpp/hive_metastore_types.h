@@ -607,6 +607,8 @@ class ISchemaVersion;
 
 class ISchemaBranch;
 
+class ISchemaBranchToISchemaVersion;
+
 class FindSchemasByColsRqst;
 
 class FindSchemasByColsRespEntry;
@@ -11294,6 +11296,58 @@ class ISchemaBranch {
 void swap(ISchemaBranch &a, ISchemaBranch &b);
 
 inline std::ostream& operator<<(std::ostream& out, const ISchemaBranch& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _ISchemaBranchToISchemaVersion__isset {
+  _ISchemaBranchToISchemaVersion__isset() : schemaBranchId(false), schemaVersionId(false) {}
+  bool schemaBranchId :1;
+  bool schemaVersionId :1;
+} _ISchemaBranchToISchemaVersion__isset;
+
+class ISchemaBranchToISchemaVersion {
+ public:
+
+  ISchemaBranchToISchemaVersion(const ISchemaBranchToISchemaVersion&);
+  ISchemaBranchToISchemaVersion& operator=(const ISchemaBranchToISchemaVersion&);
+  ISchemaBranchToISchemaVersion() : schemaBranchId(0), schemaVersionId(0) {
+  }
+
+  virtual ~ISchemaBranchToISchemaVersion() throw();
+  int64_t schemaBranchId;
+  int64_t schemaVersionId;
+
+  _ISchemaBranchToISchemaVersion__isset __isset;
+
+  void __set_schemaBranchId(const int64_t val);
+
+  void __set_schemaVersionId(const int64_t val);
+
+  bool operator == (const ISchemaBranchToISchemaVersion & rhs) const
+  {
+    if (!(schemaBranchId == rhs.schemaBranchId))
+      return false;
+    if (!(schemaVersionId == rhs.schemaVersionId))
+      return false;
+    return true;
+  }
+  bool operator != (const ISchemaBranchToISchemaVersion &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ISchemaBranchToISchemaVersion & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(ISchemaBranchToISchemaVersion &a, ISchemaBranchToISchemaVersion &b);
+
+inline std::ostream& operator<<(std::ostream& out, const ISchemaBranchToISchemaVersion& obj)
 {
   obj.printTo(out);
   return out;

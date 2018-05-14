@@ -71,6 +71,7 @@ import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.ISchemaVersion;
 import org.apache.hadoop.hive.metastore.api.ISchemaBranch;
+import org.apache.hadoop.hive.metastore.api.ISchemaBranchToISchemaVersion;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
@@ -819,6 +820,7 @@ public interface RawStore extends Configurable {
   /**
    * Create a new ISchema.
    * @param schema schema to create
+   * @return schema id
    * @throws AlreadyExistsException there's already a schema with this name
    * @throws MetaException general database exception
    */
@@ -839,6 +841,9 @@ public interface RawStore extends Configurable {
    * Get an ISchema by Id.
    * @param schemaId id of the schema
    * @return ISchema
+   * @throws MetaException general database exception
+   * @throws InvalidObjectException the passed in SchemaVersion object has problems.
+   * @throws NoSuchObjectException no schema with the passed in name exists.
    * @throws MetaException general database exception
    */
   ISchema getISchema(Long schemaId) throws MetaException;
@@ -865,7 +870,8 @@ public interface RawStore extends Configurable {
 
   /**
    * Create a new version of an existing schema.
-   * @param schemaVersion version number
+   * @param schemaVersion version of a scheam text
+   * @return return schemaVersion ID
    * @throws AlreadyExistsException a version of the schema with the same version number already
    * exists.
    * @throws InvalidObjectException the passed in SchemaVersion object has problems.
@@ -964,13 +970,14 @@ public interface RawStore extends Configurable {
   /**
    * Create a new version of an existing schema.
    * @param schemaBranch schema branch name and description
+   * @return returns schemaBranch ID
    * @throws AlreadyExistsException a version of the schema with the same version number already
    * exists.
    * @throws InvalidObjectException the passed in SchemaVersion object has problems.
    * @throws NoSuchObjectException no schema with the passed in name exists.
    * @throws MetaException general database exception
    */
-  void addSchemaBranch(ISchemaBranch schemaBranch)
+  Long addSchemaBranch(ISchemaBranch schemaBranch)
           throws AlreadyExistsException, InvalidObjectException, NoSuchObjectException, MetaException;
 
   /**
@@ -1013,6 +1020,16 @@ public interface RawStore extends Configurable {
    */
 
   List<ISchemaBranch> getSchemaBranchBySchemaVersionId(Long schemaVersionId) throws MetaException;
+
+
+  /**
+   * Get SchemaVersions by schema branch id
+   * @param schemaBranchId schema branch id
+   * @return one or more schema versions associated with schema branch name
+   * @throws MetaException general database exception
+   */
+
+  List<ISchemaBranchToISchemaVersion> getSchemaVersionsBySchemaBranchId(Long schemaBranchId) throws MetaException;
 
   /**
    * Get serdes information

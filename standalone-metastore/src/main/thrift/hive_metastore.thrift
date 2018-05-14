@@ -1342,6 +1342,11 @@ struct ISchemaBranch {
   5: optional i64 timestamp
 }
 
+struct ISchemaBranchToISchemaVersion {
+  1: i64 schemaBranchId,
+  2: i64 schemaVersionId
+}
+
 struct FindSchemasByColsRqst {
   1: optional string colName,
   2: optional string colNamespace,
@@ -2019,6 +2024,9 @@ service ThriftHiveMetastore extends fb303.FacebookService
         throws (1:NoSuchObjectException o1, 2:MetaException o2)
 
   list<ISchemaBranch> get_schema_branch_by_schema_version_id(1: i64 schemaVersionId)
+        throws (1:NoSuchObjectException o1, 2:MetaException o2)
+
+  list<ISchemaBranchToISchemaVersion> get_schema_versions_by_schema_branch_id(1: i64 schemaBranchId)
         throws (1:NoSuchObjectException o1, 2:MetaException o2)
 
   // There is no blanket update of SchemaVersion since it is (mostly) immutable.  The only

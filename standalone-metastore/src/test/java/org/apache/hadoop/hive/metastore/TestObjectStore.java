@@ -60,6 +60,7 @@ import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.model.MNotificationLog;
 import org.apache.hadoop.hive.metastore.model.MNotificationNextId;
+import org.apache.hadoop.hive.registry.serdes.avro.AvroSchemaProvider;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
@@ -586,9 +587,11 @@ public class TestObjectStore {
   }
 
   @Test
-  public void testSchemaOperations() throws NoSuchObjectException, AlreadyExistsException, MetaException, InvalidObjectException {
+  public void testSchemaOperations() throws Exception {
     Database db1 = new Database(SCHEMA_DB, "description", "locationurl", null);
     objectStore.createDatabase(db1);
+    AvroSchemaProvider avroSchemaProvider = new AvroSchemaProvider();
+
     // create a Schema Metadata
     String schemaName = "test-schema";
     String schemaDesc = "test-desc";
@@ -620,21 +623,29 @@ public class TestObjectStore {
 
     // Add Schema Version
 
-    String description = "very descriptive";
-    String schemaText = "this should look like json, but oh well";
-    String fingerprint = "this should be an md5 string";
-    String versionName = "why would I name a version?";
+    String description = "Sample schema for testing";
+    String schemaText = "{\n" +
+        "  \"type\" : \"record\",\n" +
+        "  \"namespace\" : \"org.apache.hadoop.hive.metastore.registries\",\n" +
+        "  \"name\" : \"trucks\",\n" +
+        "  \"fields\" : [\n" +
+        "    { \"name\" : \"driverId\" , \"type\" : \"int\" },\n" +
+        "    { \"name\" : \"truckId\" , \"type\" : \"int\" }" +
+        "  ]\n" +
+        "}";
+    String fingerprint = new String(avroSchemaProvider.getFingerprint(schemaText));
+    String versionName = "first version";
     long creationTime = 10;
     String serdeName = "serde_for_schema37";
     String serializer = "org.apache.hadoop.hive.metastore.test.Serializer";
     String deserializer = "org.apache.hadoop.hive.metastore.test.Deserializer";
-    String serdeDescription = "how do you describe a serdes?";
+    String serdeDescription = "serdes for sample schema";
     int version = 1;
     ISchemaVersion schemaVersion = new SchemaVersionBuilder()
             .setSchemaName(schemaName)
             .setVersion(version)
-            .addCol("a", ColumnType.INT_TYPE_NAME)
-            .addCol("b", ColumnType.FLOAT_TYPE_NAME)
+            .addCol("driverId", ColumnType.INT_TYPE_NAME)
+            .addCol("truckId", ColumnType.INT_TYPE_NAME)
             .setCreatedAt(creationTime)
             .setState(SchemaVersionState.INITIATED)
             .setDescription(description)
@@ -654,44 +665,105 @@ public class TestObjectStore {
 
     // Add Schema Version
 
-    String description = "very descriptive";
-    String schemaText = "this should look like json, but oh well";
-    String fingerprint = "this should be an md5 string";
-    String versionName = "why would I name a version?";
-    long creationTime = 10;
-    String serdeName = "serde_for_schema37";
-    String serializer = "org.apache.hadoop.hive.metastore.test.Serializer";
-    String deserializer = "org.apache.hadoop.hive.metastore.test.Deserializer";
-    String serdeDescription = "how do you describe a serdes?";
-    int version = 1;
-    ISchemaVersion schemaVersion = new SchemaVersionBuilder()
+    String schemaWithDefaults = "{\n" +
+        "  \"type\" : \"record\",\n" +
+        "  \"namespace\" : \"com.hortonworks.registries\",\n" +
+        "  \"name\" : \"trucks\",\n" +
+        "  \"fields\" : [\n" +
+        "    { \"name\" : \"driverId\" , \"type\" : \"int\" },\n" +
+        "    { \"name\" : \"truckId\" , \"type\" : \"int\", \"default\":0 }\n" +
+        "  ]\n" +
+        "}\n";
+    String fingerprintSecondVersion = new String(avroSchemaProvider.getFingerprint(schemaWithDefaults));
+    String versionNameSecondVersion = "second version";
+    long creationTimeSecondVersion = 11;
+    int versionSecondVersion = 2;
+    ISchemaVersion schemaVersionSecondVersion = new SchemaVersionBuilder()
         .setSchemaName(schemaName)
-        .setVersion(version)
-        .addCol("a", ColumnType.INT_TYPE_NAME)
-        .addCol("b", ColumnType.FLOAT_TYPE_NAME)
-        .setCreatedAt(creationTime)
+        .setVersion(versionSecondVersion)
+        .addCol("driverId", ColumnType.INT_TYPE_NAME)
+        .addCol("truckId", ColumnType.INT_TYPE_NAME)
+        .setCreatedAt(creationTimeSecondVersion)
         .setState(SchemaVersionState.INITIATED)
         .setDescription(description)
-        .setSchemaText(schemaText)
-        .setFingerprint(fingerprint)
-        .setName(versionName)
+        .setSchemaText(schemaWithDefaults)
+        .setFingerprint(fingerprintSecondVersion)
+        .setName(versionNameSecondVersion)
         .setSerdeName(serdeName)
         .setSerdeSerializerClass(serializer)
         .setSerdeDeserializerClass(deserializer)
         .setSerdeDescription(serdeDescription)
         .build();
-    Long schemaVersionId = objectStore.addSchemaVersion(schemaVersion);
-    ISchemaVersion nSchemaVersion = objectStore.getSchemaVersion(schemaName, 1);
-    Assert.assertEquals(new Long(nSchemaVersion.getSchemaVersionId()), schemaVersionId);
-    Assert.assertEquals(nSchemaVersion.getSchemaText(), schemaText);
-    Assert.assertEquals(nSchemaVersion.getFingerprint(), fingerprint);
+    Long schemaVersionIdSecondVersion = objectStore.addSchemaVersion(schemaVersionSecondVersion);
+    ISchemaVersion nSchemaVersionSecondVersion = objectStore.getSchemaVersion(schemaName, 2);
+    Assert.assertEquals(new Long(nSchemaVersionSecondVersion.getSchemaVersionId()), schemaVersionIdSecondVersion);
+    Assert.assertEquals(nSchemaVersionSecondVersion.getSchemaText(), schemaWithDefaults);
+    Assert.assertEquals(nSchemaVersionSecondVersion.getFingerprint(), fingerprintSecondVersion);
 
+    // Get Latest SchemaVersion
+    ISchemaVersion latestSchemaVersion = objectStore.getLatestSchemaVersion(schemaName);
+    Assert.assertEquals(new Long(latestSchemaVersion.getSchemaVersionId()), schemaVersionIdSecondVersion);
+    Assert.assertEquals(latestSchemaVersion.getSchemaText(), schemaWithDefaults);
+    Assert.assertEquals(latestSchemaVersion.getFingerprint(), fingerprintSecondVersion);
+    Assert.assertEquals(latestSchemaVersion.getVersion(), 2);
+    Assert.assertEquals(latestSchemaVersion.getSchemaName(), schemaName);
+
+    //Get all SchemaVersions
+    List<ISchemaVersion> schemaVersions = objectStore.getAllSchemaVersion(schemaName);
+    Assert.assertEquals(schemaVersions.size(), 2);
+
+    // drop schemaVersion
+    objectStore.dropSchemaVersion(schemaName, 2);
+    List<ISchemaVersion> dropSchemaVersions = objectStore.getAllSchemaVersion(schemaName);
+    Assert.assertEquals(dropSchemaVersions.size(), 1);
+  }
+
+  @Test
+  public void testSchemaBranchOperations() throws Exception {
+    Database db1 = new Database(SCHEMA_DB, "description", "locationurl", null);
+    objectStore.createDatabase(db1);
+    String schemaName = "test-schema";
+    String branchName = "master";
+    String branchDesc = "master branch";
+    Long firstSchemaVersionId= 1L;
     ISchemaBranch schemaBranch = new ISchemaBranch();
-    schemaBranch.setName("master");
-    schemaBranch.setDescription("master branch");
-    objectStore.addSchemaBranch(schemaBranch);
+    schemaBranch.setName(branchName);
+    schemaBranch.setDescription(branchDesc);
+    schemaBranch.setSchemaMetadataName(schemaName);
+    Long schemaBranchId = objectStore.addSchemaBranch(schemaBranch);
+
+    ISchemaBranch nSchemaBranch = objectStore.getSchemaBranch(schemaBranchId);
+    Assert.assertEquals(schemaBranchId, new Long(nSchemaBranch.getSchemaBranchId()));
+    Assert.assertEquals(branchName, nSchemaBranch.getName());
+    Assert.assertEquals(branchDesc, nSchemaBranch.getDescription());
+    Assert.assertEquals(schemaName, nSchemaBranch.getSchemaMetadataName());
+    objectStore.mapSchemaBranchToSchemaVersion(schemaBranchId, firstSchemaVersionId);
+
+    List<ISchemaBranch> schemaBranchesBySchemaVersionId = objectStore.getSchemaBranchBySchemaVersionId(firstSchemaVersionId);
+    Assert.assertEquals(schemaBranchesBySchemaVersionId.size(), 1);
+    ISchemaBranch schemaBranchFromSchemaVersion = schemaBranchesBySchemaVersionId.get(0);
+    Assert.assertEquals(schemaBranchFromSchemaVersion.getSchemaMetadataName(), schemaName);
+    Assert.assertEquals(schemaBranchFromSchemaVersion.getDescription(), branchDesc);
+    Assert.assertEquals(schemaBranchFromSchemaVersion.getName(), branchName);
+
+
+    ISchemaBranch schemaBranchTest = new ISchemaBranch();
+    schemaBranchTest.setName("test");
+    schemaBranchTest.setDescription("test branch");
+    schemaBranchTest.setSchemaMetadataName(schemaName);
+    Long testSchemaBranchId = objectStore.addSchemaBranch(schemaBranchTest);
+
+    // test for retrieving all the branches for a given schemaName
+    List<ISchemaBranch> branchesForSchema = objectStore.getSchemaBranchBySchemaName(schemaName);
+    Assert.assertEquals(branchesForSchema.size(), 2);
+    ISchemaBranch firstBranch = branchesForSchema.get(0);
+    Assert.assertEquals(firstBranch.getName(), "test");
+    Assert.assertEquals(firstBranch.getDescription(), "test branch");
+    Assert.assertEquals(firstBranch.getSchemaMetadataName(), schemaName);
 
 
   }
+
+
 }
 

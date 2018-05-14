@@ -221,6 +221,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void get_schema_branch(ISchemaBranch& _return, const int64_t schemaBranchId) = 0;
   virtual void get_schema_branch_by_schema_name(std::vector<ISchemaBranch> & _return, const std::string& schemaName) = 0;
   virtual void get_schema_branch_by_schema_version_id(std::vector<ISchemaBranch> & _return, const int64_t schemaVersionId) = 0;
+  virtual void get_schema_versions_by_schema_branch_id(std::vector<ISchemaBranchToISchemaVersion> & _return, const int64_t schemaBranchId) = 0;
   virtual void map_schema_version_to_serde(const std::string& schemaName, const int32_t version, const std::string& serdeName) = 0;
   virtual void set_schema_version_state(const std::string& schemaName, const int32_t version, const SchemaVersionState::type state) = 0;
   virtual void add_serde(const SerDeInfo& serde) = 0;
@@ -879,6 +880,9 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void get_schema_branch_by_schema_version_id(std::vector<ISchemaBranch> & /* _return */, const int64_t /* schemaVersionId */) {
+    return;
+  }
+  void get_schema_versions_by_schema_branch_id(std::vector<ISchemaBranchToISchemaVersion> & /* _return */, const int64_t /* schemaBranchId */) {
     return;
   }
   void map_schema_version_to_serde(const std::string& /* schemaName */, const int32_t /* version */, const std::string& /* serdeName */) {
@@ -25437,6 +25441,126 @@ class ThriftHiveMetastore_get_schema_branch_by_schema_version_id_presult {
 
 };
 
+typedef struct _ThriftHiveMetastore_get_schema_versions_by_schema_branch_id_args__isset {
+  _ThriftHiveMetastore_get_schema_versions_by_schema_branch_id_args__isset() : schemaBranchId(false) {}
+  bool schemaBranchId :1;
+} _ThriftHiveMetastore_get_schema_versions_by_schema_branch_id_args__isset;
+
+class ThriftHiveMetastore_get_schema_versions_by_schema_branch_id_args {
+ public:
+
+  ThriftHiveMetastore_get_schema_versions_by_schema_branch_id_args(const ThriftHiveMetastore_get_schema_versions_by_schema_branch_id_args&);
+  ThriftHiveMetastore_get_schema_versions_by_schema_branch_id_args& operator=(const ThriftHiveMetastore_get_schema_versions_by_schema_branch_id_args&);
+  ThriftHiveMetastore_get_schema_versions_by_schema_branch_id_args() : schemaBranchId(0) {
+  }
+
+  virtual ~ThriftHiveMetastore_get_schema_versions_by_schema_branch_id_args() throw();
+  int64_t schemaBranchId;
+
+  _ThriftHiveMetastore_get_schema_versions_by_schema_branch_id_args__isset __isset;
+
+  void __set_schemaBranchId(const int64_t val);
+
+  bool operator == (const ThriftHiveMetastore_get_schema_versions_by_schema_branch_id_args & rhs) const
+  {
+    if (!(schemaBranchId == rhs.schemaBranchId))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_schema_versions_by_schema_branch_id_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_schema_versions_by_schema_branch_id_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_schema_versions_by_schema_branch_id_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_schema_versions_by_schema_branch_id_pargs() throw();
+  const int64_t* schemaBranchId;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_schema_versions_by_schema_branch_id_result__isset {
+  _ThriftHiveMetastore_get_schema_versions_by_schema_branch_id_result__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_get_schema_versions_by_schema_branch_id_result__isset;
+
+class ThriftHiveMetastore_get_schema_versions_by_schema_branch_id_result {
+ public:
+
+  ThriftHiveMetastore_get_schema_versions_by_schema_branch_id_result(const ThriftHiveMetastore_get_schema_versions_by_schema_branch_id_result&);
+  ThriftHiveMetastore_get_schema_versions_by_schema_branch_id_result& operator=(const ThriftHiveMetastore_get_schema_versions_by_schema_branch_id_result&);
+  ThriftHiveMetastore_get_schema_versions_by_schema_branch_id_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_schema_versions_by_schema_branch_id_result() throw();
+  std::vector<ISchemaBranchToISchemaVersion>  success;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_get_schema_versions_by_schema_branch_id_result__isset __isset;
+
+  void __set_success(const std::vector<ISchemaBranchToISchemaVersion> & val);
+
+  void __set_o1(const NoSuchObjectException& val);
+
+  void __set_o2(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_get_schema_versions_by_schema_branch_id_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_schema_versions_by_schema_branch_id_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_schema_versions_by_schema_branch_id_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_schema_versions_by_schema_branch_id_presult__isset {
+  _ThriftHiveMetastore_get_schema_versions_by_schema_branch_id_presult__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_get_schema_versions_by_schema_branch_id_presult__isset;
+
+class ThriftHiveMetastore_get_schema_versions_by_schema_branch_id_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_schema_versions_by_schema_branch_id_presult() throw();
+  std::vector<ISchemaBranchToISchemaVersion> * success;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_get_schema_versions_by_schema_branch_id_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 typedef struct _ThriftHiveMetastore_map_schema_version_to_serde_args__isset {
   _ThriftHiveMetastore_map_schema_version_to_serde_args__isset() : schemaName(false), version(false), serdeName(false) {}
   bool schemaName :1;
@@ -26537,6 +26661,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void get_schema_branch_by_schema_version_id(std::vector<ISchemaBranch> & _return, const int64_t schemaVersionId);
   void send_get_schema_branch_by_schema_version_id(const int64_t schemaVersionId);
   void recv_get_schema_branch_by_schema_version_id(std::vector<ISchemaBranch> & _return);
+  void get_schema_versions_by_schema_branch_id(std::vector<ISchemaBranchToISchemaVersion> & _return, const int64_t schemaBranchId);
+  void send_get_schema_versions_by_schema_branch_id(const int64_t schemaBranchId);
+  void recv_get_schema_versions_by_schema_branch_id(std::vector<ISchemaBranchToISchemaVersion> & _return);
   void map_schema_version_to_serde(const std::string& schemaName, const int32_t version, const std::string& serdeName);
   void send_map_schema_version_to_serde(const std::string& schemaName, const int32_t version, const std::string& serdeName);
   void recv_map_schema_version_to_serde();
@@ -26758,6 +26885,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_get_schema_branch(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_schema_branch_by_schema_name(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_schema_branch_by_schema_version_id(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_schema_versions_by_schema_branch_id(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_map_schema_version_to_serde(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_set_schema_version_state(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_add_serde(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -26965,6 +27093,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["get_schema_branch"] = &ThriftHiveMetastoreProcessor::process_get_schema_branch;
     processMap_["get_schema_branch_by_schema_name"] = &ThriftHiveMetastoreProcessor::process_get_schema_branch_by_schema_name;
     processMap_["get_schema_branch_by_schema_version_id"] = &ThriftHiveMetastoreProcessor::process_get_schema_branch_by_schema_version_id;
+    processMap_["get_schema_versions_by_schema_branch_id"] = &ThriftHiveMetastoreProcessor::process_get_schema_versions_by_schema_branch_id;
     processMap_["map_schema_version_to_serde"] = &ThriftHiveMetastoreProcessor::process_map_schema_version_to_serde;
     processMap_["set_schema_version_state"] = &ThriftHiveMetastoreProcessor::process_set_schema_version_state;
     processMap_["add_serde"] = &ThriftHiveMetastoreProcessor::process_add_serde;
@@ -28919,6 +29048,16 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     return;
   }
 
+  void get_schema_versions_by_schema_branch_id(std::vector<ISchemaBranchToISchemaVersion> & _return, const int64_t schemaBranchId) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_schema_versions_by_schema_branch_id(_return, schemaBranchId);
+    }
+    ifaces_[i]->get_schema_versions_by_schema_branch_id(_return, schemaBranchId);
+    return;
+  }
+
   void map_schema_version_to_serde(const std::string& schemaName, const int32_t version, const std::string& serdeName) {
     size_t sz = ifaces_.size();
     size_t i = 0;
@@ -29569,6 +29708,9 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void get_schema_branch_by_schema_version_id(std::vector<ISchemaBranch> & _return, const int64_t schemaVersionId);
   int32_t send_get_schema_branch_by_schema_version_id(const int64_t schemaVersionId);
   void recv_get_schema_branch_by_schema_version_id(std::vector<ISchemaBranch> & _return, const int32_t seqid);
+  void get_schema_versions_by_schema_branch_id(std::vector<ISchemaBranchToISchemaVersion> & _return, const int64_t schemaBranchId);
+  int32_t send_get_schema_versions_by_schema_branch_id(const int64_t schemaBranchId);
+  void recv_get_schema_versions_by_schema_branch_id(std::vector<ISchemaBranchToISchemaVersion> & _return, const int32_t seqid);
   void map_schema_version_to_serde(const std::string& schemaName, const int32_t version, const std::string& serdeName);
   int32_t send_map_schema_version_to_serde(const std::string& schemaName, const int32_t version, const std::string& serdeName);
   void recv_map_schema_version_to_serde(const int32_t seqid);

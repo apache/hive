@@ -77,77 +77,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.MetaStoreDirectSql.SqlFilterForPushdown;
-import org.apache.hadoop.hive.metastore.api.AggrStats;
-import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
-import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
-import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
-import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
-import org.apache.hadoop.hive.metastore.api.CreationMetadata;
-import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
-import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
-import org.apache.hadoop.hive.metastore.api.Function;
-import org.apache.hadoop.hive.metastore.api.FunctionType;
-import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
-import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
-import org.apache.hadoop.hive.metastore.api.HiveObjectType;
-import org.apache.hadoop.hive.metastore.api.ISchema;
-import org.apache.hadoop.hive.metastore.api.Index;
-import org.apache.hadoop.hive.metastore.api.InvalidInputException;
-import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
-import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
-import org.apache.hadoop.hive.metastore.api.InvalidPartitionException;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
-import org.apache.hadoop.hive.metastore.api.NotificationEvent;
-import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
-import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
-import org.apache.hadoop.hive.metastore.api.NotificationEventsCountRequest;
-import org.apache.hadoop.hive.metastore.api.NotificationEventsCountResponse;
-import org.apache.hadoop.hive.metastore.api.Order;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.PartitionEventType;
-import org.apache.hadoop.hive.metastore.api.PartitionValuesResponse;
-import org.apache.hadoop.hive.metastore.api.PartitionValuesRow;
-import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
-import org.apache.hadoop.hive.metastore.api.PrincipalType;
-import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
-import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
-import org.apache.hadoop.hive.metastore.api.ResourceType;
-import org.apache.hadoop.hive.metastore.api.ResourceUri;
-import org.apache.hadoop.hive.metastore.api.Role;
-import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
-import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
-import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
-import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
-import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
-import org.apache.hadoop.hive.metastore.api.ISchemaBranch;
-import org.apache.hadoop.hive.metastore.api.SchemaCompatibility;
-import org.apache.hadoop.hive.metastore.api.SchemaType;
-import org.apache.hadoop.hive.metastore.api.SchemaValidation;
-import org.apache.hadoop.hive.metastore.api.ISchemaVersion;
-import org.apache.hadoop.hive.metastore.api.SchemaVersionState;
-import org.apache.hadoop.hive.metastore.api.SerDeInfo;
-import org.apache.hadoop.hive.metastore.api.SerdeType;
-import org.apache.hadoop.hive.metastore.api.SkewedInfo;
-import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
-import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.TableMeta;
-import org.apache.hadoop.hive.metastore.api.Type;
-import org.apache.hadoop.hive.metastore.api.UnknownDBException;
-import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
-import org.apache.hadoop.hive.metastore.api.UnknownTableException;
-import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
-import org.apache.hadoop.hive.metastore.api.WMMapping;
-import org.apache.hadoop.hive.metastore.api.WMNullablePool;
-import org.apache.hadoop.hive.metastore.api.WMNullableResourcePlan;
-import org.apache.hadoop.hive.metastore.api.WMPool;
-import org.apache.hadoop.hive.metastore.api.WMPoolTrigger;
-import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
-import org.apache.hadoop.hive.metastore.api.WMResourcePlanStatus;
-import org.apache.hadoop.hive.metastore.api.WMTrigger;
-import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
+import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.datasource.DataSourceProvider;
@@ -10024,7 +9954,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public void addSchemaBranch(ISchemaBranch schemaBranch) throws NoSuchObjectException, MetaException {
+  public Long addSchemaBranch(ISchemaBranch schemaBranch) throws NoSuchObjectException, MetaException {
     boolean committed = false;
     MSchemaBranch mSchemaBranch = convertToMSchemaBranch(schemaBranch);
     try {
@@ -10034,6 +9964,7 @@ public class ObjectStore implements RawStore, Configurable {
     } finally {
       if (!committed) rollbackTransaction();
     }
+    return mSchemaBranch.getSchemaBranchId();
   }
 
   @Override
@@ -10056,8 +9987,9 @@ public class ObjectStore implements RawStore, Configurable {
     Query query = null;
     try {
       openTransaction();
-      query = pm.newQuery(MSchemaBranch.class, "iSchemaBranch.schemaBranchId == schemaBranchId");
+      query = pm.newQuery(MSchemaBranch.class, "schemaBranchId == schemaBranchId");
       query.declareParameters("java.lang.Long schemaBranchId");
+
       query.setUnique(true);
       query.setRange(0, 1);
       MSchemaBranch mSchemaBranch = (MSchemaBranch)query.execute(schemaBranchId);
@@ -10076,8 +10008,9 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
       schemaName = normalizeIdentifier(schemaName);
-      query = pm.newQuery(MSchemaBranch.class, "iSchemaBranch.schemaMetadataName == schemaName");
+      query = pm.newQuery(MSchemaBranch.class, "schemaMetadataName == schemaName");
       query.declareParameters("java.lang.String schemaName");
+      query.setOrdering("timestamp descending");
       List<MSchemaBranch> mSchemaBranches = query.setParameters(schemaName).executeList();
       pm.retrieveAll(mSchemaBranches);
       if (mSchemaBranches == null || mSchemaBranches.isEmpty()) return null;
@@ -10097,10 +10030,16 @@ public class ObjectStore implements RawStore, Configurable {
     boolean committed = false;
     Query query = null;
     try {
+      Map<String, String> parameters = new HashMap<>(1);
+      StringBuilder sql = new StringBuilder("select SCHEMA_BRANCH.SCHEMA_BRANCH_ID as SCHEMA_BRANCH_ID from " +
+          "SCHEMA_BRANCH, SCHEMA_BRANCH_VERSION_MAPPING" +
+          " where SCHEMA_BRANCH.SCHEMA_BRANCH_ID = SCHEMA_BRANCH_VERSION_MAPPING.SCHEMA_BRANCH_ID" +
+          " and SCHEMA_BRANCH_VERSION_MAPPING.SCHEMA_VERSION_ID = :schemaVersionId");
+      parameters.put("schemaVersionId", schemaVersionId.toString());
       openTransaction();
-      query = pm.newQuery(MSchemaBranch.class, "iSchemaBranch == schemaName");
-      query.declareParameters("java.lang.String schemaName");
-      List<MSchemaBranch> mSchemaBranches = query.setParameters(schemaVersionId).executeList();
+      query = pm.newQuery("javax.jdo.query.SQL", sql.toString());
+      query.setClass(MSchemaBranch.class);
+      List<MSchemaBranch> mSchemaBranches = query.setNamedParameters(parameters).executeList();
       pm.retrieveAll(mSchemaBranches);
       if (mSchemaBranches == null || mSchemaBranches.isEmpty()) return null;
       List<ISchemaBranch> schemaBranches = new ArrayList<>(mSchemaBranches.size());
@@ -10109,6 +10048,30 @@ public class ObjectStore implements RawStore, Configurable {
       }
       committed = commitTransaction();
       return schemaBranches;
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
+  }
+
+
+  @Override
+  public List<ISchemaBranchToISchemaVersion> getSchemaVersionsBySchemaBranchId(Long schemaBranchId) throws MetaException {
+    boolean committed = false;
+    Query query = null;
+    try {
+      openTransaction();
+      query = pm.newQuery(MSchemaBranchToSchemaVersion.class, "schemaBranchId == schemaBranchId");
+      query.declareParameters("java.lang.String schemaName");
+      query.setOrdering("scheamVersionId ascending");
+      List<MSchemaBranchToSchemaVersion> mSchemaBranchToSchemaVersions = query.setParameters(schemaBranchId).executeList();
+      pm.retrieveAll(mSchemaBranchToSchemaVersions);
+      if (mSchemaBranchToSchemaVersions == null || mSchemaBranchToSchemaVersions.isEmpty()) return null;
+      List<ISchemaBranchToISchemaVersion> schemaBranchToSchemaVersions = new ArrayList<>(mSchemaBranchToSchemaVersions.size());
+      for (MSchemaBranchToSchemaVersion mSchemaBranchToSchemaVersion : mSchemaBranchToSchemaVersions) {
+        schemaBranchToSchemaVersions.add(convertToISchemaBranchToISchemaVersion(mSchemaBranchToSchemaVersion));
+      }
+      committed = commitTransaction();
+      return schemaBranchToSchemaVersions;
     } finally {
       rollbackAndCleanup(committed, query);
     }
@@ -10218,7 +10181,7 @@ public class ObjectStore implements RawStore, Configurable {
     return schemaVersion;
   }
 
-  private MSchemaBranch convertToMSchemaBranch(ISchemaBranch schemaBranch) throws MetaException {
+  private MSchemaBranch convertToMSchemaBranch(ISchemaBranch schemaBranch) {
     return new MSchemaBranch(schemaBranch.isSetSchemaBranchId() ? schemaBranch.getSchemaBranchId() : null,
                              schemaBranch.getName(),
                              schemaBranch.getSchemaMetadataName(),
@@ -10227,7 +10190,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   }
 
-  private ISchemaBranch convertToSchemaBranch(MSchemaBranch mSchemaBranch) throws MetaException {
+  private ISchemaBranch convertToSchemaBranch(MSchemaBranch mSchemaBranch) {
     if (mSchemaBranch == null) return null;
     ISchemaBranch schemaBranch = new ISchemaBranch(mSchemaBranch.getName(),
                                                   mSchemaBranch.getSchemaMetadataName());
@@ -10235,6 +10198,15 @@ public class ObjectStore implements RawStore, Configurable {
     if (mSchemaBranch.getDescription() != null) schemaBranch.setDescription(mSchemaBranch.getDescription());
     schemaBranch.setTimestamp(mSchemaBranch.getTimestamp());
     return schemaBranch;
+  }
+
+  private ISchemaBranchToISchemaVersion convertToISchemaBranchToISchemaVersion(MSchemaBranchToSchemaVersion mSchemaBranchToSchemaVersion) {
+    if (mSchemaBranchToSchemaVersion == null) return null;
+    ISchemaBranchToISchemaVersion schemaBranchToSchemaVersion = new ISchemaBranchToISchemaVersion(
+        mSchemaBranchToSchemaVersion.getSchemaBranchId(),
+        mSchemaBranchToSchemaVersion.getSchemaVersionId()
+    );
+    return schemaBranchToSchemaVersion;
   }
 
   /**

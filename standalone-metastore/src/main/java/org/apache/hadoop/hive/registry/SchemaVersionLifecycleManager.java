@@ -21,6 +21,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.api.ISchemaBranch;
+import org.apache.hadoop.hive.metastore.api.ISchemaBranchToISchemaVersion;
 import org.apache.hadoop.hive.metastore.api.ISchemaVersion;
 import org.apache.hadoop.hive.metastore.api.SchemaVersionState;
 import org.apache.hadoop.hive.registry.common.QueryParam;
@@ -998,44 +1000,39 @@ public class SchemaVersionLifecycleManager {
     }
 
     public Set<SchemaBranch> getSchemaBranches(Long schemaVersionId) throws SchemaBranchNotFoundException {
-        List<QueryParam> schemaVersionMappingStorableQueryParams = new ArrayList<>();
         Set<SchemaBranch> schemaBranches = new HashSet<>();
-        schemaVersionMappingStorableQueryParams.add(new QueryParam(SchemaBranchVersionMapping.SCHEMA_VERSION_INFO_ID, schemaVersionId
-                .toString()));
+        try {
+            for (ISchemaBranch schemaBranch : metaStoreClient.getSchemaBranchBySchemaVersionId(schemaVersionId)) {
+                schemaBranches.add(schemaBranchCache.get(SchemaBranchCache.Key.of(schemaBranch.getSchemaBranchId())));
+            }
+        } catch (Exception e) {
 
-        /*for (Storable storable : storageManager.find(SchemaBranchVersionMapping.NAMESPACE, schemaVersionMappingStorableQueryParams)) {
-            schemaBranches.add(schemaBranchCache.get(SchemaBranchCache.Key.of(((SchemaBranchVersionMapping) storable).getSchemaBranchId())));
         }
-
-        return schemaBranches;*/
-        return null;
+        return schemaBranches;
     }
 
     private List<SchemaVersionInfo> getSortedSchemaVersions(Long schemaBranchId) throws SchemaNotFoundException, SchemaBranchNotFoundException {
-        List<QueryParam> schemaVersionMappingStorableQueryParams = Lists.newArrayList();
-        schemaVersionMappingStorableQueryParams.add(new QueryParam(SchemaBranchVersionMapping.SCHEMA_BRANCH_ID, schemaBranchId
-                .toString()));
-        /*List<OrderByField> orderByFields = new ArrayList<>();
-        orderByFields.add(OrderByField.of(SchemaBranchVersionMapping.SCHEMA_VERSION_INFO_ID, false));
+
         List<SchemaVersionInfo> schemaVersionInfos = new ArrayList<>();
-
-        Collection<SchemaBranchVersionMapping> storables = storageManager.find(SchemaBranchVersionMapping.NAMESPACE, schemaVersionMappingStorableQueryParams, orderByFields);
-        if (storables == null || storables.size() == 0) {
+        try {
+          Collection<ISchemaBranchToISchemaVersion> schemaBranchToISchemaVersions = metaStoreClient.getSchemaVersionsBySchemaBranchId(schemaBranchId);
+          if (schemaBranchToISchemaVersions == null || schemaBranchToISchemaVersions.size() == 0) {
             if (schemaBranchCache.get(SchemaBranchCache.Key.of(schemaBranchId))
-                                 .getName()
-                                 .equals(SchemaBranch.MASTER_BRANCH))
-                return Collections.emptyList();
+                .getName()
+                .equals(SchemaBranch.MASTER_BRANCH))
+              return Collections.emptyList();
             else
-                throw new InvalidSchemaBranchVersionMapping(String.format("No schema versions are attached to the schema branch id : '%s'", schemaBranchId));
-        }
+              throw new InvalidSchemaBranchVersionMapping(String.format("No schema versions are attached to the schema branch id : '%s'", schemaBranchId));
+          }
 
-        for (SchemaBranchVersionMapping storable : storables) {
-            SchemaIdVersion schemaIdVersion = new SchemaIdVersion(storable.getSchemaVersionInfoId());
+          for (ISchemaBranchToISchemaVersion schemaBranchToISchemaVersion : schemaBranchToISchemaVersions) {
+            SchemaIdVersion schemaIdVersion = new SchemaIdVersion(schemaBranchToISchemaVersion.getSchemaVersionId());
             schemaVersionInfos.add(schemaVersionInfoCache.getSchema(SchemaVersionInfoCache.Key.of(schemaIdVersion)));
-        }
+          }
+        } catch(Exception e) {
 
-        return schemaVersionInfos;*/
-        return null;
+        }
+        return schemaVersionInfos;
     }
 
     public List<SchemaVersionInfo> getSortedSchemaVersions(SchemaBranch schemaBranch) throws SchemaNotFoundException {

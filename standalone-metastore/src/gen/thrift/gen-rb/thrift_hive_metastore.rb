@@ -3336,6 +3336,23 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_schema_branch_by_schema_version_id failed: unknown result')
     end
 
+    def get_schema_versions_by_schema_branch_id(schemaBranchId)
+      send_get_schema_versions_by_schema_branch_id(schemaBranchId)
+      return recv_get_schema_versions_by_schema_branch_id()
+    end
+
+    def send_get_schema_versions_by_schema_branch_id(schemaBranchId)
+      send_message('get_schema_versions_by_schema_branch_id', Get_schema_versions_by_schema_branch_id_args, :schemaBranchId => schemaBranchId)
+    end
+
+    def recv_get_schema_versions_by_schema_branch_id()
+      result = receive_message(Get_schema_versions_by_schema_branch_id_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_schema_versions_by_schema_branch_id failed: unknown result')
+    end
+
     def map_schema_version_to_serde(schemaName, version, serdeName)
       send_map_schema_version_to_serde(schemaName, version, serdeName)
       recv_map_schema_version_to_serde()
@@ -5910,6 +5927,19 @@ module ThriftHiveMetastore
         result.o2 = o2
       end
       write_result(result, oprot, 'get_schema_branch_by_schema_version_id', seqid)
+    end
+
+    def process_get_schema_versions_by_schema_branch_id(seqid, iprot, oprot)
+      args = read_args(iprot, Get_schema_versions_by_schema_branch_id_args)
+      result = Get_schema_versions_by_schema_branch_id_result.new()
+      begin
+        result.success = @handler.get_schema_versions_by_schema_branch_id(args.schemaBranchId)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_schema_versions_by_schema_branch_id', seqid)
     end
 
     def process_map_schema_version_to_serde(seqid, iprot, oprot)
@@ -13381,6 +13411,42 @@ module ThriftHiveMetastore
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::ISchemaBranch}},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_schema_versions_by_schema_branch_id_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SCHEMABRANCHID = 1
+
+    FIELDS = {
+      SCHEMABRANCHID => {:type => ::Thrift::Types::I64, :name => 'schemaBranchId'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_schema_versions_by_schema_branch_id_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::ISchemaBranchToISchemaVersion}},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
     }

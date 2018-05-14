@@ -223,6 +223,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  ISchemaBranch get_schema_branch(i64 schemaBranchId)')
   print('   get_schema_branch_by_schema_name(string schemaName)')
   print('   get_schema_branch_by_schema_version_id(i64 schemaVersionId)')
+  print('   get_schema_versions_by_schema_branch_id(i64 schemaBranchId)')
   print('  void map_schema_version_to_serde(string schemaName, i32 version, string serdeName)')
   print('  void set_schema_version_state(string schemaName, i32 version, SchemaVersionState state)')
   print('  void add_serde(SerDeInfo serde)')
@@ -1489,6 +1490,12 @@ elif cmd == 'get_schema_branch_by_schema_version_id':
     print('get_schema_branch_by_schema_version_id requires 1 args')
     sys.exit(1)
   pp.pprint(client.get_schema_branch_by_schema_version_id(eval(args[0]),))
+
+elif cmd == 'get_schema_versions_by_schema_branch_id':
+  if len(args) != 1:
+    print('get_schema_versions_by_schema_branch_id requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_schema_versions_by_schema_branch_id(eval(args[0]),))
 
 elif cmd == 'map_schema_version_to_serde':
   if len(args) != 3:

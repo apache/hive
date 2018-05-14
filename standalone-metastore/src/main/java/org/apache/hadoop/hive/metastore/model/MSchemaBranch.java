@@ -33,7 +33,7 @@ public class MSchemaBranch {
 
   public MSchemaBranch(String name, String schemaMetadataName) {
     this.name = name;
-    this.description = schemaMetadataName;
+    this.schemaMetadataName = schemaMetadataName;
   }
 
 
