@@ -653,6 +653,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       setHMSHandler(this);
       configuration.set(key, value);
       notifyMetaListeners(key, oldValue, value);
+
+      if (ConfVars.TRY_DIRECT_SQL == confVar) {
+        HMSHandler.LOG.info("Direct SQL optimization = {}",  value);
+      }
     }
 
     @Override
@@ -8892,6 +8896,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           + maxWorkerThreads);
       HMSHandler.LOG.info("TCP keepalive = " + tcpKeepAlive);
       HMSHandler.LOG.info("Enable SSL = " + useSSL);
+
+      boolean directSqlEnabled = MetastoreConf.getBoolVar(conf, ConfVars.TRY_DIRECT_SQL);
+      HMSHandler.LOG.info("Direct SQL optimization = {}",  directSqlEnabled);
 
       if (startLock != null) {
         signalOtherThreadsToStart(tServer, startLock, startCondition, startedServing);
