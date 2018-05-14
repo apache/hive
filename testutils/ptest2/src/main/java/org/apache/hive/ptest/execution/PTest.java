@@ -159,7 +159,8 @@ public class PTest {
     }
     mHostExecutors = new CopyOnWriteArrayList<HostExecutor>(hostExecutors);
     mPhases = Lists.newArrayList();
-    mPhases.add(new TestCheckPhase(mHostExecutors, localCommandFactory, templateDefaults, patchFile, logger, mAddedTests));
+    mPhases.add(new TestCheckPhase(mHostExecutors, localCommandFactory, templateDefaults,
+            configuration.getPatch(), patchFile, logger, mAddedTests));
     mPhases.add(new PrepPhase(mHostExecutors, localCommandFactory, templateDefaults, scratchDir, patchFile, logger));
     mPhases.add(new YetusPhase(configuration, mHostExecutors, localCommandFactory, templateDefaults,
         mExecutionContext.getLocalWorkingDirectory(), scratchDir, logger, logDir, patchFile));

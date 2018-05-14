@@ -51,8 +51,7 @@ call_ptest_server() {
 	local PTEST_CLASSPATH="$PTEST_BUILD_DIR/hive/testutils/ptest2/target/hive-ptest-3.0-classes.jar:$PTEST_BUILD_DIR/hive/testutils/ptest2/target/lib/*"
 
 	java -cp "$PTEST_CLASSPATH" org.apache.hive.ptest.api.client.PTestClient --command testStart \
-		--outputDir "$PTEST_BUILD_DIR/hive/testutils/ptest2/target" --password "$JIRA_PASSWORD" \
-		--jenkinsQueueUrl "$JENKINS_URL$JENKINS_QUEUE_QUERY" "$@"
+		--outputDir "$PTEST_BUILD_DIR/hive/testutils/ptest2/target" --password "$JIRA_PASSWORD" "$@"
 }
 
 # Unpack all test results
