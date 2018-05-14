@@ -422,6 +422,60 @@
         </plugins>
       </build>
     </profile>
+    <profile>
+      <id>registry-ui</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>com.github.eirslett</groupId>
+            <artifactId>frontend-maven-plugin</artifactId>
+            <version>1.1</version>
+
+            <!-- optional -->
+            <configuration>
+              <workingDirectory>src/main/resources/ui/</workingDirectory>
+              <installDirectory>target</installDirectory>
+            </configuration>
+
+            <executions>
+              <execution>
+                <id>install node and npm</id>
+                <goals>
+                  <goal>install-node-and-npm</goal>
+                </goals>
+                <configuration>
+                  <nodeVersion>v5.7.0</nodeVersion>
+                  <npmVersion>3.6.0</npmVersion>
+                </configuration>
+              </execution>
+              <execution>
+                <id>npm install</id>
+                <goals>
+                  <goal>npm</goal>
+                </goals>
+                <phase>generate-resources</phase>
+                <configuration>
+                  <arguments>install</arguments>
+                </configuration>
+              </execution>
+              <execution>
+                <id>npm run-script build</id>
+                <goals>
+                  <goal>npm</goal>
+                </goals>
+                <!-- optional: the default phase is "generate-resources" -->
+                <phase>generate-resources</phase>
+                <configuration>
+                  <!-- optional: if not specified, it will run gulp's default task
+                       (and you can remove this whole <configuration> section.) -->
+                  <arguments>run-script build</arguments>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
       <!--
     <profile>
       <id>checkin</id>

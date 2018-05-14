@@ -1,0 +1,67 @@
+/**
+  * Copyright 2017 Hortonworks.
+  *
+  * Licensed under the Apache License, Version 2.0 (the "License");
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *   http://www.apache.org/licenses/LICENSE-2.0
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+**/
+table.diff {
+	border-collapse:collapse;
+	border:1px solid darkgray;
+	white-space:pre-wrap;
+}
+table.diff tbody { 
+	font-family:Courier, monospace
+}
+table.diff tbody th {
+	font-family:verdana,arial,'Bitstream Vera Sans',helvetica,sans-serif;
+	background:#EED;
+	font-size:11px;
+	font-weight:normal;
+	border:1px solid #BBC;
+	color:#886;
+	padding:.3em .5em .1em 2em;
+	text-align:right;
+	vertical-align:top
+}
+table.diff thead {
+	border-bottom:1px solid #BBC;
+	background:#EFEFEF;
+	font-family:Verdana
+}
+table.diff thead th.texttitle {
+	text-align:left
+}
+table.diff tbody td {
+	padding:0px .4em;
+	padding-top:.4em;
+	vertical-align:top;
+}
+table.diff .empty {
+	background-color:#DDD;
+}
+table.diff .replace {
+	background-color:#FD8
+}
+table.diff .delete {
+	background-color:#E99;
+}
+table.diff .skip {
+	background-color:#EFEFEF;
+	border:1px solid #AAA;
+	border-right:1px solid #BBC;
+}
+table.diff .insert {
+	background-color:#9E9
+}
+table.diff th.author {
+	text-align:right;
+	border-top:1px solid #BBC;
+	background:#EFEFEF
+}

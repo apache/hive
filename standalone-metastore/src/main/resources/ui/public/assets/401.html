@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, shrink-to-fit=no, initial-scale=1">
+<meta name="description" content="">
+<meta name="author" content="">
+<title>Schema Registry</title>
+<link href="https://fonts.googleapis.com/css?family=Roboto:400,400i,500,500i" rel="stylesheet">
+<style type="text/css">
+body {
+    background-color: #eceded;
+    color: #818386;
+    font-family: 'Roboto', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    padding-bottom: 30px;
+}
+a {
+    color: #337ab7;
+    text-decoration: none;
+}
+p {
+    margin: 25px 0;
+}
+.unauthorised-wrapper {
+    width: 1140px;
+    margin: 0 auto;
+    padding: 100px 0 50px;
+    background-image: url('back-default.png');
+    background-repeat: no-repeat;
+    background-size: 45%;
+    background-position: right bottom;
+}
+h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
+    font-family: inherit;
+    font-weight: 500;
+    line-height: 1.1;
+    color: inherit;
+}
+h3 {
+    font-size: 21px;
+    color: #707174;
+    margin-bottom: 40px;
+}
+h4 {
+    font-size: 18px;
+    margin: 0 0 5px;
+}
+.hb {
+        display: inline-block;
+        position:relative;
+        text-align: center;
+        z-index: 0;
+        line-height: 20px;
+        border: none;
+}
+.hb,
+.hb:before,
+.hb:after {
+        height: 18px;
+    width: 32px;
+    box-sizing: border-box;
+
+    background-color: #1290c0;
+        border-left:1px solid #1290c0;
+        border-right:1px solid #1290c0;
+        color: #fff;
+        margin-right: 15px;
+}
+.hb:before,
+.hb:after {
+        position: absolute;
+        content: "";
+        left: -1px;
+        top: 0;
+        z-index: -1;
+}
+.hb:before {
+        -webkit-transform: rotate(60deg);
+        -moz-transform: rotate(60deg);
+        -ms-transform: rotate(60deg);
+        -o-transform: rotate(60deg);
+        transform: rotate(60deg);
+}
+.hb:after {
+        -webkit-transform: rotate(-60deg);
+        -moz-transform: rotate(-60deg);
+        -ms-transform: rotate(-60deg);
+        -o-transform: rotate(-60deg);
+        transform: rotate(-60deg);
+}
+.hb.success,
+.hb.success:before,
+.hb.success:after {
+        background-color: #3eae4a;
+        border-left:1px solid #3eae4a;
+        border-right:1px solid #3eae4a;
+}
+.list {
+    font-size: 14px;
+    margin-bottom: 25px;
+}
+.intro-content {
+  margin-left: 50px;
+}
+</style>
+
+<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+<!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+<![endif]-->
+
+</head>
+  <body>
+    <div class="unauthorised-wrapper">
+        <h3>2 Steps to get started using Schema Registry</h3>
+        <div class="list">
+            <h4><span class="hb success">1</span> Get <span style="color: #337ab7">Kerberos Access</span></h4>
+            <div class="intro-content">
+              Contact your administrator or initialize kerberos<br/> using the kinit command
+            </div>
+        </div>
+        <div class="list">
+            <h4><span class="hb success">2</span> Setup your <span style="color: #337ab7">Browser</span></h4>
+            <div class="intro-content">
+                <p><span style="color: #424143; font-size: 15px; font-weight: 500;">Safari:</span> No configuration needed</p>
+                <p><span style="color: #424143; font-size: 15px; font-weight: 500;">Firefox:</span> Go to <span style="color: #424143;">about:config</span> and search for <span style="color: #424143;">network.negotiate-auth.trusted-uris</span> <br/>
+                double-click to add value "<span style="color: #424143;" id="hostURL"></span>". <br/>
+                You can add multiple comma separated hostnames here. <br/>
+                Make sure you are getting both the hostname and port numbers correct.</p>
+                <p><span style="color: #424143; font-size: 15px; font-weight: 500;">Google-chrome:</span> start from command line with: <br/>
+                <span style="color: #424143;">google-chrome --auth-server-whitelist="<span class="hostName"></span>" --auth-negotiate-delegate-whitelist="<span class="hostName"></span>"</span></p>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+      (function(){
+        var el = document.getElementsByClassName('hostName');
+        [].slice.call(el).forEach(function (span) {
+            span.innerHTML = '*'+window.location.hostname;
+        });
+        document.getElementById('hostURL').innerHTML = window.location.protocol+'//'+window.location.hostname+':'+window.location.port;
+      })();
+    </script>
+  </body>
+</html>
