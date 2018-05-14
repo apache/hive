@@ -30,6 +30,7 @@ import com.google.common.collect.Multimap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.ResourceType;
@@ -165,7 +166,9 @@ public class FunctionTask extends Task<FunctionWork> {
     checkLocalFunctionResources(db, createFunctionDesc.getResources());
 
     FunctionInfo registered = null;
+    HiveConf oldConf = SessionState.get().getConf();
     try {
+      SessionState.get().setConf(conf);
       registered = FunctionRegistry.registerPermanentFunction(
         registeredName, className, true, toFunctionResource(resources));
     } catch (RuntimeException ex) {
@@ -173,7 +176,10 @@ public class FunctionTask extends Task<FunctionWork> {
       while (t.getCause() != null) {
         t = t.getCause();
       }
+    } finally {
+      SessionState.get().setConf(oldConf);
     }
+
     if (registered == null) {
       console.printError("Failed to register " + registeredName
           + " using class " + createFunctionDesc.getClassName());

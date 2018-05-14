@@ -135,7 +135,7 @@ public class SessionState {
   /**
    * current configuration.
    */
-  private final HiveConf sessionConf;
+  private HiveConf sessionConf;
 
   /**
    * silent mode.
@@ -308,6 +308,9 @@ public class SessionState {
     return sessionConf;
   }
 
+  public void setConf(HiveConf conf) {
+    this.sessionConf = conf;
+  }
 
   public File getTmpOutputFile() {
     return tmpOutputFile;
