@@ -764,8 +764,8 @@ public class TestDruidSerDe {
   }
 
 
-  private static final String COLUMN_NAMES = "__time,c0,c1,c2,c3,c4,c5,c6,c7,c8,c9";
-  private static final String COLUMN_TYPES = "timestamp with local time zone,string,char(6),varchar(8),double,float,decimal(38,18),bigint,int,smallint,tinyint";
+  private static final String COLUMN_NAMES = "__time,c0,c1,c2,c3,c4,c5,c6,c7,c8";
+  private static final String COLUMN_TYPES = "timestamp with local time zone,string,char(6),varchar(8),double,float,bigint,int,smallint,tinyint";
   private static final Object[] ROW_OBJECT = new Object[] {
       new TimestampLocalTZWritable(new TimestampTZ(Instant.ofEpochMilli(1377907200000L).atZone(ZoneOffset.UTC))),
       new Text("dim1_val"),
@@ -773,7 +773,6 @@ public class TestDruidSerDe {
       new HiveVarcharWritable(new HiveVarchar("dim3_val", 8)),
       new DoubleWritable(10669.3D),
       new FloatWritable(10669.45F),
-      new HiveDecimalWritable(HiveDecimal.create(1064.34D)),
       new LongWritable(1113939),
       new IntWritable(1112123),
       new ShortWritable((short) 12),
@@ -788,11 +787,10 @@ public class TestDruidSerDe {
           .put("c2", "dim3_val")
           .put("c3", 10669.3D)
           .put("c4", 10669.45F)
-          .put("c5", 1064.34D)
-          .put("c6", 1113939L)
-          .put("c7", 1112123)
-          .put("c8", (short) 12)
-          .put("c9", (byte) 0)
+          .put("c5", 1113939L)
+          .put("c6", 1112123)
+          .put("c7", (short) 12)
+          .put("c8", (byte) 0)
           .put("__time_granularity", 1377907200000L)
           .build());
 
@@ -877,7 +875,6 @@ public class TestDruidSerDe {
       new HiveVarcharWritable(new HiveVarchar("dim3_val", 8)),
       new DoubleWritable(10669.3D),
       new FloatWritable(10669.45F),
-      new HiveDecimalWritable(HiveDecimal.create(1064.34D)),
       new LongWritable(1113939),
       new IntWritable(1112123),
       new ShortWritable((short) 12),
@@ -891,11 +888,10 @@ public class TestDruidSerDe {
           .put("c2", "dim3_val")
           .put("c3", 10669.3D)
           .put("c4", 10669.45F)
-          .put("c5", 1064.34D)
-          .put("c6", 1113939L)
-          .put("c7", 1112123)
-          .put("c8", (short) 12)
-          .put("c9", (byte) 0)
+          .put("c5", 1113939L)
+          .put("c6", 1112123)
+          .put("c7", (short) 12)
+          .put("c8", (byte) 0)
           .build());
 
   @Test
