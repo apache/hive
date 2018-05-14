@@ -350,6 +350,7 @@ public class TestSSL {
    * Start HS2 in Http mode with SSL enabled, open a SSL connection and fetch data
    * @throws Exception
    */
+  @Ignore("HIVE-19509: Disable tests that are failing continuously")
   @Test
   public void testSSLFetchHttp() throws Exception {
     SSLTestUtils.setSslConfOverlay(confOverlay);

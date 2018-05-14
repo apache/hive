@@ -71,7 +71,7 @@ kafkaPartitions=1
 activeTasks=[]	 	 
 publishingTasks=[]	 	 
 latestOffsets={0=10}	 	 
-minimumLag={}	 	 
+minimumLag={0=0}	 	 
 aggregateLag=0	 	 
 #### A masked pattern was here ####
 PREHOOK: query: Select count(*) FROM druid_kafka_test
@@ -501,7 +501,3 @@ POSTHOOK: query: DROP TABLE druid_kafka_test
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@druid_kafka_test
 POSTHOOK: Output: default@druid_kafka_test
-PREHOOK: query: DROP TABLE druid_table_1
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE druid_table_1
-POSTHOOK: type: DROPTABLE
