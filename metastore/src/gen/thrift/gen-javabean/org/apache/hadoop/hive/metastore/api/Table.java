@@ -53,6 +53,7 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
   private static final org.apache.thrift.protocol.TField PRIVILEGES_FIELD_DESC = new org.apache.thrift.protocol.TField("privileges", org.apache.thrift.protocol.TType.STRUCT, (short)13);
   private static final org.apache.thrift.protocol.TField TEMPORARY_FIELD_DESC = new org.apache.thrift.protocol.TField("temporary", org.apache.thrift.protocol.TType.BOOL, (short)14);
   private static final org.apache.thrift.protocol.TField REWRITE_ENABLED_FIELD_DESC = new org.apache.thrift.protocol.TField("rewriteEnabled", org.apache.thrift.protocol.TType.BOOL, (short)15);
+  private static final org.apache.thrift.protocol.TField OWNER_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("ownerType", org.apache.thrift.protocol.TType.I32, (short)16);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -75,6 +76,7 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
   private PrincipalPrivilegeSet privileges; // optional
   private boolean temporary; // optional
   private boolean rewriteEnabled; // optional
+  private PrincipalType ownerType; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -92,7 +94,12 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
     TABLE_TYPE((short)12, "tableType"),
     PRIVILEGES((short)13, "privileges"),
     TEMPORARY((short)14, "temporary"),
-    REWRITE_ENABLED((short)15, "rewriteEnabled");
+    REWRITE_ENABLED((short)15, "rewriteEnabled"),
+    /**
+     * 
+     * @see PrincipalType
+     */
+    OWNER_TYPE((short)16, "ownerType");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -137,6 +144,8 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
           return TEMPORARY;
         case 15: // REWRITE_ENABLED
           return REWRITE_ENABLED;
+        case 16: // OWNER_TYPE
+          return OWNER_TYPE;
         default:
           return null;
       }
@@ -183,7 +192,7 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
   private static final int __TEMPORARY_ISSET_ID = 3;
   private static final int __REWRITEENABLED_ISSET_ID = 4;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.PRIVILEGES,_Fields.TEMPORARY,_Fields.REWRITE_ENABLED};
+  private static final _Fields optionals[] = {_Fields.PRIVILEGES,_Fields.TEMPORARY,_Fields.REWRITE_ENABLED,_Fields.OWNER_TYPE};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -220,12 +229,16 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     tmpMap.put(_Fields.REWRITE_ENABLED, new org.apache.thrift.meta_data.FieldMetaData("rewriteEnabled", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.OWNER_TYPE, new org.apache.thrift.meta_data.FieldMetaData("ownerType", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, PrincipalType.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Table.class, metaDataMap);
   }
 
   public Table() {
     this.temporary = false;
+
+    this.ownerType = org.apache.hadoop.hive.metastore.api.PrincipalType.USER;
 
   }
 
@@ -306,6 +319,9 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
     }
     this.temporary = other.temporary;
     this.rewriteEnabled = other.rewriteEnabled;
+    if (other.isSetOwnerType()) {
+      this.ownerType = other.ownerType;
+    }
   }
 
   public Table deepCopy() {
@@ -334,6 +350,8 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
 
     setRewriteEnabledIsSet(false);
     this.rewriteEnabled = false;
+    this.ownerType = org.apache.hadoop.hive.metastore.api.PrincipalType.USER;
+
   }
 
   public String getTableName() {
@@ -702,6 +720,37 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __REWRITEENABLED_ISSET_ID, value);
   }
 
+  /**
+   * 
+   * @see PrincipalType
+   */
+  public PrincipalType getOwnerType() {
+    return this.ownerType;
+  }
+
+  /**
+   * 
+   * @see PrincipalType
+   */
+  public void setOwnerType(PrincipalType ownerType) {
+    this.ownerType = ownerType;
+  }
+
+  public void unsetOwnerType() {
+    this.ownerType = null;
+  }
+
+  /** Returns true if field ownerType is set (has been assigned a value) and false otherwise */
+  public boolean isSetOwnerType() {
+    return this.ownerType != null;
+  }
+
+  public void setOwnerTypeIsSet(boolean value) {
+    if (!value) {
+      this.ownerType = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case TABLE_NAME:
@@ -824,6 +873,14 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
       }
       break;
 
+    case OWNER_TYPE:
+      if (value == null) {
+        unsetOwnerType();
+      } else {
+        setOwnerType((PrincipalType)value);
+      }
+      break;
+
     }
   }
 
@@ -874,6 +931,9 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
     case REWRITE_ENABLED:
       return isRewriteEnabled();
 
+    case OWNER_TYPE:
+      return getOwnerType();
+
     }
     throw new IllegalStateException();
   }
@@ -915,6 +975,8 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
       return isSetTemporary();
     case REWRITE_ENABLED:
       return isSetRewriteEnabled();
+    case OWNER_TYPE:
+      return isSetOwnerType();
     }
     throw new IllegalStateException();
   }
@@ -1067,6 +1129,15 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
         return false;
     }
 
+    boolean this_present_ownerType = true && this.isSetOwnerType();
+    boolean that_present_ownerType = true && that.isSetOwnerType();
+    if (this_present_ownerType || that_present_ownerType) {
+      if (!(this_present_ownerType && that_present_ownerType))
+        return false;
+      if (!this.ownerType.equals(that.ownerType))
+        return false;
+    }
+
     return true;
   }
 
@@ -1148,6 +1219,11 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
     list.add(present_rewriteEnabled);
     if (present_rewriteEnabled)
       list.add(rewriteEnabled);
+
+    boolean present_ownerType = true && (isSetOwnerType());
+    list.add(present_ownerType);
+    if (present_ownerType)
+      list.add(ownerType.getValue());
 
     return list.hashCode();
   }
@@ -1310,6 +1386,16 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetOwnerType()).compareTo(other.isSetOwnerType());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetOwnerType()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.ownerType, other.ownerType);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -1433,6 +1519,16 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
       if (!first) sb.append(", ");
       sb.append("rewriteEnabled:");
       sb.append(this.rewriteEnabled);
+      first = false;
+    }
+    if (isSetOwnerType()) {
+      if (!first) sb.append(", ");
+      sb.append("ownerType:");
+      if (this.ownerType == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.ownerType);
+      }
       first = false;
     }
     sb.append(")");
@@ -1631,6 +1727,14 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 16: // OWNER_TYPE
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.ownerType = org.apache.hadoop.hive.metastore.api.PrincipalType.findByValue(iprot.readI32());
+              struct.setOwnerTypeIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -1730,6 +1834,13 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
         oprot.writeBool(struct.rewriteEnabled);
         oprot.writeFieldEnd();
       }
+      if (struct.ownerType != null) {
+        if (struct.isSetOwnerType()) {
+          oprot.writeFieldBegin(OWNER_TYPE_FIELD_DESC);
+          oprot.writeI32(struct.ownerType.getValue());
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -1793,7 +1904,10 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
       if (struct.isSetRewriteEnabled()) {
         optionals.set(14);
       }
-      oprot.writeBitSet(optionals, 15);
+      if (struct.isSetOwnerType()) {
+        optionals.set(15);
+      }
+      oprot.writeBitSet(optionals, 16);
       if (struct.isSetTableName()) {
         oprot.writeString(struct.tableName);
       }
@@ -1852,12 +1966,15 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
       if (struct.isSetRewriteEnabled()) {
         oprot.writeBool(struct.rewriteEnabled);
       }
+      if (struct.isSetOwnerType()) {
+        oprot.writeI32(struct.ownerType.getValue());
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, Table struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(15);
+      BitSet incoming = iprot.readBitSet(16);
       if (incoming.get(0)) {
         struct.tableName = iprot.readString();
         struct.setTableNameIsSet(true);
@@ -1940,6 +2057,10 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
       if (incoming.get(14)) {
         struct.rewriteEnabled = iprot.readBool();
         struct.setRewriteEnabledIsSet(true);
+      }
+      if (incoming.get(15)) {
+        struct.ownerType = org.apache.hadoop.hive.metastore.api.PrincipalType.findByValue(iprot.readI32());
+        struct.setOwnerTypeIsSet(true);
       }
     }
   }

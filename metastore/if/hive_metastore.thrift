@@ -305,7 +305,8 @@ struct Table {
   12: string tableType,                // table type enum, e.g. EXTERNAL_TABLE
   13: optional PrincipalPrivilegeSet privileges,
   14: optional bool temporary=false,
-  15: optional bool rewriteEnabled     // rewrite enabled or not
+  15: optional bool rewriteEnabled,     // rewrite enabled or not
+  16: optional PrincipalType ownerType = PrincipalType.USER // owner type of this table (default to USER for backward compatibility)
 }
 
 struct Partition {
