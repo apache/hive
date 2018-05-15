@@ -56,6 +56,7 @@ import org.apache.hadoop.hive.ql.io.HivePartitioner;
 import org.apache.hadoop.hive.ql.io.RecordUpdater;
 import org.apache.hadoop.hive.ql.io.StatsProvidingRecordWriter;
 import org.apache.hadoop.hive.ql.io.StreamingOutputFormat;
+import org.apache.hadoop.hive.ql.io.arrow.ArrowWrapperWritable;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveFatalException;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
@@ -1251,16 +1252,25 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       // If serializer is ThriftJDBCBinarySerDe, then it buffers rows to a certain limit (hive.server2.thrift.resultset.max.fetch.size)
       // and serializes the whole batch when the buffer is full. The serialize returns null if the buffer is not full
       // (the size of buffer is kept track of in the ThriftJDBCBinarySerDe).
-      if (conf.isUsingThriftJDBCBinarySerDe()) {
-          try {
-            recordValue = serializer.serialize(null, inputObjInspectors[0]);
-            if ( null != fpaths ) {
-              rowOutWriters = fpaths.outWriters;
-              rowOutWriters[0].write(recordValue);
+      if (conf.isUsingBatchingSerDe()) {
+        try {
+          recordValue = serializer.serialize(null, inputObjInspectors[0]);
+          if (null != fpaths) {
+            rowOutWriters = fpaths.outWriters;
+            rowOutWriters[0].write(recordValue);
+          } else if(recordValue instanceof ArrowWrapperWritable) {
+            //Because LLAP arrow output depends on the ThriftJDBCBinarySerDe code path
+            //this is required for 0 row outputs
+            //i.e. we need to write a 0 size batch to signal EOS to the consumer
+            for (FSPaths fsPaths : valToPaths.values()) {
+              for(RecordWriter writer : fsPaths.outWriters) {
+                writer.write(recordValue);
+              }
             }
-          } catch (SerDeException | IOException e) {
-            throw new HiveException(e);
           }
+        } catch (SerDeException | IOException e) {
+          throw new HiveException(e);
+        }
       }
       List<Path> commitPaths = new ArrayList<>();
       for (FSPaths fsp : valToPaths.values()) {
