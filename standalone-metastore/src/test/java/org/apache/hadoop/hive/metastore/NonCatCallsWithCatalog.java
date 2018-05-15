@@ -83,8 +83,7 @@ import java.util.TreeSet;
 
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 
-@Ignore
-public abstract class TestNonCatCallsWithCatalog {
+public abstract class NonCatCallsWithCatalog {
 
   private static final String OTHER_DATABASE = "non_cat_other_db";
   private Table[] testTables = new Table[6];

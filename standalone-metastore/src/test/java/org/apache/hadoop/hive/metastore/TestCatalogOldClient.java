@@ -25,7 +25,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
  * This tests calls with an older client, to make sure that if the client supplies no catalog
  * information the server still does the right thing.  I assumes the default catalog
  */
-public class TestCatalogOldClient extends TestNonCatCallsWithCatalog {
+public class TestCatalogOldClient extends NonCatCallsWithCatalog {
 
   @Override
   protected IMetaStoreClient getClient() throws MetaException {

@@ -232,6 +232,7 @@ public class CliConfigs {
         excludeQuery("schema_evol_orc_acidvec_part.q"); // Disabled in HIVE-19509
         excludeQuery("schema_evol_orc_vec_part_llap_io.q"); // Disabled in HIVE-19509
         excludeQuery("tez_dynpart_hashjoin_1.q"); // Disabled in HIVE-19509
+        excludeQuery("tez_vector_dynpart_hashjoin_1.q"); // Disabled in HIVE-19509
 
         setResultsDir("ql/src/test/results/clientpositive/llap");
         setLogDir("itests/qtest/target/qfile-results/clientpositive");
