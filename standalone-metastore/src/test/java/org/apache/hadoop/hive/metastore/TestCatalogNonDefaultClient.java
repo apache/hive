@@ -30,7 +30,7 @@ import org.junit.After;
  * This tests metastore client calls that do not specify a catalog but with the config on the
  * client set to go to a non-default catalog.
  */
-public class TestCatalogNonDefaultClient extends TestNonCatCallsWithCatalog {
+public class TestCatalogNonDefaultClient extends NonCatCallsWithCatalog {
 
   final private String catName = "non_default_catalog";
   private String catLocation;
