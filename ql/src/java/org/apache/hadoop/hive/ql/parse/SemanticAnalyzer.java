@@ -109,6 +109,7 @@ import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils.Operation;
+import org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe;
 import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
@@ -7492,7 +7493,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             fileFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYRESULTFILEFORMAT);
             Class<? extends Deserializer> serdeClass = LazySimpleSerDe.class;
             if (fileFormat.equals(PlanUtils.LLAP_OUTPUT_FORMAT_KEY)) {
-              serdeClass = LazyBinarySerDe2.class;
+              boolean useArrow = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_OUTPUT_FORMAT_ARROW);
+              if(useArrow) {
+                serdeClass = ArrowColumnarBatchSerDe.class;
+              } else {
+                serdeClass = LazyBinarySerDe2.class;
+              }
             }
             table_desc =
                 PlanUtils.getDefaultQueryOutputTableDesc(cols, colTypes, fileFormat,
@@ -7573,13 +7579,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         ltd.setInsertOverwrite(true);
       }
     }
-    if (SessionState.get().isHiveServerQuery() &&
-        null != table_desc &&
-        table_desc.getSerdeClassName().equalsIgnoreCase(ThriftJDBCBinarySerDe.class.getName()) &&
-        HiveConf.getBoolVar(conf,HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_SERIALIZE_IN_TASKS)) {
-      fileSinkDesc.setIsUsingThriftJDBCBinarySerDe(true);
+    if (null != table_desc && useBatchingSerializer(table_desc.getSerdeClassName())) {
+      fileSinkDesc.setIsUsingBatchingSerDe(true);
     } else {
-      fileSinkDesc.setIsUsingThriftJDBCBinarySerDe(false);
+      fileSinkDesc.setIsUsingBatchingSerDe(false);
     }
 
     Operator output = putOpInsertMap(OperatorFactory.getAndMakeChild(
@@ -7612,6 +7615,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
     return output;
+  }
+
+  private boolean useBatchingSerializer(String serdeClassName) {
+    return SessionState.get().isHiveServerQuery() &&
+      hasSetBatchSerializer(serdeClassName);
+  }
+
+  private boolean hasSetBatchSerializer(String serdeClassName) {
+    return (serdeClassName.equalsIgnoreCase(ThriftJDBCBinarySerDe.class.getName()) &&
+      HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_SERIALIZE_IN_TASKS)) ||
+    serdeClassName.equalsIgnoreCase(ArrowColumnarBatchSerDe.class.getName());
   }
 
   private ColsAndTypes deriveFileSinkColTypes(
