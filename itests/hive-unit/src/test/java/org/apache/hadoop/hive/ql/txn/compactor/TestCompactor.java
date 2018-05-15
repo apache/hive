@@ -78,6 +78,8 @@ import org.apache.hadoop.hive.ql.io.orc.Reader;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hive.common.util.Retry;
+import org.apache.hive.common.util.RetryTestRunner;
 import org.apache.hive.hcatalog.common.HCatUtil;
 import org.apache.hive.hcatalog.streaming.DelimitedInputWriter;
 import org.apache.hive.hcatalog.streaming.HiveEndPoint;
@@ -121,6 +123,10 @@ public class TestCompactor {
 
   @Rule
   public TemporaryFolder stagingFolder = new TemporaryFolder();
+
+  @Rule
+  public Retry retry = new Retry(2);
+
   private HiveConf conf;
   IMetaStoreClient msClient;
   private IDriver driver;
