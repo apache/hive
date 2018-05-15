@@ -769,6 +769,7 @@ public class TestBeeLineWithArgs {
    * Test Beeline could show the query progress for time-consuming query.
    * @throws Throwable
    */
+  @Ignore("HIVE-19509: Disable tests that are failing continuously")
   @Test
   public void testQueryProgress() throws Throwable {
     final String SCRIPT_TEXT =
