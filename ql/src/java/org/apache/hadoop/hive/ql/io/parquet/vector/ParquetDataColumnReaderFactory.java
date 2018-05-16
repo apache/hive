@@ -25,9 +25,11 @@ import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTimeUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.parquet.column.Dictionary;
 import org.apache.parquet.column.values.ValuesReader;
 import org.apache.parquet.io.api.Binary;
@@ -184,6 +186,16 @@ public final class ParquetDataColumnReaderFactory {
 
     @Override
     public boolean isValid(long value) {
+      return true;
+    }
+
+    @Override
+    public boolean isValid(float value) {
+      return true;
+    }
+
+    @Override
+    public boolean isValid(double value) {
       return true;
     }
 
@@ -476,6 +488,35 @@ public final class ParquetDataColumnReaderFactory {
   }
 
   /**
+   * The reader who reads long data using Decimal type.
+   */
+  public static class Types64Int2DecimalPageReader extends TypesFromInt64PageReader {
+    private int precision = 0;
+    private int scale = 0;
+    private final HiveDecimalWritable hiveDecimalWritable = new HiveDecimalWritable(0L);
+
+    public Types64Int2DecimalPageReader(ValuesReader realReader, int length, int precision,
+        int scale) {
+      super(realReader, length);
+      this.precision = precision;
+      this.scale = scale;
+    }
+
+    public Types64Int2DecimalPageReader(Dictionary dict, int length, int precision, int scale) {
+      super(dict, length);
+      this.precision = precision;
+      this.scale = scale;
+    }
+
+    @Override
+    public boolean isValid(long value) {
+      hiveDecimalWritable.setFromLong(value);
+      hiveDecimalWritable.mutateEnforcePrecisionScale(precision, scale);
+      return hiveDecimalWritable.isSet();
+    }
+  }
+
+  /**
    * The reader who reads unsigned long data.
    */
   public static class TypesFromUInt64PageReader extends TypesFromInt64PageReader {
@@ -490,6 +531,16 @@ public final class ParquetDataColumnReaderFactory {
 
     @Override
     public boolean isValid(long value) {
+      return (value >= 0);
+    }
+
+    @Override
+    public boolean isValid(float value) {
+      return (value >= 0);
+    }
+
+    @Override
+    public boolean isValid(double value) {
       return (value >= 0);
     }
   }
@@ -550,6 +601,35 @@ public final class ParquetDataColumnReaderFactory {
   }
 
   /**
+   * The reader who reads unsigned long data using Decimal type.
+   */
+  public static class Types64UInt2DecimalPageReader extends TypesFromInt64PageReader {
+    private int precision = 0;
+    private int scale = 0;
+    private final HiveDecimalWritable hiveDecimalWritable = new HiveDecimalWritable(0L);
+
+    public Types64UInt2DecimalPageReader(ValuesReader realReader, int length, int precision,
+        int scale) {
+      super(realReader, length);
+      this.precision = precision;
+      this.scale = scale;
+    }
+
+    public Types64UInt2DecimalPageReader(Dictionary dict, int length, int precision, int scale) {
+      super(dict, length);
+      this.precision = precision;
+      this.scale = scale;
+    }
+
+    @Override
+    public boolean isValid(long value) {
+      hiveDecimalWritable.setFromLong(value);
+      hiveDecimalWritable.mutateEnforcePrecisionScale(precision, scale);
+      return ((value >= 0) && hiveDecimalWritable.isSet());
+    }
+  }
+
+  /**
    * The reader who reads int data using smallint type.
    */
   public static class Types32Int2SmallintPageReader extends TypesFromInt32PageReader {
@@ -586,6 +666,35 @@ public final class ParquetDataColumnReaderFactory {
   }
 
   /**
+   * The reader who reads int data using Decimal type.
+   */
+  public static class Types32Int2DecimalPageReader extends TypesFromInt32PageReader {
+    private int precision = 0;
+    private int scale = 0;
+    private final HiveDecimalWritable hiveDecimalWritable = new HiveDecimalWritable(0L);
+
+    public Types32Int2DecimalPageReader(ValuesReader realReader, int length, int precision,
+        int scale) {
+      super(realReader, length);
+      this.precision = precision;
+      this.scale = scale;
+    }
+
+    public Types32Int2DecimalPageReader(Dictionary dict, int length, int precision, int scale) {
+      super(dict, length);
+      this.precision = precision;
+      this.scale = scale;
+    }
+
+    @Override
+    public boolean isValid(long value) {
+      hiveDecimalWritable.setFromLong(value);
+      hiveDecimalWritable.mutateEnforcePrecisionScale(precision, scale);
+      return hiveDecimalWritable.isSet();
+    }
+  }
+
+  /**
    * The reader who reads unsigned int data.
    */
   public static class TypesFromUInt32PageReader extends TypesFromInt32PageReader {
@@ -599,6 +708,16 @@ public final class ParquetDataColumnReaderFactory {
 
     @Override
     public boolean isValid(long value) {
+      return (value >= 0);
+    }
+
+    @Override
+    public boolean isValid(float value) {
+      return (value >= 0);
+    }
+
+    @Override
+    public boolean isValid(double value) {
       return (value >= 0);
     }
   }
@@ -636,6 +755,35 @@ public final class ParquetDataColumnReaderFactory {
     @Override
     public boolean isValid(long value) {
       return ((value <= Byte.MAX_VALUE) && (value >= 0));
+    }
+  }
+
+  /**
+   * The reader who reads unsigned int data using Decimal type.
+   */
+  public static class Types32UInt2DecimalPageReader extends TypesFromInt32PageReader {
+    private int precision = 0;
+    private int scale = 0;
+    private final HiveDecimalWritable hiveDecimalWritable = new HiveDecimalWritable(0L);
+
+    public Types32UInt2DecimalPageReader(ValuesReader realReader, int length, int precision,
+        int scale) {
+      super(realReader, length);
+      this.precision = precision;
+      this.scale = scale;
+    }
+
+    public Types32UInt2DecimalPageReader(Dictionary dict, int length, int precision, int scale) {
+      super(dict, length);
+      this.precision = precision;
+      this.scale = scale;
+    }
+
+    @Override
+    public boolean isValid(long value) {
+      hiveDecimalWritable.setFromLong(value);
+      hiveDecimalWritable.mutateEnforcePrecisionScale(precision, scale);
+      return ((value >= 0) && hiveDecimalWritable.isSet());
     }
   }
 
@@ -1044,6 +1192,7 @@ public final class ParquetDataColumnReaderFactory {
       throws IOException {
     // max length for varchar and char cases
     int length = getVarcharLength(hiveType);
+    String typeName = TypeInfoUtils.getBaseName(hiveType.getTypeName());
 
     switch (parquetType.getPrimitiveTypeName()) {
     case INT32:
@@ -1051,25 +1200,41 @@ public final class ParquetDataColumnReaderFactory {
           OriginalType.UINT_16 == parquetType.getOriginalType() ||
           OriginalType.UINT_32 == parquetType.getOriginalType() ||
           OriginalType.UINT_64 == parquetType.getOriginalType()) {
-        switch (hiveType.getTypeName()) {
+        switch (typeName) {
         case serdeConstants.SMALLINT_TYPE_NAME:
           return isDictionary ? new Types32UInt2SmallintPageReader(dictionary,
               length) : new Types32UInt2SmallintPageReader(valuesReader, length);
         case serdeConstants.TINYINT_TYPE_NAME:
           return isDictionary ? new Types32UInt2TinyintPageReader(dictionary,
               length) : new Types32UInt2TinyintPageReader(valuesReader, length);
+        case serdeConstants.DECIMAL_TYPE_NAME:
+          return isDictionary ?
+              new Types32UInt2DecimalPageReader(dictionary, length,
+                  ((DecimalTypeInfo) hiveType).getPrecision(),
+                  ((DecimalTypeInfo) hiveType).getScale()) :
+              new Types32UInt2DecimalPageReader(valuesReader, length,
+                  ((DecimalTypeInfo) hiveType).getPrecision(),
+                  ((DecimalTypeInfo) hiveType).getScale());
         default:
           return isDictionary ? new TypesFromUInt32PageReader(dictionary,
               length) : new TypesFromUInt32PageReader(valuesReader, length);
         }
       } else {
-        switch (hiveType.getTypeName()) {
+        switch (typeName) {
         case serdeConstants.SMALLINT_TYPE_NAME:
           return isDictionary ? new Types32Int2SmallintPageReader(dictionary,
               length) : new Types32Int2SmallintPageReader(valuesReader, length);
         case serdeConstants.TINYINT_TYPE_NAME:
           return isDictionary ? new Types32Int2TinyintPageReader(dictionary,
               length) : new Types32Int2TinyintPageReader(valuesReader, length);
+        case serdeConstants.DECIMAL_TYPE_NAME:
+          return isDictionary ?
+              new Types32Int2DecimalPageReader(dictionary, length,
+                  ((DecimalTypeInfo) hiveType).getPrecision(),
+                  ((DecimalTypeInfo) hiveType).getScale()) :
+              new Types32Int2DecimalPageReader(valuesReader, length,
+                  ((DecimalTypeInfo) hiveType).getPrecision(),
+                  ((DecimalTypeInfo) hiveType).getScale());
         default:
           return isDictionary ? new TypesFromInt32PageReader(dictionary,
               length) : new TypesFromInt32PageReader(valuesReader, length);
@@ -1080,7 +1245,7 @@ public final class ParquetDataColumnReaderFactory {
           OriginalType.UINT_16 == parquetType.getOriginalType() ||
           OriginalType.UINT_32 == parquetType.getOriginalType() ||
           OriginalType.UINT_64 == parquetType.getOriginalType()) {
-        switch (hiveType.getTypeName()) {
+        switch (typeName) {
         case serdeConstants.INT_TYPE_NAME:
           return isDictionary ? new Types64UInt2IntPageReader(dictionary,
               length) : new Types64UInt2IntPageReader(valuesReader, length);
@@ -1090,12 +1255,20 @@ public final class ParquetDataColumnReaderFactory {
         case serdeConstants.TINYINT_TYPE_NAME:
           return isDictionary ? new Types64UInt2TinyintPageReader(dictionary,
               length) : new Types64UInt2TinyintPageReader(valuesReader, length);
+        case serdeConstants.DECIMAL_TYPE_NAME:
+          return isDictionary ?
+              new Types64UInt2DecimalPageReader(dictionary, length,
+                  ((DecimalTypeInfo) hiveType).getPrecision(),
+                  ((DecimalTypeInfo) hiveType).getScale()) :
+              new Types64UInt2DecimalPageReader(valuesReader, length,
+                  ((DecimalTypeInfo) hiveType).getPrecision(),
+                  ((DecimalTypeInfo) hiveType).getScale());
         default:
           return isDictionary ? new TypesFromUInt64PageReader(dictionary,
               length) : new TypesFromUInt64PageReader(valuesReader, length);
         }
       } else {
-        switch (hiveType.getTypeName()) {
+        switch (typeName) {
         case serdeConstants.INT_TYPE_NAME:
           return isDictionary ? new Types64Int2IntPageReader(dictionary,
               length) : new Types64Int2IntPageReader(valuesReader, length);
@@ -1105,6 +1278,14 @@ public final class ParquetDataColumnReaderFactory {
         case serdeConstants.TINYINT_TYPE_NAME:
           return isDictionary ? new Types64Int2TinyintPageReader(dictionary,
               length) : new Types64Int2TinyintPageReader(valuesReader, length);
+        case serdeConstants.DECIMAL_TYPE_NAME:
+          return isDictionary ?
+              new Types64Int2DecimalPageReader(dictionary, length,
+                  ((DecimalTypeInfo) hiveType).getPrecision(),
+                  ((DecimalTypeInfo) hiveType).getScale()) :
+              new Types64Int2DecimalPageReader(valuesReader, length,
+                  ((DecimalTypeInfo) hiveType).getPrecision(),
+                  ((DecimalTypeInfo) hiveType).getScale());
         default:
           return isDictionary ? new TypesFromInt64PageReader(dictionary,
               length) : new TypesFromInt64PageReader(valuesReader, length);
