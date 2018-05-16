@@ -306,7 +306,7 @@ public class Warehouse {
   }
 
   public boolean deleteDir(Path f, boolean recursive, boolean ifPurge, Database db) throws MetaException {
-    return deleteDir(f, recursive, ifPurge, ReplChangeManager.isReplPolicySet(db));
+    return deleteDir(f, recursive, ifPurge, ReplChangeManager.isSourceOfReplication(db));
   }
 
   public boolean deleteDir(Path f, boolean recursive, boolean ifPurge, boolean needCmRecycle) throws MetaException {

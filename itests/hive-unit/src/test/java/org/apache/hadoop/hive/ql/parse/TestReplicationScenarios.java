@@ -380,7 +380,7 @@ public class TestReplicationScenarios {
     verifySetup("SELECT * from " + dbName + ".unptned ORDER BY a", unptn_data, driver);
 
     // Create an empty database to load
-    run("CREATE DATABASE " + dbName + "_empty", driverMirror);
+    createDB(dbName + "_empty", driverMirror);
 
     // Load to an empty database
     Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, dbName + "_empty");
@@ -390,7 +390,7 @@ public class TestReplicationScenarios {
     String[] nullReplId = new String[]{ "NULL" };
 
     // Create a database with a table
-    run("CREATE DATABASE " + dbName + "_withtable", driverMirror);
+    createDB(dbName + "_withtable", driverMirror);
     run("CREATE TABLE " + dbName + "_withtable.unptned(a string) STORED AS TEXTFILE", driverMirror);
     // Load using same dump to a DB with table. It should fail as DB is not empty.
     verifyFail("REPL LOAD " + dbName + "_withtable FROM '" + replDumpLocn + "'", driverMirror);
@@ -399,7 +399,7 @@ public class TestReplicationScenarios {
     verifyRun("REPL STATUS " + dbName + "_withtable", nullReplId, driverMirror);
 
     // Create a database with a view
-    run("CREATE DATABASE " + dbName + "_withview", driverMirror);
+    createDB(dbName + "_withview", driverMirror);
     run("CREATE TABLE " + dbName + "_withview.unptned(a string) STORED AS TEXTFILE", driverMirror);
     run("CREATE VIEW " + dbName + "_withview.view AS SELECT * FROM " + dbName + "_withview.unptned", driverMirror);
     // Load using same dump to a DB with view. It should fail as DB is not empty.
@@ -1894,8 +1894,8 @@ public class TestReplicationScenarios {
     String replDbName1 = dbName1 + "_dupe";
     String replDbName2 = dbName2 + "_dupe";
 
-    run("CREATE DATABASE " + dbName1, driver);
-    run("CREATE DATABASE " + dbName2, driver);
+    createDB(dbName1, driver);
+    createDB(dbName2, driver);
     run("CREATE TABLE " + dbName1 + ".unptned(a string) STORED AS TEXTFILE", driver);
 
     String[] unptn_data = new String[] { "ten", "twenty" };
@@ -1910,14 +1910,14 @@ public class TestReplicationScenarios {
     verifyRun("SELECT a from " + replDbName1 + ".unptned ORDER BY a", unptn_data, driverMirror);
     verifyIfTableNotExist(replDbName2, "unptned", metaStoreClientMirror);
 
-    run("ALTER TABLE " + dbName1 + ".unptned RENAME TO " + dbName2 + ".unptned_renamed", driver);
+    verifyFail("ALTER TABLE " + dbName1 + ".unptned RENAME TO " + dbName2 + ".unptned_renamed", driver);
 
     incrementalLoadAndVerify(dbName1, bootstrap1.lastReplId, replDbName1);
     incrementalLoadAndVerify(dbName2, bootstrap2.lastReplId, replDbName2);
 
-    verifyIfTableNotExist(replDbName1, "unptned", metaStoreClientMirror);
     verifyIfTableNotExist(replDbName1, "unptned_renamed", metaStoreClientMirror);
-    verifyRun("SELECT a from " + replDbName2 + ".unptned_renamed ORDER BY a", unptn_data, driverMirror);
+    verifyIfTableNotExist(replDbName2, "unptned_renamed", metaStoreClientMirror);
+    verifyRun("SELECT a from " + replDbName1 + ".unptned ORDER BY a", unptn_data, driverMirror);
   }
 
   @Test
@@ -1929,8 +1929,8 @@ public class TestReplicationScenarios {
     String replDbName1 = dbName1 + "_dupe";
     String replDbName2 = dbName2 + "_dupe";
 
-    run("CREATE DATABASE " + dbName1, driver);
-    run("CREATE DATABASE " + dbName2, driver);
+    createDB(dbName1, driver);
+    createDB(dbName2, driver);
     run("CREATE TABLE " + dbName1 + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
 
     String[] ptn_data = new String[] { "fifteen", "fourteen" };
@@ -1945,14 +1945,14 @@ public class TestReplicationScenarios {
     verifyRun("SELECT a from " + replDbName1 + ".ptned where (b=1) ORDER BY a", ptn_data, driverMirror);
     verifyIfTableNotExist(replDbName2, "ptned", metaStoreClientMirror);
 
-    run("ALTER TABLE " + dbName1 + ".ptned RENAME TO " + dbName2 + ".ptned_renamed", driver);
+    verifyFail("ALTER TABLE " + dbName1 + ".ptned RENAME TO " + dbName2 + ".ptned_renamed", driver);
 
     incrementalLoadAndVerify(dbName1, bootstrap1.lastReplId, replDbName1);
     incrementalLoadAndVerify(dbName2, bootstrap2.lastReplId, replDbName2);
 
-    verifyIfTableNotExist(replDbName1, "ptned", metaStoreClientMirror);
     verifyIfTableNotExist(replDbName1, "ptned_renamed", metaStoreClientMirror);
-    verifyRun("SELECT a from " + replDbName2 + ".ptned_renamed where (b=1) ORDER BY a", ptn_data, driverMirror);
+    verifyIfTableNotExist(replDbName2, "ptned_renamed", metaStoreClientMirror);
+    verifyRun("SELECT a from " + replDbName1 + ".ptned where (b=1) ORDER BY a", ptn_data, driverMirror);
   }
 
   @Test
@@ -3077,7 +3077,7 @@ public class TestReplicationScenarios {
     // Setup
     long firstEventId = metaStoreClient.getCurrentNotificationEventId().getEventId();
     String dbName = "testAuthForNotificationAPIs";
-    driver.run("create database " + dbName);
+    createDB(dbName, driver);
     NotificationEventResponse rsp = metaStoreClient.getNextNotification(firstEventId, 0, null);
     assertEquals(1, rsp.getEventsSize());
     // Test various scenarios
@@ -3158,6 +3158,13 @@ public class TestReplicationScenarios {
   }
 
   @Test
+  public void testDumpNonReplDatabase() throws IOException {
+    String dbName = createDBNonRepl(testName.getMethodName(), driver);
+    verifyFail("REPL DUMP " + dbName, driver);
+    verifyFail("REPL DUMP " + dbName + " from 1 ", driver);
+  }
+
+  @Test
   public void testRecycleFileNonReplDatabase() throws IOException {
     String dbName = createDBNonRepl(testName.getMethodName(), driver);
 
@@ -3199,10 +3206,9 @@ public class TestReplicationScenarios {
 
   private static String createDB(String name, IDriver myDriver) {
     LOG.info("Testing " + name);
-    String dbName = name + "_" + tid;
-    run("CREATE DATABASE " + dbName + " WITH DBPROPERTIES ( '" +
+    run("CREATE DATABASE " + name + " WITH DBPROPERTIES ( '" +
             SOURCE_OF_REPLICATION + "' = '1,2,3')", myDriver);
-    return dbName;
+    return name;
   }
 
   private static String createDBNonRepl(String name, IDriver myDriver) {

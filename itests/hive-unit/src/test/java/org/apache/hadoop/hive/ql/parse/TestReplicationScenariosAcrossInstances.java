@@ -407,14 +407,16 @@ public class TestReplicationScenariosAcrossInstances {
     WarehouseInstance.Tuple tuple = primary
         .run("use " + primaryDbName)
         .run("create table t1 (i int, j int)")
-        .run("create database " + dbOne)
+        .run("create database " + dbOne + " WITH DBPROPERTIES ( '" +
+                SOURCE_OF_REPLICATION + "' = '1,2,3')")
         .run("use " + dbOne)
     // TODO: this is wrong; this test sets up dummy txn manager and so it cannot create ACID tables.
     //       This used to work by accident, now this works due a test flag. The test needs to be fixed.
     //       Also applies for a couple more tests.
         .run("create table t1 (i int, j int) partitioned by (load_date date) "
             + "clustered by(i) into 2 buckets stored as orc tblproperties ('transactional'='true') ")
-        .run("create database " + dbTwo)
+        .run("create database " + dbTwo + " WITH DBPROPERTIES ( '" +
+                SOURCE_OF_REPLICATION + "' = '1,2,3')")
         .run("use " + dbTwo)
         .run("create table t1 (i int, j int)")
         .dump("`*`", null, Arrays.asList("'hive.repl.dump.metadata.only'='true'",
@@ -468,7 +470,8 @@ public class TestReplicationScenariosAcrossInstances {
     WarehouseInstance.Tuple bootstrapTuple = primary
         .run("use " + primaryDbName)
         .run("create table t1 (i int, j int)")
-        .run("create database " + dbOne)
+        .run("create database " + dbOne + " WITH DBPROPERTIES ( '" +
+                SOURCE_OF_REPLICATION + "' = '1,2,3')")
         .run("use " + dbOne)
         .run("create table t1 (i int, j int) partitioned by (load_date date) "
             + "clustered by(i) into 2 buckets stored as orc tblproperties ('transactional'='true') ")
@@ -477,7 +480,8 @@ public class TestReplicationScenariosAcrossInstances {
 
     String dbTwo = primaryDbName + randomTwo;
     WarehouseInstance.Tuple incrementalTuple = primary
-        .run("create database " + dbTwo)
+        .run("create database " + dbTwo + " WITH DBPROPERTIES ( '" +
+                SOURCE_OF_REPLICATION + "' = '1,2,3')")
         .run("use " + dbTwo)
         .run("create table t1 (i int, j int)")
         .run("use " + dbOne)

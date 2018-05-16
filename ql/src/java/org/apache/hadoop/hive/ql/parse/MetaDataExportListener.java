@@ -24,8 +24,6 @@ import java.util.Date;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -92,9 +90,9 @@ public class MetaDataExportListener extends MetaStorePreEventListener {
       EximUtil.createExportDump(fs, outFile, mTbl, null, null,
           new HiveConf(conf, MetaDataExportListener.class));
       if (moveMetadataToTrash == true) {
-        wh.deleteDir(metaPath, true, Hive.get().getDatabase(tbl.getDbName()));
+        wh.deleteDir(metaPath, true, false, false);
       }
-    } catch (IOException | MetaException | HiveException e) {
+    } catch (IOException | SemanticException e) {
       throw new MetaException(e.getMessage());
     }
   }

@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -348,10 +349,11 @@ public class Cleaner extends CompactorThread {
     }
 
     FileSystem fs = filesToDelete.get(0).getFileSystem(conf);
+    Database db = Hive.get().getDatabase(ci.dbname);
 
     for (Path dead : filesToDelete) {
       LOG.debug("Going to delete path " + dead.toString());
-      if (ReplChangeManager.isReplPolicySet(Hive.get().getDatabase(ci.dbname))) {
+      if (ReplChangeManager.isSourceOfReplication(db)) {
         replChangeManager.recycle(dead, ReplChangeManager.RecycleType.MOVE, true);
       }
       fs.delete(dead, true);
