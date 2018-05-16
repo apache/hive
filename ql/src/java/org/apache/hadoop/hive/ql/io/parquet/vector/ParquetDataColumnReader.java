@@ -110,9 +110,11 @@ public interface ParquetDataColumnReader {
    * The type of the data in Parquet files need not match the type in HMS.  In that case
    * the value returned to the user will depend on the data.  If the data value is within the valid
    * range accommodated by the HMS type, the data will be returned as is.  When data is not within
-   * the valid range, a NULL will be returned.  This function will do the appropriate check.
+   * the valid range, a NULL will be returned.  These functions will do the appropriate check.
    */
   boolean isValid(long value);
+  boolean isValid(float value);
+  boolean isValid(double value);
 
   /**
    * @return the underlying dictionary if current reader is dictionary encoded
