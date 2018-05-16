@@ -91,6 +91,81 @@ alter table testAltColT replace columns
 
 select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColT order by cId;
 
+-- bigint, int, smallint, and tinyint: type changed to float
+alter table testAltColT replace columns
+(cId        TINYINT,
+ cBigInt    FLOAT,
+ cInt       FLOAT,
+ cSmallInt  FLOAT,
+ cTinyint   FLOAT);
+
+select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColT order by cId;
+
+-- bigint, int, smallint, and tinyint: type changed to double
+alter table testAltColT replace columns
+(cId        TINYINT,
+ cBigInt    DOUBLE,
+ cInt       DOUBLE,
+ cSmallInt  DOUBLE,
+ cTinyint   DOUBLE);
+
+select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColT order by cId;
+
+-- bigint, int, smallint, and tinyint: type changed to decimal
+-- all values fit and should return all values
+alter table testAltColT replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(22,2),
+ cInt       DECIMAL(22,2),
+ cSmallInt  DECIMAL(22,2),
+ cTinyint   DECIMAL(22,2));
+
+select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColT order by cId;
+
+-- bigint, int, smallint, and tinyint: type changed to decimal
+-- some of big int doesn't fit and should return null where it didn't fit
+alter table testAltColT replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(13,2),
+ cInt       DECIMAL(13,2),
+ cSmallInt  DECIMAL(13,2),
+ cTinyint   DECIMAL(13,2));
+
+select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColT order by cId;
+
+-- bigint, int, smallint, and tinyint: type changed to decimal
+-- some of big int and int doesn't fit and should return null where it didn't fit
+alter table testAltColT replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(8,2),
+ cInt       DECIMAL(8,2),
+ cSmallInt  DECIMAL(8,2),
+ cTinyint   DECIMAL(8,2));
+
+select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColT order by cId;
+
+-- bigint, int, smallint, and tinyint: type changed to decimal
+-- some of big int, int and small int doesn't fit and should return null where it didn't fit
+alter table testAltColT replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(6,2),
+ cInt       DECIMAL(6,2),
+ cSmallInt  DECIMAL(6,2),
+ cTinyint   DECIMAL(6,2));
+
+select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColT order by cId;
+
+-- bigint, int, smallint, and tinyint: type changed to decimal
+-- only single digit fits and should return null where it didn't fit
+alter table testAltColT replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(3,2),
+ cInt       DECIMAL(3,2),
+ cSmallInt  DECIMAL(3,2),
+ cTinyint   DECIMAL(3,2));
+
+select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColT order by cId;
+
 drop table if exists testAltColT;
 -- Text type: End
 
@@ -138,6 +213,81 @@ alter table testAltColSF replace columns
  cInt       TINYINT,
  cSmallInt  TINYINT,
  cTinyint   TINYINT);
+
+select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColSF order by cId;
+
+-- bigint, int, smallint, and tinyint: type changed to float
+alter table testAltColSF replace columns
+(cId        TINYINT,
+ cBigInt    FLOAT,
+ cInt       FLOAT,
+ cSmallInt  FLOAT,
+ cTinyint   FLOAT);
+
+select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColSF order by cId;
+
+-- bigint, int, smallint, and tinyint: type changed to double
+alter table testAltColSF replace columns
+(cId        TINYINT,
+ cBigInt    DOUBLE,
+ cInt       DOUBLE,
+ cSmallInt  DOUBLE,
+ cTinyint   DOUBLE);
+
+select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColSF order by cId;
+
+-- bigint, int, smallint, and tinyint: type changed to decimal
+-- all values fit and should return all values
+alter table testAltColSF replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(22,2),
+ cInt       DECIMAL(22,2),
+ cSmallInt  DECIMAL(22,2),
+ cTinyint   DECIMAL(22,2));
+
+select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColSF order by cId;
+
+-- bigint, int, smallint, and tinyint: type changed to decimal
+-- some of big int doesn't fit and should return null where it didn't fit
+alter table testAltColSF replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(13,2),
+ cInt       DECIMAL(13,2),
+ cSmallInt  DECIMAL(13,2),
+ cTinyint   DECIMAL(13,2));
+
+select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColSF order by cId;
+
+-- bigint, int, smallint, and tinyint: type changed to decimal
+-- some of big int and int doesn't fit and should return null where it didn't fit
+alter table testAltColSF replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(8,2),
+ cInt       DECIMAL(8,2),
+ cSmallInt  DECIMAL(8,2),
+ cTinyint   DECIMAL(8,2));
+
+select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColSF order by cId;
+
+-- bigint, int, smallint, and tinyint: type changed to decimal
+-- some of big int, int and small int doesn't fit and should return null where it didn't fit
+alter table testAltColSF replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(6,2),
+ cInt       DECIMAL(6,2),
+ cSmallInt  DECIMAL(6,2),
+ cTinyint   DECIMAL(6,2));
+
+select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColSF order by cId;
+
+-- bigint, int, smallint, and tinyint: type changed to decimal
+-- only single digit fits and should return null where it didn't fit
+alter table testAltColSF replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(3,2),
+ cInt       DECIMAL(3,2),
+ cSmallInt  DECIMAL(3,2),
+ cTinyint   DECIMAL(3,2));
 
 select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColSF order by cId;
 
@@ -191,6 +341,81 @@ alter table testAltColRCF replace columns
 
 select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColRCF order by cId;
 
+-- bigint, int, smallint, and tinyint: type changed to float
+alter table testAltColRCF replace columns
+(cId        TINYINT,
+ cBigInt    FLOAT,
+ cInt       FLOAT,
+ cSmallInt  FLOAT,
+ cTinyint   FLOAT);
+
+select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColRCF order by cId;
+
+-- bigint, int, smallint, and tinyint: type changed to double
+alter table testAltColRCF replace columns
+(cId        TINYINT,
+ cBigInt    DOUBLE,
+ cInt       DOUBLE,
+ cSmallInt  DOUBLE,
+ cTinyint   DOUBLE);
+
+select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColRCF order by cId;
+
+-- bigint, int, smallint, and tinyint: type changed to decimal
+-- all values fit and should return all values
+alter table testAltColRCF replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(22,2),
+ cInt       DECIMAL(22,2),
+ cSmallInt  DECIMAL(22,2),
+ cTinyint   DECIMAL(22,2));
+
+select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColRCF order by cId;
+
+-- bigint, int, smallint, and tinyint: type changed to decimal
+-- some of big int doesn't fit and should return null where it didn't fit
+alter table testAltColRCF replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(13,2),
+ cInt       DECIMAL(13,2),
+ cSmallInt  DECIMAL(13,2),
+ cTinyint   DECIMAL(13,2));
+
+select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColRCF order by cId;
+
+-- bigint, int, smallint, and tinyint: type changed to decimal
+-- some of big int and int doesn't fit and should return null where it didn't fit
+alter table testAltColRCF replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(8,2),
+ cInt       DECIMAL(8,2),
+ cSmallInt  DECIMAL(8,2),
+ cTinyint   DECIMAL(8,2));
+
+select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColRCF order by cId;
+
+-- bigint, int, smallint, and tinyint: type changed to decimal
+-- some of big int, int and small int doesn't fit and should return null where it didn't fit
+alter table testAltColRCF replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(6,2),
+ cInt       DECIMAL(6,2),
+ cSmallInt  DECIMAL(6,2),
+ cTinyint   DECIMAL(6,2));
+
+select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColRCF order by cId;
+
+-- bigint, int, smallint, and tinyint: type changed to decimal
+-- only single digit fits and should return null where it didn't fit
+alter table testAltColRCF replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(3,2),
+ cInt       DECIMAL(3,2),
+ cSmallInt  DECIMAL(3,2),
+ cTinyint   DECIMAL(3,2));
+
+select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColRCF order by cId;
+
 drop table if exists testAltColRCF;
 -- RCFile type: End
 
@@ -238,6 +463,81 @@ alter table testAltColORC replace columns
  cInt       TINYINT,
  cSmallInt  TINYINT,
  cTinyint   TINYINT);
+
+select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColORC order by cId;
+
+-- bigint, int, smallint, and tinyint: type changed to float
+alter table testAltColORC replace columns
+(cId        TINYINT,
+ cBigInt    FLOAT,
+ cInt       FLOAT,
+ cSmallInt  FLOAT,
+ cTinyint   FLOAT);
+
+select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColORC order by cId;
+
+-- bigint, int, smallint, and tinyint: type changed to double
+alter table testAltColORC replace columns
+(cId        TINYINT,
+ cBigInt    DOUBLE,
+ cInt       DOUBLE,
+ cSmallInt  DOUBLE,
+ cTinyint   DOUBLE);
+
+select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColORC order by cId;
+
+-- bigint, int, smallint, and tinyint: type changed to decimal
+-- all values fit and should return all values
+alter table testAltColORC replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(22,2),
+ cInt       DECIMAL(22,2),
+ cSmallInt  DECIMAL(22,2),
+ cTinyint   DECIMAL(22,2));
+
+select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColORC order by cId;
+
+-- bigint, int, smallint, and tinyint: type changed to decimal
+-- some of big int doesn't fit and should return null where it didn't fit
+alter table testAltColORC replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(13,2),
+ cInt       DECIMAL(13,2),
+ cSmallInt  DECIMAL(13,2),
+ cTinyint   DECIMAL(13,2));
+
+select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColORC order by cId;
+
+-- bigint, int, smallint, and tinyint: type changed to decimal
+-- some of big int and int doesn't fit and should return null where it didn't fit
+alter table testAltColORC replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(8,2),
+ cInt       DECIMAL(8,2),
+ cSmallInt  DECIMAL(8,2),
+ cTinyint   DECIMAL(8,2));
+
+select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColORC order by cId;
+
+-- bigint, int, smallint, and tinyint: type changed to decimal
+-- some of big int, int and small int doesn't fit and should return null where it didn't fit
+alter table testAltColORC replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(6,2),
+ cInt       DECIMAL(6,2),
+ cSmallInt  DECIMAL(6,2),
+ cTinyint   DECIMAL(6,2));
+
+select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColORC order by cId;
+
+-- bigint, int, smallint, and tinyint: type changed to decimal
+-- only single digit fits and should return null where it didn't fit
+alter table testAltColORC replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(3,2),
+ cInt       DECIMAL(3,2),
+ cSmallInt  DECIMAL(3,2),
+ cTinyint   DECIMAL(3,2));
 
 select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColORC order by cId;
 
@@ -291,6 +591,81 @@ alter table testAltColPDE replace columns
 
 select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDE order by cId;
 
+-- bigint, int, smallint, and tinyint: type changed to float
+alter table testAltColPDE replace columns
+(cId        TINYINT,
+ cBigInt    FLOAT,
+ cInt       FLOAT,
+ cSmallInt  FLOAT,
+ cTinyint   FLOAT);
+
+select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDE order by cId;
+
+-- bigint, int, smallint, and tinyint: type changed to double
+alter table testAltColPDE replace columns
+(cId        TINYINT,
+ cBigInt    DOUBLE,
+ cInt       DOUBLE,
+ cSmallInt  DOUBLE,
+ cTinyint   DOUBLE);
+
+select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDE order by cId;
+
+-- bigint, int, smallint, and tinyint: type changed to decimal
+-- all values fit and should return all values
+alter table testAltColPDE replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(22,2),
+ cInt       DECIMAL(22,2),
+ cSmallInt  DECIMAL(22,2),
+ cTinyint   DECIMAL(22,2));
+
+select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDE order by cId;
+
+-- bigint, int, smallint, and tinyint: type changed to decimal
+-- some of big int doesn't fit and should return null where it didn't fit
+alter table testAltColPDE replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(13,2),
+ cInt       DECIMAL(13,2),
+ cSmallInt  DECIMAL(13,2),
+ cTinyint   DECIMAL(13,2));
+
+select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDE order by cId;
+
+-- bigint, int, smallint, and tinyint: type changed to decimal
+-- some of big int and int doesn't fit and should return null where it didn't fit
+alter table testAltColPDE replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(8,2),
+ cInt       DECIMAL(8,2),
+ cSmallInt  DECIMAL(8,2),
+ cTinyint   DECIMAL(8,2));
+
+select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDE order by cId;
+
+-- bigint, int, smallint, and tinyint: type changed to decimal
+-- some of big int, int and small int doesn't fit and should return null where it didn't fit
+alter table testAltColPDE replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(6,2),
+ cInt       DECIMAL(6,2),
+ cSmallInt  DECIMAL(6,2),
+ cTinyint   DECIMAL(6,2));
+
+select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDE order by cId;
+
+-- bigint, int, smallint, and tinyint: type changed to decimal
+-- only single digit fits and should return null where it didn't fit
+alter table testAltColPDE replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(3,2),
+ cInt       DECIMAL(3,2),
+ cSmallInt  DECIMAL(3,2),
+ cTinyint   DECIMAL(3,2));
+
+select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDE order by cId;
+
 drop table if exists testAltColPDE;
 -- Parquet type with Dictionary encoding enabled: End
 
@@ -339,6 +714,81 @@ alter table testAltColPDD replace columns
  cInt       TINYINT,
  cSmallInt  TINYINT,
  cTinyint   TINYINT);
+
+select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDD order by cId;
+
+-- bigint, int, smallint, and tinyint: type changed to float
+alter table testAltColPDD replace columns
+(cId        TINYINT,
+ cBigInt    FLOAT,
+ cInt       FLOAT,
+ cSmallInt  FLOAT,
+ cTinyint   FLOAT);
+
+select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDD order by cId;
+
+-- bigint, int, smallint, and tinyint: type changed to double
+alter table testAltColPDD replace columns
+(cId        TINYINT,
+ cBigInt    DOUBLE,
+ cInt       DOUBLE,
+ cSmallInt  DOUBLE,
+ cTinyint   DOUBLE);
+
+select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDD order by cId;
+
+-- bigint, int, smallint, and tinyint: type changed to decimal
+-- all values fit and should return all values
+alter table testAltColPDD replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(22,2),
+ cInt       DECIMAL(22,2),
+ cSmallInt  DECIMAL(22,2),
+ cTinyint   DECIMAL(22,2));
+
+select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDD order by cId;
+
+-- bigint, int, smallint, and tinyint: type changed to decimal
+-- some of big int doesn't fit and should return null where it didn't fit
+alter table testAltColPDD replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(13,2),
+ cInt       DECIMAL(13,2),
+ cSmallInt  DECIMAL(13,2),
+ cTinyint   DECIMAL(13,2));
+
+select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDD order by cId;
+
+-- bigint, int, smallint, and tinyint: type changed to decimal
+-- some of big int and int doesn't fit and should return null where it didn't fit
+alter table testAltColPDD replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(8,2),
+ cInt       DECIMAL(8,2),
+ cSmallInt  DECIMAL(8,2),
+ cTinyint   DECIMAL(8,2));
+
+select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDD order by cId;
+
+-- bigint, int, smallint, and tinyint: type changed to decimal
+-- some of big int, int and small int doesn't fit and should return null where it didn't fit
+alter table testAltColPDD replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(6,2),
+ cInt       DECIMAL(6,2),
+ cSmallInt  DECIMAL(6,2),
+ cTinyint   DECIMAL(6,2));
+
+select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDD order by cId;
+
+-- bigint, int, smallint, and tinyint: type changed to decimal
+-- only single digit fits and should return null where it didn't fit
+alter table testAltColPDD replace columns
+(cId        TINYINT,
+ cBigInt    DECIMAL(3,2),
+ cInt       DECIMAL(3,2),
+ cSmallInt  DECIMAL(3,2),
+ cTinyint   DECIMAL(3,2));
 
 select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColPDD order by cId;
 

@@ -231,6 +231,349 @@ POSTHOOK: query: drop table testtinyintinv
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testtinyintinv
 POSTHOOK: Output: default@testtinyintinv
+PREHOOK: query: create table testfloatinv
+(col_INT32_UINT_8  float,
+ col_INT32_UINT_16 float,
+ col_INT32_UINT_32 float,
+ col_INT64_UINT_64 float) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testfloatinv
+POSTHOOK: query: create table testfloatinv
+(col_INT32_UINT_8  float,
+ col_INT32_UINT_16 float,
+ col_INT32_UINT_32 float,
+ col_INT64_UINT_64 float) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testfloatinv
+PREHOOK: query: load data local inpath '../../data/files/data_including_invalid_values.parquet' into table testfloatinv
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@testfloatinv
+POSTHOOK: query: load data local inpath '../../data/files/data_including_invalid_values.parquet' into table testfloatinv
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@testfloatinv
+PREHOOK: query: select * from testfloatinv
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testfloatinv
+#### A masked pattern was here ####
+POSTHOOK: query: select * from testfloatinv
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testfloatinv
+#### A masked pattern was here ####
+0.0	0.0	0.0	0.0
+127.0	127.0	127.0	127.0
+255.0	255.0	255.0	255.0
+32767.0	32767.0	32767.0	32767.0
+65535.0	65535.0	65535.0	65535.0
+2.14748365E9	2.14748365E9	2.14748365E9	2.14748365E9
+NULL	NULL	NULL	4.2949673E9
+NULL	NULL	NULL	9.223372E18
+NULL	NULL	NULL	NULL
+PREHOOK: query: drop table testfloatinv
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@testfloatinv
+PREHOOK: Output: default@testfloatinv
+POSTHOOK: query: drop table testfloatinv
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@testfloatinv
+POSTHOOK: Output: default@testfloatinv
+PREHOOK: query: create table testdoubleinv
+(col_INT32_UINT_8  double,
+ col_INT32_UINT_16 double,
+ col_INT32_UINT_32 double,
+ col_INT64_UINT_64 double) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testdoubleinv
+POSTHOOK: query: create table testdoubleinv
+(col_INT32_UINT_8  double,
+ col_INT32_UINT_16 double,
+ col_INT32_UINT_32 double,
+ col_INT64_UINT_64 double) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testdoubleinv
+PREHOOK: query: load data local inpath '../../data/files/data_including_invalid_values.parquet' into table testdoubleinv
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@testdoubleinv
+POSTHOOK: query: load data local inpath '../../data/files/data_including_invalid_values.parquet' into table testdoubleinv
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@testdoubleinv
+PREHOOK: query: select * from testdoubleinv
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testdoubleinv
+#### A masked pattern was here ####
+POSTHOOK: query: select * from testdoubleinv
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testdoubleinv
+#### A masked pattern was here ####
+0.0	0.0	0.0	0.0
+127.0	127.0	127.0	127.0
+255.0	255.0	255.0	255.0
+32767.0	32767.0	32767.0	32767.0
+65535.0	65535.0	65535.0	65535.0
+2.147483648E9	2.147483648E9	2.147483648E9	2.147483647E9
+NULL	NULL	NULL	4.294967295E9
+NULL	NULL	NULL	9.223372036854776E18
+NULL	NULL	NULL	NULL
+PREHOOK: query: drop table testdoubleinv
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@testdoubleinv
+PREHOOK: Output: default@testdoubleinv
+POSTHOOK: query: drop table testdoubleinv
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@testdoubleinv
+POSTHOOK: Output: default@testdoubleinv
+PREHOOK: query: create table testdecimal22_2inv
+(col_INT32_UINT_8  decimal(22,2),
+ col_INT32_UINT_16 decimal(22,2),
+ col_INT32_UINT_32 decimal(22,2),
+ col_INT64_UINT_64 decimal(22,2)) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testdecimal22_2inv
+POSTHOOK: query: create table testdecimal22_2inv
+(col_INT32_UINT_8  decimal(22,2),
+ col_INT32_UINT_16 decimal(22,2),
+ col_INT32_UINT_32 decimal(22,2),
+ col_INT64_UINT_64 decimal(22,2)) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testdecimal22_2inv
+PREHOOK: query: load data local inpath '../../data/files/data_including_invalid_values.parquet' into table testdecimal22_2inv
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@testdecimal22_2inv
+POSTHOOK: query: load data local inpath '../../data/files/data_including_invalid_values.parquet' into table testdecimal22_2inv
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@testdecimal22_2inv
+PREHOOK: query: select * from testdecimal22_2inv
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testdecimal22_2inv
+#### A masked pattern was here ####
+POSTHOOK: query: select * from testdecimal22_2inv
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testdecimal22_2inv
+#### A masked pattern was here ####
+0.00	0.00	0.00	0.00
+127.00	127.00	127.00	127.00
+255.00	255.00	255.00	255.00
+32767.00	32767.00	32767.00	32767.00
+65535.00	65535.00	65535.00	65535.00
+2147483647.00	2147483647.00	2147483647.00	2147483647.00
+NULL	NULL	NULL	4294967295.00
+NULL	NULL	NULL	9223372036854775807.00
+NULL	NULL	NULL	NULL
+PREHOOK: query: drop table testdecimal22_2inv
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@testdecimal22_2inv
+PREHOOK: Output: default@testdecimal22_2inv
+POSTHOOK: query: drop table testdecimal22_2inv
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@testdecimal22_2inv
+POSTHOOK: Output: default@testdecimal22_2inv
+PREHOOK: query: create table testdecimal13_2inv
+(col_INT32_UINT_8  decimal(13,2),
+ col_INT32_UINT_16 decimal(13,2),
+ col_INT32_UINT_32 decimal(13,2),
+ col_INT64_UINT_64 decimal(13,2)) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testdecimal13_2inv
+POSTHOOK: query: create table testdecimal13_2inv
+(col_INT32_UINT_8  decimal(13,2),
+ col_INT32_UINT_16 decimal(13,2),
+ col_INT32_UINT_32 decimal(13,2),
+ col_INT64_UINT_64 decimal(13,2)) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testdecimal13_2inv
+PREHOOK: query: load data local inpath '../../data/files/data_including_invalid_values.parquet' into table testdecimal13_2inv
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@testdecimal13_2inv
+POSTHOOK: query: load data local inpath '../../data/files/data_including_invalid_values.parquet' into table testdecimal13_2inv
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@testdecimal13_2inv
+PREHOOK: query: select * from testdecimal13_2inv
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testdecimal13_2inv
+#### A masked pattern was here ####
+POSTHOOK: query: select * from testdecimal13_2inv
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testdecimal13_2inv
+#### A masked pattern was here ####
+0.00	0.00	0.00	0.00
+127.00	127.00	127.00	127.00
+255.00	255.00	255.00	255.00
+32767.00	32767.00	32767.00	32767.00
+65535.00	65535.00	65535.00	65535.00
+2147483647.00	2147483647.00	2147483647.00	2147483647.00
+NULL	NULL	NULL	4294967295.00
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+PREHOOK: query: drop table testdecimal13_2inv
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@testdecimal13_2inv
+PREHOOK: Output: default@testdecimal13_2inv
+POSTHOOK: query: drop table testdecimal13_2inv
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@testdecimal13_2inv
+POSTHOOK: Output: default@testdecimal13_2inv
+PREHOOK: query: create table testdecimal8_2inv
+(col_INT32_UINT_8  decimal(8,2),
+ col_INT32_UINT_16 decimal(8,2),
+ col_INT32_UINT_32 decimal(8,2),
+ col_INT64_UINT_64 decimal(8,2)) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testdecimal8_2inv
+POSTHOOK: query: create table testdecimal8_2inv
+(col_INT32_UINT_8  decimal(8,2),
+ col_INT32_UINT_16 decimal(8,2),
+ col_INT32_UINT_32 decimal(8,2),
+ col_INT64_UINT_64 decimal(8,2)) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testdecimal8_2inv
+PREHOOK: query: load data local inpath '../../data/files/data_including_invalid_values.parquet' into table testdecimal8_2inv
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@testdecimal8_2inv
+POSTHOOK: query: load data local inpath '../../data/files/data_including_invalid_values.parquet' into table testdecimal8_2inv
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@testdecimal8_2inv
+PREHOOK: query: select * from testdecimal8_2inv
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testdecimal8_2inv
+#### A masked pattern was here ####
+POSTHOOK: query: select * from testdecimal8_2inv
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testdecimal8_2inv
+#### A masked pattern was here ####
+0.00	0.00	0.00	0.00
+127.00	127.00	127.00	127.00
+255.00	255.00	255.00	255.00
+32767.00	32767.00	32767.00	32767.00
+65535.00	65535.00	65535.00	65535.00
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+PREHOOK: query: drop table testdecimal8_2inv
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@testdecimal8_2inv
+PREHOOK: Output: default@testdecimal8_2inv
+POSTHOOK: query: drop table testdecimal8_2inv
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@testdecimal8_2inv
+POSTHOOK: Output: default@testdecimal8_2inv
+PREHOOK: query: create table testdecimal6_2inv
+(col_INT32_UINT_8  decimal(6,2),
+ col_INT32_UINT_16 decimal(6,2),
+ col_INT32_UINT_32 decimal(6,2),
+ col_INT64_UINT_64 decimal(6,2)) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testdecimal6_2inv
+POSTHOOK: query: create table testdecimal6_2inv
+(col_INT32_UINT_8  decimal(6,2),
+ col_INT32_UINT_16 decimal(6,2),
+ col_INT32_UINT_32 decimal(6,2),
+ col_INT64_UINT_64 decimal(6,2)) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testdecimal6_2inv
+PREHOOK: query: load data local inpath '../../data/files/data_including_invalid_values.parquet' into table testdecimal6_2inv
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@testdecimal6_2inv
+POSTHOOK: query: load data local inpath '../../data/files/data_including_invalid_values.parquet' into table testdecimal6_2inv
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@testdecimal6_2inv
+PREHOOK: query: select * from testdecimal6_2inv
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testdecimal6_2inv
+#### A masked pattern was here ####
+POSTHOOK: query: select * from testdecimal6_2inv
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testdecimal6_2inv
+#### A masked pattern was here ####
+0.00	0.00	0.00	0.00
+127.00	127.00	127.00	127.00
+255.00	255.00	255.00	255.00
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+PREHOOK: query: drop table testdecimal6_2inv
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@testdecimal6_2inv
+PREHOOK: Output: default@testdecimal6_2inv
+POSTHOOK: query: drop table testdecimal6_2inv
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@testdecimal6_2inv
+POSTHOOK: Output: default@testdecimal6_2inv
+PREHOOK: query: create table testdecimal3_2inv
+(col_INT32_UINT_8  decimal(3,2),
+ col_INT32_UINT_16 decimal(3,2),
+ col_INT32_UINT_32 decimal(3,2),
+ col_INT64_UINT_64 decimal(3,2)) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testdecimal3_2inv
+POSTHOOK: query: create table testdecimal3_2inv
+(col_INT32_UINT_8  decimal(3,2),
+ col_INT32_UINT_16 decimal(3,2),
+ col_INT32_UINT_32 decimal(3,2),
+ col_INT64_UINT_64 decimal(3,2)) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testdecimal3_2inv
+PREHOOK: query: load data local inpath '../../data/files/data_including_invalid_values.parquet' into table testdecimal3_2inv
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@testdecimal3_2inv
+POSTHOOK: query: load data local inpath '../../data/files/data_including_invalid_values.parquet' into table testdecimal3_2inv
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@testdecimal3_2inv
+PREHOOK: query: select * from testdecimal3_2inv
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testdecimal3_2inv
+#### A masked pattern was here ####
+POSTHOOK: query: select * from testdecimal3_2inv
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testdecimal3_2inv
+#### A masked pattern was here ####
+0.00	0.00	0.00	0.00
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+PREHOOK: query: drop table testdecimal3_2inv
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@testdecimal3_2inv
+PREHOOK: Output: default@testdecimal3_2inv
+POSTHOOK: query: drop table testdecimal3_2inv
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@testdecimal3_2inv
+POSTHOOK: Output: default@testdecimal3_2inv
 PREHOOK: query: create table testbigintvalid
 (col_INT32_UINT_8 bigint,
  col_INT32_UINT_16 bigint,
@@ -427,3 +770,346 @@ POSTHOOK: query: drop table testtinyintvalid
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testtinyintvalid
 POSTHOOK: Output: default@testtinyintvalid
+PREHOOK: query: create table testfloatvalid
+(col_INT32_UINT_8  float,
+ col_INT32_UINT_16 float,
+ col_INT32_UINT_32 float,
+ col_INT64_UINT_64 float) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testfloatvalid
+POSTHOOK: query: create table testfloatvalid
+(col_INT32_UINT_8  float,
+ col_INT32_UINT_16 float,
+ col_INT32_UINT_32 float,
+ col_INT64_UINT_64 float) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testfloatvalid
+PREHOOK: query: load data local inpath '../../data/files/data_with_valid_values.parquet' into table testfloatvalid
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@testfloatvalid
+POSTHOOK: query: load data local inpath '../../data/files/data_with_valid_values.parquet' into table testfloatvalid
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@testfloatvalid
+PREHOOK: query: select * from testfloatvalid
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testfloatvalid
+#### A masked pattern was here ####
+POSTHOOK: query: select * from testfloatvalid
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testfloatvalid
+#### A masked pattern was here ####
+0.0	0.0	0.0	0.0
+127.0	127.0	127.0	127.0
+255.0	255.0	255.0	255.0
+NULL	32767.0	32767.0	32767.0
+NULL	65535.0	65535.0	65535.0
+NULL	NULL	2.14748365E9	2.14748365E9
+NULL	NULL	NULL	4.2949673E9
+NULL	NULL	NULL	9.223372E18
+NULL	NULL	NULL	NULL
+PREHOOK: query: drop table testfloatvalid
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@testfloatvalid
+PREHOOK: Output: default@testfloatvalid
+POSTHOOK: query: drop table testfloatvalid
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@testfloatvalid
+POSTHOOK: Output: default@testfloatvalid
+PREHOOK: query: create table testdoublevalid
+(col_INT32_UINT_8  double,
+ col_INT32_UINT_16 double,
+ col_INT32_UINT_32 double,
+ col_INT64_UINT_64 double) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testdoublevalid
+POSTHOOK: query: create table testdoublevalid
+(col_INT32_UINT_8  double,
+ col_INT32_UINT_16 double,
+ col_INT32_UINT_32 double,
+ col_INT64_UINT_64 double) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testdoublevalid
+PREHOOK: query: load data local inpath '../../data/files/data_with_valid_values.parquet' into table testdoublevalid
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@testdoublevalid
+POSTHOOK: query: load data local inpath '../../data/files/data_with_valid_values.parquet' into table testdoublevalid
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@testdoublevalid
+PREHOOK: query: select * from testdoublevalid
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testdoublevalid
+#### A masked pattern was here ####
+POSTHOOK: query: select * from testdoublevalid
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testdoublevalid
+#### A masked pattern was here ####
+0.0	0.0	0.0	0.0
+127.0	127.0	127.0	127.0
+255.0	255.0	255.0	255.0
+NULL	32767.0	32767.0	32767.0
+NULL	65535.0	65535.0	65535.0
+NULL	NULL	2.147483648E9	2.147483647E9
+NULL	NULL	NULL	4.294967295E9
+NULL	NULL	NULL	9.223372036854776E18
+NULL	NULL	NULL	NULL
+PREHOOK: query: drop table testdoublevalid
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@testdoublevalid
+PREHOOK: Output: default@testdoublevalid
+POSTHOOK: query: drop table testdoublevalid
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@testdoublevalid
+POSTHOOK: Output: default@testdoublevalid
+PREHOOK: query: create table testdecimal22_2valid
+(col_INT32_UINT_8  decimal(22,2),
+ col_INT32_UINT_16 decimal(22,2),
+ col_INT32_UINT_32 decimal(22,2),
+ col_INT64_UINT_64 decimal(22,2)) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testdecimal22_2valid
+POSTHOOK: query: create table testdecimal22_2valid
+(col_INT32_UINT_8  decimal(22,2),
+ col_INT32_UINT_16 decimal(22,2),
+ col_INT32_UINT_32 decimal(22,2),
+ col_INT64_UINT_64 decimal(22,2)) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testdecimal22_2valid
+PREHOOK: query: load data local inpath '../../data/files/data_with_valid_values.parquet' into table testdecimal22_2valid
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@testdecimal22_2valid
+POSTHOOK: query: load data local inpath '../../data/files/data_with_valid_values.parquet' into table testdecimal22_2valid
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@testdecimal22_2valid
+PREHOOK: query: select * from testdecimal22_2valid
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testdecimal22_2valid
+#### A masked pattern was here ####
+POSTHOOK: query: select * from testdecimal22_2valid
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testdecimal22_2valid
+#### A masked pattern was here ####
+0.00	0.00	0.00	0.00
+127.00	127.00	127.00	127.00
+255.00	255.00	255.00	255.00
+NULL	32767.00	32767.00	32767.00
+NULL	65535.00	65535.00	65535.00
+NULL	NULL	2147483647.00	2147483647.00
+NULL	NULL	NULL	4294967295.00
+NULL	NULL	NULL	9223372036854775807.00
+NULL	NULL	NULL	NULL
+PREHOOK: query: drop table testdecimal22_2valid
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@testdecimal22_2valid
+PREHOOK: Output: default@testdecimal22_2valid
+POSTHOOK: query: drop table testdecimal22_2valid
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@testdecimal22_2valid
+POSTHOOK: Output: default@testdecimal22_2valid
+PREHOOK: query: create table testdecimal13_2valid
+(col_INT32_UINT_8  decimal(13,2),
+ col_INT32_UINT_16 decimal(13,2),
+ col_INT32_UINT_32 decimal(13,2),
+ col_INT64_UINT_64 decimal(13,2)) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testdecimal13_2valid
+POSTHOOK: query: create table testdecimal13_2valid
+(col_INT32_UINT_8  decimal(13,2),
+ col_INT32_UINT_16 decimal(13,2),
+ col_INT32_UINT_32 decimal(13,2),
+ col_INT64_UINT_64 decimal(13,2)) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testdecimal13_2valid
+PREHOOK: query: load data local inpath '../../data/files/data_with_valid_values.parquet' into table testdecimal13_2valid
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@testdecimal13_2valid
+POSTHOOK: query: load data local inpath '../../data/files/data_with_valid_values.parquet' into table testdecimal13_2valid
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@testdecimal13_2valid
+PREHOOK: query: select * from testdecimal13_2valid
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testdecimal13_2valid
+#### A masked pattern was here ####
+POSTHOOK: query: select * from testdecimal13_2valid
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testdecimal13_2valid
+#### A masked pattern was here ####
+0.00	0.00	0.00	0.00
+127.00	127.00	127.00	127.00
+255.00	255.00	255.00	255.00
+NULL	32767.00	32767.00	32767.00
+NULL	65535.00	65535.00	65535.00
+NULL	NULL	2147483647.00	2147483647.00
+NULL	NULL	NULL	4294967295.00
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+PREHOOK: query: drop table testdecimal13_2valid
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@testdecimal13_2valid
+PREHOOK: Output: default@testdecimal13_2valid
+POSTHOOK: query: drop table testdecimal13_2valid
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@testdecimal13_2valid
+POSTHOOK: Output: default@testdecimal13_2valid
+PREHOOK: query: create table testdecimal8_2valid
+(col_INT32_UINT_8  decimal(8,2),
+ col_INT32_UINT_16 decimal(8,2),
+ col_INT32_UINT_32 decimal(8,2),
+ col_INT64_UINT_64 decimal(8,2)) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testdecimal8_2valid
+POSTHOOK: query: create table testdecimal8_2valid
+(col_INT32_UINT_8  decimal(8,2),
+ col_INT32_UINT_16 decimal(8,2),
+ col_INT32_UINT_32 decimal(8,2),
+ col_INT64_UINT_64 decimal(8,2)) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testdecimal8_2valid
+PREHOOK: query: load data local inpath '../../data/files/data_with_valid_values.parquet' into table testdecimal8_2valid
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@testdecimal8_2valid
+POSTHOOK: query: load data local inpath '../../data/files/data_with_valid_values.parquet' into table testdecimal8_2valid
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@testdecimal8_2valid
+PREHOOK: query: select * from testdecimal8_2valid
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testdecimal8_2valid
+#### A masked pattern was here ####
+POSTHOOK: query: select * from testdecimal8_2valid
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testdecimal8_2valid
+#### A masked pattern was here ####
+0.00	0.00	0.00	0.00
+127.00	127.00	127.00	127.00
+255.00	255.00	255.00	255.00
+NULL	32767.00	32767.00	32767.00
+NULL	65535.00	65535.00	65535.00
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+PREHOOK: query: drop table testdecimal8_2valid
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@testdecimal8_2valid
+PREHOOK: Output: default@testdecimal8_2valid
+POSTHOOK: query: drop table testdecimal8_2valid
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@testdecimal8_2valid
+POSTHOOK: Output: default@testdecimal8_2valid
+PREHOOK: query: create table testdecimal6_2valid
+(col_INT32_UINT_8  decimal(6,2),
+ col_INT32_UINT_16 decimal(6,2),
+ col_INT32_UINT_32 decimal(6,2),
+ col_INT64_UINT_64 decimal(6,2)) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testdecimal6_2valid
+POSTHOOK: query: create table testdecimal6_2valid
+(col_INT32_UINT_8  decimal(6,2),
+ col_INT32_UINT_16 decimal(6,2),
+ col_INT32_UINT_32 decimal(6,2),
+ col_INT64_UINT_64 decimal(6,2)) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testdecimal6_2valid
+PREHOOK: query: load data local inpath '../../data/files/data_with_valid_values.parquet' into table testdecimal6_2valid
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@testdecimal6_2valid
+POSTHOOK: query: load data local inpath '../../data/files/data_with_valid_values.parquet' into table testdecimal6_2valid
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@testdecimal6_2valid
+PREHOOK: query: select * from testdecimal6_2valid
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testdecimal6_2valid
+#### A masked pattern was here ####
+POSTHOOK: query: select * from testdecimal6_2valid
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testdecimal6_2valid
+#### A masked pattern was here ####
+0.00	0.00	0.00	0.00
+127.00	127.00	127.00	127.00
+255.00	255.00	255.00	255.00
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+PREHOOK: query: drop table testdecimal6_2valid
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@testdecimal6_2valid
+PREHOOK: Output: default@testdecimal6_2valid
+POSTHOOK: query: drop table testdecimal6_2valid
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@testdecimal6_2valid
+POSTHOOK: Output: default@testdecimal6_2valid
+PREHOOK: query: create table testdecimal3_2valid
+(col_INT32_UINT_8  decimal(3,2),
+ col_INT32_UINT_16 decimal(3,2),
+ col_INT32_UINT_32 decimal(3,2),
+ col_INT64_UINT_64 decimal(3,2)) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testdecimal3_2valid
+POSTHOOK: query: create table testdecimal3_2valid
+(col_INT32_UINT_8  decimal(3,2),
+ col_INT32_UINT_16 decimal(3,2),
+ col_INT32_UINT_32 decimal(3,2),
+ col_INT64_UINT_64 decimal(3,2)) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testdecimal3_2valid
+PREHOOK: query: load data local inpath '../../data/files/data_with_valid_values.parquet' into table testdecimal3_2valid
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@testdecimal3_2valid
+POSTHOOK: query: load data local inpath '../../data/files/data_with_valid_values.parquet' into table testdecimal3_2valid
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@testdecimal3_2valid
+PREHOOK: query: select * from testdecimal3_2valid
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testdecimal3_2valid
+#### A masked pattern was here ####
+POSTHOOK: query: select * from testdecimal3_2valid
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testdecimal3_2valid
+#### A masked pattern was here ####
+0.00	0.00	0.00	0.00
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+PREHOOK: query: drop table testdecimal3_2valid
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@testdecimal3_2valid
+PREHOOK: Output: default@testdecimal3_2valid
+POSTHOOK: query: drop table testdecimal3_2valid
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@testdecimal3_2valid
+POSTHOOK: Output: default@testdecimal3_2valid
