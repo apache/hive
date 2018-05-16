@@ -1,3 +1,5 @@
+-- MASK_STATS
+
 set hive.explain.user=false;
 create table bug_201_input_a (
        userid                                       int
