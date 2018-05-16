@@ -291,15 +291,15 @@ class TextMetaDataFormatter implements MetaDataFormatter {
             if (par.getLocation() != null) {
               tblLoc = par.getDataLocation().toString();
             }
-            inputFormattCls = par.getInputFormatClass().getName();
-            outputFormattCls = par.getOutputFormatClass().getName();
+            inputFormattCls = par.getInputFormatClass() == null ? null : par.getInputFormatClass().getName();
+            outputFormattCls = par.getOutputFormatClass() == null ? null : par.getOutputFormatClass().getName();
           }
         } else {
           if (tbl.getPath() != null) {
             tblLoc = tbl.getDataLocation().toString();
           }
-          inputFormattCls = tbl.getInputFormatClass().getName();
-          outputFormattCls = tbl.getOutputFormatClass().getName();
+          inputFormattCls = tbl.getInputFormatClass() == null ? null : tbl.getInputFormatClass().getName();
+          outputFormattCls = tbl.getOutputFormatClass() == null ? null : tbl.getOutputFormatClass().getName();
         }
 
         String owner = tbl.getOwner();
