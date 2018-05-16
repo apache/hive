@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.common.util.RetryTestRunner;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
@@ -164,6 +165,13 @@ public class TestAutoPurgeTables {
   }
 
   @Before
+  public void beforeTest() throws Exception {
+    FileSystem fs = FileSystem.get(conf);
+    Path trashDir = ShimLoader.getHadoopShims().getCurrentTrashPath(conf, fs);
+    fs.delete(trashDir, true);
+  }
+
+  @After
   public void afterTest() throws Exception {
     FileSystem fs = FileSystem.get(conf);
     Path trashDir = ShimLoader.getHadoopShims().getCurrentTrashPath(conf, fs);
