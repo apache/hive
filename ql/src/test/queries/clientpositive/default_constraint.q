@@ -1,5 +1,8 @@
 -- create table
- -- numeric type
+-- numeric type
+
+-- MASK_DATA_SIZE
+
  set hive.stats.autogather=false;
  set hive.support.concurrency=true;
  set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
