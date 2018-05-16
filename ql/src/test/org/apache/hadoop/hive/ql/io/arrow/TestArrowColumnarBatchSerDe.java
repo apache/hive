@@ -42,7 +42,6 @@ import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -54,7 +53,6 @@ import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.Writable;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -66,10 +64,11 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNull;
 
 public class TestArrowColumnarBatchSerDe {
   private Configuration conf;
@@ -105,13 +104,38 @@ public class TestArrowColumnarBatchSerDe {
       {null, null, null},
   };
 
-  private final static long NOW = System.currentTimeMillis();
+  private final static long TIME_IN_MS = TimeUnit.DAYS.toMillis(365 + 31 + 3);
+  private final static long NEGATIVE_TIME_IN_MS = TimeUnit.DAYS.toMillis(-9 * 365 + 31 + 3);
+  private final static Timestamp TIMESTAMP;
+  private final static Timestamp NEGATIVE_TIMESTAMP_WITHOUT_NANOS;
+  private final static Timestamp NEGATIVE_TIMESTAMP_WITH_NANOS;
+
+  static {
+    TIMESTAMP = new Timestamp(TIME_IN_MS);
+    TIMESTAMP.setNanos(123456789);
+    NEGATIVE_TIMESTAMP_WITHOUT_NANOS = new Timestamp(NEGATIVE_TIME_IN_MS);
+    NEGATIVE_TIMESTAMP_WITH_NANOS = new Timestamp(NEGATIVE_TIME_IN_MS);
+    NEGATIVE_TIMESTAMP_WITH_NANOS.setNanos(123456789);
+  }
+
   private final static Object[][] DTI_ROWS = {
       {
-          new DateWritable(DateWritable.millisToDays(NOW)),
-          new TimestampWritable(new Timestamp(NOW)),
+          new DateWritable(DateWritable.millisToDays(TIME_IN_MS)),
+          new TimestampWritable(TIMESTAMP),
           new HiveIntervalYearMonthWritable(new HiveIntervalYearMonth(1, 2)),
           new HiveIntervalDayTimeWritable(new HiveIntervalDayTime(1, 2, 3, 4, 5_000_000))
+      },
+      {
+          new DateWritable(DateWritable.millisToDays(NEGATIVE_TIME_IN_MS)),
+          new TimestampWritable(NEGATIVE_TIMESTAMP_WITHOUT_NANOS),
+          null,
+          null
+      },
+      {
+          null,
+          new TimestampWritable(NEGATIVE_TIMESTAMP_WITH_NANOS),
+          null,
+          null
       },
       {null, null, null, null},
   };
@@ -184,7 +208,7 @@ public class TestArrowColumnarBatchSerDe {
   }
 
   private void initAndSerializeAndDeserialize(String[][] schema, Object[][] rows) throws SerDeException {
-    AbstractSerDe serDe = new ArrowColumnarBatchSerDe();
+    ArrowColumnarBatchSerDe serDe = new ArrowColumnarBatchSerDe();
     StructObjectInspector rowOI = initSerDe(serDe, schema);
     serializeAndDeserialize(serDe, rows, rowOI);
   }
@@ -214,9 +238,9 @@ public class TestArrowColumnarBatchSerDe {
         TypeInfoFactory.getStructTypeInfo(fieldNameList, typeInfoList));
   }
 
-  private void serializeAndDeserialize(AbstractSerDe serDe, Object[][] rows,
-      StructObjectInspector rowOI) throws SerDeException {
-    Writable serialized = null;
+  private void serializeAndDeserialize(ArrowColumnarBatchSerDe serDe, Object[][] rows,
+      StructObjectInspector rowOI) {
+    ArrowWrapperWritable serialized = null;
     for (Object[] row : rows) {
       serialized = serDe.serialize(row, rowOI);
     }
@@ -224,6 +248,7 @@ public class TestArrowColumnarBatchSerDe {
     if (serialized == null) {
       serialized = serDe.serialize(null, rowOI);
     }
+    String s = serialized.getVectorSchemaRoot().contentToTSVString();
     final Object[][] deserializedRows = (Object[][]) serDe.deserialize(serialized);
 
     for (int rowIndex = 0; rowIndex < Math.min(deserializedRows.length, rows.length); rowIndex++) {
@@ -254,21 +279,28 @@ public class TestArrowColumnarBatchSerDe {
           case STRUCT:
             final Object[] rowStruct = (Object[]) row[fieldIndex];
             final List deserializedRowStruct = (List) deserializedRow[fieldIndex];
-            assertArrayEquals(rowStruct, deserializedRowStruct.toArray());
+            if (rowStruct == null) {
+              assertNull(deserializedRowStruct);
+            } else {
+              assertArrayEquals(rowStruct, deserializedRowStruct.toArray());
+            }
             break;
           case LIST:
           case UNION:
             assertEquals(row[fieldIndex], deserializedRow[fieldIndex]);
             break;
           case MAP:
-            Map rowMap = (Map) row[fieldIndex];
-            Map deserializedRowMap = (Map) deserializedRow[fieldIndex];
-            Set rowMapKeySet = rowMap.keySet();
-            Set deserializedRowMapKeySet = deserializedRowMap.keySet();
-            assertTrue(rowMapKeySet.containsAll(deserializedRowMapKeySet));
-            assertTrue(deserializedRowMapKeySet.containsAll(rowMapKeySet));
-            for (Object key : rowMapKeySet) {
-              assertEquals(rowMap.get(key), deserializedRowMap.get(key));
+            final Map rowMap = (Map) row[fieldIndex];
+            final Map deserializedRowMap = (Map) deserializedRow[fieldIndex];
+            if (rowMap == null) {
+              assertNull(deserializedRowMap);
+            } else {
+              final Set rowMapKeySet = rowMap.keySet();
+              final Set deserializedRowMapKeySet = deserializedRowMap.keySet();
+              assertEquals(rowMapKeySet, deserializedRowMapKeySet);
+              for (Object key : rowMapKeySet) {
+                assertEquals(rowMap.get(key), deserializedRowMap.get(key));
+              }
             }
             break;
         }
@@ -341,14 +373,18 @@ public class TestArrowColumnarBatchSerDe {
                         newArrayList(text("hello")),
                         input -> text(input.toString().toUpperCase())),
                     intW(0))), // c16:array<struct<m:map<string,string>,n:int>>
-            new TimestampWritable(new Timestamp(NOW)), // c17:timestamp
+            new TimestampWritable(TIMESTAMP), // c17:timestamp
             decimalW(HiveDecimal.create(0, 0)), // c18:decimal(16,7)
             new BytesWritable("Hello".getBytes()), // c19:binary
             new DateWritable(123), // c20:date
             varcharW("x", 20), // c21:varchar(20)
             charW("y", 15), // c22:char(15)
             new BytesWritable("world!".getBytes()), // c23:binary
-        },
+        }, {
+            null, null, null, null, null, null, null, null, null, null, // c1-c10
+            null, null, null, null, null, null, null, null, null, null, // c11-c20
+            null, null, null, // c21-c23
+        }
     };
 
     initAndSerializeAndDeserialize(schema, comprehensiveRows);
@@ -378,7 +414,7 @@ public class TestArrowColumnarBatchSerDe {
 
     final int batchSize = 1000;
     final Object[][] integerRows = new Object[batchSize][];
-    final AbstractSerDe serDe = new ArrowColumnarBatchSerDe();
+    final ArrowColumnarBatchSerDe serDe = new ArrowColumnarBatchSerDe();
     StructObjectInspector rowOI = initSerDe(serDe, schema);
 
     for (int j = 0; j < 10; j++) {
@@ -397,7 +433,7 @@ public class TestArrowColumnarBatchSerDe {
           {"bigint1", "bigint"}
       };
 
-      final AbstractSerDe serDe = new ArrowColumnarBatchSerDe();
+      final ArrowColumnarBatchSerDe serDe = new ArrowColumnarBatchSerDe();
       StructObjectInspector rowOI = initSerDe(serDe, schema);
 
       final Random random = new Random();
@@ -572,106 +608,6 @@ public class TestArrowColumnarBatchSerDe {
     initAndSerializeAndDeserialize(schema, toList(BINARY_ROWS));
   }
 
-  private StandardUnionObjectInspector.StandardUnion union(int tag, Object object) {
-    return new StandardUnionObjectInspector.StandardUnion((byte) tag, object);
-  }
-
-  public void testUnionInteger() throws SerDeException {
-    String[][] schema = {
-        {"int_union", "uniontype<tinyint,smallint,int,bigint>"},
-    };
-
-    StandardUnionObjectInspector.StandardUnion[][] integerUnions = {
-        {union(0, byteW(0))},
-        {union(1, shortW(1))},
-        {union(2, intW(2))},
-        {union(3, longW(3))},
-    };
-
-    initAndSerializeAndDeserialize(schema, integerUnions);
-  }
-
-  public void testUnionFloat() throws SerDeException {
-    String[][] schema = {
-        {"float_union", "uniontype<float,double>"},
-    };
-
-    StandardUnionObjectInspector.StandardUnion[][] floatUnions = {
-        {union(0, floatW(0f))},
-        {union(1, doubleW(1d))},
-    };
-
-    initAndSerializeAndDeserialize(schema, floatUnions);
-  }
-
-  public void testUnionString() throws SerDeException {
-    String[][] schema = {
-        {"string_union", "uniontype<string,int>"},
-    };
-
-    StandardUnionObjectInspector.StandardUnion[][] stringUnions = {
-        {union(0, text("Hello"))},
-        {union(1, intW(1))},
-    };
-
-    initAndSerializeAndDeserialize(schema, stringUnions);
-  }
-
-  public void testUnionChar() throws SerDeException {
-    String[][] schema = {
-        {"char_union", "uniontype<char(10),int>"},
-    };
-
-    StandardUnionObjectInspector.StandardUnion[][] charUnions = {
-        {union(0, charW("Hello", 10))},
-        {union(1, intW(1))},
-    };
-
-    initAndSerializeAndDeserialize(schema, charUnions);
-  }
-
-  public void testUnionVarchar() throws SerDeException {
-    String[][] schema = {
-        {"varchar_union", "uniontype<varchar(10),int>"},
-    };
-
-    StandardUnionObjectInspector.StandardUnion[][] varcharUnions = {
-        {union(0, varcharW("Hello", 10))},
-        {union(1, intW(1))},
-    };
-
-    initAndSerializeAndDeserialize(schema, varcharUnions);
-  }
-
-  public void testUnionDTI() throws SerDeException {
-    String[][] schema = {
-        {"date_union", "uniontype<date,timestamp,interval_year_month,interval_day_time>"},
-    };
-    long NOW = System.currentTimeMillis();
-
-    StandardUnionObjectInspector.StandardUnion[][] dtiUnions = {
-        {union(0, new DateWritable(DateWritable.millisToDays(NOW)))},
-        {union(1, new TimestampWritable(new Timestamp(NOW)))},
-        {union(2, new HiveIntervalYearMonthWritable(new HiveIntervalYearMonth(1, 2)))},
-        {union(3, new HiveIntervalDayTimeWritable(new HiveIntervalDayTime(1, 2, 3, 4, 5_000_000)))},
-    };
-
-    initAndSerializeAndDeserialize(schema, dtiUnions);
-  }
-
-  public void testUnionBooleanBinary() throws SerDeException {
-    String[][] schema = {
-        {"boolean_union", "uniontype<boolean,binary>"},
-    };
-
-    StandardUnionObjectInspector.StandardUnion[][] booleanBinaryUnions = {
-        {union(0, new BooleanWritable(true))},
-        {union(1, new BytesWritable("Hello".getBytes()))},
-    };
-
-    initAndSerializeAndDeserialize(schema, booleanBinaryUnions);
-  }
-
   private Object[][][] toStruct(Object[][] rows) {
     Object[][][] struct = new Object[rows.length][][];
     for (int rowIndex = 0; rowIndex < rows.length; rowIndex++) {
@@ -716,6 +652,15 @@ public class TestArrowColumnarBatchSerDe {
     };
 
     initAndSerializeAndDeserialize(schema, toStruct(DTI_ROWS));
+  }
+
+  @Test
+  public void testStructDecimal() throws SerDeException {
+    String[][] schema = {
+        {"decimal_struct", "struct<decimal1:decimal(38,10)>"},
+    };
+
+    initAndSerializeAndDeserialize(schema, toStruct(DECIMAL_ROWS));
   }
 
   @Test
@@ -812,4 +757,21 @@ public class TestArrowColumnarBatchSerDe {
 
     initAndSerializeAndDeserialize(schema, toMap(BINARY_ROWS));
   }
+
+  public void testMapDecimal() throws SerDeException {
+    String[][] schema = {
+        {"decimal_map", "map<string,decimal(38,10)>"},
+    };
+
+    initAndSerializeAndDeserialize(schema, toMap(DECIMAL_ROWS));
+  }
+
+  public void testListDecimal() throws SerDeException {
+    String[][] schema = {
+        {"decimal_list", "array<decimal(38,10)>"},
+    };
+
+    initAndSerializeAndDeserialize(schema, toList(DECIMAL_ROWS));
+  }
+
 }
