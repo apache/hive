@@ -54,6 +54,7 @@ public class PostExecWMEventsSummaryPrinter implements ExecuteWithHookContext {
     for (TezTask tezTask : rootTasks) {
       WmContext wmContext = tezTask.getDriverContext().getCtx().getWmContext();
       if (wmContext != null) {
+        wmContext.printJson(console);
         wmContext.shortPrint(console);
       }
     }
