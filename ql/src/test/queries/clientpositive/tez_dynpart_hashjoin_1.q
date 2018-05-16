@@ -1,4 +1,7 @@
 --! qt:dataset:alltypesorc
+
+-- MASK_STATS
+
 set hive.mapred.mode=nonstrict;
 
 set hive.explain.user=false;
