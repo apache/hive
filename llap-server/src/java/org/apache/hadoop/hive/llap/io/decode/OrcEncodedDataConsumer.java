@@ -216,7 +216,8 @@ public class OrcEncodedDataConsumer
       ConsumerStripeMetadata stripeMetadata, TypeDescription fileSchema) throws IOException {
     TreeReaderFactory.Context context = new TreeReaderFactory.ReaderContext()
             .setSchemaEvolution(evolution).skipCorrupt(skipCorrupt)
-            .writerTimeZone(stripeMetadata.getWriterTimezone());
+            .writerTimeZone(stripeMetadata.getWriterTimezone())
+        ;
     this.batchSchemas = includes.getBatchReaderTypes(fileSchema);
     StructTreeReader treeReader = EncodedTreeReaderFactory.createRootTreeReader(
         batchSchemas, stripeMetadata.getEncodings(), batch, codec, context);
