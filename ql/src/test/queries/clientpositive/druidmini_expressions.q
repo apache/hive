@@ -51,4 +51,34 @@ EXPLAIN SELECT cstring1 || '_'|| cstring2, substring(cstring2, 2, 3) as concat ,
 
 explain extended select count(*) from (select `__time` from druid_table_n0 limit 1) as src ;
 
+SELECT `__time`
+FROM druid_table_n0
+WHERE (`__time` BETWEEN '1968-01-01 00:00:00' AND '1970-01-01 00:00:00')
+    OR (`__time` BETWEEN '1968-02-01 00:00:00' AND '1970-04-01 00:00:00') ORDER BY `__time` ASC LIMIT 10;
+
+-- COUNT DISTINCT TESTS
+-- AS PART OF https://issues.apache.org/jira/browse/HIVE-19586
+
+EXPLAIN select count(DISTINCT cstring2), sum(cdouble) FROM druid_table_n0 GROUP  BY `__time`, `cstring1` ;
+
+EXPLAIN select count(distinct cdouble), sum(cdouble) FROM druid_table_n0 GROUP  BY `__time`, `cstring1` ;
+
+EXPLAIN select count(distinct cstring2), sum(2 * cdouble) FROM druid_table_n0 GROUP  BY `__time`, `cstring1` ;
+
+EXPLAIN select count(distinct cstring2 || '_'|| cstring1), sum(cdouble) FROM druid_table_n0 GROUP  BY `__time`, `cstring1` ;
+
+EXPLAIN select count(DISTINCT cstring2) FROM druid_table_n0 ;
+EXPLAIN select count(DISTINCT cstring2), sum(cdouble) FROM druid_table_n0 ;
+EXPLAIN select count(distinct cstring2 || '_'|| cstring1), sum(cdouble), min(cint) FROM druid_table_n0;
+
+select count(DISTINCT cstring2), sum(cdouble) FROM druid_table_n0 GROUP  BY floor_year(`__time`) ;
+
+select count(distinct cstring2), sum(2 * cdouble) FROM druid_table_n0 GROUP  BY floor_year(`__time`) ;
+
+select count(DISTINCT cstring2) FROM druid_table_n0 ;
+
+select count(DISTINCT cstring2), sum(cdouble) FROM druid_table_n0 ;
+
+select count(distinct cstring2 || '_'|| cstring1), sum(cdouble), min(cint) FROM druid_table_n0;
+
 DROP TABLE druid_table_n0;
