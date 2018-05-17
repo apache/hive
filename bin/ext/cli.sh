@@ -23,7 +23,7 @@ if [ -z "$USE_DEPRECATED_CLI" ] || [ "$USE_DEPRECATED_CLI" != "false" ]; then
 fi
 
 updateCli() {
-  USE_BEELINE_FOR_HIVE_CLI = "true"
+  USE_BEELINE_FOR_HIVE_CLI="true"
   if [ "$USE_DEPRECATED_CLI" == "true" ]; then
     if [ "$USE_BEELINE_FOR_HIVE_CLI" == "true" ]; then
 	  CLASS=org.apache.hive.beeline.BeeLine;

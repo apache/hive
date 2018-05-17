@@ -81,8 +81,7 @@ if [ "$SERVICE" = "" ] ; then
   if [ "$HELP" = "_help" ] ; then
     SERVICE="help"
   else
-    echo "Please use beeline (or another JDBC client) to access data with Hive 2."
-    exit 1
+    SERVICE="cli"
   fi
 fi
 
