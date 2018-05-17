@@ -751,8 +751,9 @@ public class TestReplicationScenariosAcrossInstances {
     WarehouseInstance.Tuple bootstrapTuple = primary
         .run("use " + primaryDbName)
         .run(createTableQuery).dump(primaryDbName, null);
-    Path cSerdesTableDumpLocation = new Path(bootstrapTuple.dumpLocation
-        + Path.SEPARATOR + primaryDbName + Path.SEPARATOR + "custom_serdes");
+    Path cSerdesTableDumpLocation = new Path(
+        new Path(bootstrapTuple.dumpLocation, primaryDbName),
+        "custom_serdes");
     FileSystem fs = cSerdesTableDumpLocation.getFileSystem(primary.hiveConf);
     assertFalse(fs.exists(cSerdesTableDumpLocation));
   }
