@@ -2566,6 +2566,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * specifically: TXN_COMPONENTS, COMPLETED_TXN_COMPONENTS, COMPACTION_QUEUE, COMPLETED_COMPACTIONS
    * Retry-by-caller note: this is only idempotent assuming it's only called by dropTable/Db/etc
    * operations.
+   *
+   * HIVE_LOCKS is (presumably) expected to be removed by AcidHouseKeeperServices
+   * WS_SET is (presumably) expected to be removed by AcidWriteSetService
    */
   @Override
   @RetrySemantics.Idempotent
@@ -2760,7 +2763,181 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       cleanupRecords(type, db, table, partitionIterator);
     }
   }
+  /**
+   * Catalog hasn't been added to transactional tables yet, so it's passed in but not used.
+   */
+  @Override
+  public void onRename(String oldCatName, String oldDbName, String oldTabName, String oldPartName,
+      String newCatName, String newDbName, String newTabName, String newPartName)
+      throws MetaException {
+    String callSig = "onRename(" +
+        oldCatName + "," + oldDbName + "," + oldTabName + "," + oldPartName + "," +
+        newCatName + "," + newDbName + "," + newTabName + "," + newPartName + ")";
 
+    if(newPartName != null) {
+      assert oldPartName != null && oldTabName != null && oldDbName != null && oldCatName != null :
+      callSig;
+    }
+    if(newTabName != null) {
+      assert oldTabName != null && oldDbName != null && oldCatName != null : callSig;
+    }
+    if(newDbName != null) {
+      assert oldDbName != null && oldCatName != null : callSig;
+    }
+
+    try {
+      Connection dbConn = null;
+      Statement stmt = null;
+      try {
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        stmt = dbConn.createStatement();
+        List<String> queries = new ArrayList<>();
+
+        String update = "update TXN_COMPONENTS set ";
+        String where = " where ";
+        if(oldPartName != null) {
+          update += "TC_PARTITION = " + quoteString(newPartName) + ", ";
+          where += "TC_PARTITION = " + quoteString(oldPartName) + " AND ";
+        }
+        if(oldTabName != null) {
+          update += "TC_TABLE = " + quoteString(normalizeCase(newTabName)) + ", ";
+          where += "TC_TABLE = " + quoteString(normalizeCase(oldTabName)) + " AND ";
+        }
+        if(oldDbName != null) {
+          update += "TC_DATABASE = " + quoteString(normalizeCase(newDbName));
+          where += "TC_DATABASE = " + quoteString(normalizeCase(oldDbName));
+        }
+        queries.add(update + where);
+
+        update = "update COMPLETED_TXN_COMPONENTS set ";
+        where = " where ";
+        if(oldPartName != null) {
+          update += "CTC_PARTITION = " + quoteString(newPartName) + ", ";
+          where += "CTC_PARTITION = " + quoteString(oldPartName) + " AND ";
+        }
+        if(oldTabName != null) {
+          update += "CTC_TABLE = " + quoteString(normalizeCase(newTabName)) + ", ";
+          where += "CTC_TABLE = " + quoteString(normalizeCase(oldTabName)) + " AND ";
+        }
+        if(oldDbName != null) {
+          update += "CTC_DATABASE = " + quoteString(normalizeCase(newDbName));
+          where += "CTC_DATABASE = " + quoteString(normalizeCase(oldDbName));
+        }
+        queries.add(update + where);
+
+        update = "update HIVE_LOCKS set ";
+        where = " where ";
+        if(oldPartName != null) {
+          update += "HL_PARTITION = " + quoteString(newPartName) + ", ";
+          where += "HL_PARTITION = " + quoteString(oldPartName) + " AND ";
+        }
+        if(oldTabName != null) {
+          update += "HL_TABLE = " + quoteString(normalizeCase(newTabName)) + ", ";
+          where += "HL_TABLE = " + quoteString(normalizeCase(oldTabName)) + " AND ";
+        }
+        if(oldDbName != null) {
+          update += "HL_DB = " + quoteString(normalizeCase(newDbName));
+          where += "HL_DB = " + quoteString(normalizeCase(oldDbName));
+        }
+        queries.add(update + where);
+
+        update = "update COMPACTION_QUEUE set ";
+        where = " where ";
+        if(oldPartName != null) {
+          update += "CQ_PARTITION = " + quoteString(newPartName) + ", ";
+          where += "CQ_PARTITION = " + quoteString(oldPartName) + " AND ";
+        }
+        if(oldTabName != null) {
+          update += "CQ_TABLE = " + quoteString(normalizeCase(newTabName)) + ", ";
+          where += "CQ_TABLE = " + quoteString(normalizeCase(oldTabName)) + " AND ";
+        }
+        if(oldDbName != null) {
+          update += "CQ_DATABASE = " + quoteString(normalizeCase(newDbName));
+          where += "CQ_DATABASE = " + quoteString(normalizeCase(oldDbName));
+        }
+        queries.add(update + where);
+
+        update = "update COMPLETED_COMPACTIONS set ";
+        where = " where ";
+        if(oldPartName != null) {
+          update += "CC_PARTITION = " + quoteString(newPartName) + ", ";
+          where += "CC_PARTITION = " + quoteString(oldPartName) + " AND ";
+        }
+        if(oldTabName != null) {
+          update += "CC_TABLE = " + quoteString(normalizeCase(newTabName)) + ", ";
+          where += "CC_TABLE = " + quoteString(normalizeCase(oldTabName)) + " AND ";
+        }
+        if(oldDbName != null) {
+          update += "CC_DATABASE = " + quoteString(normalizeCase(newDbName));
+          where += "CC_DATABASE = " + quoteString(normalizeCase(oldDbName));
+        }
+        queries.add(update + where);
+
+        update = "update WRITE_SET set ";
+        where = " where ";
+        if(oldPartName != null) {
+          update += "WS_PARTITION = " + quoteString(newPartName) + ", ";
+          where += "WS_PARTITION = " + quoteString(oldPartName) + " AND ";
+        }
+        if(oldTabName != null) {
+          update += "WS_TABLE = " + quoteString(normalizeCase(newTabName)) + ", ";
+          where += "WS_TABLE = " + quoteString(normalizeCase(oldTabName)) + " AND ";
+        }
+        if(oldDbName != null) {
+          update += "WS_DATABASE = " + quoteString(normalizeCase(newDbName));
+          where += "WS_DATABASE = " + quoteString(normalizeCase(oldDbName));
+        }
+        queries.add(update + where);
+
+        update = "update TXN_TO_WRITE_ID set ";
+        where = " where ";
+        if(oldTabName != null) {
+          update += "T2W_TABLE = " + quoteString(normalizeCase(newTabName)) + ", ";
+          where += "T2W_TABLE = " + quoteString(normalizeCase(oldTabName)) + " AND ";
+        }
+        if(oldDbName != null) {
+          update += "T2W_DATABASE = " + quoteString(normalizeCase(newDbName));
+          where += "T2W_DATABASE = " + quoteString(normalizeCase(oldDbName));
+        }
+        queries.add(update + where);
+
+        update = "update NEXT_WRITE_ID set ";
+        where = " where ";
+        if(oldTabName != null) {
+          update += "NWI_TABLE = " + quoteString(normalizeCase(newTabName)) + ", ";
+          where += "NWI_TABLE = " + quoteString(normalizeCase(oldTabName)) + " AND ";
+        }
+        if(oldDbName != null) {
+          update += "NWI_DATABASE = " + quoteString(normalizeCase(newDbName));
+          where += "NWI_DATABASE = " + quoteString(normalizeCase(oldDbName));
+        }
+        queries.add(update + where);
+
+        for (String query : queries) {
+          LOG.debug("Going to execute update <" + query + ">");
+          stmt.executeUpdate(query);
+        }
+
+        LOG.debug("Going to commit: " + callSig);
+        dbConn.commit();
+      } catch (SQLException e) {
+        LOG.debug("Going to rollback: " + callSig);
+        rollbackDBConn(dbConn);
+        checkRetryable(dbConn, e, callSig);
+        if (e.getMessage().contains("does not exist")) {
+          LOG.warn("Cannot perform " + callSig + " since metastore table does not exist");
+        } else {
+          throw new MetaException("Unable to " + callSig + ":" + StringUtils.stringifyException(e));
+        }
+      } finally {
+        closeStmt(stmt);
+        closeDbConn(dbConn);
+      }
+    } catch (RetryException e) {
+      onRename(oldCatName, oldDbName, oldTabName, oldPartName,
+          newCatName, newDbName, newTabName, newPartName);
+    }
+  }
   /**
    * For testing only, do not use.
    */

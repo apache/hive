@@ -266,6 +266,11 @@ public interface TxnStore extends Configurable {
   void cleanupRecords(HiveObjectType type, Database db, Table table,
                              Iterator<Partition> partitionIterator) throws MetaException;
 
+  @RetrySemantics.Idempotent
+  void onRename(String oldCatName, String oldDbName, String oldTabName, String oldPartName,
+      String newCatName, String newDbName, String newTabName, String newPartName)
+      throws MetaException;
+
   /**
    * Timeout transactions and/or locks.  This should only be called by the compactor.
    */
