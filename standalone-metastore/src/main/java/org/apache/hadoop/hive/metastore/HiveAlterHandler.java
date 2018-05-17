@@ -421,6 +421,15 @@ public class HiveAlterHandler implements AlterHandler {
             new AlterTableEvent(oldt, newt, false, success, handler),
             environmentContext, txnAlterTableEventResponses, msdb);
       } else {
+        if(oldt.getParameters() != null && "true".equalsIgnoreCase(
+            oldt.getParameters().get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL))) {
+          /*Why does it split Alter into Drop + Create here?????  This causes onDropTable logic
+           * to wipe out acid related metadata and writeIds from old table don't make sense
+           * in the new table.*/
+          throw new IllegalStateException("Changing database name of a transactional table " +
+              Warehouse.getQualifiedName(oldt) + " is not supported.  Please use create-table-as" +
+              " or create new table manually followed by Insert.");
+        }
         MetaStoreListenerNotifier.notifyEvent(listeners, EventMessage.EventType.DROP_TABLE,
             new DropTableEvent(oldt, true, false, handler),
             environmentContext, txnDropTableEventResponses, msdb);
