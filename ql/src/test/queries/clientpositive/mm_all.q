@@ -1,5 +1,8 @@
 --! qt:dataset:src1
 --! qt:dataset:src
+
+-- MASK_LINEAGE
+
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 set hive.fetch.task.conversion=none;
