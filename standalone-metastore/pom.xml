@@ -83,7 +83,7 @@
     <orc.version>1.4.3</orc.version>
     <protobuf.version>2.5.0</protobuf.version>
     <sqlline.version>1.3.0</sqlline.version>
-    <storage-api.version>2.6.0-SNAPSHOT</storage-api.version>
+    <storage-api.version>2.6.1</storage-api.version>
 
     <!-- Thrift properties -->
     <thrift.home>you-must-set-this-to-run-thrift</thrift.home>
