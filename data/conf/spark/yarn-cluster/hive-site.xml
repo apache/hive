@@ -260,6 +260,11 @@
 </property>
 
 <property>
+  <name>spark.local.dir</name>
+  <value>${test.tmp.dir}/spark-local-dir</value>
+</property>
+
+<property>
   <name>hive.prewarm.enabled</name>
   <value>true</value>
 </property>
