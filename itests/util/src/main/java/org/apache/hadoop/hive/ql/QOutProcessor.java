@@ -58,6 +58,9 @@ public class QOutProcessor {
   private static final PatternReplacementPair MASK_DATA_SIZE = new PatternReplacementPair(
       Pattern.compile(" Data size: [1-9][0-9]*"),
       " Data size: ###Masked###");
+  private static final PatternReplacementPair MASK_LINEAGE = new PatternReplacementPair(
+      Pattern.compile("POSTHOOK: Lineage: .*"),
+      "POSTHOOK: Lineage: ###Masked###");
 
   private FsType fsType = FsType.local;
 
@@ -137,7 +140,7 @@ public class QOutProcessor {
     return patterns;
   }
 
-  public void maskPatterns(String fname, boolean maskStats, boolean maskDataSize) throws Exception {
+  public void maskPatterns(String fname, boolean maskStats, boolean maskDataSize, boolean maskLineage) throws Exception {
     String line;
     BufferedReader in;
     BufferedWriter out;
@@ -152,7 +155,7 @@ public class QOutProcessor {
     boolean lastWasMasked = false;
 
     while (null != (line = in.readLine())) {
-      LineProcessingResult result = processLine(line, maskStats, maskDataSize);
+      LineProcessingResult result = processLine(line, maskStats, maskDataSize, maskLineage);
 
       if (result.line.equals(MASK_PATTERN)) {
         // We're folding multiple masked lines into one.
@@ -174,7 +177,7 @@ public class QOutProcessor {
     out.close();
   }
 
-  public LineProcessingResult processLine(String line, boolean maskStats, boolean maskDataSize) {
+  public LineProcessingResult processLine(String line, boolean maskStats, boolean maskDataSize, boolean maskLineage) {
     LineProcessingResult result = new LineProcessingResult(line);
     
     Matcher matcher = null;
@@ -224,6 +227,14 @@ public class QOutProcessor {
         matcher = MASK_DATA_SIZE.pattern.matcher(result.line);
         if (matcher.find()) {
           result.line = result.line.replaceAll(MASK_DATA_SIZE.pattern.pattern(), MASK_DATA_SIZE.replacement);
+          result.partialMaskWasMatched = true;
+        }
+      }
+
+      if (!result.partialMaskWasMatched && maskLineage) {
+        matcher = MASK_LINEAGE.pattern.matcher(result.line);
+        if (matcher.find()) {
+          result.line = result.line.replaceAll(MASK_LINEAGE.pattern.pattern(), MASK_LINEAGE.replacement);
           result.partialMaskWasMatched = true;
         }
       }
