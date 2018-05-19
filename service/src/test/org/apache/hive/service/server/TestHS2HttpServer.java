@@ -62,12 +62,33 @@ public class TestHS2HttpServer {
     hiveConf.set(ConfVars.METASTOREPWD.varname, metastorePasswd);
     hiveConf.set(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname, webUIPort.toString());
     hiveConf
-    .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
-        "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
-    hiveServer2 = new HiveServer2();
-    hiveServer2.init(hiveConf);
-    hiveServer2.start();
-    Thread.sleep(5000);
+        .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
+            "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
+
+    Exception hs2Exception = null;
+    boolean hs2Started = false;
+    for (int tryCount = 0; (tryCount < MetaStoreTestUtils.RETRY_COUNT); tryCount++) {
+      try {
+        hiveServer2 = new HiveServer2();
+        hiveServer2.init(hiveConf);
+        hiveServer2.start();
+        Thread.sleep(5000);
+        hs2Started = true;
+        break;
+      } catch (Exception t) {
+        HiveConf.setIntVar(hiveConf, HiveConf.ConfVars.HIVE_SERVER2_THRIFT_PORT,
+            MetaStoreTestUtils.findFreePort());
+        HiveConf.setIntVar(hiveConf, HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_PORT,
+            MetaStoreTestUtils.findFreePort());
+        HiveConf.setIntVar(hiveConf, HiveConf.ConfVars.HIVE_SERVER2_WEBUI_PORT,
+            MetaStoreTestUtils.findFreePort());
+        webUIPort = hiveConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_PORT);
+      }
+    }
+
+    if (!hs2Started) {
+      throw(hs2Exception);
+    }
   }
 
   @Test
