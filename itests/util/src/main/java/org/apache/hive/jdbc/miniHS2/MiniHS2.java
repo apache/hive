@@ -373,6 +373,8 @@ public class MiniHS2 extends AbstractHiveService {
               MetaStoreTestUtils.findFreePort());
           HiveConf.setIntVar(getHiveConf(), HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_PORT,
               MetaStoreTestUtils.findFreePort());
+          HiveConf.setIntVar(getHiveConf(), HiveConf.ConfVars.HIVE_SERVER2_WEBUI_PORT,
+              MetaStoreTestUtils.findFreePort());
         }
       }
     }
