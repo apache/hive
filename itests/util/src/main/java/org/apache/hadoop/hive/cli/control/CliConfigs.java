@@ -371,8 +371,6 @@ public class CliConfigs {
         excludeQuery("authorization_uri_import.q");
         excludeQuery("spark_job_max_tasks.q");
         excludeQuery("spark_stage_max_tasks.q");
-        excludeQuery("merge_negative_5.q"); // Disabled in HIVE-19509
-        excludeQuery("mm_concatenate.q"); // Disabled in HIVE-19509
 
         setResultsDir("ql/src/test/results/clientnegative");
         setLogDir("itests/qtest/target/qfile-results/clientnegative");
