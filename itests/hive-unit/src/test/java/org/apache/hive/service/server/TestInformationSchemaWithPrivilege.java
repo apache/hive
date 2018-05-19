@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hbase.zookeeper.MiniZooKeeperCluster;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -197,6 +198,16 @@ public class TestInformationSchemaWithPrivilege {
 
     miniHS2 = new MiniHS2(new HiveConf());
     confOverlay = new HashMap<String, String>();
+    Path workDir = new Path(System.getProperty("test.tmp.dir",
+        "target" + File.separator + "test" + File.separator + "tmp"));
+    confOverlay.put("mapred.local.dir", workDir + File.separator + "TestInformationSchemaWithPrivilege"
+        + File.separator + "mapred" + File.separator + "local");
+    confOverlay.put("mapred.system.dir", workDir + File.separator + "TestInformationSchemaWithPrivilege"
+        + File.separator + "mapred" + File.separator + "system");
+    confOverlay.put("mapreduce.jobtracker.staging.root.dir", workDir + File.separator + "TestInformationSchemaWithPrivilege"
+        + File.separator + "mapred" + File.separator + "staging");
+    confOverlay.put("mapred.temp.dir", workDir + File.separator + "TestInformationSchemaWithPrivilege"
+        + File.separator + "mapred" + File.separator + "temp");
     confOverlay.put(ConfVars.HIVE_PRIVILEGE_SYNCHRONIZER.varname, "true");
     confOverlay.put(ConfVars.HIVE_PRIVILEGE_SYNCHRONIZER_INTERVAL.varname, "1");
     confOverlay.put(ConfVars.HIVE_SERVER2_SUPPORT_DYNAMIC_SERVICE_DISCOVERY.varname, "true");
