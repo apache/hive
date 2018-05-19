@@ -78,10 +78,12 @@ public class TestHCatPartitionPublish {
   private static HiveMetaStoreClient msc;
   private static SecurityManager securityManager;
   private static Configuration conf = new Configuration(true);
+  private static String testName;
 
   public static File handleWorkDir() throws IOException {
+    testName = "test_hcat_partitionpublish_" + Math.abs(new Random().nextLong());
     String testDir = System.getProperty("test.data.dir", "./");
-    testDir = testDir + "/test_hcat_partitionpublish_" + Math.abs(new Random().nextLong()) + "/";
+    testDir = testDir + "/" + testName + "/";
     File workDir = new File(new File(testDir).getCanonicalPath());
     FileUtil.fullyDelete(workDir);
     workDir.mkdirs();
@@ -90,6 +92,10 @@ public class TestHCatPartitionPublish {
   @BeforeClass
   public static void setup() throws Exception {
     File workDir = handleWorkDir();
+    Path tmpDir = new Path(System.getProperty("test.tmp.dir",
+        "target" + File.separator + "test" + File.separator + "tmp"));
+    conf.set("yarn.app.mapreduce.am.staging-dir", tmpDir + File.separator + testName
+        + File.separator + "hadoop-yarn" + File.separator + "staging");
     conf.set("yarn.scheduler.capacity.root.queues", "default");
     conf.set("yarn.scheduler.capacity.root.default.capacity", "100");
     conf.set("fs.pfile.impl", "org.apache.hadoop.fs.ProxyLocalFileSystem");
