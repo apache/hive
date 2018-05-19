@@ -29,9 +29,12 @@ import org.apache.hadoop.hive.ql.wm.ExecutionTrigger;
 import org.apache.hadoop.hive.ql.wm.Expression;
 import org.apache.hadoop.hive.ql.wm.ExpressionFactory;
 import org.apache.hadoop.hive.ql.wm.Trigger;
+import org.apache.hive.common.util.RetryTestRunner;
 import org.junit.Test;
 import com.google.common.collect.Lists;
+import org.junit.runner.RunWith;
 
+@RunWith(RetryTestRunner.class)
 public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest {
 
   @Test(timeout = 60000)
