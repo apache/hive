@@ -121,6 +121,16 @@ public class TestTxnCommands2 {
 
   void setUpWithTableProperties(String tableProperties) throws Exception {
     hiveConf = new HiveConf(this.getClass());
+    Path workDir = new Path(System.getProperty("test.tmp.dir",
+        "target" + File.separator + "test" + File.separator + "tmp"));
+    hiveConf.set("mapred.local.dir", workDir + File.separator + this.getClass().getSimpleName()
+        + File.separator + "mapred" + File.separator + "local");
+    hiveConf.set("mapred.system.dir", workDir + File.separator + this.getClass().getSimpleName()
+        + File.separator + "mapred" + File.separator + "system");
+    hiveConf.set("mapreduce.jobtracker.staging.root.dir", workDir + File.separator + this.getClass().getSimpleName()
+        + File.separator + "mapred" + File.separator + "staging");
+    hiveConf.set("mapred.temp.dir", workDir + File.separator + this.getClass().getSimpleName()
+        + File.separator + "mapred" + File.separator + "temp");
     hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname, TEST_WAREHOUSE_DIR);
