@@ -34,7 +34,7 @@ import com.google.common.collect.Lists;
 
 public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest {
 
-  @Test(timeout = 60000)
+  @Test(timeout = 120000)
   public void testTriggerSlowQueryElapsedTime() throws Exception {
     Expression expression = ExpressionFactory.fromString("ELAPSED_TIME > 20000");
     Trigger trigger = new ExecutionTrigger("slow_query", expression, new Action(Action.Type.KILL_QUERY));
@@ -44,7 +44,7 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
     runQueryWithTrigger(query, null, trigger + " violated");
   }
 
-  @Test(timeout = 60000)
+  @Test(timeout = 120000)
   public void testTriggerShortQueryElapsedTime() throws Exception {
     Expression expression = ExpressionFactory.fromString("ELAPSED_TIME > 100");
     Trigger trigger = new ExecutionTrigger("slow_query", expression, new Action(Action.Type.KILL_QUERY));
@@ -54,7 +54,7 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
     runQueryWithTrigger(query, null, trigger + " violated");
   }
 
-  @Test(timeout = 60000)
+  @Test(timeout = 120000)
   public void testTriggerSlowQueryExecutionTime() throws Exception {
     Expression expression = ExpressionFactory.fromString("EXECUTION_TIME > 1000");
     Trigger trigger = new ExecutionTrigger("slow_query", expression, new Action(Action.Type.KILL_QUERY));
@@ -64,7 +64,7 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
     runQueryWithTrigger(query, null, trigger + " violated");
   }
 
-  @Test(timeout = 60000)
+  @Test(timeout = 120000)
   public void testTriggerHighShuffleBytes() throws Exception {
     Expression expression = ExpressionFactory.fromString("SHUFFLE_BYTES > 100");
     Trigger trigger = new ExecutionTrigger("big_shuffle", expression, new Action(Action.Type.KILL_QUERY));
@@ -79,7 +79,7 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
     runQueryWithTrigger(query, cmds, trigger + " violated");
   }
 
-  @Test(timeout = 60000)
+  @Test(timeout = 120000)
   public void testTriggerHighBytesRead() throws Exception {
     Expression expression = ExpressionFactory.fromString("HDFS_BYTES_READ > 100");
     Trigger trigger = new ExecutionTrigger("big_read", expression, new Action(Action.Type.KILL_QUERY));
@@ -89,7 +89,7 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
     runQueryWithTrigger(query, null, trigger + " violated");
   }
 
-  @Test(timeout = 60000)
+  @Test(timeout = 120000)
   public void testTriggerHighBytesWrite() throws Exception {
     Expression expression = ExpressionFactory.fromString("FILE_BYTES_WRITTEN > 100");
     Trigger trigger = new ExecutionTrigger("big_write", expression, new Action(Action.Type.KILL_QUERY));
@@ -99,7 +99,7 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
     runQueryWithTrigger(query, null, trigger + " violated");
   }
 
-  @Test(timeout = 60000)
+  @Test(timeout = 120000)
   public void testTriggerTotalTasks() throws Exception {
     Expression expression = ExpressionFactory.fromString("VERTEX_TOTAL_TASKS > 50");
     Trigger trigger = new ExecutionTrigger("highly_parallel", expression, new Action(Action.Type.KILL_QUERY));
@@ -109,7 +109,7 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
     runQueryWithTrigger(query, getConfigs(), trigger + " violated");
   }
 
-  @Test(timeout = 60000)
+  @Test(timeout = 120000)
   public void testTriggerDagTotalTasks() throws Exception {
     Expression expression = ExpressionFactory.fromString("DAG_TOTAL_TASKS > 50");
     Trigger trigger = new ExecutionTrigger("highly_parallel", expression, new Action(Action.Type.KILL_QUERY));
@@ -119,7 +119,7 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
     runQueryWithTrigger(query, getConfigs(), trigger + " violated");
   }
 
-  @Test(timeout = 60000)
+  @Test(timeout = 120000)
   public void testTriggerCustomReadOps() throws Exception {
     Expression expression = ExpressionFactory.fromString("HDFS_READ_OPS > 50");
     Trigger trigger = new ExecutionTrigger("high_read_ops", expression, new Action(Action.Type.KILL_QUERY));
@@ -191,7 +191,7 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
     runQueryWithTrigger(query, cmds, null);
   }
 
-  @Test(timeout = 60000)
+  @Test(timeout = 120000)
   public void testTriggerCustomCreatedDynamicPartitionsMultiInsert() throws Exception {
     List<String> cmds = getConfigs();
     cmds.add("drop table src2");
@@ -209,7 +209,7 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
     runQueryWithTrigger(query, cmds, trigger + " violated");
   }
 
-  @Test(timeout = 60000)
+  @Test(timeout = 120000)
   public void testTriggerCustomCreatedDynamicPartitionsUnionAll() throws Exception {
     List<String> cmds = getConfigs();
     cmds.add("drop table src2");
@@ -228,7 +228,7 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
     runQueryWithTrigger(query, cmds, trigger + " violated");
   }
 
-  @Test(timeout = 60000)
+  @Test(timeout = 120000)
   public void testTriggerCustomNonExistent() throws Exception {
     Expression expression = ExpressionFactory.fromString("OPEN_FILES > 50");
     Trigger trigger = new ExecutionTrigger("non_existent", expression, new Action(Action.Type.KILL_QUERY));
@@ -238,7 +238,7 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
     runQueryWithTrigger(query, null, null);
   }
 
-  @Test(timeout = 60000)
+  @Test(timeout = 120000)
   public void testTriggerDagRawInputSplitsKill() throws Exception {
     // Map 1 - 55 splits
     // Map 3 - 55 splits
@@ -250,7 +250,7 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
     runQueryWithTrigger(query, getConfigs(), "Query was cancelled");
   }
 
-  @Test(timeout = 60000)
+  @Test(timeout = 120000)
   public void testTriggerVertexRawInputSplitsNoKill() throws Exception {
     // Map 1 - 55 splits
     // Map 3 - 55 splits
@@ -262,7 +262,7 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
     runQueryWithTrigger(query, getConfigs(), null);
   }
 
-  @Test(timeout = 60000)
+  @Test(timeout = 120000)
   public void testTriggerVertexRawInputSplitsKill() throws Exception {
     // Map 1 - 55 splits
     // Map 3 - 55 splits
@@ -274,7 +274,7 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
     runQueryWithTrigger(query, getConfigs(), "Query was cancelled");
   }
 
-  @Test(timeout = 60000)
+  @Test(timeout = 120000)
   public void testTriggerDefaultRawInputSplits() throws Exception {
     // Map 1 - 55 splits
     // Map 3 - 55 splits
@@ -286,7 +286,7 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
     runQueryWithTrigger(query, getConfigs(), "Query was cancelled");
   }
 
-  @Test(timeout = 60000)
+  @Test(timeout = 120000)
   public void testMultipleTriggers1() throws Exception {
     Expression shuffleExpression = ExpressionFactory.fromString("HDFS_BYTES_READ > 1000000");
     Trigger shuffleTrigger = new ExecutionTrigger("big_shuffle", shuffleExpression, new Action(Action.Type.KILL_QUERY));
@@ -298,7 +298,7 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
     runQueryWithTrigger(query, null, execTimeTrigger + " violated");
   }
 
-  @Test(timeout = 60000)
+  @Test(timeout = 120000)
   public void testMultipleTriggers2() throws Exception {
     Expression shuffleExpression = ExpressionFactory.fromString("HDFS_BYTES_READ > 100");
     Trigger shuffleTrigger = new ExecutionTrigger("big_shuffle", shuffleExpression, new Action(Action.Type.KILL_QUERY));
