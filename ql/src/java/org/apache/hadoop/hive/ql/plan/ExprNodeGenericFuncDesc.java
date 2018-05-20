@@ -250,8 +250,6 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
         console.printError("WARNING: Comparing a bigint and a string may result in a loss of precision.");
       } else if ((oiTypeInfo0.equals(TypeInfoFactory.doubleTypeInfo) && oiTypeInfo1.equals(TypeInfoFactory.longTypeInfo)) ||
           (oiTypeInfo0.equals(TypeInfoFactory.longTypeInfo) && oiTypeInfo1.equals(TypeInfoFactory.doubleTypeInfo))) {
-        String error = StrictChecks.checkTypeSafety(conf);
-        if (error != null) throw new UDFArgumentException(error);
         console.printError("WARNING: Comparing a bigint and a double may result in a loss of precision.");
       }
     }
