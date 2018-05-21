@@ -2,14 +2,14 @@ set hive.mapred.mode=nonstrict;
 set hive.optimize.skewjoin.compiletime = true;
 set hive.auto.convert.join=true;
     
-CREATE TABLE T1(key STRING, val STRING)	
+CREATE TABLE T1_n157(key STRING, val STRING)	
 SKEWED BY (key) ON ((2)) STORED AS TEXTFILE;	
        
-LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1;	
+LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_n157;	
      
-CREATE TABLE T2(key STRING, val STRING) STORED AS TEXTFILE;	
+CREATE TABLE T2_n92(key STRING, val STRING) STORED AS TEXTFILE;	
        
-LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2;	
+LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2_n92;	
      
 -- copy from skewjoinopt11
 -- test compile time skew join and auto map join	 
@@ -21,15 +21,15 @@ LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2;
 EXPLAIN	 
 select * from	
 (      
-  select a.key, a.val as val1, b.val as val2 from T1 a join T2 b on a.key = b.key
+  select a.key, a.val as val1, b.val as val2 from T1_n157 a join T2_n92 b on a.key = b.key
     union all 	
-  select a.key, a.val as val1, b.val as val2 from T1 a join T2 b on a.key = b.key
+  select a.key, a.val as val1, b.val as val2 from T1_n157 a join T2_n92 b on a.key = b.key
 ) subq1; 
   
 select * from	
 (      
-  select a.key, a.val as val1, b.val as val2 from T1 a join T2 b on a.key = b.key
+  select a.key, a.val as val1, b.val as val2 from T1_n157 a join T2_n92 b on a.key = b.key
     union all 	
-  select a.key, a.val as val1, b.val as val2 from T1 a join T2 b on a.key = b.key
+  select a.key, a.val as val1, b.val as val2 from T1_n157 a join T2_n92 b on a.key = b.key
 ) subq1
 ORDER BY key, val1, val2;

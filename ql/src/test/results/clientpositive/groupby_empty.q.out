@@ -1,23 +1,23 @@
-PREHOOK: query: create table t (a int)
+PREHOOK: query: create table t_n34 (a int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t
-POSTHOOK: query: create table t (a int)
+PREHOOK: Output: default@t_n34
+POSTHOOK: query: create table t_n34 (a int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t
-PREHOOK: query: insert into t values (1),(1),(2)
+POSTHOOK: Output: default@t_n34
+PREHOOK: query: insert into t_n34 values (1),(1),(2)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values (1),(1),(2)
+PREHOOK: Output: default@t_n34
+POSTHOOK: query: insert into t_n34 values (1),(1),(2)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.a SCRIPT []
-PREHOOK: query: explain select count(*) from t group by ()
+POSTHOOK: Output: default@t_n34
+POSTHOOK: Lineage: t_n34.a SCRIPT []
+PREHOOK: query: explain select count(*) from t_n34 group by ()
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select count(*) from t group by ()
+POSTHOOK: query: explain select count(*) from t_n34 group by ()
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -29,12 +29,12 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from t group by ()
+PREHOOK: query: select count(*) from t_n34 group by ()
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t
+PREHOOK: Input: default@t_n34
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from t group by ()
+POSTHOOK: query: select count(*) from t_n34 group by ()
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n34
 #### A masked pattern was here ####
 3

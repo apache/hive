@@ -12,18 +12,18 @@ select 'key1', 'value1' from alltypesorc tablesample (1 rows);
 select 'key1', 'value1' from alltypesorc tablesample (1 rows);
 
 
-create table decimal_2 (t decimal(18,9)) stored as orc;
+create table decimal_2_n0 (t decimal(18,9)) stored as orc;
 
 explain vectorization detail
-insert overwrite table decimal_2
+insert overwrite table decimal_2_n0
   select cast('17.29' as decimal(4,2)) from alltypesorc tablesample (1 rows);
 
-insert overwrite table decimal_2
+insert overwrite table decimal_2_n0
   select cast('17.29' as decimal(4,2)) from alltypesorc tablesample (1 rows);
 
-select count(*) from decimal_2;
+select count(*) from decimal_2_n0;
 
-drop table decimal_2;
+drop table decimal_2_n0;
 
 
 -- Dummy tables HIVE-13190

@@ -1,4 +1,4 @@
-PREHOOK: query: create table store_sales_txt
+PREHOOK: query: create table store_sales_txt_n0
 (
     ss_sold_date_sk           int,
     ss_sold_time_sk           int,
@@ -28,8 +28,8 @@ row format delimited fields terminated by '|'
 stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@store_sales_txt
-POSTHOOK: query: create table store_sales_txt
+PREHOOK: Output: default@store_sales_txt_n0
+POSTHOOK: query: create table store_sales_txt_n0
 (
     ss_sold_date_sk           int,
     ss_sold_time_sk           int,
@@ -59,16 +59,16 @@ row format delimited fields terminated by '|'
 stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@store_sales_txt
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/store_sales.txt' OVERWRITE INTO TABLE store_sales_txt
+POSTHOOK: Output: default@store_sales_txt_n0
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/store_sales.txt' OVERWRITE INTO TABLE store_sales_txt_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@store_sales_txt
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/store_sales.txt' OVERWRITE INTO TABLE store_sales_txt
+PREHOOK: Output: default@store_sales_txt_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/store_sales.txt' OVERWRITE INTO TABLE store_sales_txt_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@store_sales_txt
-PREHOOK: query: create table store_sales
+POSTHOOK: Output: default@store_sales_txt_n0
+PREHOOK: query: create table store_sales_n3
 (
     ss_sold_date_sk           int,
     ss_sold_time_sk           int,
@@ -99,8 +99,8 @@ stored as orc
 tblproperties ("orc.stripe.size"="33554432", "orc.compress.size"="16384")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@store_sales
-POSTHOOK: query: create table store_sales
+PREHOOK: Output: default@store_sales_n3
+POSTHOOK: query: create table store_sales_n3
 (
     ss_sold_date_sk           int,
     ss_sold_time_sk           int,
@@ -131,8 +131,8 @@ stored as orc
 tblproperties ("orc.stripe.size"="33554432", "orc.compress.size"="16384")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@store_sales
-PREHOOK: query: insert overwrite table store_sales
+POSTHOOK: Output: default@store_sales_n3
+PREHOOK: query: insert overwrite table store_sales_n3
 select 
 ss_sold_date_sk           ,
     ss_sold_time_sk       ,
@@ -158,11 +158,11 @@ ss_sold_date_sk           ,
     ss_net_paid           ,
     ss_net_paid_inc_tax   ,
     ss_net_profit         
- from store_sales_txt
+ from store_sales_txt_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@store_sales_txt
-PREHOOK: Output: default@store_sales
-POSTHOOK: query: insert overwrite table store_sales
+PREHOOK: Input: default@store_sales_txt_n0
+PREHOOK: Output: default@store_sales_n3
+POSTHOOK: query: insert overwrite table store_sales_n3
 select 
 ss_sold_date_sk           ,
     ss_sold_time_sk       ,
@@ -188,39 +188,39 @@ ss_sold_date_sk           ,
     ss_net_paid           ,
     ss_net_paid_inc_tax   ,
     ss_net_profit         
- from store_sales_txt
+ from store_sales_txt_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@store_sales_txt
-POSTHOOK: Output: default@store_sales
-POSTHOOK: Lineage: store_sales.ss_addr_sk SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_addr_sk, type:int, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_cdemo_sk SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_cdemo_sk, type:int, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_coupon_amt SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_coupon_amt, type:double, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_customer_sk SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_customer_sk, type:int, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_ext_discount_amt SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_ext_discount_amt, type:double, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_ext_list_price SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_ext_list_price, type:double, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_ext_sales_price SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_ext_sales_price, type:double, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_ext_tax SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_ext_tax, type:double, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_ext_wholesale_cost SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_ext_wholesale_cost, type:double, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_hdemo_sk SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_hdemo_sk, type:int, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_item_sk SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_item_sk, type:int, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_list_price SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_list_price, type:double, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_net_paid SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_net_paid, type:double, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_net_paid_inc_tax SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_net_paid_inc_tax, type:double, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_net_profit SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_net_profit, type:double, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_promo_sk SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_promo_sk, type:int, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_quantity SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_quantity, type:int, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_sales_price SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_sales_price, type:double, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_sold_date_sk SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_sold_date_sk, type:int, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_sold_time_sk SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_sold_time_sk, type:int, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_store_sk SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_store_sk, type:int, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_ticket_number SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_ticket_number, type:int, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_wholesale_cost SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_wholesale_cost, type:double, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_wholesale_cost_decimal EXPRESSION [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_wholesale_cost, type:double, comment:null), ]
+POSTHOOK: Input: default@store_sales_txt_n0
+POSTHOOK: Output: default@store_sales_n3
+POSTHOOK: Lineage: store_sales_n3.ss_addr_sk SIMPLE [(store_sales_txt_n0)store_sales_txt_n0.FieldSchema(name:ss_addr_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: store_sales_n3.ss_cdemo_sk SIMPLE [(store_sales_txt_n0)store_sales_txt_n0.FieldSchema(name:ss_cdemo_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: store_sales_n3.ss_coupon_amt SIMPLE [(store_sales_txt_n0)store_sales_txt_n0.FieldSchema(name:ss_coupon_amt, type:double, comment:null), ]
+POSTHOOK: Lineage: store_sales_n3.ss_customer_sk SIMPLE [(store_sales_txt_n0)store_sales_txt_n0.FieldSchema(name:ss_customer_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: store_sales_n3.ss_ext_discount_amt SIMPLE [(store_sales_txt_n0)store_sales_txt_n0.FieldSchema(name:ss_ext_discount_amt, type:double, comment:null), ]
+POSTHOOK: Lineage: store_sales_n3.ss_ext_list_price SIMPLE [(store_sales_txt_n0)store_sales_txt_n0.FieldSchema(name:ss_ext_list_price, type:double, comment:null), ]
+POSTHOOK: Lineage: store_sales_n3.ss_ext_sales_price SIMPLE [(store_sales_txt_n0)store_sales_txt_n0.FieldSchema(name:ss_ext_sales_price, type:double, comment:null), ]
+POSTHOOK: Lineage: store_sales_n3.ss_ext_tax SIMPLE [(store_sales_txt_n0)store_sales_txt_n0.FieldSchema(name:ss_ext_tax, type:double, comment:null), ]
+POSTHOOK: Lineage: store_sales_n3.ss_ext_wholesale_cost SIMPLE [(store_sales_txt_n0)store_sales_txt_n0.FieldSchema(name:ss_ext_wholesale_cost, type:double, comment:null), ]
+POSTHOOK: Lineage: store_sales_n3.ss_hdemo_sk SIMPLE [(store_sales_txt_n0)store_sales_txt_n0.FieldSchema(name:ss_hdemo_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: store_sales_n3.ss_item_sk SIMPLE [(store_sales_txt_n0)store_sales_txt_n0.FieldSchema(name:ss_item_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: store_sales_n3.ss_list_price SIMPLE [(store_sales_txt_n0)store_sales_txt_n0.FieldSchema(name:ss_list_price, type:double, comment:null), ]
+POSTHOOK: Lineage: store_sales_n3.ss_net_paid SIMPLE [(store_sales_txt_n0)store_sales_txt_n0.FieldSchema(name:ss_net_paid, type:double, comment:null), ]
+POSTHOOK: Lineage: store_sales_n3.ss_net_paid_inc_tax SIMPLE [(store_sales_txt_n0)store_sales_txt_n0.FieldSchema(name:ss_net_paid_inc_tax, type:double, comment:null), ]
+POSTHOOK: Lineage: store_sales_n3.ss_net_profit SIMPLE [(store_sales_txt_n0)store_sales_txt_n0.FieldSchema(name:ss_net_profit, type:double, comment:null), ]
+POSTHOOK: Lineage: store_sales_n3.ss_promo_sk SIMPLE [(store_sales_txt_n0)store_sales_txt_n0.FieldSchema(name:ss_promo_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: store_sales_n3.ss_quantity SIMPLE [(store_sales_txt_n0)store_sales_txt_n0.FieldSchema(name:ss_quantity, type:int, comment:null), ]
+POSTHOOK: Lineage: store_sales_n3.ss_sales_price SIMPLE [(store_sales_txt_n0)store_sales_txt_n0.FieldSchema(name:ss_sales_price, type:double, comment:null), ]
+POSTHOOK: Lineage: store_sales_n3.ss_sold_date_sk SIMPLE [(store_sales_txt_n0)store_sales_txt_n0.FieldSchema(name:ss_sold_date_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: store_sales_n3.ss_sold_time_sk SIMPLE [(store_sales_txt_n0)store_sales_txt_n0.FieldSchema(name:ss_sold_time_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: store_sales_n3.ss_store_sk SIMPLE [(store_sales_txt_n0)store_sales_txt_n0.FieldSchema(name:ss_store_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: store_sales_n3.ss_ticket_number SIMPLE [(store_sales_txt_n0)store_sales_txt_n0.FieldSchema(name:ss_ticket_number, type:int, comment:null), ]
+POSTHOOK: Lineage: store_sales_n3.ss_wholesale_cost SIMPLE [(store_sales_txt_n0)store_sales_txt_n0.FieldSchema(name:ss_wholesale_cost, type:double, comment:null), ]
+POSTHOOK: Lineage: store_sales_n3.ss_wholesale_cost_decimal EXPRESSION [(store_sales_txt_n0)store_sales_txt_n0.FieldSchema(name:ss_wholesale_cost, type:double, comment:null), ]
 PREHOOK: query: explain vectorization expression
 select 
   ss_ticket_number
 from
-  store_sales
+  store_sales_n3
 group by ss_ticket_number
 order by ss_ticket_number
 limit 20
@@ -229,7 +229,7 @@ POSTHOOK: query: explain vectorization expression
 select 
   ss_ticket_number
 from
-  store_sales
+  store_sales_n3
 group by ss_ticket_number
 order by ss_ticket_number
 limit 20
@@ -254,7 +254,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: store_sales
+                  alias: store_sales_n3
                   Statistics: Num rows: 1000 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -372,22 +372,22 @@ STAGE PLANS:
 PREHOOK: query: select 
   ss_ticket_number
 from
-  store_sales
+  store_sales_n3
 group by ss_ticket_number
 order by ss_ticket_number
 limit 20
 PREHOOK: type: QUERY
-PREHOOK: Input: default@store_sales
+PREHOOK: Input: default@store_sales_n3
 #### A masked pattern was here ####
 POSTHOOK: query: select 
   ss_ticket_number
 from
-  store_sales
+  store_sales_n3
 group by ss_ticket_number
 order by ss_ticket_number
 limit 20
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@store_sales
+POSTHOOK: Input: default@store_sales_n3
 #### A masked pattern was here ####
 1
 2
@@ -416,7 +416,7 @@ from
     (select 
         ss_ticket_number
     from
-        store_sales
+        store_sales_n3
     group by ss_ticket_number) a
 group by ss_ticket_number
 order by m
@@ -428,7 +428,7 @@ from
     (select 
         ss_ticket_number
     from
-        store_sales
+        store_sales_n3
     group by ss_ticket_number) a
 group by ss_ticket_number
 order by m
@@ -453,7 +453,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: store_sales
+                  alias: store_sales_n3
                   Statistics: Num rows: 1000 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -588,12 +588,12 @@ from
     (select 
         ss_ticket_number
     from
-        store_sales
+        store_sales_n3
     group by ss_ticket_number) a
 group by ss_ticket_number
 order by m
 PREHOOK: type: QUERY
-PREHOOK: Input: default@store_sales
+PREHOOK: Input: default@store_sales_n3
 #### A masked pattern was here ####
 POSTHOOK: query: select 
     min(ss_ticket_number) m
@@ -601,12 +601,12 @@ from
     (select 
         ss_ticket_number
     from
-        store_sales
+        store_sales_n3
     group by ss_ticket_number) a
 group by ss_ticket_number
 order by m
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@store_sales
+POSTHOOK: Input: default@store_sales_n3
 #### A masked pattern was here ####
 1
 2
@@ -697,7 +697,7 @@ from
     (select
         ss_ticket_number, ss_item_sk, min(ss_quantity) q, max(ss_net_profit) np, max(ss_wholesale_cost_decimal) decwc
     from
-        store_sales
+        store_sales_n3
     where ss_ticket_number = 1
     group by ss_ticket_number, ss_item_sk) a
 group by ss_ticket_number
@@ -710,7 +710,7 @@ from
     (select
         ss_ticket_number, ss_item_sk, min(ss_quantity) q, max(ss_net_profit) np, max(ss_wholesale_cost_decimal) decwc
     from
-        store_sales
+        store_sales_n3
     where ss_ticket_number = 1
     group by ss_ticket_number, ss_item_sk) a
 group by ss_ticket_number
@@ -736,7 +736,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: store_sales
+                  alias: store_sales_n3
                   Statistics: Num rows: 1000 Data size: 126616 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -900,13 +900,13 @@ from
     (select
         ss_ticket_number, ss_item_sk, min(ss_quantity) q, max(ss_net_profit) np, max(ss_wholesale_cost_decimal) decwc
     from
-        store_sales
+        store_sales_n3
     where ss_ticket_number = 1
     group by ss_ticket_number, ss_item_sk) a
 group by ss_ticket_number
 order by ss_ticket_number
 PREHOOK: type: QUERY
-PREHOOK: Input: default@store_sales
+PREHOOK: Input: default@store_sales_n3
 #### A masked pattern was here ####
 POSTHOOK: query: select
     ss_ticket_number, sum(ss_item_sk), sum(q), avg(q), sum(np), avg(np), sum(decwc), avg(decwc)
@@ -914,13 +914,13 @@ from
     (select
         ss_ticket_number, ss_item_sk, min(ss_quantity) q, max(ss_net_profit) np, max(ss_wholesale_cost_decimal) decwc
     from
-        store_sales
+        store_sales_n3
     where ss_ticket_number = 1
     group by ss_ticket_number, ss_item_sk) a
 group by ss_ticket_number
 order by ss_ticket_number
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@store_sales
+POSTHOOK: Input: default@store_sales_n3
 #### A masked pattern was here ####
 1	85411	816	58.285714285714285	-5080.17	-362.8692857142857	621.350000000000000000	44.382142857142857143
 PREHOOK: query: explain vectorization expression
@@ -930,7 +930,7 @@ from
     (select
         ss_ticket_number, ss_item_sk, min(ss_quantity) q, max(ss_net_profit) np, max(ss_wholesale_cost_decimal) decwc
     from
-        store_sales
+        store_sales_n3
     group by ss_ticket_number, ss_item_sk) a
 group by ss_ticket_number, ss_item_sk
 order by ss_ticket_number, ss_item_sk
@@ -942,7 +942,7 @@ from
     (select
         ss_ticket_number, ss_item_sk, min(ss_quantity) q, max(ss_net_profit) np, max(ss_wholesale_cost_decimal) decwc
     from
-        store_sales
+        store_sales_n3
     group by ss_ticket_number, ss_item_sk) a
 group by ss_ticket_number, ss_item_sk
 order by ss_ticket_number, ss_item_sk
@@ -967,7 +967,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: store_sales
+                  alias: store_sales_n3
                   Statistics: Num rows: 1000 Data size: 126616 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -1117,12 +1117,12 @@ from
     (select
         ss_ticket_number, ss_item_sk, min(ss_quantity) q, max(ss_wholesale_cost) wc, max(ss_wholesale_cost_decimal) decwc
     from
-        store_sales
+        store_sales_n3
     group by ss_ticket_number, ss_item_sk) a
 group by ss_ticket_number, ss_item_sk
 order by ss_ticket_number, ss_item_sk
 PREHOOK: type: QUERY
-PREHOOK: Input: default@store_sales
+PREHOOK: Input: default@store_sales_n3
 #### A masked pattern was here ####
 POSTHOOK: query: select
     ss_ticket_number, ss_item_sk, sum(q), avg(q), sum(wc), avg(wc), sum(decwc), avg(decwc)
@@ -1130,12 +1130,12 @@ from
     (select
         ss_ticket_number, ss_item_sk, min(ss_quantity) q, max(ss_wholesale_cost) wc, max(ss_wholesale_cost_decimal) decwc
     from
-        store_sales
+        store_sales_n3
     group by ss_ticket_number, ss_item_sk) a
 group by ss_ticket_number, ss_item_sk
 order by ss_ticket_number, ss_item_sk
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@store_sales
+POSTHOOK: Input: default@store_sales_n3
 #### A masked pattern was here ####
 1	49	5	5.0	10.68	10.68	10.680000000000000000	10.680000000000000000
 1	173	65	65.0	27.16	27.16	27.160000000000000000	27.160000000000000000

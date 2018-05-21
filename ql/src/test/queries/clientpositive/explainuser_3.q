@@ -14,10 +14,10 @@ set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.vectorized.execution.enabled=true;
 
-CREATE TABLE acid_vectorized(a INT, b STRING) CLUSTERED BY(a) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true');
-insert into table acid_vectorized select cint, cstring1 from alltypesorc where cint is not null order by cint limit 10;
-analyze table acid_vectorized compute statistics for columns;
-explain select a, b from acid_vectorized order by a, b;
+CREATE TABLE acid_vectorized_n0(a INT, b STRING) CLUSTERED BY(a) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true');
+insert into table acid_vectorized_n0 select cint, cstring1 from alltypesorc where cint is not null order by cint limit 10;
+analyze table acid_vectorized_n0 compute statistics for columns;
+explain select a, b from acid_vectorized_n0 order by a, b;
 
 explain select key, value
 FROM srcpart LATERAL VIEW explode(array(1,2,3)) myTable AS myCol;
@@ -36,13 +36,13 @@ explain use newDB;
 
 use newDB;
 
-create table tab (name string);
+create table tab_n1 (name string);
 
-explain alter table tab rename to newName;
+explain alter table tab_n1 rename to newName;
 
-explain drop table tab;
+explain drop table tab_n1;
 
-drop table tab;
+drop table tab_n1;
 
 explain use default;
 
@@ -63,24 +63,24 @@ EXPLAIN SELECT SIGMOID(2) FROM src LIMIT 1;
 explain DROP TEMPORARY MACRO SIGMOID;
 DROP TEMPORARY MACRO SIGMOID;
 
-explain create table src_autho_test as select * from src;
-create table src_autho_test as select * from src;
+explain create table src_autho_test_n3 as select * from src;
+create table src_autho_test_n3 as select * from src;
 
 set hive.security.authorization.enabled=true;
 
-explain grant select on table src_autho_test to user hive_test_user;
-grant select on table src_autho_test to user hive_test_user;
+explain grant select on table src_autho_test_n3 to user hive_test_user;
+grant select on table src_autho_test_n3 to user hive_test_user;
 
-explain show grant user hive_test_user on table src_autho_test;
-explain show grant user hive_test_user on table src_autho_test(key);
+explain show grant user hive_test_user on table src_autho_test_n3;
+explain show grant user hive_test_user on table src_autho_test_n3(key);
 
-select key from src_autho_test order by key limit 20;
+select key from src_autho_test_n3 order by key limit 20;
 
-explain revoke select on table src_autho_test from user hive_test_user;
+explain revoke select on table src_autho_test_n3 from user hive_test_user;
 
-explain grant select(key) on table src_autho_test to user hive_test_user;
+explain grant select(key) on table src_autho_test_n3 to user hive_test_user;
 
-explain revoke select(key) on table src_autho_test from user hive_test_user;
+explain revoke select(key) on table src_autho_test_n3 from user hive_test_user;
 
 explain 
 create role sRc_roLE;
@@ -98,19 +98,19 @@ explain drop role sRc_roLE;
 drop role sRc_roLE;
 
 set hive.security.authorization.enabled=false;
-drop table src_autho_test;
+drop table src_autho_test_n3;
 
-explain drop view v;
+explain drop view v_n1;
 
-explain create view v as with cte as (select * from src  order by key limit 5)
+explain create view v_n1 as with cte as (select * from src  order by key limit 5)
 select * from cte;
 
 explain with cte as (select * from src  order by key limit 5)
 select * from cte;
 
-create table orc_merge5 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc;
+create table orc_merge5_n0 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc;
 
-load data local inpath '../../data/files/orc_split_elim.orc' into table orc_merge5;
+load data local inpath '../../data/files/orc_split_elim.orc' into table orc_merge5_n0;
 
 SET hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 SET mapred.min.split.size=1000;
@@ -129,40 +129,40 @@ set hive.merge.tezfiles=true;
 set hive.merge.mapfiles=true;
 set hive.merge.mapredfiles=true;
 
-explain insert overwrite table orc_merge5 select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13;
+explain insert overwrite table orc_merge5_n0 select userid,string1,subtype,decimal1,ts from orc_merge5_n0 where userid<=13;
 
-drop table orc_merge5;
+drop table orc_merge5_n0;
 
 set hive.auto.convert.join=true;
 set hive.auto.convert.join.noconditionaltask=true;
 set hive.auto.convert.join.noconditionaltask.size=10000;
 
-CREATE TABLE srcbucket_mapjoin(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE;
-CREATE TABLE tab_part (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE;
-CREATE TABLE srcbucket_mapjoin_part (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE;
+CREATE TABLE srcbucket_mapjoin_n3(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE;
+CREATE TABLE tab_part_n2 (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE;
+CREATE TABLE srcbucket_mapjoin_part_n3 (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE;
 
-load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08');
-load data local inpath '../../data/files/bmj1/000001_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08');
+load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_n3 partition(ds='2008-04-08');
+load data local inpath '../../data/files/bmj1/000001_0' INTO TABLE srcbucket_mapjoin_n3 partition(ds='2008-04-08');
 
-load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08');
-load data local inpath '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08');
-load data local inpath '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08');
-load data local inpath '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08');
+load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part_n3 partition(ds='2008-04-08');
+load data local inpath '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part_n3 partition(ds='2008-04-08');
+load data local inpath '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part_n3 partition(ds='2008-04-08');
+load data local inpath '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part_n3 partition(ds='2008-04-08');
 
 
 
 set hive.optimize.bucketingsorting=false;
-insert overwrite table tab_part partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin_part;
+insert overwrite table tab_part_n2 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_part_n3;
 
-CREATE TABLE tab(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE;
-insert overwrite table tab partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin;
+CREATE TABLE tab_n1(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE;
+insert overwrite table tab_n1 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_n3;
 
 set hive.convert.join.bucket.mapjoin.tez = true;
 explain
 select a.key, a.value, b.value
-from tab a join tab_part b on a.key = b.key;
+from tab_n1 a join tab_part_n2 b on a.key = b.key;
 
 
 

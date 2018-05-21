@@ -14,24 +14,24 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@t1_text
-PREHOOK: query: CREATE TABLE T1 STORED AS ORC AS SELECT * FROM T1_text
+PREHOOK: query: CREATE TABLE T1_n17 STORED AS ORC AS SELECT * FROM T1_text
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@t1_text
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1
-POSTHOOK: query: CREATE TABLE T1 STORED AS ORC AS SELECT * FROM T1_text
+PREHOOK: Output: default@T1_n17
+POSTHOOK: query: CREATE TABLE T1_n17 STORED AS ORC AS SELECT * FROM T1_text
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@t1_text
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1
-POSTHOOK: Lineage: t1.key SIMPLE [(t1_text)t1_text.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.val SIMPLE [(t1_text)t1_text.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Output: default@T1_n17
+POSTHOOK: Lineage: t1_n17.key SIMPLE [(t1_text)t1_text.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t1_n17.val SIMPLE [(t1_text)t1_text.FieldSchema(name:val, type:string, comment:null), ]
 t1_text.key	t1_text.val
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key, val, GROUPING__ID from T1 group by key, val with cube
+SELECT key, val, GROUPING__ID from T1_n17 group by key, val with cube
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key, val, GROUPING__ID from T1 group by key, val with cube
+SELECT key, val, GROUPING__ID from T1_n17 group by key, val with cube
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -53,7 +53,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n17
                   Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -159,13 +159,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT key, val, GROUPING__ID from T1 group by key, val with cube
+PREHOOK: query: SELECT key, val, GROUPING__ID from T1_n17 group by key, val with cube
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n17
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key, val, GROUPING__ID from T1 group by key, val with cube
+POSTHOOK: query: SELECT key, val, GROUPING__ID from T1_n17 group by key, val with cube
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n17
 #### A masked pattern was here ####
 key	val	grouping__id
 1	11	0
@@ -187,10 +187,10 @@ NULL	18	2
 NULL	28	2
 NULL	NULL	3
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key, val, GROUPING__ID from T1 group by cube(key, val)
+SELECT key, val, GROUPING__ID from T1_n17 group by cube(key, val)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key, val, GROUPING__ID from T1 group by cube(key, val)
+SELECT key, val, GROUPING__ID from T1_n17 group by cube(key, val)
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -212,7 +212,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n17
                   Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -318,13 +318,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT key, val, GROUPING__ID from T1 group by cube(key, val)
+PREHOOK: query: SELECT key, val, GROUPING__ID from T1_n17 group by cube(key, val)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n17
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key, val, GROUPING__ID from T1 group by cube(key, val)
+POSTHOOK: query: SELECT key, val, GROUPING__ID from T1_n17 group by cube(key, val)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n17
 #### A masked pattern was here ####
 key	val	grouping__id
 1	11	0
@@ -346,10 +346,10 @@ NULL	18	2
 NULL	28	2
 NULL	NULL	3
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT GROUPING__ID, key, val from T1 group by key, val with rollup
+SELECT GROUPING__ID, key, val from T1_n17 group by key, val with rollup
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT GROUPING__ID, key, val from T1 group by key, val with rollup
+SELECT GROUPING__ID, key, val from T1_n17 group by key, val with rollup
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -371,7 +371,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n17
                   Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -477,13 +477,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT GROUPING__ID, key, val from T1 group by key, val with rollup
+PREHOOK: query: SELECT GROUPING__ID, key, val from T1_n17 group by key, val with rollup
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n17
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT GROUPING__ID, key, val from T1 group by key, val with rollup
+POSTHOOK: query: SELECT GROUPING__ID, key, val from T1_n17 group by key, val with rollup
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n17
 #### A masked pattern was here ####
 grouping__id	key	val
 0	1	11
@@ -499,10 +499,10 @@ grouping__id	key	val
 1	8	NULL
 3	NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT GROUPING__ID, key, val from T1 group by rollup (key, val)
+SELECT GROUPING__ID, key, val from T1_n17 group by rollup (key, val)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT GROUPING__ID, key, val from T1 group by rollup (key, val)
+SELECT GROUPING__ID, key, val from T1_n17 group by rollup (key, val)
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -524,7 +524,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n17
                   Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -630,13 +630,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT GROUPING__ID, key, val from T1 group by rollup (key, val)
+PREHOOK: query: SELECT GROUPING__ID, key, val from T1_n17 group by rollup (key, val)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n17
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT GROUPING__ID, key, val from T1 group by rollup (key, val)
+POSTHOOK: query: SELECT GROUPING__ID, key, val from T1_n17 group by rollup (key, val)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n17
 #### A masked pattern was here ####
 grouping__id	key	val
 0	1	11
@@ -652,10 +652,10 @@ grouping__id	key	val
 1	8	NULL
 3	NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key, val, GROUPING__ID, CASE WHEN GROUPING__ID == 0 THEN "0" WHEN GROUPING__ID == 1 THEN "1" WHEN GROUPING__ID == 2 THEN "2" WHEN GROUPING__ID == 3 THEN "3" ELSE "nothing" END from T1 group by key, val with cube
+SELECT key, val, GROUPING__ID, CASE WHEN GROUPING__ID == 0 THEN "0" WHEN GROUPING__ID == 1 THEN "1" WHEN GROUPING__ID == 2 THEN "2" WHEN GROUPING__ID == 3 THEN "3" ELSE "nothing" END from T1_n17 group by key, val with cube
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key, val, GROUPING__ID, CASE WHEN GROUPING__ID == 0 THEN "0" WHEN GROUPING__ID == 1 THEN "1" WHEN GROUPING__ID == 2 THEN "2" WHEN GROUPING__ID == 3 THEN "3" ELSE "nothing" END from T1 group by key, val with cube
+SELECT key, val, GROUPING__ID, CASE WHEN GROUPING__ID == 0 THEN "0" WHEN GROUPING__ID == 1 THEN "1" WHEN GROUPING__ID == 2 THEN "2" WHEN GROUPING__ID == 3 THEN "3" ELSE "nothing" END from T1_n17 group by key, val with cube
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -677,7 +677,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n17
                   Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -784,13 +784,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT key, val, GROUPING__ID, CASE WHEN GROUPING__ID == 0 THEN "0" WHEN GROUPING__ID == 1 THEN "1" WHEN GROUPING__ID == 2 THEN "2" WHEN GROUPING__ID == 3 THEN "3" ELSE "nothing" END from T1 group by key, val with cube
+PREHOOK: query: SELECT key, val, GROUPING__ID, CASE WHEN GROUPING__ID == 0 THEN "0" WHEN GROUPING__ID == 1 THEN "1" WHEN GROUPING__ID == 2 THEN "2" WHEN GROUPING__ID == 3 THEN "3" ELSE "nothing" END from T1_n17 group by key, val with cube
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n17
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key, val, GROUPING__ID, CASE WHEN GROUPING__ID == 0 THEN "0" WHEN GROUPING__ID == 1 THEN "1" WHEN GROUPING__ID == 2 THEN "2" WHEN GROUPING__ID == 3 THEN "3" ELSE "nothing" END from T1 group by key, val with cube
+POSTHOOK: query: SELECT key, val, GROUPING__ID, CASE WHEN GROUPING__ID == 0 THEN "0" WHEN GROUPING__ID == 1 THEN "1" WHEN GROUPING__ID == 2 THEN "2" WHEN GROUPING__ID == 3 THEN "3" ELSE "nothing" END from T1_n17 group by key, val with cube
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n17
 #### A masked pattern was here ####
 key	val	grouping__id	_c3
 1	11	0	0
@@ -812,10 +812,10 @@ NULL	18	2	2
 NULL	28	2	2
 NULL	NULL	3	3
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key, val, GROUPING__ID, CASE WHEN GROUPING__ID == 0 THEN "0" WHEN GROUPING__ID == 1 THEN "1" WHEN GROUPING__ID == 2 THEN "2" WHEN GROUPING__ID == 3 THEN "3" ELSE "nothing" END from T1 group by cube(key, val)
+SELECT key, val, GROUPING__ID, CASE WHEN GROUPING__ID == 0 THEN "0" WHEN GROUPING__ID == 1 THEN "1" WHEN GROUPING__ID == 2 THEN "2" WHEN GROUPING__ID == 3 THEN "3" ELSE "nothing" END from T1_n17 group by cube(key, val)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key, val, GROUPING__ID, CASE WHEN GROUPING__ID == 0 THEN "0" WHEN GROUPING__ID == 1 THEN "1" WHEN GROUPING__ID == 2 THEN "2" WHEN GROUPING__ID == 3 THEN "3" ELSE "nothing" END from T1 group by cube(key, val)
+SELECT key, val, GROUPING__ID, CASE WHEN GROUPING__ID == 0 THEN "0" WHEN GROUPING__ID == 1 THEN "1" WHEN GROUPING__ID == 2 THEN "2" WHEN GROUPING__ID == 3 THEN "3" ELSE "nothing" END from T1_n17 group by cube(key, val)
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -837,7 +837,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n17
                   Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -944,13 +944,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT key, val, GROUPING__ID, CASE WHEN GROUPING__ID == 0 THEN "0" WHEN GROUPING__ID == 1 THEN "1" WHEN GROUPING__ID == 2 THEN "2" WHEN GROUPING__ID == 3 THEN "3" ELSE "nothing" END from T1 group by cube(key, val)
+PREHOOK: query: SELECT key, val, GROUPING__ID, CASE WHEN GROUPING__ID == 0 THEN "0" WHEN GROUPING__ID == 1 THEN "1" WHEN GROUPING__ID == 2 THEN "2" WHEN GROUPING__ID == 3 THEN "3" ELSE "nothing" END from T1_n17 group by cube(key, val)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n17
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key, val, GROUPING__ID, CASE WHEN GROUPING__ID == 0 THEN "0" WHEN GROUPING__ID == 1 THEN "1" WHEN GROUPING__ID == 2 THEN "2" WHEN GROUPING__ID == 3 THEN "3" ELSE "nothing" END from T1 group by cube(key, val)
+POSTHOOK: query: SELECT key, val, GROUPING__ID, CASE WHEN GROUPING__ID == 0 THEN "0" WHEN GROUPING__ID == 1 THEN "1" WHEN GROUPING__ID == 2 THEN "2" WHEN GROUPING__ID == 3 THEN "3" ELSE "nothing" END from T1_n17 group by cube(key, val)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n17
 #### A masked pattern was here ####
 key	val	grouping__id	_c3
 1	11	0	0

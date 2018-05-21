@@ -65,7 +65,7 @@ right outer join
 explain select * from src join src1 on src.key = src1.key and src.value = src1.value
     where 4 between src.key and src.value;
 
-    CREATE TABLE `table1`(
+    CREATE TABLE `table1_n8`(
        `idp_warehouse_id` bigint,
        `idp_audit_id` bigint,
        `idp_effective_date` date,
@@ -91,7 +91,7 @@ explain select * from src join src1 on src.key = src1.key and src.value = src1.v
        `odf_ss_actuals` bigint,
        `practsum` decimal(38,20));
 
-    CREATE TABLE `table2`(
+    CREATE TABLE `table2_n4`(
        `idp_warehouse_id` bigint,
        `idp_audit_id` bigint,
        `idp_effective_date` date,
@@ -118,14 +118,14 @@ explain select * from src join src1 on src.key = src1.key and src.value = src1.v
        `practsum` decimal(38,20));
 
     explain SELECT          s.idp_warehouse_id AS source_warehouse_id
-    FROM            table1 s
+    FROM            table1_n8 s
     JOIN
 
-                           table2 d
+                           table2_n4 d
     ON              (
                                     s.prid = d.prid )
     JOIN
-                             table2 e
+                             table2_n4 e
     ON
                                     s.prid = e.prid
     WHERE
@@ -279,7 +279,7 @@ explain select * from src join src1 on src.key = src1.key and src.value = src1.v
                                     ELSE d.odf_ss_actuals
                     END );
 
-drop table table2;
-drop table table1;
+drop table table2_n4;
+drop table table1_n8;
 
 

@@ -1,20 +1,20 @@
-PREHOOK: query: DROP TABLE insert_into1
+PREHOOK: query: DROP TABLE insert_into1_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE insert_into1
+POSTHOOK: query: DROP TABLE insert_into1_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE insert_into1 (key int, value string)
+PREHOOK: query: CREATE TABLE insert_into1_n0 (key int, value string)
     clustered by (key) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@insert_into1
-POSTHOOK: query: CREATE TABLE insert_into1 (key int, value string)
+PREHOOK: Output: default@insert_into1_n0
+POSTHOOK: query: CREATE TABLE insert_into1_n0 (key int, value string)
     clustered by (key) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@insert_into1
-PREHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1 values(default, DEFAULT)
+POSTHOOK: Output: default@insert_into1_n0
+PREHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1_n0 values(default, DEFAULT)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1 values(default, DEFAULT)
+POSTHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1_n0 values(default, DEFAULT)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -69,7 +69,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      name: default.insert_into1
+                      name: default.insert_into1_n0
                   Write Type: INSERT
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: string)
@@ -111,7 +111,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.insert_into1
+              name: default.insert_into1_n0
           Write Type: INSERT
 
   Stage: Stage-3
@@ -120,36 +120,36 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: int, string
-          Table: default.insert_into1
+          Table: default.insert_into1_n0
 
-PREHOOK: query: INSERT INTO TABLE insert_into1 values(default, DEFAULT)
+PREHOOK: query: INSERT INTO TABLE insert_into1_n0 values(default, DEFAULT)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@insert_into1
-POSTHOOK: query: INSERT INTO TABLE insert_into1 values(default, DEFAULT)
+PREHOOK: Output: default@insert_into1_n0
+POSTHOOK: query: INSERT INTO TABLE insert_into1_n0 values(default, DEFAULT)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@insert_into1
-POSTHOOK: Lineage: insert_into1.key EXPRESSION []
-POSTHOOK: Lineage: insert_into1.value EXPRESSION []
-PREHOOK: query: SELECT * from insert_into1
+POSTHOOK: Output: default@insert_into1_n0
+POSTHOOK: Lineage: insert_into1_n0.key EXPRESSION []
+POSTHOOK: Lineage: insert_into1_n0.value EXPRESSION []
+PREHOOK: query: SELECT * from insert_into1_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@insert_into1
+PREHOOK: Input: default@insert_into1_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * from insert_into1
+POSTHOOK: query: SELECT * from insert_into1_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@insert_into1
+POSTHOOK: Input: default@insert_into1_n0
 #### A masked pattern was here ####
 NULL	NULL
-PREHOOK: query: TRUNCATE table insert_into1
+PREHOOK: query: TRUNCATE table insert_into1_n0
 PREHOOK: type: TRUNCATETABLE
-PREHOOK: Output: default@insert_into1
-POSTHOOK: query: TRUNCATE table insert_into1
+PREHOOK: Output: default@insert_into1_n0
+POSTHOOK: query: TRUNCATE table insert_into1_n0
 POSTHOOK: type: TRUNCATETABLE
-POSTHOOK: Output: default@insert_into1
-PREHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1 values(234, dEfAULt)
+POSTHOOK: Output: default@insert_into1_n0
+PREHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1_n0 values(234, dEfAULt)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1 values(234, dEfAULt)
+POSTHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1_n0 values(234, dEfAULt)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -204,7 +204,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      name: default.insert_into1
+                      name: default.insert_into1_n0
                   Write Type: INSERT
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: string)
@@ -246,7 +246,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.insert_into1
+              name: default.insert_into1_n0
           Write Type: INSERT
 
   Stage: Stage-3
@@ -255,36 +255,36 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: int, string
-          Table: default.insert_into1
+          Table: default.insert_into1_n0
 
-PREHOOK: query: INSERT INTO TABLE insert_into1 values(234, dEfAULt)
+PREHOOK: query: INSERT INTO TABLE insert_into1_n0 values(234, dEfAULt)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@insert_into1
-POSTHOOK: query: INSERT INTO TABLE insert_into1 values(234, dEfAULt)
+PREHOOK: Output: default@insert_into1_n0
+POSTHOOK: query: INSERT INTO TABLE insert_into1_n0 values(234, dEfAULt)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@insert_into1
-POSTHOOK: Lineage: insert_into1.key SCRIPT []
-POSTHOOK: Lineage: insert_into1.value EXPRESSION []
-PREHOOK: query: SELECT * from insert_into1
+POSTHOOK: Output: default@insert_into1_n0
+POSTHOOK: Lineage: insert_into1_n0.key SCRIPT []
+POSTHOOK: Lineage: insert_into1_n0.value EXPRESSION []
+PREHOOK: query: SELECT * from insert_into1_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@insert_into1
+PREHOOK: Input: default@insert_into1_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * from insert_into1
+POSTHOOK: query: SELECT * from insert_into1_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@insert_into1
+POSTHOOK: Input: default@insert_into1_n0
 #### A masked pattern was here ####
 234	NULL
-PREHOOK: query: TRUNCATE table insert_into1
+PREHOOK: query: TRUNCATE table insert_into1_n0
 PREHOOK: type: TRUNCATETABLE
-PREHOOK: Output: default@insert_into1
-POSTHOOK: query: TRUNCATE table insert_into1
+PREHOOK: Output: default@insert_into1_n0
+POSTHOOK: query: TRUNCATE table insert_into1_n0
 POSTHOOK: type: TRUNCATETABLE
-POSTHOOK: Output: default@insert_into1
-PREHOOK: query: explain insert into insert_into1 values(default, 3),(2,default)
+POSTHOOK: Output: default@insert_into1_n0
+PREHOOK: query: explain insert into insert_into1_n0 values(default, 3),(2,default)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain insert into insert_into1 values(default, 3),(2,default)
+POSTHOOK: query: explain insert into insert_into1_n0 values(default, 3),(2,default)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -339,7 +339,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      name: default.insert_into1
+                      name: default.insert_into1_n0
                   Write Type: INSERT
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: string)
@@ -381,7 +381,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.insert_into1
+              name: default.insert_into1_n0
           Write Type: INSERT
 
   Stage: Stage-3
@@ -390,37 +390,37 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: int, string
-          Table: default.insert_into1
+          Table: default.insert_into1_n0
 
-PREHOOK: query: insert into insert_into1 values(default, 3),(2,default)
+PREHOOK: query: insert into insert_into1_n0 values(default, 3),(2,default)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@insert_into1
-POSTHOOK: query: insert into insert_into1 values(default, 3),(2,default)
+PREHOOK: Output: default@insert_into1_n0
+POSTHOOK: query: insert into insert_into1_n0 values(default, 3),(2,default)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@insert_into1
-POSTHOOK: Lineage: insert_into1.key SCRIPT []
-POSTHOOK: Lineage: insert_into1.value SCRIPT []
-PREHOOK: query: select * from insert_into1
+POSTHOOK: Output: default@insert_into1_n0
+POSTHOOK: Lineage: insert_into1_n0.key SCRIPT []
+POSTHOOK: Lineage: insert_into1_n0.value SCRIPT []
+PREHOOK: query: select * from insert_into1_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@insert_into1
+PREHOOK: Input: default@insert_into1_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from insert_into1
+POSTHOOK: query: select * from insert_into1_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@insert_into1
+POSTHOOK: Input: default@insert_into1_n0
 #### A masked pattern was here ####
 2	NULL
 NULL	3
-PREHOOK: query: TRUNCATE table insert_into1
+PREHOOK: query: TRUNCATE table insert_into1_n0
 PREHOOK: type: TRUNCATETABLE
-PREHOOK: Output: default@insert_into1
-POSTHOOK: query: TRUNCATE table insert_into1
+PREHOOK: Output: default@insert_into1_n0
+POSTHOOK: query: TRUNCATE table insert_into1_n0
 POSTHOOK: type: TRUNCATETABLE
-POSTHOOK: Output: default@insert_into1
-PREHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1(key) values(default)
+POSTHOOK: Output: default@insert_into1_n0
+PREHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1_n0(key) values(default)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1(key) values(default)
+POSTHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1_n0(key) values(default)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -475,7 +475,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      name: default.insert_into1
+                      name: default.insert_into1_n0
                   Write Type: INSERT
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: string)
@@ -517,7 +517,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.insert_into1
+              name: default.insert_into1_n0
           Write Type: INSERT
 
   Stage: Stage-3
@@ -526,36 +526,36 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: int, string
-          Table: default.insert_into1
+          Table: default.insert_into1_n0
 
-PREHOOK: query: INSERT INTO TABLE insert_into1(key) values(default)
+PREHOOK: query: INSERT INTO TABLE insert_into1_n0(key) values(default)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@insert_into1
-POSTHOOK: query: INSERT INTO TABLE insert_into1(key) values(default)
+PREHOOK: Output: default@insert_into1_n0
+POSTHOOK: query: INSERT INTO TABLE insert_into1_n0(key) values(default)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@insert_into1
-POSTHOOK: Lineage: insert_into1.key EXPRESSION []
-POSTHOOK: Lineage: insert_into1.value SIMPLE []
-PREHOOK: query: select * from insert_into1
+POSTHOOK: Output: default@insert_into1_n0
+POSTHOOK: Lineage: insert_into1_n0.key EXPRESSION []
+POSTHOOK: Lineage: insert_into1_n0.value SIMPLE []
+PREHOOK: query: select * from insert_into1_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@insert_into1
+PREHOOK: Input: default@insert_into1_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from insert_into1
+POSTHOOK: query: select * from insert_into1_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@insert_into1
+POSTHOOK: Input: default@insert_into1_n0
 #### A masked pattern was here ####
 NULL	NULL
-PREHOOK: query: TRUNCATE table insert_into1
+PREHOOK: query: TRUNCATE table insert_into1_n0
 PREHOOK: type: TRUNCATETABLE
-PREHOOK: Output: default@insert_into1
-POSTHOOK: query: TRUNCATE table insert_into1
+PREHOOK: Output: default@insert_into1_n0
+POSTHOOK: query: TRUNCATE table insert_into1_n0
 POSTHOOK: type: TRUNCATETABLE
-POSTHOOK: Output: default@insert_into1
-PREHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1(key, value) values(2,default)
+POSTHOOK: Output: default@insert_into1_n0
+PREHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1_n0(key, value) values(2,default)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1(key, value) values(2,default)
+POSTHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1_n0(key, value) values(2,default)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -610,7 +610,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      name: default.insert_into1
+                      name: default.insert_into1_n0
                   Write Type: INSERT
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: string)
@@ -652,7 +652,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.insert_into1
+              name: default.insert_into1_n0
           Write Type: INSERT
 
   Stage: Stage-3
@@ -661,54 +661,54 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: int, string
-          Table: default.insert_into1
+          Table: default.insert_into1_n0
 
-PREHOOK: query: INSERT INTO TABLE insert_into1(key, value) values(2,default)
+PREHOOK: query: INSERT INTO TABLE insert_into1_n0(key, value) values(2,default)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@insert_into1
-POSTHOOK: query: INSERT INTO TABLE insert_into1(key, value) values(2,default)
+PREHOOK: Output: default@insert_into1_n0
+POSTHOOK: query: INSERT INTO TABLE insert_into1_n0(key, value) values(2,default)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@insert_into1
-POSTHOOK: Lineage: insert_into1.key SCRIPT []
-POSTHOOK: Lineage: insert_into1.value EXPRESSION []
-PREHOOK: query: select * from insert_into1
+POSTHOOK: Output: default@insert_into1_n0
+POSTHOOK: Lineage: insert_into1_n0.key SCRIPT []
+POSTHOOK: Lineage: insert_into1_n0.value EXPRESSION []
+PREHOOK: query: select * from insert_into1_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@insert_into1
+PREHOOK: Input: default@insert_into1_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from insert_into1
+POSTHOOK: query: select * from insert_into1_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@insert_into1
+POSTHOOK: Input: default@insert_into1_n0
 #### A masked pattern was here ####
 2	NULL
-PREHOOK: query: TRUNCATE table insert_into1
+PREHOOK: query: TRUNCATE table insert_into1_n0
 PREHOOK: type: TRUNCATETABLE
-PREHOOK: Output: default@insert_into1
-POSTHOOK: query: TRUNCATE table insert_into1
+PREHOOK: Output: default@insert_into1_n0
+POSTHOOK: query: TRUNCATE table insert_into1_n0
 POSTHOOK: type: TRUNCATETABLE
-POSTHOOK: Output: default@insert_into1
-PREHOOK: query: DROP TABLE insert_into1
+POSTHOOK: Output: default@insert_into1_n0
+PREHOOK: query: DROP TABLE insert_into1_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@insert_into1
-PREHOOK: Output: default@insert_into1
-POSTHOOK: query: DROP TABLE insert_into1
+PREHOOK: Input: default@insert_into1_n0
+PREHOOK: Output: default@insert_into1_n0
+POSTHOOK: query: DROP TABLE insert_into1_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@insert_into1
-POSTHOOK: Output: default@insert_into1
-PREHOOK: query: CREATE TABLE insert_into1 (key int DEFAULT 1, value string)
+POSTHOOK: Input: default@insert_into1_n0
+POSTHOOK: Output: default@insert_into1_n0
+PREHOOK: query: CREATE TABLE insert_into1_n0 (key int DEFAULT 1, value string)
     clustered by (key) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@insert_into1
-POSTHOOK: query: CREATE TABLE insert_into1 (key int DEFAULT 1, value string)
+PREHOOK: Output: default@insert_into1_n0
+POSTHOOK: query: CREATE TABLE insert_into1_n0 (key int DEFAULT 1, value string)
     clustered by (key) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@insert_into1
-PREHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1 values(default, DEFAULT)
+POSTHOOK: Output: default@insert_into1_n0
+PREHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1_n0 values(default, DEFAULT)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1 values(default, DEFAULT)
+POSTHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1_n0 values(default, DEFAULT)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -763,7 +763,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      name: default.insert_into1
+                      name: default.insert_into1_n0
                   Write Type: INSERT
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: string)
@@ -805,7 +805,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.insert_into1
+              name: default.insert_into1_n0
           Write Type: INSERT
 
   Stage: Stage-3
@@ -814,36 +814,36 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: int, string
-          Table: default.insert_into1
+          Table: default.insert_into1_n0
 
-PREHOOK: query: INSERT INTO TABLE insert_into1 values(default, DEFAULT)
+PREHOOK: query: INSERT INTO TABLE insert_into1_n0 values(default, DEFAULT)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@insert_into1
-POSTHOOK: query: INSERT INTO TABLE insert_into1 values(default, DEFAULT)
+PREHOOK: Output: default@insert_into1_n0
+POSTHOOK: query: INSERT INTO TABLE insert_into1_n0 values(default, DEFAULT)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@insert_into1
-POSTHOOK: Lineage: insert_into1.key SCRIPT []
-POSTHOOK: Lineage: insert_into1.value EXPRESSION []
-PREHOOK: query: SELECT * from insert_into1
+POSTHOOK: Output: default@insert_into1_n0
+POSTHOOK: Lineage: insert_into1_n0.key SCRIPT []
+POSTHOOK: Lineage: insert_into1_n0.value EXPRESSION []
+PREHOOK: query: SELECT * from insert_into1_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@insert_into1
+PREHOOK: Input: default@insert_into1_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * from insert_into1
+POSTHOOK: query: SELECT * from insert_into1_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@insert_into1
+POSTHOOK: Input: default@insert_into1_n0
 #### A masked pattern was here ####
 1	NULL
-PREHOOK: query: TRUNCATE table insert_into1
+PREHOOK: query: TRUNCATE table insert_into1_n0
 PREHOOK: type: TRUNCATETABLE
-PREHOOK: Output: default@insert_into1
-POSTHOOK: query: TRUNCATE table insert_into1
+PREHOOK: Output: default@insert_into1_n0
+POSTHOOK: query: TRUNCATE table insert_into1_n0
 POSTHOOK: type: TRUNCATETABLE
-POSTHOOK: Output: default@insert_into1
-PREHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1 values(234, dEfAULt)
+POSTHOOK: Output: default@insert_into1_n0
+PREHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1_n0 values(234, dEfAULt)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1 values(234, dEfAULt)
+POSTHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1_n0 values(234, dEfAULt)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -898,7 +898,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      name: default.insert_into1
+                      name: default.insert_into1_n0
                   Write Type: INSERT
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: string)
@@ -940,7 +940,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.insert_into1
+              name: default.insert_into1_n0
           Write Type: INSERT
 
   Stage: Stage-3
@@ -949,36 +949,36 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: int, string
-          Table: default.insert_into1
+          Table: default.insert_into1_n0
 
-PREHOOK: query: INSERT INTO TABLE insert_into1 values(234, dEfAULt)
+PREHOOK: query: INSERT INTO TABLE insert_into1_n0 values(234, dEfAULt)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@insert_into1
-POSTHOOK: query: INSERT INTO TABLE insert_into1 values(234, dEfAULt)
+PREHOOK: Output: default@insert_into1_n0
+POSTHOOK: query: INSERT INTO TABLE insert_into1_n0 values(234, dEfAULt)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@insert_into1
-POSTHOOK: Lineage: insert_into1.key SCRIPT []
-POSTHOOK: Lineage: insert_into1.value EXPRESSION []
-PREHOOK: query: SELECT * from insert_into1
+POSTHOOK: Output: default@insert_into1_n0
+POSTHOOK: Lineage: insert_into1_n0.key SCRIPT []
+POSTHOOK: Lineage: insert_into1_n0.value EXPRESSION []
+PREHOOK: query: SELECT * from insert_into1_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@insert_into1
+PREHOOK: Input: default@insert_into1_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * from insert_into1
+POSTHOOK: query: SELECT * from insert_into1_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@insert_into1
+POSTHOOK: Input: default@insert_into1_n0
 #### A masked pattern was here ####
 234	NULL
-PREHOOK: query: TRUNCATE table insert_into1
+PREHOOK: query: TRUNCATE table insert_into1_n0
 PREHOOK: type: TRUNCATETABLE
-PREHOOK: Output: default@insert_into1
-POSTHOOK: query: TRUNCATE table insert_into1
+PREHOOK: Output: default@insert_into1_n0
+POSTHOOK: query: TRUNCATE table insert_into1_n0
 POSTHOOK: type: TRUNCATETABLE
-POSTHOOK: Output: default@insert_into1
-PREHOOK: query: explain insert into insert_into1 values(default, 3),(2,default)
+POSTHOOK: Output: default@insert_into1_n0
+PREHOOK: query: explain insert into insert_into1_n0 values(default, 3),(2,default)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain insert into insert_into1 values(default, 3),(2,default)
+POSTHOOK: query: explain insert into insert_into1_n0 values(default, 3),(2,default)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1033,7 +1033,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      name: default.insert_into1
+                      name: default.insert_into1_n0
                   Write Type: INSERT
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: string)
@@ -1075,7 +1075,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.insert_into1
+              name: default.insert_into1_n0
           Write Type: INSERT
 
   Stage: Stage-3
@@ -1084,37 +1084,37 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: int, string
-          Table: default.insert_into1
+          Table: default.insert_into1_n0
 
-PREHOOK: query: insert into insert_into1 values(default, 3),(2,default)
+PREHOOK: query: insert into insert_into1_n0 values(default, 3),(2,default)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@insert_into1
-POSTHOOK: query: insert into insert_into1 values(default, 3),(2,default)
+PREHOOK: Output: default@insert_into1_n0
+POSTHOOK: query: insert into insert_into1_n0 values(default, 3),(2,default)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@insert_into1
-POSTHOOK: Lineage: insert_into1.key SCRIPT []
-POSTHOOK: Lineage: insert_into1.value SCRIPT []
-PREHOOK: query: select * from insert_into1
+POSTHOOK: Output: default@insert_into1_n0
+POSTHOOK: Lineage: insert_into1_n0.key SCRIPT []
+POSTHOOK: Lineage: insert_into1_n0.value SCRIPT []
+PREHOOK: query: select * from insert_into1_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@insert_into1
+PREHOOK: Input: default@insert_into1_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from insert_into1
+POSTHOOK: query: select * from insert_into1_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@insert_into1
+POSTHOOK: Input: default@insert_into1_n0
 #### A masked pattern was here ####
 1	3
 2	NULL
-PREHOOK: query: TRUNCATE table insert_into1
+PREHOOK: query: TRUNCATE table insert_into1_n0
 PREHOOK: type: TRUNCATETABLE
-PREHOOK: Output: default@insert_into1
-POSTHOOK: query: TRUNCATE table insert_into1
+PREHOOK: Output: default@insert_into1_n0
+POSTHOOK: query: TRUNCATE table insert_into1_n0
 POSTHOOK: type: TRUNCATETABLE
-POSTHOOK: Output: default@insert_into1
-PREHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1(key) values(default)
+POSTHOOK: Output: default@insert_into1_n0
+PREHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1_n0(key) values(default)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1(key) values(default)
+POSTHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1_n0(key) values(default)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1169,7 +1169,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      name: default.insert_into1
+                      name: default.insert_into1_n0
                   Write Type: INSERT
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: string)
@@ -1211,7 +1211,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.insert_into1
+              name: default.insert_into1_n0
           Write Type: INSERT
 
   Stage: Stage-3
@@ -1220,36 +1220,36 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: int, string
-          Table: default.insert_into1
+          Table: default.insert_into1_n0
 
-PREHOOK: query: INSERT INTO TABLE insert_into1(key) values(default)
+PREHOOK: query: INSERT INTO TABLE insert_into1_n0(key) values(default)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@insert_into1
-POSTHOOK: query: INSERT INTO TABLE insert_into1(key) values(default)
+PREHOOK: Output: default@insert_into1_n0
+POSTHOOK: query: INSERT INTO TABLE insert_into1_n0(key) values(default)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@insert_into1
-POSTHOOK: Lineage: insert_into1.key SCRIPT []
-POSTHOOK: Lineage: insert_into1.value SIMPLE []
-PREHOOK: query: select * from insert_into1
+POSTHOOK: Output: default@insert_into1_n0
+POSTHOOK: Lineage: insert_into1_n0.key SCRIPT []
+POSTHOOK: Lineage: insert_into1_n0.value SIMPLE []
+PREHOOK: query: select * from insert_into1_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@insert_into1
+PREHOOK: Input: default@insert_into1_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from insert_into1
+POSTHOOK: query: select * from insert_into1_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@insert_into1
+POSTHOOK: Input: default@insert_into1_n0
 #### A masked pattern was here ####
 1	NULL
-PREHOOK: query: TRUNCATE table insert_into1
+PREHOOK: query: TRUNCATE table insert_into1_n0
 PREHOOK: type: TRUNCATETABLE
-PREHOOK: Output: default@insert_into1
-POSTHOOK: query: TRUNCATE table insert_into1
+PREHOOK: Output: default@insert_into1_n0
+POSTHOOK: query: TRUNCATE table insert_into1_n0
 POSTHOOK: type: TRUNCATETABLE
-POSTHOOK: Output: default@insert_into1
-PREHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1(key, value) values(2,default)
+POSTHOOK: Output: default@insert_into1_n0
+PREHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1_n0(key, value) values(2,default)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1(key, value) values(2,default)
+POSTHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1_n0(key, value) values(2,default)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1304,7 +1304,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      name: default.insert_into1
+                      name: default.insert_into1_n0
                   Write Type: INSERT
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: string)
@@ -1346,7 +1346,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.insert_into1
+              name: default.insert_into1_n0
           Write Type: INSERT
 
   Stage: Stage-3
@@ -1355,36 +1355,36 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: int, string
-          Table: default.insert_into1
+          Table: default.insert_into1_n0
 
-PREHOOK: query: INSERT INTO TABLE insert_into1(key, value) values(2,default)
+PREHOOK: query: INSERT INTO TABLE insert_into1_n0(key, value) values(2,default)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@insert_into1
-POSTHOOK: query: INSERT INTO TABLE insert_into1(key, value) values(2,default)
+PREHOOK: Output: default@insert_into1_n0
+POSTHOOK: query: INSERT INTO TABLE insert_into1_n0(key, value) values(2,default)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@insert_into1
-POSTHOOK: Lineage: insert_into1.key SCRIPT []
-POSTHOOK: Lineage: insert_into1.value EXPRESSION []
-PREHOOK: query: select * from insert_into1
+POSTHOOK: Output: default@insert_into1_n0
+POSTHOOK: Lineage: insert_into1_n0.key SCRIPT []
+POSTHOOK: Lineage: insert_into1_n0.value EXPRESSION []
+PREHOOK: query: select * from insert_into1_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@insert_into1
+PREHOOK: Input: default@insert_into1_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from insert_into1
+POSTHOOK: query: select * from insert_into1_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@insert_into1
+POSTHOOK: Input: default@insert_into1_n0
 #### A masked pattern was here ####
 2	NULL
-PREHOOK: query: TRUNCATE table insert_into1
+PREHOOK: query: TRUNCATE table insert_into1_n0
 PREHOOK: type: TRUNCATETABLE
-PREHOOK: Output: default@insert_into1
-POSTHOOK: query: TRUNCATE table insert_into1
+PREHOOK: Output: default@insert_into1_n0
+POSTHOOK: query: TRUNCATE table insert_into1_n0
 POSTHOOK: type: TRUNCATETABLE
-POSTHOOK: Output: default@insert_into1
-PREHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1(value, key) values(2,default)
+POSTHOOK: Output: default@insert_into1_n0
+PREHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1_n0(value, key) values(2,default)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1(value, key) values(2,default)
+POSTHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1_n0(value, key) values(2,default)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1439,7 +1439,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      name: default.insert_into1
+                      name: default.insert_into1_n0
                   Write Type: INSERT
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: string)
@@ -1481,7 +1481,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.insert_into1
+              name: default.insert_into1_n0
           Write Type: INSERT
 
   Stage: Stage-3
@@ -1490,36 +1490,36 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: int, string
-          Table: default.insert_into1
+          Table: default.insert_into1_n0
 
-PREHOOK: query: INSERT INTO TABLE insert_into1(value, key) values(2,default)
+PREHOOK: query: INSERT INTO TABLE insert_into1_n0(value, key) values(2,default)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@insert_into1
-POSTHOOK: query: INSERT INTO TABLE insert_into1(value, key) values(2,default)
+PREHOOK: Output: default@insert_into1_n0
+POSTHOOK: query: INSERT INTO TABLE insert_into1_n0(value, key) values(2,default)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@insert_into1
-POSTHOOK: Lineage: insert_into1.key SCRIPT []
-POSTHOOK: Lineage: insert_into1.value SCRIPT []
-PREHOOK: query: select * from insert_into1
+POSTHOOK: Output: default@insert_into1_n0
+POSTHOOK: Lineage: insert_into1_n0.key SCRIPT []
+POSTHOOK: Lineage: insert_into1_n0.value SCRIPT []
+PREHOOK: query: select * from insert_into1_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@insert_into1
+PREHOOK: Input: default@insert_into1_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from insert_into1
+POSTHOOK: query: select * from insert_into1_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@insert_into1
+POSTHOOK: Input: default@insert_into1_n0
 #### A masked pattern was here ####
 1	2
-PREHOOK: query: TRUNCATE table insert_into1
+PREHOOK: query: TRUNCATE table insert_into1_n0
 PREHOOK: type: TRUNCATETABLE
-PREHOOK: Output: default@insert_into1
-POSTHOOK: query: TRUNCATE table insert_into1
+PREHOOK: Output: default@insert_into1_n0
+POSTHOOK: query: TRUNCATE table insert_into1_n0
 POSTHOOK: type: TRUNCATETABLE
-POSTHOOK: Output: default@insert_into1
-PREHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1(key, value) values(2,default),(DEFAULT, default)
+POSTHOOK: Output: default@insert_into1_n0
+PREHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1_n0(key, value) values(2,default),(DEFAULT, default)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1(key, value) values(2,default),(DEFAULT, default)
+POSTHOOK: query: EXPLAIN INSERT INTO TABLE insert_into1_n0(key, value) values(2,default),(DEFAULT, default)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1574,7 +1574,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      name: default.insert_into1
+                      name: default.insert_into1_n0
                   Write Type: INSERT
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: string)
@@ -1616,7 +1616,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.insert_into1
+              name: default.insert_into1_n0
           Write Type: INSERT
 
   Stage: Stage-3
@@ -1625,66 +1625,66 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: int, string
-          Table: default.insert_into1
+          Table: default.insert_into1_n0
 
-PREHOOK: query: INSERT INTO TABLE insert_into1(key, value) values(2,default),(DEFAULT, default)
+PREHOOK: query: INSERT INTO TABLE insert_into1_n0(key, value) values(2,default),(DEFAULT, default)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@insert_into1
-POSTHOOK: query: INSERT INTO TABLE insert_into1(key, value) values(2,default),(DEFAULT, default)
+PREHOOK: Output: default@insert_into1_n0
+POSTHOOK: query: INSERT INTO TABLE insert_into1_n0(key, value) values(2,default),(DEFAULT, default)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@insert_into1
-POSTHOOK: Lineage: insert_into1.key SCRIPT []
-POSTHOOK: Lineage: insert_into1.value EXPRESSION []
-PREHOOK: query: select * from insert_into1
+POSTHOOK: Output: default@insert_into1_n0
+POSTHOOK: Lineage: insert_into1_n0.key SCRIPT []
+POSTHOOK: Lineage: insert_into1_n0.value EXPRESSION []
+PREHOOK: query: select * from insert_into1_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@insert_into1
+PREHOOK: Input: default@insert_into1_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from insert_into1
+POSTHOOK: query: select * from insert_into1_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@insert_into1
+POSTHOOK: Input: default@insert_into1_n0
 #### A masked pattern was here ####
 1	NULL
 2	NULL
-PREHOOK: query: TRUNCATE table insert_into1
+PREHOOK: query: TRUNCATE table insert_into1_n0
 PREHOOK: type: TRUNCATETABLE
-PREHOOK: Output: default@insert_into1
-POSTHOOK: query: TRUNCATE table insert_into1
+PREHOOK: Output: default@insert_into1_n0
+POSTHOOK: query: TRUNCATE table insert_into1_n0
 POSTHOOK: type: TRUNCATETABLE
-POSTHOOK: Output: default@insert_into1
-PREHOOK: query: DROP TABLE insert_into1
+POSTHOOK: Output: default@insert_into1_n0
+PREHOOK: query: DROP TABLE insert_into1_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@insert_into1
-PREHOOK: Output: default@insert_into1
-POSTHOOK: query: DROP TABLE insert_into1
+PREHOOK: Input: default@insert_into1_n0
+PREHOOK: Output: default@insert_into1_n0
+POSTHOOK: query: DROP TABLE insert_into1_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@insert_into1
-POSTHOOK: Output: default@insert_into1
-PREHOOK: query: CREATE TABLE insert_into1 (key int DEFAULT 1, value string, i int)
+POSTHOOK: Input: default@insert_into1_n0
+POSTHOOK: Output: default@insert_into1_n0
+PREHOOK: query: CREATE TABLE insert_into1_n0 (key int DEFAULT 1, value string, i int)
     clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@insert_into1
-POSTHOOK: query: CREATE TABLE insert_into1 (key int DEFAULT 1, value string, i int)
+PREHOOK: Output: default@insert_into1_n0
+POSTHOOK: query: CREATE TABLE insert_into1_n0 (key int DEFAULT 1, value string, i int)
     clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@insert_into1
-PREHOOK: query: INSERT INTO insert_into1 values(2,1, 45)
+POSTHOOK: Output: default@insert_into1_n0
+PREHOOK: query: INSERT INTO insert_into1_n0 values(2,1, 45)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@insert_into1
-POSTHOOK: query: INSERT INTO insert_into1 values(2,1, 45)
+PREHOOK: Output: default@insert_into1_n0
+POSTHOOK: query: INSERT INTO insert_into1_n0 values(2,1, 45)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@insert_into1
-POSTHOOK: Lineage: insert_into1.i SCRIPT []
-POSTHOOK: Lineage: insert_into1.key SCRIPT []
-POSTHOOK: Lineage: insert_into1.value SCRIPT []
-PREHOOK: query: EXPLAIN UPDATE insert_into1 set key = DEFAULT where value=1
+POSTHOOK: Output: default@insert_into1_n0
+POSTHOOK: Lineage: insert_into1_n0.i SCRIPT []
+POSTHOOK: Lineage: insert_into1_n0.key SCRIPT []
+POSTHOOK: Lineage: insert_into1_n0.value SCRIPT []
+PREHOOK: query: EXPLAIN UPDATE insert_into1_n0 set key = DEFAULT where value=1
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN UPDATE insert_into1 set key = DEFAULT where value=1
+POSTHOOK: query: EXPLAIN UPDATE insert_into1_n0 set key = DEFAULT where value=1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1703,7 +1703,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: insert_into1
+                  alias: insert_into1_n0
                   Statistics: Num rows: 25 Data size: 4700 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (value = 1) (type: boolean)
@@ -1734,7 +1734,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      name: default.insert_into1
+                      name: default.insert_into1_n0
                   Write Type: UPDATE
 
   Stage: Stage-2
@@ -1748,50 +1748,50 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.insert_into1
+              name: default.insert_into1_n0
           Write Type: UPDATE
 
   Stage: Stage-3
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: UPDATE insert_into1 set key = DEFAULT where value=1
+PREHOOK: query: UPDATE insert_into1_n0 set key = DEFAULT where value=1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@insert_into1
-PREHOOK: Output: default@insert_into1
-POSTHOOK: query: UPDATE insert_into1 set key = DEFAULT where value=1
+PREHOOK: Input: default@insert_into1_n0
+PREHOOK: Output: default@insert_into1_n0
+POSTHOOK: query: UPDATE insert_into1_n0 set key = DEFAULT where value=1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@insert_into1
-POSTHOOK: Output: default@insert_into1
-PREHOOK: query: SELECT * from insert_into1
+POSTHOOK: Input: default@insert_into1_n0
+POSTHOOK: Output: default@insert_into1_n0
+PREHOOK: query: SELECT * from insert_into1_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@insert_into1
+PREHOOK: Input: default@insert_into1_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * from insert_into1
+POSTHOOK: query: SELECT * from insert_into1_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@insert_into1
+POSTHOOK: Input: default@insert_into1_n0
 #### A masked pattern was here ####
 1	1	45
-PREHOOK: query: TRUNCATE table insert_into1
+PREHOOK: query: TRUNCATE table insert_into1_n0
 PREHOOK: type: TRUNCATETABLE
-PREHOOK: Output: default@insert_into1
-POSTHOOK: query: TRUNCATE table insert_into1
+PREHOOK: Output: default@insert_into1_n0
+POSTHOOK: query: TRUNCATE table insert_into1_n0
 POSTHOOK: type: TRUNCATETABLE
-POSTHOOK: Output: default@insert_into1
-PREHOOK: query: INSERT INTO insert_into1 values(2,1, 45)
+POSTHOOK: Output: default@insert_into1_n0
+PREHOOK: query: INSERT INTO insert_into1_n0 values(2,1, 45)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@insert_into1
-POSTHOOK: query: INSERT INTO insert_into1 values(2,1, 45)
+PREHOOK: Output: default@insert_into1_n0
+POSTHOOK: query: INSERT INTO insert_into1_n0 values(2,1, 45)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@insert_into1
-POSTHOOK: Lineage: insert_into1.i SCRIPT []
-POSTHOOK: Lineage: insert_into1.key SCRIPT []
-POSTHOOK: Lineage: insert_into1.value SCRIPT []
-PREHOOK: query: EXPLAIN UPDATE insert_into1 set key = DEFAULT, value=DEFAULT where value=1
+POSTHOOK: Output: default@insert_into1_n0
+POSTHOOK: Lineage: insert_into1_n0.i SCRIPT []
+POSTHOOK: Lineage: insert_into1_n0.key SCRIPT []
+POSTHOOK: Lineage: insert_into1_n0.value SCRIPT []
+PREHOOK: query: EXPLAIN UPDATE insert_into1_n0 set key = DEFAULT, value=DEFAULT where value=1
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN UPDATE insert_into1 set key = DEFAULT, value=DEFAULT where value=1
+POSTHOOK: query: EXPLAIN UPDATE insert_into1_n0 set key = DEFAULT, value=DEFAULT where value=1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1810,7 +1810,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: insert_into1
+                  alias: insert_into1_n0
                   Statistics: Num rows: 25 Data size: 4700 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (value = 1) (type: boolean)
@@ -1841,7 +1841,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      name: default.insert_into1
+                      name: default.insert_into1_n0
                   Write Type: UPDATE
 
   Stage: Stage-2
@@ -1855,44 +1855,44 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.insert_into1
+              name: default.insert_into1_n0
           Write Type: UPDATE
 
   Stage: Stage-3
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: UPDATE insert_into1 set key = DEFAULT, value=DEFAULT where value=1
+PREHOOK: query: UPDATE insert_into1_n0 set key = DEFAULT, value=DEFAULT where value=1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@insert_into1
-PREHOOK: Output: default@insert_into1
-POSTHOOK: query: UPDATE insert_into1 set key = DEFAULT, value=DEFAULT where value=1
+PREHOOK: Input: default@insert_into1_n0
+PREHOOK: Output: default@insert_into1_n0
+POSTHOOK: query: UPDATE insert_into1_n0 set key = DEFAULT, value=DEFAULT where value=1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@insert_into1
-POSTHOOK: Output: default@insert_into1
-PREHOOK: query: SELECT * from insert_into1
+POSTHOOK: Input: default@insert_into1_n0
+POSTHOOK: Output: default@insert_into1_n0
+PREHOOK: query: SELECT * from insert_into1_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@insert_into1
+PREHOOK: Input: default@insert_into1_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * from insert_into1
+POSTHOOK: query: SELECT * from insert_into1_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@insert_into1
+POSTHOOK: Input: default@insert_into1_n0
 #### A masked pattern was here ####
 1	NULL	45
-PREHOOK: query: TRUNCATE table insert_into1
+PREHOOK: query: TRUNCATE table insert_into1_n0
 PREHOOK: type: TRUNCATETABLE
-PREHOOK: Output: default@insert_into1
-POSTHOOK: query: TRUNCATE table insert_into1
+PREHOOK: Output: default@insert_into1_n0
+POSTHOOK: query: TRUNCATE table insert_into1_n0
 POSTHOOK: type: TRUNCATETABLE
-POSTHOOK: Output: default@insert_into1
-PREHOOK: query: DROP TABLE insert_into1
+POSTHOOK: Output: default@insert_into1_n0
+PREHOOK: query: DROP TABLE insert_into1_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@insert_into1
-PREHOOK: Output: default@insert_into1
-POSTHOOK: query: DROP TABLE insert_into1
+PREHOOK: Input: default@insert_into1_n0
+PREHOOK: Output: default@insert_into1_n0
+POSTHOOK: query: DROP TABLE insert_into1_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@insert_into1
-POSTHOOK: Output: default@insert_into1
+POSTHOOK: Input: default@insert_into1_n0
+POSTHOOK: Output: default@insert_into1_n0
 PREHOOK: query: CREATE TABLE tpart(i int, j int DEFAULT 1001) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -2289,36 +2289,36 @@ POSTHOOK: query: DROP TABLE tpart
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tpart
 POSTHOOK: Output: default@tpart
-PREHOOK: query: create table nonacid (key int, a1 string, value string) stored as orc
+PREHOOK: query: create table nonacid_n1 (key int, a1 string, value string) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@nonacid
-POSTHOOK: query: create table nonacid (key int, a1 string, value string) stored as orc
+PREHOOK: Output: default@nonacid_n1
+POSTHOOK: query: create table nonacid_n1 (key int, a1 string, value string) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@nonacid
-PREHOOK: query: insert into nonacid values(1, 'a11', 'val1')
+POSTHOOK: Output: default@nonacid_n1
+PREHOOK: query: insert into nonacid_n1 values(1, 'a11', 'val1')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@nonacid
-POSTHOOK: query: insert into nonacid values(1, 'a11', 'val1')
+PREHOOK: Output: default@nonacid_n1
+POSTHOOK: query: insert into nonacid_n1 values(1, 'a11', 'val1')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@nonacid
-POSTHOOK: Lineage: nonacid.a1 SCRIPT []
-POSTHOOK: Lineage: nonacid.key SCRIPT []
-POSTHOOK: Lineage: nonacid.value SCRIPT []
-PREHOOK: query: insert into nonacid values(2, 'a12', 'val2')
+POSTHOOK: Output: default@nonacid_n1
+POSTHOOK: Lineage: nonacid_n1.a1 SCRIPT []
+POSTHOOK: Lineage: nonacid_n1.key SCRIPT []
+POSTHOOK: Lineage: nonacid_n1.value SCRIPT []
+PREHOOK: query: insert into nonacid_n1 values(2, 'a12', 'val2')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@nonacid
-POSTHOOK: query: insert into nonacid values(2, 'a12', 'val2')
+PREHOOK: Output: default@nonacid_n1
+POSTHOOK: query: insert into nonacid_n1 values(2, 'a12', 'val2')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@nonacid
-POSTHOOK: Lineage: nonacid.a1 SCRIPT []
-POSTHOOK: Lineage: nonacid.key SCRIPT []
-POSTHOOK: Lineage: nonacid.value SCRIPT []
+POSTHOOK: Output: default@nonacid_n1
+POSTHOOK: Lineage: nonacid_n1.a1 SCRIPT []
+POSTHOOK: Lineage: nonacid_n1.key SCRIPT []
+POSTHOOK: Lineage: nonacid_n1.value SCRIPT []
 PREHOOK: query: create table acidTable(key int NOT NULL enable, a1 string DEFAULT 'a1', value string)
 clustered by (value) into 2 buckets stored as orc
 tblproperties ("transactional"="true")
@@ -2342,10 +2342,10 @@ POSTHOOK: Output: default@acidtable
 POSTHOOK: Lineage: acidtable.a1 SCRIPT []
 POSTHOOK: Lineage: acidtable.key SCRIPT []
 POSTHOOK: Lineage: acidtable.value SCRIPT []
-PREHOOK: query: explain MERGE INTO acidTable as t using nonacid as s ON t.key = s.key
+PREHOOK: query: explain MERGE INTO acidTable as t using nonacid_n1 as s ON t.key = s.key
 WHEN NOT MATCHED THEN INSERT VALUES (s.key, DEFAULT, DEFAULT)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain MERGE INTO acidTable as t using nonacid as s ON t.key = s.key
+POSTHOOK: query: explain MERGE INTO acidTable as t using nonacid_n1 as s ON t.key = s.key
 WHEN NOT MATCHED THEN INSERT VALUES (s.key, DEFAULT, DEFAULT)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -2484,20 +2484,20 @@ STAGE PLANS:
           Column Types: int, string, string
           Table: default.acidtable
 
-PREHOOK: query: MERGE INTO acidTable as t using nonacid as s ON t.key = s.key
+PREHOOK: query: MERGE INTO acidTable as t using nonacid_n1 as s ON t.key = s.key
 WHEN NOT MATCHED THEN INSERT VALUES (s.key, DEFAULT, DEFAULT)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acidtable
-PREHOOK: Input: default@nonacid
+PREHOOK: Input: default@nonacid_n1
 PREHOOK: Output: default@acidtable
-POSTHOOK: query: MERGE INTO acidTable as t using nonacid as s ON t.key = s.key
+POSTHOOK: query: MERGE INTO acidTable as t using nonacid_n1 as s ON t.key = s.key
 WHEN NOT MATCHED THEN INSERT VALUES (s.key, DEFAULT, DEFAULT)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acidtable
-POSTHOOK: Input: default@nonacid
+POSTHOOK: Input: default@nonacid_n1
 POSTHOOK: Output: default@acidtable
 POSTHOOK: Lineage: acidtable.a1 SIMPLE []
-POSTHOOK: Lineage: acidtable.key SIMPLE [(nonacid)s.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: acidtable.key SIMPLE [(nonacid_n1)s.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: acidtable.value EXPRESSION []
 PREHOOK: query: select * from acidTable
 PREHOOK: type: QUERY
@@ -2526,12 +2526,12 @@ POSTHOOK: Output: default@acidtable
 POSTHOOK: Lineage: acidtable.a1 SCRIPT []
 POSTHOOK: Lineage: acidtable.key SCRIPT []
 POSTHOOK: Lineage: acidtable.value SCRIPT []
-PREHOOK: query: explain MERGE INTO acidTable as t using nonacid as s ON t.key = s.key
+PREHOOK: query: explain MERGE INTO acidTable as t using nonacid_n1 as s ON t.key = s.key
 WHEN MATCHED AND s.key < 3 THEN DELETE
 WHEN MATCHED AND s.key > 3 THEN UPDATE set a1 = DEFAULT
 WHEN NOT MATCHED THEN INSERT VALUES (s.key, s.a1, DEFAULT)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain MERGE INTO acidTable as t using nonacid as s ON t.key = s.key
+POSTHOOK: query: explain MERGE INTO acidTable as t using nonacid_n1 as s ON t.key = s.key
 WHEN MATCHED AND s.key < 3 THEN DELETE
 WHEN MATCHED AND s.key > 3 THEN UPDATE set a1 = DEFAULT
 WHEN NOT MATCHED THEN INSERT VALUES (s.key, s.a1, DEFAULT)
@@ -2845,30 +2845,30 @@ STAGE PLANS:
           Column Types: int, string, string
           Table: default.acidtable
 
-PREHOOK: query: MERGE INTO acidTable as t using nonacid as s ON t.key = s.key
+PREHOOK: query: MERGE INTO acidTable as t using nonacid_n1 as s ON t.key = s.key
 WHEN MATCHED AND s.key < 3 THEN DELETE
 WHEN MATCHED AND s.key > 3 THEN UPDATE set a1 = DEFAULT
 WHEN NOT MATCHED THEN INSERT VALUES (s.key, s.a1, DEFAULT)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acidtable
-PREHOOK: Input: default@nonacid
+PREHOOK: Input: default@nonacid_n1
 PREHOOK: Output: default@acidtable
 PREHOOK: Output: default@acidtable
 PREHOOK: Output: default@acidtable
 PREHOOK: Output: default@merge_tmp_table
-POSTHOOK: query: MERGE INTO acidTable as t using nonacid as s ON t.key = s.key
+POSTHOOK: query: MERGE INTO acidTable as t using nonacid_n1 as s ON t.key = s.key
 WHEN MATCHED AND s.key < 3 THEN DELETE
 WHEN MATCHED AND s.key > 3 THEN UPDATE set a1 = DEFAULT
 WHEN NOT MATCHED THEN INSERT VALUES (s.key, s.a1, DEFAULT)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acidtable
-POSTHOOK: Input: default@nonacid
+POSTHOOK: Input: default@nonacid_n1
 POSTHOOK: Output: default@acidtable
 POSTHOOK: Output: default@acidtable
 POSTHOOK: Output: default@acidtable
 POSTHOOK: Output: default@merge_tmp_table
-POSTHOOK: Lineage: acidtable.a1 SIMPLE [(nonacid)s.FieldSchema(name:a1, type:string, comment:null), ]
-POSTHOOK: Lineage: acidtable.key SIMPLE [(nonacid)s.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: acidtable.a1 SIMPLE [(nonacid_n1)s.FieldSchema(name:a1, type:string, comment:null), ]
+POSTHOOK: Lineage: acidtable.key SIMPLE [(nonacid_n1)s.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: acidtable.value EXPRESSION []
 POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(acidtable)t.FieldSchema(name:ROW__ID, type:struct<writeId:bigint,bucketId:int,rowId:bigint>, comment:), ]
 PREHOOK: query: select * from acidTable
@@ -2896,10 +2896,10 @@ tblproperties ("transactional"="true")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@acidTable2
-PREHOOK: query: explain MERGE INTO acidTable2 as t using nonacid as s ON t.key = s.key
+PREHOOK: query: explain MERGE INTO acidTable2 as t using nonacid_n1 as s ON t.key = s.key
 WHEN NOT MATCHED THEN INSERT VALUES (DEFAULT)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain MERGE INTO acidTable2 as t using nonacid as s ON t.key = s.key
+POSTHOOK: query: explain MERGE INTO acidTable2 as t using nonacid_n1 as s ON t.key = s.key
 WHEN NOT MATCHED THEN INSERT VALUES (DEFAULT)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -3029,17 +3029,17 @@ STAGE PLANS:
           Column Types: int
           Table: default.acidtable2
 
-PREHOOK: query: MERGE INTO acidTable2 as t using nonacid as s ON t.key = s.key
+PREHOOK: query: MERGE INTO acidTable2 as t using nonacid_n1 as s ON t.key = s.key
 WHEN NOT MATCHED THEN INSERT VALUES (DEFAULT)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acidtable2
-PREHOOK: Input: default@nonacid
+PREHOOK: Input: default@nonacid_n1
 PREHOOK: Output: default@acidtable2
-POSTHOOK: query: MERGE INTO acidTable2 as t using nonacid as s ON t.key = s.key
+POSTHOOK: query: MERGE INTO acidTable2 as t using nonacid_n1 as s ON t.key = s.key
 WHEN NOT MATCHED THEN INSERT VALUES (DEFAULT)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acidtable2
-POSTHOOK: Input: default@nonacid
+POSTHOOK: Input: default@nonacid_n1
 POSTHOOK: Output: default@acidtable2
 POSTHOOK: Lineage: acidtable2.key SIMPLE []
 PREHOOK: query: select * from acidTable2
@@ -3068,11 +3068,11 @@ POSTHOOK: query: DROP TABLE acidTable2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@acidtable2
 POSTHOOK: Output: default@acidtable2
-PREHOOK: query: DROP TABLE nonacid
+PREHOOK: query: DROP TABLE nonacid_n1
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@nonacid
-PREHOOK: Output: default@nonacid
-POSTHOOK: query: DROP TABLE nonacid
+PREHOOK: Input: default@nonacid_n1
+PREHOOK: Output: default@nonacid_n1
+POSTHOOK: query: DROP TABLE nonacid_n1
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@nonacid
-POSTHOOK: Output: default@nonacid
+POSTHOOK: Input: default@nonacid_n1
+POSTHOOK: Output: default@nonacid_n1

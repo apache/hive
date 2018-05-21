@@ -1,133 +1,133 @@
-PREHOOK: query: create view v1 as select c_int, value, c_boolean, dt from cbo_t1
+PREHOOK: query: create view v1_n12 as select c_int, value, c_boolean, dt from cbo_t1
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Output: database:default
-PREHOOK: Output: default@v1
-POSTHOOK: query: create view v1 as select c_int, value, c_boolean, dt from cbo_t1
+PREHOOK: Output: default@v1_n12
+POSTHOOK: query: create view v1_n12 as select c_int, value, c_boolean, dt from cbo_t1
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@v1
-POSTHOOK: Lineage: v1.c_boolean SIMPLE [(cbo_t1)cbo_t1.FieldSchema(name:c_boolean, type:boolean, comment:null), ]
-POSTHOOK: Lineage: v1.c_int SIMPLE [(cbo_t1)cbo_t1.FieldSchema(name:c_int, type:int, comment:null), ]
-POSTHOOK: Lineage: v1.dt SIMPLE [(cbo_t1)cbo_t1.FieldSchema(name:dt, type:string, comment:null), ]
-POSTHOOK: Lineage: v1.value SIMPLE [(cbo_t1)cbo_t1.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: create view v2 as select c_int, value from cbo_t2
+POSTHOOK: Output: default@v1_n12
+POSTHOOK: Lineage: v1_n12.c_boolean SIMPLE [(cbo_t1)cbo_t1.FieldSchema(name:c_boolean, type:boolean, comment:null), ]
+POSTHOOK: Lineage: v1_n12.c_int SIMPLE [(cbo_t1)cbo_t1.FieldSchema(name:c_int, type:int, comment:null), ]
+POSTHOOK: Lineage: v1_n12.dt SIMPLE [(cbo_t1)cbo_t1.FieldSchema(name:dt, type:string, comment:null), ]
+POSTHOOK: Lineage: v1_n12.value SIMPLE [(cbo_t1)cbo_t1.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: create view v2_n6 as select c_int, value from cbo_t2
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@cbo_t2
 PREHOOK: Output: database:default
-PREHOOK: Output: default@v2
-POSTHOOK: query: create view v2 as select c_int, value from cbo_t2
+PREHOOK: Output: default@v2_n6
+POSTHOOK: query: create view v2_n6 as select c_int, value from cbo_t2
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@cbo_t2
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@v2
-POSTHOOK: Lineage: v2.c_int SIMPLE [(cbo_t2)cbo_t2.FieldSchema(name:c_int, type:int, comment:null), ]
-POSTHOOK: Lineage: v2.value SIMPLE [(cbo_t2)cbo_t2.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: select value from v1 where c_boolean=false
+POSTHOOK: Output: default@v2_n6
+POSTHOOK: Lineage: v2_n6.c_int SIMPLE [(cbo_t2)cbo_t2.FieldSchema(name:c_int, type:int, comment:null), ]
+POSTHOOK: Lineage: v2_n6.value SIMPLE [(cbo_t2)cbo_t2.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select value from v1_n12 where c_boolean=false
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
-PREHOOK: Input: default@v1
+PREHOOK: Input: default@v1_n12
 #### A masked pattern was here ####
-POSTHOOK: query: select value from v1 where c_boolean=false
+POSTHOOK: query: select value from v1_n12 where c_boolean=false
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
-POSTHOOK: Input: default@v1
+POSTHOOK: Input: default@v1_n12
 #### A masked pattern was here ####
 1
 1
-PREHOOK: query: select max(c_int) from v1 group by (c_boolean)
+PREHOOK: query: select max(c_int) from v1_n12 group by (c_boolean)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
-PREHOOK: Input: default@v1
+PREHOOK: Input: default@v1_n12
 #### A masked pattern was here ####
-POSTHOOK: query: select max(c_int) from v1 group by (c_boolean)
+POSTHOOK: query: select max(c_int) from v1_n12 group by (c_boolean)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
-POSTHOOK: Input: default@v1
+POSTHOOK: Input: default@v1_n12
 #### A masked pattern was here ####
 NULL
 1
 1
-PREHOOK: query: select count(v1.c_int)  from v1 join cbo_t2 on v1.c_int = cbo_t2.c_int
+PREHOOK: query: select count(v1_n12.c_int)  from v1_n12 join cbo_t2 on v1_n12.c_int = cbo_t2.c_int
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
 PREHOOK: Input: default@cbo_t2
 PREHOOK: Input: default@cbo_t2@dt=2014
-PREHOOK: Input: default@v1
+PREHOOK: Input: default@v1_n12
 #### A masked pattern was here ####
-POSTHOOK: query: select count(v1.c_int)  from v1 join cbo_t2 on v1.c_int = cbo_t2.c_int
+POSTHOOK: query: select count(v1_n12.c_int)  from v1_n12 join cbo_t2 on v1_n12.c_int = cbo_t2.c_int
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
 POSTHOOK: Input: default@cbo_t2
 POSTHOOK: Input: default@cbo_t2@dt=2014
-POSTHOOK: Input: default@v1
+POSTHOOK: Input: default@v1_n12
 #### A masked pattern was here ####
 234
-PREHOOK: query: select count(v1.c_int)  from v1 join v2 on v1.c_int = v2.c_int
+PREHOOK: query: select count(v1_n12.c_int)  from v1_n12 join v2_n6 on v1_n12.c_int = v2_n6.c_int
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
 PREHOOK: Input: default@cbo_t2
 PREHOOK: Input: default@cbo_t2@dt=2014
-PREHOOK: Input: default@v1
-PREHOOK: Input: default@v2
+PREHOOK: Input: default@v1_n12
+PREHOOK: Input: default@v2_n6
 #### A masked pattern was here ####
-POSTHOOK: query: select count(v1.c_int)  from v1 join v2 on v1.c_int = v2.c_int
+POSTHOOK: query: select count(v1_n12.c_int)  from v1_n12 join v2_n6 on v1_n12.c_int = v2_n6.c_int
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
 POSTHOOK: Input: default@cbo_t2
 POSTHOOK: Input: default@cbo_t2@dt=2014
-POSTHOOK: Input: default@v1
-POSTHOOK: Input: default@v2
+POSTHOOK: Input: default@v1_n12
+POSTHOOK: Input: default@v2_n6
 #### A masked pattern was here ####
 234
-PREHOOK: query: select count(*) from v1 a join v1 b on a.value = b.value
+PREHOOK: query: select count(*) from v1_n12 a join v1_n12 b on a.value = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
-PREHOOK: Input: default@v1
+PREHOOK: Input: default@v1_n12
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from v1 a join v1 b on a.value = b.value
+POSTHOOK: query: select count(*) from v1_n12 a join v1_n12 b on a.value = b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
-POSTHOOK: Input: default@v1
+POSTHOOK: Input: default@v1_n12
 #### A masked pattern was here ####
 156
-PREHOOK: query: create view v3 as select v1.value val from v1 join cbo_t1 on v1.c_boolean = cbo_t1.c_boolean
+PREHOOK: query: create view v3_n2 as select v1_n12.value val from v1_n12 join cbo_t1 on v1_n12.c_boolean = cbo_t1.c_boolean
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@cbo_t1
-PREHOOK: Input: default@v1
+PREHOOK: Input: default@v1_n12
 PREHOOK: Output: database:default
-PREHOOK: Output: default@v3
-POSTHOOK: query: create view v3 as select v1.value val from v1 join cbo_t1 on v1.c_boolean = cbo_t1.c_boolean
+PREHOOK: Output: default@v3_n2
+POSTHOOK: query: create view v3_n2 as select v1_n12.value val from v1_n12 join cbo_t1 on v1_n12.c_boolean = cbo_t1.c_boolean
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@cbo_t1
-POSTHOOK: Input: default@v1
+POSTHOOK: Input: default@v1_n12
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@v3
-POSTHOOK: Lineage: v3.val SIMPLE [(cbo_t1)cbo_t1.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: select count(val) from v3 where val != '1'
+POSTHOOK: Output: default@v3_n2
+POSTHOOK: Lineage: v3_n2.val SIMPLE [(cbo_t1)cbo_t1.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select count(val) from v3_n2 where val != '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
-PREHOOK: Input: default@v1
-PREHOOK: Input: default@v3
+PREHOOK: Input: default@v1_n12
+PREHOOK: Input: default@v3_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select count(val) from v3 where val != '1'
+POSTHOOK: query: select count(val) from v3_n2 where val != '1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
-POSTHOOK: Input: default@v1
-POSTHOOK: Input: default@v3
+POSTHOOK: Input: default@v1_n12
+POSTHOOK: Input: default@v3_n2
 #### A masked pattern was here ####
 96
 PREHOOK: query: with q1 as ( select key from cbo_t1 where key = '1')
@@ -143,102 +143,102 @@ POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
 12
-PREHOOK: query: with q1 as ( select value from v1 where c_boolean = false)
+PREHOOK: query: with q1 as ( select value from v1_n12 where c_boolean = false)
 select count(value) from q1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
-PREHOOK: Input: default@v1
+PREHOOK: Input: default@v1_n12
 #### A masked pattern was here ####
-POSTHOOK: query: with q1 as ( select value from v1 where c_boolean = false)
+POSTHOOK: query: with q1 as ( select value from v1_n12 where c_boolean = false)
 select count(value) from q1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
-POSTHOOK: Input: default@v1
+POSTHOOK: Input: default@v1_n12
 #### A masked pattern was here ####
 2
-PREHOOK: query: create view v4 as
+PREHOOK: query: create view v4_n2 as
 with q1 as ( select key,c_int from cbo_t1  where key = '1')
 select * from q1
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Output: database:default
-PREHOOK: Output: default@v4
-POSTHOOK: query: create view v4 as
+PREHOOK: Output: default@v4_n2
+POSTHOOK: query: create view v4_n2 as
 with q1 as ( select key,c_int from cbo_t1  where key = '1')
 select * from q1
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@v4
-POSTHOOK: Lineage: v4.c_int SIMPLE [(cbo_t1)cbo_t1.FieldSchema(name:c_int, type:int, comment:null), ]
-POSTHOOK: Lineage: v4.key SIMPLE []
+POSTHOOK: Output: default@v4_n2
+POSTHOOK: Lineage: v4_n2.c_int SIMPLE [(cbo_t1)cbo_t1.FieldSchema(name:c_int, type:int, comment:null), ]
+POSTHOOK: Lineage: v4_n2.key SIMPLE []
 PREHOOK: query: with q1 as ( select c_int from q2 where c_boolean = false),
-q2 as ( select c_int,c_boolean from v1  where value = '1')
+q2 as ( select c_int,c_boolean from v1_n12  where value = '1')
 select sum(c_int) from (select c_int from q1) a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
-PREHOOK: Input: default@v1
+PREHOOK: Input: default@v1_n12
 #### A masked pattern was here ####
 POSTHOOK: query: with q1 as ( select c_int from q2 where c_boolean = false),
-q2 as ( select c_int,c_boolean from v1  where value = '1')
+q2 as ( select c_int,c_boolean from v1_n12  where value = '1')
 select sum(c_int) from (select c_int from q1) a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
-POSTHOOK: Input: default@v1
+POSTHOOK: Input: default@v1_n12
 #### A masked pattern was here ####
 2
 PREHOOK: query: with q1 as ( select cbo_t1.c_int c_int from q2 join cbo_t1 where q2.c_int = cbo_t1.c_int  and cbo_t1.dt='2014'),
-q2 as ( select c_int,c_boolean from v1  where value = '1' or dt = '14')
-select count(*) from q1 join q2 join v4 on q1.c_int = q2.c_int and v4.c_int = q2.c_int
+q2 as ( select c_int,c_boolean from v1_n12  where value = '1' or dt = '14')
+select count(*) from q1 join q2 join v4_n2 on q1.c_int = q2.c_int and v4_n2.c_int = q2.c_int
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
-PREHOOK: Input: default@v1
-PREHOOK: Input: default@v4
+PREHOOK: Input: default@v1_n12
+PREHOOK: Input: default@v4_n2
 #### A masked pattern was here ####
 POSTHOOK: query: with q1 as ( select cbo_t1.c_int c_int from q2 join cbo_t1 where q2.c_int = cbo_t1.c_int  and cbo_t1.dt='2014'),
-q2 as ( select c_int,c_boolean from v1  where value = '1' or dt = '14')
-select count(*) from q1 join q2 join v4 on q1.c_int = q2.c_int and v4.c_int = q2.c_int
+q2 as ( select c_int,c_boolean from v1_n12  where value = '1' or dt = '14')
+select count(*) from q1 join q2 join v4_n2 on q1.c_int = q2.c_int and v4_n2.c_int = q2.c_int
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
-POSTHOOK: Input: default@v1
-POSTHOOK: Input: default@v4
+POSTHOOK: Input: default@v1_n12
+POSTHOOK: Input: default@v4_n2
 #### A masked pattern was here ####
 31104
-PREHOOK: query: drop view v1
+PREHOOK: query: drop view v1_n12
 PREHOOK: type: DROPVIEW
-PREHOOK: Input: default@v1
-PREHOOK: Output: default@v1
-POSTHOOK: query: drop view v1
+PREHOOK: Input: default@v1_n12
+PREHOOK: Output: default@v1_n12
+POSTHOOK: query: drop view v1_n12
 POSTHOOK: type: DROPVIEW
-POSTHOOK: Input: default@v1
-POSTHOOK: Output: default@v1
-PREHOOK: query: drop view v2
+POSTHOOK: Input: default@v1_n12
+POSTHOOK: Output: default@v1_n12
+PREHOOK: query: drop view v2_n6
 PREHOOK: type: DROPVIEW
-PREHOOK: Input: default@v2
-PREHOOK: Output: default@v2
-POSTHOOK: query: drop view v2
+PREHOOK: Input: default@v2_n6
+PREHOOK: Output: default@v2_n6
+POSTHOOK: query: drop view v2_n6
 POSTHOOK: type: DROPVIEW
-POSTHOOK: Input: default@v2
-POSTHOOK: Output: default@v2
-PREHOOK: query: drop view v3
+POSTHOOK: Input: default@v2_n6
+POSTHOOK: Output: default@v2_n6
+PREHOOK: query: drop view v3_n2
 PREHOOK: type: DROPVIEW
-PREHOOK: Input: default@v3
-PREHOOK: Output: default@v3
-POSTHOOK: query: drop view v3
+PREHOOK: Input: default@v3_n2
+PREHOOK: Output: default@v3_n2
+POSTHOOK: query: drop view v3_n2
 POSTHOOK: type: DROPVIEW
-POSTHOOK: Input: default@v3
-POSTHOOK: Output: default@v3
-PREHOOK: query: drop view v4
+POSTHOOK: Input: default@v3_n2
+POSTHOOK: Output: default@v3_n2
+PREHOOK: query: drop view v4_n2
 PREHOOK: type: DROPVIEW
-PREHOOK: Input: default@v4
-PREHOOK: Output: default@v4
-POSTHOOK: query: drop view v4
+PREHOOK: Input: default@v4_n2
+PREHOOK: Output: default@v4_n2
+POSTHOOK: query: drop view v4_n2
 POSTHOOK: type: DROPVIEW
-POSTHOOK: Input: default@v4
-POSTHOOK: Output: default@v4
+POSTHOOK: Input: default@v4_n2
+POSTHOOK: Output: default@v4_n2

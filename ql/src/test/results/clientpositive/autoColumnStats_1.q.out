@@ -1,28 +1,28 @@
-PREHOOK: query: drop table src_multi1
+PREHOOK: query: drop table src_multi1_n1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table src_multi1
+POSTHOOK: query: drop table src_multi1_n1
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table src_multi1 like src
+PREHOOK: query: create table src_multi1_n1 like src
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src_multi1
-POSTHOOK: query: create table src_multi1 like src
+PREHOOK: Output: default@src_multi1_n1
+POSTHOOK: query: create table src_multi1_n1 like src
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src_multi1
-PREHOOK: query: insert overwrite table src_multi1 select * from src
+POSTHOOK: Output: default@src_multi1_n1
+PREHOOK: query: insert overwrite table src_multi1_n1 select * from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@src_multi1
-POSTHOOK: query: insert overwrite table src_multi1 select * from src
+PREHOOK: Output: default@src_multi1_n1
+POSTHOOK: query: insert overwrite table src_multi1_n1 select * from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@src_multi1
-POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: explain extended select * from src_multi1
+POSTHOOK: Output: default@src_multi1_n1
+POSTHOOK: Lineage: src_multi1_n1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi1_n1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: explain extended select * from src_multi1_n1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended select * from src_multi1
+POSTHOOK: query: explain extended select * from src_multi1_n1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -33,7 +33,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: src_multi1
+          alias: src_multi1_n1
           Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
           GatherStats: false
           Select Operator
@@ -42,12 +42,12 @@ STAGE PLANS:
             Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
-PREHOOK: query: describe formatted src_multi1
+PREHOOK: query: describe formatted src_multi1_n1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@src_multi1
-POSTHOOK: query: describe formatted src_multi1
+PREHOOK: Input: default@src_multi1_n1
+POSTHOOK: query: describe formatted src_multi1_n1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@src_multi1
+POSTHOOK: Input: default@src_multi1_n1
 # col_name            	data_type           	comment             
 key                 	string              	default             
 value               	string              	default             
@@ -76,54 +76,54 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: drop table a
+PREHOOK: query: drop table a_n12
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table a
+POSTHOOK: query: drop table a_n12
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: drop table b
+PREHOOK: query: drop table b_n9
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table b
+POSTHOOK: query: drop table b_n9
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table a like src
+PREHOOK: query: create table a_n12 like src
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@a
-POSTHOOK: query: create table a like src
+PREHOOK: Output: default@a_n12
+POSTHOOK: query: create table a_n12 like src
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@a
-PREHOOK: query: create table b like src
+POSTHOOK: Output: default@a_n12
+PREHOOK: query: create table b_n9 like src
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@b
-POSTHOOK: query: create table b like src
+PREHOOK: Output: default@b_n9
+POSTHOOK: query: create table b_n9 like src
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@b
+POSTHOOK: Output: default@b_n9
 PREHOOK: query: from src
-insert overwrite table a select *
-insert overwrite table b select *
+insert overwrite table a_n12 select *
+insert overwrite table b_n9 select *
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@a
-PREHOOK: Output: default@b
+PREHOOK: Output: default@a_n12
+PREHOOK: Output: default@b_n9
 POSTHOOK: query: from src
-insert overwrite table a select *
-insert overwrite table b select *
+insert overwrite table a_n12 select *
+insert overwrite table b_n9 select *
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@a
-POSTHOOK: Output: default@b
-POSTHOOK: Lineage: a.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: a.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: b.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: b.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: describe formatted a
+POSTHOOK: Output: default@a_n12
+POSTHOOK: Output: default@b_n9
+POSTHOOK: Lineage: a_n12.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: a_n12.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: b_n9.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: b_n9.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: describe formatted a_n12
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@a
-POSTHOOK: query: describe formatted a
+PREHOOK: Input: default@a_n12
+POSTHOOK: query: describe formatted a_n12
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@a
+POSTHOOK: Input: default@a_n12
 # col_name            	data_type           	comment             
 key                 	string              	default             
 value               	string              	default             
@@ -152,12 +152,12 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: describe formatted b
+PREHOOK: query: describe formatted b_n9
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@b
-POSTHOOK: query: describe formatted b
+PREHOOK: Input: default@b_n9
+POSTHOOK: query: describe formatted b_n9
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@b
+POSTHOOK: Input: default@b_n9
 # col_name            	data_type           	comment             
 key                 	string              	default             
 value               	string              	default             
@@ -186,62 +186,62 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: drop table a
+PREHOOK: query: drop table a_n12
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@a
-PREHOOK: Output: default@a
-POSTHOOK: query: drop table a
+PREHOOK: Input: default@a_n12
+PREHOOK: Output: default@a_n12
+POSTHOOK: query: drop table a_n12
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@a
-POSTHOOK: Output: default@a
-PREHOOK: query: drop table b
+POSTHOOK: Input: default@a_n12
+POSTHOOK: Output: default@a_n12
+PREHOOK: query: drop table b_n9
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@b
-PREHOOK: Output: default@b
-POSTHOOK: query: drop table b
+PREHOOK: Input: default@b_n9
+PREHOOK: Output: default@b_n9
+POSTHOOK: query: drop table b_n9
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@b
-POSTHOOK: Output: default@b
-PREHOOK: query: create table a like src
+POSTHOOK: Input: default@b_n9
+POSTHOOK: Output: default@b_n9
+PREHOOK: query: create table a_n12 like src
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@a
-POSTHOOK: query: create table a like src
+PREHOOK: Output: default@a_n12
+POSTHOOK: query: create table a_n12 like src
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@a
-PREHOOK: query: create table b like src
+POSTHOOK: Output: default@a_n12
+PREHOOK: query: create table b_n9 like src
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@b
-POSTHOOK: query: create table b like src
+PREHOOK: Output: default@b_n9
+POSTHOOK: query: create table b_n9 like src
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@b
+POSTHOOK: Output: default@b_n9
 PREHOOK: query: from src
-insert overwrite table a select *
-insert into table b select *
+insert overwrite table a_n12 select *
+insert into table b_n9 select *
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@a
-PREHOOK: Output: default@b
+PREHOOK: Output: default@a_n12
+PREHOOK: Output: default@b_n9
 POSTHOOK: query: from src
-insert overwrite table a select *
-insert into table b select *
+insert overwrite table a_n12 select *
+insert into table b_n9 select *
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@a
-POSTHOOK: Output: default@b
-POSTHOOK: Lineage: a.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: a.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: b.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: b.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: describe formatted a
+POSTHOOK: Output: default@a_n12
+POSTHOOK: Output: default@b_n9
+POSTHOOK: Lineage: a_n12.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: a_n12.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: b_n9.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: b_n9.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: describe formatted a_n12
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@a
-POSTHOOK: query: describe formatted a
+PREHOOK: Input: default@a_n12
+POSTHOOK: query: describe formatted a_n12
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@a
+POSTHOOK: Input: default@a_n12
 # col_name            	data_type           	comment             
 key                 	string              	default             
 value               	string              	default             
@@ -270,12 +270,12 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: describe formatted b
+PREHOOK: query: describe formatted b_n9
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@b
-POSTHOOK: query: describe formatted b
+PREHOOK: Input: default@b_n9
+POSTHOOK: query: describe formatted b_n9
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@b
+POSTHOOK: Input: default@b_n9
 # col_name            	data_type           	comment             
 key                 	string              	default             
 value               	string              	default             
@@ -304,36 +304,36 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: drop table src_multi2
+PREHOOK: query: drop table src_multi2_n2
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table src_multi2
+POSTHOOK: query: drop table src_multi2_n2
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table src_multi2 like src
+PREHOOK: query: create table src_multi2_n2 like src
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src_multi2
-POSTHOOK: query: create table src_multi2 like src
+PREHOOK: Output: default@src_multi2_n2
+POSTHOOK: query: create table src_multi2_n2 like src
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src_multi2
-PREHOOK: query: insert overwrite table src_multi2 select subq.key, src.value from (select * from src union select * from src1)subq join src on subq.key=src.key
+POSTHOOK: Output: default@src_multi2_n2
+PREHOOK: query: insert overwrite table src_multi2_n2 select subq.key, src.value from (select * from src union select * from src1)subq join src on subq.key=src.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
-PREHOOK: Output: default@src_multi2
-POSTHOOK: query: insert overwrite table src_multi2 select subq.key, src.value from (select * from src union select * from src1)subq join src on subq.key=src.key
+PREHOOK: Output: default@src_multi2_n2
+POSTHOOK: query: insert overwrite table src_multi2_n2 select subq.key, src.value from (select * from src union select * from src1)subq join src on subq.key=src.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
-POSTHOOK: Output: default@src_multi2
-POSTHOOK: Lineage: src_multi2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src1)src1.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: describe formatted src_multi2
+POSTHOOK: Output: default@src_multi2_n2
+POSTHOOK: Lineage: src_multi2_n2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi2_n2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: describe formatted src_multi2_n2
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@src_multi2
-POSTHOOK: query: describe formatted src_multi2
+PREHOOK: Input: default@src_multi2_n2
+POSTHOOK: query: describe formatted src_multi2_n2
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@src_multi2
+POSTHOOK: Input: default@src_multi2_n2
 # col_name            	data_type           	comment             
 key                 	string              	default             
 value               	string              	default             
@@ -362,26 +362,26 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: drop table nzhang_part14
+PREHOOK: query: drop table nzhang_part14_n1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table nzhang_part14
+POSTHOOK: query: drop table nzhang_part14_n1
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table if not exists nzhang_part14 (key string)
+PREHOOK: query: create table if not exists nzhang_part14_n1 (key string)
   partitioned by (value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@nzhang_part14
-POSTHOOK: query: create table if not exists nzhang_part14 (key string)
+PREHOOK: Output: default@nzhang_part14_n1
+POSTHOOK: query: create table if not exists nzhang_part14_n1 (key string)
   partitioned by (value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@nzhang_part14
-PREHOOK: query: desc formatted nzhang_part14
+POSTHOOK: Output: default@nzhang_part14_n1
+PREHOOK: query: desc formatted nzhang_part14_n1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@nzhang_part14
-POSTHOOK: query: desc formatted nzhang_part14
+PREHOOK: Input: default@nzhang_part14_n1
+POSTHOOK: query: desc formatted nzhang_part14_n1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@nzhang_part14
+POSTHOOK: Input: default@nzhang_part14_n1
 # col_name            	data_type           	comment             
 key                 	string              	                    
 	 	 
@@ -415,37 +415,37 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: insert overwrite table nzhang_part14 partition(value) 
+PREHOOK: query: insert overwrite table nzhang_part14_n1 partition(value) 
 select key, value from (
-  select * from (select 'k1' as key, cast(null as string) as value from src limit 2)a 
+  select * from (select 'k1' as key, cast(null as string) as value from src limit 2)a_n12 
   union all
-  select * from (select 'k2' as key, '' as value from src limit 2)b
+  select * from (select 'k2' as key, '' as value from src limit 2)b_n9
   union all 
-  select * from (select 'k3' as key, ' ' as value from src limit 2)c
+  select * from (select 'k3' as key, ' ' as value from src limit 2)c_n2
 ) T
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@nzhang_part14
-POSTHOOK: query: insert overwrite table nzhang_part14 partition(value) 
+PREHOOK: Output: default@nzhang_part14_n1
+POSTHOOK: query: insert overwrite table nzhang_part14_n1 partition(value) 
 select key, value from (
-  select * from (select 'k1' as key, cast(null as string) as value from src limit 2)a 
+  select * from (select 'k1' as key, cast(null as string) as value from src limit 2)a_n12 
   union all
-  select * from (select 'k2' as key, '' as value from src limit 2)b
+  select * from (select 'k2' as key, '' as value from src limit 2)b_n9
   union all 
-  select * from (select 'k3' as key, ' ' as value from src limit 2)c
+  select * from (select 'k3' as key, ' ' as value from src limit 2)c_n2
 ) T
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@nzhang_part14@value= 
-POSTHOOK: Output: default@nzhang_part14@value=__HIVE_DEFAULT_PARTITION__
-POSTHOOK: Lineage: nzhang_part14 PARTITION(value= ).key EXPRESSION []
-POSTHOOK: Lineage: nzhang_part14 PARTITION(value=__HIVE_DEFAULT_PARTITION__).key EXPRESSION []
-PREHOOK: query: desc formatted nzhang_part14 partition (value=' ')
+POSTHOOK: Output: default@nzhang_part14_n1@value= 
+POSTHOOK: Output: default@nzhang_part14_n1@value=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: nzhang_part14_n1 PARTITION(value= ).key EXPRESSION []
+POSTHOOK: Lineage: nzhang_part14_n1 PARTITION(value=__HIVE_DEFAULT_PARTITION__).key EXPRESSION []
+PREHOOK: query: desc formatted nzhang_part14_n1 partition (value=' ')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@nzhang_part14
-POSTHOOK: query: desc formatted nzhang_part14 partition (value=' ')
+PREHOOK: Input: default@nzhang_part14_n1
+POSTHOOK: query: desc formatted nzhang_part14_n1 partition (value=' ')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@nzhang_part14
+POSTHOOK: Input: default@nzhang_part14_n1
 # col_name            	data_type           	comment             
 key                 	string              	                    
 	 	 
@@ -456,7 +456,7 @@ value               	string
 # Detailed Partition Information	 	 
 Partition Value:    	[ ]                 	 
 Database:           	default             	 
-Table:              	nzhang_part14       	 
+Table:              	nzhang_part14_n1    	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}
@@ -476,9 +476,9 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: explain select key from nzhang_part14
+PREHOOK: query: explain select key from nzhang_part14_n1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select key from nzhang_part14
+POSTHOOK: query: explain select key from nzhang_part14_n1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -489,7 +489,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: nzhang_part14
+          alias: nzhang_part14_n1
           Statistics: Num rows: 6 Data size: 516 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: key (type: string)
@@ -497,44 +497,44 @@ STAGE PLANS:
             Statistics: Num rows: 6 Data size: 516 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
-PREHOOK: query: drop table src5
+PREHOOK: query: drop table src5_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table src5
+POSTHOOK: query: drop table src5_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table src5 as select key, value from src limit 5
+PREHOOK: query: create table src5_n0 as select key, value from src limit 5
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src5
-POSTHOOK: query: create table src5 as select key, value from src limit 5
+PREHOOK: Output: default@src5_n0
+POSTHOOK: query: create table src5_n0 as select key, value from src limit 5
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src5
-POSTHOOK: Lineage: src5.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src5.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: insert overwrite table nzhang_part14 partition(value)
-select key, value from src5
+POSTHOOK: Output: default@src5_n0
+POSTHOOK: Lineage: src5_n0.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src5_n0.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table nzhang_part14_n1 partition(value)
+select key, value from src5_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src5
-PREHOOK: Output: default@nzhang_part14
-POSTHOOK: query: insert overwrite table nzhang_part14 partition(value)
-select key, value from src5
+PREHOOK: Input: default@src5_n0
+PREHOOK: Output: default@nzhang_part14_n1
+POSTHOOK: query: insert overwrite table nzhang_part14_n1 partition(value)
+select key, value from src5_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src5
-POSTHOOK: Output: default@nzhang_part14@value=val_165
-POSTHOOK: Output: default@nzhang_part14@value=val_238
-POSTHOOK: Output: default@nzhang_part14@value=val_27
-POSTHOOK: Output: default@nzhang_part14@value=val_311
-POSTHOOK: Output: default@nzhang_part14@value=val_86
-POSTHOOK: Lineage: nzhang_part14 PARTITION(value=val_165).key SIMPLE [(src5)src5.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: nzhang_part14 PARTITION(value=val_238).key SIMPLE [(src5)src5.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: nzhang_part14 PARTITION(value=val_27).key SIMPLE [(src5)src5.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: nzhang_part14 PARTITION(value=val_311).key SIMPLE [(src5)src5.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: nzhang_part14 PARTITION(value=val_86).key SIMPLE [(src5)src5.FieldSchema(name:key, type:string, comment:null), ]
-PREHOOK: query: explain select key from nzhang_part14
+POSTHOOK: Input: default@src5_n0
+POSTHOOK: Output: default@nzhang_part14_n1@value=val_165
+POSTHOOK: Output: default@nzhang_part14_n1@value=val_238
+POSTHOOK: Output: default@nzhang_part14_n1@value=val_27
+POSTHOOK: Output: default@nzhang_part14_n1@value=val_311
+POSTHOOK: Output: default@nzhang_part14_n1@value=val_86
+POSTHOOK: Lineage: nzhang_part14_n1 PARTITION(value=val_165).key SIMPLE [(src5_n0)src5_n0.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: nzhang_part14_n1 PARTITION(value=val_238).key SIMPLE [(src5_n0)src5_n0.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: nzhang_part14_n1 PARTITION(value=val_27).key SIMPLE [(src5_n0)src5_n0.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: nzhang_part14_n1 PARTITION(value=val_311).key SIMPLE [(src5_n0)src5_n0.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: nzhang_part14_n1 PARTITION(value=val_86).key SIMPLE [(src5_n0)src5_n0.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: explain select key from nzhang_part14_n1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select key from nzhang_part14
+POSTHOOK: query: explain select key from nzhang_part14_n1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -545,7 +545,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: nzhang_part14
+          alias: nzhang_part14_n1
           Statistics: Num rows: 11 Data size: 946 Basic stats: COMPLETE Column stats: PARTIAL
           Select Operator
             expressions: key (type: string)
@@ -553,29 +553,29 @@ STAGE PLANS:
             Statistics: Num rows: 11 Data size: 946 Basic stats: COMPLETE Column stats: PARTIAL
             ListSink
 
-PREHOOK: query: create table alter5 ( col1 string ) partitioned by (dt string)
+PREHOOK: query: create table alter5_n0 ( col1 string ) partitioned by (dt string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@alter5
-POSTHOOK: query: create table alter5 ( col1 string ) partitioned by (dt string)
+PREHOOK: Output: default@alter5_n0
+POSTHOOK: query: create table alter5_n0 ( col1 string ) partitioned by (dt string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@alter5
-PREHOOK: query: alter table alter5 add partition (dt='a') location 'parta'
+POSTHOOK: Output: default@alter5_n0
+PREHOOK: query: alter table alter5_n0 add partition (dt='a') location 'parta'
 PREHOOK: type: ALTERTABLE_ADDPARTS
 #### A masked pattern was here ####
-PREHOOK: Output: default@alter5
-POSTHOOK: query: alter table alter5 add partition (dt='a') location 'parta'
+PREHOOK: Output: default@alter5_n0
+POSTHOOK: query: alter table alter5_n0 add partition (dt='a') location 'parta'
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 #### A masked pattern was here ####
-POSTHOOK: Output: default@alter5
-POSTHOOK: Output: default@alter5@dt=a
-PREHOOK: query: describe formatted alter5 partition (dt='a')
+POSTHOOK: Output: default@alter5_n0
+POSTHOOK: Output: default@alter5_n0@dt=a
+PREHOOK: query: describe formatted alter5_n0 partition (dt='a')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@alter5
-POSTHOOK: query: describe formatted alter5 partition (dt='a')
+PREHOOK: Input: default@alter5_n0
+POSTHOOK: query: describe formatted alter5_n0 partition (dt='a')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@alter5
+POSTHOOK: Input: default@alter5_n0
 # col_name            	data_type           	comment             
 col1                	string              	                    
 	 	 
@@ -586,7 +586,7 @@ dt                  	string
 # Detailed Partition Information	 	 
 Partition Value:    	[a]                 	 
 Database:           	default             	 
-Table:              	alter5              	 
+Table:              	alter5_n0           	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 #### A masked pattern was here ####
@@ -601,21 +601,21 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: insert overwrite table alter5 partition (dt='a') select key from src
+PREHOOK: query: insert overwrite table alter5_n0 partition (dt='a') select key from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@alter5@dt=a
-POSTHOOK: query: insert overwrite table alter5 partition (dt='a') select key from src
+PREHOOK: Output: default@alter5_n0@dt=a
+POSTHOOK: query: insert overwrite table alter5_n0 partition (dt='a') select key from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@alter5@dt=a
-POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: describe formatted alter5 partition (dt='a')
+POSTHOOK: Output: default@alter5_n0@dt=a
+POSTHOOK: Lineage: alter5_n0 PARTITION(dt=a).col1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: describe formatted alter5_n0 partition (dt='a')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@alter5
-POSTHOOK: query: describe formatted alter5 partition (dt='a')
+PREHOOK: Input: default@alter5_n0
+POSTHOOK: query: describe formatted alter5_n0 partition (dt='a')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@alter5
+POSTHOOK: Input: default@alter5_n0
 # col_name            	data_type           	comment             
 col1                	string              	                    
 	 	 
@@ -626,7 +626,7 @@ dt                  	string
 # Detailed Partition Information	 	 
 Partition Value:    	[a]                 	 
 Database:           	default             	 
-Table:              	alter5              	 
+Table:              	alter5_n0           	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\"}}
@@ -646,9 +646,9 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: explain select * from alter5 where dt='a'
+PREHOOK: query: explain select * from alter5_n0 where dt='a'
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from alter5 where dt='a'
+POSTHOOK: query: explain select * from alter5_n0 where dt='a'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -659,7 +659,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: alter5
+          alias: alter5_n0
           Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: col1 (type: string), 'a' (type: string)
@@ -667,36 +667,36 @@ STAGE PLANS:
             Statistics: Num rows: 500 Data size: 86000 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
-PREHOOK: query: drop table src_stat_part
+PREHOOK: query: drop table src_stat_part_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table src_stat_part
+POSTHOOK: query: drop table src_stat_part_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table src_stat_part(key string, value string) partitioned by (partitionId int)
+PREHOOK: query: create table src_stat_part_n0(key string, value string) partitioned by (partitionId int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src_stat_part
-POSTHOOK: query: create table src_stat_part(key string, value string) partitioned by (partitionId int)
+PREHOOK: Output: default@src_stat_part_n0
+POSTHOOK: query: create table src_stat_part_n0(key string, value string) partitioned by (partitionId int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src_stat_part
-PREHOOK: query: insert overwrite table src_stat_part partition (partitionId=1)
+POSTHOOK: Output: default@src_stat_part_n0
+PREHOOK: query: insert overwrite table src_stat_part_n0 partition (partitionId=1)
 select * from src1 limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1
-PREHOOK: Output: default@src_stat_part@partitionid=1
-POSTHOOK: query: insert overwrite table src_stat_part partition (partitionId=1)
+PREHOOK: Output: default@src_stat_part_n0@partitionid=1
+POSTHOOK: query: insert overwrite table src_stat_part_n0 partition (partitionId=1)
 select * from src1 limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1
-POSTHOOK: Output: default@src_stat_part@partitionid=1
-POSTHOOK: Lineage: src_stat_part PARTITION(partitionid=1).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_stat_part PARTITION(partitionid=1).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: describe formatted src_stat_part PARTITION(partitionId=1)
+POSTHOOK: Output: default@src_stat_part_n0@partitionid=1
+POSTHOOK: Lineage: src_stat_part_n0 PARTITION(partitionid=1).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_stat_part_n0 PARTITION(partitionid=1).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: describe formatted src_stat_part_n0 PARTITION(partitionId=1)
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@src_stat_part
-POSTHOOK: query: describe formatted src_stat_part PARTITION(partitionId=1)
+PREHOOK: Input: default@src_stat_part_n0
+POSTHOOK: query: describe formatted src_stat_part_n0 PARTITION(partitionId=1)
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@src_stat_part
+POSTHOOK: Input: default@src_stat_part_n0
 # col_name            	data_type           	comment             
 key                 	string              	                    
 value               	string              	                    
@@ -708,7 +708,7 @@ partitionid         	int
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
 Database:           	default             	 
-Table:              	src_stat_part       	 
+Table:              	src_stat_part_n0    	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
@@ -728,24 +728,24 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: insert overwrite table src_stat_part partition (partitionId=2)
+PREHOOK: query: insert overwrite table src_stat_part_n0 partition (partitionId=2)
 select * from src1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1
-PREHOOK: Output: default@src_stat_part@partitionid=2
-POSTHOOK: query: insert overwrite table src_stat_part partition (partitionId=2)
+PREHOOK: Output: default@src_stat_part_n0@partitionid=2
+POSTHOOK: query: insert overwrite table src_stat_part_n0 partition (partitionId=2)
 select * from src1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1
-POSTHOOK: Output: default@src_stat_part@partitionid=2
-POSTHOOK: Lineage: src_stat_part PARTITION(partitionid=2).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_stat_part PARTITION(partitionid=2).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: describe formatted src_stat_part PARTITION(partitionId=2)
+POSTHOOK: Output: default@src_stat_part_n0@partitionid=2
+POSTHOOK: Lineage: src_stat_part_n0 PARTITION(partitionid=2).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_stat_part_n0 PARTITION(partitionid=2).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: describe formatted src_stat_part_n0 PARTITION(partitionId=2)
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@src_stat_part
-POSTHOOK: query: describe formatted src_stat_part PARTITION(partitionId=2)
+PREHOOK: Input: default@src_stat_part_n0
+POSTHOOK: query: describe formatted src_stat_part_n0 PARTITION(partitionId=2)
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@src_stat_part
+POSTHOOK: Input: default@src_stat_part_n0
 # col_name            	data_type           	comment             
 key                 	string              	                    
 value               	string              	                    
@@ -757,7 +757,7 @@ partitionid         	int
 # Detailed Partition Information	 	 
 Partition Value:    	[2]                 	 
 Database:           	default             	 
-Table:              	src_stat_part       	 
+Table:              	src_stat_part_n0    	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
@@ -777,112 +777,112 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: drop table srcbucket_mapjoin
+PREHOOK: query: drop table srcbucket_mapjoin_n6
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table srcbucket_mapjoin
+POSTHOOK: query: drop table srcbucket_mapjoin_n6
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE srcbucket_mapjoin_n6(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+PREHOOK: Output: default@srcbucket_mapjoin_n6
+POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_n6(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcbucket_mapjoin
-PREHOOK: query: drop table tab_part
+POSTHOOK: Output: default@srcbucket_mapjoin_n6
+PREHOOK: query: drop table tab_part_n4
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table tab_part
+POSTHOOK: query: drop table tab_part_n4
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE tab_part (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE tab_part_n4 (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tab_part
-POSTHOOK: query: CREATE TABLE tab_part (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+PREHOOK: Output: default@tab_part_n4
+POSTHOOK: query: CREATE TABLE tab_part_n4 (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tab_part
-PREHOOK: query: drop table srcbucket_mapjoin_part
+POSTHOOK: Output: default@tab_part_n4
+PREHOOK: query: drop table srcbucket_mapjoin_part_n7
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table srcbucket_mapjoin_part
+POSTHOOK: query: drop table srcbucket_mapjoin_part_n7
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE srcbucket_mapjoin_part (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE srcbucket_mapjoin_part_n7 (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@srcbucket_mapjoin_part
-POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_part (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+PREHOOK: Output: default@srcbucket_mapjoin_part_n7
+POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_part_n7 (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcbucket_mapjoin_part
-PREHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n7
+PREHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_n6 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_n6
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_n6 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/bmj1/000001_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_n6
+POSTHOOK: Output: default@srcbucket_mapjoin_n6@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj1/000001_0' INTO TABLE srcbucket_mapjoin_n6 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/bmj1/000001_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_n6@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/bmj1/000001_0' INTO TABLE srcbucket_mapjoin_n6 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_n6@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part_n7 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin_part
-POSTHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_part_n7
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part_n7 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin_part
-POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n7
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n7@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part_n7 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_part_n7@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part_n7 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n7@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part_n7 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_part_n7@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part_n7 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n7@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part_n7 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_part_n7@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part_n7 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: query: insert overwrite table tab_part partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin_part
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n7@ds=2008-04-08
+PREHOOK: query: insert overwrite table tab_part_n4 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_part_n7
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin_part
-PREHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: Output: default@tab_part@ds=2008-04-08
-POSTHOOK: query: insert overwrite table tab_part partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin_part
+PREHOOK: Input: default@srcbucket_mapjoin_part_n7
+PREHOOK: Input: default@srcbucket_mapjoin_part_n7@ds=2008-04-08
+PREHOOK: Output: default@tab_part_n4@ds=2008-04-08
+POSTHOOK: query: insert overwrite table tab_part_n4 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_part_n7
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin_part
-POSTHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
-POSTHOOK: Output: default@tab_part@ds=2008-04-08
-POSTHOOK: Lineage: tab_part PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_part)srcbucket_mapjoin_part.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: tab_part PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_part)srcbucket_mapjoin_part.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: describe formatted tab_part partition (ds='2008-04-08')
+POSTHOOK: Input: default@srcbucket_mapjoin_part_n7
+POSTHOOK: Input: default@srcbucket_mapjoin_part_n7@ds=2008-04-08
+POSTHOOK: Output: default@tab_part_n4@ds=2008-04-08
+POSTHOOK: Lineage: tab_part_n4 PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_part_n7)srcbucket_mapjoin_part_n7.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tab_part_n4 PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_part_n7)srcbucket_mapjoin_part_n7.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: describe formatted tab_part_n4 partition (ds='2008-04-08')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@tab_part
-POSTHOOK: query: describe formatted tab_part partition (ds='2008-04-08')
+PREHOOK: Input: default@tab_part_n4
+POSTHOOK: query: describe formatted tab_part_n4 partition (ds='2008-04-08')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@tab_part
+POSTHOOK: Input: default@tab_part_n4
 # col_name            	data_type           	comment             
 key                 	int                 	                    
 value               	string              	                    
@@ -894,7 +894,7 @@ ds                  	string
 # Detailed Partition Information	 	 
 Partition Value:    	[2008-04-08]        	 
 Database:           	default             	 
-Table:              	tab_part            	 
+Table:              	tab_part_n4         	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
@@ -914,34 +914,34 @@ Bucket Columns:     	[key]
 Sort Columns:       	[Order(col:key, order:1)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: CREATE TABLE tab(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE tab_n3(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tab
-POSTHOOK: query: CREATE TABLE tab(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+PREHOOK: Output: default@tab_n3
+POSTHOOK: query: CREATE TABLE tab_n3(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tab
-PREHOOK: query: insert overwrite table tab partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin
+POSTHOOK: Output: default@tab_n3
+PREHOOK: query: insert overwrite table tab_n3 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_n6
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin
-PREHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
-PREHOOK: Output: default@tab@ds=2008-04-08
-POSTHOOK: query: insert overwrite table tab partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin
+PREHOOK: Input: default@srcbucket_mapjoin_n6
+PREHOOK: Input: default@srcbucket_mapjoin_n6@ds=2008-04-08
+PREHOOK: Output: default@tab_n3@ds=2008-04-08
+POSTHOOK: query: insert overwrite table tab_n3 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_n6
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin
-POSTHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
-POSTHOOK: Output: default@tab@ds=2008-04-08
-POSTHOOK: Lineage: tab PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin)srcbucket_mapjoin.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: tab PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin)srcbucket_mapjoin.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: describe formatted tab partition (ds='2008-04-08')
+POSTHOOK: Input: default@srcbucket_mapjoin_n6
+POSTHOOK: Input: default@srcbucket_mapjoin_n6@ds=2008-04-08
+POSTHOOK: Output: default@tab_n3@ds=2008-04-08
+POSTHOOK: Lineage: tab_n3 PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_n6)srcbucket_mapjoin_n6.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tab_n3 PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_n6)srcbucket_mapjoin_n6.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: describe formatted tab_n3 partition (ds='2008-04-08')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@tab
-POSTHOOK: query: describe formatted tab partition (ds='2008-04-08')
+PREHOOK: Input: default@tab_n3
+POSTHOOK: query: describe formatted tab_n3 partition (ds='2008-04-08')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@tab
+POSTHOOK: Input: default@tab_n3
 # col_name            	data_type           	comment             
 key                 	int                 	                    
 value               	string              	                    
@@ -953,7 +953,7 @@ ds                  	string
 # Detailed Partition Information	 	 
 Partition Value:    	[2008-04-08]        	 
 Database:           	default             	 
-Table:              	tab                 	 
+Table:              	tab_n3              	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
@@ -973,30 +973,30 @@ Bucket Columns:     	[key]
 Sort Columns:       	[Order(col:key, order:1)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: drop table nzhang_part14
+PREHOOK: query: drop table nzhang_part14_n1
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@nzhang_part14
-PREHOOK: Output: default@nzhang_part14
-POSTHOOK: query: drop table nzhang_part14
+PREHOOK: Input: default@nzhang_part14_n1
+PREHOOK: Output: default@nzhang_part14_n1
+POSTHOOK: query: drop table nzhang_part14_n1
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@nzhang_part14
-POSTHOOK: Output: default@nzhang_part14
-PREHOOK: query: create table if not exists nzhang_part14 (key string, value string)
+POSTHOOK: Input: default@nzhang_part14_n1
+POSTHOOK: Output: default@nzhang_part14_n1
+PREHOOK: query: create table if not exists nzhang_part14_n1 (key string, value string)
   partitioned by (ds string, hr string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@nzhang_part14
-POSTHOOK: query: create table if not exists nzhang_part14 (key string, value string)
+PREHOOK: Output: default@nzhang_part14_n1
+POSTHOOK: query: create table if not exists nzhang_part14_n1 (key string, value string)
   partitioned by (ds string, hr string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@nzhang_part14
-PREHOOK: query: describe formatted nzhang_part14
+POSTHOOK: Output: default@nzhang_part14_n1
+PREHOOK: query: describe formatted nzhang_part14_n1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@nzhang_part14
-POSTHOOK: query: describe formatted nzhang_part14
+PREHOOK: Input: default@nzhang_part14_n1
+POSTHOOK: query: describe formatted nzhang_part14_n1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@nzhang_part14
+POSTHOOK: Input: default@nzhang_part14_n1
 # col_name            	data_type           	comment             
 key                 	string              	                    
 value               	string              	                    
@@ -1032,42 +1032,42 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: insert overwrite table nzhang_part14 partition(ds, hr) 
+PREHOOK: query: insert overwrite table nzhang_part14_n1 partition(ds, hr) 
 select key, value, ds, hr from (
-  select * from (select 'k1' as key, cast(null as string) as value, '1' as ds, '2' as hr from src limit 2)a 
+  select * from (select 'k1' as key, cast(null as string) as value, '1' as ds, '2' as hr from src limit 2)a_n12 
   union all
-  select * from (select 'k2' as key, '' as value, '1' as ds, '3' as hr from src limit 2)b
+  select * from (select 'k2' as key, '' as value, '1' as ds, '3' as hr from src limit 2)b_n9
   union all 
-  select * from (select 'k3' as key, ' ' as value, '2' as ds, '1' as hr from src limit 2)c
+  select * from (select 'k3' as key, ' ' as value, '2' as ds, '1' as hr from src limit 2)c_n2
 ) T
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@nzhang_part14
-POSTHOOK: query: insert overwrite table nzhang_part14 partition(ds, hr) 
+PREHOOK: Output: default@nzhang_part14_n1
+POSTHOOK: query: insert overwrite table nzhang_part14_n1 partition(ds, hr) 
 select key, value, ds, hr from (
-  select * from (select 'k1' as key, cast(null as string) as value, '1' as ds, '2' as hr from src limit 2)a 
+  select * from (select 'k1' as key, cast(null as string) as value, '1' as ds, '2' as hr from src limit 2)a_n12 
   union all
-  select * from (select 'k2' as key, '' as value, '1' as ds, '3' as hr from src limit 2)b
+  select * from (select 'k2' as key, '' as value, '1' as ds, '3' as hr from src limit 2)b_n9
   union all 
-  select * from (select 'k3' as key, ' ' as value, '2' as ds, '1' as hr from src limit 2)c
+  select * from (select 'k3' as key, ' ' as value, '2' as ds, '1' as hr from src limit 2)c_n2
 ) T
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@nzhang_part14@ds=1/hr=2
-POSTHOOK: Output: default@nzhang_part14@ds=1/hr=3
-POSTHOOK: Output: default@nzhang_part14@ds=2/hr=1
-POSTHOOK: Lineage: nzhang_part14 PARTITION(ds=1,hr=2).key EXPRESSION []
-POSTHOOK: Lineage: nzhang_part14 PARTITION(ds=1,hr=2).value EXPRESSION []
-POSTHOOK: Lineage: nzhang_part14 PARTITION(ds=1,hr=3).key EXPRESSION []
-POSTHOOK: Lineage: nzhang_part14 PARTITION(ds=1,hr=3).value EXPRESSION []
-POSTHOOK: Lineage: nzhang_part14 PARTITION(ds=2,hr=1).key EXPRESSION []
-POSTHOOK: Lineage: nzhang_part14 PARTITION(ds=2,hr=1).value EXPRESSION []
-PREHOOK: query: desc formatted nzhang_part14 partition(ds='1', hr='3')
+POSTHOOK: Output: default@nzhang_part14_n1@ds=1/hr=2
+POSTHOOK: Output: default@nzhang_part14_n1@ds=1/hr=3
+POSTHOOK: Output: default@nzhang_part14_n1@ds=2/hr=1
+POSTHOOK: Lineage: nzhang_part14_n1 PARTITION(ds=1,hr=2).key EXPRESSION []
+POSTHOOK: Lineage: nzhang_part14_n1 PARTITION(ds=1,hr=2).value EXPRESSION []
+POSTHOOK: Lineage: nzhang_part14_n1 PARTITION(ds=1,hr=3).key EXPRESSION []
+POSTHOOK: Lineage: nzhang_part14_n1 PARTITION(ds=1,hr=3).value EXPRESSION []
+POSTHOOK: Lineage: nzhang_part14_n1 PARTITION(ds=2,hr=1).key EXPRESSION []
+POSTHOOK: Lineage: nzhang_part14_n1 PARTITION(ds=2,hr=1).value EXPRESSION []
+PREHOOK: query: desc formatted nzhang_part14_n1 partition(ds='1', hr='3')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@nzhang_part14
-POSTHOOK: query: desc formatted nzhang_part14 partition(ds='1', hr='3')
+PREHOOK: Input: default@nzhang_part14_n1
+POSTHOOK: query: desc formatted nzhang_part14_n1 partition(ds='1', hr='3')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@nzhang_part14
+POSTHOOK: Input: default@nzhang_part14_n1
 # col_name            	data_type           	comment             
 key                 	string              	                    
 value               	string              	                    
@@ -1080,7 +1080,7 @@ hr                  	string
 # Detailed Partition Information	 	 
 Partition Value:    	[1, 3]              	 
 Database:           	default             	 
-Table:              	nzhang_part14       	 
+Table:              	nzhang_part14_n1    	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
@@ -1100,7 +1100,7 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: INSERT OVERWRITE TABLE nzhang_part14 PARTITION (ds='2010-03-03', hr)
+PREHOOK: query: INSERT OVERWRITE TABLE nzhang_part14_n1 PARTITION (ds='2010-03-03', hr)
 SELECT key, value, hr FROM srcpart WHERE ds is not null and hr>10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
@@ -1108,8 +1108,8 @@ PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Output: default@nzhang_part14@ds=2010-03-03
-POSTHOOK: query: INSERT OVERWRITE TABLE nzhang_part14 PARTITION (ds='2010-03-03', hr)
+PREHOOK: Output: default@nzhang_part14_n1@ds=2010-03-03
+POSTHOOK: query: INSERT OVERWRITE TABLE nzhang_part14_n1 PARTITION (ds='2010-03-03', hr)
 SELECT key, value, hr FROM srcpart WHERE ds is not null and hr>10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
@@ -1117,18 +1117,18 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Output: default@nzhang_part14@ds=2010-03-03/hr=11
-POSTHOOK: Output: default@nzhang_part14@ds=2010-03-03/hr=12
-POSTHOOK: Lineage: nzhang_part14 PARTITION(ds=2010-03-03,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part14 PARTITION(ds=2010-03-03,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part14 PARTITION(ds=2010-03-03,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part14 PARTITION(ds=2010-03-03,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: desc formatted nzhang_part14 PARTITION(ds='2010-03-03', hr='12')
+POSTHOOK: Output: default@nzhang_part14_n1@ds=2010-03-03/hr=11
+POSTHOOK: Output: default@nzhang_part14_n1@ds=2010-03-03/hr=12
+POSTHOOK: Lineage: nzhang_part14_n1 PARTITION(ds=2010-03-03,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part14_n1 PARTITION(ds=2010-03-03,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part14_n1 PARTITION(ds=2010-03-03,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part14_n1 PARTITION(ds=2010-03-03,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: desc formatted nzhang_part14_n1 PARTITION(ds='2010-03-03', hr='12')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@nzhang_part14
-POSTHOOK: query: desc formatted nzhang_part14 PARTITION(ds='2010-03-03', hr='12')
+PREHOOK: Input: default@nzhang_part14_n1
+POSTHOOK: query: desc formatted nzhang_part14_n1 PARTITION(ds='2010-03-03', hr='12')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@nzhang_part14
+POSTHOOK: Input: default@nzhang_part14_n1
 # col_name            	data_type           	comment             
 key                 	string              	                    
 value               	string              	                    
@@ -1141,7 +1141,7 @@ hr                  	string
 # Detailed Partition Information	 	 
 Partition Value:    	[2010-03-03, 12]    	 
 Database:           	default             	 
-Table:              	nzhang_part14       	 
+Table:              	nzhang_part14_n1    	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
@@ -1161,25 +1161,25 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: drop table nzhang_part14
+PREHOOK: query: drop table nzhang_part14_n1
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@nzhang_part14
-PREHOOK: Output: default@nzhang_part14
-POSTHOOK: query: drop table nzhang_part14
+PREHOOK: Input: default@nzhang_part14_n1
+PREHOOK: Output: default@nzhang_part14_n1
+POSTHOOK: query: drop table nzhang_part14_n1
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@nzhang_part14
-POSTHOOK: Output: default@nzhang_part14
-PREHOOK: query: create table if not exists nzhang_part14 (key string, value string)
+POSTHOOK: Input: default@nzhang_part14_n1
+POSTHOOK: Output: default@nzhang_part14_n1
+PREHOOK: query: create table if not exists nzhang_part14_n1 (key string, value string)
 partitioned by (ds string, hr string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@nzhang_part14
-POSTHOOK: query: create table if not exists nzhang_part14 (key string, value string)
+PREHOOK: Output: default@nzhang_part14_n1
+POSTHOOK: query: create table if not exists nzhang_part14_n1 (key string, value string)
 partitioned by (ds string, hr string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@nzhang_part14
-PREHOOK: query: INSERT OVERWRITE TABLE nzhang_part14 PARTITION (ds='2010-03-03', hr)
+POSTHOOK: Output: default@nzhang_part14_n1
+PREHOOK: query: INSERT OVERWRITE TABLE nzhang_part14_n1 PARTITION (ds='2010-03-03', hr)
 SELECT key, value, hr FROM srcpart WHERE ds is not null and hr>10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
@@ -1187,8 +1187,8 @@ PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Output: default@nzhang_part14@ds=2010-03-03
-POSTHOOK: query: INSERT OVERWRITE TABLE nzhang_part14 PARTITION (ds='2010-03-03', hr)
+PREHOOK: Output: default@nzhang_part14_n1@ds=2010-03-03
+POSTHOOK: query: INSERT OVERWRITE TABLE nzhang_part14_n1 PARTITION (ds='2010-03-03', hr)
 SELECT key, value, hr FROM srcpart WHERE ds is not null and hr>10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
@@ -1196,18 +1196,18 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Output: default@nzhang_part14@ds=2010-03-03/hr=11
-POSTHOOK: Output: default@nzhang_part14@ds=2010-03-03/hr=12
-POSTHOOK: Lineage: nzhang_part14 PARTITION(ds=2010-03-03,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part14 PARTITION(ds=2010-03-03,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part14 PARTITION(ds=2010-03-03,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_part14 PARTITION(ds=2010-03-03,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: desc formatted nzhang_part14 PARTITION(ds='2010-03-03', hr='12')
+POSTHOOK: Output: default@nzhang_part14_n1@ds=2010-03-03/hr=11
+POSTHOOK: Output: default@nzhang_part14_n1@ds=2010-03-03/hr=12
+POSTHOOK: Lineage: nzhang_part14_n1 PARTITION(ds=2010-03-03,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part14_n1 PARTITION(ds=2010-03-03,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part14_n1 PARTITION(ds=2010-03-03,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_part14_n1 PARTITION(ds=2010-03-03,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: desc formatted nzhang_part14_n1 PARTITION(ds='2010-03-03', hr='12')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@nzhang_part14
-POSTHOOK: query: desc formatted nzhang_part14 PARTITION(ds='2010-03-03', hr='12')
+PREHOOK: Input: default@nzhang_part14_n1
+POSTHOOK: query: desc formatted nzhang_part14_n1 PARTITION(ds='2010-03-03', hr='12')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@nzhang_part14
+POSTHOOK: Input: default@nzhang_part14_n1
 # col_name            	data_type           	comment             
 key                 	string              	                    
 value               	string              	                    
@@ -1220,7 +1220,7 @@ hr                  	string
 # Detailed Partition Information	 	 
 Partition Value:    	[2010-03-03, 12]    	 
 Database:           	default             	 
-Table:              	nzhang_part14       	 
+Table:              	nzhang_part14_n1    	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
@@ -1240,97 +1240,97 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: drop table a
+PREHOOK: query: drop table a_n12
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@a
-PREHOOK: Output: default@a
-POSTHOOK: query: drop table a
+PREHOOK: Input: default@a_n12
+PREHOOK: Output: default@a_n12
+POSTHOOK: query: drop table a_n12
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@a
-POSTHOOK: Output: default@a
-PREHOOK: query: create table a (key string, value string)
+POSTHOOK: Input: default@a_n12
+POSTHOOK: Output: default@a_n12
+PREHOOK: query: create table a_n12 (key string, value string)
 partitioned by (ds string, hr string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@a
-POSTHOOK: query: create table a (key string, value string)
+PREHOOK: Output: default@a_n12
+POSTHOOK: query: create table a_n12 (key string, value string)
 partitioned by (ds string, hr string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@a
-PREHOOK: query: drop table b
+POSTHOOK: Output: default@a_n12
+PREHOOK: query: drop table b_n9
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@b
-PREHOOK: Output: default@b
-POSTHOOK: query: drop table b
+PREHOOK: Input: default@b_n9
+PREHOOK: Output: default@b_n9
+POSTHOOK: query: drop table b_n9
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@b
-POSTHOOK: Output: default@b
-PREHOOK: query: create table b (key string, value string)
+POSTHOOK: Input: default@b_n9
+POSTHOOK: Output: default@b_n9
+PREHOOK: query: create table b_n9 (key string, value string)
 partitioned by (ds string, hr string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@b
-POSTHOOK: query: create table b (key string, value string)
+PREHOOK: Output: default@b_n9
+POSTHOOK: query: create table b_n9 (key string, value string)
 partitioned by (ds string, hr string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@b
-PREHOOK: query: drop table c
+POSTHOOK: Output: default@b_n9
+PREHOOK: query: drop table c_n2
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table c
+POSTHOOK: query: drop table c_n2
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table c (key string, value string)
+PREHOOK: query: create table c_n2 (key string, value string)
 partitioned by (ds string, hr string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@c
-POSTHOOK: query: create table c (key string, value string)
+PREHOOK: Output: default@c_n2
+POSTHOOK: query: create table c_n2 (key string, value string)
 partitioned by (ds string, hr string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@c
+POSTHOOK: Output: default@c_n2
 PREHOOK: query: FROM srcpart 
-INSERT OVERWRITE TABLE a PARTITION (ds='2010-03-11', hr) SELECT key, value, hr WHERE ds is not null and hr>10
-INSERT OVERWRITE TABLE b PARTITION (ds='2010-04-11', hr) SELECT key, value, hr WHERE ds is not null and hr>11
-INSERT OVERWRITE TABLE c PARTITION (ds='2010-05-11', hr) SELECT key, value, hr WHERE hr>0
+INSERT OVERWRITE TABLE a_n12 PARTITION (ds='2010-03-11', hr) SELECT key, value, hr WHERE ds is not null and hr>10
+INSERT OVERWRITE TABLE b_n9 PARTITION (ds='2010-04-11', hr) SELECT key, value, hr WHERE ds is not null and hr>11
+INSERT OVERWRITE TABLE c_n2 PARTITION (ds='2010-05-11', hr) SELECT key, value, hr WHERE hr>0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Output: default@a@ds=2010-03-11
-PREHOOK: Output: default@b@ds=2010-04-11
-PREHOOK: Output: default@c@ds=2010-05-11
+PREHOOK: Output: default@a_n12@ds=2010-03-11
+PREHOOK: Output: default@b_n9@ds=2010-04-11
+PREHOOK: Output: default@c_n2@ds=2010-05-11
 POSTHOOK: query: FROM srcpart 
-INSERT OVERWRITE TABLE a PARTITION (ds='2010-03-11', hr) SELECT key, value, hr WHERE ds is not null and hr>10
-INSERT OVERWRITE TABLE b PARTITION (ds='2010-04-11', hr) SELECT key, value, hr WHERE ds is not null and hr>11
-INSERT OVERWRITE TABLE c PARTITION (ds='2010-05-11', hr) SELECT key, value, hr WHERE hr>0
+INSERT OVERWRITE TABLE a_n12 PARTITION (ds='2010-03-11', hr) SELECT key, value, hr WHERE ds is not null and hr>10
+INSERT OVERWRITE TABLE b_n9 PARTITION (ds='2010-04-11', hr) SELECT key, value, hr WHERE ds is not null and hr>11
+INSERT OVERWRITE TABLE c_n2 PARTITION (ds='2010-05-11', hr) SELECT key, value, hr WHERE hr>0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Output: default@a@ds=2010-03-11/hr=11
-POSTHOOK: Output: default@a@ds=2010-03-11/hr=12
-POSTHOOK: Output: default@b@ds=2010-04-11/hr=12
-POSTHOOK: Output: default@c@ds=2010-05-11/hr=11
-POSTHOOK: Output: default@c@ds=2010-05-11/hr=12
-POSTHOOK: Lineage: a PARTITION(ds=2010-03-11,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: a PARTITION(ds=2010-03-11,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: a PARTITION(ds=2010-03-11,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: a PARTITION(ds=2010-03-11,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: b PARTITION(ds=2010-04-11,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: b PARTITION(ds=2010-04-11,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: c PARTITION(ds=2010-05-11,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: c PARTITION(ds=2010-05-11,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: c PARTITION(ds=2010-05-11,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: c PARTITION(ds=2010-05-11,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: explain select key from a
+POSTHOOK: Output: default@a_n12@ds=2010-03-11/hr=11
+POSTHOOK: Output: default@a_n12@ds=2010-03-11/hr=12
+POSTHOOK: Output: default@b_n9@ds=2010-04-11/hr=12
+POSTHOOK: Output: default@c_n2@ds=2010-05-11/hr=11
+POSTHOOK: Output: default@c_n2@ds=2010-05-11/hr=12
+POSTHOOK: Lineage: a_n12 PARTITION(ds=2010-03-11,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: a_n12 PARTITION(ds=2010-03-11,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: a_n12 PARTITION(ds=2010-03-11,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: a_n12 PARTITION(ds=2010-03-11,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: b_n9 PARTITION(ds=2010-04-11,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: b_n9 PARTITION(ds=2010-04-11,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: c_n2 PARTITION(ds=2010-05-11,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: c_n2 PARTITION(ds=2010-05-11,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: c_n2 PARTITION(ds=2010-05-11,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: c_n2 PARTITION(ds=2010-05-11,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: explain select key from a_n12
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select key from a
+POSTHOOK: query: explain select key from a_n12
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -1341,7 +1341,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: a
+          alias: a_n12
           Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: key (type: string)
@@ -1349,9 +1349,9 @@ STAGE PLANS:
             Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
-PREHOOK: query: explain select value from b
+PREHOOK: query: explain select value from b_n9
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select value from b
+POSTHOOK: query: explain select value from b_n9
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -1362,7 +1362,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: b
+          alias: b_n9
           Statistics: Num rows: 1000 Data size: 91000 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: value (type: string)
@@ -1370,9 +1370,9 @@ STAGE PLANS:
             Statistics: Num rows: 1000 Data size: 91000 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
-PREHOOK: query: explain select key from b
+PREHOOK: query: explain select key from b_n9
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select key from b
+POSTHOOK: query: explain select key from b_n9
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -1383,7 +1383,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: b
+          alias: b_n9
           Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: key (type: string)
@@ -1391,9 +1391,9 @@ STAGE PLANS:
             Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
-PREHOOK: query: explain select value from c
+PREHOOK: query: explain select value from c_n2
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select value from c
+POSTHOOK: query: explain select value from c_n2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -1404,7 +1404,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: c
+          alias: c_n2
           Statistics: Num rows: 2000 Data size: 182000 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: value (type: string)
@@ -1412,9 +1412,9 @@ STAGE PLANS:
             Statistics: Num rows: 2000 Data size: 182000 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
-PREHOOK: query: explain select key from c
+PREHOOK: query: explain select key from c_n2
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select key from c
+POSTHOOK: query: explain select key from c_n2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -1425,7 +1425,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: c
+          alias: c_n2
           Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: key (type: string)

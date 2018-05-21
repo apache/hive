@@ -14,29 +14,29 @@ POSTHOOK: query: load data local inpath '../../data/files/test.dat' overwrite in
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@alter5_src
-PREHOOK: query: create table alter5 ( col1 string ) partitioned by (dt string)
+PREHOOK: query: create table alter5_n1 ( col1 string ) partitioned by (dt string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@alter5
-POSTHOOK: query: create table alter5 ( col1 string ) partitioned by (dt string)
+PREHOOK: Output: default@alter5_n1
+POSTHOOK: query: create table alter5_n1 ( col1 string ) partitioned by (dt string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@alter5
-PREHOOK: query: alter table alter5 add partition (dt='a') location 'parta'
+POSTHOOK: Output: default@alter5_n1
+PREHOOK: query: alter table alter5_n1 add partition (dt='a') location 'parta'
 PREHOOK: type: ALTERTABLE_ADDPARTS
 #### A masked pattern was here ####
-PREHOOK: Output: default@alter5
-POSTHOOK: query: alter table alter5 add partition (dt='a') location 'parta'
+PREHOOK: Output: default@alter5_n1
+POSTHOOK: query: alter table alter5_n1 add partition (dt='a') location 'parta'
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 #### A masked pattern was here ####
-POSTHOOK: Output: default@alter5
-POSTHOOK: Output: default@alter5@dt=a
-PREHOOK: query: describe extended alter5 partition (dt='a')
+POSTHOOK: Output: default@alter5_n1
+POSTHOOK: Output: default@alter5_n1@dt=a
+PREHOOK: query: describe extended alter5_n1 partition (dt='a')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@alter5
-POSTHOOK: query: describe extended alter5 partition (dt='a')
+PREHOOK: Input: default@alter5_n1
+POSTHOOK: query: describe extended alter5_n1 partition (dt='a')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@alter5
+POSTHOOK: Input: default@alter5_n1
 col1                	string              	                    
 dt                  	string              	                    
 	 	 
@@ -45,24 +45,24 @@ dt                  	string
 dt                  	string              	                    
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: insert overwrite table alter5 partition (dt='a') select col1 from alter5_src
+PREHOOK: query: insert overwrite table alter5_n1 partition (dt='a') select col1 from alter5_src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter5_src
-PREHOOK: Output: default@alter5@dt=a
-POSTHOOK: query: insert overwrite table alter5 partition (dt='a') select col1 from alter5_src
+PREHOOK: Output: default@alter5_n1@dt=a
+POSTHOOK: query: insert overwrite table alter5_n1 partition (dt='a') select col1 from alter5_src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter5_src
-POSTHOOK: Output: default@alter5@dt=a
-POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.FieldSchema(name:col1, type:string, comment:null), ]
-PREHOOK: query: select * from alter5 where dt='a'
+POSTHOOK: Output: default@alter5_n1@dt=a
+POSTHOOK: Lineage: alter5_n1 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.FieldSchema(name:col1, type:string, comment:null), ]
+PREHOOK: query: select * from alter5_n1 where dt='a'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@alter5
-PREHOOK: Input: default@alter5@dt=a
+PREHOOK: Input: default@alter5_n1
+PREHOOK: Input: default@alter5_n1@dt=a
 #### A masked pattern was here ####
-POSTHOOK: query: select * from alter5 where dt='a'
+POSTHOOK: query: select * from alter5_n1 where dt='a'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@alter5
-POSTHOOK: Input: default@alter5@dt=a
+POSTHOOK: Input: default@alter5_n1
+POSTHOOK: Input: default@alter5_n1@dt=a
 #### A masked pattern was here ####
 1	a
 2	a
@@ -70,12 +70,12 @@ POSTHOOK: Input: default@alter5@dt=a
 4	a
 5	a
 6	a
-PREHOOK: query: describe extended alter5 partition (dt='a')
+PREHOOK: query: describe extended alter5_n1 partition (dt='a')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@alter5
-POSTHOOK: query: describe extended alter5 partition (dt='a')
+PREHOOK: Input: default@alter5_n1
+POSTHOOK: query: describe extended alter5_n1 partition (dt='a')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@alter5
+POSTHOOK: Input: default@alter5_n1
 col1                	string              	                    
 dt                  	string              	                    
 	 	 
@@ -92,14 +92,14 @@ POSTHOOK: query: DROP TABLE alter5_src
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@alter5_src
 POSTHOOK: Output: default@alter5_src
-PREHOOK: query: DROP TABLE alter5
+PREHOOK: query: DROP TABLE alter5_n1
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@alter5
-PREHOOK: Output: default@alter5
-POSTHOOK: query: DROP TABLE alter5
+PREHOOK: Input: default@alter5_n1
+PREHOOK: Output: default@alter5_n1
+POSTHOOK: query: DROP TABLE alter5_n1
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@alter5
-POSTHOOK: Output: default@alter5
+POSTHOOK: Input: default@alter5_n1
+POSTHOOK: Output: default@alter5_n1
 PREHOOK: query: SHOW TABLES LIKE "alter*"
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:default
@@ -140,29 +140,29 @@ POSTHOOK: query: load data local inpath '../../data/files/test.dat' overwrite in
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: alter5_db@alter5_src
-PREHOOK: query: create table alter5 ( col1 string ) partitioned by (dt string)
+PREHOOK: query: create table alter5_n1 ( col1 string ) partitioned by (dt string)
 PREHOOK: type: CREATETABLE
-PREHOOK: Output: alter5_db@alter5
+PREHOOK: Output: alter5_db@alter5_n1
 PREHOOK: Output: database:alter5_db
-POSTHOOK: query: create table alter5 ( col1 string ) partitioned by (dt string)
+POSTHOOK: query: create table alter5_n1 ( col1 string ) partitioned by (dt string)
 POSTHOOK: type: CREATETABLE
-POSTHOOK: Output: alter5_db@alter5
+POSTHOOK: Output: alter5_db@alter5_n1
 POSTHOOK: Output: database:alter5_db
-PREHOOK: query: alter table alter5 add partition (dt='a') location 'parta'
+PREHOOK: query: alter table alter5_n1 add partition (dt='a') location 'parta'
 PREHOOK: type: ALTERTABLE_ADDPARTS
 #### A masked pattern was here ####
-PREHOOK: Output: alter5_db@alter5
-POSTHOOK: query: alter table alter5 add partition (dt='a') location 'parta'
+PREHOOK: Output: alter5_db@alter5_n1
+POSTHOOK: query: alter table alter5_n1 add partition (dt='a') location 'parta'
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 #### A masked pattern was here ####
-POSTHOOK: Output: alter5_db@alter5
-POSTHOOK: Output: alter5_db@alter5@dt=a
-PREHOOK: query: describe extended alter5 partition (dt='a')
+POSTHOOK: Output: alter5_db@alter5_n1
+POSTHOOK: Output: alter5_db@alter5_n1@dt=a
+PREHOOK: query: describe extended alter5_n1 partition (dt='a')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: alter5_db@alter5
-POSTHOOK: query: describe extended alter5 partition (dt='a')
+PREHOOK: Input: alter5_db@alter5_n1
+POSTHOOK: query: describe extended alter5_n1 partition (dt='a')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: alter5_db@alter5
+POSTHOOK: Input: alter5_db@alter5_n1
 col1                	string              	                    
 dt                  	string              	                    
 	 	 
@@ -171,24 +171,24 @@ dt                  	string
 dt                  	string              	                    
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: insert overwrite table alter5 partition (dt='a') select col1 from alter5_src
+PREHOOK: query: insert overwrite table alter5_n1 partition (dt='a') select col1 from alter5_src
 PREHOOK: type: QUERY
 PREHOOK: Input: alter5_db@alter5_src
-PREHOOK: Output: alter5_db@alter5@dt=a
-POSTHOOK: query: insert overwrite table alter5 partition (dt='a') select col1 from alter5_src
+PREHOOK: Output: alter5_db@alter5_n1@dt=a
+POSTHOOK: query: insert overwrite table alter5_n1 partition (dt='a') select col1 from alter5_src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: alter5_db@alter5_src
-POSTHOOK: Output: alter5_db@alter5@dt=a
-POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.FieldSchema(name:col1, type:string, comment:null), ]
-PREHOOK: query: select * from alter5 where dt='a'
+POSTHOOK: Output: alter5_db@alter5_n1@dt=a
+POSTHOOK: Lineage: alter5_n1 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.FieldSchema(name:col1, type:string, comment:null), ]
+PREHOOK: query: select * from alter5_n1 where dt='a'
 PREHOOK: type: QUERY
-PREHOOK: Input: alter5_db@alter5
-PREHOOK: Input: alter5_db@alter5@dt=a
+PREHOOK: Input: alter5_db@alter5_n1
+PREHOOK: Input: alter5_db@alter5_n1@dt=a
 #### A masked pattern was here ####
-POSTHOOK: query: select * from alter5 where dt='a'
+POSTHOOK: query: select * from alter5_n1 where dt='a'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: alter5_db@alter5
-POSTHOOK: Input: alter5_db@alter5@dt=a
+POSTHOOK: Input: alter5_db@alter5_n1
+POSTHOOK: Input: alter5_db@alter5_n1@dt=a
 #### A masked pattern was here ####
 1	a
 2	a
@@ -196,12 +196,12 @@ POSTHOOK: Input: alter5_db@alter5@dt=a
 4	a
 5	a
 6	a
-PREHOOK: query: describe extended alter5 partition (dt='a')
+PREHOOK: query: describe extended alter5_n1 partition (dt='a')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: alter5_db@alter5
-POSTHOOK: query: describe extended alter5 partition (dt='a')
+PREHOOK: Input: alter5_db@alter5_n1
+POSTHOOK: query: describe extended alter5_n1 partition (dt='a')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: alter5_db@alter5
+POSTHOOK: Input: alter5_db@alter5_n1
 col1                	string              	                    
 dt                  	string              	                    
 	 	 

@@ -1,28 +1,28 @@
-PREHOOK: query: create table if not exists src_a like src
+PREHOOK: query: create table if not exists src_a_n0 like src
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src_a
-POSTHOOK: query: create table if not exists src_a like src
+PREHOOK: Output: default@src_a_n0
+POSTHOOK: query: create table if not exists src_a_n0 like src
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src_a
-PREHOOK: query: create table if not exists src_b like src
+POSTHOOK: Output: default@src_a_n0
+PREHOOK: query: create table if not exists src_b_n1 like src
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src_b
-POSTHOOK: query: create table if not exists src_b like src
+PREHOOK: Output: default@src_b_n1
+POSTHOOK: query: create table if not exists src_b_n1 like src
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src_b
+POSTHOOK: Output: default@src_b_n1
 PREHOOK: query: explain
 from (select key, value from src group by key, value) s
-insert overwrite table src_a select s.key, s.value group by s.key, s.value
-insert overwrite table src_b select s.key, s.value group by s.key, s.value
+insert overwrite table src_a_n0 select s.key, s.value group by s.key, s.value
+insert overwrite table src_b_n1 select s.key, s.value group by s.key, s.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 from (select key, value from src group by key, value) s
-insert overwrite table src_a select s.key, s.value group by s.key, s.value
-insert overwrite table src_b select s.key, s.value group by s.key, s.value
+insert overwrite table src_a_n0 select s.key, s.value group by s.key, s.value
+insert overwrite table src_b_n1 select s.key, s.value group by s.key, s.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -94,7 +94,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.src_a
+                        name: default.src_a_n0
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string)
                     outputColumnNames: key, value
@@ -120,7 +120,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.src_b
+                        name: default.src_b_n1
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string)
                     outputColumnNames: key, value
@@ -176,7 +176,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.src_a
+              name: default.src_a_n0
 
   Stage: Stage-4
     Stats Work
@@ -184,7 +184,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: string, string
-          Table: default.src_a
+          Table: default.src_a_n0
 
   Stage: Stage-1
     Move Operator
@@ -194,7 +194,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.src_b
+              name: default.src_b_n1
 
   Stage: Stage-5
     Stats Work
@@ -202,33 +202,33 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: string, string
-          Table: default.src_b
+          Table: default.src_b_n1
 
 PREHOOK: query: from (select key, value from src group by key, value) s
-insert overwrite table src_a select s.key, s.value group by s.key, s.value
-insert overwrite table src_b select s.key, s.value group by s.key, s.value
+insert overwrite table src_a_n0 select s.key, s.value group by s.key, s.value
+insert overwrite table src_b_n1 select s.key, s.value group by s.key, s.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@src_a
-PREHOOK: Output: default@src_b
+PREHOOK: Output: default@src_a_n0
+PREHOOK: Output: default@src_b_n1
 POSTHOOK: query: from (select key, value from src group by key, value) s
-insert overwrite table src_a select s.key, s.value group by s.key, s.value
-insert overwrite table src_b select s.key, s.value group by s.key, s.value
+insert overwrite table src_a_n0 select s.key, s.value group by s.key, s.value
+insert overwrite table src_b_n1 select s.key, s.value group by s.key, s.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@src_a
-POSTHOOK: Output: default@src_b
-POSTHOOK: Lineage: src_a.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_a.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: src_b.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_b.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from src_a
+POSTHOOK: Output: default@src_a_n0
+POSTHOOK: Output: default@src_b_n1
+POSTHOOK: Lineage: src_a_n0.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_a_n0.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src_b_n1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_b_n1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from src_a_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_a
+PREHOOK: Input: default@src_a_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from src_a
+POSTHOOK: query: select * from src_a_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_a
+POSTHOOK: Input: default@src_a_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	val_0
 10	val_10
@@ -539,13 +539,13 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 96	val_96
 97	val_97
 98	val_98
-PREHOOK: query: select * from src_b
+PREHOOK: query: select * from src_b_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_b
+PREHOOK: Input: default@src_b_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from src_b
+POSTHOOK: query: select * from src_b_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_b
+POSTHOOK: Input: default@src_b_n1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	val_0
 10	val_10
@@ -857,30 +857,30 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 97	val_97
 98	val_98
 PREHOOK: query: from (select key, value from src group by key, value) s
-insert overwrite table src_a select s.key, s.value group by s.key, s.value
-insert overwrite table src_b select s.key, s.value group by s.key, s.value
+insert overwrite table src_a_n0 select s.key, s.value group by s.key, s.value
+insert overwrite table src_b_n1 select s.key, s.value group by s.key, s.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@src_a
-PREHOOK: Output: default@src_b
+PREHOOK: Output: default@src_a_n0
+PREHOOK: Output: default@src_b_n1
 POSTHOOK: query: from (select key, value from src group by key, value) s
-insert overwrite table src_a select s.key, s.value group by s.key, s.value
-insert overwrite table src_b select s.key, s.value group by s.key, s.value
+insert overwrite table src_a_n0 select s.key, s.value group by s.key, s.value
+insert overwrite table src_b_n1 select s.key, s.value group by s.key, s.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@src_a
-POSTHOOK: Output: default@src_b
-POSTHOOK: Lineage: src_a.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_a.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: src_b.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_b.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from src_a
+POSTHOOK: Output: default@src_a_n0
+POSTHOOK: Output: default@src_b_n1
+POSTHOOK: Lineage: src_a_n0.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_a_n0.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src_b_n1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_b_n1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from src_a_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_a
+PREHOOK: Input: default@src_a_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from src_a
+POSTHOOK: query: select * from src_a_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_a
+POSTHOOK: Input: default@src_a_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	val_0
 10	val_10
@@ -1191,13 +1191,13 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 96	val_96
 97	val_97
 98	val_98
-PREHOOK: query: select * from src_b
+PREHOOK: query: select * from src_b_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_b
+PREHOOK: Input: default@src_b_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from src_b
+POSTHOOK: query: select * from src_b_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_b
+POSTHOOK: Input: default@src_b_n1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	val_0
 10	val_10

@@ -1,24 +1,24 @@
-PREHOOK: query: CREATE VIEW V1 AS SELECT key, value from src
+PREHOOK: query: CREATE VIEW V1_n0 AS SELECT key, value from src
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@V1
-POSTHOOK: query: CREATE VIEW V1 AS SELECT key, value from src
+PREHOOK: Output: default@V1_n0
+POSTHOOK: query: CREATE VIEW V1_n0 AS SELECT key, value from src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@V1
-POSTHOOK: Lineage: V1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: V1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select count(*) from V1 where key > 0
+POSTHOOK: Output: default@V1_n0
+POSTHOOK: Lineage: V1_n0.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: V1_n0.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select count(*) from V1_n0 where key > 0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Input: default@v1
+PREHOOK: Input: default@v1_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from V1 where key > 0
+POSTHOOK: query: select count(*) from V1_n0 where key > 0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Input: default@v1
+POSTHOOK: Input: default@v1_n0
 #### A masked pattern was here ####
 497
 PREHOOK: query: CREATE TABLE M1 AS SELECT key, value from src
@@ -230,9 +230,9 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-PREHOOK: query: EXPLAIN CREATE TABLE M1 AS select * from V1
+PREHOOK: query: EXPLAIN CREATE TABLE M1 AS select * from V1_n0
 PREHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: query: EXPLAIN CREATE TABLE M1 AS select * from V1
+POSTHOOK: query: EXPLAIN CREATE TABLE M1 AS select * from V1_n0
 POSTHOOK: type: CREATETABLE_AS_SELECT
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -326,9 +326,9 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-PREHOOK: query: EXPLAIN CREATE TABLE V1 AS select * from M1
+PREHOOK: query: EXPLAIN CREATE TABLE V1_n0 AS select * from M1
 PREHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: query: EXPLAIN CREATE TABLE V1 AS select * from M1
+POSTHOOK: query: EXPLAIN CREATE TABLE V1_n0 AS select * from M1
 POSTHOOK: type: CREATETABLE_AS_SELECT
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -359,7 +359,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.V1
+                    name: default.V1_n0
       Execution mode: vectorized
 
   Stage: Stage-7
@@ -384,7 +384,7 @@ STAGE PLANS:
           input format: org.apache.hadoop.mapred.TextInputFormat
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
           serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: default.V1
+          name: default.V1_n0
 
   Stage: Stage-2
     Stats Work
@@ -400,7 +400,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.V1
+                  name: default.V1_n0
 
   Stage: Stage-5
     Map Reduce
@@ -412,7 +412,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.V1
+                  name: default.V1_n0
 
   Stage: Stage-6
     Move Operator
@@ -420,9 +420,9 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-PREHOOK: query: EXPLAIN CREATE VIEW V1 AS select * from M1
+PREHOOK: query: EXPLAIN CREATE VIEW V1_n0 AS select * from M1
 PREHOOK: type: CREATEVIEW
-POSTHOOK: query: EXPLAIN CREATE VIEW V1 AS select * from M1
+POSTHOOK: query: EXPLAIN CREATE VIEW V1_n0 AS select * from M1
 POSTHOOK: type: CREATEVIEW
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -433,7 +433,7 @@ STAGE PLANS:
         Create View
           columns: key string, value string
           expanded text: select `m1`.`key`, `m1`.`value` from `default`.`M1`
-          name: default.V1
+          name: default.V1_n0
           original text: select * from M1
 
 PREHOOK: query: EXPLAIN CREATE TABLE M1 LIKE src

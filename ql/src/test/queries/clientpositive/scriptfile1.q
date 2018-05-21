@@ -7,7 +7,7 @@ set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 
 -- NO_SESSION_REUSE
 
-CREATE TABLE dest1(key INT, value STRING);
+CREATE TABLE dest1_n22(key INT, value STRING);
 
 ADD FILE ../../ql/src/test/scripts/testgrep;
 
@@ -17,6 +17,6 @@ FROM (
          USING 'testgrep' AS (tkey, tvalue)
   CLUSTER BY tkey
 ) tmap
-INSERT OVERWRITE TABLE dest1 SELECT tmap.tkey, tmap.tvalue;
+INSERT OVERWRITE TABLE dest1_n22 SELECT tmap.tkey, tmap.tvalue;
 
-SELECT dest1.* FROM dest1;
+SELECT dest1_n22.* FROM dest1_n22;

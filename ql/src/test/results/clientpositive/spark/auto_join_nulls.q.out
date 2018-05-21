@@ -1,217 +1,217 @@
-PREHOOK: query: CREATE TABLE myinput1(key int, value int)
+PREHOOK: query: CREATE TABLE myinput1_n2(key int, value int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@myinput1
-POSTHOOK: query: CREATE TABLE myinput1(key int, value int)
+PREHOOK: Output: default@myinput1_n2
+POSTHOOK: query: CREATE TABLE myinput1_n2(key int, value int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@myinput1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in1.txt' INTO TABLE myinput1
+POSTHOOK: Output: default@myinput1_n2
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in1.txt' INTO TABLE myinput1_n2
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@myinput1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in1.txt' INTO TABLE myinput1
+PREHOOK: Output: default@myinput1_n2
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in1.txt' INTO TABLE myinput1_n2
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@myinput1
+POSTHOOK: Output: default@myinput1_n2
 Warning: Map Join MAPJOIN[14][bigTable=?] in task 'Stage-1:MAPRED' is a cross product
-PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a JOIN myinput1 b
+PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n2 a JOIN myinput1_n2 b
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a JOIN myinput1 b
+POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n2 a JOIN myinput1_n2 b
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n2
 #### A masked pattern was here ####
 13630578
 Warning: Map Join MAPJOIN[14][bigTable=?] in task 'Stage-1:MAPRED' is a cross product
-PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a LEFT OUTER JOIN myinput1 b
+PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n2 a LEFT OUTER JOIN myinput1_n2 b
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a LEFT OUTER JOIN myinput1 b
+POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n2 a LEFT OUTER JOIN myinput1_n2 b
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n2
 #### A masked pattern was here ####
 13630578
 Warning: Map Join MAPJOIN[14][bigTable=?] in task 'Stage-1:MAPRED' is a cross product
-PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a RIGHT OUTER JOIN myinput1 b
+PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n2 a RIGHT OUTER JOIN myinput1_n2 b
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a RIGHT OUTER JOIN myinput1 b
+POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n2 a RIGHT OUTER JOIN myinput1_n2 b
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n2
 #### A masked pattern was here ####
 13630578
-PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a JOIN myinput1 b ON a.key = b.value
+PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n2 a JOIN myinput1_n2 b ON a.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a JOIN myinput1 b ON a.key = b.value
+POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n2 a JOIN myinput1_n2 b ON a.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n2
 #### A masked pattern was here ####
 3078400
-PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a JOIN myinput1 b ON a.key = b.key
+PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n2 a JOIN myinput1_n2 b ON a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a JOIN myinput1 b ON a.key = b.key
+POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n2 a JOIN myinput1_n2 b ON a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n2
 #### A masked pattern was here ####
 4509856
-PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a JOIN myinput1 b ON a.value = b.value
+PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n2 a JOIN myinput1_n2 b ON a.value = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a JOIN myinput1 b ON a.value = b.value
+POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n2 a JOIN myinput1_n2 b ON a.value = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n2
 #### A masked pattern was here ####
 3112070
-PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a JOIN myinput1 b ON a.value = b.value and a.key=b.key
+PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n2 a JOIN myinput1_n2 b ON a.value = b.value and a.key=b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a JOIN myinput1 b ON a.value = b.value and a.key=b.key
+POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n2 a JOIN myinput1_n2 b ON a.value = b.value and a.key=b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n2
 #### A masked pattern was here ####
 3078400
-PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.value
+PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n2 a LEFT OUTER JOIN myinput1_n2 b ON a.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.value
+POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n2 a LEFT OUTER JOIN myinput1_n2 b ON a.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n2
 #### A masked pattern was here ####
 4542003
-PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.value = b.value
+PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n2 a LEFT OUTER JOIN myinput1_n2 b ON a.value = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.value = b.value
+POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n2 a LEFT OUTER JOIN myinput1_n2 b ON a.value = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n2
 #### A masked pattern was here ####
 4542038
-PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key
+PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n2 a LEFT OUTER JOIN myinput1_n2 b ON a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key
+POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n2 a LEFT OUTER JOIN myinput1_n2 b ON a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n2
 #### A masked pattern was here ####
 4543491
-PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key and a.value=b.value
+PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n2 a LEFT OUTER JOIN myinput1_n2 b ON a.key = b.key and a.value=b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key and a.value=b.value
+POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n2 a LEFT OUTER JOIN myinput1_n2 b ON a.key = b.key and a.value=b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n2
 #### A masked pattern was here ####
 4542003
-PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.value
+PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n2 a RIGHT OUTER JOIN myinput1_n2 b ON a.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.value
+POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n2 a RIGHT OUTER JOIN myinput1_n2 b ON a.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n2
 #### A masked pattern was here ####
 3079923
-PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.key
+PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n2 a RIGHT OUTER JOIN myinput1_n2 b ON a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.key
+POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n2 a RIGHT OUTER JOIN myinput1_n2 b ON a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n2
 #### A masked pattern was here ####
 4509891
-PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.value = b.value
+PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n2 a RIGHT OUTER JOIN myinput1_n2 b ON a.value = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.value = b.value
+POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n2 a RIGHT OUTER JOIN myinput1_n2 b ON a.value = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n2
 #### A masked pattern was here ####
 3113558
-PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key=b.key and a.value = b.value
+PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n2 a RIGHT OUTER JOIN myinput1_n2 b ON a.key=b.key and a.value = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key=b.key and a.value = b.value
+POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n2 a RIGHT OUTER JOIN myinput1_n2 b ON a.key=b.key and a.value = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n2
 #### A masked pattern was here ####
 3079923
-PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key = b.value
+PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n2 a FULL OUTER JOIN myinput1_n2 b ON a.key = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key = b.value
+POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n2 a FULL OUTER JOIN myinput1_n2 b ON a.key = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n2
 #### A masked pattern was here ####
 4543526
-PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key = b.key
+PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n2 a FULL OUTER JOIN myinput1_n2 b ON a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key = b.key
+POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n2 a FULL OUTER JOIN myinput1_n2 b ON a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n2
 #### A masked pattern was here ####
 4543526
-PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.value = b.value
+PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n2 a FULL OUTER JOIN myinput1_n2 b ON a.value = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.value = b.value
+POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n2 a FULL OUTER JOIN myinput1_n2 b ON a.value = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n2
 #### A masked pattern was here ####
 4543526
-PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.value = b.value and a.key=b.key
+PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n2 a FULL OUTER JOIN myinput1_n2 b ON a.value = b.value and a.key=b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.value = b.value and a.key=b.key
+POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n2 a FULL OUTER JOIN myinput1_n2 b ON a.value = b.value and a.key=b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n2
 #### A masked pattern was here ####
 4543526
-PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) from myinput1 a LEFT OUTER JOIN myinput1 b ON (a.value=b.value) RIGHT OUTER JOIN myinput1 c ON (b.value=c.value)
+PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) from myinput1_n2 a LEFT OUTER JOIN myinput1_n2 b ON (a.value=b.value) RIGHT OUTER JOIN myinput1_n2 c ON (b.value=c.value)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) from myinput1 a LEFT OUTER JOIN myinput1 b ON (a.value=b.value) RIGHT OUTER JOIN myinput1 c ON (b.value=c.value)
+POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) from myinput1_n2 a LEFT OUTER JOIN myinput1_n2 b ON (a.value=b.value) RIGHT OUTER JOIN myinput1_n2 c ON (b.value=c.value)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n2
 #### A masked pattern was here ####
 3112070
-PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) from myinput1 a RIGHT OUTER JOIN myinput1 b ON (a.value=b.value) LEFT OUTER JOIN myinput1 c ON (b.value=c.value)
+PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) from myinput1_n2 a RIGHT OUTER JOIN myinput1_n2 b ON (a.value=b.value) LEFT OUTER JOIN myinput1_n2 c ON (b.value=c.value)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) from myinput1 a RIGHT OUTER JOIN myinput1 b ON (a.value=b.value) LEFT OUTER JOIN myinput1 c ON (b.value=c.value)
+POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) from myinput1_n2 a RIGHT OUTER JOIN myinput1_n2 b ON (a.value=b.value) LEFT OUTER JOIN myinput1_n2 c ON (b.value=c.value)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n2
 #### A masked pattern was here ####
 3113558
-PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a LEFT OUTER JOIN myinput1 b RIGHT OUTER JOIN myinput1 c ON a.value = b.value and b.value = c.value
+PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n2 a LEFT OUTER JOIN myinput1_n2 b RIGHT OUTER JOIN myinput1_n2 c ON a.value = b.value and b.value = c.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a LEFT OUTER JOIN myinput1 b RIGHT OUTER JOIN myinput1 c ON a.value = b.value and b.value = c.value
+POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1_n2 a LEFT OUTER JOIN myinput1_n2 b RIGHT OUTER JOIN myinput1_n2 c ON a.value = b.value and b.value = c.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n2
 #### A masked pattern was here ####
 3112070

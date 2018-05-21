@@ -1,17 +1,17 @@
-PREHOOK: query: CREATE TABLE bucket2_1(key int, value string) CLUSTERED BY (key) INTO 2 BUCKETS
+PREHOOK: query: CREATE TABLE bucket2_1_n0(key int, value string) CLUSTERED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@bucket2_1
-POSTHOOK: query: CREATE TABLE bucket2_1(key int, value string) CLUSTERED BY (key) INTO 2 BUCKETS
+PREHOOK: Output: default@bucket2_1_n0
+POSTHOOK: query: CREATE TABLE bucket2_1_n0(key int, value string) CLUSTERED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@bucket2_1
+POSTHOOK: Output: default@bucket2_1_n0
 PREHOOK: query: explain extended
-insert overwrite table bucket2_1
+insert overwrite table bucket2_1_n0
 select * from src
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
-insert overwrite table bucket2_1
+insert overwrite table bucket2_1_n0
 select * from src
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -129,17 +129,17 @@ STAGE PLANS:
                         columns.types int:string
 #### A masked pattern was here ####
                         location hdfs://### HDFS PATH ###
-                        name default.bucket2_1
+                        name default.bucket2_1_n0
                         numFiles 0
                         numRows 0
                         rawDataSize 0
-                        serialization.ddl struct bucket2_1 { i32 key, string value}
+                        serialization.ddl struct bucket2_1_n0 { i32 key, string value}
                         serialization.format 1
                         serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         totalSize 0
 #### A masked pattern was here ####
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.bucket2_1
+                      name: default.bucket2_1_n0
                   TotalFiles: 2
                   GatherStats: true
                   MultiFileSpray: true
@@ -163,40 +163,40 @@ STAGE PLANS:
                 columns.types int:string
 #### A masked pattern was here ####
                 location hdfs://### HDFS PATH ###
-                name default.bucket2_1
+                name default.bucket2_1_n0
                 numFiles 0
                 numRows 0
                 rawDataSize 0
-                serialization.ddl struct bucket2_1 { i32 key, string value}
+                serialization.ddl struct bucket2_1_n0 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.bucket2_1
+              name: default.bucket2_1_n0
 
   Stage: Stage-2
     Stats Work
       Basic Stats Work:
           Stats Aggregation Key Prefix: hdfs://### HDFS PATH ###
 
-PREHOOK: query: insert overwrite table bucket2_1
+PREHOOK: query: insert overwrite table bucket2_1_n0
 select * from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@bucket2_1
-POSTHOOK: query: insert overwrite table bucket2_1
+PREHOOK: Output: default@bucket2_1_n0
+POSTHOOK: query: insert overwrite table bucket2_1_n0
 select * from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@bucket2_1
-POSTHOOK: Lineage: bucket2_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: bucket2_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@bucket2_1_n0
+POSTHOOK: Lineage: bucket2_1_n0.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: bucket2_1_n0.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain
-select * from bucket2_1 tablesample (bucket 1 out of 2) s order by key
+select * from bucket2_1_n0 tablesample (bucket 1 out of 2) s order by key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select * from bucket2_1 tablesample (bucket 1 out of 2) s order by key
+select * from bucket2_1_n0 tablesample (bucket 1 out of 2) s order by key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -248,13 +248,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from bucket2_1 tablesample (bucket 1 out of 2) s order by key
+PREHOOK: query: select * from bucket2_1_n0 tablesample (bucket 1 out of 2) s order by key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@bucket2_1
+PREHOOK: Input: default@bucket2_1_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from bucket2_1 tablesample (bucket 1 out of 2) s order by key
+POSTHOOK: query: select * from bucket2_1_n0 tablesample (bucket 1 out of 2) s order by key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@bucket2_1
+POSTHOOK: Input: default@bucket2_1_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 2	val_2
 10	val_10

@@ -30,7 +30,7 @@ having not exists
 
 -- 19. SubQueries Exists
 -- view test
-create view cv1 as 
+create view cv1_n4 as 
 select * 
 from src_cbo b 
 where exists
@@ -39,7 +39,7 @@ where exists
   where b.value = a.value  and a.key = b.key and a.value > 'val_9')
 ;
 
-select * from cv1
+select * from cv1_n4
 ;
 
 -- sq in from

@@ -1,44 +1,44 @@
-PREHOOK: query: create table t1 (v string, k int)
+PREHOOK: query: create table t1_n97 (v string, k int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t1
-POSTHOOK: query: create table t1 (v string, k int)
+PREHOOK: Output: default@t1_n97
+POSTHOOK: query: create table t1_n97 (v string, k int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t1
-PREHOOK: query: insert into t1 values ('people', 10), ('strangers', 20), ('parents', 30)
+POSTHOOK: Output: default@t1_n97
+PREHOOK: query: insert into t1_n97 values ('people', 10), ('strangers', 20), ('parents', 30)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t1
-POSTHOOK: query: insert into t1 values ('people', 10), ('strangers', 20), ('parents', 30)
+PREHOOK: Output: default@t1_n97
+POSTHOOK: query: insert into t1_n97 values ('people', 10), ('strangers', 20), ('parents', 30)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t1
-POSTHOOK: Lineage: t1.k SCRIPT []
-POSTHOOK: Lineage: t1.v SCRIPT []
-PREHOOK: query: create table t2 (v string, k double)
+POSTHOOK: Output: default@t1_n97
+POSTHOOK: Lineage: t1_n97.k SCRIPT []
+POSTHOOK: Lineage: t1_n97.v SCRIPT []
+PREHOOK: query: create table t2_n60 (v string, k double)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t2
-POSTHOOK: query: create table t2 (v string, k double)
+PREHOOK: Output: default@t2_n60
+POSTHOOK: query: create table t2_n60 (v string, k double)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t2
-PREHOOK: query: insert into t2 values ('people', 10), ('strangers', 20), ('parents', 30)
+POSTHOOK: Output: default@t2_n60
+PREHOOK: query: insert into t2_n60 values ('people', 10), ('strangers', 20), ('parents', 30)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t2
-POSTHOOK: query: insert into t2 values ('people', 10), ('strangers', 20), ('parents', 30)
+PREHOOK: Output: default@t2_n60
+POSTHOOK: query: insert into t2_n60 values ('people', 10), ('strangers', 20), ('parents', 30)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t2
-POSTHOOK: Lineage: t2.k SCRIPT []
-POSTHOOK: Lineage: t2.v SCRIPT []
+POSTHOOK: Output: default@t2_n60
+POSTHOOK: Lineage: t2_n60.k SCRIPT []
+POSTHOOK: Lineage: t2_n60.v SCRIPT []
 PREHOOK: query: explain
-select * from t1 where t1.k in (select t2.k from t2 where t2.v='people') and t1.k<15
+select * from t1_n97 where t1_n97.k in (select t2_n60.k from t2_n60 where t2_n60.v='people') and t1_n97.k<15
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select * from t1 where t1.k in (select t2.k from t2 where t2.v='people') and t1.k<15
+select * from t1_n97 where t1_n97.k in (select t2_n60.k from t2_n60 where t2_n60.v='people') and t1_n97.k<15
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -55,7 +55,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n97
                   Statistics: Num rows: 3 Data size: 285 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (k < 15) (type: boolean)
@@ -75,7 +75,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: t2
+                  alias: t2_n60
                   Statistics: Num rows: 3 Data size: 297 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((v = 'people') and k is not null) (type: boolean)
@@ -121,14 +121,14 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from t1 where t1.k in (select t2.k from t2 where t2.v='people') and t1.k<15
+PREHOOK: query: select * from t1_n97 where t1_n97.k in (select t2_n60.k from t2_n60 where t2_n60.v='people') and t1_n97.k<15
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
+PREHOOK: Input: default@t1_n97
+PREHOOK: Input: default@t2_n60
 #### A masked pattern was here ####
-POSTHOOK: query: select * from t1 where t1.k in (select t2.k from t2 where t2.v='people') and t1.k<15
+POSTHOOK: query: select * from t1_n97 where t1_n97.k in (select t2_n60.k from t2_n60 where t2_n60.v='people') and t1_n97.k<15
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t1_n97
+POSTHOOK: Input: default@t2_n60
 #### A masked pattern was here ####
 people	10

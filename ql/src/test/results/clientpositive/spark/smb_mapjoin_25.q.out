@@ -1,59 +1,59 @@
-PREHOOK: query: create table smb_bucket_1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS STORED AS RCFILE
+PREHOOK: query: create table smb_bucket_1_n4(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@smb_bucket_1
-POSTHOOK: query: create table smb_bucket_1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS STORED AS RCFILE
+PREHOOK: Output: default@smb_bucket_1_n4
+POSTHOOK: query: create table smb_bucket_1_n4(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@smb_bucket_1
-PREHOOK: query: create table smb_bucket_2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS STORED AS RCFILE
+POSTHOOK: Output: default@smb_bucket_1_n4
+PREHOOK: query: create table smb_bucket_2_n4(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@smb_bucket_2
-POSTHOOK: query: create table smb_bucket_2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS STORED AS RCFILE
+PREHOOK: Output: default@smb_bucket_2_n4
+POSTHOOK: query: create table smb_bucket_2_n4(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@smb_bucket_2
-PREHOOK: query: create table smb_bucket_3(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS STORED AS RCFILE
+POSTHOOK: Output: default@smb_bucket_2_n4
+PREHOOK: query: create table smb_bucket_3_n4(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@smb_bucket_3
-POSTHOOK: query: create table smb_bucket_3(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS STORED AS RCFILE
+PREHOOK: Output: default@smb_bucket_3_n4
+POSTHOOK: query: create table smb_bucket_3_n4(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@smb_bucket_3
-PREHOOK: query: load data local inpath '../../data/files/smb_rc1/000000_0' overwrite into table smb_bucket_1
+POSTHOOK: Output: default@smb_bucket_3_n4
+PREHOOK: query: load data local inpath '../../data/files/smb_rc1/000000_0' overwrite into table smb_bucket_1_n4
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@smb_bucket_1
-POSTHOOK: query: load data local inpath '../../data/files/smb_rc1/000000_0' overwrite into table smb_bucket_1
+PREHOOK: Output: default@smb_bucket_1_n4
+POSTHOOK: query: load data local inpath '../../data/files/smb_rc1/000000_0' overwrite into table smb_bucket_1_n4
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@smb_bucket_1
-PREHOOK: query: load data local inpath '../../data/files/smb_rc2/000000_0' overwrite into table smb_bucket_2
+POSTHOOK: Output: default@smb_bucket_1_n4
+PREHOOK: query: load data local inpath '../../data/files/smb_rc2/000000_0' overwrite into table smb_bucket_2_n4
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@smb_bucket_2
-POSTHOOK: query: load data local inpath '../../data/files/smb_rc2/000000_0' overwrite into table smb_bucket_2
+PREHOOK: Output: default@smb_bucket_2_n4
+POSTHOOK: query: load data local inpath '../../data/files/smb_rc2/000000_0' overwrite into table smb_bucket_2_n4
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@smb_bucket_2
-PREHOOK: query: load data local inpath '../../data/files/smb_rc3/000000_0' overwrite into table smb_bucket_3
+POSTHOOK: Output: default@smb_bucket_2_n4
+PREHOOK: query: load data local inpath '../../data/files/smb_rc3/000000_0' overwrite into table smb_bucket_3_n4
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@smb_bucket_3
-POSTHOOK: query: load data local inpath '../../data/files/smb_rc3/000000_0' overwrite into table smb_bucket_3
+PREHOOK: Output: default@smb_bucket_3_n4
+POSTHOOK: query: load data local inpath '../../data/files/smb_rc3/000000_0' overwrite into table smb_bucket_3_n4
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@smb_bucket_3
+POSTHOOK: Output: default@smb_bucket_3_n4
 Warning: Shuffle Join JOIN[8][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 2' is a cross product
 Warning: Shuffle Join JOIN[18][tables = [$hdt$_1, $hdt$_2]] in Work 'Reducer 6' is a cross product
 Warning: Shuffle Join JOIN[22][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 3' is a cross product
 PREHOOK: query: explain 
-select * from (select a.key from smb_bucket_1 a join smb_bucket_2 b on (a.key = b.key) where a.key = 5) t1 left outer join (select c.key from smb_bucket_2 c join smb_bucket_3 d on (c.key = d.key) where c.key=5) t2 on (t1.key=t2.key) where t2.key=5
+select * from (select a.key from smb_bucket_1_n4 a join smb_bucket_2_n4 b on (a.key = b.key) where a.key = 5) t1 left outer join (select c.key from smb_bucket_2_n4 c join smb_bucket_3_n4 d on (c.key = d.key) where c.key=5) t2 on (t1.key=t2.key) where t2.key=5
 PREHOOK: type: QUERY
 POSTHOOK: query: explain 
-select * from (select a.key from smb_bucket_1 a join smb_bucket_2 b on (a.key = b.key) where a.key = 5) t1 left outer join (select c.key from smb_bucket_2 c join smb_bucket_3 d on (c.key = d.key) where c.key=5) t2 on (t1.key=t2.key) where t2.key=5
+select * from (select a.key from smb_bucket_1_n4 a join smb_bucket_2_n4 b on (a.key = b.key) where a.key = 5) t1 left outer join (select c.key from smb_bucket_2_n4 c join smb_bucket_3_n4 d on (c.key = d.key) where c.key=5) t2 on (t1.key=t2.key) where t2.key=5
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -179,10 +179,10 @@ Warning: Map Join MAPJOIN[29][bigTable=?] in task 'Stage-1:MAPRED' is a cross pr
 Warning: Map Join MAPJOIN[31][bigTable=?] in task 'Stage-1:MAPRED' is a cross product
 Warning: Map Join MAPJOIN[30][bigTable=?] in task 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: explain 
-select * from (select a.key from smb_bucket_1 a join smb_bucket_2 b on (a.key = b.key) where a.key = 5) t1 left outer join (select c.key from smb_bucket_2 c join smb_bucket_3 d on (c.key = d.key) where c.key=5) t2 on (t1.key=t2.key) where t2.key=5
+select * from (select a.key from smb_bucket_1_n4 a join smb_bucket_2_n4 b on (a.key = b.key) where a.key = 5) t1 left outer join (select c.key from smb_bucket_2_n4 c join smb_bucket_3_n4 d on (c.key = d.key) where c.key=5) t2 on (t1.key=t2.key) where t2.key=5
 PREHOOK: type: QUERY
 POSTHOOK: query: explain 
-select * from (select a.key from smb_bucket_1 a join smb_bucket_2 b on (a.key = b.key) where a.key = 5) t1 left outer join (select c.key from smb_bucket_2 c join smb_bucket_3 d on (c.key = d.key) where c.key=5) t2 on (t1.key=t2.key) where t2.key=5
+select * from (select a.key from smb_bucket_1_n4 a join smb_bucket_2_n4 b on (a.key = b.key) where a.key = 5) t1 left outer join (select c.key from smb_bucket_2_n4 c join smb_bucket_3_n4 d on (c.key = d.key) where c.key=5) t2 on (t1.key=t2.key) where t2.key=5
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
@@ -317,15 +317,15 @@ STAGE PLANS:
 Warning: Map Join MAPJOIN[29][bigTable=?] in task 'Stage-1:MAPRED' is a cross product
 Warning: Map Join MAPJOIN[31][bigTable=?] in task 'Stage-1:MAPRED' is a cross product
 Warning: Map Join MAPJOIN[30][bigTable=?] in task 'Stage-2:MAPRED' is a cross product
-PREHOOK: query: select * from (select a.key from smb_bucket_1 a join smb_bucket_2 b on (a.key = b.key) where a.key = 5) t1 left outer join (select c.key from smb_bucket_2 c join smb_bucket_3 d on (c.key = d.key) where c.key=5) t2 on (t1.key=t2.key) where t2.key=5
+PREHOOK: query: select * from (select a.key from smb_bucket_1_n4 a join smb_bucket_2_n4 b on (a.key = b.key) where a.key = 5) t1 left outer join (select c.key from smb_bucket_2_n4 c join smb_bucket_3_n4 d on (c.key = d.key) where c.key=5) t2 on (t1.key=t2.key) where t2.key=5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_bucket_1
-PREHOOK: Input: default@smb_bucket_2
-PREHOOK: Input: default@smb_bucket_3
+PREHOOK: Input: default@smb_bucket_1_n4
+PREHOOK: Input: default@smb_bucket_2_n4
+PREHOOK: Input: default@smb_bucket_3_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select * from (select a.key from smb_bucket_1 a join smb_bucket_2 b on (a.key = b.key) where a.key = 5) t1 left outer join (select c.key from smb_bucket_2 c join smb_bucket_3 d on (c.key = d.key) where c.key=5) t2 on (t1.key=t2.key) where t2.key=5
+POSTHOOK: query: select * from (select a.key from smb_bucket_1_n4 a join smb_bucket_2_n4 b on (a.key = b.key) where a.key = 5) t1 left outer join (select c.key from smb_bucket_2_n4 c join smb_bucket_3_n4 d on (c.key = d.key) where c.key=5) t2 on (t1.key=t2.key) where t2.key=5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_bucket_1
-POSTHOOK: Input: default@smb_bucket_2
-POSTHOOK: Input: default@smb_bucket_3
+POSTHOOK: Input: default@smb_bucket_1_n4
+POSTHOOK: Input: default@smb_bucket_2_n4
+POSTHOOK: Input: default@smb_bucket_3_n4
 #### A masked pattern was here ####

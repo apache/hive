@@ -1,71 +1,71 @@
-PREHOOK: query: drop table t1
+PREHOOK: query: drop table t1_n28
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table t1
+POSTHOOK: query: drop table t1_n28
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: drop table t2
+PREHOOK: query: drop table t2_n19
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table t2
+POSTHOOK: query: drop table t2_n19
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table t1 as select * from src where key < 10
+PREHOOK: query: create table t1_n28 as select * from src where key < 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t1
-POSTHOOK: query: create table t1 as select * from src where key < 10
+PREHOOK: Output: default@t1_n28
+POSTHOOK: query: create table t1_n28 as select * from src where key < 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t1
-POSTHOOK: Lineage: t1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: create table t2 as select * from src where key < 10
+POSTHOOK: Output: default@t1_n28
+POSTHOOK: Lineage: t1_n28.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1_n28.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create table t2_n19 as select * from src where key < 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t2
-POSTHOOK: query: create table t2 as select * from src where key < 10
+PREHOOK: Output: default@t2_n19
+POSTHOOK: query: create table t2_n19 as select * from src where key < 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t2
-POSTHOOK: Lineage: t2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: t2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: create table t3(key string, cnt int)
+POSTHOOK: Output: default@t2_n19
+POSTHOOK: Lineage: t2_n19.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t2_n19.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create table t3_n6(key string, cnt int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t3
-POSTHOOK: query: create table t3(key string, cnt int)
+PREHOOK: Output: default@t3_n6
+POSTHOOK: query: create table t3_n6(key string, cnt int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t3
-PREHOOK: query: create table t4(value string, cnt int)
+POSTHOOK: Output: default@t3_n6
+PREHOOK: query: create table t4_n2(value string, cnt int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t4
-POSTHOOK: query: create table t4(value string, cnt int)
+PREHOOK: Output: default@t4_n2
+POSTHOOK: query: create table t4_n2(value string, cnt int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t4
+POSTHOOK: Output: default@t4_n2
 PREHOOK: query: explain
 from
-(select * from t1
+(select * from t1_n28
  union all
- select * from t2
+ select * from t2_n19
 ) x
-insert overwrite table t3
+insert overwrite table t3_n6
   select key, count(1) group by key
-insert overwrite table t4
+insert overwrite table t4_n2
   select value, count(1) group by value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 from
-(select * from t1
+(select * from t1_n28
  union all
- select * from t2
+ select * from t2_n19
 ) x
-insert overwrite table t3
+insert overwrite table t3_n6
   select key, count(1) group by key
-insert overwrite table t4
+insert overwrite table t4_n2
   select value, count(1) group by value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -86,7 +86,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n28
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string)
@@ -112,7 +112,7 @@ STAGE PLANS:
         Map 6 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n28
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string)
@@ -138,7 +138,7 @@ STAGE PLANS:
         Map 7 
             Map Operator Tree:
                 TableScan
-                  alias: t2
+                  alias: t2_n19
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string)
@@ -164,7 +164,7 @@ STAGE PLANS:
         Map 8 
             Map Operator Tree:
                 TableScan
-                  alias: t2
+                  alias: t2_n19
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string)
@@ -207,7 +207,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.t3
+                        name: default.t3_n6
         Reducer 3 
             Execution mode: vectorized
             Reduce Operator Tree:
@@ -228,7 +228,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.t4
+                        name: default.t4_n2
 
   Stage: Stage-0
     Move Operator
@@ -238,7 +238,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.t3
+              name: default.t3_n6
 
   Stage: Stage-3
     Stats Work
@@ -252,51 +252,51 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.t4
+              name: default.t4_n2
 
   Stage: Stage-4
     Stats Work
       Basic Stats Work:
 
 PREHOOK: query: from
-(select * from t1
+(select * from t1_n28
  union all
- select * from t2
+ select * from t2_n19
 ) x
-insert overwrite table t3
+insert overwrite table t3_n6
   select key, count(1) group by key
-insert overwrite table t4
+insert overwrite table t4_n2
   select value, count(1) group by value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
-PREHOOK: Output: default@t3
-PREHOOK: Output: default@t4
+PREHOOK: Input: default@t1_n28
+PREHOOK: Input: default@t2_n19
+PREHOOK: Output: default@t3_n6
+PREHOOK: Output: default@t4_n2
 POSTHOOK: query: from
-(select * from t1
+(select * from t1_n28
  union all
- select * from t2
+ select * from t2_n19
 ) x
-insert overwrite table t3
+insert overwrite table t3_n6
   select key, count(1) group by key
-insert overwrite table t4
+insert overwrite table t4_n2
   select value, count(1) group by value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
-POSTHOOK: Output: default@t3
-POSTHOOK: Output: default@t4
-POSTHOOK: Lineage: t3.cnt EXPRESSION [(t1)t1.null, (t2)t2.null, ]
-POSTHOOK: Lineage: t3.key EXPRESSION [(t1)t1.FieldSchema(name:key, type:string, comment:null), (t2)t2.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t4.cnt EXPRESSION [(t1)t1.null, (t2)t2.null, ]
-POSTHOOK: Lineage: t4.value EXPRESSION [(t1)t1.FieldSchema(name:value, type:string, comment:null), (t2)t2.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: select * from t3
+POSTHOOK: Input: default@t1_n28
+POSTHOOK: Input: default@t2_n19
+POSTHOOK: Output: default@t3_n6
+POSTHOOK: Output: default@t4_n2
+POSTHOOK: Lineage: t3_n6.cnt EXPRESSION [(t1_n28)t1_n28.null, (t2_n19)t2_n19.null, ]
+POSTHOOK: Lineage: t3_n6.key EXPRESSION [(t1_n28)t1_n28.FieldSchema(name:key, type:string, comment:null), (t2_n19)t2_n19.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t4_n2.cnt EXPRESSION [(t1_n28)t1_n28.null, (t2_n19)t2_n19.null, ]
+POSTHOOK: Lineage: t4_n2.value EXPRESSION [(t1_n28)t1_n28.FieldSchema(name:value, type:string, comment:null), (t2_n19)t2_n19.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select * from t3_n6
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t3
+PREHOOK: Input: default@t3_n6
 #### A masked pattern was here ####
-POSTHOOK: query: select * from t3
+POSTHOOK: query: select * from t3_n6
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t3
+POSTHOOK: Input: default@t3_n6
 #### A masked pattern was here ####
 0	6
 2	2
@@ -304,13 +304,13 @@ POSTHOOK: Input: default@t3
 5	6
 8	2
 9	2
-PREHOOK: query: select * from t4
+PREHOOK: query: select * from t4_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t4
+PREHOOK: Input: default@t4_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select * from t4
+POSTHOOK: query: select * from t4_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t4
+POSTHOOK: Input: default@t4_n2
 #### A masked pattern was here ####
 val_0	6
 val_2	2
@@ -318,44 +318,44 @@ val_4	2
 val_5	6
 val_8	2
 val_9	2
-PREHOOK: query: create table t5(c1 string, cnt int)
+PREHOOK: query: create table t5_n0(c1 string, cnt int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t5
-POSTHOOK: query: create table t5(c1 string, cnt int)
+PREHOOK: Output: default@t5_n0
+POSTHOOK: query: create table t5_n0(c1 string, cnt int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t5
-PREHOOK: query: create table t6(c1 string, cnt int)
+POSTHOOK: Output: default@t5_n0
+PREHOOK: query: create table t6_n0(c1 string, cnt int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t6
-POSTHOOK: query: create table t6(c1 string, cnt int)
+PREHOOK: Output: default@t6_n0
+POSTHOOK: query: create table t6_n0(c1 string, cnt int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t6
+POSTHOOK: Output: default@t6_n0
 PREHOOK: query: explain
 from
 (
- select key as c1, count(1) as cnt from t1 group by key
+ select key as c1, count(1) as cnt from t1_n28 group by key
    union all
- select key as c1, count(1) as cnt from t2 group by key
+ select key as c1, count(1) as cnt from t2_n19 group by key
 ) x
-insert overwrite table t5
+insert overwrite table t5_n0
   select c1, sum(cnt) group by c1
-insert overwrite table t6
+insert overwrite table t6_n0
   select c1, sum(cnt) group by c1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 from
 (
- select key as c1, count(1) as cnt from t1 group by key
+ select key as c1, count(1) as cnt from t1_n28 group by key
    union all
- select key as c1, count(1) as cnt from t2 group by key
+ select key as c1, count(1) as cnt from t2_n19 group by key
 ) x
-insert overwrite table t5
+insert overwrite table t5_n0
   select c1, sum(cnt) group by c1
-insert overwrite table t6
+insert overwrite table t6_n0
   select c1, sum(cnt) group by c1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -377,7 +377,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n28
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string)
@@ -399,7 +399,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: t2
+                  alias: t2_n19
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string)
@@ -454,7 +454,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.t5
+                          name: default.t5_n0
                 Group By Operator
                   aggregations: sum(VALUE._col0)
                   keys: KEY._col0 (type: string)
@@ -472,7 +472,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.t6
+                          name: default.t6_n0
         Reducer 5 
             Execution mode: vectorized
             Reduce Operator Tree:
@@ -497,7 +497,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.t5
+              name: default.t5_n0
 
   Stage: Stage-3
     Stats Work
@@ -511,7 +511,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.t6
+              name: default.t6_n0
 
   Stage: Stage-4
     Stats Work
@@ -519,45 +519,45 @@ STAGE PLANS:
 
 PREHOOK: query: from
 (
- select key as c1, count(1) as cnt from t1 group by key
+ select key as c1, count(1) as cnt from t1_n28 group by key
    union all
- select key as c1, count(1) as cnt from t2 group by key
+ select key as c1, count(1) as cnt from t2_n19 group by key
 ) x
-insert overwrite table t5
+insert overwrite table t5_n0
   select c1, sum(cnt) group by c1
-insert overwrite table t6
+insert overwrite table t6_n0
   select c1, sum(cnt) group by c1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
-PREHOOK: Output: default@t5
-PREHOOK: Output: default@t6
+PREHOOK: Input: default@t1_n28
+PREHOOK: Input: default@t2_n19
+PREHOOK: Output: default@t5_n0
+PREHOOK: Output: default@t6_n0
 POSTHOOK: query: from
 (
- select key as c1, count(1) as cnt from t1 group by key
+ select key as c1, count(1) as cnt from t1_n28 group by key
    union all
- select key as c1, count(1) as cnt from t2 group by key
+ select key as c1, count(1) as cnt from t2_n19 group by key
 ) x
-insert overwrite table t5
+insert overwrite table t5_n0
   select c1, sum(cnt) group by c1
-insert overwrite table t6
+insert overwrite table t6_n0
   select c1, sum(cnt) group by c1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
-POSTHOOK: Output: default@t5
-POSTHOOK: Output: default@t6
-POSTHOOK: Lineage: t5.c1 EXPRESSION [(t1)t1.FieldSchema(name:key, type:string, comment:null), (t2)t2.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t5.cnt EXPRESSION [(t1)t1.null, (t2)t2.null, ]
-POSTHOOK: Lineage: t6.c1 EXPRESSION [(t1)t1.FieldSchema(name:key, type:string, comment:null), (t2)t2.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t6.cnt EXPRESSION [(t1)t1.null, (t2)t2.null, ]
-PREHOOK: query: select * from t5
+POSTHOOK: Input: default@t1_n28
+POSTHOOK: Input: default@t2_n19
+POSTHOOK: Output: default@t5_n0
+POSTHOOK: Output: default@t6_n0
+POSTHOOK: Lineage: t5_n0.c1 EXPRESSION [(t1_n28)t1_n28.FieldSchema(name:key, type:string, comment:null), (t2_n19)t2_n19.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t5_n0.cnt EXPRESSION [(t1_n28)t1_n28.null, (t2_n19)t2_n19.null, ]
+POSTHOOK: Lineage: t6_n0.c1 EXPRESSION [(t1_n28)t1_n28.FieldSchema(name:key, type:string, comment:null), (t2_n19)t2_n19.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t6_n0.cnt EXPRESSION [(t1_n28)t1_n28.null, (t2_n19)t2_n19.null, ]
+PREHOOK: query: select * from t5_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t5
+PREHOOK: Input: default@t5_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from t5
+POSTHOOK: query: select * from t5_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t5
+POSTHOOK: Input: default@t5_n0
 #### A masked pattern was here ####
 0	6
 2	2
@@ -565,13 +565,13 @@ POSTHOOK: Input: default@t5
 5	6
 8	2
 9	2
-PREHOOK: query: select * from t6
+PREHOOK: query: select * from t6_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t6
+PREHOOK: Input: default@t6_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from t6
+POSTHOOK: query: select * from t6_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t6
+POSTHOOK: Input: default@t6_n0
 #### A masked pattern was here ####
 0	6
 2	2
@@ -579,84 +579,84 @@ POSTHOOK: Input: default@t6
 5	6
 8	2
 9	2
-PREHOOK: query: drop table t1
+PREHOOK: query: drop table t1_n28
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@t1
-POSTHOOK: query: drop table t1
+PREHOOK: Input: default@t1_n28
+PREHOOK: Output: default@t1_n28
+POSTHOOK: query: drop table t1_n28
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@t1
-PREHOOK: query: drop table t2
+POSTHOOK: Input: default@t1_n28
+POSTHOOK: Output: default@t1_n28
+PREHOOK: query: drop table t2_n19
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@t2
-PREHOOK: Output: default@t2
-POSTHOOK: query: drop table t2
+PREHOOK: Input: default@t2_n19
+PREHOOK: Output: default@t2_n19
+POSTHOOK: query: drop table t2_n19
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@t2
-POSTHOOK: Output: default@t2
-PREHOOK: query: create table t1 as select * from src where key < 10
+POSTHOOK: Input: default@t2_n19
+POSTHOOK: Output: default@t2_n19
+PREHOOK: query: create table t1_n28 as select * from src where key < 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t1
-POSTHOOK: query: create table t1 as select * from src where key < 10
+PREHOOK: Output: default@t1_n28
+POSTHOOK: query: create table t1_n28 as select * from src where key < 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t1
-POSTHOOK: Lineage: t1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: create table t2 as select key, count(1) as cnt from src where key < 10 group by key
+POSTHOOK: Output: default@t1_n28
+POSTHOOK: Lineage: t1_n28.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1_n28.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create table t2_n19 as select key, count(1) as cnt from src where key < 10 group by key
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t2
-POSTHOOK: query: create table t2 as select key, count(1) as cnt from src where key < 10 group by key
+PREHOOK: Output: default@t2_n19
+POSTHOOK: query: create table t2_n19 as select key, count(1) as cnt from src where key < 10 group by key
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t2
-POSTHOOK: Lineage: t2.cnt EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: t2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: create table t7(c1 string, cnt int)
+POSTHOOK: Output: default@t2_n19
+POSTHOOK: Lineage: t2_n19.cnt EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: t2_n19.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: create table t7_n1(c1 string, cnt int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t7
-POSTHOOK: query: create table t7(c1 string, cnt int)
+PREHOOK: Output: default@t7_n1
+POSTHOOK: query: create table t7_n1(c1 string, cnt int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t7
-PREHOOK: query: create table t8(c1 string, cnt int)
+POSTHOOK: Output: default@t7_n1
+PREHOOK: query: create table t8_n0(c1 string, cnt int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t8
-POSTHOOK: query: create table t8(c1 string, cnt int)
+PREHOOK: Output: default@t8_n0
+POSTHOOK: query: create table t8_n0(c1 string, cnt int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t8
+POSTHOOK: Output: default@t8_n0
 PREHOOK: query: explain
 from
 (
- select key as c1, count(1) as cnt from t1 group by key
+ select key as c1, count(1) as cnt from t1_n28 group by key
    union all
- select key as c1, cnt from t2
+ select key as c1, cnt from t2_n19
 ) x
-insert overwrite table t7
+insert overwrite table t7_n1
   select c1, count(1) group by c1
-insert overwrite table t8
+insert overwrite table t8_n0
   select c1, count(1) group by c1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 from
 (
- select key as c1, count(1) as cnt from t1 group by key
+ select key as c1, count(1) as cnt from t1_n28 group by key
    union all
- select key as c1, cnt from t2
+ select key as c1, cnt from t2_n19
 ) x
-insert overwrite table t7
+insert overwrite table t7_n1
   select c1, count(1) group by c1
-insert overwrite table t8
+insert overwrite table t8_n0
   select c1, count(1) group by c1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -677,7 +677,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n28
                   Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string)
@@ -699,7 +699,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: t2
+                  alias: t2_n19
                   Statistics: Num rows: 6 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string)
@@ -758,7 +758,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.t7
+                          name: default.t7_n1
                 Group By Operator
                   aggregations: count(1)
                   keys: KEY._col0 (type: string)
@@ -776,7 +776,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.t8
+                          name: default.t8_n0
 
   Stage: Stage-0
     Move Operator
@@ -786,7 +786,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.t7
+              name: default.t7_n1
 
   Stage: Stage-3
     Stats Work
@@ -800,7 +800,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.t8
+              name: default.t8_n0
 
   Stage: Stage-4
     Stats Work
@@ -808,45 +808,45 @@ STAGE PLANS:
 
 PREHOOK: query: from
 (
- select key as c1, count(1) as cnt from t1 group by key
+ select key as c1, count(1) as cnt from t1_n28 group by key
    union all
- select key as c1, cnt from t2
+ select key as c1, cnt from t2_n19
 ) x
-insert overwrite table t7
+insert overwrite table t7_n1
   select c1, count(1) group by c1
-insert overwrite table t8
+insert overwrite table t8_n0
   select c1, count(1) group by c1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
-PREHOOK: Output: default@t7
-PREHOOK: Output: default@t8
+PREHOOK: Input: default@t1_n28
+PREHOOK: Input: default@t2_n19
+PREHOOK: Output: default@t7_n1
+PREHOOK: Output: default@t8_n0
 POSTHOOK: query: from
 (
- select key as c1, count(1) as cnt from t1 group by key
+ select key as c1, count(1) as cnt from t1_n28 group by key
    union all
- select key as c1, cnt from t2
+ select key as c1, cnt from t2_n19
 ) x
-insert overwrite table t7
+insert overwrite table t7_n1
   select c1, count(1) group by c1
-insert overwrite table t8
+insert overwrite table t8_n0
   select c1, count(1) group by c1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
-POSTHOOK: Output: default@t7
-POSTHOOK: Output: default@t8
-POSTHOOK: Lineage: t7.c1 EXPRESSION [(t1)t1.FieldSchema(name:key, type:string, comment:null), (t2)t2.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t7.cnt EXPRESSION [(t1)t1.null, (t2)t2.null, ]
-POSTHOOK: Lineage: t8.c1 EXPRESSION [(t1)t1.FieldSchema(name:key, type:string, comment:null), (t2)t2.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t8.cnt EXPRESSION [(t1)t1.null, (t2)t2.null, ]
-PREHOOK: query: select * from t7
+POSTHOOK: Input: default@t1_n28
+POSTHOOK: Input: default@t2_n19
+POSTHOOK: Output: default@t7_n1
+POSTHOOK: Output: default@t8_n0
+POSTHOOK: Lineage: t7_n1.c1 EXPRESSION [(t1_n28)t1_n28.FieldSchema(name:key, type:string, comment:null), (t2_n19)t2_n19.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t7_n1.cnt EXPRESSION [(t1_n28)t1_n28.null, (t2_n19)t2_n19.null, ]
+POSTHOOK: Lineage: t8_n0.c1 EXPRESSION [(t1_n28)t1_n28.FieldSchema(name:key, type:string, comment:null), (t2_n19)t2_n19.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t8_n0.cnt EXPRESSION [(t1_n28)t1_n28.null, (t2_n19)t2_n19.null, ]
+PREHOOK: query: select * from t7_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t7
+PREHOOK: Input: default@t7_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from t7
+POSTHOOK: query: select * from t7_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t7
+POSTHOOK: Input: default@t7_n1
 #### A masked pattern was here ####
 0	2
 2	2
@@ -854,13 +854,13 @@ POSTHOOK: Input: default@t7
 5	2
 8	2
 9	2
-PREHOOK: query: select * from t8
+PREHOOK: query: select * from t8_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t8
+PREHOOK: Input: default@t8_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from t8
+POSTHOOK: query: select * from t8_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t8
+POSTHOOK: Input: default@t8_n0
 #### A masked pattern was here ####
 0	2
 2	2

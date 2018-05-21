@@ -76,49 +76,49 @@ select
 from alltypesorc;
 
 -- add test for VectorUDFAdaptor call IfExprConditionalFilter
-CREATE TABLE test_1 (member DECIMAL , attr DECIMAL) STORED AS ORC;
+CREATE TABLE test_1_n3 (member DECIMAL , attr DECIMAL) STORED AS ORC;
 
-INSERT INTO test_1 VALUES (3.0,1.0),(2.0,2.0),(1.0,3.0);
+INSERT INTO test_1_n3 VALUES (3.0,1.0),(2.0,2.0),(1.0,3.0);
 --for length=3
 EXPLAIN VECTORIZATION DETAIL
-SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE attr+2.0 END FROM test_1;
+SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE attr+2.0 END FROM test_1_n3;
 
-SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE attr+2.0 END FROM test_1;
+SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE attr+2.0 END FROM test_1_n3;
 
 --for length=2 and the expr2 is null
 EXPLAIN VECTORIZATION DETAIL
-SELECT CASE WHEN member =1.0 THEN 1.0 ELSE attr+2.0 END FROM test_1;
+SELECT CASE WHEN member =1.0 THEN 1.0 ELSE attr+2.0 END FROM test_1_n3;
 
-SELECT CASE WHEN member =1.0 THEN 1.0 ELSE attr+2.0 END FROM test_1;
+SELECT CASE WHEN member =1.0 THEN 1.0 ELSE attr+2.0 END FROM test_1_n3;
 
 --for length=2 and the expr3 is null
 EXPLAIN VECTORIZATION DETAIL
-SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE 2.0 END FROM test_1;
+SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE 2.0 END FROM test_1_n3;
 
-SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE 2.0 END FROM test_1;
+SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE 2.0 END FROM test_1_n3;
 
 -- add test for IF**.java call IfExprConditionalFilter
-CREATE TABLE test_2 (member BIGINT, attr BIGINT) STORED AS ORC;
+CREATE TABLE test_2_n3 (member BIGINT, attr BIGINT) STORED AS ORC;
 
-INSERT INTO test_2 VALUES (3,1),(2,2),(1,3);
+INSERT INTO test_2_n3 VALUES (3,1),(2,2),(1,3);
 
 --for length=3
 EXPLAIN VECTORIZATION DETAIL
-SELECT CASE WHEN member=1 THEN attr+1 else attr+2 END FROM test_2;
+SELECT CASE WHEN member=1 THEN attr+1 else attr+2 END FROM test_2_n3;
 
-SELECT CASE WHEN member=1 THEN attr+1 else attr+2 END FROM test_2;
+SELECT CASE WHEN member=1 THEN attr+1 else attr+2 END FROM test_2_n3;
 
 --for length=2 and the detail2 is null
 EXPLAIN VECTORIZATION DETAIL
-SELECT CASE WHEN member=1 THEN null else attr+2 END FROM test_2;
+SELECT CASE WHEN member=1 THEN null else attr+2 END FROM test_2_n3;
 
-SELECT CASE WHEN member=1 THEN null else attr+2 END FROM test_2;
+SELECT CASE WHEN member=1 THEN null else attr+2 END FROM test_2_n3;
 
 --for length=2 and the detail3 is null
 EXPLAIN VECTORIZATION DETAIL
-SELECT CASE WHEN member=1 THEN attr+1 else null END FROM test_2;
+SELECT CASE WHEN member=1 THEN attr+1 else null END FROM test_2_n3;
 
-SELECT CASE WHEN member=1 THEN attr+1 else null END FROM test_2;
+SELECT CASE WHEN member=1 THEN attr+1 else null END FROM test_2_n3;
 
 
 select count(*), sum(a.ceven)

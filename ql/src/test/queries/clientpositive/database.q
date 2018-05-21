@@ -49,33 +49,33 @@ USE test_db;
 SHOW DATABASES;
 
 -- CREATE table in non-default DB
-CREATE TABLE test_table (col1 STRING) STORED AS TEXTFILE;
+CREATE TABLE test_table_n2 (col1 STRING) STORED AS TEXTFILE;
 SHOW TABLES;
 
 -- DESCRIBE table in non-default DB
-DESCRIBE test_table;
+DESCRIBE test_table_n2;
 
 -- DESCRIBE EXTENDED in non-default DB
-DESCRIBE EXTENDED test_table;
+DESCRIBE EXTENDED test_table_n2;
 
 -- CREATE LIKE in non-default DB
-CREATE TABLE test_table_like LIKE test_table;
+CREATE TABLE test_table_like LIKE test_table_n2;
 SHOW TABLES;
 DESCRIBE EXTENDED test_table_like;
 
 -- LOAD and SELECT
 LOAD DATA LOCAL INPATH '../../data/files/test.dat'
-OVERWRITE INTO TABLE test_table;
-SELECT * FROM test_table;
+OVERWRITE INTO TABLE test_table_n2;
+SELECT * FROM test_table_n2;
 
 -- DROP and CREATE w/o LOAD
-DROP TABLE test_table;
+DROP TABLE test_table_n2;
 SHOW TABLES;
 
-CREATE TABLE test_table (col1 STRING) STORED AS TEXTFILE;
+CREATE TABLE test_table_n2 (col1 STRING) STORED AS TEXTFILE;
 SHOW TABLES;
 
-SELECT * FROM test_table;
+SELECT * FROM test_table_n2;
 
 -- CREATE table that already exists in DEFAULT
 USE test_db;
@@ -91,7 +91,7 @@ SELECT * FROM src LIMIT 10;
 USE test_db;
 
 DROP TABLE src;
-DROP TABLE test_table;
+DROP TABLE test_table_n2;
 DROP TABLE test_table_like;
 SHOW TABLES;
 

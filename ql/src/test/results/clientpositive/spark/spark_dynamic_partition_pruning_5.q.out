@@ -1,39 +1,39 @@
-PREHOOK: query: create table part1(key string, value string) partitioned by (p string)
+PREHOOK: query: create table part1_n0(key string, value string) partitioned by (p string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@part1
-POSTHOOK: query: create table part1(key string, value string) partitioned by (p string)
+PREHOOK: Output: default@part1_n0
+POSTHOOK: query: create table part1_n0(key string, value string) partitioned by (p string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@part1
-PREHOOK: query: insert into table part1 partition (p='1') select * from src
+POSTHOOK: Output: default@part1_n0
+PREHOOK: query: insert into table part1_n0 partition (p='1') select * from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@part1@p=1
-POSTHOOK: query: insert into table part1 partition (p='1') select * from src
+PREHOOK: Output: default@part1_n0@p=1
+POSTHOOK: query: insert into table part1_n0 partition (p='1') select * from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@part1@p=1
-POSTHOOK: Lineage: part1 PARTITION(p=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: part1 PARTITION(p=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: create table part2(key string, value string) partitioned by (p string)
+POSTHOOK: Output: default@part1_n0@p=1
+POSTHOOK: Lineage: part1_n0 PARTITION(p=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: part1_n0 PARTITION(p=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create table part2_n3(key string, value string) partitioned by (p string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@part2
-POSTHOOK: query: create table part2(key string, value string) partitioned by (p string)
+PREHOOK: Output: default@part2_n3
+POSTHOOK: query: create table part2_n3(key string, value string) partitioned by (p string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@part2
-PREHOOK: query: insert into table part2 partition (p='1') select * from src
+POSTHOOK: Output: default@part2_n3
+PREHOOK: query: insert into table part2_n3 partition (p='1') select * from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@part2@p=1
-POSTHOOK: query: insert into table part2 partition (p='1') select * from src
+PREHOOK: Output: default@part2_n3@p=1
+POSTHOOK: query: insert into table part2_n3 partition (p='1') select * from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@part2@p=1
-POSTHOOK: Lineage: part2 PARTITION(p=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: part2 PARTITION(p=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@part2_n3@p=1
+POSTHOOK: Lineage: part2_n3 PARTITION(p=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: part2_n3 PARTITION(p=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: create table regular1 as select * from src limit 2
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
@@ -46,9 +46,9 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@regular1
 POSTHOOK: Lineage: regular1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: regular1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: explain select * from src join part1 on src.key=part1.p join part2 on src.value=part2.p
+PREHOOK: query: explain select * from src join part1_n0 on src.key=part1_n0.p join part2_n3 on src.value=part2_n3.p
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from src join part1 on src.key=part1.p join part2 on src.value=part2.p
+POSTHOOK: query: explain select * from src join part1_n0 on src.key=part1_n0.p join part2_n3 on src.value=part2_n3.p
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -95,7 +95,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: part1
+                  alias: part1_n0
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string), p (type: string)
@@ -128,7 +128,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: part2
+                  alias: part2_n3
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string), p (type: string)
@@ -184,9 +184,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select * from regular1 join part1 on regular1.key=part1.p join part2 on regular1.value=part2.p
+PREHOOK: query: explain select * from regular1 join part1_n0 on regular1.key=part1_n0.p join part2_n3 on regular1.value=part2_n3.p
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from regular1 join part1 on regular1.key=part1.p join part2 on regular1.value=part2.p
+POSTHOOK: query: explain select * from regular1 join part1_n0 on regular1.key=part1_n0.p join part2_n3 on regular1.value=part2_n3.p
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -238,7 +238,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: part1
+                  alias: part1_n0
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string), p (type: string)
@@ -265,7 +265,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: part2
+                  alias: part2_n3
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string), p (type: string)
@@ -305,22 +305,22 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: drop table part1
+PREHOOK: query: drop table part1_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@part1
-PREHOOK: Output: default@part1
-POSTHOOK: query: drop table part1
+PREHOOK: Input: default@part1_n0
+PREHOOK: Output: default@part1_n0
+POSTHOOK: query: drop table part1_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@part1
-POSTHOOK: Output: default@part1
-PREHOOK: query: drop table part2
+POSTHOOK: Input: default@part1_n0
+POSTHOOK: Output: default@part1_n0
+PREHOOK: query: drop table part2_n3
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@part2
-PREHOOK: Output: default@part2
-POSTHOOK: query: drop table part2
+PREHOOK: Input: default@part2_n3
+PREHOOK: Output: default@part2_n3
+POSTHOOK: query: drop table part2_n3
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@part2
-POSTHOOK: Output: default@part2
+POSTHOOK: Input: default@part2_n3
+POSTHOOK: Output: default@part2_n3
 PREHOOK: query: drop table regular1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@regular1

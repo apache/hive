@@ -4,12 +4,12 @@ set hive.mapred.mode=nonstrict;
 
 drop view v;
 
-create table t1_new (key string, value string) partitioned by (ds string);
+create table t1_new_n0 (key string, value string) partitioned by (ds string);
 
-insert overwrite table t1_new partition (ds = '2011-10-15')
+insert overwrite table t1_new_n0 partition (ds = '2011-10-15')
 select 'key1', 'value1' from src tablesample (1 rows);
 
-insert overwrite table t1_new partition (ds = '2011-10-16')
+insert overwrite table t1_new_n0 partition (ds = '2011-10-16')
 select 'key2', 'value2' from src tablesample (1 rows);
 
 create table t1_old (keymap string, value string) partitioned by (ds string);
@@ -29,10 +29,10 @@ insert overwrite table t1_mapping partition (ds = '2011-10-14')
 select 'key4', 'keymap4' from src tablesample (1 rows);
 
 
-create view t1 partitioned on (ds) as
+create view t1_n113 partitioned on (ds) as
 select * from
 (
-select key, value, ds from t1_new
+select key, value, ds from t1_new_n0
 union all
 select key, value, t1_old.ds from t1_old join t1_mapping
 on t1_old.keymap = t1_mapping.keymap and
@@ -40,14 +40,14 @@ on t1_old.keymap = t1_mapping.keymap and
 ) subq;
 
 explain extended
-select * from t1 where ds = '2011-10-13';
+select * from t1_n113 where ds = '2011-10-13';
 
-select * from t1 where ds = '2011-10-13';
+select * from t1_n113 where ds = '2011-10-13';
 
-select * from t1 where ds = '2011-10-14';
+select * from t1_n113 where ds = '2011-10-14';
 
 explain extended
-select * from t1 where ds = '2011-10-15';
+select * from t1_n113 where ds = '2011-10-15';
 
-select * from t1 where ds = '2011-10-15';
-select * from t1 where ds = '2011-10-16';
+select * from t1_n113 where ds = '2011-10-15';
+select * from t1_n113 where ds = '2011-10-16';

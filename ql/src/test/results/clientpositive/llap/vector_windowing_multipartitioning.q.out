@@ -1,8 +1,8 @@
-PREHOOK: query: drop table over10k
+PREHOOK: query: drop table over10k_n6
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table over10k
+POSTHOOK: query: drop table over10k_n6
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table over10k(
+PREHOOK: query: create table over10k_n6(
            t tinyint,
            si smallint,
            i int,
@@ -18,8 +18,8 @@ PREHOOK: query: create table over10k(
        fields terminated by '|'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@over10k
-POSTHOOK: query: create table over10k(
+PREHOOK: Output: default@over10k_n6
+POSTHOOK: query: create table over10k_n6(
            t tinyint,
            si smallint,
            i int,
@@ -35,20 +35,20 @@ POSTHOOK: query: create table over10k(
        fields terminated by '|'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@over10k
-PREHOOK: query: load data local inpath '../../data/files/over10k' into table over10k
+POSTHOOK: Output: default@over10k_n6
+PREHOOK: query: load data local inpath '../../data/files/over10k' into table over10k_n6
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@over10k
-POSTHOOK: query: load data local inpath '../../data/files/over10k' into table over10k
+PREHOOK: Output: default@over10k_n6
+POSTHOOK: query: load data local inpath '../../data/files/over10k' into table over10k_n6
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@over10k
+POSTHOOK: Output: default@over10k_n6
 PREHOOK: query: explain vectorization detail
-select s, rank() over (partition by s order by si), sum(b) over (partition by s order by si) from over10k
+select s, rank() over (partition by s order by si), sum(b) over (partition by s order by si) from over10k_n6
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select s, rank() over (partition by s order by si), sum(b) over (partition by s order by si) from over10k
+select s, rank() over (partition by s order by si), sum(b) over (partition by s order by si) from over10k_n6
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -70,7 +70,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over10k
+                  alias: over10k_n6
                   Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -195,13 +195,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select s, rank() over (partition by s order by si), sum(b) over (partition by s order by si) from over10k
+PREHOOK: query: select s, rank() over (partition by s order by si), sum(b) over (partition by s order by si) from over10k_n6
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n6
 #### A masked pattern was here ####
-POSTHOOK: query: select s, rank() over (partition by s order by si), sum(b) over (partition by s order by si) from over10k
+POSTHOOK: query: select s, rank() over (partition by s order by si), sum(b) over (partition by s order by si) from over10k_n6
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n6
 #### A masked pattern was here ####
 s	rank_window_0	sum_window_1
 alice allen	1	4294967503
@@ -10207,14 +10207,14 @@ PREHOOK: query: explain vectorization detail
 select s, 
 rank() over (partition by s order by `dec` desc), 
 sum(b) over (partition by s order by ts desc) 
-from over10k
+from over10k_n6
 where s = 'tom allen' or s = 'bob steinbeck'
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select s, 
 rank() over (partition by s order by `dec` desc), 
 sum(b) over (partition by s order by ts desc) 
-from over10k
+from over10k_n6
 where s = 'tom allen' or s = 'bob steinbeck'
 POSTHOOK: type: QUERY
 Explain
@@ -10238,7 +10238,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over10k
+                  alias: over10k_n6
                   Statistics: Num rows: 1 Data size: 344 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -10445,18 +10445,18 @@ STAGE PLANS:
 PREHOOK: query: select s, 
 rank() over (partition by s order by `dec` desc), 
 sum(b) over (partition by s order by ts desc) 
-from over10k
+from over10k_n6
 where s = 'tom allen' or s = 'bob steinbeck'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n6
 #### A masked pattern was here ####
 POSTHOOK: query: select s, 
 rank() over (partition by s order by `dec` desc), 
 sum(b) over (partition by s order by ts desc) 
-from over10k
+from over10k_n6
 where s = 'tom allen' or s = 'bob steinbeck'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n6
 #### A masked pattern was here ####
 s	_c1	sum_window_1
 bob steinbeck	11	4294967344
@@ -10490,10 +10490,10 @@ tom allen	12	73014446496
 tom allen	13	77309413835
 tom allen	14	81604381169
 PREHOOK: query: explain vectorization detail
-select s, sum(i) over (partition by s), sum(f) over (partition by si) from over10k where s = 'tom allen' or s = 'bob steinbeck'
+select s, sum(i) over (partition by s), sum(f) over (partition by si) from over10k_n6 where s = 'tom allen' or s = 'bob steinbeck'
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select s, sum(i) over (partition by s), sum(f) over (partition by si) from over10k where s = 'tom allen' or s = 'bob steinbeck'
+select s, sum(i) over (partition by s), sum(f) over (partition by si) from over10k_n6 where s = 'tom allen' or s = 'bob steinbeck'
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -10516,7 +10516,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over10k
+                  alias: over10k_n6
                   Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -10715,13 +10715,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select s, sum(i) over (partition by s), sum(f) over (partition by si) from over10k where s = 'tom allen' or s = 'bob steinbeck'
+PREHOOK: query: select s, sum(i) over (partition by s), sum(f) over (partition by si) from over10k_n6 where s = 'tom allen' or s = 'bob steinbeck'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n6
 #### A masked pattern was here ####
-POSTHOOK: query: select s, sum(i) over (partition by s), sum(f) over (partition by si) from over10k where s = 'tom allen' or s = 'bob steinbeck'
+POSTHOOK: query: select s, sum(i) over (partition by s), sum(f) over (partition by si) from over10k_n6 where s = 'tom allen' or s = 'bob steinbeck'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n6
 #### A masked pattern was here ####
 s	_c1	sum_window_1
 tom allen	1248023	47.16999816894531
@@ -10755,11 +10755,11 @@ tom allen	1248023	89.88999938964844
 tom allen	1248023	38.93000030517578
 tom allen	1248023	81.8499984741211
 PREHOOK: query: explain vectorization detail
-select s, rank() over (partition by s order by bo), rank() over (partition by si order by bin desc) from over10k
+select s, rank() over (partition by s order by bo), rank() over (partition by si order by bin desc) from over10k_n6
 where s = 'tom allen' or s = 'bob steinbeck'
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select s, rank() over (partition by s order by bo), rank() over (partition by si order by bin desc) from over10k
+select s, rank() over (partition by s order by bo), rank() over (partition by si order by bin desc) from over10k_n6
 where s = 'tom allen' or s = 'bob steinbeck'
 POSTHOOK: type: QUERY
 Explain
@@ -10783,7 +10783,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over10k
+                  alias: over10k_n6
                   Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -10988,15 +10988,15 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select s, rank() over (partition by s order by bo), rank() over (partition by si order by bin desc) from over10k
+PREHOOK: query: select s, rank() over (partition by s order by bo), rank() over (partition by si order by bin desc) from over10k_n6
 where s = 'tom allen' or s = 'bob steinbeck'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n6
 #### A masked pattern was here ####
-POSTHOOK: query: select s, rank() over (partition by s order by bo), rank() over (partition by si order by bin desc) from over10k
+POSTHOOK: query: select s, rank() over (partition by s order by bo), rank() over (partition by si order by bin desc) from over10k_n6
 where s = 'tom allen' or s = 'bob steinbeck'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n6
 #### A masked pattern was here ####
 s	_c1	rank_window_1
 tom allen	1	1
@@ -11030,10 +11030,10 @@ tom allen	1	1
 bob steinbeck	1	1
 tom allen	7	2
 PREHOOK: query: explain vectorization detail
-select s, sum(f) over (partition by i), row_number() over (order by f) from over10k where s = 'tom allen' or s = 'bob steinbeck'
+select s, sum(f) over (partition by i), row_number() over (order by f) from over10k_n6 where s = 'tom allen' or s = 'bob steinbeck'
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select s, sum(f) over (partition by i), row_number() over (order by f) from over10k where s = 'tom allen' or s = 'bob steinbeck'
+select s, sum(f) over (partition by i), row_number() over (order by f) from over10k_n6 where s = 'tom allen' or s = 'bob steinbeck'
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -11056,7 +11056,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over10k
+                  alias: over10k_n6
                   Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -11258,13 +11258,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select s, sum(f) over (partition by i), row_number() over (order by f) from over10k where s = 'tom allen' or s = 'bob steinbeck'
+PREHOOK: query: select s, sum(f) over (partition by i), row_number() over (order by f) from over10k_n6 where s = 'tom allen' or s = 'bob steinbeck'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n6
 #### A masked pattern was here ####
-POSTHOOK: query: select s, sum(f) over (partition by i), row_number() over (order by f) from over10k where s = 'tom allen' or s = 'bob steinbeck'
+POSTHOOK: query: select s, sum(f) over (partition by i), row_number() over (order by f) from over10k_n6 where s = 'tom allen' or s = 'bob steinbeck'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n6
 #### A masked pattern was here ####
 s	_c1	row_number_window_1
 tom allen	2.8499999046325684	1
@@ -11300,7 +11300,7 @@ tom allen	95.41000366210938	30
 PREHOOK: query: explain vectorization detail
 select s, rank() over w1, 
 rank() over w2 
-from over10k 
+from over10k_n6 
 where s = 'tom allen' or s = 'bob steinbeck'
 window 
 w1 as (partition by s order by `dec`), 
@@ -11309,7 +11309,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select s, rank() over w1, 
 rank() over w2 
-from over10k 
+from over10k_n6 
 where s = 'tom allen' or s = 'bob steinbeck'
 window 
 w1 as (partition by s order by `dec`), 
@@ -11336,7 +11336,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over10k
+                  alias: over10k_n6
                   Statistics: Num rows: 1 Data size: 304 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -11543,23 +11543,23 @@ STAGE PLANS:
 
 PREHOOK: query: select s, rank() over w1, 
 rank() over w2 
-from over10k 
+from over10k_n6 
 where s = 'tom allen' or s = 'bob steinbeck'
 window 
 w1 as (partition by s order by `dec`), 
 w2 as (partition by si order by f)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n6
 #### A masked pattern was here ####
 POSTHOOK: query: select s, rank() over w1, 
 rank() over w2 
-from over10k 
+from over10k_n6 
 where s = 'tom allen' or s = 'bob steinbeck'
 window 
 w1 as (partition by s order by `dec`), 
 w2 as (partition by si order by f)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n6
 #### A masked pattern was here ####
 s	_c1	rank_window_1
 tom allen	14	1

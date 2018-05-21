@@ -5,12 +5,12 @@ set hive.stats.autogather=true;
 set hive.cbo.enable=true;
 set hive.optimize.index.groupby=true;
 
-DROP TABLE IF EXISTS lineitem_ix;
-DROP INDEX IF EXISTS lineitem_ix_L_ORDERKEY_idx on lineitem_ix;
-DROP INDEX IF EXISTS lineitem_ix_L_PARTKEY_idx on lineitem_ix;
+DROP TABLE IF EXISTS lineitem_ix_n0;
+DROP INDEX IF EXISTS lineitem_ix_L_ORDERKEY_idx on lineitem_ix_n0;
+DROP INDEX IF EXISTS lineitem_ix_L_PARTKEY_idx on lineitem_ix_n0;
 
 
-CREATE TABLE lineitem_ix (L_ORDERKEY      INT,
+CREATE TABLE lineitem_ix_n0 (L_ORDERKEY      INT,
                                 L_PARTKEY       INT,
                                 L_SUPPKEY       INT,
                                 L_LINENUMBER    INT,
@@ -29,178 +29,178 @@ CREATE TABLE lineitem_ix (L_ORDERKEY      INT,
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '|';
 
-LOAD DATA LOCAL INPATH '../../data/files/lineitem.txt' OVERWRITE INTO TABLE lineitem_ix;
+LOAD DATA LOCAL INPATH '../../data/files/lineitem.txt' OVERWRITE INTO TABLE lineitem_ix_n0;
 
-CREATE INDEX lineitem_ix_L_ORDERKEY_idx ON TABLE lineitem_ix(L_ORDERKEY) AS 'org.apache.hadoop.hive.ql.index.AggregateIndexHandler' WITH DEFERRED REBUILD IDXPROPERTIES("AGGREGATES"="count(L_ORDERKEY)");
-ALTER INDEX lineitem_ix_L_ORDERKEY_idx ON lineitem_ix REBUILD;
+CREATE INDEX lineitem_ix_L_ORDERKEY_idx ON TABLE lineitem_ix_n0(L_ORDERKEY) AS 'org.apache.hadoop.hive.ql.index.AggregateIndexHandler' WITH DEFERRED REBUILD IDXPROPERTIES("AGGREGATES"="count(L_ORDERKEY)");
+ALTER INDEX lineitem_ix_L_ORDERKEY_idx ON lineitem_ix_n0 REBUILD;
 
-CREATE INDEX lineitem_ix_L_PARTKEY_idx ON TABLE lineitem_ix(L_PARTKEY) AS 'org.apache.hadoop.hive.ql.index.AggregateIndexHandler' WITH DEFERRED REBUILD IDXPROPERTIES("AGGREGATES"="count(L_PARTKEY)");
-ALTER INDEX lineitem_ix_L_PARTKEY_idx ON lineitem_ix REBUILD;
+CREATE INDEX lineitem_ix_L_PARTKEY_idx ON TABLE lineitem_ix_n0(L_PARTKEY) AS 'org.apache.hadoop.hive.ql.index.AggregateIndexHandler' WITH DEFERRED REBUILD IDXPROPERTIES("AGGREGATES"="count(L_PARTKEY)");
+ALTER INDEX lineitem_ix_L_PARTKEY_idx ON lineitem_ix_n0 REBUILD;
 
 explain
 select count(1)
-from lineitem_ix;
+from lineitem_ix_n0;
 
 select count(1)
-from lineitem_ix;
+from lineitem_ix_n0;
 
 explain
 select count(L_ORDERKEY)
-from lineitem_ix;
+from lineitem_ix_n0;
 
 select count(L_ORDERKEY)
-from lineitem_ix;
+from lineitem_ix_n0;
 
 explain select L_ORDERKEY+L_PARTKEY as keysum,
 count(L_ORDERKEY), count(L_PARTKEY)
-from lineitem_ix
+from lineitem_ix_n0
 group by L_ORDERKEY, L_PARTKEY;
 
 select L_ORDERKEY+L_PARTKEY as keysum,
 count(L_ORDERKEY), count(L_PARTKEY)
-from lineitem_ix
+from lineitem_ix_n0
 group by L_ORDERKEY, L_PARTKEY;
 
 explain
 select L_ORDERKEY, count(L_ORDERKEY)
-from  lineitem_ix
+from  lineitem_ix_n0
 where L_ORDERKEY = 7
 group by L_ORDERKEY;
 
 select L_ORDERKEY, count(L_ORDERKEY)
-from  lineitem_ix
+from  lineitem_ix_n0
 where L_ORDERKEY = 7
 group by L_ORDERKEY;
 
 explain
 select L_ORDERKEY, count(1)
-from lineitem_ix
+from lineitem_ix_n0
 group by L_ORDERKEY;
 
 select L_ORDERKEY, count(1)
-from lineitem_ix
+from lineitem_ix_n0
 group by L_ORDERKEY;
 
 explain
 select count(L_ORDERKEY+1)
-from lineitem_ix;
+from lineitem_ix_n0;
 
 select count(L_ORDERKEY+1)
-from lineitem_ix;
+from lineitem_ix_n0;
 
 explain
 select L_ORDERKEY, count(L_ORDERKEY+1)
-from lineitem_ix
+from lineitem_ix_n0
 group by L_ORDERKEY;
 
 select L_ORDERKEY, count(L_ORDERKEY+1)
-from lineitem_ix
+from lineitem_ix_n0
 group by L_ORDERKEY;
 
 explain
 select L_ORDERKEY, count(L_ORDERKEY+1+L_ORDERKEY+2)
-from lineitem_ix
+from lineitem_ix_n0
 group by L_ORDERKEY;
 
 select L_ORDERKEY, count(L_ORDERKEY+1+L_ORDERKEY+2)
-from lineitem_ix
+from lineitem_ix_n0
 group by L_ORDERKEY;
 
 explain
 select L_ORDERKEY, count(1+L_ORDERKEY+2)
-from lineitem_ix
+from lineitem_ix_n0
 group by L_ORDERKEY;
 
 select L_ORDERKEY, count(1+L_ORDERKEY+2)
-from lineitem_ix
+from lineitem_ix_n0
 group by L_ORDERKEY;
 
 
 explain
 select L_ORDERKEY as a, count(1) as b
-from lineitem_ix
+from lineitem_ix_n0
 where L_ORDERKEY < 7
 group by L_ORDERKEY;
 
 select L_ORDERKEY as a, count(1) as b
-from lineitem_ix
+from lineitem_ix_n0
 where L_ORDERKEY < 7
 group by L_ORDERKEY;
 
 explain
 select L_ORDERKEY, count(keysum), sum(keysum)
 from
-(select L_ORDERKEY, L_ORDERKEY+L_PARTKEY as keysum from lineitem_ix) tabA
+(select L_ORDERKEY, L_ORDERKEY+L_PARTKEY as keysum from lineitem_ix_n0) tabA
 group by L_ORDERKEY;
 
 select L_ORDERKEY, count(keysum), sum(keysum)
 from
-(select L_ORDERKEY, L_ORDERKEY+L_PARTKEY as keysum from lineitem_ix) tabA
+(select L_ORDERKEY, L_ORDERKEY+L_PARTKEY as keysum from lineitem_ix_n0) tabA
 group by L_ORDERKEY;
 
 
 explain
 select L_ORDERKEY, count(L_ORDERKEY), sum(L_ORDERKEY)
-from lineitem_ix
+from lineitem_ix_n0
 group by L_ORDERKEY;
 
 select L_ORDERKEY, count(L_ORDERKEY), sum(L_ORDERKEY)
-from lineitem_ix
+from lineitem_ix_n0
 group by L_ORDERKEY;
 
 explain
 select colA, count(colA)
-from (select L_ORDERKEY as colA from lineitem_ix) tabA
+from (select L_ORDERKEY as colA from lineitem_ix_n0) tabA
 group by colA;
 
 select colA, count(colA)
-from (select L_ORDERKEY as colA from lineitem_ix) tabA
+from (select L_ORDERKEY as colA from lineitem_ix_n0) tabA
 group by colA;
 
 explain
 select keysum, count(keysum)
 from
-(select L_ORDERKEY+L_PARTKEY as keysum from lineitem_ix) tabA
+(select L_ORDERKEY+L_PARTKEY as keysum from lineitem_ix_n0) tabA
 group by keysum;
 
 select keysum, count(keysum)
 from
-(select L_ORDERKEY+L_PARTKEY as keysum from lineitem_ix) tabA
+(select L_ORDERKEY+L_PARTKEY as keysum from lineitem_ix_n0) tabA
 group by keysum;
 
 explain
 select keysum, count(keysum)
 from
-(select L_ORDERKEY+1 as keysum from lineitem_ix) tabA
+(select L_ORDERKEY+1 as keysum from lineitem_ix_n0) tabA
 group by keysum;
 
 select keysum, count(keysum)
 from
-(select L_ORDERKEY+1 as keysum from lineitem_ix) tabA
+(select L_ORDERKEY+1 as keysum from lineitem_ix_n0) tabA
 group by keysum;
 
 
 explain
 select keysum, count(1)
 from
-(select L_ORDERKEY+1 as keysum from lineitem_ix) tabA
+(select L_ORDERKEY+1 as keysum from lineitem_ix_n0) tabA
 group by keysum;
 
 select keysum, count(1)
 from
-(select L_ORDERKEY+1 as keysum from lineitem_ix) tabA
+(select L_ORDERKEY+1 as keysum from lineitem_ix_n0) tabA
 group by keysum;
 
 
 explain
 select keysum, count(keysum)
 from
-(select L_ORDERKEY+1 as keysum from lineitem_ix where L_ORDERKEY = 7) tabA
+(select L_ORDERKEY+1 as keysum from lineitem_ix_n0 where L_ORDERKEY = 7) tabA
 group by keysum;
 
 select keysum, count(keysum)
 from
-(select L_ORDERKEY+1 as keysum from lineitem_ix where L_ORDERKEY = 7) tabA
+(select L_ORDERKEY+1 as keysum from lineitem_ix_n0 where L_ORDERKEY = 7) tabA
 group by keysum;
 
 
@@ -209,7 +209,7 @@ select ckeysum, count(ckeysum)
 from
 (select keysum, count(keysum) as ckeysum
 from 
-	(select L_ORDERKEY+1 as keysum from lineitem_ix where L_ORDERKEY = 7) tabA
+	(select L_ORDERKEY+1 as keysum from lineitem_ix_n0 where L_ORDERKEY = 7) tabA
 group by keysum) tabB
 group by ckeysum;
 
@@ -217,7 +217,7 @@ select ckeysum, count(ckeysum)
 from
 (select keysum, count(keysum) as ckeysum
 from 
-	(select L_ORDERKEY+1 as keysum from lineitem_ix where L_ORDERKEY = 7) tabA
+	(select L_ORDERKEY+1 as keysum from lineitem_ix_n0 where L_ORDERKEY = 7) tabA
 group by keysum) tabB
 group by ckeysum;
 
@@ -225,7 +225,7 @@ explain
 select keysum, count(keysum) as ckeysum
 from
 (select L_ORDERKEY, count(L_ORDERKEY) as keysum
-from lineitem_ix
+from lineitem_ix_n0
 where L_ORDERKEY < 7
 group by L_ORDERKEY)tabA
 group by keysum;
@@ -233,7 +233,7 @@ group by keysum;
 select keysum, count(keysum) as ckeysum
 from
 (select L_ORDERKEY, count(L_ORDERKEY) as keysum
-from lineitem_ix
+from lineitem_ix_n0
 where L_ORDERKEY < 7
 group by L_ORDERKEY)tabA
 group by keysum;
@@ -247,7 +247,7 @@ explain
 select tabA.a, tabA.b, tabB.a, tabB.b
 from
 (select L_ORDERKEY as a, count(L_ORDERKEY) as b
-from lineitem_ix
+from lineitem_ix_n0
 where L_ORDERKEY < 7
 group by L_ORDERKEY) tabA
 join
@@ -260,7 +260,7 @@ on (tabA.b=tabB.b);
 select tabA.a, tabA.b, tabB.a, tabB.b
 from
 (select L_ORDERKEY as a, count(L_ORDERKEY) as b
-from lineitem_ix
+from lineitem_ix_n0
 where L_ORDERKEY < 7
 group by L_ORDERKEY) tabA
 join
@@ -275,7 +275,7 @@ explain
 select tabA.a, tabA.b, tabB.a, tabB.b
 from
 (select L_ORDERKEY as a, count(L_ORDERKEY) as b
-from lineitem_ix
+from lineitem_ix_n0
 where L_ORDERKEY < 7
 group by L_ORDERKEY) tabA
 join
@@ -288,7 +288,7 @@ on (tabA.b=tabB.b and tabB.a < '2');
 select tabA.a, tabA.b, tabB.a, tabB.b
 from 
 (select L_ORDERKEY as a, count(L_ORDERKEY) as b
-from lineitem_ix
+from lineitem_ix_n0
 where L_ORDERKEY < 7
 group by L_ORDERKEY) tabA
 join
@@ -299,19 +299,19 @@ group by key
 on (tabA.b=tabB.b and tabB.a < '2');
 
 EXPLAIN
-select L_ORDERKEY FROM lineitem_ix GROUP BY L_ORDERKEY, L_ORDERKEY+1;
+select L_ORDERKEY FROM lineitem_ix_n0 GROUP BY L_ORDERKEY, L_ORDERKEY+1;
 
-select L_ORDERKEY FROM lineitem_ix GROUP BY L_ORDERKEY, L_ORDERKEY+1;
-
-EXPLAIN
-select L_ORDERKEY, L_ORDERKEY+1, count(L_ORDERKEY) FROM lineitem_ix GROUP BY L_ORDERKEY, L_ORDERKEY+1;
-
-select L_ORDERKEY, L_ORDERKEY+1, count(L_ORDERKEY) FROM lineitem_ix GROUP BY L_ORDERKEY, L_ORDERKEY+1;
+select L_ORDERKEY FROM lineitem_ix_n0 GROUP BY L_ORDERKEY, L_ORDERKEY+1;
 
 EXPLAIN
-select L_ORDERKEY+2, count(L_ORDERKEY) FROM lineitem_ix GROUP BY L_ORDERKEY+2;
+select L_ORDERKEY, L_ORDERKEY+1, count(L_ORDERKEY) FROM lineitem_ix_n0 GROUP BY L_ORDERKEY, L_ORDERKEY+1;
 
-select L_ORDERKEY+2, count(L_ORDERKEY) FROM lineitem_ix GROUP BY L_ORDERKEY+2;
+select L_ORDERKEY, L_ORDERKEY+1, count(L_ORDERKEY) FROM lineitem_ix_n0 GROUP BY L_ORDERKEY, L_ORDERKEY+1;
+
+EXPLAIN
+select L_ORDERKEY+2, count(L_ORDERKEY) FROM lineitem_ix_n0 GROUP BY L_ORDERKEY+2;
+
+select L_ORDERKEY+2, count(L_ORDERKEY) FROM lineitem_ix_n0 GROUP BY L_ORDERKEY+2;
 
 --with cbo on, the following query can use idx
 
@@ -320,12 +320,12 @@ select b, count(b) as ckeysum
 from
 (
 select L_ORDERKEY as a, count(L_ORDERKEY) as b
-from lineitem_ix
+from lineitem_ix_n0
 where L_ORDERKEY < 7
 group by L_ORDERKEY
 union all
 select L_PARTKEY as a, count(L_PARTKEY) as b
-from lineitem_ix
+from lineitem_ix_n0
 where L_PARTKEY < 10
 group by L_PARTKEY
 ) tabA
@@ -335,12 +335,12 @@ select b, count(b) as ckeysum
 from
 (
 select L_ORDERKEY as a, count(L_ORDERKEY) as b
-from lineitem_ix
+from lineitem_ix_n0
 where L_ORDERKEY < 7
 group by L_ORDERKEY
 union all
 select L_PARTKEY as a, count(L_PARTKEY) as b
-from lineitem_ix 
+from lineitem_ix_n0 
 where L_PARTKEY < 10
 group by L_PARTKEY
 ) tabA
@@ -353,12 +353,12 @@ select a, count(a) as ckeysum
 from
 (
 select L_ORDERKEY as a, count(L_ORDERKEY) as b 
-from lineitem_ix
+from lineitem_ix_n0
 where L_ORDERKEY < 7 
 group by L_ORDERKEY
 union all
 select L_PARTKEY as a, count(L_PARTKEY) as b
-from lineitem_ix
+from lineitem_ix_n0
 where L_PARTKEY < 10
 group by L_PARTKEY
 ) tabA
@@ -368,12 +368,12 @@ select a, count(a) as ckeysum
 from
 (
 select L_ORDERKEY as a, count(L_ORDERKEY) as b
-from lineitem_ix
+from lineitem_ix_n0
 where L_ORDERKEY < 7
 group by L_ORDERKEY
 union all
 select L_PARTKEY as a, count(L_PARTKEY) as b
-from lineitem_ix 
+from lineitem_ix_n0 
 where L_PARTKEY < 10
 group by L_PARTKEY
 ) tabA
@@ -383,12 +383,12 @@ explain
 select a, count(a)
 from (
 select case L_ORDERKEY when null then 1 else 1 END as a
-from lineitem_ix)tab
+from lineitem_ix_n0)tab
 group by a;
 
 select a, count(a)
 from (
 select case L_ORDERKEY when null then 1 else 1 END as a
-from lineitem_ix)tab
+from lineitem_ix_n0)tab
 group by a;
 

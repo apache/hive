@@ -1,15 +1,15 @@
-PREHOOK: query: create table t_cli(i int)
+PREHOOK: query: create table t_cli_n0(i int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t_cli
-POSTHOOK: query: create table t_cli(i int)
+PREHOOK: Output: default@t_cli_n0
+POSTHOOK: query: create table t_cli_n0(i int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t_cli
-PREHOOK: query: describe t_cli
+POSTHOOK: Output: default@t_cli_n0
+PREHOOK: query: describe t_cli_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@t_cli
-POSTHOOK: query: describe t_cli
+PREHOOK: Input: default@t_cli_n0
+POSTHOOK: query: describe t_cli_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@t_cli
+POSTHOOK: Input: default@t_cli_n0
 i                   	int                 	                    

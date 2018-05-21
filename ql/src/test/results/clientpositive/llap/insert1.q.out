@@ -618,39 +618,39 @@ PREHOOK: Output: database:db1
 POSTHOOK: query: CREATE DATABASE db1
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:db1
-PREHOOK: query: CREATE TABLE db1.result(col1 STRING)
+PREHOOK: query: CREATE TABLE db1.result_n0(col1 STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:db1
-PREHOOK: Output: db1@result
-POSTHOOK: query: CREATE TABLE db1.result(col1 STRING)
+PREHOOK: Output: db1@result_n0
+POSTHOOK: query: CREATE TABLE db1.result_n0(col1 STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:db1
-POSTHOOK: Output: db1@result
-PREHOOK: query: INSERT OVERWRITE TABLE db1.result SELECT 'db1_insert1' FROM src LIMIT 1
+POSTHOOK: Output: db1@result_n0
+PREHOOK: query: INSERT OVERWRITE TABLE db1.result_n0 SELECT 'db1_insert1' FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: db1@result
-POSTHOOK: query: INSERT OVERWRITE TABLE db1.result SELECT 'db1_insert1' FROM src LIMIT 1
+PREHOOK: Output: db1@result_n0
+POSTHOOK: query: INSERT OVERWRITE TABLE db1.result_n0 SELECT 'db1_insert1' FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: db1@result
-POSTHOOK: Lineage: result.col1 SIMPLE []
-PREHOOK: query: INSERT INTO TABLE db1.result SELECT 'db1_insert2' FROM src LIMIT 1
+POSTHOOK: Output: db1@result_n0
+POSTHOOK: Lineage: result_n0.col1 SIMPLE []
+PREHOOK: query: INSERT INTO TABLE db1.result_n0 SELECT 'db1_insert2' FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: db1@result
-POSTHOOK: query: INSERT INTO TABLE db1.result SELECT 'db1_insert2' FROM src LIMIT 1
+PREHOOK: Output: db1@result_n0
+POSTHOOK: query: INSERT INTO TABLE db1.result_n0 SELECT 'db1_insert2' FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: db1@result
-POSTHOOK: Lineage: result.col1 SIMPLE []
-PREHOOK: query: SELECT * FROM db1.result
+POSTHOOK: Output: db1@result_n0
+POSTHOOK: Lineage: result_n0.col1 SIMPLE []
+PREHOOK: query: SELECT * FROM db1.result_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: db1@result
+PREHOOK: Input: db1@result_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM db1.result
+POSTHOOK: query: SELECT * FROM db1.result_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: db1@result
+POSTHOOK: Input: db1@result_n0
 #### A masked pattern was here ####
 db1_insert1
 db1_insert2

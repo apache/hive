@@ -1,26 +1,26 @@
-PREHOOK: query: create table count_case_groupby (key string, bool boolean) STORED AS orc
+PREHOOK: query: create table count_case_groupby_n0 (key string, bool boolean) STORED AS orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@count_case_groupby
-POSTHOOK: query: create table count_case_groupby (key string, bool boolean) STORED AS orc
+PREHOOK: Output: default@count_case_groupby_n0
+POSTHOOK: query: create table count_case_groupby_n0 (key string, bool boolean) STORED AS orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@count_case_groupby
-PREHOOK: query: insert into table count_case_groupby values ('key1', true),('key2', false),('key3', NULL),('key4', false),('key5',NULL)
+POSTHOOK: Output: default@count_case_groupby_n0
+PREHOOK: query: insert into table count_case_groupby_n0 values ('key1', true),('key2', false),('key3', NULL),('key4', false),('key5',NULL)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@count_case_groupby
-POSTHOOK: query: insert into table count_case_groupby values ('key1', true),('key2', false),('key3', NULL),('key4', false),('key5',NULL)
+PREHOOK: Output: default@count_case_groupby_n0
+POSTHOOK: query: insert into table count_case_groupby_n0 values ('key1', true),('key2', false),('key3', NULL),('key4', false),('key5',NULL)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@count_case_groupby
-POSTHOOK: Lineage: count_case_groupby.bool SCRIPT []
-POSTHOOK: Lineage: count_case_groupby.key SCRIPT []
+POSTHOOK: Output: default@count_case_groupby_n0
+POSTHOOK: Lineage: count_case_groupby_n0.bool SCRIPT []
+POSTHOOK: Lineage: count_case_groupby_n0.key SCRIPT []
 PREHOOK: query: explain vectorization expression
-SELECT key, COUNT(CASE WHEN bool THEN 1 WHEN NOT bool THEN 0 ELSE NULL END) AS cnt_bool0_ok FROM count_case_groupby GROUP BY key
+SELECT key, COUNT(CASE WHEN bool THEN 1 WHEN NOT bool THEN 0 ELSE NULL END) AS cnt_bool0_ok FROM count_case_groupby_n0 GROUP BY key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
-SELECT key, COUNT(CASE WHEN bool THEN 1 WHEN NOT bool THEN 0 ELSE NULL END) AS cnt_bool0_ok FROM count_case_groupby GROUP BY key
+SELECT key, COUNT(CASE WHEN bool THEN 1 WHEN NOT bool THEN 0 ELSE NULL END) AS cnt_bool0_ok FROM count_case_groupby_n0 GROUP BY key
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -35,7 +35,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: count_case_groupby
+            alias: count_case_groupby_n0
             Statistics: Num rows: 5 Data size: 452 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -108,13 +108,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT key, COUNT(CASE WHEN bool THEN 1 WHEN NOT bool THEN 0 ELSE NULL END) AS cnt_bool0_ok FROM count_case_groupby GROUP BY key
+PREHOOK: query: SELECT key, COUNT(CASE WHEN bool THEN 1 WHEN NOT bool THEN 0 ELSE NULL END) AS cnt_bool0_ok FROM count_case_groupby_n0 GROUP BY key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@count_case_groupby
+PREHOOK: Input: default@count_case_groupby_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key, COUNT(CASE WHEN bool THEN 1 WHEN NOT bool THEN 0 ELSE NULL END) AS cnt_bool0_ok FROM count_case_groupby GROUP BY key
+POSTHOOK: query: SELECT key, COUNT(CASE WHEN bool THEN 1 WHEN NOT bool THEN 0 ELSE NULL END) AS cnt_bool0_ok FROM count_case_groupby_n0 GROUP BY key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@count_case_groupby
+POSTHOOK: Input: default@count_case_groupby_n0
 #### A masked pattern was here ####
 key1	1
 key2	1

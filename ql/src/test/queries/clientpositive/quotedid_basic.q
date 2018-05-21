@@ -4,18 +4,18 @@ set hive.mapred.mode=nonstrict;
 set hive.support.quoted.identifiers=column;
 
 -- basic
-create table t1(`x+1` string, `y&y` string, `!@#$%^&*()_q` string);
-describe t1;
-select `x+1`, `y&y`, `!@#$%^&*()_q` from t1;
-explain select `x+1`, `y&y`, `!@#$%^&*()_q` from t1;
-explain select `x+1`, `y&y`, `!@#$%^&*()_q` from t1 where `!@#$%^&*()_q` = '1';
-explain select `x+1`, `y&y`, `!@#$%^&*()_q` from t1 where `!@#$%^&*()_q` = '1' group by `x+1`, `y&y`, `!@#$%^&*()_q` having `!@#$%^&*()_q` = '1';
+create table t1_n7(`x+1` string, `y&y` string, `!@#$%^&*()_q` string);
+describe t1_n7;
+select `x+1`, `y&y`, `!@#$%^&*()_q` from t1_n7;
+explain select `x+1`, `y&y`, `!@#$%^&*()_q` from t1_n7;
+explain select `x+1`, `y&y`, `!@#$%^&*()_q` from t1_n7 where `!@#$%^&*()_q` = '1';
+explain select `x+1`, `y&y`, `!@#$%^&*()_q` from t1_n7 where `!@#$%^&*()_q` = '1' group by `x+1`, `y&y`, `!@#$%^&*()_q` having `!@#$%^&*()_q` = '1';
 explain select `x+1`, `y&y`, `!@#$%^&*()_q`, rank() over(partition by `!@#$%^&*()_q` order by  `y&y`)  
-from t1 where `!@#$%^&*()_q` = '1' group by `x+1`, `y&y`, `!@#$%^&*()_q` having `!@#$%^&*()_q` = '1';
+from t1_n7 where `!@#$%^&*()_q` = '1' group by `x+1`, `y&y`, `!@#$%^&*()_q` having `!@#$%^&*()_q` = '1';
 
 -- case insensitive
 explain select `X+1`, `Y&y`, `!@#$%^&*()_Q`, rank() over(partition by `!@#$%^&*()_q` order by  `y&y`)  
-from t1 where `!@#$%^&*()_q` = '1' group by `x+1`, `y&Y`, `!@#$%^&*()_q` having `!@#$%^&*()_Q` = '1';
+from t1_n7 where `!@#$%^&*()_q` = '1' group by `x+1`, `y&Y`, `!@#$%^&*()_q` having `!@#$%^&*()_Q` = '1';
 
 
 -- escaped back ticks

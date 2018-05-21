@@ -1,76 +1,76 @@
-PREHOOK: query: DROP TABLE Employee_Part
+PREHOOK: query: DROP TABLE Employee_Part_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE Employee_Part
+POSTHOOK: query: DROP TABLE Employee_Part_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE Employee_Part(employeeID int, employeeName String) partitioned by (employeeSalary double, country string)
+PREHOOK: query: CREATE TABLE Employee_Part_n0(employeeID int, employeeName String) partitioned by (employeeSalary double, country string)
 row format delimited fields terminated by '|'  stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@Employee_Part
-POSTHOOK: query: CREATE TABLE Employee_Part(employeeID int, employeeName String) partitioned by (employeeSalary double, country string)
+PREHOOK: Output: default@Employee_Part_n0
+POSTHOOK: query: CREATE TABLE Employee_Part_n0(employeeID int, employeeName String) partitioned by (employeeSalary double, country string)
 row format delimited fields terminated by '|'  stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@Employee_Part
-PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee.dat"  INTO TABLE Employee_Part partition(employeeSalary='2000.0', country='USA')
+POSTHOOK: Output: default@Employee_Part_n0
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee.dat"  INTO TABLE Employee_Part_n0 partition(employeeSalary='2000.0', country='USA')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@employee_part
-POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee.dat"  INTO TABLE Employee_Part partition(employeeSalary='2000.0', country='USA')
+PREHOOK: Output: default@employee_part_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee.dat"  INTO TABLE Employee_Part_n0 partition(employeeSalary='2000.0', country='USA')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@employee_part
-POSTHOOK: Output: default@employee_part@employeesalary=2000.0/country=USA
-PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_Part partition(employeeSalary='2000.0', country='UK')
+POSTHOOK: Output: default@employee_part_n0
+POSTHOOK: Output: default@employee_part_n0@employeesalary=2000.0/country=USA
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_Part_n0 partition(employeeSalary='2000.0', country='UK')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@employee_part
-POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_Part partition(employeeSalary='2000.0', country='UK')
+PREHOOK: Output: default@employee_part_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_Part_n0 partition(employeeSalary='2000.0', country='UK')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@employee_part
-POSTHOOK: Output: default@employee_part@employeesalary=2000.0/country=UK
-PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_Part partition(employeeSalary='3000.0', country='USA')
+POSTHOOK: Output: default@employee_part_n0
+POSTHOOK: Output: default@employee_part_n0@employeesalary=2000.0/country=UK
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_Part_n0 partition(employeeSalary='3000.0', country='USA')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@employee_part
-POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_Part partition(employeeSalary='3000.0', country='USA')
+PREHOOK: Output: default@employee_part_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_Part_n0 partition(employeeSalary='3000.0', country='USA')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@employee_part
-POSTHOOK: Output: default@employee_part@employeesalary=3000.0/country=USA
-PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_Part partition(employeeSalary='4000.0', country='USA')
+POSTHOOK: Output: default@employee_part_n0
+POSTHOOK: Output: default@employee_part_n0@employeesalary=3000.0/country=USA
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_Part_n0 partition(employeeSalary='4000.0', country='USA')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@employee_part
-POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_Part partition(employeeSalary='4000.0', country='USA')
+PREHOOK: Output: default@employee_part_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_Part_n0 partition(employeeSalary='4000.0', country='USA')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@employee_part
-POSTHOOK: Output: default@employee_part@employeesalary=4000.0/country=USA
-PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_Part partition(employeeSalary='3500.0', country='UK')
+POSTHOOK: Output: default@employee_part_n0
+POSTHOOK: Output: default@employee_part_n0@employeesalary=4000.0/country=USA
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_Part_n0 partition(employeeSalary='3500.0', country='UK')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@employee_part
-POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_Part partition(employeeSalary='3500.0', country='UK')
+PREHOOK: Output: default@employee_part_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_Part_n0 partition(employeeSalary='3500.0', country='UK')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@employee_part
-POSTHOOK: Output: default@employee_part@employeesalary=3500.0/country=UK
-PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee.dat"  INTO TABLE Employee_Part partition(employeeSalary='3000.0', country='UK')
+POSTHOOK: Output: default@employee_part_n0
+POSTHOOK: Output: default@employee_part_n0@employeesalary=3500.0/country=UK
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee.dat"  INTO TABLE Employee_Part_n0 partition(employeeSalary='3000.0', country='UK')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@employee_part
-POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee.dat"  INTO TABLE Employee_Part partition(employeeSalary='3000.0', country='UK')
+PREHOOK: Output: default@employee_part_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee.dat"  INTO TABLE Employee_Part_n0 partition(employeeSalary='3000.0', country='UK')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@employee_part
-POSTHOOK: Output: default@employee_part@employeesalary=3000.0/country=UK
+POSTHOOK: Output: default@employee_part_n0
+POSTHOOK: Output: default@employee_part_n0@employeesalary=3000.0/country=UK
 PREHOOK: query: explain 
-analyze table Employee_Part partition (employeeSalary='4000.0', country) compute statistics for columns employeeName, employeeID
+analyze table Employee_Part_n0 partition (employeeSalary='4000.0', country) compute statistics for columns employeeName, employeeID
 PREHOOK: type: ANALYZE_TABLE
 POSTHOOK: query: explain 
-analyze table Employee_Part partition (employeeSalary='4000.0', country) compute statistics for columns employeeName, employeeID
+analyze table Employee_Part_n0 partition (employeeSalary='4000.0', country) compute statistics for columns employeeName, employeeID
 POSTHOOK: type: ANALYZE_TABLE
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -81,7 +81,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: employee_part
+            alias: employee_part_n0
             Statistics: Num rows: 1 Data size: 640 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: employeeid (type: int), employeename (type: string), country (type: string)
@@ -124,28 +124,28 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: employeeName, employeeID
           Column Types: string, int
-          Table: default.employee_part
+          Table: default.employee_part_n0
 
-PREHOOK: query: analyze table Employee_Part partition (employeeSalary='4000.0', country) compute statistics for columns employeeName, employeeID
+PREHOOK: query: analyze table Employee_Part_n0 partition (employeeSalary='4000.0', country) compute statistics for columns employeeName, employeeID
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@employee_part
-PREHOOK: Input: default@employee_part@employeesalary=4000.0/country=USA
-PREHOOK: Output: default@employee_part
-PREHOOK: Output: default@employee_part@employeesalary=4000.0/country=USA
+PREHOOK: Input: default@employee_part_n0
+PREHOOK: Input: default@employee_part_n0@employeesalary=4000.0/country=USA
+PREHOOK: Output: default@employee_part_n0
+PREHOOK: Output: default@employee_part_n0@employeesalary=4000.0/country=USA
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table Employee_Part partition (employeeSalary='4000.0', country) compute statistics for columns employeeName, employeeID
+POSTHOOK: query: analyze table Employee_Part_n0 partition (employeeSalary='4000.0', country) compute statistics for columns employeeName, employeeID
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@employee_part
-POSTHOOK: Input: default@employee_part@employeesalary=4000.0/country=USA
-POSTHOOK: Output: default@employee_part
-POSTHOOK: Output: default@employee_part@employeesalary=4000.0/country=USA
+POSTHOOK: Input: default@employee_part_n0
+POSTHOOK: Input: default@employee_part_n0@employeesalary=4000.0/country=USA
+POSTHOOK: Output: default@employee_part_n0
+POSTHOOK: Output: default@employee_part_n0@employeesalary=4000.0/country=USA
 #### A masked pattern was here ####
-PREHOOK: query: describe formatted Employee_Part partition (employeeSalary='4000.0', country='USA')
+PREHOOK: query: describe formatted Employee_Part_n0 partition (employeeSalary='4000.0', country='USA')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@employee_part
-POSTHOOK: query: describe formatted Employee_Part partition (employeeSalary='4000.0', country='USA')
+PREHOOK: Input: default@employee_part_n0
+POSTHOOK: query: describe formatted Employee_Part_n0 partition (employeeSalary='4000.0', country='USA')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@employee_part
+POSTHOOK: Input: default@employee_part_n0
 # col_name            	data_type           	comment             
 employeeid          	int                 	                    
 employeename        	string              	                    
@@ -158,7 +158,7 @@ country             	string
 # Detailed Partition Information	 	 
 Partition Value:    	[4000.0, USA]       	 
 Database:           	default             	 
-Table:              	employee_part       	 
+Table:              	employee_part_n0    	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"employeeid\":\"true\",\"employeename\":\"true\"}}
@@ -179,12 +179,12 @@ Sort Columns:       	[]
 Storage Desc Params:	 	 
 	field.delim         	|                   
 	serialization.format	|                   
-PREHOOK: query: describe formatted Employee_Part partition (employeeSalary='4000.0', country='USA') employeeName
+PREHOOK: query: describe formatted Employee_Part_n0 partition (employeeSalary='4000.0', country='USA') employeeName
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@employee_part
-POSTHOOK: query: describe formatted Employee_Part partition (employeeSalary='4000.0', country='USA') employeeName
+PREHOOK: Input: default@employee_part_n0
+POSTHOOK: query: describe formatted Employee_Part_n0 partition (employeeSalary='4000.0', country='USA') employeeName
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@employee_part
+POSTHOOK: Input: default@employee_part_n0
 col_name            	employeeName        	 	 	 	 	 	 	 	 	 	 
 data_type           	string              	 	 	 	 	 	 	 	 	 	 
 min                 	                    	 	 	 	 	 	 	 	 	 	 
@@ -198,10 +198,10 @@ num_falses
 bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: explain	
-analyze table Employee_Part partition (employeeSalary='2000.0') compute statistics for columns employeeID
+analyze table Employee_Part_n0 partition (employeeSalary='2000.0') compute statistics for columns employeeID
 PREHOOK: type: ANALYZE_TABLE
 POSTHOOK: query: explain	
-analyze table Employee_Part partition (employeeSalary='2000.0') compute statistics for columns employeeID
+analyze table Employee_Part_n0 partition (employeeSalary='2000.0') compute statistics for columns employeeID
 POSTHOOK: type: ANALYZE_TABLE
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -212,7 +212,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: employee_part
+            alias: employee_part_n0
             Statistics: Num rows: 3 Data size: 1690 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: employeeid (type: int), country (type: string)
@@ -255,32 +255,32 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: employeeID
           Column Types: int
-          Table: default.employee_part
+          Table: default.employee_part_n0
 
-PREHOOK: query: analyze table Employee_Part partition (employeeSalary='2000.0') compute statistics for columns employeeID
+PREHOOK: query: analyze table Employee_Part_n0 partition (employeeSalary='2000.0') compute statistics for columns employeeID
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@employee_part
-PREHOOK: Input: default@employee_part@employeesalary=2000.0/country=UK
-PREHOOK: Input: default@employee_part@employeesalary=2000.0/country=USA
-PREHOOK: Output: default@employee_part
-PREHOOK: Output: default@employee_part@employeesalary=2000.0/country=UK
-PREHOOK: Output: default@employee_part@employeesalary=2000.0/country=USA
+PREHOOK: Input: default@employee_part_n0
+PREHOOK: Input: default@employee_part_n0@employeesalary=2000.0/country=UK
+PREHOOK: Input: default@employee_part_n0@employeesalary=2000.0/country=USA
+PREHOOK: Output: default@employee_part_n0
+PREHOOK: Output: default@employee_part_n0@employeesalary=2000.0/country=UK
+PREHOOK: Output: default@employee_part_n0@employeesalary=2000.0/country=USA
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table Employee_Part partition (employeeSalary='2000.0') compute statistics for columns employeeID
+POSTHOOK: query: analyze table Employee_Part_n0 partition (employeeSalary='2000.0') compute statistics for columns employeeID
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@employee_part
-POSTHOOK: Input: default@employee_part@employeesalary=2000.0/country=UK
-POSTHOOK: Input: default@employee_part@employeesalary=2000.0/country=USA
-POSTHOOK: Output: default@employee_part
-POSTHOOK: Output: default@employee_part@employeesalary=2000.0/country=UK
-POSTHOOK: Output: default@employee_part@employeesalary=2000.0/country=USA
+POSTHOOK: Input: default@employee_part_n0
+POSTHOOK: Input: default@employee_part_n0@employeesalary=2000.0/country=UK
+POSTHOOK: Input: default@employee_part_n0@employeesalary=2000.0/country=USA
+POSTHOOK: Output: default@employee_part_n0
+POSTHOOK: Output: default@employee_part_n0@employeesalary=2000.0/country=UK
+POSTHOOK: Output: default@employee_part_n0@employeesalary=2000.0/country=USA
 #### A masked pattern was here ####
-PREHOOK: query: describe formatted Employee_Part partition (employeeSalary='2000.0', country='USA') employeeID
+PREHOOK: query: describe formatted Employee_Part_n0 partition (employeeSalary='2000.0', country='USA') employeeID
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@employee_part
-POSTHOOK: query: describe formatted Employee_Part partition (employeeSalary='2000.0', country='USA') employeeID
+PREHOOK: Input: default@employee_part_n0
+POSTHOOK: query: describe formatted Employee_Part_n0 partition (employeeSalary='2000.0', country='USA') employeeID
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@employee_part
+POSTHOOK: Input: default@employee_part_n0
 col_name            	employeeID          	 	 	 	 	 	 	 	 	 	 
 data_type           	int                 	 	 	 	 	 	 	 	 	 	 
 min                 	16                  	 	 	 	 	 	 	 	 	 	 
@@ -293,12 +293,12 @@ num_trues
 num_falses          	                    	 	 	 	 	 	 	 	 	 	 
 bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-PREHOOK: query: describe formatted Employee_Part partition (employeeSalary='2000.0', country='UK') employeeID
+PREHOOK: query: describe formatted Employee_Part_n0 partition (employeeSalary='2000.0', country='UK') employeeID
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@employee_part
-POSTHOOK: query: describe formatted Employee_Part partition (employeeSalary='2000.0', country='UK') employeeID
+PREHOOK: Input: default@employee_part_n0
+POSTHOOK: query: describe formatted Employee_Part_n0 partition (employeeSalary='2000.0', country='UK') employeeID
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@employee_part
+POSTHOOK: Input: default@employee_part_n0
 col_name            	employeeID          	 	 	 	 	 	 	 	 	 	 
 data_type           	int                 	 	 	 	 	 	 	 	 	 	 
 min                 	16                  	 	 	 	 	 	 	 	 	 	 
@@ -312,10 +312,10 @@ num_falses
 bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: explain	
-analyze table Employee_Part partition (employeeSalary) compute statistics for columns employeeID
+analyze table Employee_Part_n0 partition (employeeSalary) compute statistics for columns employeeID
 PREHOOK: type: ANALYZE_TABLE
 POSTHOOK: query: explain	
-analyze table Employee_Part partition (employeeSalary) compute statistics for columns employeeID
+analyze table Employee_Part_n0 partition (employeeSalary) compute statistics for columns employeeID
 POSTHOOK: type: ANALYZE_TABLE
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -326,7 +326,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: employee_part
+            alias: employee_part_n0
             Statistics: Num rows: 27 Data size: 206 Basic stats: PARTIAL Column stats: NONE
             Select Operator
               expressions: employeeid (type: int), employeesalary (type: double), country (type: string)
@@ -369,48 +369,48 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: employeeID
           Column Types: int
-          Table: default.employee_part
+          Table: default.employee_part_n0
 
-PREHOOK: query: analyze table Employee_Part partition (employeeSalary) compute statistics for columns employeeID
+PREHOOK: query: analyze table Employee_Part_n0 partition (employeeSalary) compute statistics for columns employeeID
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@employee_part
-PREHOOK: Input: default@employee_part@employeesalary=2000.0/country=UK
-PREHOOK: Input: default@employee_part@employeesalary=2000.0/country=USA
-PREHOOK: Input: default@employee_part@employeesalary=3000.0/country=UK
-PREHOOK: Input: default@employee_part@employeesalary=3000.0/country=USA
-PREHOOK: Input: default@employee_part@employeesalary=3500.0/country=UK
-PREHOOK: Input: default@employee_part@employeesalary=4000.0/country=USA
-PREHOOK: Output: default@employee_part
-PREHOOK: Output: default@employee_part@employeesalary=2000.0/country=UK
-PREHOOK: Output: default@employee_part@employeesalary=2000.0/country=USA
-PREHOOK: Output: default@employee_part@employeesalary=3000.0/country=UK
-PREHOOK: Output: default@employee_part@employeesalary=3000.0/country=USA
-PREHOOK: Output: default@employee_part@employeesalary=3500.0/country=UK
-PREHOOK: Output: default@employee_part@employeesalary=4000.0/country=USA
+PREHOOK: Input: default@employee_part_n0
+PREHOOK: Input: default@employee_part_n0@employeesalary=2000.0/country=UK
+PREHOOK: Input: default@employee_part_n0@employeesalary=2000.0/country=USA
+PREHOOK: Input: default@employee_part_n0@employeesalary=3000.0/country=UK
+PREHOOK: Input: default@employee_part_n0@employeesalary=3000.0/country=USA
+PREHOOK: Input: default@employee_part_n0@employeesalary=3500.0/country=UK
+PREHOOK: Input: default@employee_part_n0@employeesalary=4000.0/country=USA
+PREHOOK: Output: default@employee_part_n0
+PREHOOK: Output: default@employee_part_n0@employeesalary=2000.0/country=UK
+PREHOOK: Output: default@employee_part_n0@employeesalary=2000.0/country=USA
+PREHOOK: Output: default@employee_part_n0@employeesalary=3000.0/country=UK
+PREHOOK: Output: default@employee_part_n0@employeesalary=3000.0/country=USA
+PREHOOK: Output: default@employee_part_n0@employeesalary=3500.0/country=UK
+PREHOOK: Output: default@employee_part_n0@employeesalary=4000.0/country=USA
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table Employee_Part partition (employeeSalary) compute statistics for columns employeeID
+POSTHOOK: query: analyze table Employee_Part_n0 partition (employeeSalary) compute statistics for columns employeeID
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@employee_part
-POSTHOOK: Input: default@employee_part@employeesalary=2000.0/country=UK
-POSTHOOK: Input: default@employee_part@employeesalary=2000.0/country=USA
-POSTHOOK: Input: default@employee_part@employeesalary=3000.0/country=UK
-POSTHOOK: Input: default@employee_part@employeesalary=3000.0/country=USA
-POSTHOOK: Input: default@employee_part@employeesalary=3500.0/country=UK
-POSTHOOK: Input: default@employee_part@employeesalary=4000.0/country=USA
-POSTHOOK: Output: default@employee_part
-POSTHOOK: Output: default@employee_part@employeesalary=2000.0/country=UK
-POSTHOOK: Output: default@employee_part@employeesalary=2000.0/country=USA
-POSTHOOK: Output: default@employee_part@employeesalary=3000.0/country=UK
-POSTHOOK: Output: default@employee_part@employeesalary=3000.0/country=USA
-POSTHOOK: Output: default@employee_part@employeesalary=3500.0/country=UK
-POSTHOOK: Output: default@employee_part@employeesalary=4000.0/country=USA
+POSTHOOK: Input: default@employee_part_n0
+POSTHOOK: Input: default@employee_part_n0@employeesalary=2000.0/country=UK
+POSTHOOK: Input: default@employee_part_n0@employeesalary=2000.0/country=USA
+POSTHOOK: Input: default@employee_part_n0@employeesalary=3000.0/country=UK
+POSTHOOK: Input: default@employee_part_n0@employeesalary=3000.0/country=USA
+POSTHOOK: Input: default@employee_part_n0@employeesalary=3500.0/country=UK
+POSTHOOK: Input: default@employee_part_n0@employeesalary=4000.0/country=USA
+POSTHOOK: Output: default@employee_part_n0
+POSTHOOK: Output: default@employee_part_n0@employeesalary=2000.0/country=UK
+POSTHOOK: Output: default@employee_part_n0@employeesalary=2000.0/country=USA
+POSTHOOK: Output: default@employee_part_n0@employeesalary=3000.0/country=UK
+POSTHOOK: Output: default@employee_part_n0@employeesalary=3000.0/country=USA
+POSTHOOK: Output: default@employee_part_n0@employeesalary=3500.0/country=UK
+POSTHOOK: Output: default@employee_part_n0@employeesalary=4000.0/country=USA
 #### A masked pattern was here ####
-PREHOOK: query: describe formatted Employee_Part partition (employeeSalary='3000.0', country='UK') employeeID
+PREHOOK: query: describe formatted Employee_Part_n0 partition (employeeSalary='3000.0', country='UK') employeeID
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@employee_part
-POSTHOOK: query: describe formatted Employee_Part partition (employeeSalary='3000.0', country='UK') employeeID
+PREHOOK: Input: default@employee_part_n0
+POSTHOOK: query: describe formatted Employee_Part_n0 partition (employeeSalary='3000.0', country='UK') employeeID
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@employee_part
+POSTHOOK: Input: default@employee_part_n0
 col_name            	employeeID          	 	 	 	 	 	 	 	 	 	 
 data_type           	int                 	 	 	 	 	 	 	 	 	 	 
 min                 	16                  	 	 	 	 	 	 	 	 	 	 
@@ -424,10 +424,10 @@ num_falses
 bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: explain	
-analyze table Employee_Part partition (employeeSalary,country) compute statistics for columns
+analyze table Employee_Part_n0 partition (employeeSalary,country) compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
 POSTHOOK: query: explain	
-analyze table Employee_Part partition (employeeSalary,country) compute statistics for columns
+analyze table Employee_Part_n0 partition (employeeSalary,country) compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -438,7 +438,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: employee_part
+            alias: employee_part_n0
             Statistics: Num rows: 54 Data size: 412 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: employeeid (type: int), employeename (type: string), employeesalary (type: double), country (type: string)
@@ -481,48 +481,48 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: employeeid, employeename
           Column Types: int, string
-          Table: default.employee_part
+          Table: default.employee_part_n0
 
-PREHOOK: query: analyze table Employee_Part partition (employeeSalary,country) compute statistics for columns
+PREHOOK: query: analyze table Employee_Part_n0 partition (employeeSalary,country) compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@employee_part
-PREHOOK: Input: default@employee_part@employeesalary=2000.0/country=UK
-PREHOOK: Input: default@employee_part@employeesalary=2000.0/country=USA
-PREHOOK: Input: default@employee_part@employeesalary=3000.0/country=UK
-PREHOOK: Input: default@employee_part@employeesalary=3000.0/country=USA
-PREHOOK: Input: default@employee_part@employeesalary=3500.0/country=UK
-PREHOOK: Input: default@employee_part@employeesalary=4000.0/country=USA
-PREHOOK: Output: default@employee_part
-PREHOOK: Output: default@employee_part@employeesalary=2000.0/country=UK
-PREHOOK: Output: default@employee_part@employeesalary=2000.0/country=USA
-PREHOOK: Output: default@employee_part@employeesalary=3000.0/country=UK
-PREHOOK: Output: default@employee_part@employeesalary=3000.0/country=USA
-PREHOOK: Output: default@employee_part@employeesalary=3500.0/country=UK
-PREHOOK: Output: default@employee_part@employeesalary=4000.0/country=USA
+PREHOOK: Input: default@employee_part_n0
+PREHOOK: Input: default@employee_part_n0@employeesalary=2000.0/country=UK
+PREHOOK: Input: default@employee_part_n0@employeesalary=2000.0/country=USA
+PREHOOK: Input: default@employee_part_n0@employeesalary=3000.0/country=UK
+PREHOOK: Input: default@employee_part_n0@employeesalary=3000.0/country=USA
+PREHOOK: Input: default@employee_part_n0@employeesalary=3500.0/country=UK
+PREHOOK: Input: default@employee_part_n0@employeesalary=4000.0/country=USA
+PREHOOK: Output: default@employee_part_n0
+PREHOOK: Output: default@employee_part_n0@employeesalary=2000.0/country=UK
+PREHOOK: Output: default@employee_part_n0@employeesalary=2000.0/country=USA
+PREHOOK: Output: default@employee_part_n0@employeesalary=3000.0/country=UK
+PREHOOK: Output: default@employee_part_n0@employeesalary=3000.0/country=USA
+PREHOOK: Output: default@employee_part_n0@employeesalary=3500.0/country=UK
+PREHOOK: Output: default@employee_part_n0@employeesalary=4000.0/country=USA
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table Employee_Part partition (employeeSalary,country) compute statistics for columns
+POSTHOOK: query: analyze table Employee_Part_n0 partition (employeeSalary,country) compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@employee_part
-POSTHOOK: Input: default@employee_part@employeesalary=2000.0/country=UK
-POSTHOOK: Input: default@employee_part@employeesalary=2000.0/country=USA
-POSTHOOK: Input: default@employee_part@employeesalary=3000.0/country=UK
-POSTHOOK: Input: default@employee_part@employeesalary=3000.0/country=USA
-POSTHOOK: Input: default@employee_part@employeesalary=3500.0/country=UK
-POSTHOOK: Input: default@employee_part@employeesalary=4000.0/country=USA
-POSTHOOK: Output: default@employee_part
-POSTHOOK: Output: default@employee_part@employeesalary=2000.0/country=UK
-POSTHOOK: Output: default@employee_part@employeesalary=2000.0/country=USA
-POSTHOOK: Output: default@employee_part@employeesalary=3000.0/country=UK
-POSTHOOK: Output: default@employee_part@employeesalary=3000.0/country=USA
-POSTHOOK: Output: default@employee_part@employeesalary=3500.0/country=UK
-POSTHOOK: Output: default@employee_part@employeesalary=4000.0/country=USA
+POSTHOOK: Input: default@employee_part_n0
+POSTHOOK: Input: default@employee_part_n0@employeesalary=2000.0/country=UK
+POSTHOOK: Input: default@employee_part_n0@employeesalary=2000.0/country=USA
+POSTHOOK: Input: default@employee_part_n0@employeesalary=3000.0/country=UK
+POSTHOOK: Input: default@employee_part_n0@employeesalary=3000.0/country=USA
+POSTHOOK: Input: default@employee_part_n0@employeesalary=3500.0/country=UK
+POSTHOOK: Input: default@employee_part_n0@employeesalary=4000.0/country=USA
+POSTHOOK: Output: default@employee_part_n0
+POSTHOOK: Output: default@employee_part_n0@employeesalary=2000.0/country=UK
+POSTHOOK: Output: default@employee_part_n0@employeesalary=2000.0/country=USA
+POSTHOOK: Output: default@employee_part_n0@employeesalary=3000.0/country=UK
+POSTHOOK: Output: default@employee_part_n0@employeesalary=3000.0/country=USA
+POSTHOOK: Output: default@employee_part_n0@employeesalary=3500.0/country=UK
+POSTHOOK: Output: default@employee_part_n0@employeesalary=4000.0/country=USA
 #### A masked pattern was here ####
-PREHOOK: query: describe formatted Employee_Part partition (employeeSalary='3500.0', country='UK') employeeName
+PREHOOK: query: describe formatted Employee_Part_n0 partition (employeeSalary='3500.0', country='UK') employeeName
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@employee_part
-POSTHOOK: query: describe formatted Employee_Part partition (employeeSalary='3500.0', country='UK') employeeName
+PREHOOK: Input: default@employee_part_n0
+POSTHOOK: query: describe formatted Employee_Part_n0 partition (employeeSalary='3500.0', country='UK') employeeName
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@employee_part
+POSTHOOK: Input: default@employee_part_n0
 col_name            	employeeName        	 	 	 	 	 	 	 	 	 	 
 data_type           	string              	 	 	 	 	 	 	 	 	 	 
 min                 	                    	 	 	 	 	 	 	 	 	 	 
@@ -535,88 +535,88 @@ num_trues
 num_falses          	                    	 	 	 	 	 	 	 	 	 	 
 bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-PREHOOK: query: drop table Employee
+PREHOOK: query: drop table Employee_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table Employee
+POSTHOOK: query: drop table Employee_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE Employee(employeeID int, employeeName String) partitioned by (employeeSalary double, country string)
+PREHOOK: query: CREATE TABLE Employee_n0(employeeID int, employeeName String) partitioned by (employeeSalary double, country string)
 row format delimited fields terminated by '|'  stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@Employee
-POSTHOOK: query: CREATE TABLE Employee(employeeID int, employeeName String) partitioned by (employeeSalary double, country string)
+PREHOOK: Output: default@Employee_n0
+POSTHOOK: query: CREATE TABLE Employee_n0(employeeID int, employeeName String) partitioned by (employeeSalary double, country string)
 row format delimited fields terminated by '|'  stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@Employee
-PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee.dat"  INTO TABLE Employee partition(employeeSalary='2000.0', country='USA')
+POSTHOOK: Output: default@Employee_n0
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee.dat"  INTO TABLE Employee_n0 partition(employeeSalary='2000.0', country='USA')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@employee
-POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee.dat"  INTO TABLE Employee partition(employeeSalary='2000.0', country='USA')
+PREHOOK: Output: default@employee_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee.dat"  INTO TABLE Employee_n0 partition(employeeSalary='2000.0', country='USA')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@employee
-POSTHOOK: Output: default@employee@employeesalary=2000.0/country=USA
-PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee partition(employeeSalary='2000.0', country='UK')
+POSTHOOK: Output: default@employee_n0
+POSTHOOK: Output: default@employee_n0@employeesalary=2000.0/country=USA
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_n0 partition(employeeSalary='2000.0', country='UK')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@employee
-POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee partition(employeeSalary='2000.0', country='UK')
+PREHOOK: Output: default@employee_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_n0 partition(employeeSalary='2000.0', country='UK')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@employee
-POSTHOOK: Output: default@employee@employeesalary=2000.0/country=UK
-PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee partition(employeeSalary='3500.0', country='UK')
+POSTHOOK: Output: default@employee_n0
+POSTHOOK: Output: default@employee_n0@employeesalary=2000.0/country=UK
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_n0 partition(employeeSalary='3500.0', country='UK')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@employee
-POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee partition(employeeSalary='3500.0', country='UK')
+PREHOOK: Output: default@employee_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_n0 partition(employeeSalary='3500.0', country='UK')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@employee
-POSTHOOK: Output: default@employee@employeesalary=3500.0/country=UK
-PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee.dat"  INTO TABLE Employee partition(employeeSalary='3000.0', country='UK')
+POSTHOOK: Output: default@employee_n0
+POSTHOOK: Output: default@employee_n0@employeesalary=3500.0/country=UK
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee.dat"  INTO TABLE Employee_n0 partition(employeeSalary='3000.0', country='UK')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@employee
-POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee.dat"  INTO TABLE Employee partition(employeeSalary='3000.0', country='UK')
+PREHOOK: Output: default@employee_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee.dat"  INTO TABLE Employee_n0 partition(employeeSalary='3000.0', country='UK')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@employee
-POSTHOOK: Output: default@employee@employeesalary=3000.0/country=UK
-PREHOOK: query: analyze table Employee partition (employeeSalary,country) compute statistics for columns
+POSTHOOK: Output: default@employee_n0
+POSTHOOK: Output: default@employee_n0@employeesalary=3000.0/country=UK
+PREHOOK: query: analyze table Employee_n0 partition (employeeSalary,country) compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@employee
-PREHOOK: Input: default@employee@employeesalary=2000.0/country=UK
-PREHOOK: Input: default@employee@employeesalary=2000.0/country=USA
-PREHOOK: Input: default@employee@employeesalary=3000.0/country=UK
-PREHOOK: Input: default@employee@employeesalary=3500.0/country=UK
-PREHOOK: Output: default@employee
-PREHOOK: Output: default@employee@employeesalary=2000.0/country=UK
-PREHOOK: Output: default@employee@employeesalary=2000.0/country=USA
-PREHOOK: Output: default@employee@employeesalary=3000.0/country=UK
-PREHOOK: Output: default@employee@employeesalary=3500.0/country=UK
+PREHOOK: Input: default@employee_n0
+PREHOOK: Input: default@employee_n0@employeesalary=2000.0/country=UK
+PREHOOK: Input: default@employee_n0@employeesalary=2000.0/country=USA
+PREHOOK: Input: default@employee_n0@employeesalary=3000.0/country=UK
+PREHOOK: Input: default@employee_n0@employeesalary=3500.0/country=UK
+PREHOOK: Output: default@employee_n0
+PREHOOK: Output: default@employee_n0@employeesalary=2000.0/country=UK
+PREHOOK: Output: default@employee_n0@employeesalary=2000.0/country=USA
+PREHOOK: Output: default@employee_n0@employeesalary=3000.0/country=UK
+PREHOOK: Output: default@employee_n0@employeesalary=3500.0/country=UK
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table Employee partition (employeeSalary,country) compute statistics for columns
+POSTHOOK: query: analyze table Employee_n0 partition (employeeSalary,country) compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@employee
-POSTHOOK: Input: default@employee@employeesalary=2000.0/country=UK
-POSTHOOK: Input: default@employee@employeesalary=2000.0/country=USA
-POSTHOOK: Input: default@employee@employeesalary=3000.0/country=UK
-POSTHOOK: Input: default@employee@employeesalary=3500.0/country=UK
-POSTHOOK: Output: default@employee
-POSTHOOK: Output: default@employee@employeesalary=2000.0/country=UK
-POSTHOOK: Output: default@employee@employeesalary=2000.0/country=USA
-POSTHOOK: Output: default@employee@employeesalary=3000.0/country=UK
-POSTHOOK: Output: default@employee@employeesalary=3500.0/country=UK
+POSTHOOK: Input: default@employee_n0
+POSTHOOK: Input: default@employee_n0@employeesalary=2000.0/country=UK
+POSTHOOK: Input: default@employee_n0@employeesalary=2000.0/country=USA
+POSTHOOK: Input: default@employee_n0@employeesalary=3000.0/country=UK
+POSTHOOK: Input: default@employee_n0@employeesalary=3500.0/country=UK
+POSTHOOK: Output: default@employee_n0
+POSTHOOK: Output: default@employee_n0@employeesalary=2000.0/country=UK
+POSTHOOK: Output: default@employee_n0@employeesalary=2000.0/country=USA
+POSTHOOK: Output: default@employee_n0@employeesalary=3000.0/country=UK
+POSTHOOK: Output: default@employee_n0@employeesalary=3500.0/country=UK
 #### A masked pattern was here ####
-PREHOOK: query: describe formatted Employee partition (employeeSalary='3500.0', country='UK') employeeName
+PREHOOK: query: describe formatted Employee_n0 partition (employeeSalary='3500.0', country='UK') employeeName
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@employee
-POSTHOOK: query: describe formatted Employee partition (employeeSalary='3500.0', country='UK') employeeName
+PREHOOK: Input: default@employee_n0
+POSTHOOK: query: describe formatted Employee_n0 partition (employeeSalary='3500.0', country='UK') employeeName
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@employee
+POSTHOOK: Input: default@employee_n0
 col_name            	employeeName        	 	 	 	 	 	 	 	 	 	 
 data_type           	string              	 	 	 	 	 	 	 	 	 	 
 min                 	                    	 	 	 	 	 	 	 	 	 	 
@@ -629,64 +629,64 @@ num_trues
 num_falses          	                    	 	 	 	 	 	 	 	 	 	 
 bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee partition(employeeSalary='3000.0', country='USA')
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_n0 partition(employeeSalary='3000.0', country='USA')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@employee
-POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee partition(employeeSalary='3000.0', country='USA')
+PREHOOK: Output: default@employee_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_n0 partition(employeeSalary='3000.0', country='USA')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@employee
-POSTHOOK: Output: default@employee@employeesalary=3000.0/country=USA
-PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee partition(employeeSalary='4000.0', country='USA')
+POSTHOOK: Output: default@employee_n0
+POSTHOOK: Output: default@employee_n0@employeesalary=3000.0/country=USA
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_n0 partition(employeeSalary='4000.0', country='USA')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@employee
-POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee partition(employeeSalary='4000.0', country='USA')
+PREHOOK: Output: default@employee_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_n0 partition(employeeSalary='4000.0', country='USA')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@employee
-POSTHOOK: Output: default@employee@employeesalary=4000.0/country=USA
-PREHOOK: query: analyze table Employee partition (employeeSalary) compute statistics for columns
+POSTHOOK: Output: default@employee_n0
+POSTHOOK: Output: default@employee_n0@employeesalary=4000.0/country=USA
+PREHOOK: query: analyze table Employee_n0 partition (employeeSalary) compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@employee
-PREHOOK: Input: default@employee@employeesalary=2000.0/country=UK
-PREHOOK: Input: default@employee@employeesalary=2000.0/country=USA
-PREHOOK: Input: default@employee@employeesalary=3000.0/country=UK
-PREHOOK: Input: default@employee@employeesalary=3000.0/country=USA
-PREHOOK: Input: default@employee@employeesalary=3500.0/country=UK
-PREHOOK: Input: default@employee@employeesalary=4000.0/country=USA
-PREHOOK: Output: default@employee
-PREHOOK: Output: default@employee@employeesalary=2000.0/country=UK
-PREHOOK: Output: default@employee@employeesalary=2000.0/country=USA
-PREHOOK: Output: default@employee@employeesalary=3000.0/country=UK
-PREHOOK: Output: default@employee@employeesalary=3000.0/country=USA
-PREHOOK: Output: default@employee@employeesalary=3500.0/country=UK
-PREHOOK: Output: default@employee@employeesalary=4000.0/country=USA
+PREHOOK: Input: default@employee_n0
+PREHOOK: Input: default@employee_n0@employeesalary=2000.0/country=UK
+PREHOOK: Input: default@employee_n0@employeesalary=2000.0/country=USA
+PREHOOK: Input: default@employee_n0@employeesalary=3000.0/country=UK
+PREHOOK: Input: default@employee_n0@employeesalary=3000.0/country=USA
+PREHOOK: Input: default@employee_n0@employeesalary=3500.0/country=UK
+PREHOOK: Input: default@employee_n0@employeesalary=4000.0/country=USA
+PREHOOK: Output: default@employee_n0
+PREHOOK: Output: default@employee_n0@employeesalary=2000.0/country=UK
+PREHOOK: Output: default@employee_n0@employeesalary=2000.0/country=USA
+PREHOOK: Output: default@employee_n0@employeesalary=3000.0/country=UK
+PREHOOK: Output: default@employee_n0@employeesalary=3000.0/country=USA
+PREHOOK: Output: default@employee_n0@employeesalary=3500.0/country=UK
+PREHOOK: Output: default@employee_n0@employeesalary=4000.0/country=USA
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table Employee partition (employeeSalary) compute statistics for columns
+POSTHOOK: query: analyze table Employee_n0 partition (employeeSalary) compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@employee
-POSTHOOK: Input: default@employee@employeesalary=2000.0/country=UK
-POSTHOOK: Input: default@employee@employeesalary=2000.0/country=USA
-POSTHOOK: Input: default@employee@employeesalary=3000.0/country=UK
-POSTHOOK: Input: default@employee@employeesalary=3000.0/country=USA
-POSTHOOK: Input: default@employee@employeesalary=3500.0/country=UK
-POSTHOOK: Input: default@employee@employeesalary=4000.0/country=USA
-POSTHOOK: Output: default@employee
-POSTHOOK: Output: default@employee@employeesalary=2000.0/country=UK
-POSTHOOK: Output: default@employee@employeesalary=2000.0/country=USA
-POSTHOOK: Output: default@employee@employeesalary=3000.0/country=UK
-POSTHOOK: Output: default@employee@employeesalary=3000.0/country=USA
-POSTHOOK: Output: default@employee@employeesalary=3500.0/country=UK
-POSTHOOK: Output: default@employee@employeesalary=4000.0/country=USA
+POSTHOOK: Input: default@employee_n0
+POSTHOOK: Input: default@employee_n0@employeesalary=2000.0/country=UK
+POSTHOOK: Input: default@employee_n0@employeesalary=2000.0/country=USA
+POSTHOOK: Input: default@employee_n0@employeesalary=3000.0/country=UK
+POSTHOOK: Input: default@employee_n0@employeesalary=3000.0/country=USA
+POSTHOOK: Input: default@employee_n0@employeesalary=3500.0/country=UK
+POSTHOOK: Input: default@employee_n0@employeesalary=4000.0/country=USA
+POSTHOOK: Output: default@employee_n0
+POSTHOOK: Output: default@employee_n0@employeesalary=2000.0/country=UK
+POSTHOOK: Output: default@employee_n0@employeesalary=2000.0/country=USA
+POSTHOOK: Output: default@employee_n0@employeesalary=3000.0/country=UK
+POSTHOOK: Output: default@employee_n0@employeesalary=3000.0/country=USA
+POSTHOOK: Output: default@employee_n0@employeesalary=3500.0/country=UK
+POSTHOOK: Output: default@employee_n0@employeesalary=4000.0/country=USA
 #### A masked pattern was here ####
-PREHOOK: query: describe formatted Employee partition (employeeSalary='3000.0', country='USA') employeeName
+PREHOOK: query: describe formatted Employee_n0 partition (employeeSalary='3000.0', country='USA') employeeName
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@employee
-POSTHOOK: query: describe formatted Employee partition (employeeSalary='3000.0', country='USA') employeeName
+PREHOOK: Input: default@employee_n0
+POSTHOOK: query: describe formatted Employee_n0 partition (employeeSalary='3000.0', country='USA') employeeName
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@employee
+POSTHOOK: Input: default@employee_n0
 col_name            	employeeName        	 	 	 	 	 	 	 	 	 	 
 data_type           	string              	 	 	 	 	 	 	 	 	 	 
 min                 	                    	 	 	 	 	 	 	 	 	 	 
@@ -699,43 +699,43 @@ num_trues
 num_falses          	                    	 	 	 	 	 	 	 	 	 	 
 bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-PREHOOK: query: alter table Employee add columns (c int ,d string)
+PREHOOK: query: alter table Employee_n0 add columns (c int ,d string)
 PREHOOK: type: ALTERTABLE_ADDCOLS
-PREHOOK: Input: default@employee
-PREHOOK: Output: default@employee
-POSTHOOK: query: alter table Employee add columns (c int ,d string)
+PREHOOK: Input: default@employee_n0
+PREHOOK: Output: default@employee_n0
+POSTHOOK: query: alter table Employee_n0 add columns (c int ,d string)
 POSTHOOK: type: ALTERTABLE_ADDCOLS
-POSTHOOK: Input: default@employee
-POSTHOOK: Output: default@employee
-PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee_part.txt"  INTO TABLE Employee partition(employeeSalary='6000.0', country='UK')
+POSTHOOK: Input: default@employee_n0
+POSTHOOK: Output: default@employee_n0
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee_part.txt"  INTO TABLE Employee_n0 partition(employeeSalary='6000.0', country='UK')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@employee
-POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee_part.txt"  INTO TABLE Employee partition(employeeSalary='6000.0', country='UK')
+PREHOOK: Output: default@employee_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee_part.txt"  INTO TABLE Employee_n0 partition(employeeSalary='6000.0', country='UK')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@employee
-POSTHOOK: Output: default@employee@employeesalary=6000.0/country=UK
-PREHOOK: query: analyze table Employee partition (employeeSalary='6000.0',country='UK') compute statistics for columns
+POSTHOOK: Output: default@employee_n0
+POSTHOOK: Output: default@employee_n0@employeesalary=6000.0/country=UK
+PREHOOK: query: analyze table Employee_n0 partition (employeeSalary='6000.0',country='UK') compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@employee
-PREHOOK: Input: default@employee@employeesalary=6000.0/country=UK
-PREHOOK: Output: default@employee
-PREHOOK: Output: default@employee@employeesalary=6000.0/country=UK
+PREHOOK: Input: default@employee_n0
+PREHOOK: Input: default@employee_n0@employeesalary=6000.0/country=UK
+PREHOOK: Output: default@employee_n0
+PREHOOK: Output: default@employee_n0@employeesalary=6000.0/country=UK
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table Employee partition (employeeSalary='6000.0',country='UK') compute statistics for columns
+POSTHOOK: query: analyze table Employee_n0 partition (employeeSalary='6000.0',country='UK') compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@employee
-POSTHOOK: Input: default@employee@employeesalary=6000.0/country=UK
-POSTHOOK: Output: default@employee
-POSTHOOK: Output: default@employee@employeesalary=6000.0/country=UK
+POSTHOOK: Input: default@employee_n0
+POSTHOOK: Input: default@employee_n0@employeesalary=6000.0/country=UK
+POSTHOOK: Output: default@employee_n0
+POSTHOOK: Output: default@employee_n0@employeesalary=6000.0/country=UK
 #### A masked pattern was here ####
-PREHOOK: query: describe formatted Employee partition (employeeSalary='6000.0', country='UK') employeeName
+PREHOOK: query: describe formatted Employee_n0 partition (employeeSalary='6000.0', country='UK') employeeName
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@employee
-POSTHOOK: query: describe formatted Employee partition (employeeSalary='6000.0', country='UK') employeeName
+PREHOOK: Input: default@employee_n0
+POSTHOOK: query: describe formatted Employee_n0 partition (employeeSalary='6000.0', country='UK') employeeName
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@employee
+POSTHOOK: Input: default@employee_n0
 col_name            	employeeName        	 	 	 	 	 	 	 	 	 	 
 data_type           	string              	 	 	 	 	 	 	 	 	 	 
 min                 	                    	 	 	 	 	 	 	 	 	 	 
@@ -748,12 +748,12 @@ num_trues
 num_falses          	                    	 	 	 	 	 	 	 	 	 	 
 bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-PREHOOK: query: describe formatted Employee partition (employeeSalary='6000.0', country='UK') c
+PREHOOK: query: describe formatted Employee_n0 partition (employeeSalary='6000.0', country='UK') c
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@employee
-POSTHOOK: query: describe formatted Employee partition (employeeSalary='6000.0', country='UK') c
+PREHOOK: Input: default@employee_n0
+POSTHOOK: query: describe formatted Employee_n0 partition (employeeSalary='6000.0', country='UK') c
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@employee
+POSTHOOK: Input: default@employee_n0
 col_name            	c                   	 	 	 	 	 	 	 	 	 	 
 data_type           	int                 	 	 	 	 	 	 	 	 	 	 
 min                 	2000                	 	 	 	 	 	 	 	 	 	 
@@ -766,12 +766,12 @@ num_trues
 num_falses          	                    	 	 	 	 	 	 	 	 	 	 
 bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-PREHOOK: query: describe formatted Employee partition (employeeSalary='6000.0', country='UK') d
+PREHOOK: query: describe formatted Employee_n0 partition (employeeSalary='6000.0', country='UK') d
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@employee
-POSTHOOK: query: describe formatted Employee partition (employeeSalary='6000.0', country='UK') d
+PREHOOK: Input: default@employee_n0
+POSTHOOK: query: describe formatted Employee_n0 partition (employeeSalary='6000.0', country='UK') d
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@employee
+POSTHOOK: Input: default@employee_n0
 col_name            	d                   	 	 	 	 	 	 	 	 	 	 
 data_type           	string              	 	 	 	 	 	 	 	 	 	 
 min                 	                    	 	 	 	 	 	 	 	 	 	 

@@ -1,71 +1,71 @@
-PREHOOK: query: CREATE VIEW V1 AS SELECT key, value from src
+PREHOOK: query: CREATE VIEW V1_n8 AS SELECT key, value from src
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@V1
-POSTHOOK: query: CREATE VIEW V1 AS SELECT key, value from src
+PREHOOK: Output: default@V1_n8
+POSTHOOK: query: CREATE VIEW V1_n8 AS SELECT key, value from src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@V1
-POSTHOOK: Lineage: V1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: V1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: CREATE VIEW V2 AS SELECT ds, key, value FROM srcpart WHERE ds IS NOT NULL
+POSTHOOK: Output: default@V1_n8
+POSTHOOK: Lineage: V1_n8.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: V1_n8.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: CREATE VIEW V2_n3 AS SELECT ds, key, value FROM srcpart WHERE ds IS NOT NULL
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@srcpart
 PREHOOK: Output: database:default
-PREHOOK: Output: default@V2
-POSTHOOK: query: CREATE VIEW V2 AS SELECT ds, key, value FROM srcpart WHERE ds IS NOT NULL
+PREHOOK: Output: default@V2_n3
+POSTHOOK: query: CREATE VIEW V2_n3 AS SELECT ds, key, value FROM srcpart WHERE ds IS NOT NULL
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@V2
-POSTHOOK: Lineage: V2.ds SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: V2.key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: V2.value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: CREATE VIEW V3 AS 
-  SELECT src1.key, src2.value FROM V2 src1 
+POSTHOOK: Output: default@V2_n3
+POSTHOOK: Lineage: V2_n3.ds SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: V2_n3.key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: V2_n3.value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: CREATE VIEW V3_n1 AS 
+  SELECT src1.key, src2.value FROM V2_n3 src1 
   JOIN src src2 ON src1.key = src2.key WHERE src1.ds IS NOT NULL
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Input: default@srcpart
-PREHOOK: Input: default@v2
+PREHOOK: Input: default@v2_n3
 PREHOOK: Output: database:default
-PREHOOK: Output: default@V3
-POSTHOOK: query: CREATE VIEW V3 AS 
-  SELECT src1.key, src2.value FROM V2 src1 
+PREHOOK: Output: default@V3_n1
+POSTHOOK: query: CREATE VIEW V3_n1 AS 
+  SELECT src1.key, src2.value FROM V2_n3 src1 
   JOIN src src2 ON src1.key = src2.key WHERE src1.ds IS NOT NULL
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@srcpart
-POSTHOOK: Input: default@v2
+POSTHOOK: Input: default@v2_n3
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@V3
-POSTHOOK: Lineage: V3.key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: V3.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: CREATE VIEW V4 AS 
+POSTHOOK: Output: default@V3_n1
+POSTHOOK: Lineage: V3_n1.key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: V3_n1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: CREATE VIEW V4_n1 AS 
   SELECT src1.key, src2.value as value1, src3.value as value2 
-  FROM V1 src1 JOIN V2 src2 on src1.key = src2.key JOIN src src3 ON src2.key = src3.key
+  FROM V1_n8 src1 JOIN V2_n3 src2 on src1.key = src2.key JOIN src src3 ON src2.key = src3.key
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Input: default@srcpart
-PREHOOK: Input: default@v1
-PREHOOK: Input: default@v2
+PREHOOK: Input: default@v1_n8
+PREHOOK: Input: default@v2_n3
 PREHOOK: Output: database:default
-PREHOOK: Output: default@V4
-POSTHOOK: query: CREATE VIEW V4 AS 
+PREHOOK: Output: default@V4_n1
+POSTHOOK: query: CREATE VIEW V4_n1 AS 
   SELECT src1.key, src2.value as value1, src3.value as value2 
-  FROM V1 src1 JOIN V2 src2 on src1.key = src2.key JOIN src src3 ON src2.key = src3.key
+  FROM V1_n8 src1 JOIN V2_n3 src2 on src1.key = src2.key JOIN src src3 ON src2.key = src3.key
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@srcpart
-POSTHOOK: Input: default@v1
-POSTHOOK: Input: default@v2
+POSTHOOK: Input: default@v1_n8
+POSTHOOK: Input: default@v2_n3
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@V4
-POSTHOOK: Lineage: V4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: V4.value1 SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: V4.value2 SIMPLE [(src)src3.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@V4_n1
+POSTHOOK: Lineage: V4_n1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: V4_n1.value1 SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: V4_n1.value2 SIMPLE [(src)src3.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: EXPLAIN LOGICAL 
   SELECT key, count(1) FROM srcpart WHERE ds IS NOT NULL GROUP BY key
 PREHOOK: type: QUERY
@@ -255,9 +255,9 @@ $hdt$_1:s2
             outputColumnNames: _col0, _col2
             Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
 
-PREHOOK: query: EXPLAIN LOGICAL SELECT * FROM V1
+PREHOOK: query: EXPLAIN LOGICAL SELECT * FROM V1_n8
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN LOGICAL SELECT * FROM V1
+POSTHOOK: query: EXPLAIN LOGICAL SELECT * FROM V1_n8
 POSTHOOK: type: QUERY
 LOGICAL PLAN:
 src 
@@ -272,9 +272,9 @@ src
       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
       ListSink (LIST_SINK_3)
 
-PREHOOK: query: EXPLAIN LOGICAL SELECT * FROM V2
+PREHOOK: query: EXPLAIN LOGICAL SELECT * FROM V2_n3
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN LOGICAL SELECT * FROM V2
+POSTHOOK: query: EXPLAIN LOGICAL SELECT * FROM V2_n3
 POSTHOOK: type: QUERY
 LOGICAL PLAN:
 srcpart 
@@ -289,9 +289,9 @@ srcpart
       Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
       ListSink (LIST_SINK_5)
 
-PREHOOK: query: EXPLAIN LOGICAL SELECT * FROM V3
+PREHOOK: query: EXPLAIN LOGICAL SELECT * FROM V3_n1
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN LOGICAL SELECT * FROM V3
+POSTHOOK: query: EXPLAIN LOGICAL SELECT * FROM V3_n1
 POSTHOOK: type: QUERY
 LOGICAL PLAN:
 $hdt$_0:srcpart 
@@ -359,9 +359,9 @@ $hdt$_1:src2
             outputColumnNames: _col0, _col2
             Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
 
-PREHOOK: query: EXPLAIN LOGICAL SELECT * FROM V4
+PREHOOK: query: EXPLAIN LOGICAL SELECT * FROM V4_n1
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN LOGICAL SELECT * FROM V4
+POSTHOOK: query: EXPLAIN LOGICAL SELECT * FROM V4_n1
 POSTHOOK: type: QUERY
 LOGICAL PLAN:
 $hdt$_0:srcpart 
@@ -462,23 +462,23 @@ $hdt$_2:src3
             outputColumnNames: _col1, _col2, _col4
             Statistics: Num rows: 4400 Data size: 46745 Basic stats: COMPLETE Column stats: NONE
 
-PREHOOK: query: CREATE VIEW V5 as SELECT * FROM srcpart where ds = '10'
+PREHOOK: query: CREATE VIEW V5_n0 as SELECT * FROM srcpart where ds = '10'
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@srcpart
 PREHOOK: Output: database:default
-PREHOOK: Output: default@V5
-POSTHOOK: query: CREATE VIEW V5 as SELECT * FROM srcpart where ds = '10'
+PREHOOK: Output: default@V5_n0
+POSTHOOK: query: CREATE VIEW V5_n0 as SELECT * FROM srcpart where ds = '10'
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@V5
-POSTHOOK: Lineage: V5.ds SIMPLE []
-POSTHOOK: Lineage: V5.hr SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: V5.key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: V5.value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: EXPLAIN LOGICAL SELECT * FROM V5
+POSTHOOK: Output: default@V5_n0
+POSTHOOK: Lineage: V5_n0.ds SIMPLE []
+POSTHOOK: Lineage: V5_n0.hr SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: V5_n0.key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: V5_n0.value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: EXPLAIN LOGICAL SELECT * FROM V5_n0
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN LOGICAL SELECT * FROM V5
+POSTHOOK: query: EXPLAIN LOGICAL SELECT * FROM V5_n0
 POSTHOOK: type: QUERY
 LOGICAL PLAN:
 srcpart 

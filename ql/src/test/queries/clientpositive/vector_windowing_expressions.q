@@ -6,9 +6,9 @@ SET hive.vectorized.execution.reduce.enabled=true;
 set hive.vectorized.execution.ptf.enabled=true;
 set hive.fetch.task.conversion=none;
 
-drop table over10k;
+drop table over10k_n3;
 
-create table over10k(
+create table over10k_n3(
            t tinyint,
            si smallint,
            i int,
@@ -23,7 +23,7 @@ create table over10k(
        row format delimited
        fields terminated by '|';
 
-load data local inpath '../../data/files/over10k' into table over10k;
+load data local inpath '../../data/files/over10k' into table over10k_n3;
 
 explain vectorization detail
 select p_mfgr, p_retailprice, p_size,
@@ -54,17 +54,17 @@ from part
 ;
 
 explain vectorization detail
-select s, si, f, si - lead(f, 3) over (partition by t order by bo,s,si,f desc) from over10k limit 100;
-select s, si, f, si - lead(f, 3) over (partition by t order by bo,s,si,f desc) from over10k limit 100;
+select s, si, f, si - lead(f, 3) over (partition by t order by bo,s,si,f desc) from over10k_n3 limit 100;
+select s, si, f, si - lead(f, 3) over (partition by t order by bo,s,si,f desc) from over10k_n3 limit 100;
 explain vectorization detail
-select s, i, i - lead(i, 3, 0) over (partition by si order by i,s) from over10k limit 100;
-select s, i, i - lead(i, 3, 0) over (partition by si order by i,s) from over10k limit 100;
+select s, i, i - lead(i, 3, 0) over (partition by si order by i,s) from over10k_n3 limit 100;
+select s, i, i - lead(i, 3, 0) over (partition by si order by i,s) from over10k_n3 limit 100;
 explain vectorization detail
-select s, si, d, si - lag(d, 3) over (partition by b order by si,s,d) from over10k limit 100;
-select s, si, d, si - lag(d, 3) over (partition by b order by si,s,d) from over10k limit 100;
+select s, si, d, si - lag(d, 3) over (partition by b order by si,s,d) from over10k_n3 limit 100;
+select s, si, d, si - lag(d, 3) over (partition by b order by si,s,d) from over10k_n3 limit 100;
 explain vectorization detail
-select s, lag(s, 3, 'fred') over (partition by f order by b) from over10k limit 100;
-select s, lag(s, 3, 'fred') over (partition by f order by b) from over10k limit 100;
+select s, lag(s, 3, 'fred') over (partition by f order by b) from over10k_n3 limit 100;
+select s, lag(s, 3, 'fred') over (partition by f order by b) from over10k_n3 limit 100;
 
 explain vectorization detail
 select p_mfgr, avg(p_retailprice) over(partition by p_mfgr, p_type order by p_mfgr) from part;
@@ -75,13 +75,13 @@ select p_mfgr, avg(p_retailprice) over(partition by p_mfgr order by p_type,p_mfg
 select p_mfgr, avg(p_retailprice) over(partition by p_mfgr order by p_type,p_mfgr rows between unbounded preceding and current row) from part;
 
 -- multi table insert test
-create table t1 (a1 int, b1 string); 
-create table t2 (a1 int, b1 string);
+create table t1_n23 (a1 int, b1 string); 
+create table t2_n15 (a1 int, b1 string);
 explain vectorization detail
-from (select sum(i) over (partition by ts order by i), s from over10k) tt insert overwrite table t1 select * insert overwrite table t2 select * ;
-from (select sum(i) over (partition by ts order by i), s from over10k) tt insert overwrite table t1 select * insert overwrite table t2 select * ;
-select * from t1 limit 3;
-select * from t2 limit 3;
+from (select sum(i) over (partition by ts order by i), s from over10k_n3) tt insert overwrite table t1_n23 select * insert overwrite table t2_n15 select * ;
+from (select sum(i) over (partition by ts order by i), s from over10k_n3) tt insert overwrite table t1_n23 select * insert overwrite table t2_n15 select * ;
+select * from t1_n23 limit 3;
+select * from t2_n15 limit 3;
 
 explain vectorization detail
 select p_mfgr, p_retailprice, p_size,
@@ -120,9 +120,9 @@ select p_mfgr, avg(p_retailprice) over(partition by p_mfgr, p_type order by p_mf
 
 select p_mfgr, avg(p_retailprice) over(partition by p_mfgr order by p_type,p_mfgr rows between unbounded preceding and current row) from part;
 
-from (select sum(i) over (partition by ts order by i), s from over10k) tt insert overwrite table t1 select * insert overwrite table t2 select * ;
-select * from t1 limit 3;
-select * from t2 limit 3;
+from (select sum(i) over (partition by ts order by i), s from over10k_n3) tt insert overwrite table t1_n23 select * insert overwrite table t2_n15 select * ;
+select * from t1_n23 limit 3;
+select * from t2_n15 limit 3;
 
 select p_mfgr, p_retailprice, p_size,
 round(sum(p_retailprice) over w1 , 2) + 50.0 = round(sum(lag(p_retailprice,1,50.0)) over w1 + (last_value(p_retailprice) over w1),2)

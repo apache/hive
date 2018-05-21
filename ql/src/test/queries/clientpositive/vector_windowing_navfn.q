@@ -6,9 +6,9 @@ SET hive.vectorized.execution.reduce.enabled=true;
 set hive.vectorized.execution.ptf.enabled=true;
 set hive.fetch.task.conversion=none;
 
-drop table over10k;
+drop table over10k_n7;
 
-create table over10k(
+create table over10k_n7(
            t tinyint,
            si smallint,
            i int,
@@ -23,7 +23,7 @@ create table over10k(
        row format delimited
        fields terminated by '|';
 
-load data local inpath '../../data/files/over10k' into table over10k;
+load data local inpath '../../data/files/over10k' into table over10k_n7;
 
 explain vectorization detail
 select row_number() over()  from src where key = '238';
@@ -31,36 +31,36 @@ select row_number() over()  from src where key = '238';
 select row_number() over()  from src where key = '238';
 
 explain vectorization detail
-select s, row_number() over (partition by d order by `dec`) from over10k limit 100;
+select s, row_number() over (partition by d order by `dec`) from over10k_n7 limit 100;
 
-select s, row_number() over (partition by d order by `dec`) from over10k limit 100;
-
-explain vectorization detail
-select i, lead(s) over (partition by bin order by d,i desc) from over10k limit 100;
-
-select i, lead(s) over (partition by bin order by d,i desc) from over10k limit 100;
+select s, row_number() over (partition by d order by `dec`) from over10k_n7 limit 100;
 
 explain vectorization detail
-select i, lag(`dec`) over (partition by i order by s,i,`dec`) from over10k limit 100;
+select i, lead(s) over (partition by bin order by d,i desc) from over10k_n7 limit 100;
 
-select i, lag(`dec`) over (partition by i order by s,i,`dec`) from over10k limit 100;
-
-explain vectorization detail
-select s, last_value(t) over (partition by d order by f) from over10k limit 100;
-
-select s, last_value(t) over (partition by d order by f) from over10k limit 100;
+select i, lead(s) over (partition by bin order by d,i desc) from over10k_n7 limit 100;
 
 explain vectorization detail
-select s, first_value(s) over (partition by bo order by s) from over10k limit 100;
+select i, lag(`dec`) over (partition by i order by s,i,`dec`) from over10k_n7 limit 100;
 
-select s, first_value(s) over (partition by bo order by s) from over10k limit 100;
+select i, lag(`dec`) over (partition by i order by s,i,`dec`) from over10k_n7 limit 100;
+
+explain vectorization detail
+select s, last_value(t) over (partition by d order by f) from over10k_n7 limit 100;
+
+select s, last_value(t) over (partition by d order by f) from over10k_n7 limit 100;
+
+explain vectorization detail
+select s, first_value(s) over (partition by bo order by s) from over10k_n7 limit 100;
+
+select s, first_value(s) over (partition by bo order by s) from over10k_n7 limit 100;
 
 explain vectorization detail
 select t, s, i, last_value(i) over (partition by t order by s) 
-from over10k where (s = 'oscar allen' or s = 'oscar carson') and t = 10;
+from over10k_n7 where (s = 'oscar allen' or s = 'oscar carson') and t = 10;
 
 -- select t, s, i, last_value(i) over (partition by t order by s) 
--- from over10k where (s = 'oscar allen' or s = 'oscar carson') and t = 10;
+-- from over10k_n7 where (s = 'oscar allen' or s = 'oscar carson') and t = 10;
 
 drop table if exists wtest;
 create table wtest as

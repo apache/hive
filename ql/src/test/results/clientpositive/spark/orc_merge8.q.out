@@ -1,4 +1,4 @@
-PREHOOK: query: create table if not exists alltypes (
+PREHOOK: query: create table if not exists alltypes_n1 (
  bo boolean,
  ti tinyint,
  si smallint,
@@ -20,8 +20,8 @@ collection items terminated by ','
 map keys terminated by ':' stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@alltypes
-POSTHOOK: query: create table if not exists alltypes (
+PREHOOK: Output: default@alltypes_n1
+POSTHOOK: query: create table if not exists alltypes_n1 (
  bo boolean,
  ti tinyint,
  si smallint,
@@ -43,91 +43,91 @@ collection items terminated by ','
 map keys terminated by ':' stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@alltypes
-PREHOOK: query: create table alltypes_orc like alltypes
+POSTHOOK: Output: default@alltypes_n1
+PREHOOK: query: create table alltypes_orc_n1 like alltypes_n1
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@alltypes_orc
-POSTHOOK: query: create table alltypes_orc like alltypes
+PREHOOK: Output: default@alltypes_orc_n1
+POSTHOOK: query: create table alltypes_orc_n1 like alltypes_n1
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@alltypes_orc
-PREHOOK: query: alter table alltypes_orc set fileformat orc
+POSTHOOK: Output: default@alltypes_orc_n1
+PREHOOK: query: alter table alltypes_orc_n1 set fileformat orc
 PREHOOK: type: ALTERTABLE_FILEFORMAT
-PREHOOK: Input: default@alltypes_orc
-PREHOOK: Output: default@alltypes_orc
-POSTHOOK: query: alter table alltypes_orc set fileformat orc
+PREHOOK: Input: default@alltypes_orc_n1
+PREHOOK: Output: default@alltypes_orc_n1
+POSTHOOK: query: alter table alltypes_orc_n1 set fileformat orc
 POSTHOOK: type: ALTERTABLE_FILEFORMAT
-POSTHOOK: Input: default@alltypes_orc
-POSTHOOK: Output: default@alltypes_orc
-PREHOOK: query: load data local inpath '../../data/files/alltypes2.txt' overwrite into table alltypes
+POSTHOOK: Input: default@alltypes_orc_n1
+POSTHOOK: Output: default@alltypes_orc_n1
+PREHOOK: query: load data local inpath '../../data/files/alltypes2.txt' overwrite into table alltypes_n1
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@alltypes
-POSTHOOK: query: load data local inpath '../../data/files/alltypes2.txt' overwrite into table alltypes
+PREHOOK: Output: default@alltypes_n1
+POSTHOOK: query: load data local inpath '../../data/files/alltypes2.txt' overwrite into table alltypes_n1
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@alltypes
-PREHOOK: query: insert overwrite table alltypes_orc select * from alltypes
+POSTHOOK: Output: default@alltypes_n1
+PREHOOK: query: insert overwrite table alltypes_orc_n1 select * from alltypes_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@alltypes
-PREHOOK: Output: default@alltypes_orc
-POSTHOOK: query: insert overwrite table alltypes_orc select * from alltypes
+PREHOOK: Input: default@alltypes_n1
+PREHOOK: Output: default@alltypes_orc_n1
+POSTHOOK: query: insert overwrite table alltypes_orc_n1 select * from alltypes_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@alltypes
-POSTHOOK: Output: default@alltypes_orc
-POSTHOOK: Lineage: alltypes_orc.bi SIMPLE [(alltypes)alltypes.FieldSchema(name:bi, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo SIMPLE [(alltypes)alltypes.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.c SIMPLE [(alltypes)alltypes.FieldSchema(name:c, type:char(5), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d SIMPLE [(alltypes)alltypes.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da SIMPLE [(alltypes)alltypes.FieldSchema(name:da, type:date, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de SIMPLE [(alltypes)alltypes.FieldSchema(name:de, type:decimal(10,3), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f SIMPLE [(alltypes)alltypes.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i SIMPLE [(alltypes)alltypes.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l SIMPLE [(alltypes)alltypes.FieldSchema(name:l, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m SIMPLE [(alltypes)alltypes.FieldSchema(name:m, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s SIMPLE [(alltypes)alltypes.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si SIMPLE [(alltypes)alltypes.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st SIMPLE [(alltypes)alltypes.FieldSchema(name:st, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti SIMPLE [(alltypes)alltypes.FieldSchema(name:ti, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts SIMPLE [(alltypes)alltypes.FieldSchema(name:ts, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc SIMPLE [(alltypes)alltypes.FieldSchema(name:vc, type:varchar(5), comment:null), ]
-PREHOOK: query: insert into table alltypes_orc select * from alltypes
+POSTHOOK: Input: default@alltypes_n1
+POSTHOOK: Output: default@alltypes_orc_n1
+POSTHOOK: Lineage: alltypes_orc_n1.bi SIMPLE [(alltypes_n1)alltypes_n1.FieldSchema(name:bi, type:bigint, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc_n1.bo SIMPLE [(alltypes_n1)alltypes_n1.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc_n1.c SIMPLE [(alltypes_n1)alltypes_n1.FieldSchema(name:c, type:char(5), comment:null), ]
+POSTHOOK: Lineage: alltypes_orc_n1.d SIMPLE [(alltypes_n1)alltypes_n1.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc_n1.da SIMPLE [(alltypes_n1)alltypes_n1.FieldSchema(name:da, type:date, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc_n1.de SIMPLE [(alltypes_n1)alltypes_n1.FieldSchema(name:de, type:decimal(10,3), comment:null), ]
+POSTHOOK: Lineage: alltypes_orc_n1.f SIMPLE [(alltypes_n1)alltypes_n1.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc_n1.i SIMPLE [(alltypes_n1)alltypes_n1.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc_n1.l SIMPLE [(alltypes_n1)alltypes_n1.FieldSchema(name:l, type:array<int>, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc_n1.m SIMPLE [(alltypes_n1)alltypes_n1.FieldSchema(name:m, type:map<string,string>, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc_n1.s SIMPLE [(alltypes_n1)alltypes_n1.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc_n1.si SIMPLE [(alltypes_n1)alltypes_n1.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc_n1.st SIMPLE [(alltypes_n1)alltypes_n1.FieldSchema(name:st, type:struct<c1:int,c2:string>, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc_n1.ti SIMPLE [(alltypes_n1)alltypes_n1.FieldSchema(name:ti, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc_n1.ts SIMPLE [(alltypes_n1)alltypes_n1.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc_n1.vc SIMPLE [(alltypes_n1)alltypes_n1.FieldSchema(name:vc, type:varchar(5), comment:null), ]
+PREHOOK: query: insert into table alltypes_orc_n1 select * from alltypes_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@alltypes
-PREHOOK: Output: default@alltypes_orc
-POSTHOOK: query: insert into table alltypes_orc select * from alltypes
+PREHOOK: Input: default@alltypes_n1
+PREHOOK: Output: default@alltypes_orc_n1
+POSTHOOK: query: insert into table alltypes_orc_n1 select * from alltypes_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@alltypes
-POSTHOOK: Output: default@alltypes_orc
-POSTHOOK: Lineage: alltypes_orc.bi SIMPLE [(alltypes)alltypes.FieldSchema(name:bi, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo SIMPLE [(alltypes)alltypes.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.c SIMPLE [(alltypes)alltypes.FieldSchema(name:c, type:char(5), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d SIMPLE [(alltypes)alltypes.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da SIMPLE [(alltypes)alltypes.FieldSchema(name:da, type:date, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de SIMPLE [(alltypes)alltypes.FieldSchema(name:de, type:decimal(10,3), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f SIMPLE [(alltypes)alltypes.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i SIMPLE [(alltypes)alltypes.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l SIMPLE [(alltypes)alltypes.FieldSchema(name:l, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m SIMPLE [(alltypes)alltypes.FieldSchema(name:m, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s SIMPLE [(alltypes)alltypes.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si SIMPLE [(alltypes)alltypes.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st SIMPLE [(alltypes)alltypes.FieldSchema(name:st, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti SIMPLE [(alltypes)alltypes.FieldSchema(name:ti, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts SIMPLE [(alltypes)alltypes.FieldSchema(name:ts, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc SIMPLE [(alltypes)alltypes.FieldSchema(name:vc, type:varchar(5), comment:null), ]
+POSTHOOK: Input: default@alltypes_n1
+POSTHOOK: Output: default@alltypes_orc_n1
+POSTHOOK: Lineage: alltypes_orc_n1.bi SIMPLE [(alltypes_n1)alltypes_n1.FieldSchema(name:bi, type:bigint, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc_n1.bo SIMPLE [(alltypes_n1)alltypes_n1.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc_n1.c SIMPLE [(alltypes_n1)alltypes_n1.FieldSchema(name:c, type:char(5), comment:null), ]
+POSTHOOK: Lineage: alltypes_orc_n1.d SIMPLE [(alltypes_n1)alltypes_n1.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc_n1.da SIMPLE [(alltypes_n1)alltypes_n1.FieldSchema(name:da, type:date, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc_n1.de SIMPLE [(alltypes_n1)alltypes_n1.FieldSchema(name:de, type:decimal(10,3), comment:null), ]
+POSTHOOK: Lineage: alltypes_orc_n1.f SIMPLE [(alltypes_n1)alltypes_n1.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc_n1.i SIMPLE [(alltypes_n1)alltypes_n1.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc_n1.l SIMPLE [(alltypes_n1)alltypes_n1.FieldSchema(name:l, type:array<int>, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc_n1.m SIMPLE [(alltypes_n1)alltypes_n1.FieldSchema(name:m, type:map<string,string>, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc_n1.s SIMPLE [(alltypes_n1)alltypes_n1.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc_n1.si SIMPLE [(alltypes_n1)alltypes_n1.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc_n1.st SIMPLE [(alltypes_n1)alltypes_n1.FieldSchema(name:st, type:struct<c1:int,c2:string>, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc_n1.ti SIMPLE [(alltypes_n1)alltypes_n1.FieldSchema(name:ti, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc_n1.ts SIMPLE [(alltypes_n1)alltypes_n1.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc_n1.vc SIMPLE [(alltypes_n1)alltypes_n1.FieldSchema(name:vc, type:varchar(5), comment:null), ]
 Found 4 items
 -rw-r--r--   3 ### USER ### ### GROUP ###       1595 ### HDFS DATE ### hdfs://### HDFS PATH ###
 -rw-r--r--   3 ### USER ### ### GROUP ###       1595 ### HDFS DATE ### hdfs://### HDFS PATH ###
 -rw-r--r--   3 ### USER ### ### GROUP ###       1606 ### HDFS DATE ### hdfs://### HDFS PATH ###
 -rw-r--r--   3 ### USER ### ### GROUP ###       1606 ### HDFS DATE ### hdfs://### HDFS PATH ###
-PREHOOK: query: alter table alltypes_orc concatenate
+PREHOOK: query: alter table alltypes_orc_n1 concatenate
 PREHOOK: type: ALTER_TABLE_MERGE
-PREHOOK: Input: default@alltypes_orc
-PREHOOK: Output: default@alltypes_orc
-POSTHOOK: query: alter table alltypes_orc concatenate
+PREHOOK: Input: default@alltypes_orc_n1
+PREHOOK: Output: default@alltypes_orc_n1
+POSTHOOK: query: alter table alltypes_orc_n1 concatenate
 POSTHOOK: type: ALTER_TABLE_MERGE
-POSTHOOK: Input: default@alltypes_orc
-POSTHOOK: Output: default@alltypes_orc
+POSTHOOK: Input: default@alltypes_orc_n1
+POSTHOOK: Output: default@alltypes_orc_n1
 Found 1 items
 -rw-r--r--   3 ### USER ### ### GROUP ###       4634 ### HDFS DATE ### hdfs://### HDFS PATH ###

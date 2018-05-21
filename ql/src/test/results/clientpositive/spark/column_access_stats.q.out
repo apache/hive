@@ -1,28 +1,28 @@
-PREHOOK: query: CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE T1_n127(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1
+PREHOOK: Output: default@T1_n127
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_n127
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t1
-PREHOOK: query: CREATE TABLE T2(key STRING, val STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@t1_n127
+PREHOOK: query: CREATE TABLE T2_n75(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T2
-PREHOOK: query: CREATE TABLE T3(key STRING, val STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@T2_n75
+PREHOOK: query: CREATE TABLE T3_n29(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T3
-PREHOOK: query: CREATE TABLE T4(key STRING, val STRING) PARTITIONED BY (p STRING)
+PREHOOK: Output: default@T3_n29
+PREHOOK: query: CREATE TABLE T4_n16(key STRING, val STRING) PARTITIONED BY (p STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T4
-PREHOOK: query: SELECT key FROM T1
+PREHOOK: Output: default@T4_n16
+PREHOOK: query: SELECT key FROM T1_n127
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n127
 #### A masked pattern was here ####
-Table:default@t1
+Table:default@t1_n127
 Columns:key
 
 1
@@ -31,11 +31,11 @@ Columns:key
 7
 8
 8
-PREHOOK: query: SELECT key, val FROM T1
+PREHOOK: query: SELECT key, val FROM T1_n127
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n127
 #### A masked pattern was here ####
-Table:default@t1
+Table:default@t1_n127
 Columns:key,val
 
 1	11
@@ -44,9 +44,9 @@ Columns:key,val
 7	17
 8	18
 8	28
-PREHOOK: query: SELECT 1 FROM T1
+PREHOOK: query: SELECT 1 FROM T1_n127
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n127
 #### A masked pattern was here ####
 1
 1
@@ -54,28 +54,28 @@ PREHOOK: Input: default@t1
 1
 1
 1
-PREHOOK: query: SELECT key, val from T4 where p=1
+PREHOOK: query: SELECT key, val from T4_n16 where p=1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t4
+PREHOOK: Input: default@t4_n16
 #### A masked pattern was here ####
-Table:default@t4
+Table:default@t4_n16
 Columns:key,p,val
 
-PREHOOK: query: SELECT val FROM T4 where p=1
+PREHOOK: query: SELECT val FROM T4_n16 where p=1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t4
+PREHOOK: Input: default@t4_n16
 #### A masked pattern was here ####
-Table:default@t4
+Table:default@t4_n16
 Columns:p,val
 
-PREHOOK: query: SELECT p, val FROM T4 where p=1
+PREHOOK: query: SELECT p, val FROM T4_n16 where p=1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t4
+PREHOOK: Input: default@t4_n16
 #### A masked pattern was here ####
-Table:default@t4
+Table:default@t4_n16
 Columns:p,val
 
-PREHOOK: query: EXPLAIN SELECT key FROM (SELECT key, val FROM T1) subq1
+PREHOOK: query: EXPLAIN SELECT key FROM (SELECT key, val FROM T1_n127) subq1
 PREHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -86,17 +86,17 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: t1
+          alias: t1_n127
           Select Operator
             expressions: key (type: string)
             outputColumnNames: _col0
             ListSink
 
-PREHOOK: query: SELECT key FROM (SELECT key, val FROM T1) subq1
+PREHOOK: query: SELECT key FROM (SELECT key, val FROM T1_n127) subq1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n127
 #### A masked pattern was here ####
-Table:default@t1
+Table:default@t1_n127
 Columns:key
 
 1
@@ -105,7 +105,7 @@ Columns:key
 7
 8
 8
-PREHOOK: query: EXPLAIN SELECT k FROM (SELECT key as k, val as v FROM T1) subq1
+PREHOOK: query: EXPLAIN SELECT k FROM (SELECT key as k, val as v FROM T1_n127) subq1
 PREHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -116,17 +116,17 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: t1
+          alias: t1_n127
           Select Operator
             expressions: key (type: string)
             outputColumnNames: _col0
             ListSink
 
-PREHOOK: query: SELECT k FROM (SELECT key as k, val as v FROM T1) subq1
+PREHOOK: query: SELECT k FROM (SELECT key as k, val as v FROM T1_n127) subq1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n127
 #### A masked pattern was here ####
-Table:default@t1
+Table:default@t1_n127
 Columns:key
 
 1
@@ -135,11 +135,11 @@ Columns:key
 7
 8
 8
-PREHOOK: query: SELECT key + 1 as k FROM T1
+PREHOOK: query: SELECT key + 1 as k FROM T1_n127
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n127
 #### A masked pattern was here ####
-Table:default@t1
+Table:default@t1_n127
 Columns:key
 
 2.0
@@ -148,11 +148,11 @@ Columns:key
 8.0
 9.0
 9.0
-PREHOOK: query: SELECT key + val as k FROM T1
+PREHOOK: query: SELECT key + val as k FROM T1_n127
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n127
 #### A masked pattern was here ####
-Table:default@t1
+Table:default@t1_n127
 Columns:key,val
 
 12.0
@@ -163,9 +163,9 @@ Columns:key,val
 36.0
 PREHOOK: query: EXPLAIN
 SELECT * FROM (
-SELECT key as c FROM T1
+SELECT key as c FROM T1_n127
  UNION ALL
-SELECT val as c FROM T1
+SELECT val as c FROM T1_n127
 ) subq1
 PREHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -180,7 +180,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n127
                   Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string)
@@ -197,7 +197,7 @@ STAGE PLANS:
         Map 2 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n127
                   Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: val (type: string)
@@ -219,14 +219,14 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT * FROM (
-SELECT key as c FROM T1
+SELECT key as c FROM T1_n127
  UNION ALL
-SELECT val as c FROM T1
+SELECT val as c FROM T1_n127
 ) subq1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n127
 #### A masked pattern was here ####
-Table:default@t1
+Table:default@t1_n127
 Columns:key,val
 
 1
@@ -243,9 +243,9 @@ Columns:key,val
 8
 PREHOOK: query: EXPLAIN
 SELECT * FROM (
-SELECT key as c FROM T1
+SELECT key as c FROM T1_n127
  UNION ALL
-SELECT key as c FROM T1
+SELECT key as c FROM T1_n127
 ) subq1
 PREHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -260,7 +260,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n127
                   Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string)
@@ -277,7 +277,7 @@ STAGE PLANS:
         Map 2 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n127
                   Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string)
@@ -299,14 +299,14 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT * FROM (
-SELECT key as c FROM T1
+SELECT key as c FROM T1_n127
  UNION ALL
-SELECT key as c FROM T1
+SELECT key as c FROM T1_n127
 ) subq1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n127
 #### A masked pattern was here ####
-Table:default@t1
+Table:default@t1_n127
 Columns:key
 
 1
@@ -321,27 +321,27 @@ Columns:key
 8
 8
 8
-PREHOOK: query: FROM T1
-INSERT OVERWRITE TABLE T2 SELECT key, count(1) GROUP BY key
-INSERT OVERWRITE TABLE T3 SELECT key, sum(val) GROUP BY key
+PREHOOK: query: FROM T1_n127
+INSERT OVERWRITE TABLE T2_n75 SELECT key, count(1) GROUP BY key
+INSERT OVERWRITE TABLE T3_n29 SELECT key, sum(val) GROUP BY key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@t2
-PREHOOK: Output: default@t3
-Table:default@t1
+PREHOOK: Input: default@t1_n127
+PREHOOK: Output: default@t2_n75
+PREHOOK: Output: default@t3_n29
+Table:default@t1_n127
 Columns:key,val
 
 PREHOOK: query: SELECT *
-FROM T1 JOIN T2
-ON T1.key = T2.key
+FROM T1_n127 JOIN T2_n75
+ON T1_n127.key = T2_n75.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
+PREHOOK: Input: default@t1_n127
+PREHOOK: Input: default@t2_n75
 #### A masked pattern was here ####
-Table:default@t1
+Table:default@t1_n127
 Columns:key,val
 
-Table:default@t2
+Table:default@t2_n75
 Columns:key,val
 
 1	11	1	1
@@ -351,9 +351,9 @@ Columns:key,val
 8	18	8	2
 8	28	8	2
 PREHOOK: query: EXPLAIN
-SELECT T1.key
-FROM T1 JOIN T2
-ON T1.key = T2.key
+SELECT T1_n127.key
+FROM T1_n127 JOIN T2_n75
+ON T1_n127.key = T2_n75.key
 PREHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -369,7 +369,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n127
                   Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -387,7 +387,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: t2
+                  alias: t2_n75
                   Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -426,17 +426,17 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT T1.key
-FROM T1 JOIN T2
-ON T1.key = T2.key
+PREHOOK: query: SELECT T1_n127.key
+FROM T1_n127 JOIN T2_n75
+ON T1_n127.key = T2_n75.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
+PREHOOK: Input: default@t1_n127
+PREHOOK: Input: default@t2_n75
 #### A masked pattern was here ####
-Table:default@t1
+Table:default@t1_n127
 Columns:key
 
-Table:default@t2
+Table:default@t2_n75
 Columns:key
 
 1
@@ -446,29 +446,29 @@ Columns:key
 8
 8
 PREHOOK: query: SELECT *
-FROM T1 JOIN T2
-ON T1.key = T2.key AND T1.val = T2.val
+FROM T1_n127 JOIN T2_n75
+ON T1_n127.key = T2_n75.key AND T1_n127.val = T2_n75.val
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
+PREHOOK: Input: default@t1_n127
+PREHOOK: Input: default@t2_n75
 #### A masked pattern was here ####
-Table:default@t1
+Table:default@t1_n127
 Columns:key,val
 
-Table:default@t2
+Table:default@t2_n75
 Columns:key,val
 
 PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * 
-FROM T1 a JOIN T2 b 
+FROM T1_n127 a JOIN T2_n75 b 
 ON a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
+PREHOOK: Input: default@t1_n127
+PREHOOK: Input: default@t2_n75
 #### A masked pattern was here ####
-Table:default@t1
+Table:default@t1_n127
 Columns:key,val
 
-Table:default@t2
+Table:default@t2_n75
 Columns:key,val
 
 1	11	1	1
@@ -479,8 +479,8 @@ Columns:key,val
 8	28	8	2
 PREHOOK: query: EXPLAIN
 SELECT *
-FROM T1 JOIN T2
-ON T1.key = T2.key AND T1.val = 3 and T2.val = 3
+FROM T1_n127 JOIN T2_n75
+ON T1_n127.key = T2_n75.key AND T1_n127.val = 3 and T2_n75.val = 3
 PREHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -496,7 +496,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n127
                   Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((UDFToDouble(val) = 3.0D) and key is not null) (type: boolean)
@@ -515,7 +515,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: t2
+                  alias: t2_n75
                   Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((UDFToDouble(val) = 3.0D) and key is not null) (type: boolean)
@@ -556,27 +556,27 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT *
-FROM T1 JOIN T2
-ON T1.key = T2.key AND T1.val = 3 and T2.val = 3
+FROM T1_n127 JOIN T2_n75
+ON T1_n127.key = T2_n75.key AND T1_n127.val = 3 and T2_n75.val = 3
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
+PREHOOK: Input: default@t1_n127
+PREHOOK: Input: default@t2_n75
 #### A masked pattern was here ####
-Table:default@t1
+Table:default@t1_n127
 Columns:key,val
 
-Table:default@t2
+Table:default@t2_n75
 Columns:key,val
 
 PREHOOK: query: EXPLAIN
 SELECT subq1.val
 FROM 
 (
-  SELECT val FROM T1 WHERE key = 5  
+  SELECT val FROM T1_n127 WHERE key = 5  
 ) subq1
 JOIN 
 (
-  SELECT val FROM T2 WHERE key = 6
+  SELECT val FROM T2_n75 WHERE key = 6
 ) subq2 
 ON subq1.val = subq2.val
 PREHOOK: type: QUERY
@@ -594,7 +594,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n127
                   Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((UDFToDouble(key) = 5.0D) and val is not null) (type: boolean)
@@ -612,7 +612,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: t2
+                  alias: t2_n75
                   Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((UDFToDouble(key) = 6.0D) and val is not null) (type: boolean)
@@ -654,21 +654,21 @@ STAGE PLANS:
 PREHOOK: query: SELECT subq1.val
 FROM 
 (
-  SELECT val FROM T1 WHERE key = 5  
+  SELECT val FROM T1_n127 WHERE key = 5  
 ) subq1
 JOIN 
 (
-  SELECT val FROM T2 WHERE key = 6
+  SELECT val FROM T2_n75 WHERE key = 6
 ) subq2 
 ON subq1.val = subq2.val
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
+PREHOOK: Input: default@t1_n127
+PREHOOK: Input: default@t2_n75
 #### A masked pattern was here ####
-Table:default@t1
+Table:default@t1_n127
 Columns:key,val
 
-Table:default@t2
+Table:default@t2_n75
 Columns:key,val
 
 PREHOOK: query: EXPLAIN
@@ -678,16 +678,16 @@ FROM
   SELECT subq1.key as key
   FROM
   (
-    SELECT key, val FROM T1
+    SELECT key, val FROM T1_n127
   ) subq1
   JOIN
   (
-    SELECT key, 'teststring' as val FROM T2
+    SELECT key, 'teststring' as val FROM T2_n75
   ) subq2
   ON subq1.key = subq2.key
-) T4
-JOIN T3
-ON T3.key = T4.key
+) T4_n16
+JOIN T3_n29
+ON T3_n29.key = T4_n16.key
 PREHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -704,7 +704,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t2
+                  alias: t2_n75
                   Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -722,7 +722,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n127
                   Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -740,7 +740,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: t3
+                  alias: t3_n29
                   Statistics: Num rows: 5 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -805,28 +805,28 @@ FROM
   SELECT subq1.key as key
   FROM
   (
-    SELECT key, val FROM T1
+    SELECT key, val FROM T1_n127
   ) subq1
   JOIN
   (
-    SELECT key, 'teststring' as val FROM T2
+    SELECT key, 'teststring' as val FROM T2_n75
   ) subq2
   ON subq1.key = subq2.key
-) T4
-JOIN T3
-ON T3.key = T4.key
+) T4_n16
+JOIN T3_n29
+ON T3_n29.key = T4_n16.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
-PREHOOK: Input: default@t3
+PREHOOK: Input: default@t1_n127
+PREHOOK: Input: default@t2_n75
+PREHOOK: Input: default@t3_n29
 #### A masked pattern was here ####
-Table:default@t2
+Table:default@t2_n75
 Columns:key
 
-Table:default@t1
+Table:default@t1_n127
 Columns:key
 
-Table:default@t3
+Table:default@t3_n29
 Columns:key,val
 
 1	1	11.0

@@ -1,32 +1,32 @@
-PREHOOK: query: drop table tstz1
+PREHOOK: query: drop table tstz1_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table tstz1
+POSTHOOK: query: drop table tstz1_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table tstz1(`__time` timestamp with local time zone, n string, v integer)
+PREHOOK: query: create table tstz1_n0(`__time` timestamp with local time zone, n string, v integer)
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "HOUR")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tstz1
-POSTHOOK: query: create table tstz1(`__time` timestamp with local time zone, n string, v integer)
+PREHOOK: Output: default@tstz1_n0
+POSTHOOK: query: create table tstz1_n0(`__time` timestamp with local time zone, n string, v integer)
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "HOUR")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tstz1
-PREHOOK: query: insert into table tstz1
+POSTHOOK: Output: default@tstz1_n0
+PREHOOK: query: insert into table tstz1_n0
 values(cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone), 'Bill', 10)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@tstz1
-POSTHOOK: query: insert into table tstz1
+PREHOOK: Output: default@tstz1_n0
+POSTHOOK: query: insert into table tstz1_n0
 values(cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone), 'Bill', 10)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@tstz1
-PREHOOK: query: EXPLAIN select `__time` from tstz1
+POSTHOOK: Output: default@tstz1_n0
+PREHOOK: query: EXPLAIN select `__time` from tstz1_n0
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select `__time` from tstz1
+POSTHOOK: query: EXPLAIN select `__time` from tstz1_n0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -37,29 +37,29 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: tstz1
+          alias: tstz1_n0
           properties:
             druid.fieldNames vc
             druid.fieldTypes timestamp with local time zone
-            druid.query.json {"queryType":"scan","dataSource":"default.tstz1","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
+            druid.query.json {"queryType":"scan","dataSource":"default.tstz1_n0","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
             druid.query.type scan
           Select Operator
             expressions: vc (type: timestamp with local time zone)
             outputColumnNames: _col0
             ListSink
 
-PREHOOK: query: select `__time` from tstz1
+PREHOOK: query: select `__time` from tstz1_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tstz1
+PREHOOK: Input: default@tstz1_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select `__time` from tstz1
+POSTHOOK: query: select `__time` from tstz1_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tstz1
+POSTHOOK: Input: default@tstz1_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 2016-01-03 12:26:34.0 US/Pacific
-PREHOOK: query: EXPLAIN select cast(`__time` as timestamp) from tstz1
+PREHOOK: query: EXPLAIN select cast(`__time` as timestamp) from tstz1_n0
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select cast(`__time` as timestamp) from tstz1
+POSTHOOK: query: EXPLAIN select cast(`__time` as timestamp) from tstz1_n0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -70,29 +70,29 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: tstz1
+          alias: tstz1_n0
           properties:
             druid.fieldNames vc
             druid.fieldTypes timestamp
-            druid.query.json {"queryType":"scan","dataSource":"default.tstz1","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
+            druid.query.json {"queryType":"scan","dataSource":"default.tstz1_n0","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
             druid.query.type scan
           Select Operator
             expressions: vc (type: timestamp)
             outputColumnNames: _col0
             ListSink
 
-PREHOOK: query: select cast(`__time` as timestamp) from tstz1
+PREHOOK: query: select cast(`__time` as timestamp) from tstz1_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tstz1
+PREHOOK: Input: default@tstz1_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select cast(`__time` as timestamp) from tstz1
+POSTHOOK: query: select cast(`__time` as timestamp) from tstz1_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tstz1
+POSTHOOK: Input: default@tstz1_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 2016-01-03 12:26:34
-PREHOOK: query: EXPLAIN select cast(`__time` as timestamp) from tstz1 where `__time` >= cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone)
+PREHOOK: query: EXPLAIN select cast(`__time` as timestamp) from tstz1_n0 where `__time` >= cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select cast(`__time` as timestamp) from tstz1 where `__time` >= cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone)
+POSTHOOK: query: EXPLAIN select cast(`__time` as timestamp) from tstz1_n0 where `__time` >= cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -103,29 +103,29 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: tstz1
+          alias: tstz1_n0
           properties:
             druid.fieldNames vc
             druid.fieldTypes timestamp
-            druid.query.json {"queryType":"scan","dataSource":"default.tstz1","intervals":["2016-01-03T20:26:34.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
+            druid.query.json {"queryType":"scan","dataSource":"default.tstz1_n0","intervals":["2016-01-03T20:26:34.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
             druid.query.type scan
           Select Operator
             expressions: vc (type: timestamp)
             outputColumnNames: _col0
             ListSink
 
-PREHOOK: query: select cast(`__time` as timestamp) from tstz1 where `__time` >= cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone)
+PREHOOK: query: select cast(`__time` as timestamp) from tstz1_n0 where `__time` >= cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tstz1
+PREHOOK: Input: default@tstz1_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select cast(`__time` as timestamp) from tstz1 where `__time` >= cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone)
+POSTHOOK: query: select cast(`__time` as timestamp) from tstz1_n0 where `__time` >= cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tstz1
+POSTHOOK: Input: default@tstz1_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 2016-01-03 12:26:34
-PREHOOK: query: EXPLAIN SELECT EXTRACT(HOUR FROM CAST(`__time` AS timestamp)) FROM tstz1
+PREHOOK: query: EXPLAIN SELECT EXTRACT(HOUR FROM CAST(`__time` AS timestamp)) FROM tstz1_n0
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT EXTRACT(HOUR FROM CAST(`__time` AS timestamp)) FROM tstz1
+POSTHOOK: query: EXPLAIN SELECT EXTRACT(HOUR FROM CAST(`__time` AS timestamp)) FROM tstz1_n0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -136,29 +136,29 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: tstz1
+          alias: tstz1_n0
           properties:
             druid.fieldNames vc
             druid.fieldTypes int
-            druid.query.json {"queryType":"scan","dataSource":"default.tstz1","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_extract(\"__time\",'HOUR','US/Pacific')","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
+            druid.query.json {"queryType":"scan","dataSource":"default.tstz1_n0","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_extract(\"__time\",'HOUR','US/Pacific')","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
             druid.query.type scan
           Select Operator
             expressions: vc (type: int)
             outputColumnNames: _col0
             ListSink
 
-PREHOOK: query: SELECT EXTRACT(HOUR FROM CAST(`__time` AS timestamp)) FROM tstz1
+PREHOOK: query: SELECT EXTRACT(HOUR FROM CAST(`__time` AS timestamp)) FROM tstz1_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tstz1
+PREHOOK: Input: default@tstz1_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: SELECT EXTRACT(HOUR FROM CAST(`__time` AS timestamp)) FROM tstz1
+POSTHOOK: query: SELECT EXTRACT(HOUR FROM CAST(`__time` AS timestamp)) FROM tstz1_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tstz1
+POSTHOOK: Input: default@tstz1_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 12
-PREHOOK: query: EXPLAIN SELECT FLOOR(CAST(`__time` AS timestamp) to HOUR) FROM tstz1
+PREHOOK: query: EXPLAIN SELECT FLOOR(CAST(`__time` AS timestamp) to HOUR) FROM tstz1_n0
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT FLOOR(CAST(`__time` AS timestamp) to HOUR) FROM tstz1
+POSTHOOK: query: EXPLAIN SELECT FLOOR(CAST(`__time` AS timestamp) to HOUR) FROM tstz1_n0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -169,29 +169,29 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: tstz1
+          alias: tstz1_n0
           properties:
             druid.fieldNames vc
             druid.fieldTypes timestamp
-            druid.query.json {"queryType":"scan","dataSource":"default.tstz1","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_floor(\"__time\",'PT1H','','US/Pacific')","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
+            druid.query.json {"queryType":"scan","dataSource":"default.tstz1_n0","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_floor(\"__time\",'PT1H','','US/Pacific')","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
             druid.query.type scan
           Select Operator
             expressions: vc (type: timestamp)
             outputColumnNames: _col0
             ListSink
 
-PREHOOK: query: SELECT FLOOR(CAST(`__time` AS timestamp) to HOUR) FROM tstz1
+PREHOOK: query: SELECT FLOOR(CAST(`__time` AS timestamp) to HOUR) FROM tstz1_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tstz1
+PREHOOK: Input: default@tstz1_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: SELECT FLOOR(CAST(`__time` AS timestamp) to HOUR) FROM tstz1
+POSTHOOK: query: SELECT FLOOR(CAST(`__time` AS timestamp) to HOUR) FROM tstz1_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tstz1
+POSTHOOK: Input: default@tstz1_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 2016-01-03 12:00:00
-PREHOOK: query: EXPLAIN select `__time` from tstz1
+PREHOOK: query: EXPLAIN select `__time` from tstz1_n0
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select `__time` from tstz1
+POSTHOOK: query: EXPLAIN select `__time` from tstz1_n0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -202,29 +202,29 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: tstz1
+          alias: tstz1_n0
           properties:
             druid.fieldNames vc
             druid.fieldTypes timestamp with local time zone
-            druid.query.json {"queryType":"scan","dataSource":"default.tstz1","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
+            druid.query.json {"queryType":"scan","dataSource":"default.tstz1_n0","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
             druid.query.type scan
           Select Operator
             expressions: vc (type: timestamp with local time zone)
             outputColumnNames: _col0
             ListSink
 
-PREHOOK: query: select `__time` from tstz1
+PREHOOK: query: select `__time` from tstz1_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tstz1
+PREHOOK: Input: default@tstz1_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select `__time` from tstz1
+POSTHOOK: query: select `__time` from tstz1_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tstz1
+POSTHOOK: Input: default@tstz1_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 2016-01-03 20:26:34.0 UTC
-PREHOOK: query: EXPLAIN select cast(`__time` as timestamp) from tstz1
+PREHOOK: query: EXPLAIN select cast(`__time` as timestamp) from tstz1_n0
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select cast(`__time` as timestamp) from tstz1
+POSTHOOK: query: EXPLAIN select cast(`__time` as timestamp) from tstz1_n0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -235,29 +235,29 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: tstz1
+          alias: tstz1_n0
           properties:
             druid.fieldNames vc
             druid.fieldTypes timestamp
-            druid.query.json {"queryType":"scan","dataSource":"default.tstz1","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
+            druid.query.json {"queryType":"scan","dataSource":"default.tstz1_n0","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
             druid.query.type scan
           Select Operator
             expressions: vc (type: timestamp)
             outputColumnNames: _col0
             ListSink
 
-PREHOOK: query: select cast(`__time` as timestamp) from tstz1
+PREHOOK: query: select cast(`__time` as timestamp) from tstz1_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tstz1
+PREHOOK: Input: default@tstz1_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select cast(`__time` as timestamp) from tstz1
+POSTHOOK: query: select cast(`__time` as timestamp) from tstz1_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tstz1
+POSTHOOK: Input: default@tstz1_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 2016-01-03 20:26:34
-PREHOOK: query: EXPLAIN select cast(`__time` as timestamp) from tstz1 where `__time` >= cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone)
+PREHOOK: query: EXPLAIN select cast(`__time` as timestamp) from tstz1_n0 where `__time` >= cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select cast(`__time` as timestamp) from tstz1 where `__time` >= cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone)
+POSTHOOK: query: EXPLAIN select cast(`__time` as timestamp) from tstz1_n0 where `__time` >= cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -268,29 +268,29 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: tstz1
+          alias: tstz1_n0
           properties:
             druid.fieldNames vc
             druid.fieldTypes timestamp
-            druid.query.json {"queryType":"scan","dataSource":"default.tstz1","intervals":["2016-01-03T20:26:34.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
+            druid.query.json {"queryType":"scan","dataSource":"default.tstz1_n0","intervals":["2016-01-03T20:26:34.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
             druid.query.type scan
           Select Operator
             expressions: vc (type: timestamp)
             outputColumnNames: _col0
             ListSink
 
-PREHOOK: query: select cast(`__time` as timestamp) from tstz1 where `__time` >= cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone)
+PREHOOK: query: select cast(`__time` as timestamp) from tstz1_n0 where `__time` >= cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tstz1
+PREHOOK: Input: default@tstz1_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select cast(`__time` as timestamp) from tstz1 where `__time` >= cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone)
+POSTHOOK: query: select cast(`__time` as timestamp) from tstz1_n0 where `__time` >= cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tstz1
+POSTHOOK: Input: default@tstz1_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 2016-01-03 20:26:34
-PREHOOK: query: EXPLAIN select cast(`__time` as timestamp) from tstz1 where `__time` >= cast('2016-01-03 20:26:34' as timestamp)
+PREHOOK: query: EXPLAIN select cast(`__time` as timestamp) from tstz1_n0 where `__time` >= cast('2016-01-03 20:26:34' as timestamp)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select cast(`__time` as timestamp) from tstz1 where `__time` >= cast('2016-01-03 20:26:34' as timestamp)
+POSTHOOK: query: EXPLAIN select cast(`__time` as timestamp) from tstz1_n0 where `__time` >= cast('2016-01-03 20:26:34' as timestamp)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -301,29 +301,29 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: tstz1
+          alias: tstz1_n0
           properties:
             druid.fieldNames vc
             druid.fieldTypes timestamp
-            druid.query.json {"queryType":"scan","dataSource":"default.tstz1","intervals":["2016-01-03T20:26:34.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
+            druid.query.json {"queryType":"scan","dataSource":"default.tstz1_n0","intervals":["2016-01-03T20:26:34.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
             druid.query.type scan
           Select Operator
             expressions: vc (type: timestamp)
             outputColumnNames: _col0
             ListSink
 
-PREHOOK: query: select cast(`__time` as timestamp) from tstz1 where `__time` >= cast('2016-01-03 20:26:34' as timestamp)
+PREHOOK: query: select cast(`__time` as timestamp) from tstz1_n0 where `__time` >= cast('2016-01-03 20:26:34' as timestamp)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tstz1
+PREHOOK: Input: default@tstz1_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select cast(`__time` as timestamp) from tstz1 where `__time` >= cast('2016-01-03 20:26:34' as timestamp)
+POSTHOOK: query: select cast(`__time` as timestamp) from tstz1_n0 where `__time` >= cast('2016-01-03 20:26:34' as timestamp)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tstz1
+POSTHOOK: Input: default@tstz1_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 2016-01-03 20:26:34
-PREHOOK: query: EXPLAIN select cast(`__time` as timestamp) from tstz1 where `__time` >= cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone) AND `__time` <= cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone)
+PREHOOK: query: EXPLAIN select cast(`__time` as timestamp) from tstz1_n0 where `__time` >= cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone) AND `__time` <= cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select cast(`__time` as timestamp) from tstz1 where `__time` >= cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone) AND `__time` <= cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone)
+POSTHOOK: query: EXPLAIN select cast(`__time` as timestamp) from tstz1_n0 where `__time` >= cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone) AND `__time` <= cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -334,29 +334,29 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: tstz1
+          alias: tstz1_n0
           properties:
             druid.fieldNames vc
             druid.fieldTypes timestamp
-            druid.query.json {"queryType":"scan","dataSource":"default.tstz1","intervals":["2016-01-03T20:26:34.000Z/2016-01-03T20:26:34.001Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
+            druid.query.json {"queryType":"scan","dataSource":"default.tstz1_n0","intervals":["2016-01-03T20:26:34.000Z/2016-01-03T20:26:34.001Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
             druid.query.type scan
           Select Operator
             expressions: vc (type: timestamp)
             outputColumnNames: _col0
             ListSink
 
-PREHOOK: query: select cast(`__time` as timestamp) from tstz1 where `__time` >= cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone) AND `__time` <= cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone)
+PREHOOK: query: select cast(`__time` as timestamp) from tstz1_n0 where `__time` >= cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone) AND `__time` <= cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tstz1
+PREHOOK: Input: default@tstz1_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select cast(`__time` as timestamp) from tstz1 where `__time` >= cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone) AND `__time` <= cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone)
+POSTHOOK: query: select cast(`__time` as timestamp) from tstz1_n0 where `__time` >= cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone) AND `__time` <= cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tstz1
+POSTHOOK: Input: default@tstz1_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 2016-01-03 20:26:34
-PREHOOK: query: EXPLAIN SELECT EXTRACT(HOUR FROM CAST(`__time` AS timestamp)) FROM tstz1
+PREHOOK: query: EXPLAIN SELECT EXTRACT(HOUR FROM CAST(`__time` AS timestamp)) FROM tstz1_n0
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT EXTRACT(HOUR FROM CAST(`__time` AS timestamp)) FROM tstz1
+POSTHOOK: query: EXPLAIN SELECT EXTRACT(HOUR FROM CAST(`__time` AS timestamp)) FROM tstz1_n0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -367,29 +367,29 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: tstz1
+          alias: tstz1_n0
           properties:
             druid.fieldNames vc
             druid.fieldTypes int
-            druid.query.json {"queryType":"scan","dataSource":"default.tstz1","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_extract(\"__time\",'HOUR','UTC')","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
+            druid.query.json {"queryType":"scan","dataSource":"default.tstz1_n0","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_extract(\"__time\",'HOUR','UTC')","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
             druid.query.type scan
           Select Operator
             expressions: vc (type: int)
             outputColumnNames: _col0
             ListSink
 
-PREHOOK: query: SELECT EXTRACT(HOUR FROM CAST(`__time` AS timestamp)) FROM tstz1
+PREHOOK: query: SELECT EXTRACT(HOUR FROM CAST(`__time` AS timestamp)) FROM tstz1_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tstz1
+PREHOOK: Input: default@tstz1_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: SELECT EXTRACT(HOUR FROM CAST(`__time` AS timestamp)) FROM tstz1
+POSTHOOK: query: SELECT EXTRACT(HOUR FROM CAST(`__time` AS timestamp)) FROM tstz1_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tstz1
+POSTHOOK: Input: default@tstz1_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 20
-PREHOOK: query: EXPLAIN  SELECT FLOOR(CAST(`__time` AS timestamp) to HOUR) FROM tstz1
+PREHOOK: query: EXPLAIN  SELECT FLOOR(CAST(`__time` AS timestamp) to HOUR) FROM tstz1_n0
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN  SELECT FLOOR(CAST(`__time` AS timestamp) to HOUR) FROM tstz1
+POSTHOOK: query: EXPLAIN  SELECT FLOOR(CAST(`__time` AS timestamp) to HOUR) FROM tstz1_n0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -400,23 +400,23 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: tstz1
+          alias: tstz1_n0
           properties:
             druid.fieldNames vc
             druid.fieldTypes timestamp
-            druid.query.json {"queryType":"scan","dataSource":"default.tstz1","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_floor(\"__time\",'PT1H','','UTC')","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
+            druid.query.json {"queryType":"scan","dataSource":"default.tstz1_n0","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"timestamp_floor(\"__time\",'PT1H','','UTC')","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
             druid.query.type scan
           Select Operator
             expressions: vc (type: timestamp)
             outputColumnNames: _col0
             ListSink
 
-PREHOOK: query: SELECT FLOOR(CAST(`__time` AS timestamp) to HOUR) FROM tstz1
+PREHOOK: query: SELECT FLOOR(CAST(`__time` AS timestamp) to HOUR) FROM tstz1_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tstz1
+PREHOOK: Input: default@tstz1_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: SELECT FLOOR(CAST(`__time` AS timestamp) to HOUR) FROM tstz1
+POSTHOOK: query: SELECT FLOOR(CAST(`__time` AS timestamp) to HOUR) FROM tstz1_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tstz1
+POSTHOOK: Input: default@tstz1_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 2016-01-03 20:00:00

@@ -1,12 +1,12 @@
-PREHOOK: query: drop table if exists table1
+PREHOOK: query: drop table if exists table1_n1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table if exists table1
+POSTHOOK: query: drop table if exists table1_n1
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: drop table if exists table1_1
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table if exists table1_1
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table table1
+PREHOOK: query: create table table1_n1
    ROW FORMAT SERDE
      'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
    STORED AS INPUTFORMAT
@@ -16,8 +16,8 @@ PREHOOK: query: create table table1
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@table1
-POSTHOOK: query: create table table1
+PREHOOK: Output: default@table1_n1
+POSTHOOK: query: create table table1_n1
    ROW FORMAT SERDE
      'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
    STORED AS INPUTFORMAT
@@ -27,7 +27,7 @@ POSTHOOK: query: create table table1
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@table1
+POSTHOOK: Output: default@table1_n1
 PREHOOK: query: create table table1_1
    ROW FORMAT SERDE
      'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
@@ -50,17 +50,17 @@ POSTHOOK: query: create table table1_1
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table1_1
-PREHOOK: query: insert into table1 values ("1", "2", "3")
+PREHOOK: query: insert into table1_n1 values ("1", "2", "3")
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@table1
-POSTHOOK: query: insert into table1 values ("1", "2", "3")
+PREHOOK: Output: default@table1_n1
+POSTHOOK: query: insert into table1_n1 values ("1", "2", "3")
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@table1
-POSTHOOK: Lineage: table1.col1 SCRIPT []
-POSTHOOK: Lineage: table1.col2 SCRIPT []
-POSTHOOK: Lineage: table1.col3 SCRIPT []
+POSTHOOK: Output: default@table1_n1
+POSTHOOK: Lineage: table1_n1.col1 SCRIPT []
+POSTHOOK: Lineage: table1_n1.col2 SCRIPT []
+POSTHOOK: Lineage: table1_n1.col3 SCRIPT []
 PREHOOK: query: insert into table1_1 values (1, "2")
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -73,14 +73,14 @@ POSTHOOK: Lineage: table1_1.col1 SCRIPT []
 POSTHOOK: Lineage: table1_1.col2 SCRIPT []
 WARNING: Comparing a bigint and a string may result in a loss of precision.
 Warning: Shuffle Join JOIN[8][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
-PREHOOK: query: select table1.col1, table1_1.* from table1 join table1_1 on table1.col1=table1_1.col1 where table1_1.col1="1"
+PREHOOK: query: select table1_n1.col1, table1_1.* from table1_n1 join table1_1 on table1_n1.col1=table1_1.col1 where table1_1.col1="1"
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table1
 PREHOOK: Input: default@table1_1
+PREHOOK: Input: default@table1_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select table1.col1, table1_1.* from table1 join table1_1 on table1.col1=table1_1.col1 where table1_1.col1="1"
+POSTHOOK: query: select table1_n1.col1, table1_1.* from table1_n1 join table1_1 on table1_n1.col1=table1_1.col1 where table1_1.col1="1"
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table1
 POSTHOOK: Input: default@table1_1
+POSTHOOK: Input: default@table1_n1
 #### A masked pattern was here ####
 1	1	2

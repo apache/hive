@@ -1,19 +1,19 @@
-PREHOOK: query: CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE dest1_n31(key INT, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest1
-POSTHOOK: query: CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@dest1_n31
+POSTHOOK: query: CREATE TABLE dest1_n31(key INT, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest1
+POSTHOOK: Output: default@dest1_n31
 PREHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE dest1 
+INSERT OVERWRITE TABLE dest1_n31 
 SELECT src.key, sum(substr(src.value,5)) 
 FROM src
 GROUP BY src.key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE dest1 
+INSERT OVERWRITE TABLE dest1_n31 
 SELECT src.key, sum(substr(src.value,5)) 
 FROM src
 GROUP BY src.key
@@ -65,7 +65,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.dest1
+                        name: default.dest1_n31
 
   Stage: Stage-0
     Move Operator
@@ -75,35 +75,35 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n31
 
   Stage: Stage-2
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: INSERT OVERWRITE TABLE dest1 
+PREHOOK: query: INSERT OVERWRITE TABLE dest1_n31 
 SELECT src.key, sum(substr(src.value,5)) 
 FROM src
 GROUP BY src.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@dest1
-POSTHOOK: query: INSERT OVERWRITE TABLE dest1 
+PREHOOK: Output: default@dest1_n31
+POSTHOOK: query: INSERT OVERWRITE TABLE dest1_n31 
 SELECT src.key, sum(substr(src.value,5)) 
 FROM src
 GROUP BY src.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@dest1
-POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: Output: default@dest1_n31
+POSTHOOK: Lineage: dest1_n31.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n31.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT dest1_n31.* FROM dest1_n31
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n31
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: query: SELECT dest1_n31.* FROM dest1_n31
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n31
 #### A masked pattern was here ####
 0	0.0
 10	10.0

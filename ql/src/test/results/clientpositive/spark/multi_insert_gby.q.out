@@ -1,29 +1,29 @@
-PREHOOK: query: create table e1 (key string, count int)
+PREHOOK: query: create table e1_n0 (key string, count int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@e1
-POSTHOOK: query: create table e1 (key string, count int)
+PREHOOK: Output: default@e1_n0
+POSTHOOK: query: create table e1_n0 (key string, count int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@e1
-PREHOOK: query: create table e2 (key string, count int)
+POSTHOOK: Output: default@e1_n0
+PREHOOK: query: create table e2_n1 (key string, count int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@e2
-POSTHOOK: query: create table e2 (key string, count int)
+PREHOOK: Output: default@e2_n1
+POSTHOOK: query: create table e2_n1 (key string, count int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@e2
+POSTHOOK: Output: default@e2_n1
 PREHOOK: query: explain FROM src
-INSERT OVERWRITE TABLE e1
+INSERT OVERWRITE TABLE e1_n0
     SELECT key, COUNT(*) WHERE key>450 GROUP BY key
-INSERT OVERWRITE TABLE e2
+INSERT OVERWRITE TABLE e2_n1
     SELECT key, COUNT(*) WHERE key>500 GROUP BY key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain FROM src
-INSERT OVERWRITE TABLE e1
+INSERT OVERWRITE TABLE e1_n0
     SELECT key, COUNT(*) WHERE key>450 GROUP BY key
-INSERT OVERWRITE TABLE e2
+INSERT OVERWRITE TABLE e2_n1
     SELECT key, COUNT(*) WHERE key>500 GROUP BY key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -78,7 +78,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.e1
+                            name: default.e1_n0
                 Filter Operator
                   predicate: (KEY._col0 > 500) (type: boolean)
                   Statistics: Num rows: 110 Data size: 1168 Basic stats: COMPLETE Column stats: NONE
@@ -99,7 +99,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.e2
+                            name: default.e2_n1
 
   Stage: Stage-0
     Move Operator
@@ -109,7 +109,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.e1
+              name: default.e1_n0
 
   Stage: Stage-3
     Stats Work
@@ -123,41 +123,41 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.e2
+              name: default.e2_n1
 
   Stage: Stage-4
     Stats Work
       Basic Stats Work:
 
 PREHOOK: query: FROM src
-INSERT OVERWRITE TABLE e1
+INSERT OVERWRITE TABLE e1_n0
     SELECT key, COUNT(*) WHERE key>450 GROUP BY key
-INSERT OVERWRITE TABLE e2
+INSERT OVERWRITE TABLE e2_n1
     SELECT key, COUNT(*) WHERE key>500 GROUP BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@e1
-PREHOOK: Output: default@e2
+PREHOOK: Output: default@e1_n0
+PREHOOK: Output: default@e2_n1
 POSTHOOK: query: FROM src
-INSERT OVERWRITE TABLE e1
+INSERT OVERWRITE TABLE e1_n0
     SELECT key, COUNT(*) WHERE key>450 GROUP BY key
-INSERT OVERWRITE TABLE e2
+INSERT OVERWRITE TABLE e2_n1
     SELECT key, COUNT(*) WHERE key>500 GROUP BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@e1
-POSTHOOK: Output: default@e2
-POSTHOOK: Lineage: e1.count EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: e1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: e2.count EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: e2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: select * from e1
+POSTHOOK: Output: default@e1_n0
+POSTHOOK: Output: default@e2_n1
+POSTHOOK: Lineage: e1_n0.count EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: e1_n0.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: e2_n1.count EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: e2_n1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: select * from e1_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@e1
+PREHOOK: Input: default@e1_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from e1
+POSTHOOK: query: select * from e1_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@e1
+POSTHOOK: Input: default@e1_n0
 #### A masked pattern was here ####
 452	1
 453	1
@@ -196,24 +196,24 @@ POSTHOOK: Input: default@e1
 496	1
 497	1
 498	3
-PREHOOK: query: select * from e2
+PREHOOK: query: select * from e2_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@e2
+PREHOOK: Input: default@e2_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from e2
+POSTHOOK: query: select * from e2_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@e2
+POSTHOOK: Input: default@e2_n1
 #### A masked pattern was here ####
 PREHOOK: query: explain FROM src
-INSERT OVERWRITE TABLE e1
+INSERT OVERWRITE TABLE e1_n0
     SELECT key, COUNT(*) WHERE key>450 GROUP BY key
-INSERT OVERWRITE TABLE e2
+INSERT OVERWRITE TABLE e2_n1
     SELECT key, COUNT(*) GROUP BY key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain FROM src
-INSERT OVERWRITE TABLE e1
+INSERT OVERWRITE TABLE e1_n0
     SELECT key, COUNT(*) WHERE key>450 GROUP BY key
-INSERT OVERWRITE TABLE e2
+INSERT OVERWRITE TABLE e2_n1
     SELECT key, COUNT(*) GROUP BY key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -266,7 +266,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.e2
+                          name: default.e2_n1
                 Filter Operator
                   predicate: (KEY._col0 > 450) (type: boolean)
                   Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
@@ -287,7 +287,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.e1
+                            name: default.e1_n0
 
   Stage: Stage-1
     Move Operator
@@ -297,7 +297,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.e2
+              name: default.e2_n1
 
   Stage: Stage-3
     Stats Work
@@ -311,41 +311,41 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.e1
+              name: default.e1_n0
 
   Stage: Stage-4
     Stats Work
       Basic Stats Work:
 
 PREHOOK: query: FROM src
-INSERT OVERWRITE TABLE e1
+INSERT OVERWRITE TABLE e1_n0
     SELECT key, COUNT(*) WHERE key>450 GROUP BY key
-INSERT OVERWRITE TABLE e2
+INSERT OVERWRITE TABLE e2_n1
     SELECT key, COUNT(*) GROUP BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@e1
-PREHOOK: Output: default@e2
+PREHOOK: Output: default@e1_n0
+PREHOOK: Output: default@e2_n1
 POSTHOOK: query: FROM src
-INSERT OVERWRITE TABLE e1
+INSERT OVERWRITE TABLE e1_n0
     SELECT key, COUNT(*) WHERE key>450 GROUP BY key
-INSERT OVERWRITE TABLE e2
+INSERT OVERWRITE TABLE e2_n1
     SELECT key, COUNT(*) GROUP BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@e1
-POSTHOOK: Output: default@e2
-POSTHOOK: Lineage: e1.count EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: e1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: e2.count EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: e2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: select * from e1
+POSTHOOK: Output: default@e1_n0
+POSTHOOK: Output: default@e2_n1
+POSTHOOK: Lineage: e1_n0.count EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: e1_n0.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: e2_n1.count EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: e2_n1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: select * from e1_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@e1
+PREHOOK: Input: default@e1_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from e1
+POSTHOOK: query: select * from e1_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@e1
+POSTHOOK: Input: default@e1_n0
 #### A masked pattern was here ####
 452	1
 453	1
@@ -384,13 +384,13 @@ POSTHOOK: Input: default@e1
 496	1
 497	1
 498	3
-PREHOOK: query: select * from e2
+PREHOOK: query: select * from e2_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@e2
+PREHOOK: Input: default@e2_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from e2
+POSTHOOK: query: select * from e2_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@e2
+POSTHOOK: Input: default@e2_n1
 #### A masked pattern was here ####
 0	3
 10	1

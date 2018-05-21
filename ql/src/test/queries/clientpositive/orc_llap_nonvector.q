@@ -12,12 +12,12 @@ SET hive.optimize.index.filter=true;
 set hive.auto.convert.join=false;
 set hive.fetch.task.conversion=none;
 
-DROP TABLE orc_create_staging;
+DROP TABLE orc_create_staging_n3;
 DROP TABLE orc_create_complex;
 DROP TABLE orc_llap_nonvector;
 
 
-CREATE TABLE orc_create_staging (
+CREATE TABLE orc_create_staging_n3 (
   str STRING,
   mp  MAP<STRING,STRING>,
   lst ARRAY<STRING>,
@@ -26,7 +26,7 @@ CREATE TABLE orc_create_staging (
     FIELDS TERMINATED BY '|'
     COLLECTION ITEMS TERMINATED BY ','
     MAP KEYS TERMINATED BY ':';
-LOAD DATA LOCAL INPATH '../../data/files/orc_create.txt' OVERWRITE INTO TABLE orc_create_staging;
+LOAD DATA LOCAL INPATH '../../data/files/orc_create.txt' OVERWRITE INTO TABLE orc_create_staging_n3;
 
 create table orc_llap_nonvector stored as orc as select *, rand(1234) rdm from alltypesorc order by rdm;
 
@@ -41,5 +41,5 @@ explain
 select cint, cstring1 from orc_llap_nonvector limit 1025;
 select cint, cstring1 from orc_llap_nonvector limit 1025;
 
-DROP TABLE orc_create_staging;
+DROP TABLE orc_create_staging_n3;
 DROP TABLE orc_llap_nonvector;

@@ -1,4 +1,4 @@
-PREHOOK: query: CREATE TABLE staging(t tinyint,
+PREHOOK: query: CREATE TABLE staging_n4(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -13,8 +13,8 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@staging
-POSTHOOK: query: CREATE TABLE staging(t tinyint,
+PREHOOK: Output: default@staging_n4
+POSTHOOK: query: CREATE TABLE staging_n4(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -29,16 +29,16 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@staging
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE staging
+POSTHOOK: Output: default@staging_n4
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE staging_n4
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@staging
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE staging
+PREHOOK: Output: default@staging_n4
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE staging_n4
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@staging
-PREHOOK: query: CREATE TABLE orc_ppd(t tinyint,
+POSTHOOK: Output: default@staging_n4
+PREHOOK: query: CREATE TABLE orc_ppd_n0(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -52,8 +52,8 @@ PREHOOK: query: CREATE TABLE orc_ppd(t tinyint,
 STORED AS ORC tblproperties("orc.row.index.stride" = "1000", "orc.bloom.filter.columns"="*")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@orc_ppd
-POSTHOOK: query: CREATE TABLE orc_ppd(t tinyint,
+PREHOOK: Output: default@orc_ppd_n0
+POSTHOOK: query: CREATE TABLE orc_ppd_n0(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -67,29 +67,29 @@ POSTHOOK: query: CREATE TABLE orc_ppd(t tinyint,
 STORED AS ORC tblproperties("orc.row.index.stride" = "1000", "orc.bloom.filter.columns"="*")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@orc_ppd
-PREHOOK: query: insert overwrite table orc_ppd select * from staging
+POSTHOOK: Output: default@orc_ppd_n0
+PREHOOK: query: insert overwrite table orc_ppd_n0 select * from staging_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@staging
-PREHOOK: Output: default@orc_ppd
-POSTHOOK: query: insert overwrite table orc_ppd select * from staging
+PREHOOK: Input: default@staging_n4
+PREHOOK: Output: default@orc_ppd_n0
+POSTHOOK: query: insert overwrite table orc_ppd_n0 select * from staging_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@staging
-POSTHOOK: Output: default@orc_ppd
-POSTHOOK: Lineage: orc_ppd.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_ppd.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: orc_ppd.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: orc_ppd.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_ppd.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
-POSTHOOK: Lineage: orc_ppd.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: orc_ppd.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: orc_ppd.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_ppd.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: orc_ppd.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: orc_ppd.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
-PREHOOK: query: select * from orc_ppd limit 1
+POSTHOOK: Input: default@staging_n4
+POSTHOOK: Output: default@orc_ppd_n0
+POSTHOOK: Lineage: orc_ppd_n0.b SIMPLE [(staging_n4)staging_n4.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_n0.bin SIMPLE [(staging_n4)staging_n4.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_n0.bo SIMPLE [(staging_n4)staging_n4.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_n0.d SIMPLE [(staging_n4)staging_n4.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_n0.dec SIMPLE [(staging_n4)staging_n4.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
+POSTHOOK: Lineage: orc_ppd_n0.f SIMPLE [(staging_n4)staging_n4.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_n0.i SIMPLE [(staging_n4)staging_n4.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_n0.s SIMPLE [(staging_n4)staging_n4.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_n0.si SIMPLE [(staging_n4)staging_n4.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_n0.t SIMPLE [(staging_n4)staging_n4.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_n0.ts SIMPLE [(staging_n4)staging_n4.FieldSchema(name:ts, type:timestamp, comment:null), ]
+PREHOOK: query: select * from orc_ppd_n0 limit 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_ppd
+PREHOOK: Input: default@orc_ppd_n0
 #### A masked pattern was here ####
 -- BEGIN ORC FILE DUMP --
 #### A masked pattern was here ####
@@ -276,17 +276,17 @@ ________________________________________________________________________________
 
 -- END ORC FILE DUMP --
 124	336	65664	4294967435	74.72	42.47	true	bob davidson	2013-03-01 09:11:58.703302	45.40	yard duty
-PREHOOK: query: alter table orc_ppd set tblproperties("orc.bloom.filter.fpp"="0.01")
+PREHOOK: query: alter table orc_ppd_n0 set tblproperties("orc.bloom.filter.fpp"="0.01")
 PREHOOK: type: ALTERTABLE_PROPERTIES
-PREHOOK: Input: default@orc_ppd
-PREHOOK: Output: default@orc_ppd
-PREHOOK: query: insert overwrite table orc_ppd select * from staging
+PREHOOK: Input: default@orc_ppd_n0
+PREHOOK: Output: default@orc_ppd_n0
+PREHOOK: query: insert overwrite table orc_ppd_n0 select * from staging_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@staging
-PREHOOK: Output: default@orc_ppd
-PREHOOK: query: select * from orc_ppd limit 1
+PREHOOK: Input: default@staging_n4
+PREHOOK: Output: default@orc_ppd_n0
+PREHOOK: query: select * from orc_ppd_n0 limit 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_ppd
+PREHOOK: Input: default@orc_ppd_n0
 #### A masked pattern was here ####
 -- BEGIN ORC FILE DUMP --
 #### A masked pattern was here ####
@@ -488,9 +488,9 @@ PARTITIONED BY (ds string, hr int) STORED AS ORC tblproperties("orc.row.index.st
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_ppd_part
-PREHOOK: query: insert overwrite table orc_ppd_part partition(ds = "2015", hr = 10) select * from staging
+PREHOOK: query: insert overwrite table orc_ppd_part partition(ds = "2015", hr = 10) select * from staging_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@staging
+PREHOOK: Input: default@staging_n4
 PREHOOK: Output: default@orc_ppd_part@ds=2015/hr=10
 PREHOOK: query: select * from orc_ppd_part limit 1
 PREHOOK: type: QUERY

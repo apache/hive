@@ -1,5 +1,5 @@
 --! qt:dataset:src_thrift
-CREATE TABLE dest1(a array<int>, b array<string>, c map<string,string>, d int, e string)
+CREATE TABLE dest1_n114(a array<int>, b array<string>, c map<string,string>, d int, e string)
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '1'
 COLLECTION ITEMS TERMINATED BY '2'
@@ -9,11 +9,11 @@ STORED AS TEXTFILE;
 
 EXPLAIN
 FROM src_thrift
-INSERT OVERWRITE TABLE dest1 SELECT src_thrift.lint, src_thrift.lstring, src_thrift.mstringstring, src_thrift.aint, src_thrift.astring;
+INSERT OVERWRITE TABLE dest1_n114 SELECT src_thrift.lint, src_thrift.lstring, src_thrift.mstringstring, src_thrift.aint, src_thrift.astring;
 
 FROM src_thrift
-INSERT OVERWRITE TABLE dest1 SELECT src_thrift.lint, src_thrift.lstring, src_thrift.mstringstring, src_thrift.aint, src_thrift.astring;
+INSERT OVERWRITE TABLE dest1_n114 SELECT src_thrift.lint, src_thrift.lstring, src_thrift.mstringstring, src_thrift.aint, src_thrift.astring;
 
-SELECT dest1.* FROM dest1;
+SELECT dest1_n114.* FROM dest1_n114;
 
-SELECT dest1.a[0], dest1.b[0], dest1.c['key2'], dest1.d, dest1.e FROM dest1;
+SELECT dest1_n114.a[0], dest1_n114.b[0], dest1_n114.c['key2'], dest1_n114.d, dest1_n114.e FROM dest1_n114;

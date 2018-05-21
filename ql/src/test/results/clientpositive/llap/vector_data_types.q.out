@@ -1,12 +1,12 @@
-PREHOOK: query: DROP TABLE over1k
+PREHOOK: query: DROP TABLE over1k_n8
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE over1k
+POSTHOOK: query: DROP TABLE over1k_n8
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: DROP TABLE over1korc
+PREHOOK: query: DROP TABLE over1korc_n1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE over1korc
+POSTHOOK: query: DROP TABLE over1korc_n1
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE over1k(t tinyint,
+PREHOOK: query: CREATE TABLE over1k_n8(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -21,8 +21,8 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@over1k
-POSTHOOK: query: CREATE TABLE over1k(t tinyint,
+PREHOOK: Output: default@over1k_n8
+POSTHOOK: query: CREATE TABLE over1k_n8(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -37,16 +37,16 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@over1k
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE over1k
+POSTHOOK: Output: default@over1k_n8
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE over1k_n8
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@over1k
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE over1k
+PREHOOK: Output: default@over1k_n8
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE over1k_n8
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@over1k
-PREHOOK: query: CREATE TABLE over1korc(t tinyint,
+POSTHOOK: Output: default@over1k_n8
+PREHOOK: query: CREATE TABLE over1korc_n1(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -60,8 +60,8 @@ PREHOOK: query: CREATE TABLE over1korc(t tinyint,
 STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@over1korc
-POSTHOOK: query: CREATE TABLE over1korc(t tinyint,
+PREHOOK: Output: default@over1korc_n1
+POSTHOOK: query: CREATE TABLE over1korc_n1(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -75,48 +75,48 @@ POSTHOOK: query: CREATE TABLE over1korc(t tinyint,
 STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@over1korc
-PREHOOK: query: INSERT INTO TABLE over1korc SELECT * FROM over1k
+POSTHOOK: Output: default@over1korc_n1
+PREHOOK: query: INSERT INTO TABLE over1korc_n1 SELECT * FROM over1k_n8
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over1k
-PREHOOK: Output: default@over1korc
-POSTHOOK: query: INSERT INTO TABLE over1korc SELECT * FROM over1k
+PREHOOK: Input: default@over1k_n8
+PREHOOK: Output: default@over1korc_n1
+POSTHOOK: query: INSERT INTO TABLE over1korc_n1 SELECT * FROM over1k_n8
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over1k
-POSTHOOK: Output: default@over1korc
-POSTHOOK: Lineage: over1korc.b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1korc.bin SIMPLE [(over1k)over1k.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: over1korc.bo SIMPLE [(over1k)over1k.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: over1korc.d SIMPLE [(over1k)over1k.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: over1korc.dec SIMPLE [(over1k)over1k.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
-POSTHOOK: Lineage: over1korc.f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1korc.i SIMPLE [(over1k)over1k.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: over1korc.s SIMPLE [(over1k)over1k.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: over1korc.si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: over1korc.t SIMPLE [(over1k)over1k.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: over1korc.ts SIMPLE [(over1k)over1k.FieldSchema(name:ts, type:timestamp, comment:null), ]
-PREHOOK: query: insert into over1korc values (NULL, NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL)
+POSTHOOK: Input: default@over1k_n8
+POSTHOOK: Output: default@over1korc_n1
+POSTHOOK: Lineage: over1korc_n1.b SIMPLE [(over1k_n8)over1k_n8.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1korc_n1.bin SIMPLE [(over1k_n8)over1k_n8.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: over1korc_n1.bo SIMPLE [(over1k_n8)over1k_n8.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: over1korc_n1.d SIMPLE [(over1k_n8)over1k_n8.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: over1korc_n1.dec SIMPLE [(over1k_n8)over1k_n8.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
+POSTHOOK: Lineage: over1korc_n1.f SIMPLE [(over1k_n8)over1k_n8.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1korc_n1.i SIMPLE [(over1k_n8)over1k_n8.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1korc_n1.s SIMPLE [(over1k_n8)over1k_n8.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: over1korc_n1.si SIMPLE [(over1k_n8)over1k_n8.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1korc_n1.t SIMPLE [(over1k_n8)over1k_n8.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: over1korc_n1.ts SIMPLE [(over1k_n8)over1k_n8.FieldSchema(name:ts, type:timestamp, comment:null), ]
+PREHOOK: query: insert into over1korc_n1 values (NULL, NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@over1korc
-POSTHOOK: query: insert into over1korc values (NULL, NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL)
+PREHOOK: Output: default@over1korc_n1
+POSTHOOK: query: insert into over1korc_n1 values (NULL, NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@over1korc
-POSTHOOK: Lineage: over1korc.b EXPRESSION []
-POSTHOOK: Lineage: over1korc.bin EXPRESSION []
-POSTHOOK: Lineage: over1korc.bo EXPRESSION []
-POSTHOOK: Lineage: over1korc.d EXPRESSION []
-POSTHOOK: Lineage: over1korc.dec EXPRESSION []
-POSTHOOK: Lineage: over1korc.f EXPRESSION []
-POSTHOOK: Lineage: over1korc.i EXPRESSION []
-POSTHOOK: Lineage: over1korc.s EXPRESSION []
-POSTHOOK: Lineage: over1korc.si EXPRESSION []
-POSTHOOK: Lineage: over1korc.t EXPRESSION []
-POSTHOOK: Lineage: over1korc.ts EXPRESSION []
-PREHOOK: query: EXPLAIN SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc ORDER BY t, si, i LIMIT 20
+POSTHOOK: Output: default@over1korc_n1
+POSTHOOK: Lineage: over1korc_n1.b EXPRESSION []
+POSTHOOK: Lineage: over1korc_n1.bin EXPRESSION []
+POSTHOOK: Lineage: over1korc_n1.bo EXPRESSION []
+POSTHOOK: Lineage: over1korc_n1.d EXPRESSION []
+POSTHOOK: Lineage: over1korc_n1.dec EXPRESSION []
+POSTHOOK: Lineage: over1korc_n1.f EXPRESSION []
+POSTHOOK: Lineage: over1korc_n1.i EXPRESSION []
+POSTHOOK: Lineage: over1korc_n1.s EXPRESSION []
+POSTHOOK: Lineage: over1korc_n1.si EXPRESSION []
+POSTHOOK: Lineage: over1korc_n1.t EXPRESSION []
+POSTHOOK: Lineage: over1korc_n1.ts EXPRESSION []
+PREHOOK: query: EXPLAIN SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc_n1 ORDER BY t, si, i LIMIT 20
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc ORDER BY t, si, i LIMIT 20
+POSTHOOK: query: EXPLAIN SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc_n1 ORDER BY t, si, i LIMIT 20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -133,7 +133,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over1korc
+                  alias: over1korc_n1
                   Statistics: Num rows: 1050 Data size: 358026 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: t (type: tinyint), si (type: smallint), i (type: int), b (type: bigint), f (type: float), d (type: double), bo (type: boolean), s (type: string), ts (type: timestamp), dec (type: decimal(4,2)), bin (type: binary)
@@ -171,13 +171,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc ORDER BY t, si, i LIMIT 20
+PREHOOK: query: SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc_n1 ORDER BY t, si, i LIMIT 20
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over1korc
+PREHOOK: Input: default@over1korc_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc ORDER BY t, si, i LIMIT 20
+POSTHOOK: query: SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc_n1 ORDER BY t, si, i LIMIT 20
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over1korc
+POSTHOOK: Input: default@over1korc_n1
 #### A masked pattern was here ####
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 NULL	374	65560	4294967516	65.43	22.48	true	oscar quirinius	2013-03-01 09:11:58.703316	16.86	mathematics
@@ -200,19 +200,19 @@ NULL	473	65720	4294967324	80.74	40.6	false	holly falkner	2013-03-01 09:11:58.703
 -1	268	65778	4294967418	56.33	44.73	true	calvin falkner	2013-03-01 09:11:58.70322	7.37	history
 -1	281	65643	4294967323	15.1	45.0	false	irene nixon	2013-03-01 09:11:58.703223	80.96	undecided
 PREHOOK: query: SELECT SUM(HASH(*))
-FROM (SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc ORDER BY t, si, i) as q
+FROM (SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc_n1 ORDER BY t, si, i) as q
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over1korc
+PREHOOK: Input: default@over1korc_n1
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT SUM(HASH(*))
-FROM (SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc ORDER BY t, si, i) as q
+FROM (SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc_n1 ORDER BY t, si, i) as q
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over1korc
+POSTHOOK: Input: default@over1korc_n1
 #### A masked pattern was here ####
 -17045922556
-PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION select t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc ORDER BY t, si, i LIMIT 20
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION select t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc_n1 ORDER BY t, si, i LIMIT 20
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION select t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc ORDER BY t, si, i LIMIT 20
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION select t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc_n1 ORDER BY t, si, i LIMIT 20
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -233,7 +233,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over1korc
+                  alias: over1korc_n1
                   Statistics: Num rows: 1050 Data size: 358026 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -306,13 +306,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc ORDER BY t, si, i LIMIT 20
+PREHOOK: query: SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc_n1 ORDER BY t, si, i LIMIT 20
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over1korc
+PREHOOK: Input: default@over1korc_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc ORDER BY t, si, i LIMIT 20
+POSTHOOK: query: SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc_n1 ORDER BY t, si, i LIMIT 20
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over1korc
+POSTHOOK: Input: default@over1korc_n1
 #### A masked pattern was here ####
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 NULL	374	65560	4294967516	65.43	22.48	true	oscar quirinius	2013-03-01 09:11:58.703316	16.86	mathematics
@@ -336,11 +336,11 @@ NULL	473	65720	4294967324	80.74	40.6	false	holly falkner	2013-03-01 09:11:58.703
 -1	281	65643	4294967323	15.1	45.0	false	irene nixon	2013-03-01 09:11:58.703223	80.96	undecided
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION 
 SELECT SUM(HASH(*))
-FROM (SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc ORDER BY t, si, i) as q
+FROM (SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc_n1 ORDER BY t, si, i) as q
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION 
 SELECT SUM(HASH(*))
-FROM (SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc ORDER BY t, si, i) as q
+FROM (SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc_n1 ORDER BY t, si, i) as q
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -361,7 +361,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over1korc
+                  alias: over1korc_n1
                   Statistics: Num rows: 1050 Data size: 358026 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -444,13 +444,13 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT SUM(HASH(*))
-FROM (SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc ORDER BY t, si, i) as q
+FROM (SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc_n1 ORDER BY t, si, i) as q
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over1korc
+PREHOOK: Input: default@over1korc_n1
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT SUM(HASH(*))
-FROM (SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc ORDER BY t, si, i) as q
+FROM (SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc_n1 ORDER BY t, si, i) as q
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over1korc
+POSTHOOK: Input: default@over1korc_n1
 #### A masked pattern was here ####
 -17045922556

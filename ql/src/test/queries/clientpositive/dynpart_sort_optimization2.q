@@ -11,12 +11,12 @@ set hive.exec.dynamic.partition.mode=nonstrict;
 
 -- SORT_QUERY_RESULTS
 
-drop table ss;
+drop table ss_n0;
 drop table ss_orc;
 drop table ss_part;
 drop table ss_part_orc;
 
-create table ss (
+create table ss_n0 (
 ss_sold_date_sk int,
 ss_net_paid_inc_tax float,
 ss_net_profit float);
@@ -26,13 +26,13 @@ ss_net_paid_inc_tax float,
 ss_net_profit float)
 partitioned by (ss_sold_date_sk int);
 
-load data local inpath '../../data/files/dynpart_test.txt' overwrite into table ss;
+load data local inpath '../../data/files/dynpart_test.txt' overwrite into table ss_n0;
 
 explain insert overwrite table ss_part partition (ss_sold_date_sk)
 select ss_net_paid_inc_tax,
   ss_net_profit,
   ss_sold_date_sk
-  from ss
+  from ss_n0
   where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
   group by ss_sold_date_sk,
     ss_net_paid_inc_tax,
@@ -43,7 +43,7 @@ insert overwrite table ss_part partition (ss_sold_date_sk)
 select ss_net_paid_inc_tax,
   ss_net_profit,
   ss_sold_date_sk
-  from ss
+  from ss_n0
   where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
   group by ss_sold_date_sk,
     ss_net_paid_inc_tax,
@@ -60,7 +60,7 @@ explain insert overwrite table ss_part partition (ss_sold_date_sk)
 select ss_net_paid_inc_tax,
   ss_net_profit,
   ss_sold_date_sk
-  from ss
+  from ss_n0
   where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
     distribute by ss_sold_date_sk;
 
@@ -68,7 +68,7 @@ insert overwrite table ss_part partition (ss_sold_date_sk)
 select ss_net_paid_inc_tax,
   ss_net_profit,
   ss_sold_date_sk
-  from ss
+  from ss_n0
   where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
     distribute by ss_sold_date_sk;
 
@@ -85,7 +85,7 @@ explain insert overwrite table ss_part partition (ss_sold_date_sk)
 select ss_net_paid_inc_tax,
   ss_net_profit,
   ss_sold_date_sk
-  from ss
+  from ss_n0
   where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
   group by ss_sold_date_sk,
     ss_net_paid_inc_tax,
@@ -96,7 +96,7 @@ insert overwrite table ss_part partition (ss_sold_date_sk)
 select ss_net_paid_inc_tax,
   ss_net_profit,
   ss_sold_date_sk
-  from ss
+  from ss_n0
   where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
   group by ss_sold_date_sk,
     ss_net_paid_inc_tax,
@@ -113,7 +113,7 @@ explain insert overwrite table ss_part partition (ss_sold_date_sk)
 select ss_net_paid_inc_tax,
   ss_net_profit,
   ss_sold_date_sk
-  from ss
+  from ss_n0
   where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
     distribute by ss_sold_date_sk;
 
@@ -121,7 +121,7 @@ insert overwrite table ss_part partition (ss_sold_date_sk)
 select ss_net_paid_inc_tax,
   ss_net_profit,
   ss_sold_date_sk
-  from ss
+  from ss_n0
   where ss_sold_date_sk>=2452617 and ss_sold_date_sk<=2452638
     distribute by ss_sold_date_sk;
 
@@ -144,9 +144,9 @@ ss_net_paid_inc_tax float,
 ss_net_profit float)
 partitioned by (ss_sold_date_sk int) stored as orc;
 
-insert overwrite table ss_orc select * from ss;
+insert overwrite table ss_orc select * from ss_n0;
 
-drop table ss;
+drop table ss_n0;
 drop table ss_part;
 
 explain insert overwrite table ss_part_orc partition (ss_sold_date_sk)

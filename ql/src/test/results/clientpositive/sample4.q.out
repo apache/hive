@@ -1,17 +1,17 @@
-PREHOOK: query: CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE dest1_n118(key INT, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest1
-POSTHOOK: query: CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@dest1_n118
+POSTHOOK: query: CREATE TABLE dest1_n118(key INT, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest1
+POSTHOOK: Output: default@dest1_n118
 PREHOOK: query: EXPLAIN EXTENDED
-INSERT OVERWRITE TABLE dest1 SELECT s.*
+INSERT OVERWRITE TABLE dest1_n118 SELECT s.*
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 2 on key) s
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED
-INSERT OVERWRITE TABLE dest1 SELECT s.*
+INSERT OVERWRITE TABLE dest1_n118 SELECT s.*
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 2 on key) s
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -60,17 +60,17 @@ STAGE PLANS:
                         columns.comments 
                         columns.types int:string
 #### A masked pattern was here ####
-                        name default.dest1
+                        name default.dest1_n118
                         numFiles 0
                         numRows 0
                         rawDataSize 0
-                        serialization.ddl struct dest1 { i32 key, string value}
+                        serialization.ddl struct dest1_n118 { i32 key, string value}
                         serialization.format 1
                         serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         totalSize 0
 #### A masked pattern was here ####
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.dest1
+                      name: default.dest1_n118
                   TotalFiles: 1
                   GatherStats: true
                   MultiFileSpray: false
@@ -201,17 +201,17 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
-                name default.dest1
+                name default.dest1_n118
                 numFiles 0
                 numRows 0
                 rawDataSize 0
-                serialization.ddl struct dest1 { i32 key, string value}
+                serialization.ddl struct dest1_n118 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n118
 
   Stage: Stage-2
     Stats Work
@@ -220,7 +220,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: int, string
-          Table: default.dest1
+          Table: default.dest1_n118
           Is Table Level Stats: true
 
   Stage: Stage-3
@@ -245,17 +245,17 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
-                    name default.dest1
+                    name default.dest1_n118
                     numFiles 0
                     numRows 0
                     rawDataSize 0
-                    serialization.ddl struct dest1 { i32 key, string value}
+                    serialization.ddl struct dest1_n118 { i32 key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 0
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.dest1
+                  name: default.dest1_n118
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
@@ -276,11 +276,11 @@ STAGE PLANS:
               columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
-              name default.dest1
+              name default.dest1_n118
               numFiles 0
               numRows 0
               rawDataSize 0
-              serialization.ddl struct dest1 { i32 key, string value}
+              serialization.ddl struct dest1_n118 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 0
@@ -298,18 +298,18 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
-                name default.dest1
+                name default.dest1_n118
                 numFiles 0
                 numRows 0
                 rawDataSize 0
-                serialization.ddl struct dest1 { i32 key, string value}
+                serialization.ddl struct dest1_n118 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
-            name: default.dest1
+              name: default.dest1_n118
+            name: default.dest1_n118
       Truncated Path -> Alias:
 #### A masked pattern was here ####
 
@@ -335,17 +335,17 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
-                    name default.dest1
+                    name default.dest1_n118
                     numFiles 0
                     numRows 0
                     rawDataSize 0
-                    serialization.ddl struct dest1 { i32 key, string value}
+                    serialization.ddl struct dest1_n118 { i32 key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 0
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.dest1
+                  name: default.dest1_n118
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
@@ -366,11 +366,11 @@ STAGE PLANS:
               columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
-              name default.dest1
+              name default.dest1_n118
               numFiles 0
               numRows 0
               rawDataSize 0
-              serialization.ddl struct dest1 { i32 key, string value}
+              serialization.ddl struct dest1_n118 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 0
@@ -388,18 +388,18 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
-                name default.dest1
+                name default.dest1_n118
                 numFiles 0
                 numRows 0
                 rawDataSize 0
-                serialization.ddl struct dest1 { i32 key, string value}
+                serialization.ddl struct dest1_n118 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
-            name: default.dest1
+              name: default.dest1_n118
+            name: default.dest1_n118
       Truncated Path -> Alias:
 #### A masked pattern was here ####
 
@@ -409,209 +409,99 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-PREHOOK: query: INSERT OVERWRITE TABLE dest1 SELECT s.*
+PREHOOK: query: INSERT OVERWRITE TABLE dest1_n118 SELECT s.*
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 2 on key) s
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcbucket
-PREHOOK: Output: default@dest1
-POSTHOOK: query: INSERT OVERWRITE TABLE dest1 SELECT s.*
+PREHOOK: Output: default@dest1_n118
+POSTHOOK: query: INSERT OVERWRITE TABLE dest1_n118 SELECT s.*
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 2 on key) s
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket
-POSTHOOK: Output: default@dest1
-POSTHOOK: Lineage: dest1.key SIMPLE [(srcbucket)s.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.value SIMPLE [(srcbucket)s.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: Output: default@dest1_n118
+POSTHOOK: Lineage: dest1_n118.key SIMPLE [(srcbucket)s.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest1_n118.value SIMPLE [(srcbucket)s.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: SELECT dest1_n118.* FROM dest1_n118
 order by key, value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n118
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: query: SELECT dest1_n118.* FROM dest1_n118
 order by key, value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n118
 #### A masked pattern was here ####
 2	val_2
 2	val_3
-3	val_4
 6	val_7
 6	val_7
 10	val_10
 10	val_11
-17	val_17
-19	val_19
-19	val_20
 20	val_20
 20	val_21
 20	val_21
-21	val_22
-21	val_22
-21	val_22
-21	val_22
-27	val_27
-29	val_30
-29	val_30
 30	val_30
 30	val_31
-31	val_32
 40	val_41
 40	val_41
-41	val_41
-43	val_43
 46	val_47
 48	val_49
 48	val_49
-51	val_51
-51	val_51
-51	val_52
 54	val_54
-57	val_57
 58	val_58
 58	val_58
 58	val_59
 58	val_59
-59	val_60
 60	val_61
-61	val_62
 64	val_64
-65	val_65
-65	val_66
-65	val_66
-67	val_67
-67	val_67
 68	val_69
-69	val_69
-69	val_70
 70	val_70
 70	val_70
 70	val_70
 70	val_71
-77	val_77
-77	val_78
-77	val_78
 80	val_80
 80	val_81
-83	val_83
-83	val_83
 84	val_84
 84	val_84
-85	val_85
-85	val_86
 86	val_86
 86	val_87
-89	val_90
-89	val_90
-89	val_90
 90	val_90
 90	val_90
 90	val_90
-91	val_92
-93	val_94
-93	val_94
-93	val_94
 96	val_96
-97	val_97
-97	val_97
-97	val_98
-97	val_98
 98	val_98
 98	val_98
-99	val_100
-101	val_102
-105	val_105
-105	val_106
-105	val_106
 106	val_107
 110	val_111
-113	val_113
-113	val_113
 116	val_116
 116	val_117
-117	val_118
-117	val_118
-119	val_119
-119	val_119
-119	val_119
-119	val_120
-119	val_120
-119	val_120
-121	val_122
-121	val_122
-123	val_124
-123	val_124
 126	val_126
 126	val_127
 126	val_127
 132	val_133
 132	val_133
-133	val_133
-133	val_134
 134	val_134
 134	val_134
 134	val_135
-135	val_136
-135	val_136
-135	val_136
-137	val_137
-137	val_137
-137	val_138
 140	val_141
 146	val_146
 146	val_146
-149	val_149
-149	val_149
-149	val_150
-153	val_153
-153	val_154
-153	val_154
 156	val_156
 156	val_157
 156	val_157
-157	val_157
-157	val_158
-157	val_158
 158	val_158
 162	val_162
 162	val_163
-163	val_163
 164	val_164
 164	val_164
 164	val_165
 164	val_165
-165	val_165
-165	val_165
-165	val_166
-169	val_169
-169	val_169
-169	val_169
-169	val_169
-177	val_177
-177	val_178
-177	val_178
 178	val_178
 178	val_179
 178	val_179
-181	val_181
 182	val_183
 184	val_185
-185	val_186
-187	val_187
-187	val_187
-187	val_187
 190	val_190
-191	val_191
-191	val_191
-191	val_192
-195	val_195
-195	val_195
-197	val_197
-197	val_197
-197	val_198
-199	val_199
-199	val_199
-199	val_199
-199	val_200
-201	val_201
 202	val_202
 206	val_207
 206	val_207
@@ -621,57 +511,34 @@ POSTHOOK: Input: default@dest1
 208	val_208
 212	val_213
 214	val_214
-215	val_216
 216	val_216
 216	val_216
 216	val_217
-221	val_221
-221	val_221
 226	val_226
 226	val_227
 226	val_227
 226	val_227
 226	val_227
-229	val_229
-229	val_229
-231	val_232
-233	val_233
-233	val_233
-237	val_237
-237	val_237
 238	val_238
 238	val_238
 238	val_239
-239	val_239
-239	val_239
-239	val_240
-239	val_240
 240	val_241
-243	val_244
-243	val_244
 244	val_244
 244	val_245
 244	val_245
 244	val_245
 248	val_248
 248	val_249
-249	val_249
-249	val_250
-249	val_250
 252	val_252
 252	val_253
 254	val_255
-255	val_255
-255	val_255
 256	val_256
 256	val_256
 256	val_257
 260	val_260
 260	val_261
 260	val_261
-261	val_262
 266	val_266
-271	val_272
 272	val_272
 272	val_272
 272	val_273
@@ -681,20 +548,10 @@ POSTHOOK: Input: default@dest1
 284	val_285
 286	val_286
 286	val_287
-287	val_287
-287	val_288
-287	val_288
-289	val_289
-289	val_290
-291	val_291
-291	val_292
-291	val_292
 292	val_292
 292	val_293
 292	val_293
 304	val_305
-307	val_307
-307	val_307
 308	val_308
 308	val_309
 308	val_309
@@ -702,81 +559,37 @@ POSTHOOK: Input: default@dest1
 310	val_311
 310	val_311
 310	val_311
-311	val_311
-311	val_311
-311	val_311
-313	val_314
-315	val_315
 316	val_316
 316	val_316
 316	val_316
-317	val_317
-317	val_317
-317	val_318
 324	val_325
-325	val_325
-325	val_325
 326	val_327
-327	val_327
-327	val_327
-327	val_327
 332	val_332
 334	val_335
 336	val_336
 336	val_337
-337	val_338
 338	val_338
 338	val_339
-339	val_339
-341	val_341
-341	val_342
-341	val_342
-341	val_342
 342	val_342
 342	val_342
 342	val_343
-343	val_344
 344	val_344
 344	val_344
 344	val_345
-347	val_348
-347	val_348
 348	val_348
 348	val_348
 348	val_348
 348	val_348
 348	val_348
 348	val_349
-349	val_350
-349	val_350
-349	val_350
-349	val_350
-351	val_351
-351	val_352
-351	val_352
 352	val_353
 352	val_353
-353	val_353
-353	val_353
-353	val_354
-355	val_356
-355	val_356
 360	val_360
 360	val_361
 362	val_362
 364	val_364
 364	val_365
-365	val_365
 368	val_368
-369	val_369
-369	val_369
-369	val_369
-369	val_370
-371	val_372
-371	val_372
-371	val_372
-371	val_372
-377	val_377
 378	val_378
 378	val_379
 384	val_384
@@ -789,24 +602,13 @@ POSTHOOK: Input: default@dest1
 386	val_387
 386	val_387
 388	val_389
-391	val_392
-391	val_392
 392	val_392
 392	val_393
 392	val_393
-393	val_393
-393	val_394
-393	val_394
 394	val_394
 396	val_396
 396	val_396
 396	val_396
-397	val_397
-397	val_397
-399	val_399
-399	val_399
-399	val_400
-399	val_400
 402	val_402
 402	val_403
 402	val_403
@@ -816,36 +618,13 @@ POSTHOOK: Input: default@dest1
 404	val_405
 404	val_405
 404	val_405
-407	val_407
-407	val_408
-407	val_408
-407	val_408
 408	val_409
 408	val_409
-409	val_409
-409	val_409
-409	val_409
-409	val_410
-409	val_410
 410	val_411
-411	val_411
-411	val_412
 414	val_414
 414	val_414
 414	val_415
-417	val_417
-417	val_417
-417	val_417
-419	val_419
-421	val_421
-421	val_422
-421	val_422
-423	val_424
-425	val_426
 426	val_427
-427	val_427
-427	val_428
-427	val_428
 428	val_429
 430	val_430
 430	val_430
@@ -853,24 +632,13 @@ POSTHOOK: Input: default@dest1
 430	val_431
 432	val_432
 432	val_433
-435	val_435
-435	val_436
-437	val_437
-437	val_438
 440	val_441
 440	val_441
-443	val_443
-443	val_444
-443	val_444
-443	val_444
 444	val_444
 446	val_446
 446	val_447
 446	val_447
-449	val_449
 452	val_452
-453	val_453
-453	val_454
 454	val_454
 454	val_454
 454	val_454
@@ -878,19 +646,10 @@ POSTHOOK: Input: default@dest1
 454	val_455
 458	val_458
 458	val_458
-459	val_459
-459	val_459
-459	val_460
-463	val_463
-463	val_463
-463	val_464
 466	val_466
 466	val_466
 466	val_466
-467	val_467
-467	val_468
 472	val_472
-473	val_474
 474	val_475
 474	val_475
 476	val_477
@@ -899,7 +658,6 @@ POSTHOOK: Input: default@dest1
 478	val_478
 478	val_479
 478	val_479
-479	val_479
 480	val_480
 480	val_480
 480	val_480
@@ -907,23 +665,11 @@ POSTHOOK: Input: default@dest1
 480	val_481
 482	val_482
 482	val_483
-483	val_483
 484	val_484
 484	val_485
-485	val_485
-485	val_486
-485	val_486
 488	val_489
 490	val_490
 490	val_491
-491	val_491
-491	val_492
-491	val_492
-495	val_495
-495	val_496
-497	val_497
-497	val_498
-497	val_498
 498	val_498
 498	val_498
 498	val_498

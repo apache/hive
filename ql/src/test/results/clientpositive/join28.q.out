@@ -1,13 +1,13 @@
-PREHOOK: query: CREATE TABLE dest_j1(key STRING, value STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE dest_j1_n11(key STRING, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest_j1
-POSTHOOK: query: CREATE TABLE dest_j1(key STRING, value STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@dest_j1_n11
+POSTHOOK: query: CREATE TABLE dest_j1_n11(key STRING, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest_j1
+POSTHOOK: Output: default@dest_j1_n11
 PREHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE dest_j1 
+INSERT OVERWRITE TABLE dest_j1_n11 
 SELECT subq.key1, z.value
 FROM
 (SELECT x.key as key1, x.value as value1, y.key as key2, y.value as value2 
@@ -15,7 +15,7 @@ FROM
  JOIN srcpart z ON (subq.key1 = z.key and z.ds='2008-04-08' and z.hr=11)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE dest_j1 
+INSERT OVERWRITE TABLE dest_j1_n11 
 SELECT subq.key1, z.value
 FROM
 (SELECT x.key as key1, x.value as value1, y.key as key2, y.value as value2 
@@ -115,7 +115,7 @@ STAGE PLANS:
                               input format: org.apache.hadoop.mapred.TextInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                              name: default.dest_j1
+                              name: default.dest_j1_n11
                         Select Operator
                           expressions: _col0 (type: string), _col1 (type: string)
                           outputColumnNames: key, value
@@ -142,7 +142,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest_j1
+              name: default.dest_j1_n11
 
   Stage: Stage-2
     Stats Work
@@ -150,7 +150,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: string, string
-          Table: default.dest_j1
+          Table: default.dest_j1_n11
 
   Stage: Stage-3
     Map Reduce
@@ -175,7 +175,7 @@ STAGE PLANS:
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
-PREHOOK: query: INSERT OVERWRITE TABLE dest_j1 
+PREHOOK: query: INSERT OVERWRITE TABLE dest_j1_n11 
 SELECT subq.key1, z.value
 FROM
 (SELECT x.key as key1, x.value as value1, y.key as key2, y.value as value2 
@@ -186,8 +186,8 @@ PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
-PREHOOK: Output: default@dest_j1
-POSTHOOK: query: INSERT OVERWRITE TABLE dest_j1 
+PREHOOK: Output: default@dest_j1_n11
+POSTHOOK: query: INSERT OVERWRITE TABLE dest_j1_n11 
 SELECT subq.key1, z.value
 FROM
 (SELECT x.key as key1, x.value as value1, y.key as key2, y.value as value2 
@@ -198,16 +198,16 @@ POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
-POSTHOOK: Output: default@dest_j1
-POSTHOOK: Lineage: dest_j1.key SIMPLE [(src1)x.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest_j1.value SIMPLE [(srcpart)z.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from dest_j1
+POSTHOOK: Output: default@dest_j1_n11
+POSTHOOK: Lineage: dest_j1_n11.key SIMPLE [(src1)x.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest_j1_n11.value SIMPLE [(srcpart)z.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from dest_j1_n11
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest_j1
+PREHOOK: Input: default@dest_j1_n11
 #### A masked pattern was here ####
-POSTHOOK: query: select * from dest_j1
+POSTHOOK: query: select * from dest_j1_n11
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest_j1
+POSTHOOK: Input: default@dest_j1_n11
 #### A masked pattern was here ####
 128	val_128
 128	val_128

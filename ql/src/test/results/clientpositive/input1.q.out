@@ -1,16 +1,16 @@
-PREHOOK: query: CREATE TABLE TEST1(A INT, B DOUBLE) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE TEST1_n6(A INT, B DOUBLE) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@TEST1
-POSTHOOK: query: CREATE TABLE TEST1(A INT, B DOUBLE) STORED AS TEXTFILE
+PREHOOK: Output: default@TEST1_n6
+POSTHOOK: query: CREATE TABLE TEST1_n6(A INT, B DOUBLE) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@TEST1
+POSTHOOK: Output: default@TEST1_n6
 PREHOOK: query: EXPLAIN
-DESCRIBE TEST1
+DESCRIBE TEST1_n6
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: EXPLAIN
-DESCRIBE TEST1
+DESCRIBE TEST1_n6
 POSTHOOK: type: DESCTABLE
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -20,7 +20,7 @@ STAGE PLANS:
   Stage: Stage-0
       Describe Table Operator:
         Describe Table
-          table: TEST1
+          table: TEST1_n6
 
   Stage: Stage-1
     Fetch Operator
@@ -28,11 +28,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: DESCRIBE TEST1
+PREHOOK: query: DESCRIBE TEST1_n6
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@test1
-POSTHOOK: query: DESCRIBE TEST1
+PREHOOK: Input: default@test1_n6
+POSTHOOK: query: DESCRIBE TEST1_n6
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test1_n6
 a                   	int                 	                    
 b                   	double              	                    

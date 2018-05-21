@@ -1,19 +1,19 @@
-PREHOOK: query: CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: query: CREATE TABLE tbl1_n0(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tbl1
-POSTHOOK: query: CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: Output: default@tbl1_n0
+POSTHOOK: query: CREATE TABLE tbl1_n0(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tbl1
-PREHOOK: query: CREATE TABLE tbl2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+POSTHOOK: Output: default@tbl1_n0
+PREHOOK: query: CREATE TABLE tbl2_n0(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tbl2
-POSTHOOK: query: CREATE TABLE tbl2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: Output: default@tbl2_n0
+POSTHOOK: query: CREATE TABLE tbl2_n0(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tbl2
+POSTHOOK: Output: default@tbl2_n0
 PREHOOK: query: CREATE TABLE tbl3(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -22,30 +22,30 @@ POSTHOOK: query: CREATE TABLE tbl3(key int, value string) CLUSTERED BY (key) SOR
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl3
-PREHOOK: query: insert overwrite table tbl1
+PREHOOK: query: insert overwrite table tbl1_n0
 select * from src where key < 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@tbl1
-POSTHOOK: query: insert overwrite table tbl1
+PREHOOK: Output: default@tbl1_n0
+POSTHOOK: query: insert overwrite table tbl1_n0
 select * from src where key < 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@tbl1
-POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: insert overwrite table tbl2
+POSTHOOK: Output: default@tbl1_n0
+POSTHOOK: Lineage: tbl1_n0.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl1_n0.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table tbl2_n0
 select * from src where key < 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@tbl2
-POSTHOOK: query: insert overwrite table tbl2
+PREHOOK: Output: default@tbl2_n0
+POSTHOOK: query: insert overwrite table tbl2_n0
 select * from src where key < 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@tbl2
-POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@tbl2_n0
+POSTHOOK: Lineage: tbl2_n0.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2_n0.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: insert overwrite table tbl3
 select * from src where key < 10
 PREHOOK: type: QUERY
@@ -60,11 +60,11 @@ POSTHOOK: Lineage: tbl3.key EXPRESSION [(src)src.FieldSchema(name:key, type:stri
 POSTHOOK: Lineage: tbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain extended
 select a.key as key, a.value as val1, b.value as val2, c.value as val3
-from tbl1 a join tbl2 b on a.key = b.key join tbl3 c on a.value = c.value
+from tbl1_n0 a join tbl2_n0 b on a.key = b.key join tbl3 c on a.value = c.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select a.key as key, a.value as val1, b.value as val2, c.value as val3
-from tbl1 a join tbl2 b on a.key = b.key join tbl3 c on a.value = c.value
+from tbl1_n0 a join tbl2_n0 b on a.key = b.key join tbl3 c on a.value = c.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -180,7 +180,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: tbl2
+                  base file name: tbl2_n0
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
@@ -194,11 +194,11 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
-                    name default.tbl2
+                    name default.tbl2_n0
                     numFiles 2
                     numRows 10
                     rawDataSize 70
-                    serialization.ddl struct tbl2 { i32 key, string value}
+                    serialization.ddl struct tbl2_n0 { i32 key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 80
@@ -218,20 +218,20 @@ STAGE PLANS:
                       columns.comments 
                       columns.types int:string
 #### A masked pattern was here ####
-                      name default.tbl2
+                      name default.tbl2_n0
                       numFiles 2
                       numRows 10
                       rawDataSize 70
-                      serialization.ddl struct tbl2 { i32 key, string value}
+                      serialization.ddl struct tbl2_n0 { i32 key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       totalSize 80
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.tbl2
-                  name: default.tbl2
+                    name: default.tbl2_n0
+                  name: default.tbl2_n0
             Truncated Path -> Alias:
-              /tbl2 [$hdt$_2:b]
+              /tbl2_n0 [$hdt$_2:b]
 
   Stage: Stage-1
     Spark
@@ -306,7 +306,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: tbl1
+                  base file name: tbl1_n0
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
@@ -320,11 +320,11 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
-                    name default.tbl1
+                    name default.tbl1_n0
                     numFiles 2
                     numRows 10
                     rawDataSize 70
-                    serialization.ddl struct tbl1 { i32 key, string value}
+                    serialization.ddl struct tbl1_n0 { i32 key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 80
@@ -344,20 +344,20 @@ STAGE PLANS:
                       columns.comments 
                       columns.types int:string
 #### A masked pattern was here ####
-                      name default.tbl1
+                      name default.tbl1_n0
                       numFiles 2
                       numRows 10
                       rawDataSize 70
-                      serialization.ddl struct tbl1 { i32 key, string value}
+                      serialization.ddl struct tbl1_n0 { i32 key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       totalSize 80
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.tbl1
-                  name: default.tbl1
+                    name: default.tbl1_n0
+                  name: default.tbl1_n0
             Truncated Path -> Alias:
-              /tbl1 [$hdt$_0:a]
+              /tbl1_n0 [$hdt$_0:a]
 
   Stage: Stage-0
     Fetch Operator
@@ -366,17 +366,17 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select a.key as key, a.value as val1, b.value as val2, c.value as val3
-from tbl1 a join tbl2 b on a.key = b.key join tbl3 c on a.value = c.value
+from tbl1_n0 a join tbl2_n0 b on a.key = b.key join tbl3 c on a.value = c.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tbl1
-PREHOOK: Input: default@tbl2
+PREHOOK: Input: default@tbl1_n0
+PREHOOK: Input: default@tbl2_n0
 PREHOOK: Input: default@tbl3
 #### A masked pattern was here ####
 POSTHOOK: query: select a.key as key, a.value as val1, b.value as val2, c.value as val3
-from tbl1 a join tbl2 b on a.key = b.key join tbl3 c on a.value = c.value
+from tbl1_n0 a join tbl2_n0 b on a.key = b.key join tbl3 c on a.value = c.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tbl1
-POSTHOOK: Input: default@tbl2
+POSTHOOK: Input: default@tbl1_n0
+POSTHOOK: Input: default@tbl2_n0
 POSTHOOK: Input: default@tbl3
 #### A masked pattern was here ####
 0	val_0	val_0	val_0
@@ -439,11 +439,11 @@ POSTHOOK: Input: default@tbl3
 9	val_9	val_9	val_9
 PREHOOK: query: explain extended
 select a.key as key, a.value as val1, b.value as val2, c.value as val3
-from tbl1 a join tbl2 b on a.key = b.key join tbl3 c on a.value = c.value
+from tbl1_n0 a join tbl2_n0 b on a.key = b.key join tbl3 c on a.value = c.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select a.key as key, a.value as val1, b.value as val2, c.value as val3
-from tbl1 a join tbl2 b on a.key = b.key join tbl3 c on a.value = c.value
+from tbl1_n0 a join tbl2_n0 b on a.key = b.key join tbl3 c on a.value = c.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -559,7 +559,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: tbl2
+                  base file name: tbl2_n0
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
@@ -573,11 +573,11 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
-                    name default.tbl2
+                    name default.tbl2_n0
                     numFiles 2
                     numRows 10
                     rawDataSize 70
-                    serialization.ddl struct tbl2 { i32 key, string value}
+                    serialization.ddl struct tbl2_n0 { i32 key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 80
@@ -597,20 +597,20 @@ STAGE PLANS:
                       columns.comments 
                       columns.types int:string
 #### A masked pattern was here ####
-                      name default.tbl2
+                      name default.tbl2_n0
                       numFiles 2
                       numRows 10
                       rawDataSize 70
-                      serialization.ddl struct tbl2 { i32 key, string value}
+                      serialization.ddl struct tbl2_n0 { i32 key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       totalSize 80
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.tbl2
-                  name: default.tbl2
+                    name: default.tbl2_n0
+                  name: default.tbl2_n0
             Truncated Path -> Alias:
-              /tbl2 [$hdt$_2:b]
+              /tbl2_n0 [$hdt$_2:b]
 
   Stage: Stage-1
     Spark
@@ -685,7 +685,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: tbl1
+                  base file name: tbl1_n0
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
@@ -699,11 +699,11 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:string
 #### A masked pattern was here ####
-                    name default.tbl1
+                    name default.tbl1_n0
                     numFiles 2
                     numRows 10
                     rawDataSize 70
-                    serialization.ddl struct tbl1 { i32 key, string value}
+                    serialization.ddl struct tbl1_n0 { i32 key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 80
@@ -723,20 +723,20 @@ STAGE PLANS:
                       columns.comments 
                       columns.types int:string
 #### A masked pattern was here ####
-                      name default.tbl1
+                      name default.tbl1_n0
                       numFiles 2
                       numRows 10
                       rawDataSize 70
-                      serialization.ddl struct tbl1 { i32 key, string value}
+                      serialization.ddl struct tbl1_n0 { i32 key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       totalSize 80
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.tbl1
-                  name: default.tbl1
+                    name: default.tbl1_n0
+                  name: default.tbl1_n0
             Truncated Path -> Alias:
-              /tbl1 [$hdt$_0:a]
+              /tbl1_n0 [$hdt$_0:a]
 
   Stage: Stage-0
     Fetch Operator
@@ -745,17 +745,17 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select a.key as key, a.value as val1, b.value as val2, c.value as val3
-from tbl1 a join tbl2 b on a.key = b.key join tbl3 c on a.value = c.value
+from tbl1_n0 a join tbl2_n0 b on a.key = b.key join tbl3 c on a.value = c.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tbl1
-PREHOOK: Input: default@tbl2
+PREHOOK: Input: default@tbl1_n0
+PREHOOK: Input: default@tbl2_n0
 PREHOOK: Input: default@tbl3
 #### A masked pattern was here ####
 POSTHOOK: query: select a.key as key, a.value as val1, b.value as val2, c.value as val3
-from tbl1 a join tbl2 b on a.key = b.key join tbl3 c on a.value = c.value
+from tbl1_n0 a join tbl2_n0 b on a.key = b.key join tbl3 c on a.value = c.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tbl1
-POSTHOOK: Input: default@tbl2
+POSTHOOK: Input: default@tbl1_n0
+POSTHOOK: Input: default@tbl2_n0
 POSTHOOK: Input: default@tbl3
 #### A masked pattern was here ####
 0	val_0	val_0	val_0

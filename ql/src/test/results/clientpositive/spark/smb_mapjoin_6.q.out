@@ -1,66 +1,66 @@
-PREHOOK: query: CREATE TABLE smb_bucket4_1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS RCFILE
+PREHOOK: query: CREATE TABLE smb_bucket4_1_n0(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@smb_bucket4_1
-POSTHOOK: query: CREATE TABLE smb_bucket4_1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS RCFILE
+PREHOOK: Output: default@smb_bucket4_1_n0
+POSTHOOK: query: CREATE TABLE smb_bucket4_1_n0(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@smb_bucket4_1
-PREHOOK: query: CREATE TABLE smb_bucket4_2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS RCFILE
+POSTHOOK: Output: default@smb_bucket4_1_n0
+PREHOOK: query: CREATE TABLE smb_bucket4_2_n0(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@smb_bucket4_2
-POSTHOOK: query: CREATE TABLE smb_bucket4_2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS RCFILE
+PREHOOK: Output: default@smb_bucket4_2_n0
+POSTHOOK: query: CREATE TABLE smb_bucket4_2_n0(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@smb_bucket4_2
-PREHOOK: query: create table smb_join_results(k1 int, v1 string, k2 int, v2 string)
+POSTHOOK: Output: default@smb_bucket4_2_n0
+PREHOOK: query: create table smb_join_results_n0(k1 int, v1 string, k2 int, v2 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@smb_join_results
-POSTHOOK: query: create table smb_join_results(k1 int, v1 string, k2 int, v2 string)
+PREHOOK: Output: default@smb_join_results_n0
+POSTHOOK: query: create table smb_join_results_n0(k1 int, v1 string, k2 int, v2 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@smb_join_results
-PREHOOK: query: create table normal_join_results(k1 int, v1 string, k2 int, v2 string)
+POSTHOOK: Output: default@smb_join_results_n0
+PREHOOK: query: create table normal_join_results_n0(k1 int, v1 string, k2 int, v2 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@normal_join_results
-POSTHOOK: query: create table normal_join_results(k1 int, v1 string, k2 int, v2 string)
+PREHOOK: Output: default@normal_join_results_n0
+POSTHOOK: query: create table normal_join_results_n0(k1 int, v1 string, k2 int, v2 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@normal_join_results
-PREHOOK: query: insert overwrite table smb_bucket4_1
+POSTHOOK: Output: default@normal_join_results_n0
+PREHOOK: query: insert overwrite table smb_bucket4_1_n0
 select * from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@smb_bucket4_1
-POSTHOOK: query: insert overwrite table smb_bucket4_1
+PREHOOK: Output: default@smb_bucket4_1_n0
+POSTHOOK: query: insert overwrite table smb_bucket4_1_n0
 select * from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@smb_bucket4_1
-POSTHOOK: Lineage: smb_bucket4_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smb_bucket4_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: insert overwrite table smb_bucket4_2
+POSTHOOK: Output: default@smb_bucket4_1_n0
+POSTHOOK: Lineage: smb_bucket4_1_n0.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: smb_bucket4_1_n0.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table smb_bucket4_2_n0
 select * from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@smb_bucket4_2
-POSTHOOK: query: insert overwrite table smb_bucket4_2
+PREHOOK: Output: default@smb_bucket4_2_n0
+POSTHOOK: query: insert overwrite table smb_bucket4_2_n0
 select * from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@smb_bucket4_2
-POSTHOOK: Lineage: smb_bucket4_2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: smb_bucket4_2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@smb_bucket4_2_n0
+POSTHOOK: Lineage: smb_bucket4_2_n0.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: smb_bucket4_2_n0.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain
-insert overwrite table smb_join_results
-select /*+mapjoin(a)*/ * from smb_bucket4_1 a join smb_bucket4_2 b on a.key = b.key
+insert overwrite table smb_join_results_n0
+select /*+mapjoin(a)*/ * from smb_bucket4_1_n0 a join smb_bucket4_2_n0 b on a.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-insert overwrite table smb_join_results
-select /*+mapjoin(a)*/ * from smb_bucket4_1 a join smb_bucket4_2 b on a.key = b.key
+insert overwrite table smb_join_results_n0
+select /*+mapjoin(a)*/ * from smb_bucket4_1_n0 a join smb_bucket4_2_n0 b on a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -129,7 +129,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.smb_join_results
+                      name: default.smb_join_results_n0
 
   Stage: Stage-0
     Move Operator
@@ -139,35 +139,35 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.smb_join_results
+              name: default.smb_join_results_n0
 
   Stage: Stage-2
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: insert overwrite table smb_join_results
-select /*+mapjoin(a)*/ * from smb_bucket4_1 a join smb_bucket4_2 b on a.key = b.key
+PREHOOK: query: insert overwrite table smb_join_results_n0
+select /*+mapjoin(a)*/ * from smb_bucket4_1_n0 a join smb_bucket4_2_n0 b on a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_bucket4_1
-PREHOOK: Input: default@smb_bucket4_2
-PREHOOK: Output: default@smb_join_results
-POSTHOOK: query: insert overwrite table smb_join_results
-select /*+mapjoin(a)*/ * from smb_bucket4_1 a join smb_bucket4_2 b on a.key = b.key
+PREHOOK: Input: default@smb_bucket4_1_n0
+PREHOOK: Input: default@smb_bucket4_2_n0
+PREHOOK: Output: default@smb_join_results_n0
+POSTHOOK: query: insert overwrite table smb_join_results_n0
+select /*+mapjoin(a)*/ * from smb_bucket4_1_n0 a join smb_bucket4_2_n0 b on a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_bucket4_1
-POSTHOOK: Input: default@smb_bucket4_2
-POSTHOOK: Output: default@smb_join_results
-POSTHOOK: Lineage: smb_join_results.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: smb_join_results.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: smb_join_results.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: smb_join_results.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: select * from smb_join_results order by k1
+POSTHOOK: Input: default@smb_bucket4_1_n0
+POSTHOOK: Input: default@smb_bucket4_2_n0
+POSTHOOK: Output: default@smb_join_results_n0
+POSTHOOK: Lineage: smb_join_results_n0.k1 SIMPLE [(smb_bucket4_1_n0)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_n0.k2 SIMPLE [(smb_bucket4_2_n0)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_n0.v1 SIMPLE [(smb_bucket4_1_n0)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_n0.v2 SIMPLE [(smb_bucket4_2_n0)b.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select * from smb_join_results_n0 order by k1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_join_results
+PREHOOK: Input: default@smb_join_results_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from smb_join_results order by k1
+POSTHOOK: query: select * from smb_join_results_n0 order by k1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_join_results
+POSTHOOK: Input: default@smb_join_results_n0
 #### A masked pattern was here ####
 0	val_0	0	val_0
 0	val_0	0	val_0
@@ -1197,45 +1197,45 @@ POSTHOOK: Input: default@smb_join_results
 498	val_498	498	val_498
 498	val_498	498	val_498
 498	val_498	498	val_498
-PREHOOK: query: insert overwrite table normal_join_results select * from smb_bucket4_1 a join smb_bucket4_2 b on a.key = b.key
+PREHOOK: query: insert overwrite table normal_join_results_n0 select * from smb_bucket4_1_n0 a join smb_bucket4_2_n0 b on a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_bucket4_1
-PREHOOK: Input: default@smb_bucket4_2
-PREHOOK: Output: default@normal_join_results
-POSTHOOK: query: insert overwrite table normal_join_results select * from smb_bucket4_1 a join smb_bucket4_2 b on a.key = b.key
+PREHOOK: Input: default@smb_bucket4_1_n0
+PREHOOK: Input: default@smb_bucket4_2_n0
+PREHOOK: Output: default@normal_join_results_n0
+POSTHOOK: query: insert overwrite table normal_join_results_n0 select * from smb_bucket4_1_n0 a join smb_bucket4_2_n0 b on a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_bucket4_1
-POSTHOOK: Input: default@smb_bucket4_2
-POSTHOOK: Output: default@normal_join_results
-POSTHOOK: Lineage: normal_join_results.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: normal_join_results.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: normal_join_results.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: normal_join_results.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from normal_join_results
+POSTHOOK: Input: default@smb_bucket4_1_n0
+POSTHOOK: Input: default@smb_bucket4_2_n0
+POSTHOOK: Output: default@normal_join_results_n0
+POSTHOOK: Lineage: normal_join_results_n0.k1 SIMPLE [(smb_bucket4_1_n0)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: normal_join_results_n0.k2 SIMPLE [(smb_bucket4_2_n0)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: normal_join_results_n0.v1 SIMPLE [(smb_bucket4_1_n0)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: normal_join_results_n0.v2 SIMPLE [(smb_bucket4_2_n0)b.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from normal_join_results_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@normal_join_results
+PREHOOK: Input: default@normal_join_results_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from normal_join_results
+POSTHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from normal_join_results_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@normal_join_results
+POSTHOOK: Input: default@normal_join_results_n0
 #### A masked pattern was here ####
 278697	278697	101852390308	101852390308
-PREHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from smb_join_results
+PREHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from smb_join_results_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_join_results
+PREHOOK: Input: default@smb_join_results_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from smb_join_results
+POSTHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from smb_join_results_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_join_results
+POSTHOOK: Input: default@smb_join_results_n0
 #### A masked pattern was here ####
 278697	278697	101852390308	101852390308
 PREHOOK: query: explain
-insert overwrite table smb_join_results
-select /*+mapjoin(b)*/ * from smb_bucket4_1 a join smb_bucket4_2 b on a.key = b.key
+insert overwrite table smb_join_results_n0
+select /*+mapjoin(b)*/ * from smb_bucket4_1_n0 a join smb_bucket4_2_n0 b on a.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-insert overwrite table smb_join_results
-select /*+mapjoin(b)*/ * from smb_bucket4_1 a join smb_bucket4_2 b on a.key = b.key
+insert overwrite table smb_join_results_n0
+select /*+mapjoin(b)*/ * from smb_bucket4_1_n0 a join smb_bucket4_2_n0 b on a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1304,7 +1304,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.smb_join_results
+                      name: default.smb_join_results_n0
 
   Stage: Stage-0
     Move Operator
@@ -1314,51 +1314,51 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.smb_join_results
+              name: default.smb_join_results_n0
 
   Stage: Stage-2
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: insert overwrite table smb_join_results
-select /*+mapjoin(b)*/ * from smb_bucket4_1 a join smb_bucket4_2 b on a.key = b.key
+PREHOOK: query: insert overwrite table smb_join_results_n0
+select /*+mapjoin(b)*/ * from smb_bucket4_1_n0 a join smb_bucket4_2_n0 b on a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_bucket4_1
-PREHOOK: Input: default@smb_bucket4_2
-PREHOOK: Output: default@smb_join_results
-POSTHOOK: query: insert overwrite table smb_join_results
-select /*+mapjoin(b)*/ * from smb_bucket4_1 a join smb_bucket4_2 b on a.key = b.key
+PREHOOK: Input: default@smb_bucket4_1_n0
+PREHOOK: Input: default@smb_bucket4_2_n0
+PREHOOK: Output: default@smb_join_results_n0
+POSTHOOK: query: insert overwrite table smb_join_results_n0
+select /*+mapjoin(b)*/ * from smb_bucket4_1_n0 a join smb_bucket4_2_n0 b on a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_bucket4_1
-POSTHOOK: Input: default@smb_bucket4_2
-POSTHOOK: Output: default@smb_join_results
-POSTHOOK: Lineage: smb_join_results.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: smb_join_results.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: smb_join_results.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: smb_join_results.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: insert overwrite table smb_join_results
-select /*+mapjoin(a)*/ * from smb_bucket4_1 a join smb_bucket4_2 b on a.key = b.key
+POSTHOOK: Input: default@smb_bucket4_1_n0
+POSTHOOK: Input: default@smb_bucket4_2_n0
+POSTHOOK: Output: default@smb_join_results_n0
+POSTHOOK: Lineage: smb_join_results_n0.k1 SIMPLE [(smb_bucket4_1_n0)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_n0.k2 SIMPLE [(smb_bucket4_2_n0)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_n0.v1 SIMPLE [(smb_bucket4_1_n0)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_n0.v2 SIMPLE [(smb_bucket4_2_n0)b.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: insert overwrite table smb_join_results_n0
+select /*+mapjoin(a)*/ * from smb_bucket4_1_n0 a join smb_bucket4_2_n0 b on a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_bucket4_1
-PREHOOK: Input: default@smb_bucket4_2
-PREHOOK: Output: default@smb_join_results
-POSTHOOK: query: insert overwrite table smb_join_results
-select /*+mapjoin(a)*/ * from smb_bucket4_1 a join smb_bucket4_2 b on a.key = b.key
+PREHOOK: Input: default@smb_bucket4_1_n0
+PREHOOK: Input: default@smb_bucket4_2_n0
+PREHOOK: Output: default@smb_join_results_n0
+POSTHOOK: query: insert overwrite table smb_join_results_n0
+select /*+mapjoin(a)*/ * from smb_bucket4_1_n0 a join smb_bucket4_2_n0 b on a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_bucket4_1
-POSTHOOK: Input: default@smb_bucket4_2
-POSTHOOK: Output: default@smb_join_results
-POSTHOOK: Lineage: smb_join_results.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: smb_join_results.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: smb_join_results.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: smb_join_results.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: select * from smb_join_results order by k1
+POSTHOOK: Input: default@smb_bucket4_1_n0
+POSTHOOK: Input: default@smb_bucket4_2_n0
+POSTHOOK: Output: default@smb_join_results_n0
+POSTHOOK: Lineage: smb_join_results_n0.k1 SIMPLE [(smb_bucket4_1_n0)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_n0.k2 SIMPLE [(smb_bucket4_2_n0)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_n0.v1 SIMPLE [(smb_bucket4_1_n0)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_n0.v2 SIMPLE [(smb_bucket4_2_n0)b.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select * from smb_join_results_n0 order by k1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_join_results
+PREHOOK: Input: default@smb_join_results_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from smb_join_results order by k1
+POSTHOOK: query: select * from smb_join_results_n0 order by k1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_join_results
+POSTHOOK: Input: default@smb_join_results_n0
 #### A masked pattern was here ####
 0	val_0	0	val_0
 0	val_0	0	val_0
@@ -2388,45 +2388,45 @@ POSTHOOK: Input: default@smb_join_results
 498	val_498	498	val_498
 498	val_498	498	val_498
 498	val_498	498	val_498
-PREHOOK: query: insert overwrite table normal_join_results select * from smb_bucket4_1 a join smb_bucket4_2 b on a.key = b.key
+PREHOOK: query: insert overwrite table normal_join_results_n0 select * from smb_bucket4_1_n0 a join smb_bucket4_2_n0 b on a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_bucket4_1
-PREHOOK: Input: default@smb_bucket4_2
-PREHOOK: Output: default@normal_join_results
-POSTHOOK: query: insert overwrite table normal_join_results select * from smb_bucket4_1 a join smb_bucket4_2 b on a.key = b.key
+PREHOOK: Input: default@smb_bucket4_1_n0
+PREHOOK: Input: default@smb_bucket4_2_n0
+PREHOOK: Output: default@normal_join_results_n0
+POSTHOOK: query: insert overwrite table normal_join_results_n0 select * from smb_bucket4_1_n0 a join smb_bucket4_2_n0 b on a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_bucket4_1
-POSTHOOK: Input: default@smb_bucket4_2
-POSTHOOK: Output: default@normal_join_results
-POSTHOOK: Lineage: normal_join_results.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: normal_join_results.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: normal_join_results.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: normal_join_results.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from normal_join_results
+POSTHOOK: Input: default@smb_bucket4_1_n0
+POSTHOOK: Input: default@smb_bucket4_2_n0
+POSTHOOK: Output: default@normal_join_results_n0
+POSTHOOK: Lineage: normal_join_results_n0.k1 SIMPLE [(smb_bucket4_1_n0)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: normal_join_results_n0.k2 SIMPLE [(smb_bucket4_2_n0)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: normal_join_results_n0.v1 SIMPLE [(smb_bucket4_1_n0)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: normal_join_results_n0.v2 SIMPLE [(smb_bucket4_2_n0)b.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from normal_join_results_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@normal_join_results
+PREHOOK: Input: default@normal_join_results_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from normal_join_results
+POSTHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from normal_join_results_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@normal_join_results
+POSTHOOK: Input: default@normal_join_results_n0
 #### A masked pattern was here ####
 278697	278697	101852390308	101852390308
-PREHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from smb_join_results
+PREHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from smb_join_results_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_join_results
+PREHOOK: Input: default@smb_join_results_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from smb_join_results
+POSTHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from smb_join_results_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_join_results
+POSTHOOK: Input: default@smb_join_results_n0
 #### A masked pattern was here ####
 278697	278697	101852390308	101852390308
 PREHOOK: query: explain
-insert overwrite table smb_join_results
-select /*+mapjoin(a)*/ * from smb_bucket4_1 a join smb_bucket4_2 b on a.key = b.key where a.key>1000
+insert overwrite table smb_join_results_n0
+select /*+mapjoin(a)*/ * from smb_bucket4_1_n0 a join smb_bucket4_2_n0 b on a.key = b.key where a.key>1000
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-insert overwrite table smb_join_results
-select /*+mapjoin(a)*/ * from smb_bucket4_1 a join smb_bucket4_2 b on a.key = b.key where a.key>1000
+insert overwrite table smb_join_results_n0
+select /*+mapjoin(a)*/ * from smb_bucket4_1_n0 a join smb_bucket4_2_n0 b on a.key = b.key where a.key>1000
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2495,7 +2495,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.smb_join_results
+                      name: default.smb_join_results_n0
 
   Stage: Stage-0
     Move Operator
@@ -2505,35 +2505,35 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.smb_join_results
+              name: default.smb_join_results_n0
 
   Stage: Stage-2
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: insert overwrite table smb_join_results
-select /*+mapjoin(a)*/ * from smb_bucket4_1 a join smb_bucket4_2 b on a.key = b.key where a.key>1000
+PREHOOK: query: insert overwrite table smb_join_results_n0
+select /*+mapjoin(a)*/ * from smb_bucket4_1_n0 a join smb_bucket4_2_n0 b on a.key = b.key where a.key>1000
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_bucket4_1
-PREHOOK: Input: default@smb_bucket4_2
-PREHOOK: Output: default@smb_join_results
-POSTHOOK: query: insert overwrite table smb_join_results
-select /*+mapjoin(a)*/ * from smb_bucket4_1 a join smb_bucket4_2 b on a.key = b.key where a.key>1000
+PREHOOK: Input: default@smb_bucket4_1_n0
+PREHOOK: Input: default@smb_bucket4_2_n0
+PREHOOK: Output: default@smb_join_results_n0
+POSTHOOK: query: insert overwrite table smb_join_results_n0
+select /*+mapjoin(a)*/ * from smb_bucket4_1_n0 a join smb_bucket4_2_n0 b on a.key = b.key where a.key>1000
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_bucket4_1
-POSTHOOK: Input: default@smb_bucket4_2
-POSTHOOK: Output: default@smb_join_results
-POSTHOOK: Lineage: smb_join_results.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: smb_join_results.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: smb_join_results.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: smb_join_results.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Input: default@smb_bucket4_1_n0
+POSTHOOK: Input: default@smb_bucket4_2_n0
+POSTHOOK: Output: default@smb_join_results_n0
+POSTHOOK: Lineage: smb_join_results_n0.k1 SIMPLE [(smb_bucket4_1_n0)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_n0.k2 SIMPLE [(smb_bucket4_2_n0)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_n0.v1 SIMPLE [(smb_bucket4_1_n0)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_n0.v2 SIMPLE [(smb_bucket4_2_n0)b.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: explain
-insert overwrite table smb_join_results
-select /*+mapjoin(b)*/ * from smb_bucket4_1 a join smb_bucket4_2 b on a.key = b.key where a.key>1000
+insert overwrite table smb_join_results_n0
+select /*+mapjoin(b)*/ * from smb_bucket4_1_n0 a join smb_bucket4_2_n0 b on a.key = b.key where a.key>1000
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-insert overwrite table smb_join_results
-select /*+mapjoin(b)*/ * from smb_bucket4_1 a join smb_bucket4_2 b on a.key = b.key where a.key>1000
+insert overwrite table smb_join_results_n0
+select /*+mapjoin(b)*/ * from smb_bucket4_1_n0 a join smb_bucket4_2_n0 b on a.key = b.key where a.key>1000
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2602,7 +2602,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.smb_join_results
+                      name: default.smb_join_results_n0
 
   Stage: Stage-0
     Move Operator
@@ -2612,33 +2612,33 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.smb_join_results
+              name: default.smb_join_results_n0
 
   Stage: Stage-2
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: insert overwrite table smb_join_results
-select /*+mapjoin(b)*/ * from smb_bucket4_1 a join smb_bucket4_2 b on a.key = b.key where a.key>1000
+PREHOOK: query: insert overwrite table smb_join_results_n0
+select /*+mapjoin(b)*/ * from smb_bucket4_1_n0 a join smb_bucket4_2_n0 b on a.key = b.key where a.key>1000
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_bucket4_1
-PREHOOK: Input: default@smb_bucket4_2
-PREHOOK: Output: default@smb_join_results
-POSTHOOK: query: insert overwrite table smb_join_results
-select /*+mapjoin(b)*/ * from smb_bucket4_1 a join smb_bucket4_2 b on a.key = b.key where a.key>1000
+PREHOOK: Input: default@smb_bucket4_1_n0
+PREHOOK: Input: default@smb_bucket4_2_n0
+PREHOOK: Output: default@smb_join_results_n0
+POSTHOOK: query: insert overwrite table smb_join_results_n0
+select /*+mapjoin(b)*/ * from smb_bucket4_1_n0 a join smb_bucket4_2_n0 b on a.key = b.key where a.key>1000
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_bucket4_1
-POSTHOOK: Input: default@smb_bucket4_2
-POSTHOOK: Output: default@smb_join_results
-POSTHOOK: Lineage: smb_join_results.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: smb_join_results.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: smb_join_results.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: smb_join_results.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Input: default@smb_bucket4_1_n0
+POSTHOOK: Input: default@smb_bucket4_2_n0
+POSTHOOK: Output: default@smb_join_results_n0
+POSTHOOK: Lineage: smb_join_results_n0.k1 SIMPLE [(smb_bucket4_1_n0)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_n0.k2 SIMPLE [(smb_bucket4_2_n0)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_n0.v1 SIMPLE [(smb_bucket4_1_n0)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smb_join_results_n0.v2 SIMPLE [(smb_bucket4_2_n0)b.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: explain
-select /*+mapjoin(b,c)*/ * from smb_bucket4_1 a join smb_bucket4_2 b on a.key = b.key join smb_bucket4_2 c on b.key = c.key where a.key>1000
+select /*+mapjoin(b,c)*/ * from smb_bucket4_1_n0 a join smb_bucket4_2_n0 b on a.key = b.key join smb_bucket4_2_n0 c on b.key = c.key where a.key>1000
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select /*+mapjoin(b,c)*/ * from smb_bucket4_1 a join smb_bucket4_2 b on a.key = b.key join smb_bucket4_2 c on b.key = c.key where a.key>1000
+select /*+mapjoin(b,c)*/ * from smb_bucket4_1_n0 a join smb_bucket4_2_n0 b on a.key = b.key join smb_bucket4_2_n0 c on b.key = c.key where a.key>1000
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2734,13 +2734,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select /*+mapjoin(b,c)*/ * from smb_bucket4_1 a join smb_bucket4_2 b on a.key = b.key join smb_bucket4_2 c on b.key = c.key where a.key>1000
+PREHOOK: query: select /*+mapjoin(b,c)*/ * from smb_bucket4_1_n0 a join smb_bucket4_2_n0 b on a.key = b.key join smb_bucket4_2_n0 c on b.key = c.key where a.key>1000
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_bucket4_1
-PREHOOK: Input: default@smb_bucket4_2
+PREHOOK: Input: default@smb_bucket4_1_n0
+PREHOOK: Input: default@smb_bucket4_2_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select /*+mapjoin(b,c)*/ * from smb_bucket4_1 a join smb_bucket4_2 b on a.key = b.key join smb_bucket4_2 c on b.key = c.key where a.key>1000
+POSTHOOK: query: select /*+mapjoin(b,c)*/ * from smb_bucket4_1_n0 a join smb_bucket4_2_n0 b on a.key = b.key join smb_bucket4_2_n0 c on b.key = c.key where a.key>1000
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_bucket4_1
-POSTHOOK: Input: default@smb_bucket4_2
+POSTHOOK: Input: default@smb_bucket4_1_n0
+POSTHOOK: Input: default@smb_bucket4_2_n0
 #### A masked pattern was here ####

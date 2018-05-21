@@ -1,21 +1,21 @@
-PREHOOK: query: create table X as
+PREHOOK: query: create table X_n1 as
 select distinct * from src order by key limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@X
-POSTHOOK: query: create table X as
+PREHOOK: Output: default@X_n1
+POSTHOOK: query: create table X_n1 as
 select distinct * from src order by key limit 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@X
-POSTHOOK: Lineage: x.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: x.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@X_n1
+POSTHOOK: Lineage: x_n1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: x_n1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: explain select * from X as A, X as B
+PREHOOK: query: explain select * from X_n1 as A, X_n1 as B
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from X as A, X as B
+POSTHOOK: query: explain select * from X_n1 as A, X_n1 as B
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -85,13 +85,13 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join MERGEJOIN[11][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: select * from X as A, X as B order by A.key, B.key
+PREHOOK: query: select * from X_n1 as A, X_n1 as B order by A.key, B.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@x
+PREHOOK: Input: default@x_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from X as A, X as B order by A.key, B.key
+POSTHOOK: query: select * from X_n1 as A, X_n1 as B order by A.key, B.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@x
+POSTHOOK: Input: default@x_n1
 #### A masked pattern was here ####
 0	val_0	0	val_0
 0	val_0	10	val_10

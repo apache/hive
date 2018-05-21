@@ -1,30 +1,30 @@
-PREHOOK: query: CREATE TABLE T1(key STRING, val STRING) PARTITIONED BY (ds string)
+PREHOOK: query: CREATE TABLE T1_n137(key STRING, val STRING) PARTITIONED BY (ds string)
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1
-POSTHOOK: query: CREATE TABLE T1(key STRING, val STRING) PARTITIONED BY (ds string)
+PREHOOK: Output: default@T1_n137
+POSTHOOK: query: CREATE TABLE T1_n137(key STRING, val STRING) PARTITIONED BY (ds string)
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1
-PREHOOK: query: INSERT OVERWRITE TABLE T1 PARTITION (ds='1')
+POSTHOOK: Output: default@T1_n137
+PREHOOK: query: INSERT OVERWRITE TABLE T1_n137 PARTITION (ds='1')
 SELECT * from src where key < 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@t1@ds=1
-POSTHOOK: query: INSERT OVERWRITE TABLE T1 PARTITION (ds='1')
+PREHOOK: Output: default@t1_n137@ds=1
+POSTHOOK: query: INSERT OVERWRITE TABLE T1_n137 PARTITION (ds='1')
 SELECT * from src where key < 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@t1@ds=1
-POSTHOOK: Lineage: t1 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: t1 PARTITION(ds=1).val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@t1_n137@ds=1
+POSTHOOK: Lineage: t1_n137 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1_n137 PARTITION(ds=1).val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-select count(distinct key) from T1
+select count(distinct key) from T1_n137
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-select count(distinct key) from T1
+select count(distinct key) from T1_n137
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -45,7 +45,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n137
                   Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -156,22 +156,22 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(distinct key) from T1
+PREHOOK: query: select count(distinct key) from T1_n137
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t1@ds=1
+PREHOOK: Input: default@t1_n137
+PREHOOK: Input: default@t1_n137@ds=1
 #### A masked pattern was here ####
-POSTHOOK: query: select count(distinct key) from T1
+POSTHOOK: query: select count(distinct key) from T1_n137
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t1@ds=1
+POSTHOOK: Input: default@t1_n137
+POSTHOOK: Input: default@t1_n137@ds=1
 #### A masked pattern was here ####
 6
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-select count(distinct key), count(1), count(key), sum(distinct key) from T1
+select count(distinct key), count(1), count(key), sum(distinct key) from T1_n137
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-select count(distinct key), count(1), count(key), sum(distinct key) from T1
+select count(distinct key), count(1), count(key), sum(distinct key) from T1_n137
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -192,7 +192,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n137
                   Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: string)
@@ -245,22 +245,22 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(distinct key), count(1), count(key), sum(distinct key) from T1
+PREHOOK: query: select count(distinct key), count(1), count(key), sum(distinct key) from T1_n137
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t1@ds=1
+PREHOOK: Input: default@t1_n137
+PREHOOK: Input: default@t1_n137@ds=1
 #### A masked pattern was here ####
-POSTHOOK: query: select count(distinct key), count(1), count(key), sum(distinct key) from T1
+POSTHOOK: query: select count(distinct key), count(1), count(key), sum(distinct key) from T1_n137
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t1@ds=1
+POSTHOOK: Input: default@t1_n137
+POSTHOOK: Input: default@t1_n137@ds=1
 #### A masked pattern was here ####
 6	10	10	28.0
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-select count(distinct key), count(1), count(key), sum(distinct key) from T1 group by key
+select count(distinct key), count(1), count(key), sum(distinct key) from T1_n137 group by key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-select count(distinct key), count(1), count(key), sum(distinct key) from T1 group by key
+select count(distinct key), count(1), count(key), sum(distinct key) from T1_n137 group by key
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -281,7 +281,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n137
                   Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: string)
@@ -340,15 +340,15 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(distinct key), count(1), count(key), sum(distinct key) from T1 group by key
+PREHOOK: query: select count(distinct key), count(1), count(key), sum(distinct key) from T1_n137 group by key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t1@ds=1
+PREHOOK: Input: default@t1_n137
+PREHOOK: Input: default@t1_n137@ds=1
 #### A masked pattern was here ####
-POSTHOOK: query: select count(distinct key), count(1), count(key), sum(distinct key) from T1 group by key
+POSTHOOK: query: select count(distinct key), count(1), count(key), sum(distinct key) from T1_n137 group by key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t1@ds=1
+POSTHOOK: Input: default@t1_n137
+POSTHOOK: Input: default@t1_n137@ds=1
 #### A masked pattern was here ####
 1	1	1	2.0
 1	1	1	4.0
@@ -357,10 +357,10 @@ POSTHOOK: Input: default@t1@ds=1
 1	3	3	0.0
 1	3	3	5.0
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-select key, count(distinct key), count(1), count(key), sum(distinct key) from T1 group by key
+select key, count(distinct key), count(1), count(key), sum(distinct key) from T1_n137 group by key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-select key, count(distinct key), count(1), count(key), sum(distinct key) from T1 group by key
+select key, count(distinct key), count(1), count(key), sum(distinct key) from T1_n137 group by key
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -381,7 +381,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n137
                   Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: string)
@@ -436,15 +436,15 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select key, count(distinct key), count(1), count(key), sum(distinct key) from T1 group by key
+PREHOOK: query: select key, count(distinct key), count(1), count(key), sum(distinct key) from T1_n137 group by key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t1@ds=1
+PREHOOK: Input: default@t1_n137
+PREHOOK: Input: default@t1_n137@ds=1
 #### A masked pattern was here ####
-POSTHOOK: query: select key, count(distinct key), count(1), count(key), sum(distinct key) from T1 group by key
+POSTHOOK: query: select key, count(distinct key), count(1), count(key), sum(distinct key) from T1_n137 group by key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t1@ds=1
+POSTHOOK: Input: default@t1_n137
+POSTHOOK: Input: default@t1_n137@ds=1
 #### A masked pattern was here ####
 0	1	3	3	0.0
 2	1	1	1	2.0
@@ -453,10 +453,10 @@ POSTHOOK: Input: default@t1@ds=1
 8	1	1	1	8.0
 9	1	1	1	9.0
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-select count(distinct key+key) from T1
+select count(distinct key+key) from T1_n137
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-select count(distinct key+key) from T1
+select count(distinct key+key) from T1_n137
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -478,7 +478,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n137
                   Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -629,22 +629,22 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(distinct key+key) from T1
+PREHOOK: query: select count(distinct key+key) from T1_n137
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t1@ds=1
+PREHOOK: Input: default@t1_n137
+PREHOOK: Input: default@t1_n137@ds=1
 #### A masked pattern was here ####
-POSTHOOK: query: select count(distinct key+key) from T1
+POSTHOOK: query: select count(distinct key+key) from T1_n137
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t1@ds=1
+POSTHOOK: Input: default@t1_n137
+POSTHOOK: Input: default@t1_n137@ds=1
 #### A masked pattern was here ####
 6
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-select count(distinct 1) from T1
+select count(distinct 1) from T1_n137
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-select count(distinct 1) from T1
+select count(distinct 1) from T1_n137
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -666,7 +666,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n137
                   Statistics: Num rows: 10 Data size: 150 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -820,22 +820,22 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(distinct 1) from T1
+PREHOOK: query: select count(distinct 1) from T1_n137
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t1@ds=1
+PREHOOK: Input: default@t1_n137
+PREHOOK: Input: default@t1_n137@ds=1
 #### A masked pattern was here ####
-POSTHOOK: query: select count(distinct 1) from T1
+POSTHOOK: query: select count(distinct 1) from T1_n137
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t1@ds=1
+POSTHOOK: Input: default@t1_n137
+POSTHOOK: Input: default@t1_n137@ds=1
 #### A masked pattern was here ####
 1
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-select count(distinct key) from T1
+select count(distinct key) from T1_n137
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-select count(distinct key) from T1
+select count(distinct key) from T1_n137
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -857,7 +857,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n137
                   Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -983,14 +983,14 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(distinct key) from T1
+PREHOOK: query: select count(distinct key) from T1_n137
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t1@ds=1
+PREHOOK: Input: default@t1_n137
+PREHOOK: Input: default@t1_n137@ds=1
 #### A masked pattern was here ####
-POSTHOOK: query: select count(distinct key) from T1
+POSTHOOK: query: select count(distinct key) from T1_n137
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t1@ds=1
+POSTHOOK: Input: default@t1_n137
+POSTHOOK: Input: default@t1_n137@ds=1
 #### A masked pattern was here ####
 6

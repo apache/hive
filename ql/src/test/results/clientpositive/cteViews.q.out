@@ -19,29 +19,29 @@ PREHOOK: Input: database:default
 POSTHOOK: query: use default
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:default
-PREHOOK: query: drop view v
+PREHOOK: query: drop view v_n0
 PREHOOK: type: DROPVIEW
-POSTHOOK: query: drop view v
+POSTHOOK: query: drop view v_n0
 POSTHOOK: type: DROPVIEW
-PREHOOK: query: create view v as with cte as (select key, value from src order by key limit 5)
+PREHOOK: query: create view v_n0 as with cte as (select key, value from src order by key limit 5)
 select key from cte
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@v
-POSTHOOK: query: create view v as with cte as (select key, value from src order by key limit 5)
+PREHOOK: Output: default@v_n0
+POSTHOOK: query: create view v_n0 as with cte as (select key, value from src order by key limit 5)
 select key from cte
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@v
-POSTHOOK: Lineage: v.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: describe extended v
+POSTHOOK: Output: default@v_n0
+POSTHOOK: Lineage: v_n0.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: describe extended v_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@v
-POSTHOOK: query: describe extended v
+PREHOOK: Input: default@v_n0
+POSTHOOK: query: describe extended v_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@v_n0
 key                 	string              	                    
 	 	 
 #### A masked pattern was here ####
@@ -57,15 +57,15 @@ PREHOOK: Input: database:bug
 POSTHOOK: query: use bug
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:bug
-PREHOOK: query: select * from default.v
+PREHOOK: query: select * from default.v_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Input: default@v
+PREHOOK: Input: default@v_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from default.v
+POSTHOOK: query: select * from default.v_n0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@v_n0
 #### A masked pattern was here ####
 0
 0
@@ -86,34 +86,34 @@ PREHOOK: Input: database:default
 POSTHOOK: query: use default
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:default
-PREHOOK: query: drop view v
+PREHOOK: query: drop view v_n0
 PREHOOK: type: DROPVIEW
-PREHOOK: Input: default@v
-PREHOOK: Output: default@v
-POSTHOOK: query: drop view v
+PREHOOK: Input: default@v_n0
+PREHOOK: Output: default@v_n0
+POSTHOOK: query: drop view v_n0
 POSTHOOK: type: DROPVIEW
-POSTHOOK: Input: default@v
-POSTHOOK: Output: default@v
-PREHOOK: query: create view v as with cte as (select * from src  order by key limit 5)
+POSTHOOK: Input: default@v_n0
+POSTHOOK: Output: default@v_n0
+PREHOOK: query: create view v_n0 as with cte as (select * from src  order by key limit 5)
 select * from cte
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@v
-POSTHOOK: query: create view v as with cte as (select * from src  order by key limit 5)
+PREHOOK: Output: default@v_n0
+POSTHOOK: query: create view v_n0 as with cte as (select * from src  order by key limit 5)
 select * from cte
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@v
-POSTHOOK: Lineage: v.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: v.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: describe extended v
+POSTHOOK: Output: default@v_n0
+POSTHOOK: Lineage: v_n0.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: v_n0.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: describe extended v_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@v
-POSTHOOK: query: describe extended v
+PREHOOK: Input: default@v_n0
+POSTHOOK: query: describe extended v_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@v_n0
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -130,15 +130,15 @@ PREHOOK: Input: database:bug
 POSTHOOK: query: use bug
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:bug
-PREHOOK: query: select * from default.v
+PREHOOK: query: select * from default.v_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Input: default@v
+PREHOOK: Input: default@v_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from default.v
+POSTHOOK: query: select * from default.v_n0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@v_n0
 #### A masked pattern was here ####
 0	val_0
 0	val_0
@@ -159,33 +159,33 @@ PREHOOK: Input: database:default
 POSTHOOK: query: use default
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:default
-PREHOOK: query: drop view v
+PREHOOK: query: drop view v_n0
 PREHOOK: type: DROPVIEW
-PREHOOK: Input: default@v
-PREHOOK: Output: default@v
-POSTHOOK: query: drop view v
+PREHOOK: Input: default@v_n0
+PREHOOK: Output: default@v_n0
+POSTHOOK: query: drop view v_n0
 POSTHOOK: type: DROPVIEW
-POSTHOOK: Input: default@v
-POSTHOOK: Output: default@v
-PREHOOK: query: create view v as with src1 as (select key from src order by key limit 5)
+POSTHOOK: Input: default@v_n0
+POSTHOOK: Output: default@v_n0
+PREHOOK: query: create view v_n0 as with src1 as (select key from src order by key limit 5)
 select * from src1
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@v
-POSTHOOK: query: create view v as with src1 as (select key from src order by key limit 5)
+PREHOOK: Output: default@v_n0
+POSTHOOK: query: create view v_n0 as with src1 as (select key from src order by key limit 5)
 select * from src1
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@v
-POSTHOOK: Lineage: v.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: describe extended v
+POSTHOOK: Output: default@v_n0
+POSTHOOK: Lineage: v_n0.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: describe extended v_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@v
-POSTHOOK: query: describe extended v
+PREHOOK: Input: default@v_n0
+POSTHOOK: query: describe extended v_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@v_n0
 key                 	string              	                    
 	 	 
 #### A masked pattern was here ####
@@ -201,15 +201,15 @@ PREHOOK: Input: database:bug
 POSTHOOK: query: use bug
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:bug
-PREHOOK: query: select * from default.v
+PREHOOK: query: select * from default.v_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Input: default@v
+PREHOOK: Input: default@v_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from default.v
+POSTHOOK: query: select * from default.v_n0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@v_n0
 #### A masked pattern was here ####
 0
 0
@@ -222,59 +222,59 @@ PREHOOK: Input: database:default
 POSTHOOK: query: use default
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:default
-PREHOOK: query: drop view v
+PREHOOK: query: drop view v_n0
 PREHOOK: type: DROPVIEW
-PREHOOK: Input: default@v
-PREHOOK: Output: default@v
-POSTHOOK: query: drop view v
+PREHOOK: Input: default@v_n0
+PREHOOK: Output: default@v_n0
+POSTHOOK: query: drop view v_n0
 POSTHOOK: type: DROPVIEW
-POSTHOOK: Input: default@v
-POSTHOOK: Output: default@v
-PREHOOK: query: create view v as with src1 as (select key from src order by key limit 5)
+POSTHOOK: Input: default@v_n0
+POSTHOOK: Output: default@v_n0
+PREHOOK: query: create view v_n0 as with src1 as (select key from src order by key limit 5)
 select * from src1 a where a.key is not null
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@v
-POSTHOOK: query: create view v as with src1 as (select key from src order by key limit 5)
+PREHOOK: Output: default@v_n0
+POSTHOOK: query: create view v_n0 as with src1 as (select key from src order by key limit 5)
 select * from src1 a where a.key is not null
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@v
-POSTHOOK: Lineage: v.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: describe extended v
+POSTHOOK: Output: default@v_n0
+POSTHOOK: Lineage: v_n0.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: describe extended v_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@v
-POSTHOOK: query: describe extended v
+PREHOOK: Input: default@v_n0
+POSTHOOK: query: describe extended v_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@v_n0
 key                 	string              	                    
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: select * from v
+PREHOOK: query: select * from v_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Input: default@v
+PREHOOK: Input: default@v_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from v
+POSTHOOK: query: select * from v_n0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@v_n0
 #### A masked pattern was here ####
 0
 0
 0
 10
 100
-PREHOOK: query: drop view v
+PREHOOK: query: drop view v_n0
 PREHOOK: type: DROPVIEW
-PREHOOK: Input: default@v
-PREHOOK: Output: default@v
-POSTHOOK: query: drop view v
+PREHOOK: Input: default@v_n0
+PREHOOK: Output: default@v_n0
+POSTHOOK: query: drop view v_n0
 POSTHOOK: type: DROPVIEW
-POSTHOOK: Input: default@v
-POSTHOOK: Output: default@v
+POSTHOOK: Input: default@v_n0
+POSTHOOK: Output: default@v_n0
 PREHOOK: query: drop database bug
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:bug

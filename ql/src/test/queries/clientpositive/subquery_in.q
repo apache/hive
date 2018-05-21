@@ -225,7 +225,7 @@ explain select p_partkey from part where p_name in
 select p_partkey from part where p_name in 
 	(select p.p_name from part p left outer join part pp on p.p_type = pp.p_type where pp.p_size = part.p_size and p.p_size=part.p_size);
 
--- join in subquery, correlated predicate with both inner tables, different outer var
+-- join in subquery, correlated predicate with both inner tables, different_n22 outer var
 explain select p_partkey from part where p_name in 
 	(select p.p_name from part p left outer join part pp on p.p_type = pp.p_type where pp.p_size = part.p_size and p.p_type=part.p_type);
 
@@ -255,47 +255,47 @@ select * from part where p_size NOT IN (select count(*) from part pp where pp.p_
 explain select * from part where p_size not in (select avg(pp.p_size) from part pp where pp.p_partkey = part.p_partkey);
 select * from part where p_size not in (select avg(pp.p_size) from part pp where pp.p_partkey = part.p_partkey);
 
-create table t(i int);
-insert into t values(1);
-insert into t values(0);
+create table t_n22(i int);
+insert into t_n22 values(1);
+insert into t_n22 values(0);
 
-create table tempty(i int);
+create table tempty_n2(i int);
 
 -- uncorr sub with aggregate which produces result irrespective of zero rows
-explain select * from t where i IN (select count(*) from tempty);
-select * from t where i IN (select count(*) from tempty);
+explain select * from t_n22 where i IN (select count(*) from tempty_n2);
+select * from t_n22 where i IN (select count(*) from tempty_n2);
 
-drop table t;
+drop table t_n22;
 
-create table tnull(i int);
-insert into tnull values(NULL) , (NULL);
+create table tnull_n2(i int);
+insert into tnull_n2 values(NULL) , (NULL);
 
 -- empty inner table, non-null sq key, expected empty result
-select * from part where p_size IN (select i from tempty);
+select * from part where p_size IN (select i from tempty_n2);
 
 -- empty inner table, null sq key, expected empty result
-select * from tnull where i IN (select i from tempty);
+select * from tnull_n2 where i IN (select i from tempty_n2);
 
 -- null inner table, non-null sq key
-select * from part where p_size IN (select i from tnull);
+select * from part where p_size IN (select i from tnull_n2);
 
 -- null inner table, null sq key
-select * from tnull where i IN (select i from tnull);
+select * from tnull_n2 where i IN (select i from tnull_n2);
 
-drop table tempty;
+drop table tempty_n2;
 
-create table t(i int, j int);
-insert into t values(0,1), (0,2);
+create table t_n22(i int, j int);
+insert into t_n22 values(0,1), (0,2);
 
-create table tt(i int, j int);
-insert into tt values(0,3);
+create table tt_n2(i int, j int);
+insert into tt_n2 values(0,3);
 
 -- corr IN with aggregate other than COUNT return zero rows
-explain select * from t where i IN (select sum(i) from tt where tt.j = t.j);
-select * from t where i IN (select sum(i) from tt where tt.j = t.j);
+explain select * from t_n22 where i IN (select sum(i) from tt_n2 where tt_n2.j = t_n22.j);
+select * from t_n22 where i IN (select sum(i) from tt_n2 where tt_n2.j = t_n22.j);
 
-drop table t;
-drop table tt;
+drop table t_n22;
+drop table tt_n2;
 
 -- since inner query has aggregate it will be joined with outer to get all possible corrrelated values
 explain select * from part where p_size IN (select max(p_size) from part p where p.p_type <> part.p_name);

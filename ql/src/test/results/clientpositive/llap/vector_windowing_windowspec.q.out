@@ -1,8 +1,8 @@
-PREHOOK: query: drop table over10k
+PREHOOK: query: drop table over10k_n1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table over10k
+POSTHOOK: query: drop table over10k_n1
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table over10k(
+PREHOOK: query: create table over10k_n1(
            t tinyint,
            si smallint,
            i int,
@@ -18,8 +18,8 @@ PREHOOK: query: create table over10k(
        fields terminated by '|'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@over10k
-POSTHOOK: query: create table over10k(
+PREHOOK: Output: default@over10k_n1
+POSTHOOK: query: create table over10k_n1(
            t tinyint,
            si smallint,
            i int,
@@ -35,20 +35,20 @@ POSTHOOK: query: create table over10k(
        fields terminated by '|'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@over10k
-PREHOOK: query: load data local inpath '../../data/files/over10k' into table over10k
+POSTHOOK: Output: default@over10k_n1
+PREHOOK: query: load data local inpath '../../data/files/over10k' into table over10k_n1
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@over10k
-POSTHOOK: query: load data local inpath '../../data/files/over10k' into table over10k
+PREHOOK: Output: default@over10k_n1
+POSTHOOK: query: load data local inpath '../../data/files/over10k' into table over10k_n1
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@over10k
+POSTHOOK: Output: default@over10k_n1
 PREHOOK: query: explain vectorization detail
-select s, sum(b) over (partition by i order by s,b rows unbounded preceding) from over10k limit 100
+select s, sum(b) over (partition by i order by s,b rows unbounded preceding) from over10k_n1 limit 100
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select s, sum(b) over (partition by i order by s,b rows unbounded preceding) from over10k limit 100
+select s, sum(b) over (partition by i order by s,b rows unbounded preceding) from over10k_n1 limit 100
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -70,7 +70,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over10k
+                  alias: over10k_n1
                   Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -158,13 +158,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select s, sum(b) over (partition by i order by s,b rows unbounded preceding) from over10k limit 100
+PREHOOK: query: select s, sum(b) over (partition by i order by s,b rows unbounded preceding) from over10k_n1 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select s, sum(b) over (partition by i order by s,b rows unbounded preceding) from over10k limit 100
+POSTHOOK: query: select s, sum(b) over (partition by i order by s,b rows unbounded preceding) from over10k_n1 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n1
 #### A masked pattern was here ####
 s	sum_window_0
 alice ichabod	4294967441
@@ -268,10 +268,10 @@ quinn garcia	77309413317
 quinn laertes	81604380656
 rachel young	85899348171
 PREHOOK: query: explain vectorization detail
-select s, sum(f) over (partition by d order by s,f rows unbounded preceding) from over10k limit 100
+select s, sum(f) over (partition by d order by s,f rows unbounded preceding) from over10k_n1 limit 100
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select s, sum(f) over (partition by d order by s,f rows unbounded preceding) from over10k limit 100
+select s, sum(f) over (partition by d order by s,f rows unbounded preceding) from over10k_n1 limit 100
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -293,7 +293,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over10k
+                  alias: over10k_n1
                   Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -381,13 +381,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select s, sum(f) over (partition by d order by s,f rows unbounded preceding) from over10k limit 100
+PREHOOK: query: select s, sum(f) over (partition by d order by s,f rows unbounded preceding) from over10k_n1 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select s, sum(f) over (partition by d order by s,f rows unbounded preceding) from over10k limit 100
+POSTHOOK: query: select s, sum(f) over (partition by d order by s,f rows unbounded preceding) from over10k_n1 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n1
 #### A masked pattern was here ####
 s	sum_window_0
 calvin miller	8.390000343322754
@@ -491,10 +491,10 @@ holly hernandez	116.36999893188477
 tom white	154.0
 rachel ellison	10.600000381469727
 PREHOOK: query: explain vectorization detail
-select s, sum(f) over (partition by ts order by f range between current row and unbounded following) from over10k limit 100
+select s, sum(f) over (partition by ts order by f range between current row and unbounded following) from over10k_n1 limit 100
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select s, sum(f) over (partition by ts order by f range between current row and unbounded following) from over10k limit 100
+select s, sum(f) over (partition by ts order by f range between current row and unbounded following) from over10k_n1 limit 100
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -516,7 +516,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over10k
+                  alias: over10k_n1
                   Statistics: Num rows: 1 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -605,13 +605,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select s, sum(f) over (partition by ts order by f range between current row and unbounded following) from over10k limit 100
+PREHOOK: query: select s, sum(f) over (partition by ts order by f range between current row and unbounded following) from over10k_n1 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select s, sum(f) over (partition by ts order by f range between current row and unbounded following) from over10k limit 100
+POSTHOOK: query: select s, sum(f) over (partition by ts order by f range between current row and unbounded following) from over10k_n1 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n1
 #### A masked pattern was here ####
 s	sum_window_0
 gabriella xylophone	1276.850001335144
@@ -715,10 +715,10 @@ jessica ovid	956.9800109863281
 jessica johnson	885.3000106811523
 priscilla garcia	805.8400115966797
 PREHOOK: query: explain vectorization detail
-select s, avg(f) over (partition by ts order by s,f rows between current row and 5 following) from over10k limit 100
+select s, avg(f) over (partition by ts order by s,f rows between current row and 5 following) from over10k_n1 limit 100
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select s, avg(f) over (partition by ts order by s,f rows between current row and 5 following) from over10k limit 100
+select s, avg(f) over (partition by ts order by s,f rows between current row and 5 following) from over10k_n1 limit 100
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -740,7 +740,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over10k
+                  alias: over10k_n1
                   Statistics: Num rows: 1 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -828,13 +828,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select s, avg(f) over (partition by ts order by s,f rows between current row and 5 following) from over10k limit 100
+PREHOOK: query: select s, avg(f) over (partition by ts order by s,f rows between current row and 5 following) from over10k_n1 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select s, avg(f) over (partition by ts order by s,f rows between current row and 5 following) from over10k limit 100
+POSTHOOK: query: select s, avg(f) over (partition by ts order by s,f rows between current row and 5 following) from over10k_n1 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n1
 #### A masked pattern was here ####
 s	avg_window_0
 bob ovid	28.053333441416424
@@ -938,10 +938,10 @@ rachel polk	49.56333351135254
 sarah falkner	59.53333377838135
 tom hernandez	63.331667264302574
 PREHOOK: query: explain vectorization detail
-select s, avg(d) over (partition by t order by s,d desc rows between 5 preceding and 5 following) from over10k limit 100
+select s, avg(d) over (partition by t order by s,d desc rows between 5 preceding and 5 following) from over10k_n1 limit 100
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select s, avg(d) over (partition by t order by s,d desc rows between 5 preceding and 5 following) from over10k limit 100
+select s, avg(d) over (partition by t order by s,d desc rows between 5 preceding and 5 following) from over10k_n1 limit 100
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -963,7 +963,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over10k
+                  alias: over10k_n1
                   Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1051,13 +1051,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select s, avg(d) over (partition by t order by s,d desc rows between 5 preceding and 5 following) from over10k limit 100
+PREHOOK: query: select s, avg(d) over (partition by t order by s,d desc rows between 5 preceding and 5 following) from over10k_n1 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select s, avg(d) over (partition by t order by s,d desc rows between 5 preceding and 5 following) from over10k limit 100
+POSTHOOK: query: select s, avg(d) over (partition by t order by s,d desc rows between 5 preceding and 5 following) from over10k_n1 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n1
 #### A masked pattern was here ####
 s	avg_window_0
 alice allen	33.20166666666666
@@ -1161,10 +1161,10 @@ david falkner	27.31
 david laertes	28.00454545454545
 david miller	28.40090909090909
 PREHOOK: query: explain vectorization detail
-select s, sum(i) over(partition by ts order by s) from over10k limit 100
+select s, sum(i) over(partition by ts order by s) from over10k_n1 limit 100
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select s, sum(i) over(partition by ts order by s) from over10k limit 100
+select s, sum(i) over(partition by ts order by s) from over10k_n1 limit 100
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -1186,7 +1186,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over10k
+                  alias: over10k_n1
                   Statistics: Num rows: 1 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1310,13 +1310,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select s, sum(i) over(partition by ts order by s) from over10k limit 100
+PREHOOK: query: select s, sum(i) over(partition by ts order by s) from over10k_n1 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select s, sum(i) over(partition by ts order by s) from over10k limit 100
+POSTHOOK: query: select s, sum(i) over(partition by ts order by s) from over10k_n1 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n1
 #### A masked pattern was here ####
 s	sum_window_0
 bob ovid	65748
@@ -1420,10 +1420,10 @@ rachel polk	1445518
 sarah falkner	1511234
 tom hernandez	1576947
 PREHOOK: query: explain vectorization detail
-select f, sum(f) over (partition by ts order by f range between unbounded preceding and current row) from over10k limit 100
+select f, sum(f) over (partition by ts order by f range between unbounded preceding and current row) from over10k_n1 limit 100
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select f, sum(f) over (partition by ts order by f range between unbounded preceding and current row) from over10k limit 100
+select f, sum(f) over (partition by ts order by f range between unbounded preceding and current row) from over10k_n1 limit 100
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -1445,7 +1445,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over10k
+                  alias: over10k_n1
                   Statistics: Num rows: 1 Data size: 44 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1568,13 +1568,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select f, sum(f) over (partition by ts order by f range between unbounded preceding and current row) from over10k limit 100
+PREHOOK: query: select f, sum(f) over (partition by ts order by f range between unbounded preceding and current row) from over10k_n1 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select f, sum(f) over (partition by ts order by f range between unbounded preceding and current row) from over10k limit 100
+POSTHOOK: query: select f, sum(f) over (partition by ts order by f range between unbounded preceding and current row) from over10k_n1 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n1
 #### A masked pattern was here ####
 f	sum_window_0
 3.17	3.1700000762939453
@@ -1678,10 +1678,10 @@ f	sum_window_0
 79.46	802.1099938452244
 80.02	882.1299904882908
 PREHOOK: query: explain vectorization detail
-select f, sum(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k limit 100
+select f, sum(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k_n1 limit 100
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select f, sum(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k limit 100
+select f, sum(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k_n1 limit 100
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -1703,7 +1703,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over10k
+                  alias: over10k_n1
                   Statistics: Num rows: 1 Data size: 44 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1791,13 +1791,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select f, sum(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k limit 100
+PREHOOK: query: select f, sum(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k_n1 limit 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select f, sum(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k limit 100
+POSTHOOK: query: select f, sum(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k_n1 limit 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n1
 #### A masked pattern was here ####
 f	sum_window_0
 3.17	NULL
@@ -1901,10 +1901,10 @@ f	sum_window_0
 79.46	139.87999725341797
 80.02	151.13999938964844
 PREHOOK: query: explain vectorization detail
-select s, i, round(avg(d) over (partition by s order by i) / 10.0 , 2) from over10k limit 7
+select s, i, round(avg(d) over (partition by s order by i) / 10.0 , 2) from over10k_n1 limit 7
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select s, i, round(avg(d) over (partition by s order by i) / 10.0 , 2) from over10k limit 7
+select s, i, round(avg(d) over (partition by s order by i) / 10.0 , 2) from over10k_n1 limit 7
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -1926,7 +1926,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over10k
+                  alias: over10k_n1
                   Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -2051,13 +2051,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select s, i, round(avg(d) over (partition by s order by i) / 10.0 , 2) from over10k limit 7
+PREHOOK: query: select s, i, round(avg(d) over (partition by s order by i) / 10.0 , 2) from over10k_n1 limit 7
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select s, i, round(avg(d) over (partition by s order by i) / 10.0 , 2) from over10k limit 7
+POSTHOOK: query: select s, i, round(avg(d) over (partition by s order by i) / 10.0 , 2) from over10k_n1 limit 7
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n1
 #### A masked pattern was here ####
 s	i	_c2
 alice allen	65545	2.22
@@ -2068,10 +2068,10 @@ alice allen	65662	2.7
 alice allen	65670	2.88
 alice allen	65720	2.76
 PREHOOK: query: explain vectorization detail
-select s, i, round((avg(d) over  w1 + 10.0) - (avg(d) over w1 - 10.0),2) from over10k window w1 as (partition by s order by i) limit 7
+select s, i, round((avg(d) over  w1 + 10.0) - (avg(d) over w1 - 10.0),2) from over10k_n1 window w1 as (partition by s order by i) limit 7
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select s, i, round((avg(d) over  w1 + 10.0) - (avg(d) over w1 - 10.0),2) from over10k window w1 as (partition by s order by i) limit 7
+select s, i, round((avg(d) over  w1 + 10.0) - (avg(d) over w1 - 10.0),2) from over10k_n1 window w1 as (partition by s order by i) limit 7
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -2093,7 +2093,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over10k
+                  alias: over10k_n1
                   Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -2218,13 +2218,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select s, i, round((avg(d) over  w1 + 10.0) - (avg(d) over w1 - 10.0),2) from over10k window w1 as (partition by s order by i) limit 7
+PREHOOK: query: select s, i, round((avg(d) over  w1 + 10.0) - (avg(d) over w1 - 10.0),2) from over10k_n1 window w1 as (partition by s order by i) limit 7
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select s, i, round((avg(d) over  w1 + 10.0) - (avg(d) over w1 - 10.0),2) from over10k window w1 as (partition by s order by i) limit 7
+POSTHOOK: query: select s, i, round((avg(d) over  w1 + 10.0) - (avg(d) over w1 - 10.0),2) from over10k_n1 window w1 as (partition by s order by i) limit 7
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n1
 #### A masked pattern was here ####
 s	i	_c2
 alice allen	65545	20.0
@@ -2235,10 +2235,10 @@ alice allen	65662	20.0
 alice allen	65670	20.0
 alice allen	65720	20.0
 PREHOOK: query: explain vectorization detail
-select s, i from ( select s, i, round((avg(d) over  w1 + 10.0) - (avg(d) over w1 - 10.0),2) from over10k window w1 as (partition by s order by i)) X limit 7
+select s, i from ( select s, i, round((avg(d) over  w1 + 10.0) - (avg(d) over w1 - 10.0),2) from over10k_n1 window w1 as (partition by s order by i)) X limit 7
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select s, i from ( select s, i, round((avg(d) over  w1 + 10.0) - (avg(d) over w1 - 10.0),2) from over10k window w1 as (partition by s order by i)) X limit 7
+select s, i from ( select s, i, round((avg(d) over  w1 + 10.0) - (avg(d) over w1 - 10.0),2) from over10k_n1 window w1 as (partition by s order by i)) X limit 7
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -2260,7 +2260,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: over10k
+                  alias: over10k_n1
                   Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -2384,13 +2384,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select s, i from ( select s, i, round((avg(d) over  w1 + 10.0) - (avg(d) over w1 - 10.0),2) from over10k window w1 as (partition by s order by i)) X limit 7
+PREHOOK: query: select s, i from ( select s, i, round((avg(d) over  w1 + 10.0) - (avg(d) over w1 - 10.0),2) from over10k_n1 window w1 as (partition by s order by i)) X limit 7
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select s, i from ( select s, i, round((avg(d) over  w1 + 10.0) - (avg(d) over w1 - 10.0),2) from over10k window w1 as (partition by s order by i)) X limit 7
+POSTHOOK: query: select s, i from ( select s, i, round((avg(d) over  w1 + 10.0) - (avg(d) over w1 - 10.0),2) from over10k_n1 window w1 as (partition by s order by i)) X limit 7
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n1
 #### A masked pattern was here ####
 s	i
 alice allen	65545

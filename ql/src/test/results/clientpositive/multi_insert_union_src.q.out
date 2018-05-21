@@ -1,52 +1,52 @@
-PREHOOK: query: drop table if exists src2
+PREHOOK: query: drop table if exists src2_n4
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table if exists src2
+POSTHOOK: query: drop table if exists src2_n4
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: drop table if exists src_multi1
+PREHOOK: query: drop table if exists src_multi1_n3
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table if exists src_multi1
+POSTHOOK: query: drop table if exists src_multi1_n3
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: drop table if exists src_multi2
+PREHOOK: query: drop table if exists src_multi2_n4
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table if exists src_multi2
+POSTHOOK: query: drop table if exists src_multi2_n4
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE src2 as SELECT * FROM src
+PREHOOK: query: CREATE TABLE src2_n4 as SELECT * FROM src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src2
-POSTHOOK: query: CREATE TABLE src2 as SELECT * FROM src
+PREHOOK: Output: default@src2_n4
+POSTHOOK: query: CREATE TABLE src2_n4 as SELECT * FROM src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src2
-POSTHOOK: Lineage: src2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: create table src_multi1 like src
+POSTHOOK: Output: default@src2_n4
+POSTHOOK: Lineage: src2_n4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src2_n4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create table src_multi1_n3 like src
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src_multi1
-POSTHOOK: query: create table src_multi1 like src
+PREHOOK: Output: default@src_multi1_n3
+POSTHOOK: query: create table src_multi1_n3 like src
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src_multi1
-PREHOOK: query: create table src_multi2 like src
+POSTHOOK: Output: default@src_multi1_n3
+PREHOOK: query: create table src_multi2_n4 like src
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src_multi2
-POSTHOOK: query: create table src_multi2 like src
+PREHOOK: Output: default@src_multi2_n4
+POSTHOOK: query: create table src_multi2_n4 like src
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src_multi2
+POSTHOOK: Output: default@src_multi2_n4
 PREHOOK: query: explain
-from (select * from src1 where key < 10 union all select * from src2 where key > 100) s
-insert overwrite table src_multi1 select key, value where key < 150 order by key
-insert overwrite table src_multi2 select key, value where key > 400 order by value
+from (select * from src1 where key < 10 union all select * from src2_n4 where key > 100) s
+insert overwrite table src_multi1_n3 select key, value where key < 150 order by key
+insert overwrite table src_multi2_n4 select key, value where key > 400 order by value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-from (select * from src1 where key < 10 union all select * from src2 where key > 100) s
-insert overwrite table src_multi1 select key, value where key < 150 order by key
-insert overwrite table src_multi2 select key, value where key > 400 order by value
+from (select * from src1 where key < 10 union all select * from src2_n4 where key > 100) s
+insert overwrite table src_multi1_n3 select key, value where key < 150 order by key
+insert overwrite table src_multi2_n4 select key, value where key > 400 order by value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -90,7 +90,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
           TableScan
-            alias: src2
+            alias: src2_n4
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) > 100.0D) (type: boolean)
@@ -130,7 +130,7 @@ STAGE PLANS:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: default.src_multi1
+                name: default.src_multi1_n3
           Select Operator
             expressions: _col0 (type: string), _col1 (type: string)
             outputColumnNames: key, value
@@ -160,7 +160,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.src_multi1
+              name: default.src_multi1_n3
 
   Stage: Stage-3
     Stats Work
@@ -168,7 +168,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: string, string
-          Table: default.src_multi1
+          Table: default.src_multi1_n3
 
   Stage: Stage-4
     Map Reduce
@@ -192,7 +192,7 @@ STAGE PLANS:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: default.src_multi2
+                name: default.src_multi2_n4
           Select Operator
             expressions: _col0 (type: string), _col1 (type: string)
             outputColumnNames: key, value
@@ -222,7 +222,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.src_multi2
+              name: default.src_multi2_n4
 
   Stage: Stage-5
     Stats Work
@@ -230,35 +230,35 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: string, string
-          Table: default.src_multi2
+          Table: default.src_multi2_n4
 
-PREHOOK: query: from (select * from src1 where key < 10 union all select * from src2 where key > 100) s
-insert overwrite table src_multi1 select key, value where key < 150 order by key
-insert overwrite table src_multi2 select key, value where key > 400 order by value
+PREHOOK: query: from (select * from src1 where key < 10 union all select * from src2_n4 where key > 100) s
+insert overwrite table src_multi1_n3 select key, value where key < 150 order by key
+insert overwrite table src_multi2_n4 select key, value where key > 400 order by value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1
-PREHOOK: Input: default@src2
-PREHOOK: Output: default@src_multi1
-PREHOOK: Output: default@src_multi2
-POSTHOOK: query: from (select * from src1 where key < 10 union all select * from src2 where key > 100) s
-insert overwrite table src_multi1 select key, value where key < 150 order by key
-insert overwrite table src_multi2 select key, value where key > 400 order by value
+PREHOOK: Input: default@src2_n4
+PREHOOK: Output: default@src_multi1_n3
+PREHOOK: Output: default@src_multi2_n4
+POSTHOOK: query: from (select * from src1 where key < 10 union all select * from src2_n4 where key > 100) s
+insert overwrite table src_multi1_n3 select key, value where key < 150 order by key
+insert overwrite table src_multi2_n4 select key, value where key > 400 order by value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1
-POSTHOOK: Input: default@src2
-POSTHOOK: Output: default@src_multi1
-POSTHOOK: Output: default@src_multi2
-POSTHOOK: Lineage: src_multi1.key EXPRESSION [(src1)src1.FieldSchema(name:key, type:string, comment:default), (src2)src2.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_multi1.value EXPRESSION [(src1)src1.FieldSchema(name:value, type:string, comment:default), (src2)src2.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_multi2.key EXPRESSION [(src1)src1.FieldSchema(name:key, type:string, comment:default), (src2)src2.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src1)src1.FieldSchema(name:value, type:string, comment:default), (src2)src2.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: select * from src_multi1
+POSTHOOK: Input: default@src2_n4
+POSTHOOK: Output: default@src_multi1_n3
+POSTHOOK: Output: default@src_multi2_n4
+POSTHOOK: Lineage: src_multi1_n3.key EXPRESSION [(src1)src1.FieldSchema(name:key, type:string, comment:default), (src2_n4)src2_n4.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: src_multi1_n3.value EXPRESSION [(src1)src1.FieldSchema(name:value, type:string, comment:default), (src2_n4)src2_n4.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_multi2_n4.key EXPRESSION [(src1)src1.FieldSchema(name:key, type:string, comment:default), (src2_n4)src2_n4.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: src_multi2_n4.value EXPRESSION [(src1)src1.FieldSchema(name:value, type:string, comment:default), (src2_n4)src2_n4.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select * from src_multi1_n3
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_multi1
+PREHOOK: Input: default@src_multi1_n3
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_multi1
+POSTHOOK: query: select * from src_multi1_n3
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_multi1
+POSTHOOK: Input: default@src_multi1_n3
 #### A masked pattern was here ####
 103	val_103
 103	val_103
@@ -302,13 +302,13 @@ POSTHOOK: Input: default@src_multi1
 146	val_146
 149	val_149
 149	val_149
-PREHOOK: query: select * from src_multi2
+PREHOOK: query: select * from src_multi2_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_multi2
+PREHOOK: Input: default@src_multi2_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_multi2
+POSTHOOK: query: select * from src_multi2_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_multi2
+POSTHOOK: Input: default@src_multi2_n4
 #### A masked pattern was here ####
 401	val_401
 401	val_401

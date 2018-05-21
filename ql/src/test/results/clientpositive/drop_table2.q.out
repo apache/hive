@@ -1,68 +1,68 @@
-PREHOOK: query: create table if not exists temp(col STRING) partitioned by (p STRING)
+PREHOOK: query: create table if not exists temp_n0(col STRING) partitioned by (p STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@temp
-POSTHOOK: query: create table if not exists temp(col STRING) partitioned by (p STRING)
+PREHOOK: Output: default@temp_n0
+POSTHOOK: query: create table if not exists temp_n0(col STRING) partitioned by (p STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@temp
-PREHOOK: query: alter table temp add if not exists partition (p ='p1')
+POSTHOOK: Output: default@temp_n0
+PREHOOK: query: alter table temp_n0 add if not exists partition (p ='p1')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Output: default@temp
-POSTHOOK: query: alter table temp add if not exists partition (p ='p1')
+PREHOOK: Output: default@temp_n0
+POSTHOOK: query: alter table temp_n0 add if not exists partition (p ='p1')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Output: default@temp
-POSTHOOK: Output: default@temp@p=p1
-PREHOOK: query: alter table temp add if not exists partition (p ='p2')
+POSTHOOK: Output: default@temp_n0
+POSTHOOK: Output: default@temp_n0@p=p1
+PREHOOK: query: alter table temp_n0 add if not exists partition (p ='p2')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Output: default@temp
-POSTHOOK: query: alter table temp add if not exists partition (p ='p2')
+PREHOOK: Output: default@temp_n0
+POSTHOOK: query: alter table temp_n0 add if not exists partition (p ='p2')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Output: default@temp
-POSTHOOK: Output: default@temp@p=p2
-PREHOOK: query: alter table temp add if not exists partition (p ='p3')
+POSTHOOK: Output: default@temp_n0
+POSTHOOK: Output: default@temp_n0@p=p2
+PREHOOK: query: alter table temp_n0 add if not exists partition (p ='p3')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Output: default@temp
-POSTHOOK: query: alter table temp add if not exists partition (p ='p3')
+PREHOOK: Output: default@temp_n0
+POSTHOOK: query: alter table temp_n0 add if not exists partition (p ='p3')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Output: default@temp
-POSTHOOK: Output: default@temp@p=p3
-PREHOOK: query: show partitions temp
+POSTHOOK: Output: default@temp_n0
+POSTHOOK: Output: default@temp_n0@p=p3
+PREHOOK: query: show partitions temp_n0
 PREHOOK: type: SHOWPARTITIONS
-PREHOOK: Input: default@temp
-POSTHOOK: query: show partitions temp
+PREHOOK: Input: default@temp_n0
+POSTHOOK: query: show partitions temp_n0
 POSTHOOK: type: SHOWPARTITIONS
-POSTHOOK: Input: default@temp
+POSTHOOK: Input: default@temp_n0
 p=p1
 p=p2
 p=p3
-PREHOOK: query: drop table temp
+PREHOOK: query: drop table temp_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@temp
-PREHOOK: Output: default@temp
-POSTHOOK: query: drop table temp
+PREHOOK: Input: default@temp_n0
+PREHOOK: Output: default@temp_n0
+POSTHOOK: query: drop table temp_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@temp
-POSTHOOK: Output: default@temp
-PREHOOK: query: create table if not exists temp(col STRING) partitioned by (p STRING)
+POSTHOOK: Input: default@temp_n0
+POSTHOOK: Output: default@temp_n0
+PREHOOK: query: create table if not exists temp_n0(col STRING) partitioned by (p STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@temp
-POSTHOOK: query: create table if not exists temp(col STRING) partitioned by (p STRING)
+PREHOOK: Output: default@temp_n0
+POSTHOOK: query: create table if not exists temp_n0(col STRING) partitioned by (p STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@temp
-PREHOOK: query: show partitions temp
+POSTHOOK: Output: default@temp_n0
+PREHOOK: query: show partitions temp_n0
 PREHOOK: type: SHOWPARTITIONS
-PREHOOK: Input: default@temp
-POSTHOOK: query: show partitions temp
+PREHOOK: Input: default@temp_n0
+POSTHOOK: query: show partitions temp_n0
 POSTHOOK: type: SHOWPARTITIONS
-POSTHOOK: Input: default@temp
-PREHOOK: query: drop table temp
+POSTHOOK: Input: default@temp_n0
+PREHOOK: query: drop table temp_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@temp
-PREHOOK: Output: default@temp
-POSTHOOK: query: drop table temp
+PREHOOK: Input: default@temp_n0
+PREHOOK: Output: default@temp_n0
+POSTHOOK: query: drop table temp_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@temp
-POSTHOOK: Output: default@temp
+POSTHOOK: Input: default@temp_n0
+POSTHOOK: Output: default@temp_n0

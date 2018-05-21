@@ -1,196 +1,196 @@
-PREHOOK: query: create table a(key int, value int)
+PREHOOK: query: create table a_n1(key int, value int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@a
-POSTHOOK: query: create table a(key int, value int)
+PREHOOK: Output: default@a_n1
+POSTHOOK: query: create table a_n1(key int, value int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@a
-PREHOOK: query: insert into table a values (1,2),(1,2),(1,2),(1,3),(2,3)
+POSTHOOK: Output: default@a_n1
+PREHOOK: query: insert into table a_n1 values (1,2),(1,2),(1,2),(1,3),(2,3)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@a
-POSTHOOK: query: insert into table a values (1,2),(1,2),(1,2),(1,3),(2,3)
+PREHOOK: Output: default@a_n1
+POSTHOOK: query: insert into table a_n1 values (1,2),(1,2),(1,2),(1,3),(2,3)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@a
-POSTHOOK: Lineage: a.key SCRIPT []
-POSTHOOK: Lineage: a.value SCRIPT []
-PREHOOK: query: create table b(key int, value int)
+POSTHOOK: Output: default@a_n1
+POSTHOOK: Lineage: a_n1.key SCRIPT []
+POSTHOOK: Lineage: a_n1.value SCRIPT []
+PREHOOK: query: create table b_n1(key int, value int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@b
-POSTHOOK: query: create table b(key int, value int)
+PREHOOK: Output: default@b_n1
+POSTHOOK: query: create table b_n1(key int, value int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@b
-PREHOOK: query: insert into table b values (1,2),(1,2),(2,3)
+POSTHOOK: Output: default@b_n1
+PREHOOK: query: insert into table b_n1 values (1,2),(1,2),(2,3)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@b
-POSTHOOK: query: insert into table b values (1,2),(1,2),(2,3)
+PREHOOK: Output: default@b_n1
+POSTHOOK: query: insert into table b_n1 values (1,2),(1,2),(2,3)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@b
-POSTHOOK: Lineage: b.key SCRIPT []
-POSTHOOK: Lineage: b.value SCRIPT []
-PREHOOK: query: select * from a intersect select * from b
+POSTHOOK: Output: default@b_n1
+POSTHOOK: Lineage: b_n1.key SCRIPT []
+POSTHOOK: Lineage: b_n1.value SCRIPT []
+PREHOOK: query: select * from a_n1 intersect select * from b_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@a
-PREHOOK: Input: default@b
+PREHOOK: Input: default@a_n1
+PREHOOK: Input: default@b_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from a intersect select * from b
+POSTHOOK: query: select * from a_n1 intersect select * from b_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@a
-POSTHOOK: Input: default@b
+POSTHOOK: Input: default@a_n1
+POSTHOOK: Input: default@b_n1
 #### A masked pattern was here ####
 1	2
 2	3
-PREHOOK: query: (select * from b intersect (select * from a)) intersect select * from b
+PREHOOK: query: (select * from b_n1 intersect (select * from a_n1)) intersect select * from b_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@a
-PREHOOK: Input: default@b
+PREHOOK: Input: default@a_n1
+PREHOOK: Input: default@b_n1
 #### A masked pattern was here ####
-POSTHOOK: query: (select * from b intersect (select * from a)) intersect select * from b
+POSTHOOK: query: (select * from b_n1 intersect (select * from a_n1)) intersect select * from b_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@a
-POSTHOOK: Input: default@b
+POSTHOOK: Input: default@a_n1
+POSTHOOK: Input: default@b_n1
 #### A masked pattern was here ####
 1	2
 2	3
-PREHOOK: query: select * from b intersect all select * from a intersect select * from b
+PREHOOK: query: select * from b_n1 intersect all select * from a_n1 intersect select * from b_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@a
-PREHOOK: Input: default@b
+PREHOOK: Input: default@a_n1
+PREHOOK: Input: default@b_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from b intersect all select * from a intersect select * from b
+POSTHOOK: query: select * from b_n1 intersect all select * from a_n1 intersect select * from b_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@a
-POSTHOOK: Input: default@b
+POSTHOOK: Input: default@a_n1
+POSTHOOK: Input: default@b_n1
 #### A masked pattern was here ####
 1	2
 2	3
-PREHOOK: query: (select * from b) intersect all ((select * from a) intersect select * from b)
+PREHOOK: query: (select * from b_n1) intersect all ((select * from a_n1) intersect select * from b_n1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@a
-PREHOOK: Input: default@b
+PREHOOK: Input: default@a_n1
+PREHOOK: Input: default@b_n1
 #### A masked pattern was here ####
-POSTHOOK: query: (select * from b) intersect all ((select * from a) intersect select * from b)
+POSTHOOK: query: (select * from b_n1) intersect all ((select * from a_n1) intersect select * from b_n1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@a
-POSTHOOK: Input: default@b
+POSTHOOK: Input: default@a_n1
+POSTHOOK: Input: default@b_n1
 #### A masked pattern was here ####
 1	2
 2	3
-PREHOOK: query: select * from (select a.key, b.value from a join b on a.key=b.key)sub1 
+PREHOOK: query: select * from (select a_n1.key, b_n1.value from a_n1 join b_n1 on a_n1.key=b_n1.key)sub1 
 intersect 
-select * from (select a.key, b.value from a join b on a.key=b.key)sub2
+select * from (select a_n1.key, b_n1.value from a_n1 join b_n1 on a_n1.key=b_n1.key)sub2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@a
-PREHOOK: Input: default@b
+PREHOOK: Input: default@a_n1
+PREHOOK: Input: default@b_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from (select a.key, b.value from a join b on a.key=b.key)sub1 
+POSTHOOK: query: select * from (select a_n1.key, b_n1.value from a_n1 join b_n1 on a_n1.key=b_n1.key)sub1 
 intersect 
-select * from (select a.key, b.value from a join b on a.key=b.key)sub2
+select * from (select a_n1.key, b_n1.value from a_n1 join b_n1 on a_n1.key=b_n1.key)sub2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@a
-POSTHOOK: Input: default@b
+POSTHOOK: Input: default@a_n1
+POSTHOOK: Input: default@b_n1
 #### A masked pattern was here ####
 1	2
 2	3
-PREHOOK: query: drop table a
+PREHOOK: query: drop table a_n1
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@a
-PREHOOK: Output: default@a
-POSTHOOK: query: drop table a
+PREHOOK: Input: default@a_n1
+PREHOOK: Output: default@a_n1
+POSTHOOK: query: drop table a_n1
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@a
-POSTHOOK: Output: default@a
-PREHOOK: query: drop table b
+POSTHOOK: Input: default@a_n1
+POSTHOOK: Output: default@a_n1
+PREHOOK: query: drop table b_n1
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@b
-PREHOOK: Output: default@b
-POSTHOOK: query: drop table b
+PREHOOK: Input: default@b_n1
+PREHOOK: Output: default@b_n1
+POSTHOOK: query: drop table b_n1
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@b
-POSTHOOK: Output: default@b
-PREHOOK: query: create table a(key int)
+POSTHOOK: Input: default@b_n1
+POSTHOOK: Output: default@b_n1
+PREHOOK: query: create table a_n1(key int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@a
-POSTHOOK: query: create table a(key int)
+PREHOOK: Output: default@a_n1
+POSTHOOK: query: create table a_n1(key int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@a
-PREHOOK: query: insert into table a values (0),(1),(2),(2),(2),(2),(3),(NULL),(NULL),(NULL),(NULL),(NULL)
+POSTHOOK: Output: default@a_n1
+PREHOOK: query: insert into table a_n1 values (0),(1),(2),(2),(2),(2),(3),(NULL),(NULL),(NULL),(NULL),(NULL)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@a
-POSTHOOK: query: insert into table a values (0),(1),(2),(2),(2),(2),(3),(NULL),(NULL),(NULL),(NULL),(NULL)
+PREHOOK: Output: default@a_n1
+POSTHOOK: query: insert into table a_n1 values (0),(1),(2),(2),(2),(2),(3),(NULL),(NULL),(NULL),(NULL),(NULL)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@a
-POSTHOOK: Lineage: a.key SCRIPT []
-PREHOOK: query: create table b(key bigint)
+POSTHOOK: Output: default@a_n1
+POSTHOOK: Lineage: a_n1.key SCRIPT []
+PREHOOK: query: create table b_n1(key bigint)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@b
-POSTHOOK: query: create table b(key bigint)
+PREHOOK: Output: default@b_n1
+POSTHOOK: query: create table b_n1(key bigint)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@b
-PREHOOK: query: insert into table b values (1),(2),(2),(3),(5),(5),(NULL),(NULL),(NULL)
+POSTHOOK: Output: default@b_n1
+PREHOOK: query: insert into table b_n1 values (1),(2),(2),(3),(5),(5),(NULL),(NULL),(NULL)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@b
-POSTHOOK: query: insert into table b values (1),(2),(2),(3),(5),(5),(NULL),(NULL),(NULL)
+PREHOOK: Output: default@b_n1
+POSTHOOK: query: insert into table b_n1 values (1),(2),(2),(3),(5),(5),(NULL),(NULL),(NULL)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@b
-POSTHOOK: Lineage: b.key SCRIPT []
-PREHOOK: query: select * from a except select * from b
+POSTHOOK: Output: default@b_n1
+POSTHOOK: Lineage: b_n1.key SCRIPT []
+PREHOOK: query: select * from a_n1 except select * from b_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@a
-PREHOOK: Input: default@b
+PREHOOK: Input: default@a_n1
+PREHOOK: Input: default@b_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from a except select * from b
+POSTHOOK: query: select * from a_n1 except select * from b_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@a
-POSTHOOK: Input: default@b
+POSTHOOK: Input: default@a_n1
+POSTHOOK: Input: default@b_n1
 #### A masked pattern was here ####
 0
-PREHOOK: query: (select * from a) minus select * from b union (select * from a) minus select * from b
+PREHOOK: query: (select * from a_n1) minus select * from b_n1 union (select * from a_n1) minus select * from b_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@a
-PREHOOK: Input: default@b
+PREHOOK: Input: default@a_n1
+PREHOOK: Input: default@b_n1
 #### A masked pattern was here ####
-POSTHOOK: query: (select * from a) minus select * from b union (select * from a) minus select * from b
+POSTHOOK: query: (select * from a_n1) minus select * from b_n1 union (select * from a_n1) minus select * from b_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@a
-POSTHOOK: Input: default@b
+POSTHOOK: Input: default@a_n1
+POSTHOOK: Input: default@b_n1
 #### A masked pattern was here ####
 0
-PREHOOK: query: (select * from a) minus select * from b union all ((select * from a) minus select * from b)
+PREHOOK: query: (select * from a_n1) minus select * from b_n1 union all ((select * from a_n1) minus select * from b_n1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@a
-PREHOOK: Input: default@b
+PREHOOK: Input: default@a_n1
+PREHOOK: Input: default@b_n1
 #### A masked pattern was here ####
-POSTHOOK: query: (select * from a) minus select * from b union all ((select * from a) minus select * from b)
+POSTHOOK: query: (select * from a_n1) minus select * from b_n1 union all ((select * from a_n1) minus select * from b_n1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@a
-POSTHOOK: Input: default@b
+POSTHOOK: Input: default@a_n1
+POSTHOOK: Input: default@b_n1
 #### A masked pattern was here ####
 0
 0
-PREHOOK: query: (select * from a) minus select * from b union all (select * from a) minus all select * from b
+PREHOOK: query: (select * from a_n1) minus select * from b_n1 union all (select * from a_n1) minus all select * from b_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@a
-PREHOOK: Input: default@b
+PREHOOK: Input: default@a_n1
+PREHOOK: Input: default@b_n1
 #### A masked pattern was here ####
-POSTHOOK: query: (select * from a) minus select * from b union all (select * from a) minus all select * from b
+POSTHOOK: query: (select * from a_n1) minus select * from b_n1 union all (select * from a_n1) minus all select * from b_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@a
-POSTHOOK: Input: default@b
+POSTHOOK: Input: default@a_n1
+POSTHOOK: Input: default@b_n1
 #### A masked pattern was here ####
 NULL
 NULL
@@ -198,40 +198,40 @@ NULL
 0
 2
 2
-PREHOOK: query: select * from a minus select * from b minus (select * from a minus select * from b)
+PREHOOK: query: select * from a_n1 minus select * from b_n1 minus (select * from a_n1 minus select * from b_n1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@a
-PREHOOK: Input: default@b
+PREHOOK: Input: default@a_n1
+PREHOOK: Input: default@b_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from a minus select * from b minus (select * from a minus select * from b)
+POSTHOOK: query: select * from a_n1 minus select * from b_n1 minus (select * from a_n1 minus select * from b_n1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@a
-POSTHOOK: Input: default@b
+POSTHOOK: Input: default@a_n1
+POSTHOOK: Input: default@b_n1
 #### A masked pattern was here ####
-PREHOOK: query: (select * from a) minus (select * from b minus (select * from a minus select * from b))
+PREHOOK: query: (select * from a_n1) minus (select * from b_n1 minus (select * from a_n1 minus select * from b_n1))
 PREHOOK: type: QUERY
-PREHOOK: Input: default@a
-PREHOOK: Input: default@b
+PREHOOK: Input: default@a_n1
+PREHOOK: Input: default@b_n1
 #### A masked pattern was here ####
-POSTHOOK: query: (select * from a) minus (select * from b minus (select * from a minus select * from b))
+POSTHOOK: query: (select * from a_n1) minus (select * from b_n1 minus (select * from a_n1 minus select * from b_n1))
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@a
-POSTHOOK: Input: default@b
+POSTHOOK: Input: default@a_n1
+POSTHOOK: Input: default@b_n1
 #### A masked pattern was here ####
 0
-PREHOOK: query: drop table a
+PREHOOK: query: drop table a_n1
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@a
-PREHOOK: Output: default@a
-POSTHOOK: query: drop table a
+PREHOOK: Input: default@a_n1
+PREHOOK: Output: default@a_n1
+POSTHOOK: query: drop table a_n1
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@a
-POSTHOOK: Output: default@a
-PREHOOK: query: drop table b
+POSTHOOK: Input: default@a_n1
+POSTHOOK: Output: default@a_n1
+PREHOOK: query: drop table b_n1
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@b
-PREHOOK: Output: default@b
-POSTHOOK: query: drop table b
+PREHOOK: Input: default@b_n1
+PREHOOK: Output: default@b_n1
+POSTHOOK: query: drop table b_n1
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@b
-POSTHOOK: Output: default@b
+POSTHOOK: Input: default@b_n1
+POSTHOOK: Output: default@b_n1

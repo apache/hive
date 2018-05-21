@@ -1,11 +1,11 @@
-PREHOOK: query: create table t (c int)
+PREHOOK: query: create table t_n2 (c int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t
-POSTHOOK: query: create table t (c int)
+PREHOOK: Output: default@t_n2
+POSTHOOK: query: create table t_n2 (c int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t
+POSTHOOK: Output: default@t_n2
 PREHOOK: query: create table o (c int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -18,22 +18,22 @@ POSTHOOK: Output: default@o
 PREHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 PREHOOK: Output: database:default
-PREHOOK: Output: default@e
+PREHOOK: Output: default@e_n1
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@e
+POSTHOOK: Output: default@e_n1
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 PREHOOK: Output: database:default
-PREHOOK: Output: default@i
+PREHOOK: Output: default@i_n0
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@i
+POSTHOOK: Output: default@i_n0
 PREHOOK: query: create table io (c int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -52,12 +52,12 @@ POSTHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@e2
-PREHOOK: query: describe formatted t
+PREHOOK: query: describe formatted t_n2
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@t
-POSTHOOK: query: describe formatted t
+PREHOOK: Input: default@t_n2
+POSTHOOK: query: describe formatted t_n2
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n2
 # col_name            	data_type           	comment             
 c                   	int                 	                    
 	 	 
@@ -154,12 +154,12 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: describe formatted e
+PREHOOK: query: describe formatted e_n1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@e
-POSTHOOK: query: describe formatted e
+PREHOOK: Input: default@e_n1
+POSTHOOK: query: describe formatted e_n1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@e
+POSTHOOK: Input: default@e_n1
 # col_name            	data_type           	comment             
 c                   	int                 	                    
 	 	 
@@ -184,12 +184,12 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: describe formatted i
+PREHOOK: query: describe formatted i_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@i
-POSTHOOK: query: describe formatted i
+PREHOOK: Input: default@i_n0
+POSTHOOK: query: describe formatted i_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@i
+POSTHOOK: Input: default@i_n0
 # col_name            	data_type           	comment             
 c                   	int                 	                    
 	 	 
@@ -250,14 +250,14 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: drop table t
+PREHOOK: query: drop table t_n2
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@t
-PREHOOK: Output: default@t
-POSTHOOK: query: drop table t
+PREHOOK: Input: default@t_n2
+PREHOOK: Output: default@t_n2
+POSTHOOK: query: drop table t_n2
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@t
-POSTHOOK: Output: default@t
+POSTHOOK: Input: default@t_n2
+POSTHOOK: Output: default@t_n2
 PREHOOK: query: drop table o
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@o
@@ -274,22 +274,22 @@ POSTHOOK: query: drop table io
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@io
 POSTHOOK: Output: default@io
-PREHOOK: query: drop table e
+PREHOOK: query: drop table e_n1
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@e
-PREHOOK: Output: default@e
-POSTHOOK: query: drop table e
+PREHOOK: Input: default@e_n1
+PREHOOK: Output: default@e_n1
+POSTHOOK: query: drop table e_n1
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@e
-POSTHOOK: Output: default@e
-PREHOOK: query: drop table i
+POSTHOOK: Input: default@e_n1
+POSTHOOK: Output: default@e_n1
+PREHOOK: query: drop table i_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@i
-PREHOOK: Output: default@i
-POSTHOOK: query: drop table i
+PREHOOK: Input: default@i_n0
+PREHOOK: Output: default@i_n0
+POSTHOOK: query: drop table i_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@i
-POSTHOOK: Output: default@i
+POSTHOOK: Input: default@i_n0
+POSTHOOK: Output: default@i_n0
 PREHOOK: query: drop table e2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@e2
@@ -298,14 +298,14 @@ POSTHOOK: query: drop table e2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@e2
 POSTHOOK: Output: default@e2
-PREHOOK: query: create table t (c int)
+PREHOOK: query: create table t_n2 (c int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t
-POSTHOOK: query: create table t (c int)
+PREHOOK: Output: default@t_n2
+POSTHOOK: query: create table t_n2 (c int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t
+POSTHOOK: Output: default@t_n2
 PREHOOK: query: create table o (c int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -318,22 +318,22 @@ POSTHOOK: Output: default@o
 PREHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 PREHOOK: Output: database:default
-PREHOOK: Output: default@e
+PREHOOK: Output: default@e_n1
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@e
+POSTHOOK: Output: default@e_n1
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 PREHOOK: Output: database:default
-PREHOOK: Output: default@i
+PREHOOK: Output: default@i_n0
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@i
+POSTHOOK: Output: default@i_n0
 PREHOOK: query: create table io (c int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -352,12 +352,12 @@ POSTHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@e2
-PREHOOK: query: describe formatted t
+PREHOOK: query: describe formatted t_n2
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@t
-POSTHOOK: query: describe formatted t
+PREHOOK: Input: default@t_n2
+POSTHOOK: query: describe formatted t_n2
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n2
 # col_name            	data_type           	comment             
 c                   	int                 	                    
 	 	 
@@ -454,12 +454,12 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: describe formatted e
+PREHOOK: query: describe formatted e_n1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@e
-POSTHOOK: query: describe formatted e
+PREHOOK: Input: default@e_n1
+POSTHOOK: query: describe formatted e_n1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@e
+POSTHOOK: Input: default@e_n1
 # col_name            	data_type           	comment             
 c                   	int                 	                    
 	 	 
@@ -486,12 +486,12 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: describe formatted i
+PREHOOK: query: describe formatted i_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@i
-POSTHOOK: query: describe formatted i
+PREHOOK: Input: default@i_n0
+POSTHOOK: query: describe formatted i_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@i
+POSTHOOK: Input: default@i_n0
 # col_name            	data_type           	comment             
 c                   	int                 	                    
 	 	 
@@ -552,14 +552,14 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: drop table t
+PREHOOK: query: drop table t_n2
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@t
-PREHOOK: Output: default@t
-POSTHOOK: query: drop table t
+PREHOOK: Input: default@t_n2
+PREHOOK: Output: default@t_n2
+POSTHOOK: query: drop table t_n2
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@t
-POSTHOOK: Output: default@t
+POSTHOOK: Input: default@t_n2
+POSTHOOK: Output: default@t_n2
 PREHOOK: query: drop table o
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@o
@@ -576,22 +576,22 @@ POSTHOOK: query: drop table io
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@io
 POSTHOOK: Output: default@io
-PREHOOK: query: drop table e
+PREHOOK: query: drop table e_n1
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@e
-PREHOOK: Output: default@e
-POSTHOOK: query: drop table e
+PREHOOK: Input: default@e_n1
+PREHOOK: Output: default@e_n1
+POSTHOOK: query: drop table e_n1
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@e
-POSTHOOK: Output: default@e
-PREHOOK: query: drop table i
+POSTHOOK: Input: default@e_n1
+POSTHOOK: Output: default@e_n1
+PREHOOK: query: drop table i_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@i
-PREHOOK: Output: default@i
-POSTHOOK: query: drop table i
+PREHOOK: Input: default@i_n0
+PREHOOK: Output: default@i_n0
+POSTHOOK: query: drop table i_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@i
-POSTHOOK: Output: default@i
+POSTHOOK: Input: default@i_n0
+POSTHOOK: Output: default@i_n0
 PREHOOK: query: drop table e2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@e2

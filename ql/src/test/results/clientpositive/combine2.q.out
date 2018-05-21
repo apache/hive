@@ -4,15 +4,15 @@ PREHOOK: Input: database:default
 POSTHOOK: query: USE default
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:default
-PREHOOK: query: create table combine2(key string) partitioned by (value string)
+PREHOOK: query: create table combine2_n0(key string) partitioned by (value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@combine2
-POSTHOOK: query: create table combine2(key string) partitioned by (value string)
+PREHOOK: Output: default@combine2_n0
+POSTHOOK: query: create table combine2_n0(key string) partitioned by (value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@combine2
-PREHOOK: query: insert overwrite table combine2 partition(value) 
+POSTHOOK: Output: default@combine2_n0
+PREHOOK: query: insert overwrite table combine2_n0 partition(value) 
 select * from (
    select key, value from src where key < 10
    union all 
@@ -21,8 +21,8 @@ select * from (
    select key, '2010-04-21 09:45:00' value from src where key = 19) s
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@combine2
-POSTHOOK: query: insert overwrite table combine2 partition(value) 
+PREHOOK: Output: default@combine2_n0
+POSTHOOK: query: insert overwrite table combine2_n0 partition(value) 
 select * from (
    select key, value from src where key < 10
    union all 
@@ -31,28 +31,28 @@ select * from (
    select key, '2010-04-21 09:45:00' value from src where key = 19) s
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@combine2@value=2010-04-21 09%3A45%3A00
-POSTHOOK: Output: default@combine2@value=val_0
-POSTHOOK: Output: default@combine2@value=val_2
-POSTHOOK: Output: default@combine2@value=val_4
-POSTHOOK: Output: default@combine2@value=val_5
-POSTHOOK: Output: default@combine2@value=val_8
-POSTHOOK: Output: default@combine2@value=val_9
-POSTHOOK: Output: default@combine2@value=|
-POSTHOOK: Lineage: combine2 PARTITION(value=2010-04-21 09:45:00).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: combine2 PARTITION(value=val_0).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: combine2 PARTITION(value=val_2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: combine2 PARTITION(value=val_4).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: combine2 PARTITION(value=val_5).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: combine2 PARTITION(value=val_8).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: combine2 PARTITION(value=val_9).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: combine2 PARTITION(value=|).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: show partitions combine2
+POSTHOOK: Output: default@combine2_n0@value=2010-04-21 09%3A45%3A00
+POSTHOOK: Output: default@combine2_n0@value=val_0
+POSTHOOK: Output: default@combine2_n0@value=val_2
+POSTHOOK: Output: default@combine2_n0@value=val_4
+POSTHOOK: Output: default@combine2_n0@value=val_5
+POSTHOOK: Output: default@combine2_n0@value=val_8
+POSTHOOK: Output: default@combine2_n0@value=val_9
+POSTHOOK: Output: default@combine2_n0@value=|
+POSTHOOK: Lineage: combine2_n0 PARTITION(value=2010-04-21 09:45:00).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine2_n0 PARTITION(value=val_0).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine2_n0 PARTITION(value=val_2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine2_n0 PARTITION(value=val_4).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine2_n0 PARTITION(value=val_5).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine2_n0 PARTITION(value=val_8).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine2_n0 PARTITION(value=val_9).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine2_n0 PARTITION(value=|).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: show partitions combine2_n0
 PREHOOK: type: SHOWPARTITIONS
-PREHOOK: Input: default@combine2
-POSTHOOK: query: show partitions combine2
+PREHOOK: Input: default@combine2_n0
+POSTHOOK: query: show partitions combine2_n0
 POSTHOOK: type: SHOWPARTITIONS
-POSTHOOK: Input: default@combine2
+POSTHOOK: Input: default@combine2_n0
 value=2010-04-21 09%3A45%3A00
 value=val_0
 value=val_2
@@ -62,10 +62,10 @@ value=val_8
 value=val_9
 value=|
 PREHOOK: query: explain
-select key, value from combine2 where value is not null
+select key, value from combine2_n0 where value is not null
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select key, value from combine2 where value is not null
+select key, value from combine2_n0 where value is not null
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -76,7 +76,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: combine2
+          alias: combine2_n0
           Statistics: Num rows: 12 Data size: 14 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: key (type: string), value (type: string)
@@ -84,29 +84,29 @@ STAGE PLANS:
             Statistics: Num rows: 12 Data size: 14 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
-PREHOOK: query: select key, value from combine2 where value is not null
+PREHOOK: query: select key, value from combine2_n0 where value is not null
 PREHOOK: type: QUERY
-PREHOOK: Input: default@combine2
-PREHOOK: Input: default@combine2@value=2010-04-21 09%3A45%3A00
-PREHOOK: Input: default@combine2@value=val_0
-PREHOOK: Input: default@combine2@value=val_2
-PREHOOK: Input: default@combine2@value=val_4
-PREHOOK: Input: default@combine2@value=val_5
-PREHOOK: Input: default@combine2@value=val_8
-PREHOOK: Input: default@combine2@value=val_9
-PREHOOK: Input: default@combine2@value=|
+PREHOOK: Input: default@combine2_n0
+PREHOOK: Input: default@combine2_n0@value=2010-04-21 09%3A45%3A00
+PREHOOK: Input: default@combine2_n0@value=val_0
+PREHOOK: Input: default@combine2_n0@value=val_2
+PREHOOK: Input: default@combine2_n0@value=val_4
+PREHOOK: Input: default@combine2_n0@value=val_5
+PREHOOK: Input: default@combine2_n0@value=val_8
+PREHOOK: Input: default@combine2_n0@value=val_9
+PREHOOK: Input: default@combine2_n0@value=|
 #### A masked pattern was here ####
-POSTHOOK: query: select key, value from combine2 where value is not null
+POSTHOOK: query: select key, value from combine2_n0 where value is not null
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@combine2
-POSTHOOK: Input: default@combine2@value=2010-04-21 09%3A45%3A00
-POSTHOOK: Input: default@combine2@value=val_0
-POSTHOOK: Input: default@combine2@value=val_2
-POSTHOOK: Input: default@combine2@value=val_4
-POSTHOOK: Input: default@combine2@value=val_5
-POSTHOOK: Input: default@combine2@value=val_8
-POSTHOOK: Input: default@combine2@value=val_9
-POSTHOOK: Input: default@combine2@value=|
+POSTHOOK: Input: default@combine2_n0
+POSTHOOK: Input: default@combine2_n0@value=2010-04-21 09%3A45%3A00
+POSTHOOK: Input: default@combine2_n0@value=val_0
+POSTHOOK: Input: default@combine2_n0@value=val_2
+POSTHOOK: Input: default@combine2_n0@value=val_4
+POSTHOOK: Input: default@combine2_n0@value=val_5
+POSTHOOK: Input: default@combine2_n0@value=val_8
+POSTHOOK: Input: default@combine2_n0@value=val_9
+POSTHOOK: Input: default@combine2_n0@value=|
 #### A masked pattern was here ####
 0	val_0
 0	val_0
@@ -121,10 +121,10 @@ POSTHOOK: Input: default@combine2@value=|
 8	val_8
 9	val_9
 PREHOOK: query: explain extended
-select count(1) from combine2 where value is not null
+select count(1) from combine2_n0 where value is not null
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
-select count(1) from combine2 where value is not null
+select count(1) from combine2_n0 where value is not null
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -136,13 +136,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(1) from combine2 where value is not null
+PREHOOK: query: select count(1) from combine2_n0 where value is not null
 PREHOOK: type: QUERY
-PREHOOK: Input: default@combine2
+PREHOOK: Input: default@combine2_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select count(1) from combine2 where value is not null
+POSTHOOK: query: select count(1) from combine2_n0 where value is not null
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@combine2
+POSTHOOK: Input: default@combine2_n0
 #### A masked pattern was here ####
 12
 PREHOOK: query: explain

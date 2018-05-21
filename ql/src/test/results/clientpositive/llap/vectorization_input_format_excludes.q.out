@@ -1,4 +1,4 @@
-PREHOOK: query: create table if not exists alltypes_parquet (
+PREHOOK: query: create table if not exists alltypes_parquet_n0 (
   cint int,
   ctinyint tinyint,
   csmallint smallint,
@@ -7,8 +7,8 @@ PREHOOK: query: create table if not exists alltypes_parquet (
   cstring1 string) stored as parquet
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@alltypes_parquet
-POSTHOOK: query: create table if not exists alltypes_parquet (
+PREHOOK: Output: default@alltypes_parquet_n0
+POSTHOOK: query: create table if not exists alltypes_parquet_n0 (
   cint int,
   ctinyint tinyint,
   csmallint smallint,
@@ -17,8 +17,8 @@ POSTHOOK: query: create table if not exists alltypes_parquet (
   cstring1 string) stored as parquet
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@alltypes_parquet
-PREHOOK: query: insert overwrite table alltypes_parquet
+POSTHOOK: Output: default@alltypes_parquet_n0
+PREHOOK: query: insert overwrite table alltypes_parquet_n0
   select cint,
     ctinyint,
     csmallint,
@@ -28,8 +28,8 @@ PREHOOK: query: insert overwrite table alltypes_parquet
   from alltypesorc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
-PREHOOK: Output: default@alltypes_parquet
-POSTHOOK: query: insert overwrite table alltypes_parquet
+PREHOOK: Output: default@alltypes_parquet_n0
+POSTHOOK: query: insert overwrite table alltypes_parquet_n0
   select cint,
     ctinyint,
     csmallint,
@@ -39,20 +39,20 @@ POSTHOOK: query: insert overwrite table alltypes_parquet
   from alltypesorc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
-POSTHOOK: Output: default@alltypes_parquet
-POSTHOOK: Lineage: alltypes_parquet.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_parquet.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_parquet.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_parquet.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_parquet.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_parquet.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+POSTHOOK: Output: default@alltypes_parquet_n0
+POSTHOOK: Lineage: alltypes_parquet_n0.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: alltypes_parquet_n0.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: alltypes_parquet_n0.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: alltypes_parquet_n0.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: alltypes_parquet_n0.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: alltypes_parquet_n0.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
 PREHOOK: query: explain vectorization select *
-  from alltypes_parquet
+  from alltypes_parquet_n0
   where cint = 528534767
   limit 10
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization select *
-  from alltypes_parquet
+  from alltypes_parquet_n0
   where cint = 528534767
   limit 10
 POSTHOOK: type: QUERY
@@ -72,7 +72,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: alltypes_parquet
+                  alias: alltypes_parquet_n0
                   Statistics: Num rows: 12288 Data size: 1082638 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (cint = 528534767) (type: boolean)
@@ -110,18 +110,18 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select *
-  from alltypes_parquet
+  from alltypes_parquet_n0
   where cint = 528534767
   limit 10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@alltypes_parquet
+PREHOOK: Input: default@alltypes_parquet_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select *
-  from alltypes_parquet
+  from alltypes_parquet_n0
   where cint = 528534767
   limit 10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@alltypes_parquet
+POSTHOOK: Input: default@alltypes_parquet_n0
 #### A masked pattern was here ####
 528534767	-11	-15431	-11.0	-15431.0	cvLH6Eat2yFsyy7p
 528534767	-28	-15813	-28.0	-15813.0	cvLH6Eat2yFsyy7p
@@ -139,7 +139,7 @@ PREHOOK: query: explain vectorization select ctinyint,
   count(cstring1),
   avg(cfloat),
   stddev_pop(cdouble)
-  from alltypes_parquet
+  from alltypes_parquet_n0
   group by ctinyint
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization select ctinyint,
@@ -148,7 +148,7 @@ POSTHOOK: query: explain vectorization select ctinyint,
   count(cstring1),
   avg(cfloat),
   stddev_pop(cdouble)
-  from alltypes_parquet
+  from alltypes_parquet_n0
   group by ctinyint
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
@@ -170,7 +170,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: alltypes_parquet
+                  alias: alltypes_parquet_n0
                   Statistics: Num rows: 12288 Data size: 1082638 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: ctinyint (type: tinyint), cint (type: int), csmallint (type: smallint), cstring1 (type: string), cfloat (type: float), cdouble (type: double), (cdouble * cdouble) (type: double)
@@ -238,10 +238,10 @@ PREHOOK: query: select ctinyint,
   count(cstring1),
   avg(cfloat),
   stddev_pop(cdouble)
-  from alltypes_parquet
+  from alltypes_parquet_n0
   group by ctinyint
 PREHOOK: type: QUERY
-PREHOOK: Input: default@alltypes_parquet
+PREHOOK: Input: default@alltypes_parquet_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select ctinyint,
   max(cint),
@@ -249,10 +249,10 @@ POSTHOOK: query: select ctinyint,
   count(cstring1),
   avg(cfloat),
   stddev_pop(cdouble)
-  from alltypes_parquet
+  from alltypes_parquet_n0
   group by ctinyint
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@alltypes_parquet
+POSTHOOK: Input: default@alltypes_parquet_n0
 #### A masked pattern was here ####
 -1	626923679	-15441	36	-1.0486250072717667	8786.246963933323
 -10	626923679	-15384	28	-10.0	8850.451610567823
@@ -383,12 +383,12 @@ POSTHOOK: Input: default@alltypes_parquet
 9	626923679	-13629	25	9.0	10157.21794880862
 NULL	1073418988	-16379	3115	NULL	305051.4870777435
 PREHOOK: query: explain vectorization select *
-  from alltypes_parquet
+  from alltypes_parquet_n0
   where cint = 528534767
   limit 10
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization select *
-  from alltypes_parquet
+  from alltypes_parquet_n0
   where cint = 528534767
   limit 10
 POSTHOOK: type: QUERY
@@ -408,7 +408,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: alltypes_parquet
+                  alias: alltypes_parquet_n0
                   Statistics: Num rows: 12288 Data size: 1082638 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (cint = 528534767) (type: boolean)
@@ -441,18 +441,18 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select *
-  from alltypes_parquet
+  from alltypes_parquet_n0
   where cint = 528534767
   limit 10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@alltypes_parquet
+PREHOOK: Input: default@alltypes_parquet_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select *
-  from alltypes_parquet
+  from alltypes_parquet_n0
   where cint = 528534767
   limit 10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@alltypes_parquet
+POSTHOOK: Input: default@alltypes_parquet_n0
 #### A masked pattern was here ####
 528534767	-11	-15431	-11.0	-15431.0	cvLH6Eat2yFsyy7p
 528534767	-28	-15813	-28.0	-15813.0	cvLH6Eat2yFsyy7p
@@ -470,7 +470,7 @@ PREHOOK: query: explain vectorization select ctinyint,
   count(cstring1),
   avg(cfloat),
   stddev_pop(cdouble)
-  from alltypes_parquet
+  from alltypes_parquet_n0
   group by ctinyint
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization select ctinyint,
@@ -479,7 +479,7 @@ POSTHOOK: query: explain vectorization select ctinyint,
   count(cstring1),
   avg(cfloat),
   stddev_pop(cdouble)
-  from alltypes_parquet
+  from alltypes_parquet_n0
   group by ctinyint
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
@@ -501,7 +501,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: alltypes_parquet
+                  alias: alltypes_parquet_n0
                   Statistics: Num rows: 12288 Data size: 1082638 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: ctinyint (type: tinyint), cint (type: int), csmallint (type: smallint), cstring1 (type: string), cfloat (type: float), cdouble (type: double), (cdouble * cdouble) (type: double)
@@ -564,10 +564,10 @@ PREHOOK: query: select ctinyint,
   count(cstring1),
   avg(cfloat),
   stddev_pop(cdouble)
-  from alltypes_parquet
+  from alltypes_parquet_n0
   group by ctinyint
 PREHOOK: type: QUERY
-PREHOOK: Input: default@alltypes_parquet
+PREHOOK: Input: default@alltypes_parquet_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select ctinyint,
   max(cint),
@@ -575,10 +575,10 @@ POSTHOOK: query: select ctinyint,
   count(cstring1),
   avg(cfloat),
   stddev_pop(cdouble)
-  from alltypes_parquet
+  from alltypes_parquet_n0
   group by ctinyint
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@alltypes_parquet
+POSTHOOK: Input: default@alltypes_parquet_n0
 #### A masked pattern was here ####
 -1	626923679	-15441	36	-1.0486250072717667	8786.246963933323
 -10	626923679	-15384	28	-10.0	8850.451610567823
@@ -709,12 +709,12 @@ POSTHOOK: Input: default@alltypes_parquet
 9	626923679	-13629	25	9.0	10157.21794880862
 NULL	1073418988	-16379	3115	NULL	305051.4870777435
 PREHOOK: query: explain vectorization select *
-  from alltypes_parquet
+  from alltypes_parquet_n0
   where cint = 528534767
   limit 10
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization select *
-  from alltypes_parquet
+  from alltypes_parquet_n0
   where cint = 528534767
   limit 10
 POSTHOOK: type: QUERY
@@ -734,7 +734,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: alltypes_parquet
+                  alias: alltypes_parquet_n0
                   Statistics: Num rows: 12288 Data size: 1082638 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (cint = 528534767) (type: boolean)
@@ -772,18 +772,18 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select *
-  from alltypes_parquet
+  from alltypes_parquet_n0
   where cint = 528534767
   limit 10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@alltypes_parquet
+PREHOOK: Input: default@alltypes_parquet_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select *
-  from alltypes_parquet
+  from alltypes_parquet_n0
   where cint = 528534767
   limit 10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@alltypes_parquet
+POSTHOOK: Input: default@alltypes_parquet_n0
 #### A masked pattern was here ####
 528534767	-11	-15431	-11.0	-15431.0	cvLH6Eat2yFsyy7p
 528534767	-28	-15813	-28.0	-15813.0	cvLH6Eat2yFsyy7p
@@ -801,7 +801,7 @@ PREHOOK: query: explain vectorization select ctinyint,
   count(cstring1),
   avg(cfloat),
   stddev_pop(cdouble)
-  from alltypes_parquet
+  from alltypes_parquet_n0
   group by ctinyint
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization select ctinyint,
@@ -810,7 +810,7 @@ POSTHOOK: query: explain vectorization select ctinyint,
   count(cstring1),
   avg(cfloat),
   stddev_pop(cdouble)
-  from alltypes_parquet
+  from alltypes_parquet_n0
   group by ctinyint
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
@@ -832,7 +832,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: alltypes_parquet
+                  alias: alltypes_parquet_n0
                   Statistics: Num rows: 12288 Data size: 1082638 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: ctinyint (type: tinyint), cint (type: int), csmallint (type: smallint), cstring1 (type: string), cfloat (type: float), cdouble (type: double), (cdouble * cdouble) (type: double)
@@ -900,10 +900,10 @@ PREHOOK: query: select ctinyint,
   count(cstring1),
   avg(cfloat),
   stddev_pop(cdouble)
-  from alltypes_parquet
+  from alltypes_parquet_n0
   group by ctinyint
 PREHOOK: type: QUERY
-PREHOOK: Input: default@alltypes_parquet
+PREHOOK: Input: default@alltypes_parquet_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select ctinyint,
   max(cint),
@@ -911,10 +911,10 @@ POSTHOOK: query: select ctinyint,
   count(cstring1),
   avg(cfloat),
   stddev_pop(cdouble)
-  from alltypes_parquet
+  from alltypes_parquet_n0
   group by ctinyint
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@alltypes_parquet
+POSTHOOK: Input: default@alltypes_parquet_n0
 #### A masked pattern was here ####
 -1	626923679	-15441	36	-1.0486250072717667	8786.246963933323
 -10	626923679	-15384	28	-10.0	8850.451610567823
@@ -1044,7 +1044,7 @@ POSTHOOK: Input: default@alltypes_parquet
 8	1070764888	-15778	1034	8.0	9562.355155774725
 9	626923679	-13629	25	9.0	10157.21794880862
 NULL	1073418988	-16379	3115	NULL	305051.4870777435
-PREHOOK: query: create table if not exists alltypes_orc (
+PREHOOK: query: create table if not exists alltypes_orc_n2 (
   cint int,
   ctinyint tinyint,
   csmallint smallint,
@@ -1053,8 +1053,8 @@ PREHOOK: query: create table if not exists alltypes_orc (
   cstring1 string) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@alltypes_orc
-POSTHOOK: query: create table if not exists alltypes_orc (
+PREHOOK: Output: default@alltypes_orc_n2
+POSTHOOK: query: create table if not exists alltypes_orc_n2 (
   cint int,
   ctinyint tinyint,
   csmallint smallint,
@@ -1063,8 +1063,8 @@ POSTHOOK: query: create table if not exists alltypes_orc (
   cstring1 string) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@alltypes_orc
-PREHOOK: query: insert overwrite table alltypes_orc
+POSTHOOK: Output: default@alltypes_orc_n2
+PREHOOK: query: insert overwrite table alltypes_orc_n2
   select cint,
     ctinyint,
     csmallint,
@@ -1074,8 +1074,8 @@ PREHOOK: query: insert overwrite table alltypes_orc
   from alltypesorc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
-PREHOOK: Output: default@alltypes_orc
-POSTHOOK: query: insert overwrite table alltypes_orc
+PREHOOK: Output: default@alltypes_orc_n2
+POSTHOOK: query: insert overwrite table alltypes_orc_n2
   select cint,
     ctinyint,
     csmallint,
@@ -1085,20 +1085,20 @@ POSTHOOK: query: insert overwrite table alltypes_orc
   from alltypesorc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
-POSTHOOK: Output: default@alltypes_orc
-POSTHOOK: Lineage: alltypes_orc.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+POSTHOOK: Output: default@alltypes_orc_n2
+POSTHOOK: Lineage: alltypes_orc_n2.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc_n2.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc_n2.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc_n2.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc_n2.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc_n2.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
 PREHOOK: query: explain vectorization select *
-  from alltypes_orc
+  from alltypes_orc_n2
   where cint = 528534767
   limit 10
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization select *
-  from alltypes_orc
+  from alltypes_orc_n2
   where cint = 528534767
   limit 10
 POSTHOOK: type: QUERY
@@ -1118,7 +1118,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: alltypes_orc
+                  alias: alltypes_orc_n2
                   Statistics: Num rows: 12288 Data size: 1082638 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (cint = 528534767) (type: boolean)
@@ -1151,18 +1151,18 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select *
-  from alltypes_orc
+  from alltypes_orc_n2
   where cint = 528534767
   limit 10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@alltypes_orc
+PREHOOK: Input: default@alltypes_orc_n2
 #### A masked pattern was here ####
 POSTHOOK: query: select *
-  from alltypes_orc
+  from alltypes_orc_n2
   where cint = 528534767
   limit 10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@alltypes_orc
+POSTHOOK: Input: default@alltypes_orc_n2
 #### A masked pattern was here ####
 528534767	-11	-15431	-11.0	-15431.0	cvLH6Eat2yFsyy7p
 528534767	-28	-15813	-28.0	-15813.0	cvLH6Eat2yFsyy7p
@@ -1180,7 +1180,7 @@ PREHOOK: query: explain vectorization select ctinyint,
   count(cstring1),
   avg(cfloat),
   stddev_pop(cdouble)
-  from alltypes_orc
+  from alltypes_orc_n2
   group by ctinyint
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization select ctinyint,
@@ -1189,7 +1189,7 @@ POSTHOOK: query: explain vectorization select ctinyint,
   count(cstring1),
   avg(cfloat),
   stddev_pop(cdouble)
-  from alltypes_orc
+  from alltypes_orc_n2
   group by ctinyint
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
@@ -1211,7 +1211,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: alltypes_orc
+                  alias: alltypes_orc_n2
                   Statistics: Num rows: 12288 Data size: 1082638 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: ctinyint (type: tinyint), cint (type: int), csmallint (type: smallint), cstring1 (type: string), cfloat (type: float), cdouble (type: double), (cdouble * cdouble) (type: double)
@@ -1274,10 +1274,10 @@ PREHOOK: query: select ctinyint,
   count(cstring1),
   avg(cfloat),
   stddev_pop(cdouble)
-  from alltypes_orc
+  from alltypes_orc_n2
   group by ctinyint
 PREHOOK: type: QUERY
-PREHOOK: Input: default@alltypes_orc
+PREHOOK: Input: default@alltypes_orc_n2
 #### A masked pattern was here ####
 POSTHOOK: query: select ctinyint,
   max(cint),
@@ -1285,10 +1285,10 @@ POSTHOOK: query: select ctinyint,
   count(cstring1),
   avg(cfloat),
   stddev_pop(cdouble)
-  from alltypes_orc
+  from alltypes_orc_n2
   group by ctinyint
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@alltypes_orc
+POSTHOOK: Input: default@alltypes_orc_n2
 #### A masked pattern was here ####
 -1	626923679	-15441	36	-1.0486250072717667	8786.246963933323
 -10	626923679	-15384	28	-10.0	8850.451610567823

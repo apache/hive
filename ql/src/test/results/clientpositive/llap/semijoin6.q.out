@@ -1,44 +1,44 @@
-PREHOOK: query: create table tx1 (a integer,b integer)
+PREHOOK: query: create table tx1_n1 (a integer,b integer)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tx1
-POSTHOOK: query: create table tx1 (a integer,b integer)
+PREHOOK: Output: default@tx1_n1
+POSTHOOK: query: create table tx1_n1 (a integer,b integer)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tx1
-PREHOOK: query: insert into tx1	values (1, 105), (2, 203), (3, 300), (4, 400), (null, 400), (null, null)
+POSTHOOK: Output: default@tx1_n1
+PREHOOK: query: insert into tx1_n1	values (1, 105), (2, 203), (3, 300), (4, 400), (null, 400), (null, null)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@tx1
-POSTHOOK: query: insert into tx1	values (1, 105), (2, 203), (3, 300), (4, 400), (null, 400), (null, null)
+PREHOOK: Output: default@tx1_n1
+POSTHOOK: query: insert into tx1_n1	values (1, 105), (2, 203), (3, 300), (4, 400), (null, 400), (null, null)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@tx1
-POSTHOOK: Lineage: tx1.a SCRIPT []
-POSTHOOK: Lineage: tx1.b SCRIPT []
-PREHOOK: query: create table tx2 (a int, b int)
+POSTHOOK: Output: default@tx1_n1
+POSTHOOK: Lineage: tx1_n1.a SCRIPT []
+POSTHOOK: Lineage: tx1_n1.b SCRIPT []
+PREHOOK: query: create table tx2_n0 (a int, b int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tx2
-POSTHOOK: query: create table tx2 (a int, b int)
+PREHOOK: Output: default@tx2_n0
+POSTHOOK: query: create table tx2_n0 (a int, b int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tx2
-PREHOOK: query: insert into tx2 values (1, 105), (1, 1900), (2, 1995), (2, 1996), (4, 400), (4, null)
+POSTHOOK: Output: default@tx2_n0
+PREHOOK: query: insert into tx2_n0 values (1, 105), (1, 1900), (2, 1995), (2, 1996), (4, 400), (4, null)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@tx2
-POSTHOOK: query: insert into tx2 values (1, 105), (1, 1900), (2, 1995), (2, 1996), (4, 400), (4, null)
+PREHOOK: Output: default@tx2_n0
+POSTHOOK: query: insert into tx2_n0 values (1, 105), (1, 1900), (2, 1995), (2, 1996), (4, 400), (4, null)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@tx2
-POSTHOOK: Lineage: tx2.a SCRIPT []
-POSTHOOK: Lineage: tx2.b SCRIPT []
+POSTHOOK: Output: default@tx2_n0
+POSTHOOK: Lineage: tx2_n0.a SCRIPT []
+POSTHOOK: Lineage: tx2_n0.b SCRIPT []
 PREHOOK: query: explain
-select * from tx1 u left semi join tx2 v on u.a=v.a
+select * from tx1_n1 u left semi join tx2_n0 v on u.a=v.a
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select * from tx1 u left semi join tx2 v on u.a=v.a
+select * from tx1_n1 u left semi join tx2_n0 v on u.a=v.a
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -121,24 +121,24 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from tx1 u left semi join tx2 v on u.a=v.a
+PREHOOK: query: select * from tx1_n1 u left semi join tx2_n0 v on u.a=v.a
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tx1
-PREHOOK: Input: default@tx2
+PREHOOK: Input: default@tx1_n1
+PREHOOK: Input: default@tx2_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from tx1 u left semi join tx2 v on u.a=v.a
+POSTHOOK: query: select * from tx1_n1 u left semi join tx2_n0 v on u.a=v.a
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tx1
-POSTHOOK: Input: default@tx2
+POSTHOOK: Input: default@tx1_n1
+POSTHOOK: Input: default@tx2_n0
 #### A masked pattern was here ####
 1	105
 2	203
 4	400
 PREHOOK: query: explain
-select * from tx1 u left semi join tx2 v on u.b <=> v.b
+select * from tx1_n1 u left semi join tx2_n0 v on u.b <=> v.b
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select * from tx1 u left semi join tx2 v on u.b <=> v.b
+select * from tx1_n1 u left semi join tx2_n0 v on u.b <=> v.b
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -212,15 +212,15 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from tx1 u left semi join tx2 v on u.b <=> v.b
+PREHOOK: query: select * from tx1_n1 u left semi join tx2_n0 v on u.b <=> v.b
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tx1
-PREHOOK: Input: default@tx2
+PREHOOK: Input: default@tx1_n1
+PREHOOK: Input: default@tx2_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from tx1 u left semi join tx2 v on u.b <=> v.b
+POSTHOOK: query: select * from tx1_n1 u left semi join tx2_n0 v on u.b <=> v.b
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tx1
-POSTHOOK: Input: default@tx2
+POSTHOOK: Input: default@tx1_n1
+POSTHOOK: Input: default@tx2_n0
 #### A masked pattern was here ####
 1	105
 4	400
@@ -228,10 +228,10 @@ NULL	400
 NULL	NULL
 Warning: Shuffle Join MERGEJOIN[12][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain
-select * from tx1 u left semi join tx2 v on u.b <> v.b
+select * from tx1_n1 u left semi join tx2_n0 v on u.b <> v.b
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select * from tx1 u left semi join tx2 v on u.b <> v.b
+select * from tx1_n1 u left semi join tx2_n0 v on u.b <> v.b
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -311,15 +311,15 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join MERGEJOIN[12][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: select * from tx1 u left semi join tx2 v on u.b <> v.b
+PREHOOK: query: select * from tx1_n1 u left semi join tx2_n0 v on u.b <> v.b
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tx1
-PREHOOK: Input: default@tx2
+PREHOOK: Input: default@tx1_n1
+PREHOOK: Input: default@tx2_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from tx1 u left semi join tx2 v on u.b <> v.b
+POSTHOOK: query: select * from tx1_n1 u left semi join tx2_n0 v on u.b <> v.b
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tx1
-POSTHOOK: Input: default@tx2
+POSTHOOK: Input: default@tx1_n1
+POSTHOOK: Input: default@tx2_n0
 #### A masked pattern was here ####
 1	105
 2	203
@@ -327,10 +327,10 @@ POSTHOOK: Input: default@tx2
 4	400
 NULL	400
 PREHOOK: query: explain
-select * from tx1 u left semi join tx2 v on u.a=v.a and u.b <> v.b
+select * from tx1_n1 u left semi join tx2_n0 v on u.a=v.a and u.b <> v.b
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select * from tx1 u left semi join tx2 v on u.a=v.a and u.b <> v.b
+select * from tx1_n1 u left semi join tx2_n0 v on u.a=v.a and u.b <> v.b
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -419,24 +419,24 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from tx1 u left semi join tx2 v on u.a=v.a and u.b <> v.b
+PREHOOK: query: select * from tx1_n1 u left semi join tx2_n0 v on u.a=v.a and u.b <> v.b
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tx1
-PREHOOK: Input: default@tx2
+PREHOOK: Input: default@tx1_n1
+PREHOOK: Input: default@tx2_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from tx1 u left semi join tx2 v on u.a=v.a and u.b <> v.b
+POSTHOOK: query: select * from tx1_n1 u left semi join tx2_n0 v on u.a=v.a and u.b <> v.b
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tx1
-POSTHOOK: Input: default@tx2
+POSTHOOK: Input: default@tx1_n1
+POSTHOOK: Input: default@tx2_n0
 #### A masked pattern was here ####
 1	105
 2	203
 Warning: Shuffle Join MERGEJOIN[12][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain
-select * from tx1 u left semi join tx2 v on u.a=v.a or u.b <> v.b
+select * from tx1_n1 u left semi join tx2_n0 v on u.a=v.a or u.b <> v.b
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select * from tx1 u left semi join tx2 v on u.a=v.a or u.b <> v.b
+select * from tx1_n1 u left semi join tx2_n0 v on u.a=v.a or u.b <> v.b
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -516,15 +516,15 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join MERGEJOIN[12][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: select * from tx1 u left semi join tx2 v on u.a=v.a or u.b <> v.b
+PREHOOK: query: select * from tx1_n1 u left semi join tx2_n0 v on u.a=v.a or u.b <> v.b
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tx1
-PREHOOK: Input: default@tx2
+PREHOOK: Input: default@tx1_n1
+PREHOOK: Input: default@tx2_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from tx1 u left semi join tx2 v on u.a=v.a or u.b <> v.b
+POSTHOOK: query: select * from tx1_n1 u left semi join tx2_n0 v on u.a=v.a or u.b <> v.b
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tx1
-POSTHOOK: Input: default@tx2
+POSTHOOK: Input: default@tx1_n1
+POSTHOOK: Input: default@tx2_n0
 #### A masked pattern was here ####
 1	105
 2	203
@@ -532,10 +532,10 @@ POSTHOOK: Input: default@tx2
 4	400
 NULL	400
 PREHOOK: query: explain
-select * from tx1 u left semi join tx1 v on u.a=v.a
+select * from tx1_n1 u left semi join tx1_n1 v on u.a=v.a
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select * from tx1 u left semi join tx1 v on u.a=v.a
+select * from tx1_n1 u left semi join tx1_n1 v on u.a=v.a
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -618,27 +618,27 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from tx1 u left semi join tx1 v on u.a=v.a
+PREHOOK: query: select * from tx1_n1 u left semi join tx1_n1 v on u.a=v.a
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tx1
+PREHOOK: Input: default@tx1_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from tx1 u left semi join tx1 v on u.a=v.a
+POSTHOOK: query: select * from tx1_n1 u left semi join tx1_n1 v on u.a=v.a
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tx1
+POSTHOOK: Input: default@tx1_n1
 #### A masked pattern was here ####
 1	105
 2	203
 3	300
 4	400
 PREHOOK: query: explain
-select * from tx1 u left semi join tx2 v
+select * from tx1_n1 u left semi join tx2_n0 v
 on (u.a + v.b > 400)
   and ((case when u.a > 3 then true when v.b > 1900 then true else false end)
       or (coalesce(u.a) + coalesce(v.b) > 1900))
   and u.a = v.a
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select * from tx1 u left semi join tx2 v
+select * from tx1_n1 u left semi join tx2_n0 v
 on (u.a + v.b > 400)
   and ((case when u.a > 3 then true when v.b > 1900 then true else false end)
       or (coalesce(u.a) + coalesce(v.b) > 1900))
@@ -731,23 +731,23 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from tx1 u left semi join tx2 v
+PREHOOK: query: select * from tx1_n1 u left semi join tx2_n0 v
 on (u.a + v.b > 400)
   and ((case when u.a > 3 then true when v.b > 1900 then true else false end)
       or (coalesce(u.a) + coalesce(v.b) > 1900))
   and u.a = v.a
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tx1
-PREHOOK: Input: default@tx2
+PREHOOK: Input: default@tx1_n1
+PREHOOK: Input: default@tx2_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from tx1 u left semi join tx2 v
+POSTHOOK: query: select * from tx1_n1 u left semi join tx2_n0 v
 on (u.a + v.b > 400)
   and ((case when u.a > 3 then true when v.b > 1900 then true else false end)
       or (coalesce(u.a) + coalesce(v.b) > 1900))
   and u.a = v.a
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tx1
-POSTHOOK: Input: default@tx2
+POSTHOOK: Input: default@tx1_n1
+POSTHOOK: Input: default@tx2_n0
 #### A masked pattern was here ####
 1	105
 2	203

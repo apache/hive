@@ -2,8 +2,8 @@
 set hive.mapred.mode=nonstrict;
 -- query from auto_sortmerge_join_9.q
 
-CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS;
-CREATE TABLE tbl2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS;
+CREATE TABLE tbl1_n9(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS;
+CREATE TABLE tbl2_n8(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS;
 
 set hive.auto.convert.join=true;
 set hive.optimize.bucketmapjoin = true;
@@ -20,14 +20,14 @@ select src1.key, src1.cnt1, src2.cnt1 from
 (
   select key, count(*) as cnt1 from
   (
-    select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+    select a.key as key, a.value as val1, b.value as val2 from tbl1_n9 a join tbl2_n8 b on a.key = b.key
   ) subq1 group by key
 ) src1
 join
 (
   select key, count(*) as cnt1 from
   (
-    select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+    select a.key as key, a.value as val1, b.value as val2 from tbl1_n9 a join tbl2_n8 b on a.key = b.key
   ) subq2 group by key
 ) src2
 on src1.key = src2.key
@@ -42,14 +42,14 @@ select src1.key, src1.cnt1, src2.cnt1 from
 (
   select key, count(*) as cnt1 from
   (
-    select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+    select a.key as key, a.value as val1, b.value as val2 from tbl1_n9 a join tbl2_n8 b on a.key = b.key
   ) subq1 group by key
 ) src1
 join
 (
   select key, count(*) as cnt1 from
   (
-    select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+    select a.key as key, a.value as val1, b.value as val2 from tbl1_n9 a join tbl2_n8 b on a.key = b.key
   ) subq2 group by key
 ) src2
 on src1.key = src2.key
@@ -64,14 +64,14 @@ select src1.key, src1.cnt1, src2.cnt1 from
 (
   select key, count(*) as cnt1 from
   (
-    select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+    select a.key as key, a.value as val1, b.value as val2 from tbl1_n9 a join tbl2_n8 b on a.key = b.key
   ) subq1 group by key
 ) src1
 join
 (
   select key, count(*) as cnt1 from
   (
-    select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+    select a.key as key, a.value as val1, b.value as val2 from tbl1_n9 a join tbl2_n8 b on a.key = b.key
   ) subq2 group by key
 ) src2
 on src1.key = src2.key
@@ -86,14 +86,14 @@ select src1.key, src1.cnt1, src2.cnt1 from
 (
   select key, count(*) as cnt1 from
   (
-    select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+    select a.key as key, a.value as val1, b.value as val2 from tbl1_n9 a join tbl2_n8 b on a.key = b.key
   ) subq1 group by key
 ) src1
 join
 (
   select key, count(*) as cnt1 from
   (
-    select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
+    select a.key as key, a.value as val1, b.value as val2 from tbl1_n9 a join tbl2_n8 b on a.key = b.key
   ) subq2 group by key
 ) src2
 on src1.key = src2.key

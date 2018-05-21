@@ -4,7 +4,7 @@ set hive.vectorized.execution.enabled=false;
 set hive.mapred.mode=nonstrict;
 set hive.metastore.disallow.incompatible.col.type.changes=false;
 
-create table if not exists alltypes (
+create table if not exists alltypes_n0 (
  bo boolean,
  ti tinyint,
  si smallint,
@@ -25,7 +25,7 @@ create table if not exists alltypes (
 collection items terminated by ','
 map keys terminated by ':' stored as textfile;
 
-create table if not exists alltypes_orc (
+create table if not exists alltypes_orc_n0 (
  bo boolean,
  ti tinyint,
  si smallint,
@@ -44,26 +44,26 @@ create table if not exists alltypes_orc (
  st struct<c1:int, c2:string>
 ) stored as orc;
 
-load data local inpath '../../data/files/alltypes2.txt' overwrite into table alltypes;
+load data local inpath '../../data/files/alltypes2.txt' overwrite into table alltypes_n0;
 
-insert overwrite table alltypes_orc select * from alltypes;
+insert overwrite table alltypes_orc_n0 select * from alltypes_n0;
 
-select * from alltypes_orc;
+select * from alltypes_orc_n0;
 
 SET hive.exec.schema.evolution=true;
 
-alter table alltypes_orc change si si int;
-select * from alltypes_orc;
+alter table alltypes_orc_n0 change si si int;
+select * from alltypes_orc_n0;
 
-alter table alltypes_orc change si si bigint;
-alter table alltypes_orc change i i bigint;
-select * from alltypes_orc;
+alter table alltypes_orc_n0 change si si bigint;
+alter table alltypes_orc_n0 change i i bigint;
+select * from alltypes_orc_n0;
 
 set hive.vectorized.execution.enabled=true;
 set hive.fetch.task.conversion=none;
 
-explain select ti, si, i, bi from alltypes_orc;
-select ti, si, i, bi from alltypes_orc;
+explain select ti, si, i, bi from alltypes_orc_n0;
+select ti, si, i, bi from alltypes_orc_n0;
 
 SET hive.exec.schema.evolution=false;
 

@@ -1,64 +1,64 @@
-PREHOOK: query: CREATE TABLE test_1 (member BIGINT, attr BIGINT) STORED AS ORC
+PREHOOK: query: CREATE TABLE test_1_n0 (member BIGINT, attr BIGINT) STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_1
-POSTHOOK: query: CREATE TABLE test_1 (member BIGINT, attr BIGINT) STORED AS ORC
+PREHOOK: Output: default@test_1_n0
+POSTHOOK: query: CREATE TABLE test_1_n0 (member BIGINT, attr BIGINT) STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_1
-PREHOOK: query: CREATE TABLE test_2 (member BIGINT) STORED AS ORC
+POSTHOOK: Output: default@test_1_n0
+PREHOOK: query: CREATE TABLE test_2_n0 (member BIGINT) STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_2
-POSTHOOK: query: CREATE TABLE test_2 (member BIGINT) STORED AS ORC
+PREHOOK: Output: default@test_2_n0
+POSTHOOK: query: CREATE TABLE test_2_n0 (member BIGINT) STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_2
-PREHOOK: query: INSERT INTO test_1 VALUES (3,1),(2,2)
+POSTHOOK: Output: default@test_2_n0
+PREHOOK: query: INSERT INTO test_1_n0 VALUES (3,1),(2,2)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@test_1
-POSTHOOK: query: INSERT INTO test_1 VALUES (3,1),(2,2)
+PREHOOK: Output: default@test_1_n0
+POSTHOOK: query: INSERT INTO test_1_n0 VALUES (3,1),(2,2)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@test_1
-POSTHOOK: Lineage: test_1.attr SCRIPT []
-POSTHOOK: Lineage: test_1.member SCRIPT []
-PREHOOK: query: INSERT INTO test_2 VALUES (1),(2),(3),(4)
+POSTHOOK: Output: default@test_1_n0
+POSTHOOK: Lineage: test_1_n0.attr SCRIPT []
+POSTHOOK: Lineage: test_1_n0.member SCRIPT []
+PREHOOK: query: INSERT INTO test_2_n0 VALUES (1),(2),(3),(4)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@test_2
-POSTHOOK: query: INSERT INTO test_2 VALUES (1),(2),(3),(4)
+PREHOOK: Output: default@test_2_n0
+POSTHOOK: query: INSERT INTO test_2_n0 VALUES (1),(2),(3),(4)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@test_2
-POSTHOOK: Lineage: test_2.member SCRIPT []
-PREHOOK: query: insert into test_1 values (NULL, NULL)
+POSTHOOK: Output: default@test_2_n0
+POSTHOOK: Lineage: test_2_n0.member SCRIPT []
+PREHOOK: query: insert into test_1_n0 values (NULL, NULL)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@test_1
-POSTHOOK: query: insert into test_1 values (NULL, NULL)
+PREHOOK: Output: default@test_1_n0
+POSTHOOK: query: insert into test_1_n0 values (NULL, NULL)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@test_1
-POSTHOOK: Lineage: test_1.attr EXPRESSION []
-POSTHOOK: Lineage: test_1.member EXPRESSION []
-PREHOOK: query: insert into test_2 values (NULL)
+POSTHOOK: Output: default@test_1_n0
+POSTHOOK: Lineage: test_1_n0.attr EXPRESSION []
+POSTHOOK: Lineage: test_1_n0.member EXPRESSION []
+PREHOOK: query: insert into test_2_n0 values (NULL)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@test_2
-POSTHOOK: query: insert into test_2 values (NULL)
+PREHOOK: Output: default@test_2_n0
+POSTHOOK: query: insert into test_2_n0 values (NULL)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@test_2
-POSTHOOK: Lineage: test_2.member EXPRESSION []
+POSTHOOK: Output: default@test_2_n0
+POSTHOOK: Lineage: test_2_n0.member EXPRESSION []
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT m.member, (CASE WHEN COALESCE(n.attr, 5)>1 THEN n.attr END) AS attr 
-FROM test_2 m LEFT JOIN test_1 n ON m.member = n.member
+FROM test_2_n0 m LEFT JOIN test_1_n0 n ON m.member = n.member
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT m.member, (CASE WHEN COALESCE(n.attr, 5)>1 THEN n.attr END) AS attr 
-FROM test_2 m LEFT JOIN test_1 n ON m.member = n.member
+FROM test_2_n0 m LEFT JOIN test_1_n0 n ON m.member = n.member
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -200,16 +200,16 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT m.member, (CASE WHEN COALESCE(n.attr, 5)>1 THEN n.attr END) AS attr 
-FROM test_2 m LEFT JOIN test_1 n ON m.member = n.member
+FROM test_2_n0 m LEFT JOIN test_1_n0 n ON m.member = n.member
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_1
-PREHOOK: Input: default@test_2
+PREHOOK: Input: default@test_1_n0
+PREHOOK: Input: default@test_2_n0
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT m.member, (CASE WHEN COALESCE(n.attr, 5)>1 THEN n.attr END) AS attr 
-FROM test_2 m LEFT JOIN test_1 n ON m.member = n.member
+FROM test_2_n0 m LEFT JOIN test_1_n0 n ON m.member = n.member
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_1
-POSTHOOK: Input: default@test_2
+POSTHOOK: Input: default@test_1_n0
+POSTHOOK: Input: default@test_2_n0
 #### A masked pattern was here ####
 1	NULL
 2	2

@@ -1,12 +1,12 @@
-PREHOOK: query: DROP TABLE over1k
+PREHOOK: query: DROP TABLE over1k_n7
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE over1k
+POSTHOOK: query: DROP TABLE over1k_n7
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: DROP TABLE hundredorc
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE hundredorc
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE over1k(t tinyint,
+PREHOOK: query: CREATE TABLE over1k_n7(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -21,8 +21,8 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@over1k
-POSTHOOK: query: CREATE TABLE over1k(t tinyint,
+PREHOOK: Output: default@over1k_n7
+POSTHOOK: query: CREATE TABLE over1k_n7(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -37,15 +37,15 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@over1k
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE over1k
+POSTHOOK: Output: default@over1k_n7
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE over1k_n7
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@over1k
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE over1k
+PREHOOK: Output: default@over1k_n7
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE over1k_n7
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@over1k
+POSTHOOK: Output: default@over1k_n7
 PREHOOK: query: CREATE TABLE hundredorc(t tinyint,
            si smallint,
            i int,
@@ -76,25 +76,25 @@ STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hundredorc
-PREHOOK: query: INSERT INTO TABLE hundredorc SELECT * FROM over1k LIMIT 100
+PREHOOK: query: INSERT INTO TABLE hundredorc SELECT * FROM over1k_n7 LIMIT 100
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over1k
+PREHOOK: Input: default@over1k_n7
 PREHOOK: Output: default@hundredorc
-POSTHOOK: query: INSERT INTO TABLE hundredorc SELECT * FROM over1k LIMIT 100
+POSTHOOK: query: INSERT INTO TABLE hundredorc SELECT * FROM over1k_n7 LIMIT 100
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over1k
+POSTHOOK: Input: default@over1k_n7
 POSTHOOK: Output: default@hundredorc
-POSTHOOK: Lineage: hundredorc.b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: hundredorc.bin SIMPLE [(over1k)over1k.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: hundredorc.bo SIMPLE [(over1k)over1k.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: hundredorc.d SIMPLE [(over1k)over1k.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: hundredorc.dec SIMPLE [(over1k)over1k.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
-POSTHOOK: Lineage: hundredorc.f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: hundredorc.i SIMPLE [(over1k)over1k.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: hundredorc.s SIMPLE [(over1k)over1k.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: hundredorc.si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: hundredorc.t SIMPLE [(over1k)over1k.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: hundredorc.ts SIMPLE [(over1k)over1k.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: hundredorc.b SIMPLE [(over1k_n7)over1k_n7.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: hundredorc.bin SIMPLE [(over1k_n7)over1k_n7.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: hundredorc.bo SIMPLE [(over1k_n7)over1k_n7.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: hundredorc.d SIMPLE [(over1k_n7)over1k_n7.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: hundredorc.dec SIMPLE [(over1k_n7)over1k_n7.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
+POSTHOOK: Lineage: hundredorc.f SIMPLE [(over1k_n7)over1k_n7.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: hundredorc.i SIMPLE [(over1k_n7)over1k_n7.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: hundredorc.s SIMPLE [(over1k_n7)over1k_n7.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: hundredorc.si SIMPLE [(over1k_n7)over1k_n7.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: hundredorc.t SIMPLE [(over1k_n7)over1k_n7.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: hundredorc.ts SIMPLE [(over1k_n7)over1k_n7.FieldSchema(name:ts, type:timestamp, comment:null), ]
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT sum(hash(*)) k
 FROM hundredorc t1 JOIN hundredorc t2 ON t1.bin = t2.bin

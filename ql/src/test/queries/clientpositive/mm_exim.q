@@ -10,27 +10,27 @@ set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 
 
-drop table intermediate;
-create table intermediate(key int) partitioned by (p int) stored as orc tblproperties("transactional"="false");
-insert into table intermediate partition(p='455') select distinct key from src where key >= 0 order by key desc limit 2;
-insert into table intermediate partition(p='456') select distinct key from src where key is not null order by key asc limit 2;
-insert into table intermediate partition(p='457') select distinct key from src where key >= 100 order by key asc limit 2;
+drop table intermediate_n4;
+create table intermediate_n4(key int) partitioned by (p int) stored as orc tblproperties("transactional"="false");
+insert into table intermediate_n4 partition(p='455') select distinct key from src where key >= 0 order by key desc limit 2;
+insert into table intermediate_n4 partition(p='456') select distinct key from src where key is not null order by key asc limit 2;
+insert into table intermediate_n4 partition(p='457') select distinct key from src where key >= 100 order by key asc limit 2;
 
 drop table intermediate_nonpart;
 drop table intermmediate_part;
 drop table intermmediate_nonpart;
 create table intermediate_nonpart(key int, p int) tblproperties("transactional"="false");
-insert into intermediate_nonpart select * from intermediate;
+insert into intermediate_nonpart select * from intermediate_n4;
 create table intermmediate_nonpart(key int, p int) tblproperties("transactional"="true", "transactional_properties"="insert_only");
-insert into intermmediate_nonpart select * from intermediate;
+insert into intermmediate_nonpart select * from intermediate_n4;
 create table intermmediate(key int) partitioned by (p int) tblproperties("transactional"="true", "transactional_properties"="insert_only");
-insert into table intermmediate partition(p) select key, p from intermediate;
+insert into table intermmediate partition(p) select key, p from intermediate_n4;
 
 set hive.exim.test.mode=true;
 
 export table intermediate_nonpart to 'ql/test/data/exports/intermediate_nonpart';
 export table intermmediate_nonpart to 'ql/test/data/exports/intermmediate_nonpart';
-export table intermediate to 'ql/test/data/exports/intermediate_part';
+export table intermediate_n4 to 'ql/test/data/exports/intermediate_part';
 export table intermmediate to 'ql/test/data/exports/intermmediate_part';
 
 drop table intermediate_nonpart;

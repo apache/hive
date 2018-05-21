@@ -1,46 +1,46 @@
-PREHOOK: query: CREATE TABLE T1(key STRING, value STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE T1_n39(key STRING, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1
-POSTHOOK: query: CREATE TABLE T1(key STRING, value STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@T1_n39
+POSTHOOK: query: CREATE TABLE T1_n39(key STRING, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1
+POSTHOOK: Output: default@T1_n39
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_n39
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1
+PREHOOK: Output: default@t1_n39
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_n39
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t1
-PREHOOK: query: drop table array_valued_T1
+POSTHOOK: Output: default@t1_n39
+PREHOOK: query: drop table array_valued_T1_n39
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table array_valued_T1
+POSTHOOK: query: drop table array_valued_T1_n39
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table array_valued_T1 (key string, value array<string>) SKEWED BY (key) ON ((8))
+PREHOOK: query: create table array_valued_T1_n39 (key string, value array<string>) SKEWED BY (key) ON ((8))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@array_valued_T1
-POSTHOOK: query: create table array_valued_T1 (key string, value array<string>) SKEWED BY (key) ON ((8))
+PREHOOK: Output: default@array_valued_T1_n39
+POSTHOOK: query: create table array_valued_T1_n39 (key string, value array<string>) SKEWED BY (key) ON ((8))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@array_valued_T1
-PREHOOK: query: insert overwrite table array_valued_T1 select key, array(value) from T1
+POSTHOOK: Output: default@array_valued_T1_n39
+PREHOOK: query: insert overwrite table array_valued_T1_n39 select key, array(value) from T1_n39
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@array_valued_t1
-POSTHOOK: query: insert overwrite table array_valued_T1 select key, array(value) from T1
+PREHOOK: Input: default@t1_n39
+PREHOOK: Output: default@array_valued_t1_n39
+POSTHOOK: query: insert overwrite table array_valued_T1_n39 select key, array(value) from T1_n39
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@array_valued_t1
-POSTHOOK: Lineage: array_valued_t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: array_valued_t1.value EXPRESSION [(t1)t1.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Input: default@t1_n39
+POSTHOOK: Output: default@array_valued_t1_n39
+POSTHOOK: Lineage: array_valued_t1_n39.key SIMPLE [(t1_n39)t1_n39.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: array_valued_t1_n39.value EXPRESSION [(t1_n39)t1_n39.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: explain 
-select * from (select a.key as key, b.value as array_val from T1 a join array_valued_T1 b on a.key=b.key) i lateral view explode (array_val) c as val
+select * from (select a.key as key, b.value as array_val from T1_n39 a join array_valued_T1_n39 b on a.key=b.key) i lateral view explode (array_val) c as val
 PREHOOK: type: QUERY
 POSTHOOK: query: explain 
-select * from (select a.key as key, b.value as array_val from T1 a join array_valued_T1 b on a.key=b.key) i lateral view explode (array_val) c as val
+select * from (select a.key as key, b.value as array_val from T1_n39 a join array_valued_T1_n39 b on a.key=b.key) i lateral view explode (array_val) c as val
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-8 is a root stage
@@ -199,17 +199,17 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from (select a.key as key, b.value as array_val from T1 a join array_valued_T1 b on a.key=b.key) i lateral view explode (array_val) c as val
+PREHOOK: query: select * from (select a.key as key, b.value as array_val from T1_n39 a join array_valued_T1_n39 b on a.key=b.key) i lateral view explode (array_val) c as val
 ORDER BY key, val
 PREHOOK: type: QUERY
-PREHOOK: Input: default@array_valued_t1
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@array_valued_t1_n39
+PREHOOK: Input: default@t1_n39
 #### A masked pattern was here ####
-POSTHOOK: query: select * from (select a.key as key, b.value as array_val from T1 a join array_valued_T1 b on a.key=b.key) i lateral view explode (array_val) c as val
+POSTHOOK: query: select * from (select a.key as key, b.value as array_val from T1_n39 a join array_valued_T1_n39 b on a.key=b.key) i lateral view explode (array_val) c as val
 ORDER BY key, val
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@array_valued_t1
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@array_valued_t1_n39
+POSTHOOK: Input: default@t1_n39
 #### A masked pattern was here ####
 1	["11"]	11
 2	["12"]	12

@@ -1,25 +1,25 @@
-PREHOOK: query: drop view v
+PREHOOK: query: drop view v_n6
 PREHOOK: type: DROPVIEW
-POSTHOOK: query: drop view v
+POSTHOOK: query: drop view v_n6
 POSTHOOK: type: DROPVIEW
-PREHOOK: query: create view v as select key, '12' from src
+PREHOOK: query: create view v_n6 as select key, '12' from src
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@v
-POSTHOOK: query: create view v as select key, '12' from src
+PREHOOK: Output: default@v_n6
+POSTHOOK: query: create view v_n6 as select key, '12' from src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@v
-POSTHOOK: Lineage: v._c1 SIMPLE []
-POSTHOOK: Lineage: v.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: desc formatted v
+POSTHOOK: Output: default@v_n6
+POSTHOOK: Lineage: v_n6._c1 SIMPLE []
+POSTHOOK: Lineage: v_n6.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: desc formatted v_n6
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@v
-POSTHOOK: query: desc formatted v
+PREHOOK: Input: default@v_n6
+POSTHOOK: query: desc formatted v_n6
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@v_n6
 # col_name            	data_type           	comment             
 key                 	string              	                    
 _c1                 	string              	                    
@@ -46,47 +46,47 @@ Sort Columns:       	[]
 View Original Text: 	select key, '12' from src	 
 View Expanded Text: 	select `src`.`key`, '12' from `default`.`src`	 
 View Rewrite Enabled:	No                  	 
-PREHOOK: query: select * from v order by `_c1` limit 5
+PREHOOK: query: select * from v_n6 order by `_c1` limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Input: default@v
+PREHOOK: Input: default@v_n6
 #### A masked pattern was here ####
-POSTHOOK: query: select * from v order by `_c1` limit 5
+POSTHOOK: query: select * from v_n6 order by `_c1` limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@v_n6
 #### A masked pattern was here ####
 238	12
 86	12
 311	12
 27	12
 165	12
-PREHOOK: query: drop view v
+PREHOOK: query: drop view v_n6
 PREHOOK: type: DROPVIEW
-PREHOOK: Input: default@v
-PREHOOK: Output: default@v
-POSTHOOK: query: drop view v
+PREHOOK: Input: default@v_n6
+PREHOOK: Output: default@v_n6
+POSTHOOK: query: drop view v_n6
 POSTHOOK: type: DROPVIEW
-POSTHOOK: Input: default@v
-POSTHOOK: Output: default@v
-PREHOOK: query: create view v as select key as `_c1`, '12' from src
+POSTHOOK: Input: default@v_n6
+POSTHOOK: Output: default@v_n6
+PREHOOK: query: create view v_n6 as select key as `_c1`, '12' from src
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@v
-POSTHOOK: query: create view v as select key as `_c1`, '12' from src
+PREHOOK: Output: default@v_n6
+POSTHOOK: query: create view v_n6 as select key as `_c1`, '12' from src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@v
-POSTHOOK: Lineage: v._c1 SIMPLE []
-POSTHOOK: Lineage: v.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: desc formatted v
+POSTHOOK: Output: default@v_n6
+POSTHOOK: Lineage: v_n6._c1 SIMPLE []
+POSTHOOK: Lineage: v_n6.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: desc formatted v_n6
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@v
-POSTHOOK: query: desc formatted v
+PREHOOK: Input: default@v_n6
+POSTHOOK: query: desc formatted v_n6
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@v_n6
 # col_name            	data_type           	comment             
 key                 	string              	                    
 _c1                 	string              	                    
@@ -113,48 +113,48 @@ Sort Columns:       	[]
 View Original Text: 	select key as _c1, '12' from src	 
 View Expanded Text: 	select `src`.`key` as `_c1`, '12' from `default`.`src`	 
 View Rewrite Enabled:	No                  	 
-PREHOOK: query: select * from v order by `_c1` limit 5
+PREHOOK: query: select * from v_n6 order by `_c1` limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Input: default@v
+PREHOOK: Input: default@v_n6
 #### A masked pattern was here ####
-POSTHOOK: query: select * from v order by `_c1` limit 5
+POSTHOOK: query: select * from v_n6 order by `_c1` limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@v_n6
 #### A masked pattern was here ####
 238	12
 86	12
 311	12
 27	12
 165	12
-PREHOOK: query: drop view v
+PREHOOK: query: drop view v_n6
 PREHOOK: type: DROPVIEW
-PREHOOK: Input: default@v
-PREHOOK: Output: default@v
-POSTHOOK: query: drop view v
+PREHOOK: Input: default@v_n6
+PREHOOK: Output: default@v_n6
+POSTHOOK: query: drop view v_n6
 POSTHOOK: type: DROPVIEW
-POSTHOOK: Input: default@v
-POSTHOOK: Output: default@v
-PREHOOK: query: create view v as select *, '12' from src
+POSTHOOK: Input: default@v_n6
+POSTHOOK: Output: default@v_n6
+PREHOOK: query: create view v_n6 as select *, '12' from src
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@v
-POSTHOOK: query: create view v as select *, '12' from src
+PREHOOK: Output: default@v_n6
+POSTHOOK: query: create view v_n6 as select *, '12' from src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@v
-POSTHOOK: Lineage: v._c1 SIMPLE []
-POSTHOOK: Lineage: v.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: v.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: desc formatted v
+POSTHOOK: Output: default@v_n6
+POSTHOOK: Lineage: v_n6._c1 SIMPLE []
+POSTHOOK: Lineage: v_n6.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: v_n6.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: desc formatted v_n6
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@v
-POSTHOOK: query: desc formatted v
+PREHOOK: Input: default@v_n6
+POSTHOOK: query: desc formatted v_n6
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@v_n6
 # col_name            	data_type           	comment             
 key                 	string              	                    
 value               	string              	                    
@@ -182,48 +182,48 @@ Sort Columns:       	[]
 View Original Text: 	select *, '12' from src	 
 View Expanded Text: 	select `src`.`key`, `src`.`value`, '12' from `default`.`src`	 
 View Rewrite Enabled:	No                  	 
-PREHOOK: query: select * from v order by `_c2` limit 5
+PREHOOK: query: select * from v_n6 order by `_c2` limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Input: default@v
+PREHOOK: Input: default@v_n6
 #### A masked pattern was here ####
-POSTHOOK: query: select * from v order by `_c2` limit 5
+POSTHOOK: query: select * from v_n6 order by `_c2` limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@v_n6
 #### A masked pattern was here ####
 238	val_238	12
 86	val_86	12
 311	val_311	12
 27	val_27	12
 165	val_165	12
-PREHOOK: query: drop view v
+PREHOOK: query: drop view v_n6
 PREHOOK: type: DROPVIEW
-PREHOOK: Input: default@v
-PREHOOK: Output: default@v
-POSTHOOK: query: drop view v
+PREHOOK: Input: default@v_n6
+PREHOOK: Output: default@v_n6
+POSTHOOK: query: drop view v_n6
 POSTHOOK: type: DROPVIEW
-POSTHOOK: Input: default@v
-POSTHOOK: Output: default@v
-PREHOOK: query: create view v as select *, '12' as `_c121` from src
+POSTHOOK: Input: default@v_n6
+POSTHOOK: Output: default@v_n6
+PREHOOK: query: create view v_n6 as select *, '12' as `_c121` from src
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@v
-POSTHOOK: query: create view v as select *, '12' as `_c121` from src
+PREHOOK: Output: default@v_n6
+POSTHOOK: query: create view v_n6 as select *, '12' as `_c121` from src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@v
-POSTHOOK: Lineage: v._c121 SIMPLE []
-POSTHOOK: Lineage: v.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: v.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: desc formatted v
+POSTHOOK: Output: default@v_n6
+POSTHOOK: Lineage: v_n6._c121 SIMPLE []
+POSTHOOK: Lineage: v_n6.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: v_n6.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: desc formatted v_n6
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@v
-POSTHOOK: query: desc formatted v
+PREHOOK: Input: default@v_n6
+POSTHOOK: query: desc formatted v_n6
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@v_n6
 # col_name            	data_type           	comment             
 key                 	string              	                    
 value               	string              	                    
@@ -251,47 +251,47 @@ Sort Columns:       	[]
 View Original Text: 	select *, '12' as _c121 from src	 
 View Expanded Text: 	select `src`.`key`, `src`.`value`, '12' as `_c121` from `default`.`src`	 
 View Rewrite Enabled:	No                  	 
-PREHOOK: query: select * from v order by `_c121` limit 5
+PREHOOK: query: select * from v_n6 order by `_c121` limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Input: default@v
+PREHOOK: Input: default@v_n6
 #### A masked pattern was here ####
-POSTHOOK: query: select * from v order by `_c121` limit 5
+POSTHOOK: query: select * from v_n6 order by `_c121` limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@v_n6
 #### A masked pattern was here ####
 238	val_238	12
 86	val_86	12
 311	val_311	12
 27	val_27	12
 165	val_165	12
-PREHOOK: query: drop view v
+PREHOOK: query: drop view v_n6
 PREHOOK: type: DROPVIEW
-PREHOOK: Input: default@v
-PREHOOK: Output: default@v
-POSTHOOK: query: drop view v
+PREHOOK: Input: default@v_n6
+PREHOOK: Output: default@v_n6
+POSTHOOK: query: drop view v_n6
 POSTHOOK: type: DROPVIEW
-POSTHOOK: Input: default@v
-POSTHOOK: Output: default@v
-PREHOOK: query: create view v as select key, count(*) from src group by key
+POSTHOOK: Input: default@v_n6
+POSTHOOK: Output: default@v_n6
+PREHOOK: query: create view v_n6 as select key, count(*) from src group by key
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@v
-POSTHOOK: query: create view v as select key, count(*) from src group by key
+PREHOOK: Output: default@v_n6
+POSTHOOK: query: create view v_n6 as select key, count(*) from src group by key
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@v
-POSTHOOK: Lineage: v._c1 EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: v.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: desc formatted v
+POSTHOOK: Output: default@v_n6
+POSTHOOK: Lineage: v_n6._c1 EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: v_n6.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: desc formatted v_n6
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@v
-POSTHOOK: query: desc formatted v
+PREHOOK: Input: default@v_n6
+POSTHOOK: query: desc formatted v_n6
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@v_n6
 # col_name            	data_type           	comment             
 key                 	string              	                    
 _c1                 	bigint              	                    
@@ -318,97 +318,97 @@ Sort Columns:       	[]
 View Original Text: 	select key, count(*) from src group by key	 
 View Expanded Text: 	select `src`.`key`, count(*) from `default`.`src` group by `src`.`key`	 
 View Rewrite Enabled:	No                  	 
-PREHOOK: query: select * from v order by `_c1` limit 5
+PREHOOK: query: select * from v_n6 order by `_c1` limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Input: default@v
+PREHOOK: Input: default@v_n6
 #### A masked pattern was here ####
-POSTHOOK: query: select * from v order by `_c1` limit 5
+POSTHOOK: query: select * from v_n6 order by `_c1` limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@v_n6
 #### A masked pattern was here ####
 11	1
 105	1
 114	1
 96	1
 10	1
-PREHOOK: query: drop view v
+PREHOOK: query: drop view v_n6
 PREHOOK: type: DROPVIEW
-PREHOOK: Input: default@v
-PREHOOK: Output: default@v
-POSTHOOK: query: drop view v
+PREHOOK: Input: default@v_n6
+PREHOOK: Output: default@v_n6
+POSTHOOK: query: drop view v_n6
 POSTHOOK: type: DROPVIEW
-POSTHOOK: Input: default@v
-POSTHOOK: Output: default@v
-PREHOOK: query: create table a (ca string, caa string)
+POSTHOOK: Input: default@v_n6
+POSTHOOK: Output: default@v_n6
+PREHOOK: query: create table a_n9 (ca_n9 string, caa_n9 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@a
-POSTHOOK: query: create table a (ca string, caa string)
+PREHOOK: Output: default@a_n9
+POSTHOOK: query: create table a_n9 (ca_n9 string, caa_n9 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@a
-PREHOOK: query: create table b (cb string, cbb string)
+POSTHOOK: Output: default@a_n9
+PREHOOK: query: create table b_n7 (cb_n7 string, cbb_n7 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@b
-POSTHOOK: query: create table b (cb string, cbb string)
+PREHOOK: Output: default@b_n7
+POSTHOOK: query: create table b_n7 (cb_n7 string, cbb_n7 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@b
-PREHOOK: query: insert into a select * from src limit 5
+POSTHOOK: Output: default@b_n7
+PREHOOK: query: insert into a_n9 select * from src limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@a
-POSTHOOK: query: insert into a select * from src limit 5
+PREHOOK: Output: default@a_n9
+POSTHOOK: query: insert into a_n9 select * from src limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@a
-POSTHOOK: Lineage: a.ca SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: a.caa SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: insert into b select * from src limit 5
+POSTHOOK: Output: default@a_n9
+POSTHOOK: Lineage: a_n9.ca_n9 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: a_n9.caa_n9 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert into b_n7 select * from src limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@b
-POSTHOOK: query: insert into b select * from src limit 5
+PREHOOK: Output: default@b_n7
+POSTHOOK: query: insert into b_n7 select * from src limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@b
-POSTHOOK: Lineage: b.cb SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: b.cbb SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: create view v as select '010', a.*, 121, b.*, 234 from a join b on a.ca = b.cb
+POSTHOOK: Output: default@b_n7
+POSTHOOK: Lineage: b_n7.cb_n7 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: b_n7.cbb_n7 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create view v_n6 as select '010', a_n9.*, 121, b_n7.*, 234 from a_n9 join b_n7 on a_n9.ca_n9 = b_n7.cb_n7
 PREHOOK: type: CREATEVIEW
-PREHOOK: Input: default@a
-PREHOOK: Input: default@b
+PREHOOK: Input: default@a_n9
+PREHOOK: Input: default@b_n7
 PREHOOK: Output: database:default
-PREHOOK: Output: default@v
-POSTHOOK: query: create view v as select '010', a.*, 121, b.*, 234 from a join b on a.ca = b.cb
+PREHOOK: Output: default@v_n6
+POSTHOOK: query: create view v_n6 as select '010', a_n9.*, 121, b_n7.*, 234 from a_n9 join b_n7 on a_n9.ca_n9 = b_n7.cb_n7
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Input: default@a
-POSTHOOK: Input: default@b
+POSTHOOK: Input: default@a_n9
+POSTHOOK: Input: default@b_n7
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@v
-POSTHOOK: Lineage: v._c0 SIMPLE []
-POSTHOOK: Lineage: v._c2 SIMPLE []
-POSTHOOK: Lineage: v._c4 SIMPLE []
-POSTHOOK: Lineage: v.ca SIMPLE [(a)a.FieldSchema(name:ca, type:string, comment:null), ]
-POSTHOOK: Lineage: v.caa SIMPLE [(a)a.FieldSchema(name:caa, type:string, comment:null), ]
-POSTHOOK: Lineage: v.cb SIMPLE [(b)b.FieldSchema(name:cb, type:string, comment:null), ]
-POSTHOOK: Lineage: v.cbb SIMPLE [(b)b.FieldSchema(name:cbb, type:string, comment:null), ]
-PREHOOK: query: desc formatted v
+POSTHOOK: Output: default@v_n6
+POSTHOOK: Lineage: v_n6._c0 SIMPLE []
+POSTHOOK: Lineage: v_n6._c2 SIMPLE []
+POSTHOOK: Lineage: v_n6._c4 SIMPLE []
+POSTHOOK: Lineage: v_n6.ca_n9 SIMPLE [(a_n9)a_n9.FieldSchema(name:ca_n9, type:string, comment:null), ]
+POSTHOOK: Lineage: v_n6.caa_n9 SIMPLE [(a_n9)a_n9.FieldSchema(name:caa_n9, type:string, comment:null), ]
+POSTHOOK: Lineage: v_n6.cb_n7 SIMPLE [(b_n7)b_n7.FieldSchema(name:cb_n7, type:string, comment:null), ]
+POSTHOOK: Lineage: v_n6.cbb_n7 SIMPLE [(b_n7)b_n7.FieldSchema(name:cbb_n7, type:string, comment:null), ]
+PREHOOK: query: desc formatted v_n6
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@v
-POSTHOOK: query: desc formatted v
+PREHOOK: Input: default@v_n6
+POSTHOOK: query: desc formatted v_n6
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@v_n6
 # col_name            	data_type           	comment             
 _c0                 	string              	                    
-ca                  	string              	                    
-caa                 	string              	                    
+ca_n9               	string              	                    
+caa_n9              	string              	                    
 _c2                 	int                 	                    
-cb                  	string              	                    
-cbb                 	string              	                    
+cb_n7               	string              	                    
+cbb_n7              	string              	                    
 _c4                 	int                 	                    
 	 	 
 # Detailed Table Information	 	 
@@ -430,20 +430,20 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	select '010', a.*, 121, b.*, 234 from a join b on a.ca = b.cb	 
-View Expanded Text: 	select '010', `a`.`ca`, `a`.`caa`, 121, `b`.`cb`, `b`.`cbb`, 234 from `default`.`a` join `default`.`b` on `a`.`ca` = `b`.`cb`	 
+View Original Text: 	select '010', a_n9.*, 121, b_n7.*, 234 from a_n9 join b_n7 on a_n9.ca_n9 = b_n7.cb_n7	 
+View Expanded Text: 	select '010', `a_n9`.`ca_n9`, `a_n9`.`caa_n9`, 121, `b_n7`.`cb_n7`, `b_n7`.`cbb_n7`, 234 from `default`.`a_n9` join `default`.`b_n7` on `a_n9`.`ca_n9` = `b_n7`.`cb_n7`	 
 View Rewrite Enabled:	No                  	 
-PREHOOK: query: select * from v order by `_c3` limit 5
+PREHOOK: query: select * from v_n6 order by `_c3` limit 5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@a
-PREHOOK: Input: default@b
-PREHOOK: Input: default@v
+PREHOOK: Input: default@a_n9
+PREHOOK: Input: default@b_n7
+PREHOOK: Input: default@v_n6
 #### A masked pattern was here ####
-POSTHOOK: query: select * from v order by `_c3` limit 5
+POSTHOOK: query: select * from v_n6 order by `_c3` limit 5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@a
-POSTHOOK: Input: default@b
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@a_n9
+POSTHOOK: Input: default@b_n7
+POSTHOOK: Input: default@v_n6
 #### A masked pattern was here ####
 010	165	val_165	121	165	val_165	234
 010	238	val_238	121	238	val_238	234

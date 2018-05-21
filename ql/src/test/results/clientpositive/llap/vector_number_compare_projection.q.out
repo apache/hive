@@ -1,4 +1,4 @@
-PREHOOK: query: create table vectortab2k(
+PREHOOK: query: create table vectortab2k_n6(
             t tinyint,
             si smallint,
             i int,
@@ -16,8 +16,8 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@vectortab2k
-POSTHOOK: query: create table vectortab2k(
+PREHOOK: Output: default@vectortab2k_n6
+POSTHOOK: query: create table vectortab2k_n6(
             t tinyint,
             si smallint,
             i int,
@@ -35,32 +35,32 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@vectortab2k
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/vectortab2k' OVERWRITE INTO TABLE vectortab2k
+POSTHOOK: Output: default@vectortab2k_n6
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/vectortab2k' OVERWRITE INTO TABLE vectortab2k_n6
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@vectortab2k
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/vectortab2k' OVERWRITE INTO TABLE vectortab2k
+PREHOOK: Output: default@vectortab2k_n6
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/vectortab2k' OVERWRITE INTO TABLE vectortab2k_n6
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@vectortab2k
-PREHOOK: query: CREATE TABLE scratch AS SELECT t, si, i, b, f, d, dc FROM vectortab2k
+POSTHOOK: Output: default@vectortab2k_n6
+PREHOOK: query: CREATE TABLE scratch AS SELECT t, si, i, b, f, d, dc FROM vectortab2k_n6
 PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: default@vectortab2k
+PREHOOK: Input: default@vectortab2k_n6
 PREHOOK: Output: database:default
 PREHOOK: Output: default@scratch
-POSTHOOK: query: CREATE TABLE scratch AS SELECT t, si, i, b, f, d, dc FROM vectortab2k
+POSTHOOK: query: CREATE TABLE scratch AS SELECT t, si, i, b, f, d, dc FROM vectortab2k_n6
 POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: default@vectortab2k
+POSTHOOK: Input: default@vectortab2k_n6
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@scratch
-POSTHOOK: Lineage: scratch.b SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: scratch.d SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: scratch.dc SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:dc, type:decimal(38,18), comment:null), ]
-POSTHOOK: Lineage: scratch.f SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: scratch.i SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: scratch.si SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: scratch.t SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: scratch.b SIMPLE [(vectortab2k_n6)vectortab2k_n6.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: scratch.d SIMPLE [(vectortab2k_n6)vectortab2k_n6.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: scratch.dc SIMPLE [(vectortab2k_n6)vectortab2k_n6.FieldSchema(name:dc, type:decimal(38,18), comment:null), ]
+POSTHOOK: Lineage: scratch.f SIMPLE [(vectortab2k_n6)vectortab2k_n6.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: scratch.i SIMPLE [(vectortab2k_n6)vectortab2k_n6.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: scratch.si SIMPLE [(vectortab2k_n6)vectortab2k_n6.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: scratch.t SIMPLE [(vectortab2k_n6)vectortab2k_n6.FieldSchema(name:t, type:tinyint, comment:null), ]
 t	si	i	b	f	d	dc
 PREHOOK: query: INSERT INTO TABLE scratch VALUES (NULL, NULL, NULL, NULL, NULL, NULL, NULL)
 PREHOOK: type: QUERY
@@ -441,27 +441,27 @@ POSTHOOK: Input: default@vectortab2k_orc
 _c0
 14121946175
 PREHOOK: query: CREATE TABLE scratch_repeat AS SELECT t, si, i, b, bo, 20 as t_repeat,
-     9000 as si_repeat, 9233320 as i_repeat, -823823999339992 as b_repeat, false as bo_repeat_false, true as bo_repeat_true FROM vectortab2k
+     9000 as si_repeat, 9233320 as i_repeat, -823823999339992 as b_repeat, false as bo_repeat_false, true as bo_repeat_true FROM vectortab2k_n6
 PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: default@vectortab2k
+PREHOOK: Input: default@vectortab2k_n6
 PREHOOK: Output: database:default
 PREHOOK: Output: default@scratch_repeat
 POSTHOOK: query: CREATE TABLE scratch_repeat AS SELECT t, si, i, b, bo, 20 as t_repeat,
-     9000 as si_repeat, 9233320 as i_repeat, -823823999339992 as b_repeat, false as bo_repeat_false, true as bo_repeat_true FROM vectortab2k
+     9000 as si_repeat, 9233320 as i_repeat, -823823999339992 as b_repeat, false as bo_repeat_false, true as bo_repeat_true FROM vectortab2k_n6
 POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: default@vectortab2k
+POSTHOOK: Input: default@vectortab2k_n6
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@scratch_repeat
-POSTHOOK: Lineage: scratch_repeat.b SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: scratch_repeat.b SIMPLE [(vectortab2k_n6)vectortab2k_n6.FieldSchema(name:b, type:bigint, comment:null), ]
 POSTHOOK: Lineage: scratch_repeat.b_repeat SIMPLE []
-POSTHOOK: Lineage: scratch_repeat.bo SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: scratch_repeat.bo SIMPLE [(vectortab2k_n6)vectortab2k_n6.FieldSchema(name:bo, type:boolean, comment:null), ]
 POSTHOOK: Lineage: scratch_repeat.bo_repeat_false SIMPLE []
 POSTHOOK: Lineage: scratch_repeat.bo_repeat_true SIMPLE []
-POSTHOOK: Lineage: scratch_repeat.i SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: scratch_repeat.i SIMPLE [(vectortab2k_n6)vectortab2k_n6.FieldSchema(name:i, type:int, comment:null), ]
 POSTHOOK: Lineage: scratch_repeat.i_repeat SIMPLE []
-POSTHOOK: Lineage: scratch_repeat.si SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: scratch_repeat.si SIMPLE [(vectortab2k_n6)vectortab2k_n6.FieldSchema(name:si, type:smallint, comment:null), ]
 POSTHOOK: Lineage: scratch_repeat.si_repeat SIMPLE []
-POSTHOOK: Lineage: scratch_repeat.t SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: scratch_repeat.t SIMPLE [(vectortab2k_n6)vectortab2k_n6.FieldSchema(name:t, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: scratch_repeat.t_repeat SIMPLE []
 t	si	i	b	bo	t_repeat	si_repeat	i_repeat	b_repeat	bo_repeat_false	bo_repeat_true
 PREHOOK: query: CREATE TABLE vectortab2k_orc_repeat STORED AS ORC AS SELECT * FROM scratch_repeat
@@ -607,26 +607,26 @@ POSTHOOK: Input: default@vectortab2k_orc_repeat
 _c0
 235353516948
 PREHOOK: query: CREATE TABLE scratch_null AS SELECT t, si, i, b, bo,
-     cast(null as tinyint) as t_null, cast(null as smallint) as si_null, cast(null as int) as i_null, cast(null as bigint) as b_null, cast(null as boolean) as bo_null FROM vectortab2k
+     cast(null as tinyint) as t_null, cast(null as smallint) as si_null, cast(null as int) as i_null, cast(null as bigint) as b_null, cast(null as boolean) as bo_null FROM vectortab2k_n6
 PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: default@vectortab2k
+PREHOOK: Input: default@vectortab2k_n6
 PREHOOK: Output: database:default
 PREHOOK: Output: default@scratch_null
 POSTHOOK: query: CREATE TABLE scratch_null AS SELECT t, si, i, b, bo,
-     cast(null as tinyint) as t_null, cast(null as smallint) as si_null, cast(null as int) as i_null, cast(null as bigint) as b_null, cast(null as boolean) as bo_null FROM vectortab2k
+     cast(null as tinyint) as t_null, cast(null as smallint) as si_null, cast(null as int) as i_null, cast(null as bigint) as b_null, cast(null as boolean) as bo_null FROM vectortab2k_n6
 POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: default@vectortab2k
+POSTHOOK: Input: default@vectortab2k_n6
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@scratch_null
-POSTHOOK: Lineage: scratch_null.b SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: scratch_null.b SIMPLE [(vectortab2k_n6)vectortab2k_n6.FieldSchema(name:b, type:bigint, comment:null), ]
 POSTHOOK: Lineage: scratch_null.b_null SIMPLE []
-POSTHOOK: Lineage: scratch_null.bo SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: scratch_null.bo SIMPLE [(vectortab2k_n6)vectortab2k_n6.FieldSchema(name:bo, type:boolean, comment:null), ]
 POSTHOOK: Lineage: scratch_null.bo_null SIMPLE []
-POSTHOOK: Lineage: scratch_null.i SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: scratch_null.i SIMPLE [(vectortab2k_n6)vectortab2k_n6.FieldSchema(name:i, type:int, comment:null), ]
 POSTHOOK: Lineage: scratch_null.i_null SIMPLE []
-POSTHOOK: Lineage: scratch_null.si SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: scratch_null.si SIMPLE [(vectortab2k_n6)vectortab2k_n6.FieldSchema(name:si, type:smallint, comment:null), ]
 POSTHOOK: Lineage: scratch_null.si_null SIMPLE []
-POSTHOOK: Lineage: scratch_null.t SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: scratch_null.t SIMPLE [(vectortab2k_n6)vectortab2k_n6.FieldSchema(name:t, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: scratch_null.t_null SIMPLE []
 t	si	i	b	bo	t_null	si_null	i_null	b_null	bo_null
 PREHOOK: query: CREATE TABLE vectortab2k_orc_null STORED AS ORC AS SELECT * FROM scratch_null

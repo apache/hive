@@ -1,12 +1,12 @@
-PREHOOK: query: create table src11 (key1 string, value1 string)
+PREHOOK: query: create table src11_n0 (key1 string, value1 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src11
-POSTHOOK: query: create table src11 (key1 string, value1 string)
+PREHOOK: Output: default@src11_n0
+POSTHOOK: query: create table src11_n0 (key1 string, value1 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src11
-PREHOOK: query: create table part2( 
+POSTHOOK: Output: default@src11_n0
+PREHOOK: query: create table part2_n2( 
     p2_partkey INT,
     p2_name STRING,
     p2_mfgr STRING,
@@ -19,8 +19,8 @@ PREHOOK: query: create table part2(
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@part2
-POSTHOOK: query: create table part2( 
+PREHOOK: Output: default@part2_n2
+POSTHOOK: query: create table part2_n2( 
     p2_partkey INT,
     p2_name STRING,
     p2_mfgr STRING,
@@ -33,10 +33,10 @@ POSTHOOK: query: create table part2(
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@part2
-PREHOOK: query: explain select * from src11 where src11.key1 in (select key from src where src11.value1 = value and key > '9')
+POSTHOOK: Output: default@part2_n2
+PREHOOK: query: explain select * from src11_n0 where src11_n0.key1 in (select key from src where src11_n0.value1 = value and key > '9')
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from src11 where src11.key1 in (select key from src where src11.value1 = value and key > '9')
+POSTHOOK: query: explain select * from src11_n0 where src11_n0.key1 in (select key from src where src11_n0.value1 = value and key > '9')
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -47,7 +47,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: src11
+            alias: src11_n0
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: ((key1 > '9') and value1 is not null) (type: boolean)

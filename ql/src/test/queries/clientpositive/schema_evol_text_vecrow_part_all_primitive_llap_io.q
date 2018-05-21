@@ -24,13 +24,13 @@ set hive.llap.io.enabled=true;set hive.llap.io.encode.enabled=true;
 --
 --
 
-CREATE TABLE schema_evolution_data(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
+CREATE TABLE schema_evolution_data_n2(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
 row format delimited fields terminated by '|' stored as textfile;
-load data local inpath '../../data/files/schema_evolution/schema_evolution_data.txt' overwrite into table schema_evolution_data;
+load data local inpath '../../data/files/schema_evolution/schema_evolution_data.txt' overwrite into table schema_evolution_data_n2;
 
-CREATE TABLE schema_evolution_data_2(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
+CREATE TABLE schema_evolution_data_2_n0(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
 row format delimited fields terminated by '|' stored as textfile;
-load data local inpath '../../data/files/schema_evolution/schema_evolution_data_2.txt' overwrite into table schema_evolution_data_2;
+load data local inpath '../../data/files/schema_evolution/schema_evolution_data_2.txt' overwrite into table schema_evolution_data_2_n0;
 
 --
 -- SUBSECTION: ALTER TABLE CHANGE COLUMNS for Various --> Various:
@@ -54,7 +54,7 @@ insert into table part_change_various_various_boolean_to_bigint partition(part=1
              boolean1, tinyint1, int1, bigint1, float1, double1, decimal1, smallint_str, smallint_str, smallint_str, timestamp1,
              boolean1, tinyint1, smallint1, bigint1, float1, double1, decimal1, int_str, int_str, int_str, timestamp1,
              boolean1, tinyint1, smallint1, int1, float1, double1, decimal1, bigint_str, bigint_str, bigint_str, timestamp1,
-             'original' FROM schema_evolution_data;
+             'original' FROM schema_evolution_data_n2;
 
 explain vectorization detail
 select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,c30,c31,c32,c33,c34,c35,c36,c37,c38,c39,c40,c41,c42,c43,c44,c45,c46,c47,c48,c49,c50,c51,c52,c53,b from part_change_various_various_boolean_to_bigint;
@@ -76,7 +76,7 @@ insert into table part_change_various_various_boolean_to_bigint partition(part=1
              smallint1, smallint1, smallint1, smallint1, smallint1, smallint1, smallint1, smallint1, smallint1, smallint1, smallint1,
              int1, int1, int1, int1, int1, int1, int1, int1, int1, int1, int1,
              bigint1, bigint1, bigint1, bigint1, bigint1, bigint1, bigint1, bigint1, bigint1, bigint1, bigint1, 
-              'new' FROM schema_evolution_data;
+              'new' FROM schema_evolution_data_n2;
 
 explain vectorization detail
 select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,c30,c31,c32,c33,c34,c35,c36,c37,c38,c39,c40,c41,c42,c43,c44,c45,c46,c47,c48,c49,c50,c51,c52,c53,b from part_change_various_various_boolean_to_bigint;
@@ -103,7 +103,7 @@ insert into table part_change_various_various_decimal_to_double partition(part=1
             boolean1, tinyint1, smallint1, int1, bigint1, float1, double1, decimal_str, decimal_str, decimal_str, timestamp1,
             boolean1, tinyint1, smallint1, int1, bigint1, decimal1, double1, float_str, float_str, float_str, timestamp1,
             boolean1, tinyint1, smallint1, int1, bigint1, decimal1, float1, double_str, double_str, double_str, timestamp1,
-            'original' FROM schema_evolution_data;
+            'original' FROM schema_evolution_data_n2;
 
 explain vectorization detail
 select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,c30,c31,c32,c33,b from part_change_various_various_decimal_to_double;
@@ -121,7 +121,7 @@ insert into table part_change_various_various_decimal_to_double partition(part=1
              decimal1, decimal1, decimal1, decimal1, decimal1, decimal1, decimal1, decimal1, decimal1, decimal1, decimal1,
              float1, float1, float1, float1, float1, float1, float1, float1, float1, float1, float1,
              double1, double1, double1, double1, double1, double1, double1, double1, double1, double1, double1,
-             'new' FROM schema_evolution_data_2 WHERE insert_num=111;
+             'new' FROM schema_evolution_data_2_n0 WHERE insert_num=111;
 
 explain vectorization detail
 select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,c30,c31,c32,c33,b from part_change_various_various_decimal_to_double;
@@ -138,7 +138,7 @@ drop table part_change_various_various_decimal_to_double;
 --
 CREATE TABLE part_change_various_various_timestamp(insert_num int, c1 BOOLEAN, c2 TINYINT, c3 SMALLINT, c4 INT, c5 BIGINT, c6 FLOAT, c7 DOUBLE, c8 DECIMAL(38,18), c9 STRING, c10 CHAR(25), c11 VARCHAR(25), c12 DATE, b STRING) PARTITIONED BY(part INT);
 
-insert into table part_change_various_various_timestamp partition(part=1) SELECT insert_num, boolean1, tinyint1, smallint1, int1, bigint1, float1, double1, decimal1, timestamp_str, timestamp_str, timestamp_str, date1, 'original' FROM schema_evolution_data;
+insert into table part_change_various_various_timestamp partition(part=1) SELECT insert_num, boolean1, tinyint1, smallint1, int1, bigint1, float1, double1, decimal1, timestamp_str, timestamp_str, timestamp_str, date1, 'original' FROM schema_evolution_data_n2;
 
 explain vectorization detail
 select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,b from part_change_various_various_timestamp;
@@ -148,7 +148,7 @@ select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,b from part_change
 -- Table-Non-Cascade CHANGE COLUMNS ...
 alter table part_change_various_various_timestamp replace columns (insert_num int, c1 TIMESTAMP, c2 TIMESTAMP, c3 TIMESTAMP, c4 TIMESTAMP, c5 TIMESTAMP, c6 TIMESTAMP, c7 TIMESTAMP, c8 TIMESTAMP, c9 TIMESTAMP, c10 TIMESTAMP, c11 TIMESTAMP, c12 TIMESTAMP, b STRING);
 
-insert into table part_change_various_various_timestamp partition(part=1) SELECT insert_num, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, 'new' FROM schema_evolution_data_2 WHERE insert_num=111;
+insert into table part_change_various_various_timestamp partition(part=1) SELECT insert_num, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, 'new' FROM schema_evolution_data_2_n0 WHERE insert_num=111;
 
 explain vectorization detail
 select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,b from part_change_various_various_timestamp;
@@ -162,7 +162,7 @@ drop table part_change_various_various_timestamp;
 --
 CREATE TABLE part_change_various_various_date(insert_num int, c1 STRING, c2 CHAR(25), c3 VARCHAR(25), c4 TIMESTAMP, b STRING) PARTITIONED BY(part INT);
 
-insert into table part_change_various_various_date partition(part=1) SELECT insert_num, date_str, date_str, date_str, timestamp1, 'original' FROM schema_evolution_data;
+insert into table part_change_various_various_date partition(part=1) SELECT insert_num, date_str, date_str, date_str, timestamp1, 'original' FROM schema_evolution_data_n2;
 
 explain vectorization detail
 select insert_num,part,c1,c2,c3,c4,b from part_change_various_various_date;
@@ -172,7 +172,7 @@ select insert_num,part,c1,c2,c3,c4,b from part_change_various_various_date;
 -- Table-Non-Cascade CHANGE COLUMNS ...
 alter table part_change_various_various_date replace columns (insert_num int, c1 DATE, c2 DATE, c3 DATE, c4 DATE, b STRING);
 
-insert into table part_change_various_various_date partition(part=1) SELECT insert_num, date1, date1, date1, date1, 'new' FROM schema_evolution_data_2 WHERE insert_num=111;
+insert into table part_change_various_various_date partition(part=1) SELECT insert_num, date1, date1, date1, date1, 'new' FROM schema_evolution_data_2_n0 WHERE insert_num=111;
 
 explain vectorization detail
 select insert_num,part,c1,c2,c3,c4,b from part_change_various_various_date;

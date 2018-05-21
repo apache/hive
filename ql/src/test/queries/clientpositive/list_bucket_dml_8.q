@@ -51,7 +51,7 @@ set hive.merge.mapredfiles=false;
 -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
 
 -- create a skewed table
-create table list_bucketing_dynamic_part (key String, value String) 
+create table list_bucketing_dynamic_part_n2 (key String, value String) 
     partitioned by (ds String, hr String) 
     skewed by (key, value) on (('484','val_484'),('51','val_14'),('103','val_103'))
     stored as DIRECTORIES
@@ -59,32 +59,32 @@ create table list_bucketing_dynamic_part (key String, value String)
 
 -- list bucketing DML without merge. use bucketize to generate a few small files.
 explain extended
-insert overwrite table list_bucketing_dynamic_part partition (ds = '2008-04-08', hr)
+insert overwrite table list_bucketing_dynamic_part_n2 partition (ds = '2008-04-08', hr)
 select key, value, if(key % 100 == 0, 'a1', 'b1') from srcpart where ds = '2008-04-08';
 
-insert overwrite table list_bucketing_dynamic_part partition (ds = '2008-04-08', hr)
+insert overwrite table list_bucketing_dynamic_part_n2 partition (ds = '2008-04-08', hr)
 select key, value, if(key % 100 == 0, 'a1', 'b1') from srcpart where ds = '2008-04-08';
 
 -- check DML result
-show partitions list_bucketing_dynamic_part;
-desc formatted list_bucketing_dynamic_part partition (ds='2008-04-08', hr='a1');	
-desc formatted list_bucketing_dynamic_part partition (ds='2008-04-08', hr='b1');
+show partitions list_bucketing_dynamic_part_n2;
+desc formatted list_bucketing_dynamic_part_n2 partition (ds='2008-04-08', hr='a1');	
+desc formatted list_bucketing_dynamic_part_n2 partition (ds='2008-04-08', hr='b1');
 
 -- concatenate the partition and it will merge files
-alter table list_bucketing_dynamic_part partition (ds='2008-04-08', hr='b1') concatenate;
+alter table list_bucketing_dynamic_part_n2 partition (ds='2008-04-08', hr='b1') concatenate;
 
-desc formatted list_bucketing_dynamic_part partition (ds='2008-04-08', hr='b1');
+desc formatted list_bucketing_dynamic_part_n2 partition (ds='2008-04-08', hr='b1');
 
 set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 select count(1) from srcpart where ds = '2008-04-08';
-select count(*) from list_bucketing_dynamic_part;
+select count(*) from list_bucketing_dynamic_part_n2;
 explain extended
-select * from list_bucketing_dynamic_part where key = '484' and value = 'val_484';
-select * from list_bucketing_dynamic_part where key = '484' and value = 'val_484';
+select * from list_bucketing_dynamic_part_n2 where key = '484' and value = 'val_484';
+select * from list_bucketing_dynamic_part_n2 where key = '484' and value = 'val_484';
 select * from srcpart where ds = '2008-04-08' and key = '484' and value = 'val_484' order by hr;
 
 -- clean up
-drop table list_bucketing_dynamic_part;
+drop table list_bucketing_dynamic_part_n2;
 
 
 

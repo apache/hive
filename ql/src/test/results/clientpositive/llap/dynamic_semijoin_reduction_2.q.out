@@ -1,4 +1,4 @@
-PREHOOK: query: CREATE TABLE `table_1`(
+PREHOOK: query: CREATE TABLE `table_1_n2`(
   `bigint_col_7` bigint,
   `decimal2016_col_26` decimal(20,16),
   `tinyint_col_3` tinyint,
@@ -6,8 +6,8 @@ PREHOOK: query: CREATE TABLE `table_1`(
   `timestamp_col_9` timestamp)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@table_1
-POSTHOOK: query: CREATE TABLE `table_1`(
+PREHOOK: Output: default@table_1_n2
+POSTHOOK: query: CREATE TABLE `table_1_n2`(
   `bigint_col_7` bigint,
   `decimal2016_col_26` decimal(20,16),
   `tinyint_col_3` tinyint,
@@ -15,8 +15,8 @@ POSTHOOK: query: CREATE TABLE `table_1`(
   `timestamp_col_9` timestamp)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@table_1
-PREHOOK: query: CREATE TABLE `table_18`(
+POSTHOOK: Output: default@table_1_n2
+PREHOOK: query: CREATE TABLE `table_18_n2`(
   `tinyint_col_15` tinyint,
   `decimal2709_col_9` decimal(27,9),
   `tinyint_col_20` tinyint,
@@ -25,8 +25,8 @@ PREHOOK: query: CREATE TABLE `table_18`(
   `timestamp_col_18` timestamp)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@table_18
-POSTHOOK: query: CREATE TABLE `table_18`(
+PREHOOK: Output: default@table_18_n2
+POSTHOOK: query: CREATE TABLE `table_18_n2`(
   `tinyint_col_15` tinyint,
   `decimal2709_col_9` decimal(27,9),
   `tinyint_col_20` tinyint,
@@ -35,33 +35,33 @@ POSTHOOK: query: CREATE TABLE `table_18`(
   `timestamp_col_18` timestamp)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@table_18
+POSTHOOK: Output: default@table_18_n2
 PREHOOK: query: EXPLAIN
 SELECT
 COUNT(*)
-FROM table_1 t1
+FROM table_1_n2 t1
 
-INNER JOIN table_18 t2 ON (((t2.tinyint_col_15) = (t1.bigint_col_7)) AND
+INNER JOIN table_18_n2 t2 ON (((t2.tinyint_col_15) = (t1.bigint_col_7)) AND
 ((t2.decimal2709_col_9) = (t1.decimal2016_col_26))) AND
 ((t2.tinyint_col_20) = (t1.tinyint_col_3))
 WHERE (t2.smallint_col_19) IN (SELECT
 COALESCE(-92, -994) AS int_col
-FROM table_1 tt1
-INNER JOIN table_18 tt2 ON (tt2.decimal1911_col_16) = (tt1.decimal2612_col_77)
+FROM table_1_n2 tt1
+INNER JOIN table_18_n2 tt2 ON (tt2.decimal1911_col_16) = (tt1.decimal2612_col_77)
 WHERE (t1.timestamp_col_9) = (tt2.timestamp_col_18))
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT
 COUNT(*)
-FROM table_1 t1
+FROM table_1_n2 t1
 
-INNER JOIN table_18 t2 ON (((t2.tinyint_col_15) = (t1.bigint_col_7)) AND
+INNER JOIN table_18_n2 t2 ON (((t2.tinyint_col_15) = (t1.bigint_col_7)) AND
 ((t2.decimal2709_col_9) = (t1.decimal2016_col_26))) AND
 ((t2.tinyint_col_20) = (t1.tinyint_col_3))
 WHERE (t2.smallint_col_19) IN (SELECT
 COALESCE(-92, -994) AS int_col
-FROM table_1 tt1
-INNER JOIN table_18 tt2 ON (tt2.decimal1911_col_16) = (tt1.decimal2612_col_77)
+FROM table_1_n2 tt1
+INNER JOIN table_18_n2 tt2 ON (tt2.decimal1911_col_16) = (tt1.decimal2612_col_77)
 WHERE (t1.timestamp_col_9) = (tt2.timestamp_col_18))
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -376,135 +376,135 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: drop table table_1
+PREHOOK: query: drop table table_1_n2
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@table_1
-PREHOOK: Output: default@table_1
-POSTHOOK: query: drop table table_1
+PREHOOK: Input: default@table_1_n2
+PREHOOK: Output: default@table_1_n2
+POSTHOOK: query: drop table table_1_n2
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@table_1
-POSTHOOK: Output: default@table_1
-PREHOOK: query: drop table table_18
+POSTHOOK: Input: default@table_1_n2
+POSTHOOK: Output: default@table_1_n2
+PREHOOK: query: drop table table_18_n2
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@table_18
-PREHOOK: Output: default@table_18
-POSTHOOK: query: drop table table_18
+PREHOOK: Input: default@table_18_n2
+PREHOOK: Output: default@table_18_n2
+POSTHOOK: query: drop table table_18_n2
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@table_18
-POSTHOOK: Output: default@table_18
-PREHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+POSTHOOK: Input: default@table_18_n2
+POSTHOOK: Output: default@table_18_n2
+PREHOOK: query: CREATE TABLE srcbucket_mapjoin_n20(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+PREHOOK: Output: default@srcbucket_mapjoin_n20
+POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_n20(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcbucket_mapjoin
-PREHOOK: query: CREATE TABLE src2 as select * from src1
+POSTHOOK: Output: default@srcbucket_mapjoin_n20
+PREHOOK: query: CREATE TABLE src2_n7 as select * from src1
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src1
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src2
-POSTHOOK: query: CREATE TABLE src2 as select * from src1
+PREHOOK: Output: default@src2_n7
+POSTHOOK: query: CREATE TABLE src2_n7 as select * from src1
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src1
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src2
-POSTHOOK: Lineage: src2.key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src2.value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: insert into src2 select * from src2
+POSTHOOK: Output: default@src2_n7
+POSTHOOK: Lineage: src2_n7.key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src2_n7.value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert into src2_n7 select * from src2_n7
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src2
-PREHOOK: Output: default@src2
-POSTHOOK: query: insert into src2 select * from src2
+PREHOOK: Input: default@src2_n7
+PREHOOK: Output: default@src2_n7
+POSTHOOK: query: insert into src2_n7 select * from src2_n7
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src2
-POSTHOOK: Output: default@src2
-POSTHOOK: Lineage: src2.key SIMPLE [(src2)src2.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src2.value SIMPLE [(src2)src2.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: insert into src2 select * from src2
+POSTHOOK: Input: default@src2_n7
+POSTHOOK: Output: default@src2_n7
+POSTHOOK: Lineage: src2_n7.key SIMPLE [(src2_n7)src2_n7.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: src2_n7.value SIMPLE [(src2_n7)src2_n7.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: insert into src2_n7 select * from src2_n7
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src2
-PREHOOK: Output: default@src2
-POSTHOOK: query: insert into src2 select * from src2
+PREHOOK: Input: default@src2_n7
+PREHOOK: Output: default@src2_n7
+POSTHOOK: query: insert into src2_n7 select * from src2_n7
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src2
-POSTHOOK: Output: default@src2
-POSTHOOK: Lineage: src2.key SIMPLE [(src2)src2.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src2.value SIMPLE [(src2)src2.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+POSTHOOK: Input: default@src2_n7
+POSTHOOK: Output: default@src2_n7
+POSTHOOK: Lineage: src2_n7.key SIMPLE [(src2_n7)src2_n7.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: src2_n7.value SIMPLE [(src2_n7)src2_n7.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_n20 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_n20
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_n20 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/bmj1/000001_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_n20
+POSTHOOK: Output: default@srcbucket_mapjoin_n20@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj1/000001_0' INTO TABLE srcbucket_mapjoin_n20 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/bmj1/000001_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_n20@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/bmj1/000001_0' INTO TABLE srcbucket_mapjoin_n20 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08
-PREHOOK: query: CREATE TABLE tab(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+POSTHOOK: Output: default@srcbucket_mapjoin_n20@ds=2008-04-08
+PREHOOK: query: CREATE TABLE tab_n12(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tab
-POSTHOOK: query: CREATE TABLE tab(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+PREHOOK: Output: default@tab_n12
+POSTHOOK: query: CREATE TABLE tab_n12(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tab
-PREHOOK: query: insert overwrite table tab partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin
+POSTHOOK: Output: default@tab_n12
+PREHOOK: query: insert overwrite table tab_n12 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_n20
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin
-PREHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
-PREHOOK: Output: default@tab@ds=2008-04-08
-POSTHOOK: query: insert overwrite table tab partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin
+PREHOOK: Input: default@srcbucket_mapjoin_n20
+PREHOOK: Input: default@srcbucket_mapjoin_n20@ds=2008-04-08
+PREHOOK: Output: default@tab_n12@ds=2008-04-08
+POSTHOOK: query: insert overwrite table tab_n12 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_n20
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin
-POSTHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
-POSTHOOK: Output: default@tab@ds=2008-04-08
-POSTHOOK: Lineage: tab PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin)srcbucket_mapjoin.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: tab PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin)srcbucket_mapjoin.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: CREATE TABLE tab2 (key int, value string, ds string)
+POSTHOOK: Input: default@srcbucket_mapjoin_n20
+POSTHOOK: Input: default@srcbucket_mapjoin_n20@ds=2008-04-08
+POSTHOOK: Output: default@tab_n12@ds=2008-04-08
+POSTHOOK: Lineage: tab_n12 PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_n20)srcbucket_mapjoin_n20.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tab_n12 PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_n20)srcbucket_mapjoin_n20.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: CREATE TABLE tab2_n6 (key int, value string, ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tab2
-POSTHOOK: query: CREATE TABLE tab2 (key int, value string, ds string)
+PREHOOK: Output: default@tab2_n6
+POSTHOOK: query: CREATE TABLE tab2_n6 (key int, value string, ds string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tab2
+POSTHOOK: Output: default@tab2_n6
 Warning: Value had a \n character in it.
-PREHOOK: query: analyze table tab2 compute statistics
+PREHOOK: query: analyze table tab2_n6 compute statistics
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab2
-PREHOOK: Output: default@tab2
-POSTHOOK: query: analyze table tab2 compute statistics
+PREHOOK: Input: default@tab2_n6
+PREHOOK: Output: default@tab2_n6
+POSTHOOK: query: analyze table tab2_n6 compute statistics
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab2
-POSTHOOK: Output: default@tab2
-PREHOOK: query: analyze table tab2 compute statistics for columns
+POSTHOOK: Input: default@tab2_n6
+POSTHOOK: Output: default@tab2_n6
+PREHOOK: query: analyze table tab2_n6 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@tab2
-PREHOOK: Output: default@tab2
+PREHOOK: Input: default@tab2_n6
+PREHOOK: Output: default@tab2_n6
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table tab2 compute statistics for columns
+POSTHOOK: query: analyze table tab2_n6 compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@tab2
-POSTHOOK: Output: default@tab2
+POSTHOOK: Input: default@tab2_n6
+POSTHOOK: Output: default@tab2_n6
 #### A masked pattern was here ####
 PREHOOK: query: explain
 select
   count(*)
   from
-  (select x.key as key, min(x.value) as value from tab2 x group by x.key) a
+  (select x.key as key, min(x.value) as value from tab2_n6 x group by x.key) a
   join
-  (select x.key as key, min(x.value) as value from tab2 x group by x.key) b
+  (select x.key as key, min(x.value) as value from tab2_n6 x group by x.key) b
   on
   a.key = b.key join src1 c on a.value = c.value where c.key < 0
 PREHOOK: type: QUERY
@@ -512,9 +512,9 @@ POSTHOOK: query: explain
 select
   count(*)
   from
-  (select x.key as key, min(x.value) as value from tab2 x group by x.key) a
+  (select x.key as key, min(x.value) as value from tab2_n6 x group by x.key) a
   join
-  (select x.key as key, min(x.value) as value from tab2 x group by x.key) b
+  (select x.key as key, min(x.value) as value from tab2_n6 x group by x.key) b
   on
   a.key = b.key join src1 c on a.value = c.value where c.key < 0
 POSTHOOK: type: QUERY

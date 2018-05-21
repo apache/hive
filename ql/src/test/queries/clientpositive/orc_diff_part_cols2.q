@@ -7,11 +7,11 @@ set hive.vectorized.execution.enabled=false;
 
 -- SORT_QUERY_RESULTS
 
-CREATE TABLE test_orc (key STRING)
+CREATE TABLE test_orc_n4 (key STRING)
 STORED AS ORC;
 
-INSERT OVERWRITE TABLE test_orc SELECT key FROM src LIMIT 5;
+INSERT OVERWRITE TABLE test_orc_n4 SELECT key FROM src LIMIT 5;
 
-ALTER TABLE test_orc ADD COLUMNS (value STRING);
+ALTER TABLE test_orc_n4 ADD COLUMNS (value STRING);
 
-SELECT * FROM test_orc;
+SELECT * FROM test_orc_n4;

@@ -1,25 +1,25 @@
-PREHOOK: query: create table list_bucketing_mul_col (col1 String, col2 String, col3 String, col4 String, col5 string) 
+PREHOOK: query: create table list_bucketing_mul_col_n0 (col1 String, col2 String, col3 String, col4 String, col5 string) 
     partitioned by (ds String, hr String) 
     skewed by (col2, col4) on (('466','val_466'),('287','val_287'),('82','val_82'))
     stored as DIRECTORIES
     STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@list_bucketing_mul_col
-POSTHOOK: query: create table list_bucketing_mul_col (col1 String, col2 String, col3 String, col4 String, col5 string) 
+PREHOOK: Output: default@list_bucketing_mul_col_n0
+POSTHOOK: query: create table list_bucketing_mul_col_n0 (col1 String, col2 String, col3 String, col4 String, col5 string) 
     partitioned by (ds String, hr String) 
     skewed by (col2, col4) on (('466','val_466'),('287','val_287'),('82','val_82'))
     stored as DIRECTORIES
     STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@list_bucketing_mul_col
+POSTHOOK: Output: default@list_bucketing_mul_col_n0
 PREHOOK: query: explain extended
-insert overwrite table list_bucketing_mul_col partition (ds = '2008-04-08',  hr = '11')
+insert overwrite table list_bucketing_mul_col_n0 partition (ds = '2008-04-08',  hr = '11')
 select 1, key, 1, value, 1 from src
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
-insert overwrite table list_bucketing_mul_col partition (ds = '2008-04-08',  hr = '11')
+insert overwrite table list_bucketing_mul_col_n0 partition (ds = '2008-04-08',  hr = '11')
 select 1, key, 1, value, 1 from src
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -58,15 +58,15 @@ STAGE PLANS:
                       columns.comments 
                       columns.types string:string:string:string:string
 #### A masked pattern was here ####
-                      name default.list_bucketing_mul_col
+                      name default.list_bucketing_mul_col_n0
                       partition_columns ds/hr
                       partition_columns.types string:string
-                      serialization.ddl struct list_bucketing_mul_col { string col1, string col2, string col3, string col4, string col5}
+                      serialization.ddl struct list_bucketing_mul_col_n0 { string col1, string col2, string col3, string col4, string col5}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-                    name: default.list_bucketing_mul_col
+                    name: default.list_bucketing_mul_col_n0
                 TotalFiles: 1
                 GatherStats: true
                 MultiFileSpray: false
@@ -196,15 +196,15 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:string:string:string:string
 #### A masked pattern was here ####
-                name default.list_bucketing_mul_col
+                name default.list_bucketing_mul_col_n0
                 partition_columns ds/hr
                 partition_columns.types string:string
-                serialization.ddl struct list_bucketing_mul_col { string col1, string col2, string col3, string col4, string col5}
+                serialization.ddl struct list_bucketing_mul_col_n0 { string col1, string col2, string col3, string col4, string col5}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-              name: default.list_bucketing_mul_col
+              name: default.list_bucketing_mul_col_n0
 
   Stage: Stage-2
     Stats Work
@@ -213,37 +213,37 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: col1, col2, col3, col4, col5
           Column Types: string, string, string, string, string
-          Table: default.list_bucketing_mul_col
+          Table: default.list_bucketing_mul_col_n0
           Is Table Level Stats: false
 
-PREHOOK: query: insert overwrite table list_bucketing_mul_col partition (ds = '2008-04-08', hr = '11')
+PREHOOK: query: insert overwrite table list_bucketing_mul_col_n0 partition (ds = '2008-04-08', hr = '11')
 select 1, key, 1, value, 1 from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@list_bucketing_mul_col@ds=2008-04-08/hr=11
-POSTHOOK: query: insert overwrite table list_bucketing_mul_col partition (ds = '2008-04-08', hr = '11')
+PREHOOK: Output: default@list_bucketing_mul_col_n0@ds=2008-04-08/hr=11
+POSTHOOK: query: insert overwrite table list_bucketing_mul_col_n0 partition (ds = '2008-04-08', hr = '11')
 select 1, key, 1, value, 1 from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@list_bucketing_mul_col@ds=2008-04-08/hr=11
-POSTHOOK: Lineage: list_bucketing_mul_col PARTITION(ds=2008-04-08,hr=11).col1 EXPRESSION []
-POSTHOOK: Lineage: list_bucketing_mul_col PARTITION(ds=2008-04-08,hr=11).col2 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: list_bucketing_mul_col PARTITION(ds=2008-04-08,hr=11).col3 EXPRESSION []
-POSTHOOK: Lineage: list_bucketing_mul_col PARTITION(ds=2008-04-08,hr=11).col4 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: list_bucketing_mul_col PARTITION(ds=2008-04-08,hr=11).col5 EXPRESSION []
-PREHOOK: query: show partitions list_bucketing_mul_col
+POSTHOOK: Output: default@list_bucketing_mul_col_n0@ds=2008-04-08/hr=11
+POSTHOOK: Lineage: list_bucketing_mul_col_n0 PARTITION(ds=2008-04-08,hr=11).col1 EXPRESSION []
+POSTHOOK: Lineage: list_bucketing_mul_col_n0 PARTITION(ds=2008-04-08,hr=11).col2 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: list_bucketing_mul_col_n0 PARTITION(ds=2008-04-08,hr=11).col3 EXPRESSION []
+POSTHOOK: Lineage: list_bucketing_mul_col_n0 PARTITION(ds=2008-04-08,hr=11).col4 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: list_bucketing_mul_col_n0 PARTITION(ds=2008-04-08,hr=11).col5 EXPRESSION []
+PREHOOK: query: show partitions list_bucketing_mul_col_n0
 PREHOOK: type: SHOWPARTITIONS
-PREHOOK: Input: default@list_bucketing_mul_col
-POSTHOOK: query: show partitions list_bucketing_mul_col
+PREHOOK: Input: default@list_bucketing_mul_col_n0
+POSTHOOK: query: show partitions list_bucketing_mul_col_n0
 POSTHOOK: type: SHOWPARTITIONS
-POSTHOOK: Input: default@list_bucketing_mul_col
+POSTHOOK: Input: default@list_bucketing_mul_col_n0
 ds=2008-04-08/hr=11
-PREHOOK: query: desc formatted list_bucketing_mul_col partition (ds='2008-04-08', hr='11')
+PREHOOK: query: desc formatted list_bucketing_mul_col_n0 partition (ds='2008-04-08', hr='11')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@list_bucketing_mul_col
-POSTHOOK: query: desc formatted list_bucketing_mul_col partition (ds='2008-04-08', hr='11')
+PREHOOK: Input: default@list_bucketing_mul_col_n0
+POSTHOOK: query: desc formatted list_bucketing_mul_col_n0 partition (ds='2008-04-08', hr='11')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@list_bucketing_mul_col
+POSTHOOK: Input: default@list_bucketing_mul_col_n0
 # col_name            	data_type           	comment             
 col1                	string              	                    
 col2                	string              	                    
@@ -259,7 +259,7 @@ hr                  	string
 # Detailed Partition Information	 	 
 Partition Value:    	[2008-04-08, 11]    	 
 Database:           	default             	 
-Table:              	list_bucketing_mul_col	 
+Table:              	list_bucketing_mul_col_n0	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\",\"col4\":\"true\",\"col5\":\"true\"}}
@@ -281,15 +281,15 @@ Stored As SubDirectories:	Yes
 Skewed Columns:     	[col2, col4]        	 
 Skewed Values:      	[[287, val_287], [466, val_466], [82, val_82]]	 
 #### A masked pattern was here ####
-Skewed Value to Truncated Path:	{[287, val_287]=/list_bucketing_mul_col/ds=2008-04-08/hr=11/col2=287/col4=val_287, [466, val_466]=/list_bucketing_mul_col/ds=2008-04-08/hr=11/col2=466/col4=val_466, [82, val_82]=/list_bucketing_mul_col/ds=2008-04-08/hr=11/col2=82/col4=val_82}	 
+Skewed Value to Truncated Path:	{[287, val_287]=/list_bucketing_mul_col_n0/ds=2008-04-08/hr=11/col2=287/col4=val_287, [466, val_466]=/list_bucketing_mul_col_n0/ds=2008-04-08/hr=11/col2=466/col4=val_466, [82, val_82]=/list_bucketing_mul_col_n0/ds=2008-04-08/hr=11/col2=82/col4=val_82}	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
 PREHOOK: query: explain extended
-select * from list_bucketing_mul_col 
+select * from list_bucketing_mul_col_n0 
 where ds='2008-04-08' and hr='11' and col2 = "466" and col4 = "val_466"
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
-select * from list_bucketing_mul_col 
+select * from list_bucketing_mul_col_n0 
 where ds='2008-04-08' and hr='11' and col2 = "466" and col4 = "val_466"
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -314,13 +314,13 @@ STAGE PLANS:
               columns.comments 
               columns.types string:string:string:string:string
 #### A masked pattern was here ####
-              name default.list_bucketing_mul_col
+              name default.list_bucketing_mul_col_n0
               numFiles 4
               numRows 500
               partition_columns ds/hr
               partition_columns.types string:string
               rawDataSize 6312
-              serialization.ddl struct list_bucketing_mul_col { string col1, string col2, string col3, string col4, string col5}
+              serialization.ddl struct list_bucketing_mul_col_n0 { string col1, string col2, string col3, string col4, string col5}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
               totalSize 7094
@@ -337,19 +337,19 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:string:string:string:string
 #### A masked pattern was here ####
-                name default.list_bucketing_mul_col
+                name default.list_bucketing_mul_col_n0
                 partition_columns ds/hr
                 partition_columns.types string:string
-                serialization.ddl struct list_bucketing_mul_col { string col1, string col2, string col3, string col4, string col5}
+                serialization.ddl struct list_bucketing_mul_col_n0 { string col1, string col2, string col3, string col4, string col5}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-              name: default.list_bucketing_mul_col
-            name: default.list_bucketing_mul_col
+              name: default.list_bucketing_mul_col_n0
+            name: default.list_bucketing_mul_col_n0
       Processor Tree:
         TableScan
-          alias: list_bucketing_mul_col
+          alias: list_bucketing_mul_col_n0
           Statistics: Num rows: 500 Data size: 6312 Basic stats: COMPLETE Column stats: NONE
           GatherStats: false
           Filter Operator
@@ -362,27 +362,27 @@ STAGE PLANS:
               Statistics: Num rows: 125 Data size: 1578 Basic stats: COMPLETE Column stats: NONE
               ListSink
 
-PREHOOK: query: select * from list_bucketing_mul_col 
+PREHOOK: query: select * from list_bucketing_mul_col_n0 
 where ds='2008-04-08' and hr='11' and col2 = "466" and col4 = "val_466"
 PREHOOK: type: QUERY
-PREHOOK: Input: default@list_bucketing_mul_col
-PREHOOK: Input: default@list_bucketing_mul_col@ds=2008-04-08/hr=11
+PREHOOK: Input: default@list_bucketing_mul_col_n0
+PREHOOK: Input: default@list_bucketing_mul_col_n0@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
-POSTHOOK: query: select * from list_bucketing_mul_col 
+POSTHOOK: query: select * from list_bucketing_mul_col_n0 
 where ds='2008-04-08' and hr='11' and col2 = "466" and col4 = "val_466"
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@list_bucketing_mul_col
-POSTHOOK: Input: default@list_bucketing_mul_col@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@list_bucketing_mul_col_n0
+POSTHOOK: Input: default@list_bucketing_mul_col_n0@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 1	466	1	val_466	1	2008-04-08	11
 1	466	1	val_466	1	2008-04-08	11
 1	466	1	val_466	1	2008-04-08	11
 PREHOOK: query: explain extended
-select * from list_bucketing_mul_col 
+select * from list_bucketing_mul_col_n0 
 where ds='2008-04-08' and hr='11' and col2 = "382" and col4 = "val_382"
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
-select * from list_bucketing_mul_col 
+select * from list_bucketing_mul_col_n0 
 where ds='2008-04-08' and hr='11' and col2 = "382" and col4 = "val_382"
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -407,13 +407,13 @@ STAGE PLANS:
               columns.comments 
               columns.types string:string:string:string:string
 #### A masked pattern was here ####
-              name default.list_bucketing_mul_col
+              name default.list_bucketing_mul_col_n0
               numFiles 4
               numRows 500
               partition_columns ds/hr
               partition_columns.types string:string
               rawDataSize 6312
-              serialization.ddl struct list_bucketing_mul_col { string col1, string col2, string col3, string col4, string col5}
+              serialization.ddl struct list_bucketing_mul_col_n0 { string col1, string col2, string col3, string col4, string col5}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
               totalSize 7094
@@ -430,19 +430,19 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:string:string:string:string
 #### A masked pattern was here ####
-                name default.list_bucketing_mul_col
+                name default.list_bucketing_mul_col_n0
                 partition_columns ds/hr
                 partition_columns.types string:string
-                serialization.ddl struct list_bucketing_mul_col { string col1, string col2, string col3, string col4, string col5}
+                serialization.ddl struct list_bucketing_mul_col_n0 { string col1, string col2, string col3, string col4, string col5}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-              name: default.list_bucketing_mul_col
-            name: default.list_bucketing_mul_col
+              name: default.list_bucketing_mul_col_n0
+            name: default.list_bucketing_mul_col_n0
       Processor Tree:
         TableScan
-          alias: list_bucketing_mul_col
+          alias: list_bucketing_mul_col_n0
           Statistics: Num rows: 500 Data size: 6312 Basic stats: COMPLETE Column stats: NONE
           GatherStats: false
           Filter Operator
@@ -455,25 +455,25 @@ STAGE PLANS:
               Statistics: Num rows: 125 Data size: 1578 Basic stats: COMPLETE Column stats: NONE
               ListSink
 
-PREHOOK: query: select * from list_bucketing_mul_col 
+PREHOOK: query: select * from list_bucketing_mul_col_n0 
 where ds='2008-04-08' and hr='11' and col2 = "382" and col4 = "val_382"
 PREHOOK: type: QUERY
-PREHOOK: Input: default@list_bucketing_mul_col
-PREHOOK: Input: default@list_bucketing_mul_col@ds=2008-04-08/hr=11
+PREHOOK: Input: default@list_bucketing_mul_col_n0
+PREHOOK: Input: default@list_bucketing_mul_col_n0@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
-POSTHOOK: query: select * from list_bucketing_mul_col 
+POSTHOOK: query: select * from list_bucketing_mul_col_n0 
 where ds='2008-04-08' and hr='11' and col2 = "382" and col4 = "val_382"
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@list_bucketing_mul_col
-POSTHOOK: Input: default@list_bucketing_mul_col@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@list_bucketing_mul_col_n0
+POSTHOOK: Input: default@list_bucketing_mul_col_n0@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 1	382	1	val_382	1	2008-04-08	11
 1	382	1	val_382	1	2008-04-08	11
-PREHOOK: query: drop table list_bucketing_mul_col
+PREHOOK: query: drop table list_bucketing_mul_col_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@list_bucketing_mul_col
-PREHOOK: Output: default@list_bucketing_mul_col
-POSTHOOK: query: drop table list_bucketing_mul_col
+PREHOOK: Input: default@list_bucketing_mul_col_n0
+PREHOOK: Output: default@list_bucketing_mul_col_n0
+POSTHOOK: query: drop table list_bucketing_mul_col_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@list_bucketing_mul_col
-POSTHOOK: Output: default@list_bucketing_mul_col
+POSTHOOK: Input: default@list_bucketing_mul_col_n0
+POSTHOOK: Output: default@list_bucketing_mul_col_n0

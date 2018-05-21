@@ -5,14 +5,14 @@
 
 set hive.cli.errors.ignore=true;
 
-DROP TABLE IF EXISTS encrypted_table;
+DROP TABLE IF EXISTS encrypted_table_n2;
 DROP TABLE IF EXISTS encrypted_ext_table;
 
-CREATE TABLE encrypted_table (key INT, value STRING) LOCATION '${hiveconf:hive.metastore.warehouse.dir}/default/encrypted_table';
+CREATE TABLE encrypted_table_n2 (key INT, value STRING) LOCATION '${hiveconf:hive.metastore.warehouse.dir}/default/encrypted_table';
 CRYPTO CREATE_KEY --keyName key_128 --bitLength 128;
 CRYPTO CREATE_ZONE --keyName key_128 --path ${hiveconf:hive.metastore.warehouse.dir}/default/encrypted_table;
 
-INSERT OVERWRITE TABLE encrypted_table SELECT * FROM src;
+INSERT OVERWRITE TABLE encrypted_table_n2 SELECT * FROM src;
 
 CREATE EXTERNAL TABLE encrypted_ext_table (key INT, value STRING) LOCATION '${hiveconf:hive.metastore.warehouse.dir}/default/encrypted_table';
 SHOW TABLES LIKE "encrypted_*";
@@ -20,7 +20,7 @@ SHOW TABLES LIKE "encrypted_*";
 DROP TABLE default.encrypted_ext_table;
 SHOW TABLES LIKE "encrypted_*";
 
-DROP TABLE default.encrypted_table;
+DROP TABLE default.encrypted_table_n2;
 SHOW TABLES LIKE "encrypted_*";
 
 DROP TABLE IF EXISTS encrypted_table1;

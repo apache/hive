@@ -1,14 +1,14 @@
-PREHOOK: query: create table invites (id int, foo int, bar int)
+PREHOOK: query: create table invites_n0 (id int, foo int, bar int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@invites
-POSTHOOK: query: create table invites (id int, foo int, bar int)
+PREHOOK: Output: default@invites_n0
+POSTHOOK: query: create table invites_n0 (id int, foo int, bar int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@invites
-PREHOOK: query: explain select * from (select foo, bar from (select bar, foo from invites c union all select bar, foo from invites d) b) a group by bar, foo having bar=1
+POSTHOOK: Output: default@invites_n0
+PREHOOK: query: explain select * from (select foo, bar from (select bar, foo from invites_n0 c union all select bar, foo from invites_n0 d) b) a group by bar, foo having bar=1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from (select foo, bar from (select bar, foo from invites c union all select bar, foo from invites d) b) a group by bar, foo having bar=1
+POSTHOOK: query: explain select * from (select foo, bar from (select bar, foo from invites_n0 c union all select bar, foo from invites_n0 d) b) a group by bar, foo having bar=1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -86,11 +86,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: drop table invites
+PREHOOK: query: drop table invites_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@invites
-PREHOOK: Output: default@invites
-POSTHOOK: query: drop table invites
+PREHOOK: Input: default@invites_n0
+PREHOOK: Output: default@invites_n0
+POSTHOOK: query: drop table invites_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@invites
-POSTHOOK: Output: default@invites
+POSTHOOK: Input: default@invites_n0
+POSTHOOK: Output: default@invites_n0

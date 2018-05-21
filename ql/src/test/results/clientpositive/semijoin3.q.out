@@ -1,49 +1,49 @@
-PREHOOK: query: create table t1 as select cast(key as int) key, value from src
+PREHOOK: query: create table t1_n59 as select cast(key as int) key, value from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t1
-POSTHOOK: query: create table t1 as select cast(key as int) key, value from src
+PREHOOK: Output: default@t1_n59
+POSTHOOK: query: create table t1_n59 as select cast(key as int) key, value from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t1
-POSTHOOK: Lineage: t1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: create table t2 as select cast(key as int) key, value from src
+POSTHOOK: Output: default@t1_n59
+POSTHOOK: Lineage: t1_n59.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1_n59.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create table t2_n37 as select cast(key as int) key, value from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t2
-POSTHOOK: query: create table t2 as select cast(key as int) key, value from src
+PREHOOK: Output: default@t2_n37
+POSTHOOK: query: create table t2_n37 as select cast(key as int) key, value from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t2
-POSTHOOK: Lineage: t2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: t2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@t2_n37
+POSTHOOK: Lineage: t2_n37.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t2_n37.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain
 select count(1)
 from
   (select key
-  from t1
-  where key = 0) t1
+  from t1_n59
+  where key = 0) t1_n59
 left semi join
   (select key
-  from t2
-  where key = 0) t2
+  from t2_n37
+  where key = 0) t2_n37
 on 1 = 1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select count(1)
 from
   (select key
-  from t1
-  where key = 0) t1
+  from t1_n59
+  where key = 0) t1_n59
 left semi join
   (select key
-  from t2
-  where key = 0) t2
+  from t2_n37
+  where key = 0) t2_n37
 on 1 = 1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -56,7 +56,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
+            alias: t1_n59
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key = 0) (type: boolean)
@@ -69,7 +69,7 @@ STAGE PLANS:
                   Map-reduce partition columns: 1 (type: int)
                   Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
           TableScan
-            alias: t2
+            alias: t2_n37
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (key = 0) (type: boolean)
@@ -133,29 +133,29 @@ STAGE PLANS:
 PREHOOK: query: select count(1)
 from
   (select key
-  from t1
-  where key = 0) t1
+  from t1_n59
+  where key = 0) t1_n59
 left semi join
   (select key
-  from t2
-  where key = 0) t2
+  from t2_n37
+  where key = 0) t2_n37
 on 1 = 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
+PREHOOK: Input: default@t1_n59
+PREHOOK: Input: default@t2_n37
 #### A masked pattern was here ####
 POSTHOOK: query: select count(1)
 from
   (select key
-  from t1
-  where key = 0) t1
+  from t1_n59
+  where key = 0) t1_n59
 left semi join
   (select key
-  from t2
-  where key = 0) t2
+  from t2_n37
+  where key = 0) t2_n37
 on 1 = 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t1_n59
+POSTHOOK: Input: default@t2_n37
 #### A masked pattern was here ####
 3

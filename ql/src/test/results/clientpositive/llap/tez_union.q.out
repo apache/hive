@@ -1403,69 +1403,69 @@ POSTHOOK: query: drop table ut
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@ut
 POSTHOOK: Output: default@ut
-PREHOOK: query: create table TABLE1(EMP_NAME STRING, EMP_ID INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+PREHOOK: query: create table TABLE1_n3(EMP_NAME STRING, EMP_ID INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@TABLE1
-POSTHOOK: query: create table TABLE1(EMP_NAME STRING, EMP_ID INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+PREHOOK: Output: default@TABLE1_n3
+POSTHOOK: query: create table TABLE1_n3(EMP_NAME STRING, EMP_ID INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@TABLE1
-PREHOOK: query: create table table2 (EMP_NAME STRING) PARTITIONED BY (EMP_ID INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+POSTHOOK: Output: default@TABLE1_n3
+PREHOOK: query: create table table2_n1 (EMP_NAME STRING) PARTITIONED BY (EMP_ID INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@table2
-POSTHOOK: query: create table table2 (EMP_NAME STRING) PARTITIONED BY (EMP_ID INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+PREHOOK: Output: default@table2_n1
+POSTHOOK: query: create table table2_n1 (EMP_NAME STRING) PARTITIONED BY (EMP_ID INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@table2
-PREHOOK: query: CREATE OR REPLACE VIEW TABLE3 as select EMP_NAME, EMP_ID from TABLE1
+POSTHOOK: Output: default@table2_n1
+PREHOOK: query: CREATE OR REPLACE VIEW view_n123456789 as select EMP_NAME, EMP_ID from TABLE1_n3
 PREHOOK: type: CREATEVIEW
-PREHOOK: Input: default@table1
+PREHOOK: Input: default@table1_n3
 PREHOOK: Output: database:default
-PREHOOK: Output: default@TABLE3
-POSTHOOK: query: CREATE OR REPLACE VIEW TABLE3 as select EMP_NAME, EMP_ID from TABLE1
+PREHOOK: Output: default@view_n123456789
+POSTHOOK: query: CREATE OR REPLACE VIEW view_n123456789 as select EMP_NAME, EMP_ID from TABLE1_n3
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1_n3
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@TABLE3
-POSTHOOK: Lineage: TABLE3.emp_id SIMPLE [(table1)table1.FieldSchema(name:emp_id, type:int, comment:null), ]
-POSTHOOK: Lineage: TABLE3.emp_name SIMPLE [(table1)table1.FieldSchema(name:emp_name, type:string, comment:null), ]
-PREHOOK: query: explain formatted select count(*) from TABLE3
+POSTHOOK: Output: default@view_n123456789
+POSTHOOK: Lineage: view_n123456789.emp_id SIMPLE [(table1_n3)table1_n3.FieldSchema(name:emp_id, type:int, comment:null), ]
+POSTHOOK: Lineage: view_n123456789.emp_name SIMPLE [(table1_n3)table1_n3.FieldSchema(name:emp_name, type:string, comment:null), ]
+PREHOOK: query: explain formatted select count(*) from view_n123456789
 PREHOOK: type: QUERY
-POSTHOOK: query: explain formatted select count(*) from TABLE3
+POSTHOOK: query: explain formatted select count(*) from view_n123456789
 POSTHOOK: type: QUERY
 #### A masked pattern was here ####
-PREHOOK: query: drop table table2
+PREHOOK: query: drop table table2_n1
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@table2
-PREHOOK: Output: default@table2
-POSTHOOK: query: drop table table2
+PREHOOK: Input: default@table2_n1
+PREHOOK: Output: default@table2_n1
+POSTHOOK: query: drop table table2_n1
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@table2
-POSTHOOK: Output: default@table2
-PREHOOK: query: create table table2 (EMP_NAME STRING) PARTITIONED BY (EMP_ID INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+POSTHOOK: Input: default@table2_n1
+POSTHOOK: Output: default@table2_n1
+PREHOOK: query: create table table2_n1 (EMP_NAME STRING) PARTITIONED BY (EMP_ID INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@table2
-POSTHOOK: query: create table table2 (EMP_NAME STRING) PARTITIONED BY (EMP_ID INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+PREHOOK: Output: default@table2_n1
+POSTHOOK: query: create table table2_n1 (EMP_NAME STRING) PARTITIONED BY (EMP_ID INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@table2
-PREHOOK: query: CREATE OR REPLACE VIEW TABLE3 as select EMP_NAME, EMP_ID from TABLE1 UNION ALL select EMP_NAME,EMP_ID from TABLE2
+POSTHOOK: Output: default@table2_n1
+PREHOOK: query: CREATE OR REPLACE VIEW view_n123456789 as select EMP_NAME, EMP_ID from TABLE1_n3 UNION ALL select EMP_NAME,EMP_ID from TABLE2_n1
 PREHOOK: type: CREATEVIEW
-PREHOOK: Input: default@table1
-PREHOOK: Input: default@table2
+PREHOOK: Input: default@table1_n3
+PREHOOK: Input: default@table2_n1
 PREHOOK: Output: database:default
-PREHOOK: Output: default@TABLE3
-POSTHOOK: query: CREATE OR REPLACE VIEW TABLE3 as select EMP_NAME, EMP_ID from TABLE1 UNION ALL select EMP_NAME,EMP_ID from TABLE2
+PREHOOK: Output: default@view_n123456789
+POSTHOOK: query: CREATE OR REPLACE VIEW view_n123456789 as select EMP_NAME, EMP_ID from TABLE1_n3 UNION ALL select EMP_NAME,EMP_ID from TABLE2_n1
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Input: default@table1
-POSTHOOK: Input: default@table2
+POSTHOOK: Input: default@table1_n3
+POSTHOOK: Input: default@table2_n1
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@TABLE3
-PREHOOK: query: explain formatted select count(*) from TABLE3
+POSTHOOK: Output: default@view_n123456789
+PREHOOK: query: explain formatted select count(*) from view_n123456789
 PREHOOK: type: QUERY
-POSTHOOK: query: explain formatted select count(*) from TABLE3
+POSTHOOK: query: explain formatted select count(*) from view_n123456789
 POSTHOOK: type: QUERY
 #### A masked pattern was here ####

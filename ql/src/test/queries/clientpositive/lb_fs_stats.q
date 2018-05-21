@@ -9,10 +9,10 @@ set hive.stats.dbclass=fs;
 
 -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
 
-CREATE TABLE test_tab (key STRING, value STRING) PARTITIONED BY (part STRING) STORED AS RCFILE;
+CREATE TABLE test_tab_n0 (key STRING, value STRING) PARTITIONED BY (part STRING) STORED AS RCFILE;
 
-ALTER TABLE test_tab SKEWED BY (key) ON ("484") STORED AS DIRECTORIES;
+ALTER TABLE test_tab_n0 SKEWED BY (key) ON ("484") STORED AS DIRECTORIES;
 
-INSERT OVERWRITE TABLE test_tab PARTITION (part = '1') SELECT * FROM src;
+INSERT OVERWRITE TABLE test_tab_n0 PARTITION (part = '1') SELECT * FROM src;
 
-describe formatted test_tab partition (part='1');
+describe formatted test_tab_n0 partition (part='1');

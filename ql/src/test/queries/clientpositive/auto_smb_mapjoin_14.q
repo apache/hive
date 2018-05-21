@@ -257,8 +257,8 @@ select count(*) from (
 join tbl2 b
 on subq2.key = b.key) a;
 
-CREATE TABLE dest1(key int, value string);
-CREATE TABLE dest2(key int, val1 string, val2 string);
+CREATE TABLE dest1_n2(key int, value string);
+CREATE TABLE dest2_n0(key int, val1 string, val2 string);
 
 -- The join is followed by a multi-table insert. It should be converted to
 -- a sort-merge join
@@ -266,20 +266,20 @@ explain
 from (
   select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
 ) subq1
-insert overwrite table dest1 select key, val1
-insert overwrite table dest2 select key, val1, val2;
+insert overwrite table dest1_n2 select key, val1
+insert overwrite table dest2_n0 select key, val1, val2;
 
 from (
   select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
 ) subq1
-insert overwrite table dest1 select key, val1
-insert overwrite table dest2 select key, val1, val2;
+insert overwrite table dest1_n2 select key, val1
+insert overwrite table dest2_n0 select key, val1, val2;
 
-select * from dest1;
-select * from dest2;
+select * from dest1_n2;
+select * from dest2_n0;
 
-DROP TABLE dest2;
-CREATE TABLE dest2(key int, cnt int);
+DROP TABLE dest2_n0;
+CREATE TABLE dest2_n0(key int, cnt int);
 
 -- The join is followed by a multi-table insert, and one of the inserts involves a reducer.
 -- It should be converted to a sort-merge join
@@ -287,14 +287,14 @@ explain
 from (
   select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
 ) subq1
-insert overwrite table dest1 select key, val1
-insert overwrite table dest2 select key, count(*) group by key;
+insert overwrite table dest1_n2 select key, val1
+insert overwrite table dest2_n0 select key, count(*) group by key;
 
 from (
   select a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
 ) subq1
-insert overwrite table dest1 select key, val1
-insert overwrite table dest2 select key, count(*) group by key;
+insert overwrite table dest1_n2 select key, val1
+insert overwrite table dest2_n0 select key, count(*) group by key;
 
-select * from dest1;
-select * from dest2;
+select * from dest1_n2;
+select * from dest2_n0;

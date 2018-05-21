@@ -34,9 +34,9 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 11
 12
-PREHOOK: query: EXPLAIN VECTORIZATION create table srcpart_date as select ds as ds, ds as `date` from srcpart group by ds
+PREHOOK: query: EXPLAIN VECTORIZATION create table srcpart_date_n8 as select ds as ds, ds as `date` from srcpart group by ds
 PREHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: query: EXPLAIN VECTORIZATION create table srcpart_date as select ds as ds, ds as `date` from srcpart group by ds
+POSTHOOK: query: EXPLAIN VECTORIZATION create table srcpart_date_n8 as select ds as ds, ds as `date` from srcpart group by ds
 POSTHOOK: type: CREATETABLE_AS_SELECT
 PLAN VECTORIZATION:
   enabled: true
@@ -113,7 +113,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.srcpart_date
+                        name: default.srcpart_date_n8
 
   Stage: Stage-2
     Dependency Collection
@@ -125,7 +125,7 @@ STAGE PLANS:
           input format: org.apache.hadoop.mapred.TextInputFormat
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
           serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: default.srcpart_date
+          name: default.srcpart_date_n8
 
   Stage: Stage-3
     Stats Work
@@ -137,7 +137,7 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-PREHOOK: query: create table srcpart_date stored as orc as select ds as ds, ds as `date` from srcpart group by ds
+PREHOOK: query: create table srcpart_date_n8 stored as orc as select ds as ds, ds as `date` from srcpart group by ds
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -145,8 +145,8 @@ PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 PREHOOK: Output: database:default
-PREHOOK: Output: default@srcpart_date
-POSTHOOK: query: create table srcpart_date stored as orc as select ds as ds, ds as `date` from srcpart group by ds
+PREHOOK: Output: default@srcpart_date_n8
+POSTHOOK: query: create table srcpart_date_n8 stored as orc as select ds as ds, ds as `date` from srcpart group by ds
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -154,10 +154,10 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcpart_date
-POSTHOOK: Lineage: srcpart_date.date SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_date.ds SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-PREHOOK: query: create table srcpart_hour stored as orc as select hr as hr, hr as hour from srcpart group by hr
+POSTHOOK: Output: default@srcpart_date_n8
+POSTHOOK: Lineage: srcpart_date_n8.date SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: srcpart_date_n8.ds SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
+PREHOOK: query: create table srcpart_hour_n2 stored as orc as select hr as hr, hr as hour from srcpart group by hr
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -165,8 +165,8 @@ PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 PREHOOK: Output: database:default
-PREHOOK: Output: default@srcpart_hour
-POSTHOOK: query: create table srcpart_hour stored as orc as select hr as hr, hr as hour from srcpart group by hr
+PREHOOK: Output: default@srcpart_hour_n2
+POSTHOOK: query: create table srcpart_hour_n2 stored as orc as select hr as hr, hr as hour from srcpart group by hr
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -174,10 +174,10 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcpart_hour
-POSTHOOK: Lineage: srcpart_hour.hour SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_hour.hr SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-PREHOOK: query: create table srcpart_date_hour stored as orc as select ds as ds, ds as `date`, hr as hr, hr as hour from srcpart group by ds, hr
+POSTHOOK: Output: default@srcpart_hour_n2
+POSTHOOK: Lineage: srcpart_hour_n2.hour SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: srcpart_hour_n2.hr SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+PREHOOK: query: create table srcpart_date_hour_n2 stored as orc as select ds as ds, ds as `date`, hr as hr, hr as hour from srcpart group by ds, hr
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -185,8 +185,8 @@ PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 PREHOOK: Output: database:default
-PREHOOK: Output: default@srcpart_date_hour
-POSTHOOK: query: create table srcpart_date_hour stored as orc as select ds as ds, ds as `date`, hr as hr, hr as hour from srcpart group by ds, hr
+PREHOOK: Output: default@srcpart_date_hour_n2
+POSTHOOK: query: create table srcpart_date_hour_n2 stored as orc as select ds as ds, ds as `date`, hr as hr, hr as hour from srcpart group by ds, hr
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -194,12 +194,12 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcpart_date_hour
-POSTHOOK: Lineage: srcpart_date_hour.date SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_date_hour.ds SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_date_hour.hour SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_date_hour.hr SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-PREHOOK: query: create table srcpart_double_hour stored as orc as select (hr*2) as hr, hr as hour from srcpart group by hr
+POSTHOOK: Output: default@srcpart_date_hour_n2
+POSTHOOK: Lineage: srcpart_date_hour_n2.date SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: srcpart_date_hour_n2.ds SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: srcpart_date_hour_n2.hour SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: srcpart_date_hour_n2.hr SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+PREHOOK: query: create table srcpart_double_hour_n2 stored as orc as select (hr*2) as hr, hr as hour from srcpart group by hr
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -207,8 +207,8 @@ PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 PREHOOK: Output: database:default
-PREHOOK: Output: default@srcpart_double_hour
-POSTHOOK: query: create table srcpart_double_hour stored as orc as select (hr*2) as hr, hr as hour from srcpart group by hr
+PREHOOK: Output: default@srcpart_double_hour_n2
+POSTHOOK: query: create table srcpart_double_hour_n2 stored as orc as select (hr*2) as hr, hr as hour from srcpart group by hr
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -216,12 +216,12 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcpart_double_hour
-POSTHOOK: Lineage: srcpart_double_hour.hour SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_double_hour.hr EXPRESSION [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: Output: default@srcpart_double_hour_n2
+POSTHOOK: Lineage: srcpart_double_hour_n2.hour SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: srcpart_double_hour_n2.hr EXPRESSION [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = '2008-04-08'
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -270,7 +270,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n8
                   filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -358,28 +358,28 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: query: select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = '2008-04-08'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Input: default@srcpart_date
+PREHOOK: Input: default@srcpart_date_n8
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: query: select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Input: default@srcpart_date
+POSTHOOK: Input: default@srcpart_date_n8
 #### A masked pattern was here ####
 1000
-PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = '2008-04-08'
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -428,7 +428,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n8
                   filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -501,23 +501,23 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: query: select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = '2008-04-08'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Input: default@srcpart_date
+PREHOOK: Input: default@srcpart_date_n8
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: query: select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Input: default@srcpart_date
+POSTHOOK: Input: default@srcpart_date_n8
 #### A masked pattern was here ####
 1000
 PREHOOK: query: select count(*) from srcpart where ds = '2008-04-08'
@@ -533,11 +533,11 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 1000
-PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11
+PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) join srcpart_hour_n2 on (srcpart.hr = srcpart_hour_n2.hr) 
+where srcpart_date_n8.`date` = '2008-04-08' and srcpart_hour_n2.hour = 11
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11
+POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) join srcpart_hour_n2 on (srcpart.hr = srcpart_hour_n2.hr) 
+where srcpart_date_n8.`date` = '2008-04-08' and srcpart_hour_n2.hour = 11
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -587,7 +587,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n8
                   filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -631,7 +631,7 @@ STAGE PLANS:
         Map 6 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_hour
+                  alias: srcpart_hour_n2
                   filterExpr: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -735,34 +735,34 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11
+PREHOOK: query: select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) join srcpart_hour_n2 on (srcpart.hr = srcpart_hour_n2.hr) 
+where srcpart_date_n8.`date` = '2008-04-08' and srcpart_hour_n2.hour = 11
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Input: default@srcpart_date
-PREHOOK: Input: default@srcpart_hour
+PREHOOK: Input: default@srcpart_date_n8
+PREHOOK: Input: default@srcpart_hour_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11
+POSTHOOK: query: select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) join srcpart_hour_n2 on (srcpart.hr = srcpart_hour_n2.hr) 
+where srcpart_date_n8.`date` = '2008-04-08' and srcpart_hour_n2.hour = 11
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Input: default@srcpart_date
-POSTHOOK: Input: default@srcpart_hour
+POSTHOOK: Input: default@srcpart_date_n8
+POSTHOOK: Input: default@srcpart_hour_n2
 #### A masked pattern was here ####
 500
-PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11
+PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) join srcpart_hour_n2 on (srcpart.hr = srcpart_hour_n2.hr) 
+where srcpart_date_n8.`date` = '2008-04-08' and srcpart_hour_n2.hour = 11
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11
+POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) join srcpart_hour_n2 on (srcpart.hr = srcpart_hour_n2.hr) 
+where srcpart_date_n8.`date` = '2008-04-08' and srcpart_hour_n2.hour = 11
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -813,7 +813,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n8
                   filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -842,7 +842,7 @@ STAGE PLANS:
         Map 6 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_hour
+                  alias: srcpart_hour_n2
                   filterExpr: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -931,27 +931,27 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11
+PREHOOK: query: select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) join srcpart_hour_n2 on (srcpart.hr = srcpart_hour_n2.hr) 
+where srcpart_date_n8.`date` = '2008-04-08' and srcpart_hour_n2.hour = 11
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Input: default@srcpart_date
-PREHOOK: Input: default@srcpart_hour
+PREHOOK: Input: default@srcpart_date_n8
+PREHOOK: Input: default@srcpart_hour_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11
+POSTHOOK: query: select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) join srcpart_hour_n2 on (srcpart.hr = srcpart_hour_n2.hr) 
+where srcpart_date_n8.`date` = '2008-04-08' and srcpart_hour_n2.hour = 11
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Input: default@srcpart_date
-POSTHOOK: Input: default@srcpart_hour
+POSTHOOK: Input: default@srcpart_date_n8
+POSTHOOK: Input: default@srcpart_hour_n2
 #### A masked pattern was here ####
 500
 PREHOOK: query: select count(*) from srcpart where hr = 11 and ds = '2008-04-08'
@@ -965,9 +965,9 @@ POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 500
-PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_hour on (srcpart.ds = srcpart_date_hour.ds and srcpart.hr = srcpart_date_hour.hr) where srcpart_date_hour.`date` = '2008-04-08' and srcpart_date_hour.hour = 11
+PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_hour_n2 on (srcpart.ds = srcpart_date_hour_n2.ds and srcpart.hr = srcpart_date_hour_n2.hr) where srcpart_date_hour_n2.`date` = '2008-04-08' and srcpart_date_hour_n2.hour = 11
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_hour on (srcpart.ds = srcpart_date_hour.ds and srcpart.hr = srcpart_date_hour.hr) where srcpart_date_hour.`date` = '2008-04-08' and srcpart_date_hour.hour = 11
+POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_hour_n2 on (srcpart.ds = srcpart_date_hour_n2.ds and srcpart.hr = srcpart_date_hour_n2.hr) where srcpart_date_hour_n2.`date` = '2008-04-08' and srcpart_date_hour_n2.hour = 11
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -1015,7 +1015,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date_hour
+                  alias: srcpart_date_hour_n2
                   filterExpr: ((date = '2008-04-08') and (UDFToDouble(hour) = 11.0D) and ds is not null and hr is not null) (type: boolean)
                   Statistics: Num rows: 4 Data size: 2944 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -1118,28 +1118,28 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart join srcpart_date_hour on (srcpart.ds = srcpart_date_hour.ds and srcpart.hr = srcpart_date_hour.hr) where srcpart_date_hour.`date` = '2008-04-08' and srcpart_date_hour.hour = 11
+PREHOOK: query: select count(*) from srcpart join srcpart_date_hour_n2 on (srcpart.ds = srcpart_date_hour_n2.ds and srcpart.hr = srcpart_date_hour_n2.hr) where srcpart_date_hour_n2.`date` = '2008-04-08' and srcpart_date_hour_n2.hour = 11
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Input: default@srcpart_date_hour
+PREHOOK: Input: default@srcpart_date_hour_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart join srcpart_date_hour on (srcpart.ds = srcpart_date_hour.ds and srcpart.hr = srcpart_date_hour.hr) where srcpart_date_hour.`date` = '2008-04-08' and srcpart_date_hour.hour = 11
+POSTHOOK: query: select count(*) from srcpart join srcpart_date_hour_n2 on (srcpart.ds = srcpart_date_hour_n2.ds and srcpart.hr = srcpart_date_hour_n2.hr) where srcpart_date_hour_n2.`date` = '2008-04-08' and srcpart_date_hour_n2.hour = 11
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Input: default@srcpart_date_hour
+POSTHOOK: Input: default@srcpart_date_hour_n2
 #### A masked pattern was here ####
 500
-PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_hour on (srcpart.ds = srcpart_date_hour.ds and srcpart.hr = srcpart_date_hour.hr) where srcpart_date_hour.`date` = '2008-04-08' and srcpart_date_hour.hour = 11
+PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_hour_n2 on (srcpart.ds = srcpart_date_hour_n2.ds and srcpart.hr = srcpart_date_hour_n2.hr) where srcpart_date_hour_n2.`date` = '2008-04-08' and srcpart_date_hour_n2.hour = 11
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_hour on (srcpart.ds = srcpart_date_hour.ds and srcpart.hr = srcpart_date_hour.hr) where srcpart_date_hour.`date` = '2008-04-08' and srcpart_date_hour.hour = 11
+POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_hour_n2 on (srcpart.ds = srcpart_date_hour_n2.ds and srcpart.hr = srcpart_date_hour_n2.hr) where srcpart_date_hour_n2.`date` = '2008-04-08' and srcpart_date_hour_n2.hour = 11
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -1188,7 +1188,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date_hour
+                  alias: srcpart_date_hour_n2
                   filterExpr: ((date = '2008-04-08') and (UDFToDouble(hour) = 11.0D) and ds is not null and hr is not null) (type: boolean)
                   Statistics: Num rows: 4 Data size: 2944 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -1261,23 +1261,23 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart join srcpart_date_hour on (srcpart.ds = srcpart_date_hour.ds and srcpart.hr = srcpart_date_hour.hr) where srcpart_date_hour.`date` = '2008-04-08' and srcpart_date_hour.hour = 11
+PREHOOK: query: select count(*) from srcpart join srcpart_date_hour_n2 on (srcpart.ds = srcpart_date_hour_n2.ds and srcpart.hr = srcpart_date_hour_n2.hr) where srcpart_date_hour_n2.`date` = '2008-04-08' and srcpart_date_hour_n2.hour = 11
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Input: default@srcpart_date_hour
+PREHOOK: Input: default@srcpart_date_hour_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart join srcpart_date_hour on (srcpart.ds = srcpart_date_hour.ds and srcpart.hr = srcpart_date_hour.hr) where srcpart_date_hour.`date` = '2008-04-08' and srcpart_date_hour.hour = 11
+POSTHOOK: query: select count(*) from srcpart join srcpart_date_hour_n2 on (srcpart.ds = srcpart_date_hour_n2.ds and srcpart.hr = srcpart_date_hour_n2.hr) where srcpart_date_hour_n2.`date` = '2008-04-08' and srcpart_date_hour_n2.hour = 11
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Input: default@srcpart_date_hour
+POSTHOOK: Input: default@srcpart_date_hour_n2
 #### A masked pattern was here ####
 500
 PREHOOK: query: select count(*) from srcpart where ds = '2008-04-08' and hr = 11
@@ -1291,9 +1291,9 @@ POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 500
-PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = 'I DONT EXIST'
+PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = 'I DONT EXIST'
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = 'I DONT EXIST'
+POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = 'I DONT EXIST'
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -1342,7 +1342,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n8
                   filterExpr: ((date = 'I DONT EXIST') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -1430,28 +1430,28 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = 'I DONT EXIST'
+PREHOOK: query: select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = 'I DONT EXIST'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Input: default@srcpart_date
+PREHOOK: Input: default@srcpart_date_n8
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = 'I DONT EXIST'
+POSTHOOK: query: select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = 'I DONT EXIST'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Input: default@srcpart_date
+POSTHOOK: Input: default@srcpart_date_n8
 #### A masked pattern was here ####
 0
-PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = 'I DONT EXIST'
+PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = 'I DONT EXIST'
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = 'I DONT EXIST'
+POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = 'I DONT EXIST'
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -1500,7 +1500,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n8
                   filterExpr: ((date = 'I DONT EXIST') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -1573,23 +1573,23 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = 'I DONT EXIST'
+PREHOOK: query: select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = 'I DONT EXIST'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Input: default@srcpart_date
+PREHOOK: Input: default@srcpart_date_n8
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = 'I DONT EXIST'
+POSTHOOK: query: select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = 'I DONT EXIST'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Input: default@srcpart_date
+POSTHOOK: Input: default@srcpart_date_n8
 #### A masked pattern was here ####
 0
 PREHOOK: query: select count(*) from srcpart where ds = 'I DONT EXIST'
@@ -1601,9 +1601,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 #### A masked pattern was here ####
 0
-PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_double_hour on (srcpart.hr = cast(srcpart_double_hour.hr/2 as int)) where srcpart_double_hour.hour = 11
+PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_double_hour_n2 on (srcpart.hr = cast(srcpart_double_hour_n2.hr/2 as int)) where srcpart_double_hour_n2.hour = 11
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_double_hour on (srcpart.hr = cast(srcpart_double_hour.hr/2 as int)) where srcpart_double_hour.hour = 11
+POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_double_hour_n2 on (srcpart.hr = cast(srcpart_double_hour_n2.hr/2 as int)) where srcpart_double_hour_n2.hour = 11
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -1652,7 +1652,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_double_hour
+                  alias: srcpart_double_hour_n2
                   filterExpr: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 384 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -1740,28 +1740,28 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart join srcpart_double_hour on (srcpart.hr = cast(srcpart_double_hour.hr/2 as int)) where srcpart_double_hour.hour = 11
+PREHOOK: query: select count(*) from srcpart join srcpart_double_hour_n2 on (srcpart.hr = cast(srcpart_double_hour_n2.hr/2 as int)) where srcpart_double_hour_n2.hour = 11
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Input: default@srcpart_double_hour
+PREHOOK: Input: default@srcpart_double_hour_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart join srcpart_double_hour on (srcpart.hr = cast(srcpart_double_hour.hr/2 as int)) where srcpart_double_hour.hour = 11
+POSTHOOK: query: select count(*) from srcpart join srcpart_double_hour_n2 on (srcpart.hr = cast(srcpart_double_hour_n2.hr/2 as int)) where srcpart_double_hour_n2.hour = 11
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Input: default@srcpart_double_hour
+POSTHOOK: Input: default@srcpart_double_hour_n2
 #### A masked pattern was here ####
 1000
-PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_double_hour on (srcpart.hr*2 = srcpart_double_hour.hr) where srcpart_double_hour.hour = 11
+PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_double_hour_n2 on (srcpart.hr*2 = srcpart_double_hour_n2.hr) where srcpart_double_hour_n2.hour = 11
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_double_hour on (srcpart.hr*2 = srcpart_double_hour.hr) where srcpart_double_hour.hour = 11
+POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_double_hour_n2 on (srcpart.hr*2 = srcpart_double_hour_n2.hr) where srcpart_double_hour_n2.hour = 11
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -1810,7 +1810,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_double_hour
+                  alias: srcpart_double_hour_n2
                   filterExpr: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 384 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -1898,28 +1898,28 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart join srcpart_double_hour on (srcpart.hr*2 = srcpart_double_hour.hr) where srcpart_double_hour.hour = 11
+PREHOOK: query: select count(*) from srcpart join srcpart_double_hour_n2 on (srcpart.hr*2 = srcpart_double_hour_n2.hr) where srcpart_double_hour_n2.hour = 11
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Input: default@srcpart_double_hour
+PREHOOK: Input: default@srcpart_double_hour_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart join srcpart_double_hour on (srcpart.hr*2 = srcpart_double_hour.hr) where srcpart_double_hour.hour = 11
+POSTHOOK: query: select count(*) from srcpart join srcpart_double_hour_n2 on (srcpart.hr*2 = srcpart_double_hour_n2.hr) where srcpart_double_hour_n2.hour = 11
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Input: default@srcpart_double_hour
+POSTHOOK: Input: default@srcpart_double_hour_n2
 #### A masked pattern was here ####
 1000
-PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_double_hour on (srcpart.hr = cast(srcpart_double_hour.hr/2 as int)) where srcpart_double_hour.hour = 11
+PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_double_hour_n2 on (srcpart.hr = cast(srcpart_double_hour_n2.hr/2 as int)) where srcpart_double_hour_n2.hour = 11
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_double_hour on (srcpart.hr = cast(srcpart_double_hour.hr/2 as int)) where srcpart_double_hour.hour = 11
+POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_double_hour_n2 on (srcpart.hr = cast(srcpart_double_hour_n2.hr/2 as int)) where srcpart_double_hour_n2.hour = 11
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -1968,7 +1968,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_double_hour
+                  alias: srcpart_double_hour_n2
                   filterExpr: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 384 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -2041,28 +2041,28 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart join srcpart_double_hour on (srcpart.hr = cast(srcpart_double_hour.hr/2 as int)) where srcpart_double_hour.hour = 11
+PREHOOK: query: select count(*) from srcpart join srcpart_double_hour_n2 on (srcpart.hr = cast(srcpart_double_hour_n2.hr/2 as int)) where srcpart_double_hour_n2.hour = 11
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Input: default@srcpart_double_hour
+PREHOOK: Input: default@srcpart_double_hour_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart join srcpart_double_hour on (srcpart.hr = cast(srcpart_double_hour.hr/2 as int)) where srcpart_double_hour.hour = 11
+POSTHOOK: query: select count(*) from srcpart join srcpart_double_hour_n2 on (srcpart.hr = cast(srcpart_double_hour_n2.hr/2 as int)) where srcpart_double_hour_n2.hour = 11
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Input: default@srcpart_double_hour
+POSTHOOK: Input: default@srcpart_double_hour_n2
 #### A masked pattern was here ####
 1000
-PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_double_hour on (srcpart.hr*2 = srcpart_double_hour.hr) where srcpart_double_hour.hour = 11
+PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_double_hour_n2 on (srcpart.hr*2 = srcpart_double_hour_n2.hr) where srcpart_double_hour_n2.hour = 11
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_double_hour on (srcpart.hr*2 = srcpart_double_hour.hr) where srcpart_double_hour.hour = 11
+POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_double_hour_n2 on (srcpart.hr*2 = srcpart_double_hour_n2.hr) where srcpart_double_hour_n2.hour = 11
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -2111,7 +2111,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_double_hour
+                  alias: srcpart_double_hour_n2
                   filterExpr: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 384 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -2184,23 +2184,23 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart join srcpart_double_hour on (srcpart.hr*2 = srcpart_double_hour.hr) where srcpart_double_hour.hour = 11
+PREHOOK: query: select count(*) from srcpart join srcpart_double_hour_n2 on (srcpart.hr*2 = srcpart_double_hour_n2.hr) where srcpart_double_hour_n2.hour = 11
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Input: default@srcpart_double_hour
+PREHOOK: Input: default@srcpart_double_hour_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart join srcpart_double_hour on (srcpart.hr*2 = srcpart_double_hour.hr) where srcpart_double_hour.hour = 11
+POSTHOOK: query: select count(*) from srcpart join srcpart_double_hour_n2 on (srcpart.hr*2 = srcpart_double_hour_n2.hr) where srcpart_double_hour_n2.hour = 11
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Input: default@srcpart_double_hour
+POSTHOOK: Input: default@srcpart_double_hour_n2
 #### A masked pattern was here ####
 1000
 PREHOOK: query: select count(*) from srcpart where hr = 11
@@ -2216,9 +2216,9 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 #### A masked pattern was here ####
 1000
-PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_double_hour on (cast(srcpart.hr*2 as string) = cast(srcpart_double_hour.hr as string)) where srcpart_double_hour.hour = 11
+PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_double_hour_n2 on (cast(srcpart.hr*2 as string) = cast(srcpart_double_hour_n2.hr as string)) where srcpart_double_hour_n2.hour = 11
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_double_hour on (cast(srcpart.hr*2 as string) = cast(srcpart_double_hour.hr as string)) where srcpart_double_hour.hour = 11
+POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_double_hour_n2 on (cast(srcpart.hr*2 as string) = cast(srcpart_double_hour_n2.hr as string)) where srcpart_double_hour_n2.hour = 11
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -2267,7 +2267,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_double_hour
+                  alias: srcpart_double_hour_n2
                   filterExpr: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 384 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -2355,23 +2355,23 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart join srcpart_double_hour on (cast(srcpart.hr*2 as string) = cast(srcpart_double_hour.hr as string)) where srcpart_double_hour.hour = 11
+PREHOOK: query: select count(*) from srcpart join srcpart_double_hour_n2 on (cast(srcpart.hr*2 as string) = cast(srcpart_double_hour_n2.hr as string)) where srcpart_double_hour_n2.hour = 11
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Input: default@srcpart_double_hour
+PREHOOK: Input: default@srcpart_double_hour_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart join srcpart_double_hour on (cast(srcpart.hr*2 as string) = cast(srcpart_double_hour.hr as string)) where srcpart_double_hour.hour = 11
+POSTHOOK: query: select count(*) from srcpart join srcpart_double_hour_n2 on (cast(srcpart.hr*2 as string) = cast(srcpart_double_hour_n2.hr as string)) where srcpart_double_hour_n2.hour = 11
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Input: default@srcpart_double_hour
+POSTHOOK: Input: default@srcpart_double_hour_n2
 #### A masked pattern was here ####
 1000
 PREHOOK: query: select count(*) from srcpart where cast(hr as string) = 11
@@ -2537,9 +2537,9 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 1000
 Warning: Shuffle Join MERGEJOIN[15][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart, srcpart_date_hour where (srcpart_date_hour.`date` = '2008-04-08' and srcpart_date_hour.hour = 11) and (srcpart.ds = srcpart_date_hour.ds or srcpart.hr = srcpart_date_hour.hr)
+PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart, srcpart_date_hour_n2 where (srcpart_date_hour_n2.`date` = '2008-04-08' and srcpart_date_hour_n2.hour = 11) and (srcpart.ds = srcpart_date_hour_n2.ds or srcpart.hr = srcpart_date_hour_n2.hr)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart, srcpart_date_hour where (srcpart_date_hour.`date` = '2008-04-08' and srcpart_date_hour.hour = 11) and (srcpart.ds = srcpart_date_hour.ds or srcpart.hr = srcpart_date_hour.hr)
+POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart, srcpart_date_hour_n2 where (srcpart_date_hour_n2.`date` = '2008-04-08' and srcpart_date_hour_n2.hour = 11) and (srcpart.ds = srcpart_date_hour_n2.ds or srcpart.hr = srcpart_date_hour_n2.hr)
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -2586,7 +2586,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date_hour
+                  alias: srcpart_date_hour_n2
                   filterExpr: ((date = '2008-04-08') and (UDFToDouble(hour) = 11.0D)) (type: boolean)
                   Statistics: Num rows: 4 Data size: 2944 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -2663,28 +2663,28 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join MERGEJOIN[15][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: select count(*) from srcpart, srcpart_date_hour where (srcpart_date_hour.`date` = '2008-04-08' and srcpart_date_hour.hour = 11) and (srcpart.ds = srcpart_date_hour.ds or srcpart.hr = srcpart_date_hour.hr)
+PREHOOK: query: select count(*) from srcpart, srcpart_date_hour_n2 where (srcpart_date_hour_n2.`date` = '2008-04-08' and srcpart_date_hour_n2.hour = 11) and (srcpart.ds = srcpart_date_hour_n2.ds or srcpart.hr = srcpart_date_hour_n2.hr)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Input: default@srcpart_date_hour
+PREHOOK: Input: default@srcpart_date_hour_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart, srcpart_date_hour where (srcpart_date_hour.`date` = '2008-04-08' and srcpart_date_hour.hour = 11) and (srcpart.ds = srcpart_date_hour.ds or srcpart.hr = srcpart_date_hour.hr)
+POSTHOOK: query: select count(*) from srcpart, srcpart_date_hour_n2 where (srcpart_date_hour_n2.`date` = '2008-04-08' and srcpart_date_hour_n2.hour = 11) and (srcpart.ds = srcpart_date_hour_n2.ds or srcpart.hr = srcpart_date_hour_n2.hr)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Input: default@srcpart_date_hour
+POSTHOOK: Input: default@srcpart_date_hour_n2
 #### A masked pattern was here ####
 1500
-PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart, srcpart_date_hour where srcpart_date_hour.`date` = '2008-04-08' and srcpart_date_hour.hour = 11 and srcpart.ds = srcpart_date_hour.ds and srcpart.hr = srcpart_date_hour.hr
+PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart, srcpart_date_hour_n2 where srcpart_date_hour_n2.`date` = '2008-04-08' and srcpart_date_hour_n2.hour = 11 and srcpart.ds = srcpart_date_hour_n2.ds and srcpart.hr = srcpart_date_hour_n2.hr
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart, srcpart_date_hour where srcpart_date_hour.`date` = '2008-04-08' and srcpart_date_hour.hour = 11 and srcpart.ds = srcpart_date_hour.ds and srcpart.hr = srcpart_date_hour.hr
+POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart, srcpart_date_hour_n2 where srcpart_date_hour_n2.`date` = '2008-04-08' and srcpart_date_hour_n2.hour = 11 and srcpart.ds = srcpart_date_hour_n2.ds and srcpart.hr = srcpart_date_hour_n2.hr
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -2732,7 +2732,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date_hour
+                  alias: srcpart_date_hour_n2
                   filterExpr: ((date = '2008-04-08') and (UDFToDouble(hour) = 11.0D) and ds is not null and hr is not null) (type: boolean)
                   Statistics: Num rows: 4 Data size: 2944 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -2835,28 +2835,28 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart, srcpart_date_hour where srcpart_date_hour.`date` = '2008-04-08' and srcpart_date_hour.hour = 11 and srcpart.ds = srcpart_date_hour.ds and srcpart.hr = srcpart_date_hour.hr
+PREHOOK: query: select count(*) from srcpart, srcpart_date_hour_n2 where srcpart_date_hour_n2.`date` = '2008-04-08' and srcpart_date_hour_n2.hour = 11 and srcpart.ds = srcpart_date_hour_n2.ds and srcpart.hr = srcpart_date_hour_n2.hr
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Input: default@srcpart_date_hour
+PREHOOK: Input: default@srcpart_date_hour_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart, srcpart_date_hour where srcpart_date_hour.`date` = '2008-04-08' and srcpart_date_hour.hour = 11 and srcpart.ds = srcpart_date_hour.ds and srcpart.hr = srcpart_date_hour.hr
+POSTHOOK: query: select count(*) from srcpart, srcpart_date_hour_n2 where srcpart_date_hour_n2.`date` = '2008-04-08' and srcpart_date_hour_n2.hour = 11 and srcpart.ds = srcpart_date_hour_n2.ds and srcpart.hr = srcpart_date_hour_n2.hr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Input: default@srcpart_date_hour
+POSTHOOK: Input: default@srcpart_date_hour_n2
 #### A masked pattern was here ####
 500
-PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart left join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart left join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = '2008-04-08'
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart left join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart left join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -2905,7 +2905,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n8
                   filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -2993,9 +2993,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart_date left join srcpart on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart_date_n8 left join srcpart on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = '2008-04-08'
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart_date left join srcpart on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart_date_n8 left join srcpart on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -3017,7 +3017,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n8
                   filterExpr: (date = '2008-04-08') (type: boolean)
                   Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -3131,9 +3131,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart full outer join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart full outer join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = '2008-04-08'
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart full outer join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart full outer join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -3181,7 +3181,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n8
                   filterExpr: (date = '2008-04-08') (type: boolean)
                   Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -3269,11 +3269,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11 and srcpart.hr = 11
+PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) join srcpart_hour_n2 on (srcpart.hr = srcpart_hour_n2.hr) 
+where srcpart_date_n8.`date` = '2008-04-08' and srcpart_hour_n2.hour = 11 and srcpart.hr = 11
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11 and srcpart.hr = 11
+POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) join srcpart_hour_n2 on (srcpart.hr = srcpart_hour_n2.hr) 
+where srcpart_date_n8.`date` = '2008-04-08' and srcpart_hour_n2.hour = 11 and srcpart.hr = 11
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -3323,7 +3323,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n8
                   filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -3367,7 +3367,7 @@ STAGE PLANS:
         Map 6 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_hour
+                  alias: srcpart_hour_n2
                   filterExpr: ((UDFToDouble(hour) = 11.0D) and (UDFToDouble(hr) = 11.0D)) (type: boolean)
                   Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -3471,30 +3471,30 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11 and srcpart.hr = 11
+PREHOOK: query: select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) join srcpart_hour_n2 on (srcpart.hr = srcpart_hour_n2.hr) 
+where srcpart_date_n8.`date` = '2008-04-08' and srcpart_hour_n2.hour = 11 and srcpart.hr = 11
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
-PREHOOK: Input: default@srcpart_date
-PREHOOK: Input: default@srcpart_hour
+PREHOOK: Input: default@srcpart_date_n8
+PREHOOK: Input: default@srcpart_hour_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11 and srcpart.hr = 11
+POSTHOOK: query: select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) join srcpart_hour_n2 on (srcpart.hr = srcpart_hour_n2.hr) 
+where srcpart_date_n8.`date` = '2008-04-08' and srcpart_hour_n2.hour = 11 and srcpart.hr = 11
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
-POSTHOOK: Input: default@srcpart_date
-POSTHOOK: Input: default@srcpart_hour
+POSTHOOK: Input: default@srcpart_date_n8
+POSTHOOK: Input: default@srcpart_hour_n2
 #### A masked pattern was here ####
 500
-PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart.hr = 13
+PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) join srcpart_hour_n2 on (srcpart.hr = srcpart_hour_n2.hr) 
+where srcpart_date_n8.`date` = '2008-04-08' and srcpart.hr = 13
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart.hr = 13
+POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) join srcpart_hour_n2 on (srcpart.hr = srcpart_hour_n2.hr) 
+where srcpart_date_n8.`date` = '2008-04-08' and srcpart.hr = 13
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -3517,7 +3517,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_hour
+                  alias: srcpart_hour_n2
                   filterExpr: (UDFToDouble(hr) = 13.0D) (type: boolean)
                   Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -3574,7 +3574,7 @@ STAGE PLANS:
         Map 6 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n8
                   filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -3663,19 +3663,19 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart.hr = 13
+PREHOOK: query: select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) join srcpart_hour_n2 on (srcpart.hr = srcpart_hour_n2.hr) 
+where srcpart_date_n8.`date` = '2008-04-08' and srcpart.hr = 13
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
-PREHOOK: Input: default@srcpart_date
-PREHOOK: Input: default@srcpart_hour
+PREHOOK: Input: default@srcpart_date_n8
+PREHOOK: Input: default@srcpart_hour_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart.hr = 13
+POSTHOOK: query: select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) join srcpart_hour_n2 on (srcpart.hr = srcpart_hour_n2.hr) 
+where srcpart_date_n8.`date` = '2008-04-08' and srcpart.hr = 13
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
-POSTHOOK: Input: default@srcpart_date
-POSTHOOK: Input: default@srcpart_hour
+POSTHOOK: Input: default@srcpart_date_n8
+POSTHOOK: Input: default@srcpart_hour_n2
 #### A masked pattern was here ####
 0
 PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart where srcpart.ds in (select max(srcpart.ds) from srcpart union all select min(srcpart.ds) from srcpart)
@@ -4542,9 +4542,9 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 2008-04-08
 2008-04-09
 2008-04-09
-PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = '2008-04-08'
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -4606,7 +4606,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n8
                   filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -4675,23 +4675,23 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: query: select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = '2008-04-08'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Input: default@srcpart_date
+PREHOOK: Input: default@srcpart_date_n8
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: query: select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Input: default@srcpart_date
+POSTHOOK: Input: default@srcpart_date_n8
 #### A masked pattern was here ####
 1000
 PREHOOK: query: select count(*) from srcpart where ds = '2008-04-08'
@@ -4707,11 +4707,11 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 1000
-PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11
+PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) join srcpart_hour_n2 on (srcpart.hr = srcpart_hour_n2.hr) 
+where srcpart_date_n8.`date` = '2008-04-08' and srcpart_hour_n2.hour = 11
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11
+POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) join srcpart_hour_n2 on (srcpart.hr = srcpart_hour_n2.hr) 
+where srcpart_date_n8.`date` = '2008-04-08' and srcpart_hour_n2.hour = 11
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -4782,7 +4782,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n8
                   filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -4826,7 +4826,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_hour
+                  alias: srcpart_hour_n2
                   filterExpr: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -4895,27 +4895,27 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11
+PREHOOK: query: select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) join srcpart_hour_n2 on (srcpart.hr = srcpart_hour_n2.hr) 
+where srcpart_date_n8.`date` = '2008-04-08' and srcpart_hour_n2.hour = 11
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Input: default@srcpart_date
-PREHOOK: Input: default@srcpart_hour
+PREHOOK: Input: default@srcpart_date_n8
+PREHOOK: Input: default@srcpart_hour_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11
+POSTHOOK: query: select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) join srcpart_hour_n2 on (srcpart.hr = srcpart_hour_n2.hr) 
+where srcpart_date_n8.`date` = '2008-04-08' and srcpart_hour_n2.hour = 11
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Input: default@srcpart_date
-POSTHOOK: Input: default@srcpart_hour
+POSTHOOK: Input: default@srcpart_date_n8
+POSTHOOK: Input: default@srcpart_hour_n2
 #### A masked pattern was here ####
 500
 PREHOOK: query: select count(*) from srcpart where hr = 11 and ds = '2008-04-08'
@@ -4929,9 +4929,9 @@ POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 500
-PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_hour on (srcpart.ds = srcpart_date_hour.ds and srcpart.hr = srcpart_date_hour.hr) where srcpart_date_hour.`date` = '2008-04-08' and srcpart_date_hour.hour = 11
+PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_hour_n2 on (srcpart.ds = srcpart_date_hour_n2.ds and srcpart.hr = srcpart_date_hour_n2.hr) where srcpart_date_hour_n2.`date` = '2008-04-08' and srcpart_date_hour_n2.hour = 11
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_hour on (srcpart.ds = srcpart_date_hour.ds and srcpart.hr = srcpart_date_hour.hr) where srcpart_date_hour.`date` = '2008-04-08' and srcpart_date_hour.hour = 11
+POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_hour_n2 on (srcpart.ds = srcpart_date_hour_n2.ds and srcpart.hr = srcpart_date_hour_n2.hr) where srcpart_date_hour_n2.`date` = '2008-04-08' and srcpart_date_hour_n2.hour = 11
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -4992,7 +4992,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date_hour
+                  alias: srcpart_date_hour_n2
                   filterExpr: ((date = '2008-04-08') and (UDFToDouble(hour) = 11.0D) and ds is not null and hr is not null) (type: boolean)
                   Statistics: Num rows: 4 Data size: 2944 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -5076,23 +5076,23 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart join srcpart_date_hour on (srcpart.ds = srcpart_date_hour.ds and srcpart.hr = srcpart_date_hour.hr) where srcpart_date_hour.`date` = '2008-04-08' and srcpart_date_hour.hour = 11
+PREHOOK: query: select count(*) from srcpart join srcpart_date_hour_n2 on (srcpart.ds = srcpart_date_hour_n2.ds and srcpart.hr = srcpart_date_hour_n2.hr) where srcpart_date_hour_n2.`date` = '2008-04-08' and srcpart_date_hour_n2.hour = 11
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Input: default@srcpart_date_hour
+PREHOOK: Input: default@srcpart_date_hour_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart join srcpart_date_hour on (srcpart.ds = srcpart_date_hour.ds and srcpart.hr = srcpart_date_hour.hr) where srcpart_date_hour.`date` = '2008-04-08' and srcpart_date_hour.hour = 11
+POSTHOOK: query: select count(*) from srcpart join srcpart_date_hour_n2 on (srcpart.ds = srcpart_date_hour_n2.ds and srcpart.hr = srcpart_date_hour_n2.hr) where srcpart_date_hour_n2.`date` = '2008-04-08' and srcpart_date_hour_n2.hour = 11
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Input: default@srcpart_date_hour
+POSTHOOK: Input: default@srcpart_date_hour_n2
 #### A masked pattern was here ####
 500
 PREHOOK: query: select count(*) from srcpart where ds = '2008-04-08' and hr = 11
@@ -5106,9 +5106,9 @@ POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 500
-PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = 'I DONT EXIST'
+PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = 'I DONT EXIST'
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = 'I DONT EXIST'
+POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = 'I DONT EXIST'
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -5170,7 +5170,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n8
                   filterExpr: ((date = 'I DONT EXIST') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -5239,28 +5239,28 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = 'I DONT EXIST'
+PREHOOK: query: select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = 'I DONT EXIST'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Input: default@srcpart_date
+PREHOOK: Input: default@srcpart_date_n8
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = 'I DONT EXIST'
+POSTHOOK: query: select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = 'I DONT EXIST'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Input: default@srcpart_date
+POSTHOOK: Input: default@srcpart_date_n8
 #### A masked pattern was here ####
 0
-PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_double_hour on (srcpart.hr = cast(srcpart_double_hour.hr/2 as int)) where srcpart_double_hour.hour = 11
+PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_double_hour_n2 on (srcpart.hr = cast(srcpart_double_hour_n2.hr/2 as int)) where srcpart_double_hour_n2.hour = 11
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_double_hour on (srcpart.hr = cast(srcpart_double_hour.hr/2 as int)) where srcpart_double_hour.hour = 11
+POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_double_hour_n2 on (srcpart.hr = cast(srcpart_double_hour_n2.hr/2 as int)) where srcpart_double_hour_n2.hour = 11
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -5322,7 +5322,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_double_hour
+                  alias: srcpart_double_hour_n2
                   filterExpr: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 384 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -5391,28 +5391,28 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart join srcpart_double_hour on (srcpart.hr = cast(srcpart_double_hour.hr/2 as int)) where srcpart_double_hour.hour = 11
+PREHOOK: query: select count(*) from srcpart join srcpart_double_hour_n2 on (srcpart.hr = cast(srcpart_double_hour_n2.hr/2 as int)) where srcpart_double_hour_n2.hour = 11
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Input: default@srcpart_double_hour
+PREHOOK: Input: default@srcpart_double_hour_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart join srcpart_double_hour on (srcpart.hr = cast(srcpart_double_hour.hr/2 as int)) where srcpart_double_hour.hour = 11
+POSTHOOK: query: select count(*) from srcpart join srcpart_double_hour_n2 on (srcpart.hr = cast(srcpart_double_hour_n2.hr/2 as int)) where srcpart_double_hour_n2.hour = 11
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Input: default@srcpart_double_hour
+POSTHOOK: Input: default@srcpart_double_hour_n2
 #### A masked pattern was here ####
 1000
-PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_double_hour on (srcpart.hr*2 = srcpart_double_hour.hr) where srcpart_double_hour.hour = 11
+PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_double_hour_n2 on (srcpart.hr*2 = srcpart_double_hour_n2.hr) where srcpart_double_hour_n2.hour = 11
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_double_hour on (srcpart.hr*2 = srcpart_double_hour.hr) where srcpart_double_hour.hour = 11
+POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_double_hour_n2 on (srcpart.hr*2 = srcpart_double_hour_n2.hr) where srcpart_double_hour_n2.hour = 11
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -5474,7 +5474,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_double_hour
+                  alias: srcpart_double_hour_n2
                   filterExpr: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 384 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -5543,23 +5543,23 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart join srcpart_double_hour on (srcpart.hr*2 = srcpart_double_hour.hr) where srcpart_double_hour.hour = 11
+PREHOOK: query: select count(*) from srcpart join srcpart_double_hour_n2 on (srcpart.hr*2 = srcpart_double_hour_n2.hr) where srcpart_double_hour_n2.hour = 11
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Input: default@srcpart_double_hour
+PREHOOK: Input: default@srcpart_double_hour_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart join srcpart_double_hour on (srcpart.hr*2 = srcpart_double_hour.hr) where srcpart_double_hour.hour = 11
+POSTHOOK: query: select count(*) from srcpart join srcpart_double_hour_n2 on (srcpart.hr*2 = srcpart_double_hour_n2.hr) where srcpart_double_hour_n2.hour = 11
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Input: default@srcpart_double_hour
+POSTHOOK: Input: default@srcpart_double_hour_n2
 #### A masked pattern was here ####
 1000
 PREHOOK: query: select count(*) from srcpart where hr = 11
@@ -5724,9 +5724,9 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 1000
-PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart left join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart left join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = '2008-04-08'
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart left join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart left join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -5788,7 +5788,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n8
                   filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -5857,9 +5857,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart_date left join srcpart on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart_date_n8 left join srcpart on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = '2008-04-08'
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart_date left join srcpart on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart_date_n8 left join srcpart on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -5881,7 +5881,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n8
                   filterExpr: (date = '2008-04-08') (type: boolean)
                   Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -5974,9 +5974,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart full outer join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart full outer join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = '2008-04-08'
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart full outer join srcpart_date on (srcpart.ds = srcpart_date.ds) where srcpart_date.`date` = '2008-04-08'
+POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart full outer join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) where srcpart_date_n8.`date` = '2008-04-08'
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -6024,7 +6024,7 @@ STAGE PLANS:
         Map 2 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n8
                   filterExpr: (date = '2008-04-08') (type: boolean)
                   Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -6091,11 +6091,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11 and srcpart.hr = 11
+PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) join srcpart_hour_n2 on (srcpart.hr = srcpart_hour_n2.hr) 
+where srcpart_date_n8.`date` = '2008-04-08' and srcpart_hour_n2.hour = 11 and srcpart.hr = 11
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11 and srcpart.hr = 11
+POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) join srcpart_hour_n2 on (srcpart.hr = srcpart_hour_n2.hr) 
+where srcpart_date_n8.`date` = '2008-04-08' and srcpart_hour_n2.hour = 11 and srcpart.hr = 11
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -6166,7 +6166,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n8
                   filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -6210,7 +6210,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_hour
+                  alias: srcpart_hour_n2
                   filterExpr: ((UDFToDouble(hour) = 11.0D) and (UDFToDouble(hr) = 11.0D)) (type: boolean)
                   Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -6279,30 +6279,30 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11 and srcpart.hr = 11
+PREHOOK: query: select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) join srcpart_hour_n2 on (srcpart.hr = srcpart_hour_n2.hr) 
+where srcpart_date_n8.`date` = '2008-04-08' and srcpart_hour_n2.hour = 11 and srcpart.hr = 11
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
-PREHOOK: Input: default@srcpart_date
-PREHOOK: Input: default@srcpart_hour
+PREHOOK: Input: default@srcpart_date_n8
+PREHOOK: Input: default@srcpart_hour_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart_hour.hour = 11 and srcpart.hr = 11
+POSTHOOK: query: select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) join srcpart_hour_n2 on (srcpart.hr = srcpart_hour_n2.hr) 
+where srcpart_date_n8.`date` = '2008-04-08' and srcpart_hour_n2.hour = 11 and srcpart.hr = 11
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
-POSTHOOK: Input: default@srcpart_date
-POSTHOOK: Input: default@srcpart_hour
+POSTHOOK: Input: default@srcpart_date_n8
+POSTHOOK: Input: default@srcpart_hour_n2
 #### A masked pattern was here ####
 500
-PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart.hr = 13
+PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) join srcpart_hour_n2 on (srcpart.hr = srcpart_hour_n2.hr) 
+where srcpart_date_n8.`date` = '2008-04-08' and srcpart.hr = 13
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart.hr = 13
+POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) join srcpart_hour_n2 on (srcpart.hr = srcpart_hour_n2.hr) 
+where srcpart_date_n8.`date` = '2008-04-08' and srcpart.hr = 13
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -6325,7 +6325,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_hour
+                  alias: srcpart_hour_n2
                   filterExpr: (UDFToDouble(hr) = 13.0D) (type: boolean)
                   Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -6392,7 +6392,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n8
                   filterExpr: ((date = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -6459,19 +6459,19 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart.hr = 13
+PREHOOK: query: select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) join srcpart_hour_n2 on (srcpart.hr = srcpart_hour_n2.hr) 
+where srcpart_date_n8.`date` = '2008-04-08' and srcpart.hr = 13
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
-PREHOOK: Input: default@srcpart_date
-PREHOOK: Input: default@srcpart_hour
+PREHOOK: Input: default@srcpart_date_n8
+PREHOOK: Input: default@srcpart_hour_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart join srcpart_date on (srcpart.ds = srcpart_date.ds) join srcpart_hour on (srcpart.hr = srcpart_hour.hr) 
-where srcpart_date.`date` = '2008-04-08' and srcpart.hr = 13
+POSTHOOK: query: select count(*) from srcpart join srcpart_date_n8 on (srcpart.ds = srcpart_date_n8.ds) join srcpart_hour_n2 on (srcpart.hr = srcpart_hour_n2.hr) 
+where srcpart_date_n8.`date` = '2008-04-08' and srcpart.hr = 13
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
-POSTHOOK: Input: default@srcpart_date
-POSTHOOK: Input: default@srcpart_hour
+POSTHOOK: Input: default@srcpart_date_n8
+POSTHOOK: Input: default@srcpart_hour_n2
 #### A masked pattern was here ####
 0
 PREHOOK: query: EXPLAIN VECTORIZATION select distinct(ds) from srcpart where srcpart.ds in (select max(srcpart.ds) from srcpart union all select min(srcpart.ds) from srcpart)
@@ -6731,44 +6731,44 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 2008-04-09
 2008-04-08
-PREHOOK: query: create table srcpart_orc (key int, value string) partitioned by (ds string, hr int) stored as orc
+PREHOOK: query: create table srcpart_orc_n0 (key int, value string) partitioned by (ds string, hr int) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@srcpart_orc
-POSTHOOK: query: create table srcpart_orc (key int, value string) partitioned by (ds string, hr int) stored as orc
+PREHOOK: Output: default@srcpart_orc_n0
+POSTHOOK: query: create table srcpart_orc_n0 (key int, value string) partitioned by (ds string, hr int) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcpart_orc
-PREHOOK: query: insert into table srcpart_orc partition (ds, hr) select key, value, ds, hr from srcpart
+POSTHOOK: Output: default@srcpart_orc_n0
+PREHOOK: query: insert into table srcpart_orc_n0 partition (ds, hr) select key, value, ds, hr from srcpart
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Output: default@srcpart_orc
-POSTHOOK: query: insert into table srcpart_orc partition (ds, hr) select key, value, ds, hr from srcpart
+PREHOOK: Output: default@srcpart_orc_n0
+POSTHOOK: query: insert into table srcpart_orc_n0 partition (ds, hr) select key, value, ds, hr from srcpart
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Output: default@srcpart_orc@ds=2008-04-08/hr=11
-POSTHOOK: Output: default@srcpart_orc@ds=2008-04-08/hr=12
-POSTHOOK: Output: default@srcpart_orc@ds=2008-04-09/hr=11
-POSTHOOK: Output: default@srcpart_orc@ds=2008-04-09/hr=12
-POSTHOOK: Lineage: srcpart_orc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: srcpart_orc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: srcpart_orc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: srcpart_orc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: srcpart_orc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: srcpart_orc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: srcpart_orc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: srcpart_orc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart_orc join srcpart_date_hour on (srcpart_orc.ds = srcpart_date_hour.ds and srcpart_orc.hr = srcpart_date_hour.hr) where srcpart_date_hour.hour = 11 and (srcpart_date_hour.`date` = '2008-04-08' or srcpart_date_hour.`date` = '2008-04-09')
+POSTHOOK: Output: default@srcpart_orc_n0@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@srcpart_orc_n0@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@srcpart_orc_n0@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@srcpart_orc_n0@ds=2008-04-09/hr=12
+POSTHOOK: Lineage: srcpart_orc_n0 PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_orc_n0 PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_orc_n0 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_orc_n0 PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_orc_n0 PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_orc_n0 PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_orc_n0 PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_orc_n0 PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart_orc_n0 join srcpart_date_hour_n2 on (srcpart_orc_n0.ds = srcpart_date_hour_n2.ds and srcpart_orc_n0.hr = srcpart_date_hour_n2.hr) where srcpart_date_hour_n2.hour = 11 and (srcpart_date_hour_n2.`date` = '2008-04-08' or srcpart_date_hour_n2.`date` = '2008-04-09')
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart_orc join srcpart_date_hour on (srcpart_orc.ds = srcpart_date_hour.ds and srcpart_orc.hr = srcpart_date_hour.hr) where srcpart_date_hour.hour = 11 and (srcpart_date_hour.`date` = '2008-04-08' or srcpart_date_hour.`date` = '2008-04-09')
+POSTHOOK: query: EXPLAIN VECTORIZATION select count(*) from srcpart_orc_n0 join srcpart_date_hour_n2 on (srcpart_orc_n0.ds = srcpart_date_hour_n2.ds and srcpart_orc_n0.hr = srcpart_date_hour_n2.hr) where srcpart_date_hour_n2.hour = 11 and (srcpart_date_hour_n2.`date` = '2008-04-08' or srcpart_date_hour_n2.`date` = '2008-04-09')
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: false
@@ -6790,7 +6790,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_orc
+                  alias: srcpart_orc_n0
                   Statistics: Num rows: 2000 Data size: 564000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: ds (type: string), hr (type: int)
@@ -6819,7 +6819,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date_hour
+                  alias: srcpart_date_hour_n2
                   filterExpr: (((date = '2008-04-08') or (date = '2008-04-09')) and (UDFToDouble(hour) = 11.0D) and ds is not null and hr is not null) (type: boolean)
                   Statistics: Num rows: 4 Data size: 2944 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -6845,7 +6845,7 @@ STAGE PLANS:
                           Statistics: Num rows: 2 Data size: 1472 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
                             Target column: ds (string)
-                            Target Input: srcpart_orc
+                            Target Input: srcpart_orc_n0
                             Partition key expr: ds
                             Statistics: Num rows: 2 Data size: 1472 Basic stats: COMPLETE Column stats: NONE
                             Target Vertex: Map 1
@@ -6860,7 +6860,7 @@ STAGE PLANS:
                           Statistics: Num rows: 2 Data size: 1472 Basic stats: COMPLETE Column stats: NONE
                           Dynamic Partitioning Event Operator
                             Target column: hr (int)
-                            Target Input: srcpart_orc
+                            Target Input: srcpart_orc_n0
                             Partition key expr: UDFToDouble(hr)
                             Statistics: Num rows: 2 Data size: 1472 Basic stats: COMPLETE Column stats: NONE
                             Target Vertex: Map 1
@@ -6888,23 +6888,23 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart_orc join srcpart_date_hour on (srcpart_orc.ds = srcpart_date_hour.ds and srcpart_orc.hr = srcpart_date_hour.hr) where srcpart_date_hour.hour = 11 and (srcpart_date_hour.`date` = '2008-04-08' or srcpart_date_hour.`date` = '2008-04-09')
+PREHOOK: query: select count(*) from srcpart_orc_n0 join srcpart_date_hour_n2 on (srcpart_orc_n0.ds = srcpart_date_hour_n2.ds and srcpart_orc_n0.hr = srcpart_date_hour_n2.hr) where srcpart_date_hour_n2.hour = 11 and (srcpart_date_hour_n2.`date` = '2008-04-08' or srcpart_date_hour_n2.`date` = '2008-04-09')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcpart_date_hour
-PREHOOK: Input: default@srcpart_orc
-PREHOOK: Input: default@srcpart_orc@ds=2008-04-08/hr=11
-PREHOOK: Input: default@srcpart_orc@ds=2008-04-08/hr=12
-PREHOOK: Input: default@srcpart_orc@ds=2008-04-09/hr=11
-PREHOOK: Input: default@srcpart_orc@ds=2008-04-09/hr=12
+PREHOOK: Input: default@srcpart_date_hour_n2
+PREHOOK: Input: default@srcpart_orc_n0
+PREHOOK: Input: default@srcpart_orc_n0@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart_orc_n0@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart_orc_n0@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart_orc_n0@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart_orc join srcpart_date_hour on (srcpart_orc.ds = srcpart_date_hour.ds and srcpart_orc.hr = srcpart_date_hour.hr) where srcpart_date_hour.hour = 11 and (srcpart_date_hour.`date` = '2008-04-08' or srcpart_date_hour.`date` = '2008-04-09')
+POSTHOOK: query: select count(*) from srcpart_orc_n0 join srcpart_date_hour_n2 on (srcpart_orc_n0.ds = srcpart_date_hour_n2.ds and srcpart_orc_n0.hr = srcpart_date_hour_n2.hr) where srcpart_date_hour_n2.hour = 11 and (srcpart_date_hour_n2.`date` = '2008-04-08' or srcpart_date_hour_n2.`date` = '2008-04-09')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcpart_date_hour
-POSTHOOK: Input: default@srcpart_orc
-POSTHOOK: Input: default@srcpart_orc@ds=2008-04-08/hr=11
-POSTHOOK: Input: default@srcpart_orc@ds=2008-04-08/hr=12
-POSTHOOK: Input: default@srcpart_orc@ds=2008-04-09/hr=11
-POSTHOOK: Input: default@srcpart_orc@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@srcpart_date_hour_n2
+POSTHOOK: Input: default@srcpart_orc_n0
+POSTHOOK: Input: default@srcpart_orc_n0@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart_orc_n0@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart_orc_n0@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart_orc_n0@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 1000
 PREHOOK: query: select count(*) from srcpart where (ds = '2008-04-08' or ds = '2008-04-09') and hr = 11
@@ -6920,43 +6920,43 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 #### A masked pattern was here ####
 1000
-PREHOOK: query: drop table srcpart_orc
+PREHOOK: query: drop table srcpart_orc_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@srcpart_orc
-PREHOOK: Output: default@srcpart_orc
-POSTHOOK: query: drop table srcpart_orc
+PREHOOK: Input: default@srcpart_orc_n0
+PREHOOK: Output: default@srcpart_orc_n0
+POSTHOOK: query: drop table srcpart_orc_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@srcpart_orc
-POSTHOOK: Output: default@srcpart_orc
-PREHOOK: query: drop table srcpart_date
+POSTHOOK: Input: default@srcpart_orc_n0
+POSTHOOK: Output: default@srcpart_orc_n0
+PREHOOK: query: drop table srcpart_date_n8
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@srcpart_date
-PREHOOK: Output: default@srcpart_date
-POSTHOOK: query: drop table srcpart_date
+PREHOOK: Input: default@srcpart_date_n8
+PREHOOK: Output: default@srcpart_date_n8
+POSTHOOK: query: drop table srcpart_date_n8
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@srcpart_date
-POSTHOOK: Output: default@srcpart_date
-PREHOOK: query: drop table srcpart_hour
+POSTHOOK: Input: default@srcpart_date_n8
+POSTHOOK: Output: default@srcpart_date_n8
+PREHOOK: query: drop table srcpart_hour_n2
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@srcpart_hour
-PREHOOK: Output: default@srcpart_hour
-POSTHOOK: query: drop table srcpart_hour
+PREHOOK: Input: default@srcpart_hour_n2
+PREHOOK: Output: default@srcpart_hour_n2
+POSTHOOK: query: drop table srcpart_hour_n2
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@srcpart_hour
-POSTHOOK: Output: default@srcpart_hour
-PREHOOK: query: drop table srcpart_date_hour
+POSTHOOK: Input: default@srcpart_hour_n2
+POSTHOOK: Output: default@srcpart_hour_n2
+PREHOOK: query: drop table srcpart_date_hour_n2
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@srcpart_date_hour
-PREHOOK: Output: default@srcpart_date_hour
-POSTHOOK: query: drop table srcpart_date_hour
+PREHOOK: Input: default@srcpart_date_hour_n2
+PREHOOK: Output: default@srcpart_date_hour_n2
+POSTHOOK: query: drop table srcpart_date_hour_n2
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@srcpart_date_hour
-POSTHOOK: Output: default@srcpart_date_hour
-PREHOOK: query: drop table srcpart_double_hour
+POSTHOOK: Input: default@srcpart_date_hour_n2
+POSTHOOK: Output: default@srcpart_date_hour_n2
+PREHOOK: query: drop table srcpart_double_hour_n2
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@srcpart_double_hour
-PREHOOK: Output: default@srcpart_double_hour
-POSTHOOK: query: drop table srcpart_double_hour
+PREHOOK: Input: default@srcpart_double_hour_n2
+PREHOOK: Output: default@srcpart_double_hour_n2
+POSTHOOK: query: drop table srcpart_double_hour_n2
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@srcpart_double_hour
-POSTHOOK: Output: default@srcpart_double_hour
+POSTHOOK: Input: default@srcpart_double_hour_n2
+POSTHOOK: Output: default@srcpart_double_hour_n2

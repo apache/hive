@@ -1,11 +1,11 @@
-PREHOOK: query: CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE dest1_n161(key INT, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest1
-POSTHOOK: query: CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@dest1_n161
+POSTHOOK: query: CREATE TABLE dest1_n161(key INT, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest1
+POSTHOOK: Output: default@dest1_n161
 PREHOOK: query: EXPLAIN
 FROM (
   FROM src
@@ -13,7 +13,7 @@ FROM (
   USING 'cat'
   AS (tkey, tvalue) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
 ) tmap
-INSERT OVERWRITE TABLE dest1 SELECT tkey, tvalue
+INSERT OVERWRITE TABLE dest1_n161 SELECT tkey, tvalue
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 FROM (
@@ -22,7 +22,7 @@ FROM (
   USING 'cat'
   AS (tkey, tvalue) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
 ) tmap
-INSERT OVERWRITE TABLE dest1 SELECT tkey, tvalue
+INSERT OVERWRITE TABLE dest1_n161 SELECT tkey, tvalue
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -63,7 +63,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.dest1
+                        name: default.dest1_n161
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: string)
                     outputColumnNames: key, value
@@ -108,7 +108,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n161
 
   Stage: Stage-2
     Stats Work
@@ -116,7 +116,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: int, string
-          Table: default.dest1
+          Table: default.dest1_n161
 
   Stage: Stage-3
     Map Reduce
@@ -128,7 +128,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.dest1
+                  name: default.dest1_n161
 
   Stage: Stage-5
     Map Reduce
@@ -140,7 +140,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.dest1
+                  name: default.dest1_n161
 
   Stage: Stage-6
     Move Operator
@@ -154,29 +154,29 @@ PREHOOK: query: FROM (
   USING 'cat'
   AS (tkey, tvalue) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
 ) tmap
-INSERT OVERWRITE TABLE dest1 SELECT tkey, tvalue
+INSERT OVERWRITE TABLE dest1_n161 SELECT tkey, tvalue
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@dest1
+PREHOOK: Output: default@dest1_n161
 POSTHOOK: query: FROM (
   FROM src
   SELECT TRANSFORM(src.key, src.value) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
   USING 'cat'
   AS (tkey, tvalue) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
 ) tmap
-INSERT OVERWRITE TABLE dest1 SELECT tkey, tvalue
+INSERT OVERWRITE TABLE dest1_n161 SELECT tkey, tvalue
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@dest1
-POSTHOOK: Lineage: dest1.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: Output: default@dest1_n161
+POSTHOOK: Lineage: dest1_n161.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n161.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT dest1_n161.* FROM dest1_n161
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n161
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: query: SELECT dest1_n161.* FROM dest1_n161
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n161
 #### A masked pattern was here ####
 238	val_238
 86	val_86

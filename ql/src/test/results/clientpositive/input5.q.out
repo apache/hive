@@ -1,11 +1,11 @@
-PREHOOK: query: CREATE TABLE dest1(key STRING, value STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE dest1_n94(key STRING, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest1
-POSTHOOK: query: CREATE TABLE dest1(key STRING, value STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@dest1_n94
+POSTHOOK: query: CREATE TABLE dest1_n94(key STRING, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest1
+POSTHOOK: Output: default@dest1_n94
 PREHOOK: query: EXPLAIN
 FROM (
   FROM src_thrift
@@ -13,7 +13,7 @@ FROM (
          USING 'cat' AS (tkey, tvalue) 
   CLUSTER BY tkey 
 ) tmap
-INSERT OVERWRITE TABLE dest1 SELECT tmap.tkey, tmap.tvalue
+INSERT OVERWRITE TABLE dest1_n94 SELECT tmap.tkey, tmap.tvalue
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 FROM (
@@ -22,7 +22,7 @@ FROM (
          USING 'cat' AS (tkey, tvalue) 
   CLUSTER BY tkey 
 ) tmap
-INSERT OVERWRITE TABLE dest1 SELECT tmap.tkey, tmap.tvalue
+INSERT OVERWRITE TABLE dest1_n94 SELECT tmap.tkey, tmap.tvalue
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -66,7 +66,7 @@ STAGE PLANS:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: default.dest1
+                name: default.dest1_n94
           Select Operator
             expressions: _col0 (type: string), _col1 (type: string)
             outputColumnNames: key, value
@@ -91,7 +91,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n94
 
   Stage: Stage-2
     Stats Work
@@ -99,7 +99,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: string, string
-          Table: default.dest1
+          Table: default.dest1_n94
 
   Stage: Stage-3
     Map Reduce
@@ -130,29 +130,29 @@ PREHOOK: query: FROM (
          USING 'cat' AS (tkey, tvalue) 
   CLUSTER BY tkey 
 ) tmap
-INSERT OVERWRITE TABLE dest1 SELECT tmap.tkey, tmap.tvalue
+INSERT OVERWRITE TABLE dest1_n94 SELECT tmap.tkey, tmap.tvalue
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_thrift
-PREHOOK: Output: default@dest1
+PREHOOK: Output: default@dest1_n94
 POSTHOOK: query: FROM (
   FROM src_thrift
   SELECT TRANSFORM(src_thrift.lint, src_thrift.lintstring)
          USING 'cat' AS (tkey, tvalue) 
   CLUSTER BY tkey 
 ) tmap
-INSERT OVERWRITE TABLE dest1 SELECT tmap.tkey, tmap.tvalue
+INSERT OVERWRITE TABLE dest1_n94 SELECT tmap.tkey, tmap.tvalue
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_thrift
-POSTHOOK: Output: default@dest1
-POSTHOOK: Lineage: dest1.key SCRIPT [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), (src_thrift)src_thrift.FieldSchema(name:lintstring, type:array<struct<myint:int,mystring:string,underscore_int:int>>, comment:from deserializer), ]
-POSTHOOK: Lineage: dest1.value SCRIPT [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), (src_thrift)src_thrift.FieldSchema(name:lintstring, type:array<struct<myint:int,mystring:string,underscore_int:int>>, comment:from deserializer), ]
-PREHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: Output: default@dest1_n94
+POSTHOOK: Lineage: dest1_n94.key SCRIPT [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), (src_thrift)src_thrift.FieldSchema(name:lintstring, type:array<struct<myint:int,mystring:string,underscore_int:int>>, comment:from deserializer), ]
+POSTHOOK: Lineage: dest1_n94.value SCRIPT [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), (src_thrift)src_thrift.FieldSchema(name:lintstring, type:array<struct<myint:int,mystring:string,underscore_int:int>>, comment:from deserializer), ]
+PREHOOK: query: SELECT dest1_n94.* FROM dest1_n94
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n94
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: query: SELECT dest1_n94.* FROM dest1_n94
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n94
 #### A masked pattern was here ####
 NULL	NULL
 [0,0,0]	[{"myint":0,"mystring":"0","underscore_int":0}]

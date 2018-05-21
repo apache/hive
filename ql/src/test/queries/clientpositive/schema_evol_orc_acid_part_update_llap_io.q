@@ -26,13 +26,13 @@ set hive.llap.io.encode.enabled=true;
 -- Also, we don't do EXPLAINs on ACID files because the write id causes Q file statistics differences...
 --
 
-CREATE TABLE schema_evolution_data(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
+CREATE TABLE schema_evolution_data_n9(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
 row format delimited fields terminated by '|' stored as textfile;
-load data local inpath '../../data/files/schema_evolution/schema_evolution_data.txt' overwrite into table schema_evolution_data;
+load data local inpath '../../data/files/schema_evolution/schema_evolution_data.txt' overwrite into table schema_evolution_data_n9;
 
-CREATE TABLE schema_evolution_data_2(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
+CREATE TABLE schema_evolution_data_2_n3(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
 row format delimited fields terminated by '|' stored as textfile;
-load data local inpath '../../data/files/schema_evolution/schema_evolution_data_2.txt' overwrite into table schema_evolution_data_2;
+load data local inpath '../../data/files/schema_evolution/schema_evolution_data_2.txt' overwrite into table schema_evolution_data_2_n3;
 
 --
 --
@@ -40,14 +40,14 @@ load data local inpath '../../data/files/schema_evolution/schema_evolution_data_
 ---
 CREATE TABLE partitioned_update_1(insert_num int, a INT, b STRING) PARTITIONED BY(part INT) clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true');
 
-insert into table partitioned_update_1 partition(part=1) SELECT insert_num, int1, 'original' FROM schema_evolution_data;
+insert into table partitioned_update_1 partition(part=1) SELECT insert_num, int1, 'original' FROM schema_evolution_data_n9;
 
 -- Table-Non-Cascade ADD COLUMNS ...
 alter table partitioned_update_1 add columns(c int, d string);
 
-insert into table partitioned_update_1 partition(part=2) SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2 WHERE insert_num <=110;
+insert into table partitioned_update_1 partition(part=2) SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2_n3 WHERE insert_num <=110;
 
-insert into table partitioned_update_1 partition(part=1) SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2 WHERE insert_num > 110;
+insert into table partitioned_update_1 partition(part=1) SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2_n3 WHERE insert_num > 110;
 
 select insert_num,part,a,b,c,d from partitioned_update_1;
 
@@ -69,14 +69,14 @@ DROP TABLE partitioned_update_1;
 ---
 CREATE TABLE partitioned_delete_1(insert_num int, a INT, b STRING) PARTITIONED BY(part INT) clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true');
 
-insert into table partitioned_delete_1 partition(part=1) SELECT insert_num, int1, 'original' FROM schema_evolution_data;
+insert into table partitioned_delete_1 partition(part=1) SELECT insert_num, int1, 'original' FROM schema_evolution_data_n9;
 
 -- Table-Non-Cascade ADD COLUMNS ...
 alter table partitioned_delete_1 add columns(c int, d string);
 
-insert into table partitioned_delete_1 partition(part=2) SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2 WHERE insert_num <=110;
+insert into table partitioned_delete_1 partition(part=2) SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2_n3 WHERE insert_num <=110;
 
-insert into table partitioned_delete_1 partition(part=1) SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2 WHERE insert_num > 110;
+insert into table partitioned_delete_1 partition(part=1) SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2_n3 WHERE insert_num > 110;
 
 select part,a,b,c,d from partitioned_delete_1;
 
@@ -98,14 +98,14 @@ DROP TABLE partitioned_delete_1;
 ---
 CREATE TABLE partitioned_delete_2(insert_num int, a INT, b STRING) PARTITIONED BY(part INT) clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true');
 
-insert into table partitioned_delete_2 partition(part=1) SELECT insert_num, int1, 'original' FROM schema_evolution_data;
+insert into table partitioned_delete_2 partition(part=1) SELECT insert_num, int1, 'original' FROM schema_evolution_data_n9;
 
 -- Table-Non-Cascade ADD COLUMNS ...
 alter table partitioned_delete_2 add columns(c int, d string);
 
-insert into table partitioned_delete_2 partition(part=2) SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2 WHERE insert_num <=110;
+insert into table partitioned_delete_2 partition(part=2) SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2_n3 WHERE insert_num <=110;
 
-insert into table partitioned_delete_2 partition(part=1)  SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2 WHERE insert_num > 110;
+insert into table partitioned_delete_2 partition(part=1)  SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2_n3 WHERE insert_num > 110;
 
 select insert_num,part,a,b,c,d from partitioned_delete_2;
 

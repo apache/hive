@@ -1,67 +1,67 @@
-PREHOOK: query: CREATE TABLE test_table1 (key INT, value STRING) PARTITIONED BY (ds STRING)
+PREHOOK: query: CREATE TABLE test_table1_n16 (key INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_table1
-POSTHOOK: query: CREATE TABLE test_table1 (key INT, value STRING) PARTITIONED BY (ds STRING)
+PREHOOK: Output: default@test_table1_n16
+POSTHOOK: query: CREATE TABLE test_table1_n16 (key INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_table1
-PREHOOK: query: CREATE TABLE test_table2 (key INT, value STRING) PARTITIONED BY (ds STRING)
+POSTHOOK: Output: default@test_table1_n16
+PREHOOK: query: CREATE TABLE test_table2_n15 (key INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_table2
-POSTHOOK: query: CREATE TABLE test_table2 (key INT, value STRING) PARTITIONED BY (ds STRING)
+PREHOOK: Output: default@test_table2_n15
+POSTHOOK: query: CREATE TABLE test_table2_n15 (key INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_table2
-PREHOOK: query: CREATE TABLE test_table3 (key INT, key2 INT, value STRING) PARTITIONED BY (ds STRING)
+POSTHOOK: Output: default@test_table2_n15
+PREHOOK: query: CREATE TABLE test_table3_n8 (key INT, key2 INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key2) SORTED BY (key2) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_table3
-POSTHOOK: query: CREATE TABLE test_table3 (key INT, key2 INT, value STRING) PARTITIONED BY (ds STRING)
+PREHOOK: Output: default@test_table3_n8
+POSTHOOK: query: CREATE TABLE test_table3_n8 (key INT, key2 INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key2) SORTED BY (key2) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_table3
+POSTHOOK: Output: default@test_table3_n8
 PREHOOK: query: FROM src
-INSERT OVERWRITE TABLE test_table1 PARTITION (ds = '1') SELECT * where key < 10
+INSERT OVERWRITE TABLE test_table1_n16 PARTITION (ds = '1') SELECT * where key < 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@test_table1@ds=1
+PREHOOK: Output: default@test_table1_n16@ds=1
 POSTHOOK: query: FROM src
-INSERT OVERWRITE TABLE test_table1 PARTITION (ds = '1') SELECT * where key < 10
+INSERT OVERWRITE TABLE test_table1_n16 PARTITION (ds = '1') SELECT * where key < 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@test_table1@ds=1
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@test_table1_n16@ds=1
+POSTHOOK: Lineage: test_table1_n16 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table1_n16 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: FROM src
-INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1') SELECT * where key < 100
+INSERT OVERWRITE TABLE test_table2_n15 PARTITION (ds = '1') SELECT * where key < 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@test_table2@ds=1
+PREHOOK: Output: default@test_table2_n15@ds=1
 POSTHOOK: query: FROM src
-INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1') SELECT * where key < 100
+INSERT OVERWRITE TABLE test_table2_n15 PARTITION (ds = '1') SELECT * where key < 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@test_table2@ds=1
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@test_table2_n15@ds=1
+POSTHOOK: Lineage: test_table2_n15 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2_n15 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
+INSERT OVERWRITE TABLE test_table3_n8 PARTITION (ds = '1')
 SELECT a.key, a.key, concat(a.value, b.value) 
-FROM test_table1 a JOIN test_table2 b 
+FROM test_table1_n16 a JOIN test_table2_n15 b 
 ON a.key = b.key WHERE a.ds = '1' and b.ds = '1'
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
+INSERT OVERWRITE TABLE test_table3_n8 PARTITION (ds = '1')
 SELECT a.key, a.key, concat(a.value, b.value) 
-FROM test_table1 a JOIN test_table2 b 
+FROM test_table1_n16 a JOIN test_table2_n15 b 
 ON a.key = b.key WHERE a.ds = '1' and b.ds = '1'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -139,7 +139,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.test_table3
+                      name: default.test_table3_n8
 
   Stage: Stage-0
     Move Operator
@@ -151,55 +151,55 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.test_table3
+              name: default.test_table3_n8
 
   Stage: Stage-2
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
+PREHOOK: query: INSERT OVERWRITE TABLE test_table3_n8 PARTITION (ds = '1')
 SELECT a.key, a.key, concat(a.value, b.value) 
-FROM test_table1 a JOIN test_table2 b 
+FROM test_table1_n16 a JOIN test_table2_n15 b 
 ON a.key = b.key WHERE a.ds = '1' and b.ds = '1'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table1
-PREHOOK: Input: default@test_table1@ds=1
-PREHOOK: Input: default@test_table2
-PREHOOK: Input: default@test_table2@ds=1
-PREHOOK: Output: default@test_table3@ds=1
-POSTHOOK: query: INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
+PREHOOK: Input: default@test_table1_n16
+PREHOOK: Input: default@test_table1_n16@ds=1
+PREHOOK: Input: default@test_table2_n15
+PREHOOK: Input: default@test_table2_n15@ds=1
+PREHOOK: Output: default@test_table3_n8@ds=1
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table3_n8 PARTITION (ds = '1')
 SELECT a.key, a.key, concat(a.value, b.value) 
-FROM test_table1 a JOIN test_table2 b 
+FROM test_table1_n16 a JOIN test_table2_n15 b 
 ON a.key = b.key WHERE a.ds = '1' and b.ds = '1'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table1
-POSTHOOK: Input: default@test_table1@ds=1
-POSTHOOK: Input: default@test_table2
-POSTHOOK: Input: default@test_table2@ds=1
-POSTHOOK: Output: default@test_table3@ds=1
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key2 SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: select * from test_table3 tablesample (bucket 1 out of 2) s where ds = '1'
+POSTHOOK: Input: default@test_table1_n16
+POSTHOOK: Input: default@test_table1_n16@ds=1
+POSTHOOK: Input: default@test_table2_n15
+POSTHOOK: Input: default@test_table2_n15@ds=1
+POSTHOOK: Output: default@test_table3_n8@ds=1
+POSTHOOK: Lineage: test_table3_n8 PARTITION(ds=1).key SIMPLE [(test_table1_n16)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: test_table3_n8 PARTITION(ds=1).key2 SIMPLE [(test_table1_n16)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: test_table3_n8 PARTITION(ds=1).value EXPRESSION [(test_table1_n16)a.FieldSchema(name:value, type:string, comment:null), (test_table2_n15)b.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select * from test_table3_n8 tablesample (bucket 1 out of 2) s where ds = '1'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table3
-PREHOOK: Input: default@test_table3@ds=1
+PREHOOK: Input: default@test_table3_n8
+PREHOOK: Input: default@test_table3_n8@ds=1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from test_table3 tablesample (bucket 1 out of 2) s where ds = '1'
+POSTHOOK: query: select * from test_table3_n8 tablesample (bucket 1 out of 2) s where ds = '1'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table3
-POSTHOOK: Input: default@test_table3@ds=1
+POSTHOOK: Input: default@test_table3_n8
+POSTHOOK: Input: default@test_table3_n8@ds=1
 #### A masked pattern was here ####
 2	2	val_2val_2	1
-PREHOOK: query: select * from test_table3 tablesample (bucket 2 out of 2) s where ds = '1'
+PREHOOK: query: select * from test_table3_n8 tablesample (bucket 2 out of 2) s where ds = '1'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table3
-PREHOOK: Input: default@test_table3@ds=1
+PREHOOK: Input: default@test_table3_n8
+PREHOOK: Input: default@test_table3_n8@ds=1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from test_table3 tablesample (bucket 2 out of 2) s where ds = '1'
+POSTHOOK: query: select * from test_table3_n8 tablesample (bucket 2 out of 2) s where ds = '1'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table3
-POSTHOOK: Input: default@test_table3@ds=1
+POSTHOOK: Input: default@test_table3_n8
+POSTHOOK: Input: default@test_table3_n8@ds=1
 #### A masked pattern was here ####
 0	0	val_0val_0	1
 0	0	val_0val_0	1
@@ -222,34 +222,34 @@ POSTHOOK: Input: default@test_table3@ds=1
 5	5	val_5val_5	1
 8	8	val_8val_8	1
 9	9	val_9val_9	1
-PREHOOK: query: DROP TABLE test_table3
+PREHOOK: query: DROP TABLE test_table3_n8
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@test_table3
-PREHOOK: Output: default@test_table3
-POSTHOOK: query: DROP TABLE test_table3
+PREHOOK: Input: default@test_table3_n8
+PREHOOK: Output: default@test_table3_n8
+POSTHOOK: query: DROP TABLE test_table3_n8
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@test_table3
-POSTHOOK: Output: default@test_table3
-PREHOOK: query: CREATE TABLE test_table3 (key INT, value STRING) PARTITIONED BY (ds STRING)
+POSTHOOK: Input: default@test_table3_n8
+POSTHOOK: Output: default@test_table3_n8
+PREHOOK: query: CREATE TABLE test_table3_n8 (key INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_table3
-POSTHOOK: query: CREATE TABLE test_table3 (key INT, value STRING) PARTITIONED BY (ds STRING)
+PREHOOK: Output: default@test_table3_n8
+POSTHOOK: query: CREATE TABLE test_table3_n8 (key INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_table3
+POSTHOOK: Output: default@test_table3_n8
 PREHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
+INSERT OVERWRITE TABLE test_table3_n8 PARTITION (ds = '1')
 SELECT a.key, a.value
-FROM test_table1 a JOIN test_table2 b 
+FROM test_table1_n16 a JOIN test_table2_n15 b 
 ON a.key = b.key WHERE a.ds = '1' and b.ds = '1'
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
+INSERT OVERWRITE TABLE test_table3_n8 PARTITION (ds = '1')
 SELECT a.key, a.value
-FROM test_table1 a JOIN test_table2 b 
+FROM test_table1_n16 a JOIN test_table2_n15 b 
 ON a.key = b.key WHERE a.ds = '1' and b.ds = '1'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -331,7 +331,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.test_table3
+                      name: default.test_table3_n8
 
   Stage: Stage-0
     Move Operator
@@ -343,43 +343,43 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.test_table3
+              name: default.test_table3_n8
 
   Stage: Stage-2
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
+PREHOOK: query: INSERT OVERWRITE TABLE test_table3_n8 PARTITION (ds = '1')
 SELECT a.key, a.value
-FROM test_table1 a JOIN test_table2 b 
+FROM test_table1_n16 a JOIN test_table2_n15 b 
 ON a.key = b.key WHERE a.ds = '1' and b.ds = '1'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table1
-PREHOOK: Input: default@test_table1@ds=1
-PREHOOK: Input: default@test_table2
-PREHOOK: Input: default@test_table2@ds=1
-PREHOOK: Output: default@test_table3@ds=1
-POSTHOOK: query: INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
+PREHOOK: Input: default@test_table1_n16
+PREHOOK: Input: default@test_table1_n16@ds=1
+PREHOOK: Input: default@test_table2_n15
+PREHOOK: Input: default@test_table2_n15@ds=1
+PREHOOK: Output: default@test_table3_n8@ds=1
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table3_n8 PARTITION (ds = '1')
 SELECT a.key, a.value
-FROM test_table1 a JOIN test_table2 b 
+FROM test_table1_n16 a JOIN test_table2_n15 b 
 ON a.key = b.key WHERE a.ds = '1' and b.ds = '1'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table1
-POSTHOOK: Input: default@test_table1@ds=1
-POSTHOOK: Input: default@test_table2
-POSTHOOK: Input: default@test_table2@ds=1
-POSTHOOK: Output: default@test_table3@ds=1
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: select * from test_table3 tablesample (bucket 1 out of 2) s where ds = '1'
+POSTHOOK: Input: default@test_table1_n16
+POSTHOOK: Input: default@test_table1_n16@ds=1
+POSTHOOK: Input: default@test_table2_n15
+POSTHOOK: Input: default@test_table2_n15@ds=1
+POSTHOOK: Output: default@test_table3_n8@ds=1
+POSTHOOK: Lineage: test_table3_n8 PARTITION(ds=1).key SIMPLE [(test_table1_n16)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: test_table3_n8 PARTITION(ds=1).value SIMPLE [(test_table1_n16)a.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select * from test_table3_n8 tablesample (bucket 1 out of 2) s where ds = '1'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table3
-PREHOOK: Input: default@test_table3@ds=1
+PREHOOK: Input: default@test_table3_n8
+PREHOOK: Input: default@test_table3_n8@ds=1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from test_table3 tablesample (bucket 1 out of 2) s where ds = '1'
+POSTHOOK: query: select * from test_table3_n8 tablesample (bucket 1 out of 2) s where ds = '1'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table3
-POSTHOOK: Input: default@test_table3@ds=1
+POSTHOOK: Input: default@test_table3_n8
+POSTHOOK: Input: default@test_table3_n8@ds=1
 #### A masked pattern was here ####
 0	val_0	1
 0	val_0	1
@@ -394,15 +394,15 @@ POSTHOOK: Input: default@test_table3@ds=1
 4	val_4	1
 8	val_8	1
 9	val_9	1
-PREHOOK: query: select * from test_table3 tablesample (bucket 2 out of 2) s where ds = '1'
+PREHOOK: query: select * from test_table3_n8 tablesample (bucket 2 out of 2) s where ds = '1'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table3
-PREHOOK: Input: default@test_table3@ds=1
+PREHOOK: Input: default@test_table3_n8
+PREHOOK: Input: default@test_table3_n8@ds=1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from test_table3 tablesample (bucket 2 out of 2) s where ds = '1'
+POSTHOOK: query: select * from test_table3_n8 tablesample (bucket 2 out of 2) s where ds = '1'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table3
-POSTHOOK: Input: default@test_table3@ds=1
+POSTHOOK: Input: default@test_table3_n8
+POSTHOOK: Input: default@test_table3_n8@ds=1
 #### A masked pattern was here ####
 5	val_5	1
 5	val_5	1
@@ -413,11 +413,11 @@ POSTHOOK: Input: default@test_table3@ds=1
 5	val_5	1
 5	val_5	1
 5	val_5	1
-PREHOOK: query: DROP TABLE test_table3
+PREHOOK: query: DROP TABLE test_table3_n8
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@test_table3
-PREHOOK: Output: default@test_table3
-POSTHOOK: query: DROP TABLE test_table3
+PREHOOK: Input: default@test_table3_n8
+PREHOOK: Output: default@test_table3_n8
+POSTHOOK: query: DROP TABLE test_table3_n8
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@test_table3
-POSTHOOK: Output: default@test_table3
+POSTHOOK: Input: default@test_table3_n8
+POSTHOOK: Output: default@test_table3_n8

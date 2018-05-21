@@ -1,38 +1,38 @@
-PREHOOK: query: create table cmv_basetable (a int, b varchar(256), c decimal(10,2))
+PREHOOK: query: create table cmv_basetable_n4 (a int, b varchar(256), c decimal(10,2))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@cmv_basetable
-POSTHOOK: query: create table cmv_basetable (a int, b varchar(256), c decimal(10,2))
+PREHOOK: Output: default@cmv_basetable_n4
+POSTHOOK: query: create table cmv_basetable_n4 (a int, b varchar(256), c decimal(10,2))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@cmv_basetable
-PREHOOK: query: insert into cmv_basetable values (1, 'alfred', 10.30),(2, 'bob', 3.14),(2, 'bonnie', 172342.2),(3, 'calvin', 978.76),(3, 'charlie', 9.8)
+POSTHOOK: Output: default@cmv_basetable_n4
+PREHOOK: query: insert into cmv_basetable_n4 values (1, 'alfred', 10.30),(2, 'bob', 3.14),(2, 'bonnie', 172342.2),(3, 'calvin', 978.76),(3, 'charlie', 9.8)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@cmv_basetable
-POSTHOOK: query: insert into cmv_basetable values (1, 'alfred', 10.30),(2, 'bob', 3.14),(2, 'bonnie', 172342.2),(3, 'calvin', 978.76),(3, 'charlie', 9.8)
+PREHOOK: Output: default@cmv_basetable_n4
+POSTHOOK: query: insert into cmv_basetable_n4 values (1, 'alfred', 10.30),(2, 'bob', 3.14),(2, 'bonnie', 172342.2),(3, 'calvin', 978.76),(3, 'charlie', 9.8)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@cmv_basetable
-POSTHOOK: Lineage: cmv_basetable.a SCRIPT []
-POSTHOOK: Lineage: cmv_basetable.b SCRIPT []
-POSTHOOK: Lineage: cmv_basetable.c SCRIPT []
-PREHOOK: query: create materialized view cmv_mat_view as select a, b, c from cmv_basetable
+POSTHOOK: Output: default@cmv_basetable_n4
+POSTHOOK: Lineage: cmv_basetable_n4.a SCRIPT []
+POSTHOOK: Lineage: cmv_basetable_n4.b SCRIPT []
+POSTHOOK: Lineage: cmv_basetable_n4.c SCRIPT []
+PREHOOK: query: create materialized view cmv_mat_view_n4 as select a, b, c from cmv_basetable_n4
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
-PREHOOK: Input: default@cmv_basetable
+PREHOOK: Input: default@cmv_basetable_n4
 PREHOOK: Output: database:default
-PREHOOK: Output: default@cmv_mat_view
-POSTHOOK: query: create materialized view cmv_mat_view as select a, b, c from cmv_basetable
+PREHOOK: Output: default@cmv_mat_view_n4
+POSTHOOK: query: create materialized view cmv_mat_view_n4 as select a, b, c from cmv_basetable_n4
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
-POSTHOOK: Input: default@cmv_basetable
+POSTHOOK: Input: default@cmv_basetable_n4
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@cmv_mat_view
-PREHOOK: query: desc formatted cmv_mat_view
+POSTHOOK: Output: default@cmv_mat_view_n4
+PREHOOK: query: desc formatted cmv_mat_view_n4
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@cmv_mat_view
-POSTHOOK: query: desc formatted cmv_mat_view
+PREHOOK: Input: default@cmv_mat_view_n4
+POSTHOOK: query: desc formatted cmv_mat_view_n4
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@cmv_mat_view
+POSTHOOK: Input: default@cmv_mat_view_n4
 # col_name            	data_type           	comment             
 a                   	int                 	                    
 b                   	varchar(256)        	                    
@@ -63,38 +63,38 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	select a, b, c from cmv_basetable	 
-View Expanded Text: 	select `cmv_basetable`.`a`, `cmv_basetable`.`b`, `cmv_basetable`.`c` from `default`.`cmv_basetable`	 
+View Original Text: 	select a, b, c from cmv_basetable_n4	 
+View Expanded Text: 	select `cmv_basetable_n4`.`a`, `cmv_basetable_n4`.`b`, `cmv_basetable_n4`.`c` from `default`.`cmv_basetable_n4`	 
 View Rewrite Enabled:	No                  	 
-PREHOOK: query: select * from cmv_mat_view
+PREHOOK: query: select * from cmv_mat_view_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@cmv_mat_view
+PREHOOK: Input: default@cmv_mat_view_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select * from cmv_mat_view
+POSTHOOK: query: select * from cmv_mat_view_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@cmv_mat_view
+POSTHOOK: Input: default@cmv_mat_view_n4
 #### A masked pattern was here ####
 1	alfred	10.30
 2	bob	3.14
 2	bonnie	172342.20
 3	calvin	978.76
 3	charlie	9.80
-PREHOOK: query: create materialized view if not exists cmv_mat_view2 as select a, c from cmv_basetable
+PREHOOK: query: create materialized view if not exists cmv_mat_view2_n1 as select a, c from cmv_basetable_n4
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
-PREHOOK: Input: default@cmv_basetable
+PREHOOK: Input: default@cmv_basetable_n4
 PREHOOK: Output: database:default
-PREHOOK: Output: default@cmv_mat_view2
-POSTHOOK: query: create materialized view if not exists cmv_mat_view2 as select a, c from cmv_basetable
+PREHOOK: Output: default@cmv_mat_view2_n1
+POSTHOOK: query: create materialized view if not exists cmv_mat_view2_n1 as select a, c from cmv_basetable_n4
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
-POSTHOOK: Input: default@cmv_basetable
+POSTHOOK: Input: default@cmv_basetable_n4
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@cmv_mat_view2
-PREHOOK: query: desc formatted cmv_mat_view2
+POSTHOOK: Output: default@cmv_mat_view2_n1
+PREHOOK: query: desc formatted cmv_mat_view2_n1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@cmv_mat_view2
-POSTHOOK: query: desc formatted cmv_mat_view2
+PREHOOK: Input: default@cmv_mat_view2_n1
+POSTHOOK: query: desc formatted cmv_mat_view2_n1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@cmv_mat_view2
+POSTHOOK: Input: default@cmv_mat_view2_n1
 # col_name            	data_type           	comment             
 a                   	int                 	                    
 c                   	decimal(10,2)       	                    
@@ -124,30 +124,30 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	select a, c from cmv_basetable	 
-View Expanded Text: 	select `cmv_basetable`.`a`, `cmv_basetable`.`c` from `default`.`cmv_basetable`	 
+View Original Text: 	select a, c from cmv_basetable_n4	 
+View Expanded Text: 	select `cmv_basetable_n4`.`a`, `cmv_basetable_n4`.`c` from `default`.`cmv_basetable_n4`	 
 View Rewrite Enabled:	No                  	 
-PREHOOK: query: select * from cmv_mat_view2
+PREHOOK: query: select * from cmv_mat_view2_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@cmv_mat_view2
+PREHOOK: Input: default@cmv_mat_view2_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from cmv_mat_view2
+POSTHOOK: query: select * from cmv_mat_view2_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@cmv_mat_view2
+POSTHOOK: Input: default@cmv_mat_view2_n1
 #### A masked pattern was here ####
 1	10.30
 2	3.14
 2	172342.20
 3	978.76
 3	9.80
-PREHOOK: query: create materialized view if not exists cmv_mat_view3 as select * from cmv_basetable where a > 1
+PREHOOK: query: create materialized view if not exists cmv_mat_view3 as select * from cmv_basetable_n4 where a > 1
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
-PREHOOK: Input: default@cmv_basetable
+PREHOOK: Input: default@cmv_basetable_n4
 PREHOOK: Output: database:default
 PREHOOK: Output: default@cmv_mat_view3
-POSTHOOK: query: create materialized view if not exists cmv_mat_view3 as select * from cmv_basetable where a > 1
+POSTHOOK: query: create materialized view if not exists cmv_mat_view3 as select * from cmv_basetable_n4 where a > 1
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
-POSTHOOK: Input: default@cmv_basetable
+POSTHOOK: Input: default@cmv_basetable_n4
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cmv_mat_view3
 PREHOOK: query: select * from cmv_mat_view3
@@ -162,14 +162,14 @@ POSTHOOK: Input: default@cmv_mat_view3
 2	bonnie	172342.20
 3	calvin	978.76
 3	charlie	9.80
-PREHOOK: query: create materialized view cmv_mat_view4 comment 'this is a comment' as select a, sum(c) from cmv_basetable group by a
+PREHOOK: query: create materialized view cmv_mat_view4 comment 'this is a comment' as select a, sum(c) from cmv_basetable_n4 group by a
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
-PREHOOK: Input: default@cmv_basetable
+PREHOOK: Input: default@cmv_basetable_n4
 PREHOOK: Output: database:default
 PREHOOK: Output: default@cmv_mat_view4
-POSTHOOK: query: create materialized view cmv_mat_view4 comment 'this is a comment' as select a, sum(c) from cmv_basetable group by a
+POSTHOOK: query: create materialized view cmv_mat_view4 comment 'this is a comment' as select a, sum(c) from cmv_basetable_n4 group by a
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
-POSTHOOK: Input: default@cmv_basetable
+POSTHOOK: Input: default@cmv_basetable_n4
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cmv_mat_view4
 PREHOOK: query: select * from cmv_mat_view4
@@ -212,16 +212,16 @@ POSTHOOK: Output: default@cmv_basetable2
 POSTHOOK: Lineage: cmv_basetable2.d SCRIPT []
 POSTHOOK: Lineage: cmv_basetable2.e SCRIPT []
 POSTHOOK: Lineage: cmv_basetable2.f SCRIPT []
-PREHOOK: query: create materialized view cmv_mat_view5 tblproperties ('key'='value') as select a, b, d, c, f from cmv_basetable t1 join cmv_basetable2 t2 on (t1.b = t2.e)
+PREHOOK: query: create materialized view cmv_mat_view5 tblproperties ('key'='value') as select a, b, d, c, f from cmv_basetable_n4 t1 join cmv_basetable2 t2 on (t1.b = t2.e)
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
-PREHOOK: Input: default@cmv_basetable
 PREHOOK: Input: default@cmv_basetable2
+PREHOOK: Input: default@cmv_basetable_n4
 PREHOOK: Output: database:default
 PREHOOK: Output: default@cmv_mat_view5
-POSTHOOK: query: create materialized view cmv_mat_view5 tblproperties ('key'='value') as select a, b, d, c, f from cmv_basetable t1 join cmv_basetable2 t2 on (t1.b = t2.e)
+POSTHOOK: query: create materialized view cmv_mat_view5 tblproperties ('key'='value') as select a, b, d, c, f from cmv_basetable_n4 t1 join cmv_basetable2 t2 on (t1.b = t2.e)
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
-POSTHOOK: Input: default@cmv_basetable
 POSTHOOK: Input: default@cmv_basetable2
+POSTHOOK: Input: default@cmv_basetable_n4
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cmv_mat_view5
 PREHOOK: query: select * from cmv_mat_view5
@@ -249,22 +249,22 @@ numRows	5
 rawDataSize	1605
 totalSize	701
 #### A masked pattern was here ####
-PREHOOK: query: drop materialized view cmv_mat_view
+PREHOOK: query: drop materialized view cmv_mat_view_n4
 PREHOOK: type: DROP_MATERIALIZED_VIEW
-PREHOOK: Input: default@cmv_mat_view
-PREHOOK: Output: default@cmv_mat_view
-POSTHOOK: query: drop materialized view cmv_mat_view
+PREHOOK: Input: default@cmv_mat_view_n4
+PREHOOK: Output: default@cmv_mat_view_n4
+POSTHOOK: query: drop materialized view cmv_mat_view_n4
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
-POSTHOOK: Input: default@cmv_mat_view
-POSTHOOK: Output: default@cmv_mat_view
-PREHOOK: query: drop materialized view cmv_mat_view2
+POSTHOOK: Input: default@cmv_mat_view_n4
+POSTHOOK: Output: default@cmv_mat_view_n4
+PREHOOK: query: drop materialized view cmv_mat_view2_n1
 PREHOOK: type: DROP_MATERIALIZED_VIEW
-PREHOOK: Input: default@cmv_mat_view2
-PREHOOK: Output: default@cmv_mat_view2
-POSTHOOK: query: drop materialized view cmv_mat_view2
+PREHOOK: Input: default@cmv_mat_view2_n1
+PREHOOK: Output: default@cmv_mat_view2_n1
+POSTHOOK: query: drop materialized view cmv_mat_view2_n1
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
-POSTHOOK: Input: default@cmv_mat_view2
-POSTHOOK: Output: default@cmv_mat_view2
+POSTHOOK: Input: default@cmv_mat_view2_n1
+POSTHOOK: Output: default@cmv_mat_view2_n1
 PREHOOK: query: drop materialized view cmv_mat_view3
 PREHOOK: type: DROP_MATERIALIZED_VIEW
 PREHOOK: Input: default@cmv_mat_view3

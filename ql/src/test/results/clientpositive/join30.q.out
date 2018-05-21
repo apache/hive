@@ -1,17 +1,17 @@
-PREHOOK: query: CREATE TABLE dest_j1(key INT, cnt INT)
+PREHOOK: query: CREATE TABLE dest_j1_n0(key INT, cnt INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest_j1
-POSTHOOK: query: CREATE TABLE dest_j1(key INT, cnt INT)
+PREHOOK: Output: default@dest_j1_n0
+POSTHOOK: query: CREATE TABLE dest_j1_n0(key INT, cnt INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest_j1
+POSTHOOK: Output: default@dest_j1_n0
 PREHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE dest_j1 
+INSERT OVERWRITE TABLE dest_j1_n0 
 SELECT /*+ MAPJOIN(x) */ x.key, count(1) FROM src1 x JOIN src y ON (x.key = y.key) group by x.key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE dest_j1 
+INSERT OVERWRITE TABLE dest_j1_n0 
 SELECT /*+ MAPJOIN(x) */ x.key, count(1) FROM src1 x JOIN src y ON (x.key = y.key) group by x.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -99,7 +99,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.dest_j1
+                  name: default.dest_j1_n0
             Select Operator
               expressions: _col0 (type: int), _col1 (type: int)
               outputColumnNames: key, cnt
@@ -124,7 +124,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest_j1
+              name: default.dest_j1_n0
 
   Stage: Stage-3
     Stats Work
@@ -132,7 +132,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, cnt
           Column Types: int, int
-          Table: default.dest_j1
+          Table: default.dest_j1_n0
 
   Stage: Stage-4
     Map Reduce
@@ -157,27 +157,27 @@ STAGE PLANS:
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
-PREHOOK: query: INSERT OVERWRITE TABLE dest_j1 
+PREHOOK: query: INSERT OVERWRITE TABLE dest_j1_n0 
 SELECT /*+ MAPJOIN(x) */ x.key, count(1) FROM src1 x JOIN src y ON (x.key = y.key) group by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
-PREHOOK: Output: default@dest_j1
-POSTHOOK: query: INSERT OVERWRITE TABLE dest_j1 
+PREHOOK: Output: default@dest_j1_n0
+POSTHOOK: query: INSERT OVERWRITE TABLE dest_j1_n0 
 SELECT /*+ MAPJOIN(x) */ x.key, count(1) FROM src1 x JOIN src y ON (x.key = y.key) group by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
-POSTHOOK: Output: default@dest_j1
-POSTHOOK: Lineage: dest_j1.cnt EXPRESSION [(src1)x.null, (src)y.null, ]
-POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src1)x.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: select * from dest_j1
+POSTHOOK: Output: default@dest_j1_n0
+POSTHOOK: Lineage: dest_j1_n0.cnt EXPRESSION [(src1)x.null, (src)y.null, ]
+POSTHOOK: Lineage: dest_j1_n0.key EXPRESSION [(src1)x.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: select * from dest_j1_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest_j1
+PREHOOK: Input: default@dest_j1_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from dest_j1
+POSTHOOK: query: select * from dest_j1_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest_j1
+POSTHOOK: Input: default@dest_j1_n0
 #### A masked pattern was here ####
 128	3
 146	2

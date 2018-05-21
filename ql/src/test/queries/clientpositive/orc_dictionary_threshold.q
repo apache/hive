@@ -7,19 +7,19 @@ set hive.exec.orc.dictionary.key.size.threshold=-1;
 -- Tests that the data can be read back correctly when a string column is stored
 -- without dictionary encoding
 
-CREATE TABLE test_orc (key STRING)
+CREATE TABLE test_orc_n5 (key STRING)
 ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.io.orc.OrcSerde' 
 STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat' 
 OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat';
 
 -- should be single split
-INSERT OVERWRITE TABLE test_orc SELECT key FROM src TABLESAMPLE (10 ROWS);
+INSERT OVERWRITE TABLE test_orc_n5 SELECT key FROM src TABLESAMPLE (10 ROWS);
 
 -- Test reading the column back
 
-SELECT * FROM test_orc; 
+SELECT * FROM test_orc_n5; 
 
-ALTER TABLE test_orc SET SERDEPROPERTIES ('orc.stripe.size' = '1');
+ALTER TABLE test_orc_n5 SET SERDEPROPERTIES ('orc.stripe.size' = '1');
 
 CREATE TABLE src_thousand(key STRING) STORED AS TEXTFILE;
 LOAD DATA LOCAL INPATH '../../data/files/kv1kv2.cogroup.txt' 
@@ -35,7 +35,7 @@ set hive.exec.orc.dictionary.key.size.threshold=0.5;
 -- dictionary encoded. The final stripe will have 630 out of 1000 and be 
 -- direct encoded.
 
-INSERT OVERWRITE TABLE test_orc
+INSERT OVERWRITE TABLE test_orc_n5
 SELECT key FROM (
 SELECT CONCAT("a", key) AS key FROM src_thousand
 UNION ALL
@@ -60,4 +60,4 @@ UNION ALL
 SELECT CONCAT("k", key) AS key FROM src_thousand
 ) a ORDER BY key LIMIT 11000;
 
-SELECT SUM(HASH(key)) FROM test_orc;
+SELECT SUM(HASH(key)) FROM test_orc_n5;

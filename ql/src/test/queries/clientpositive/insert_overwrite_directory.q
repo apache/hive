@@ -10,22 +10,22 @@ select * from src ;
 
 dfs -cat ../../data/files/src_table_2/000000_0;
 
-create table array_table (a array<string>, b array<string>)
+create table array_table_n1 (a array<string>, b array<string>)
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '\t'
 COLLECTION ITEMS TERMINATED BY ',';
 
-load data local inpath "../../data/files/array_table.txt" overwrite into table array_table;
+load data local inpath "../../data/files/array_table.txt" overwrite into table array_table_n1;
 
 insert overwrite directory '../../data/files/array_table_1'
-select * from array_table;
+select * from array_table_n1;
 dfs -cat ../../data/files/array_table_1/000000_0;
 
 insert overwrite directory '../../data/files/array_table_2'
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY ':'
 COLLECTION ITEMS TERMINATED BY '#'
-select * from array_table;
+select * from array_table_n1;
 
 dfs -cat ../../data/files/array_table_2/000000_0;
 
@@ -33,22 +33,22 @@ insert overwrite directory '../../data/files/array_table_2_withfields'
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY ':'
 COLLECTION ITEMS TERMINATED BY '#'
-select b,a from array_table;
+select b,a from array_table_n1;
 
 dfs -cat ../../data/files/array_table_2_withfields/000000_0;
 
 
-create table map_table (foo STRING , bar MAP<STRING, STRING>)
+create table map_table_n2 (foo STRING , bar MAP<STRING, STRING>)
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '\t'
 COLLECTION ITEMS TERMINATED BY ','
 MAP KEYS TERMINATED BY ':'
 STORED AS TEXTFILE;
 
-load data local inpath "../../data/files/map_table.txt" overwrite into table map_table;
+load data local inpath "../../data/files/map_table.txt" overwrite into table map_table_n2;
 
 insert overwrite directory '../../data/files/map_table_1'
-select * from map_table;
+select * from map_table_n2;
 dfs -cat ../../data/files/map_table_1/000000_0;
 
 insert overwrite directory '../../data/files/map_table_2'
@@ -56,7 +56,7 @@ ROW FORMAT DELIMITED
 FIELDS TERMINATED BY ':'
 COLLECTION ITEMS TERMINATED BY '#'
 MAP KEYS TERMINATED BY '='
-select * from map_table;
+select * from map_table_n2;
 
 dfs -cat ../../data/files/map_table_2/000000_0;
 
@@ -65,14 +65,14 @@ ROW FORMAT DELIMITED
 FIELDS TERMINATED BY ':'
 COLLECTION ITEMS TERMINATED BY '#'
 MAP KEYS TERMINATED BY '='
-select bar,foo from map_table;
+select bar,foo from map_table_n2;
 
 dfs -cat ../../data/files/map_table_2_withfields/000000_0;
 
 insert overwrite directory '../../data/files/array_table_3'
 ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.DelimitedJSONSerDe'
 STORED AS TEXTFILE
-select * from array_table;
+select * from array_table_n1;
 
 dfs -cat ../../data/files/array_table_3/000000_0;
 
@@ -83,14 +83,14 @@ WITH SERDEPROPERTIES (
 'serialization.format'= 'org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol',
 'quote.delim'= '(\"|\\[|\\])',  'field.delim'=',',
 'serialization.null.format'='-NA-', 'collection.delim'='#') STORED AS TEXTFILE
-select a, null, b from array_table;
+select a, null, b from array_table_n1;
 
 dfs -cat ../../data/files/array_table_4/000000_0;
 
 insert overwrite directory '../../data/files/map_table_3'
 ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.DelimitedJSONSerDe'
 STORED AS TEXTFILE
-select * from map_table;
+select * from map_table_n2;
 
 dfs -cat ../../data/files/map_table_3/000000_0;
 
@@ -100,7 +100,7 @@ WITH SERDEPROPERTIES (
 'serialization.format'= 'org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol',
 'quote.delim'= '(\"|\\[|\\])',  'field.delim'=':',
 'serialization.null.format'='-NA-', 'collection.delim'='#', 'mapkey.delim'='%') STORED AS TEXTFILE
-select foo, null, bar from map_table;
+select foo, null, bar from map_table_n2;
 
 dfs -cat ../../data/files/map_table_4/000000_0;
 
@@ -125,8 +125,8 @@ select key,value from rctable;
 dfs -cat ../../data/files/rctable_out/000000_0;
 
 drop table rctable;
-drop table array_table;
-drop table map_table;
+drop table array_table_n1;
+drop table map_table_n2;
 dfs -rmr ${system:test.tmp.dir}/rctable;
 dfs -rmr ../../data/files/array_table_1;
 dfs -rmr ../../data/files/array_table_2;

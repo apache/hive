@@ -1,4 +1,4 @@
-PREHOOK: query: CREATE TABLE over1k(t tinyint,
+PREHOOK: query: CREATE TABLE over1k_n5(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -13,8 +13,8 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@over1k
-POSTHOOK: query: CREATE TABLE over1k(t tinyint,
+PREHOOK: Output: default@over1k_n5
+POSTHOOK: query: CREATE TABLE over1k_n5(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -29,54 +29,54 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@over1k
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE over1k
+POSTHOOK: Output: default@over1k_n5
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE over1k_n5
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@over1k
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE over1k
+PREHOOK: Output: default@over1k_n5
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE over1k_n5
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@over1k
-PREHOOK: query: CREATE TABLE t1(`dec` decimal(4,2)) STORED AS ORC
+POSTHOOK: Output: default@over1k_n5
+PREHOOK: query: CREATE TABLE t1_n95(`dec` decimal(4,2)) STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t1
-POSTHOOK: query: CREATE TABLE t1(`dec` decimal(4,2)) STORED AS ORC
+PREHOOK: Output: default@t1_n95
+POSTHOOK: query: CREATE TABLE t1_n95(`dec` decimal(4,2)) STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t1
-PREHOOK: query: INSERT INTO TABLE t1 select `dec` from over1k
+POSTHOOK: Output: default@t1_n95
+PREHOOK: query: INSERT INTO TABLE t1_n95 select `dec` from over1k_n5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over1k
-PREHOOK: Output: default@t1
-POSTHOOK: query: INSERT INTO TABLE t1 select `dec` from over1k
+PREHOOK: Input: default@over1k_n5
+PREHOOK: Output: default@t1_n95
+POSTHOOK: query: INSERT INTO TABLE t1_n95 select `dec` from over1k_n5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over1k
-POSTHOOK: Output: default@t1
-POSTHOOK: Lineage: t1.dec SIMPLE [(over1k)over1k.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
-PREHOOK: query: CREATE TABLE t2(`dec` decimal(4,0)) STORED AS ORC
+POSTHOOK: Input: default@over1k_n5
+POSTHOOK: Output: default@t1_n95
+POSTHOOK: Lineage: t1_n95.dec SIMPLE [(over1k_n5)over1k_n5.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
+PREHOOK: query: CREATE TABLE t2_n59(`dec` decimal(4,0)) STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t2
-POSTHOOK: query: CREATE TABLE t2(`dec` decimal(4,0)) STORED AS ORC
+PREHOOK: Output: default@t2_n59
+POSTHOOK: query: CREATE TABLE t2_n59(`dec` decimal(4,0)) STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t2
-PREHOOK: query: INSERT INTO TABLE t2 select `dec` from over1k
+POSTHOOK: Output: default@t2_n59
+PREHOOK: query: INSERT INTO TABLE t2_n59 select `dec` from over1k_n5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over1k
-PREHOOK: Output: default@t2
-POSTHOOK: query: INSERT INTO TABLE t2 select `dec` from over1k
+PREHOOK: Input: default@over1k_n5
+PREHOOK: Output: default@t2_n59
+POSTHOOK: query: INSERT INTO TABLE t2_n59 select `dec` from over1k_n5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over1k
-POSTHOOK: Output: default@t2
-POSTHOOK: Lineage: t2.dec EXPRESSION [(over1k)over1k.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
+POSTHOOK: Input: default@over1k_n5
+POSTHOOK: Output: default@t2_n59
+POSTHOOK: Lineage: t2_n59.dec EXPRESSION [(over1k_n5)over1k_n5.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
 PREHOOK: query: explain
-select t1.`dec`, t2.`dec` from t1 join t2 on (t1.`dec`=t2.`dec`) order by t1.`dec`
+select t1_n95.`dec`, t2_n59.`dec` from t1_n95 join t2_n59 on (t1_n95.`dec`=t2_n59.`dec`) order by t1_n95.`dec`
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select t1.`dec`, t2.`dec` from t1 join t2 on (t1.`dec`=t2.`dec`) order by t1.`dec`
+select t1_n95.`dec`, t2_n59.`dec` from t1_n95 join t2_n59 on (t1_n95.`dec`=t2_n59.`dec`) order by t1_n95.`dec`
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -94,7 +94,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n95
                   Statistics: Num rows: 1049 Data size: 117488 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: dec is not null (type: boolean)
@@ -123,7 +123,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: t2
+                  alias: t2_n59
                   Statistics: Num rows: 1049 Data size: 117488 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: dec is not null (type: boolean)
@@ -160,15 +160,15 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select t1.`dec`, t2.`dec` from t1 join t2 on (t1.`dec`=t2.`dec`) order by t1.`dec`
+PREHOOK: query: select t1_n95.`dec`, t2_n59.`dec` from t1_n95 join t2_n59 on (t1_n95.`dec`=t2_n59.`dec`) order by t1_n95.`dec`
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
+PREHOOK: Input: default@t1_n95
+PREHOOK: Input: default@t2_n59
 #### A masked pattern was here ####
-POSTHOOK: query: select t1.`dec`, t2.`dec` from t1 join t2 on (t1.`dec`=t2.`dec`) order by t1.`dec`
+POSTHOOK: query: select t1_n95.`dec`, t2_n59.`dec` from t1_n95 join t2_n59 on (t1_n95.`dec`=t2_n59.`dec`) order by t1_n95.`dec`
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t1_n95
+POSTHOOK: Input: default@t2_n59
 #### A masked pattern was here ####
 14.00	14
 14.00	14
@@ -276,15 +276,15 @@ POSTHOOK: Input: default@t2
 9.00	9
 9.00	9
 9.00	9
-PREHOOK: query: select t1.`dec`, t2.`dec` from t1 join t2 on (t1.`dec`=t2.`dec`) order by t1.`dec`
+PREHOOK: query: select t1_n95.`dec`, t2_n59.`dec` from t1_n95 join t2_n59 on (t1_n95.`dec`=t2_n59.`dec`) order by t1_n95.`dec`
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
+PREHOOK: Input: default@t1_n95
+PREHOOK: Input: default@t2_n59
 #### A masked pattern was here ####
-POSTHOOK: query: select t1.`dec`, t2.`dec` from t1 join t2 on (t1.`dec`=t2.`dec`) order by t1.`dec`
+POSTHOOK: query: select t1_n95.`dec`, t2_n59.`dec` from t1_n95 join t2_n59 on (t1_n95.`dec`=t2_n59.`dec`) order by t1_n95.`dec`
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t1_n95
+POSTHOOK: Input: default@t2_n59
 #### A masked pattern was here ####
 14.00	14
 14.00	14

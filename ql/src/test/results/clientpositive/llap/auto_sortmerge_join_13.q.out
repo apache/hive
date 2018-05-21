@@ -1,70 +1,70 @@
-PREHOOK: query: CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: query: CREATE TABLE tbl1_n2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tbl1
-POSTHOOK: query: CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: Output: default@tbl1_n2
+POSTHOOK: query: CREATE TABLE tbl1_n2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tbl1
-PREHOOK: query: CREATE TABLE tbl2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+POSTHOOK: Output: default@tbl1_n2
+PREHOOK: query: CREATE TABLE tbl2_n1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tbl2
-POSTHOOK: query: CREATE TABLE tbl2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: Output: default@tbl2_n1
+POSTHOOK: query: CREATE TABLE tbl2_n1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tbl2
-PREHOOK: query: insert overwrite table tbl1 select * from src where key < 10
+POSTHOOK: Output: default@tbl2_n1
+PREHOOK: query: insert overwrite table tbl1_n2 select * from src where key < 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@tbl1
-POSTHOOK: query: insert overwrite table tbl1 select * from src where key < 10
+PREHOOK: Output: default@tbl1_n2
+POSTHOOK: query: insert overwrite table tbl1_n2 select * from src where key < 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@tbl1
-POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: insert overwrite table tbl2 select * from src where key < 10
+POSTHOOK: Output: default@tbl1_n2
+POSTHOOK: Lineage: tbl1_n2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl1_n2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table tbl2_n1 select * from src where key < 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@tbl2
-POSTHOOK: query: insert overwrite table tbl2 select * from src where key < 10
+PREHOOK: Output: default@tbl2_n1
+POSTHOOK: query: insert overwrite table tbl2_n1 select * from src where key < 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@tbl2
-POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: CREATE TABLE dest1(k1 int, k2 int)
+POSTHOOK: Output: default@tbl2_n1
+POSTHOOK: Lineage: tbl2_n1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2_n1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: CREATE TABLE dest1_n20(k1 int, k2 int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest1
-POSTHOOK: query: CREATE TABLE dest1(k1 int, k2 int)
+PREHOOK: Output: default@dest1_n20
+POSTHOOK: query: CREATE TABLE dest1_n20(k1 int, k2 int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest1
-PREHOOK: query: CREATE TABLE dest2(k1 string, k2 string)
+POSTHOOK: Output: default@dest1_n20
+PREHOOK: query: CREATE TABLE dest2_n4(k1 string, k2 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest2
-POSTHOOK: query: CREATE TABLE dest2(k1 string, k2 string)
+PREHOOK: Output: default@dest2_n4
+POSTHOOK: query: CREATE TABLE dest2_n4(k1 string, k2 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest2
+POSTHOOK: Output: default@dest2_n4
 PREHOOK: query: explain 
 from (
   SELECT a.key key1, a.value value1, b.key key2, b.value value2 
-  FROM tbl1 a JOIN tbl2 b 
+  FROM tbl1_n2 a JOIN tbl2_n1 b 
   ON a.key = b.key ) subq
-INSERT OVERWRITE TABLE dest1 select key1, key2
-INSERT OVERWRITE TABLE dest2 select value1, value2
+INSERT OVERWRITE TABLE dest1_n20 select key1, key2
+INSERT OVERWRITE TABLE dest2_n4 select value1, value2
 PREHOOK: type: QUERY
 POSTHOOK: query: explain 
 from (
   SELECT a.key key1, a.value value1, b.key key2, b.value value2 
-  FROM tbl1 a JOIN tbl2 b 
+  FROM tbl1_n2 a JOIN tbl2_n1 b 
   ON a.key = b.key ) subq
-INSERT OVERWRITE TABLE dest1 select key1, key2
-INSERT OVERWRITE TABLE dest2 select value1, value2
+INSERT OVERWRITE TABLE dest1_n20 select key1, key2
+INSERT OVERWRITE TABLE dest2_n4 select value1, value2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -125,7 +125,7 @@ STAGE PLANS:
                                 input format: org.apache.hadoop.mapred.TextInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                                name: default.dest1
+                                name: default.dest1_n20
                           Select Operator
                             expressions: _col0 (type: int), _col1 (type: int)
                             outputColumnNames: k1, k2
@@ -150,7 +150,7 @@ STAGE PLANS:
                                 input format: org.apache.hadoop.mapred.TextInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                                name: default.dest2
+                                name: default.dest2_n4
                           Select Operator
                             expressions: _col0 (type: string), _col1 (type: string)
                             outputColumnNames: k1, k2
@@ -207,7 +207,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n20
 
   Stage: Stage-4
     Stats Work
@@ -215,7 +215,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: k1, k2
           Column Types: int, int
-          Table: default.dest1
+          Table: default.dest1_n20
 
   Stage: Stage-1
     Move Operator
@@ -225,7 +225,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest2
+              name: default.dest2_n4
 
   Stage: Stage-5
     Stats Work
@@ -233,41 +233,41 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: k1, k2
           Column Types: string, string
-          Table: default.dest2
+          Table: default.dest2_n4
 
 PREHOOK: query: from (
   SELECT a.key key1, a.value value1, b.key key2, b.value value2 
-  FROM tbl1 a JOIN tbl2 b 
+  FROM tbl1_n2 a JOIN tbl2_n1 b 
   ON a.key = b.key ) subq
-INSERT OVERWRITE TABLE dest1 select key1, key2
-INSERT OVERWRITE TABLE dest2 select value1, value2
+INSERT OVERWRITE TABLE dest1_n20 select key1, key2
+INSERT OVERWRITE TABLE dest2_n4 select value1, value2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tbl1
-PREHOOK: Input: default@tbl2
-PREHOOK: Output: default@dest1
-PREHOOK: Output: default@dest2
+PREHOOK: Input: default@tbl1_n2
+PREHOOK: Input: default@tbl2_n1
+PREHOOK: Output: default@dest1_n20
+PREHOOK: Output: default@dest2_n4
 POSTHOOK: query: from (
   SELECT a.key key1, a.value value1, b.key key2, b.value value2 
-  FROM tbl1 a JOIN tbl2 b 
+  FROM tbl1_n2 a JOIN tbl2_n1 b 
   ON a.key = b.key ) subq
-INSERT OVERWRITE TABLE dest1 select key1, key2
-INSERT OVERWRITE TABLE dest2 select value1, value2
+INSERT OVERWRITE TABLE dest1_n20 select key1, key2
+INSERT OVERWRITE TABLE dest2_n4 select value1, value2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tbl1
-POSTHOOK: Input: default@tbl2
-POSTHOOK: Output: default@dest1
-POSTHOOK: Output: default@dest2
-POSTHOOK: Lineage: dest1.k1 SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.k2 SIMPLE [(tbl2)b.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest2.k1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.k2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: select * from dest1
+POSTHOOK: Input: default@tbl1_n2
+POSTHOOK: Input: default@tbl2_n1
+POSTHOOK: Output: default@dest1_n20
+POSTHOOK: Output: default@dest2_n4
+POSTHOOK: Lineage: dest1_n20.k1 SIMPLE [(tbl1_n2)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest1_n20.k2 SIMPLE [(tbl2_n1)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest2_n4.k1 SIMPLE [(tbl1_n2)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: dest2_n4.k2 SIMPLE [(tbl2_n1)b.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select * from dest1_n20
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n20
 #### A masked pattern was here ####
-POSTHOOK: query: select * from dest1
+POSTHOOK: query: select * from dest1_n20
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n20
 #### A masked pattern was here ####
 0	0
 0	0
@@ -291,13 +291,13 @@ POSTHOOK: Input: default@dest1
 5	5
 8	8
 9	9
-PREHOOK: query: select * from dest2
+PREHOOK: query: select * from dest2_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest2
+PREHOOK: Input: default@dest2_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select * from dest2
+POSTHOOK: query: select * from dest2_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest2
+POSTHOOK: Input: default@dest2_n4
 #### A masked pattern was here ####
 val_0	val_0
 val_0	val_0
@@ -324,18 +324,18 @@ val_9	val_9
 PREHOOK: query: explain 
 from (
   SELECT a.key key1, a.value value1, b.key key2, b.value value2 
-  FROM tbl1 a JOIN tbl2 b 
+  FROM tbl1_n2 a JOIN tbl2_n1 b 
   ON a.key = b.key ) subq
-INSERT OVERWRITE TABLE dest1 select key1, key2
-INSERT OVERWRITE TABLE dest2 select value1, value2
+INSERT OVERWRITE TABLE dest1_n20 select key1, key2
+INSERT OVERWRITE TABLE dest2_n4 select value1, value2
 PREHOOK: type: QUERY
 POSTHOOK: query: explain 
 from (
   SELECT a.key key1, a.value value1, b.key key2, b.value value2 
-  FROM tbl1 a JOIN tbl2 b 
+  FROM tbl1_n2 a JOIN tbl2_n1 b 
   ON a.key = b.key ) subq
-INSERT OVERWRITE TABLE dest1 select key1, key2
-INSERT OVERWRITE TABLE dest2 select value1, value2
+INSERT OVERWRITE TABLE dest1_n20 select key1, key2
+INSERT OVERWRITE TABLE dest2_n4 select value1, value2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -396,7 +396,7 @@ STAGE PLANS:
                                 input format: org.apache.hadoop.mapred.TextInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                                name: default.dest1
+                                name: default.dest1_n20
                           Select Operator
                             expressions: _col0 (type: int), _col1 (type: int)
                             outputColumnNames: k1, k2
@@ -421,7 +421,7 @@ STAGE PLANS:
                                 input format: org.apache.hadoop.mapred.TextInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                                name: default.dest2
+                                name: default.dest2_n4
                           Select Operator
                             expressions: _col0 (type: string), _col1 (type: string)
                             outputColumnNames: k1, k2
@@ -478,7 +478,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n20
 
   Stage: Stage-4
     Stats Work
@@ -486,7 +486,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: k1, k2
           Column Types: int, int
-          Table: default.dest1
+          Table: default.dest1_n20
 
   Stage: Stage-1
     Move Operator
@@ -496,7 +496,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest2
+              name: default.dest2_n4
 
   Stage: Stage-5
     Stats Work
@@ -504,41 +504,41 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: k1, k2
           Column Types: string, string
-          Table: default.dest2
+          Table: default.dest2_n4
 
 PREHOOK: query: from (
   SELECT a.key key1, a.value value1, b.key key2, b.value value2 
-  FROM tbl1 a JOIN tbl2 b 
+  FROM tbl1_n2 a JOIN tbl2_n1 b 
   ON a.key = b.key ) subq
-INSERT OVERWRITE TABLE dest1 select key1, key2
-INSERT OVERWRITE TABLE dest2 select value1, value2
+INSERT OVERWRITE TABLE dest1_n20 select key1, key2
+INSERT OVERWRITE TABLE dest2_n4 select value1, value2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tbl1
-PREHOOK: Input: default@tbl2
-PREHOOK: Output: default@dest1
-PREHOOK: Output: default@dest2
+PREHOOK: Input: default@tbl1_n2
+PREHOOK: Input: default@tbl2_n1
+PREHOOK: Output: default@dest1_n20
+PREHOOK: Output: default@dest2_n4
 POSTHOOK: query: from (
   SELECT a.key key1, a.value value1, b.key key2, b.value value2 
-  FROM tbl1 a JOIN tbl2 b 
+  FROM tbl1_n2 a JOIN tbl2_n1 b 
   ON a.key = b.key ) subq
-INSERT OVERWRITE TABLE dest1 select key1, key2
-INSERT OVERWRITE TABLE dest2 select value1, value2
+INSERT OVERWRITE TABLE dest1_n20 select key1, key2
+INSERT OVERWRITE TABLE dest2_n4 select value1, value2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tbl1
-POSTHOOK: Input: default@tbl2
-POSTHOOK: Output: default@dest1
-POSTHOOK: Output: default@dest2
-POSTHOOK: Lineage: dest1.k1 SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.k2 SIMPLE [(tbl2)b.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest2.k1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.k2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: select * from dest1
+POSTHOOK: Input: default@tbl1_n2
+POSTHOOK: Input: default@tbl2_n1
+POSTHOOK: Output: default@dest1_n20
+POSTHOOK: Output: default@dest2_n4
+POSTHOOK: Lineage: dest1_n20.k1 SIMPLE [(tbl1_n2)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest1_n20.k2 SIMPLE [(tbl2_n1)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest2_n4.k1 SIMPLE [(tbl1_n2)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: dest2_n4.k2 SIMPLE [(tbl2_n1)b.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select * from dest1_n20
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n20
 #### A masked pattern was here ####
-POSTHOOK: query: select * from dest1
+POSTHOOK: query: select * from dest1_n20
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n20
 #### A masked pattern was here ####
 0	0
 0	0
@@ -562,13 +562,13 @@ POSTHOOK: Input: default@dest1
 5	5
 8	8
 9	9
-PREHOOK: query: select * from dest2
+PREHOOK: query: select * from dest2_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest2
+PREHOOK: Input: default@dest2_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select * from dest2
+POSTHOOK: query: select * from dest2_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest2
+POSTHOOK: Input: default@dest2_n4
 #### A masked pattern was here ####
 val_0	val_0
 val_0	val_0
@@ -595,18 +595,18 @@ val_9	val_9
 PREHOOK: query: explain 
 from (
   SELECT a.key key1, a.value value1, b.key key2, b.value value2 
-  FROM tbl1 a JOIN tbl2 b 
+  FROM tbl1_n2 a JOIN tbl2_n1 b 
   ON a.key = b.key ) subq
-INSERT OVERWRITE TABLE dest1 select key1, key2
-INSERT OVERWRITE TABLE dest2 select value1, value2
+INSERT OVERWRITE TABLE dest1_n20 select key1, key2
+INSERT OVERWRITE TABLE dest2_n4 select value1, value2
 PREHOOK: type: QUERY
 POSTHOOK: query: explain 
 from (
   SELECT a.key key1, a.value value1, b.key key2, b.value value2 
-  FROM tbl1 a JOIN tbl2 b 
+  FROM tbl1_n2 a JOIN tbl2_n1 b 
   ON a.key = b.key ) subq
-INSERT OVERWRITE TABLE dest1 select key1, key2
-INSERT OVERWRITE TABLE dest2 select value1, value2
+INSERT OVERWRITE TABLE dest1_n20 select key1, key2
+INSERT OVERWRITE TABLE dest2_n4 select value1, value2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -667,7 +667,7 @@ STAGE PLANS:
                                 input format: org.apache.hadoop.mapred.TextInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                                name: default.dest1
+                                name: default.dest1_n20
                           Select Operator
                             expressions: _col0 (type: int), _col1 (type: int)
                             outputColumnNames: k1, k2
@@ -692,7 +692,7 @@ STAGE PLANS:
                                 input format: org.apache.hadoop.mapred.TextInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                                name: default.dest2
+                                name: default.dest2_n4
                           Select Operator
                             expressions: _col0 (type: string), _col1 (type: string)
                             outputColumnNames: k1, k2
@@ -749,7 +749,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n20
 
   Stage: Stage-4
     Stats Work
@@ -757,7 +757,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: k1, k2
           Column Types: int, int
-          Table: default.dest1
+          Table: default.dest1_n20
 
   Stage: Stage-1
     Move Operator
@@ -767,7 +767,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest2
+              name: default.dest2_n4
 
   Stage: Stage-5
     Stats Work
@@ -775,41 +775,41 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: k1, k2
           Column Types: string, string
-          Table: default.dest2
+          Table: default.dest2_n4
 
 PREHOOK: query: from (
   SELECT a.key key1, a.value value1, b.key key2, b.value value2 
-  FROM tbl1 a JOIN tbl2 b 
+  FROM tbl1_n2 a JOIN tbl2_n1 b 
   ON a.key = b.key ) subq
-INSERT OVERWRITE TABLE dest1 select key1, key2
-INSERT OVERWRITE TABLE dest2 select value1, value2
+INSERT OVERWRITE TABLE dest1_n20 select key1, key2
+INSERT OVERWRITE TABLE dest2_n4 select value1, value2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tbl1
-PREHOOK: Input: default@tbl2
-PREHOOK: Output: default@dest1
-PREHOOK: Output: default@dest2
+PREHOOK: Input: default@tbl1_n2
+PREHOOK: Input: default@tbl2_n1
+PREHOOK: Output: default@dest1_n20
+PREHOOK: Output: default@dest2_n4
 POSTHOOK: query: from (
   SELECT a.key key1, a.value value1, b.key key2, b.value value2 
-  FROM tbl1 a JOIN tbl2 b 
+  FROM tbl1_n2 a JOIN tbl2_n1 b 
   ON a.key = b.key ) subq
-INSERT OVERWRITE TABLE dest1 select key1, key2
-INSERT OVERWRITE TABLE dest2 select value1, value2
+INSERT OVERWRITE TABLE dest1_n20 select key1, key2
+INSERT OVERWRITE TABLE dest2_n4 select value1, value2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tbl1
-POSTHOOK: Input: default@tbl2
-POSTHOOK: Output: default@dest1
-POSTHOOK: Output: default@dest2
-POSTHOOK: Lineage: dest1.k1 SIMPLE [(tbl1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.k2 SIMPLE [(tbl2)b.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest2.k1 SIMPLE [(tbl1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.k2 SIMPLE [(tbl2)b.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: select * from dest1
+POSTHOOK: Input: default@tbl1_n2
+POSTHOOK: Input: default@tbl2_n1
+POSTHOOK: Output: default@dest1_n20
+POSTHOOK: Output: default@dest2_n4
+POSTHOOK: Lineage: dest1_n20.k1 SIMPLE [(tbl1_n2)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest1_n20.k2 SIMPLE [(tbl2_n1)b.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest2_n4.k1 SIMPLE [(tbl1_n2)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: dest2_n4.k2 SIMPLE [(tbl2_n1)b.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select * from dest1_n20
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n20
 #### A masked pattern was here ####
-POSTHOOK: query: select * from dest1
+POSTHOOK: query: select * from dest1_n20
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n20
 #### A masked pattern was here ####
 0	0
 0	0
@@ -833,13 +833,13 @@ POSTHOOK: Input: default@dest1
 5	5
 8	8
 9	9
-PREHOOK: query: select * from dest2
+PREHOOK: query: select * from dest2_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest2
+PREHOOK: Input: default@dest2_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select * from dest2
+POSTHOOK: query: select * from dest2_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest2
+POSTHOOK: Input: default@dest2_n4
 #### A masked pattern was here ####
 val_0	val_0
 val_0	val_0

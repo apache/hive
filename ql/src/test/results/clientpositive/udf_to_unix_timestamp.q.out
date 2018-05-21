@@ -11,80 +11,80 @@ to_unix_timestamp(date[, pattern]) - Returns the UNIX timestamp
 Converts the specified time to number of seconds since 1970-01-01.
 Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFToUnixTimeStamp
 Function type:BUILTIN
-PREHOOK: query: create table oneline(key int, value string)
+PREHOOK: query: create table oneline_n0(key int, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@oneline
-POSTHOOK: query: create table oneline(key int, value string)
+PREHOOK: Output: default@oneline_n0
+POSTHOOK: query: create table oneline_n0(key int, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@oneline
-PREHOOK: query: load data local inpath '../../data/files/things.txt' into table oneline
+POSTHOOK: Output: default@oneline_n0
+PREHOOK: query: load data local inpath '../../data/files/things.txt' into table oneline_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@oneline
-POSTHOOK: query: load data local inpath '../../data/files/things.txt' into table oneline
+PREHOOK: Output: default@oneline_n0
+POSTHOOK: query: load data local inpath '../../data/files/things.txt' into table oneline_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@oneline
+POSTHOOK: Output: default@oneline_n0
 PREHOOK: query: SELECT
   '2009-03-20 11:30:01',
   to_unix_timestamp('2009-03-20 11:30:01')
-FROM oneline
+FROM oneline_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@oneline
+PREHOOK: Input: default@oneline_n0
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT
   '2009-03-20 11:30:01',
   to_unix_timestamp('2009-03-20 11:30:01')
-FROM oneline
+FROM oneline_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@oneline
+POSTHOOK: Input: default@oneline_n0
 #### A masked pattern was here ####
 2009-03-20 11:30:01	1237573801
 PREHOOK: query: SELECT
   '2009-03-20',
   to_unix_timestamp('2009-03-20', 'yyyy-MM-dd')
-FROM oneline
+FROM oneline_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@oneline
+PREHOOK: Input: default@oneline_n0
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT
   '2009-03-20',
   to_unix_timestamp('2009-03-20', 'yyyy-MM-dd')
-FROM oneline
+FROM oneline_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@oneline
+POSTHOOK: Input: default@oneline_n0
 #### A masked pattern was here ####
 2009-03-20	1237532400
 PREHOOK: query: SELECT
   '2009 Mar 20 11:30:01 am',
   to_unix_timestamp('2009 Mar 20 11:30:01 am', 'yyyy MMM dd h:mm:ss a')
-FROM oneline
+FROM oneline_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@oneline
+PREHOOK: Input: default@oneline_n0
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT
   '2009 Mar 20 11:30:01 am',
   to_unix_timestamp('2009 Mar 20 11:30:01 am', 'yyyy MMM dd h:mm:ss a')
-FROM oneline
+FROM oneline_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@oneline
+POSTHOOK: Input: default@oneline_n0
 #### A masked pattern was here ####
 2009 Mar 20 11:30:01 am	1237573801
 PREHOOK: query: SELECT
   'random_string',
   to_unix_timestamp('random_string')
-FROM oneline
+FROM oneline_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@oneline
+PREHOOK: Input: default@oneline_n0
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT
   'random_string',
   to_unix_timestamp('random_string')
-FROM oneline
+FROM oneline_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@oneline
+POSTHOOK: Input: default@oneline_n0
 #### A masked pattern was here ####
 random_string	NULL
 PREHOOK: query: explain select * from (select * from src) a where unix_timestamp(a.key) > 10

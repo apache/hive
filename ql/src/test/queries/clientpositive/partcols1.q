@@ -1,11 +1,11 @@
 --! qt:dataset:src
 
-create table test1(col1 string) partitioned by (partitionId int);
-insert overwrite table test1 partition (partitionId=1)
+create table test1_n15(col1 string) partitioned by (partitionId int);
+insert overwrite table test1_n15 partition (partitionId=1)
   select key from src tablesample (10 rows);
 
  FROM (
- FROM test1
+ FROM test1_n15
  SELECT partitionId, 111 as col2, 222 as col3, 333 as col4
  WHERE partitionId = 1
  DISTRIBUTE BY partitionId

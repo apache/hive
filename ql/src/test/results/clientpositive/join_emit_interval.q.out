@@ -1,54 +1,54 @@
-PREHOOK: query: CREATE TABLE test1 (key INT, value INT, col_1 STRING)
+PREHOOK: query: CREATE TABLE test1_n7 (key INT, value INT, col_1 STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test1
-POSTHOOK: query: CREATE TABLE test1 (key INT, value INT, col_1 STRING)
+PREHOOK: Output: default@test1_n7
+POSTHOOK: query: CREATE TABLE test1_n7 (key INT, value INT, col_1 STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test1
-PREHOOK: query: INSERT INTO test1 VALUES (NULL, NULL, 'None'), (98, NULL, 'None'),
+POSTHOOK: Output: default@test1_n7
+PREHOOK: query: INSERT INTO test1_n7 VALUES (NULL, NULL, 'None'), (98, NULL, 'None'),
     (99, 0, 'Alice'), (99, 2, 'Mat'), (100, 1, 'Bob'), (101, 2, 'Car')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@test1
-POSTHOOK: query: INSERT INTO test1 VALUES (NULL, NULL, 'None'), (98, NULL, 'None'),
+PREHOOK: Output: default@test1_n7
+POSTHOOK: query: INSERT INTO test1_n7 VALUES (NULL, NULL, 'None'), (98, NULL, 'None'),
     (99, 0, 'Alice'), (99, 2, 'Mat'), (100, 1, 'Bob'), (101, 2, 'Car')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@test1
-POSTHOOK: Lineage: test1.col_1 SCRIPT []
-POSTHOOK: Lineage: test1.key SCRIPT []
-POSTHOOK: Lineage: test1.value SCRIPT []
-PREHOOK: query: CREATE TABLE test2 (key INT, value INT, col_2 STRING)
+POSTHOOK: Output: default@test1_n7
+POSTHOOK: Lineage: test1_n7.col_1 SCRIPT []
+POSTHOOK: Lineage: test1_n7.key SCRIPT []
+POSTHOOK: Lineage: test1_n7.value SCRIPT []
+PREHOOK: query: CREATE TABLE test2_n4 (key INT, value INT, col_2 STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test2
-POSTHOOK: query: CREATE TABLE test2 (key INT, value INT, col_2 STRING)
+PREHOOK: Output: default@test2_n4
+POSTHOOK: query: CREATE TABLE test2_n4 (key INT, value INT, col_2 STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test2
-PREHOOK: query: INSERT INTO test2 VALUES (102, 2, 'Del'), (103, 2, 'Ema'),
+POSTHOOK: Output: default@test2_n4
+PREHOOK: query: INSERT INTO test2_n4 VALUES (102, 2, 'Del'), (103, 2, 'Ema'),
     (104, 3, 'Fli'), (105, NULL, 'None')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@test2
-POSTHOOK: query: INSERT INTO test2 VALUES (102, 2, 'Del'), (103, 2, 'Ema'),
+PREHOOK: Output: default@test2_n4
+POSTHOOK: query: INSERT INTO test2_n4 VALUES (102, 2, 'Del'), (103, 2, 'Ema'),
     (104, 3, 'Fli'), (105, NULL, 'None')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@test2
-POSTHOOK: Lineage: test2.col_2 SCRIPT []
-POSTHOOK: Lineage: test2.key SCRIPT []
-POSTHOOK: Lineage: test2.value SCRIPT []
+POSTHOOK: Output: default@test2_n4
+POSTHOOK: Lineage: test2_n4.col_2 SCRIPT []
+POSTHOOK: Lineage: test2_n4.key SCRIPT []
+POSTHOOK: Lineage: test2_n4.value SCRIPT []
 PREHOOK: query: EXPLAIN
 SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.value=test2.value AND test1.key between 100 and 102)
+FROM test1_n7 LEFT OUTER JOIN test2_n4
+ON (test1_n7.value=test2_n4.value AND test1_n7.key between 100 and 102)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.value=test2.value AND test1.key between 100 and 102)
+FROM test1_n7 LEFT OUTER JOIN test2_n4
+ON (test1_n7.value=test2_n4.value AND test1_n7.key between 100 and 102)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -59,7 +59,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: test1
+            alias: test1_n7
             Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int), col_1 (type: string)
@@ -72,7 +72,7 @@ STAGE PLANS:
                 Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col0 (type: int), _col2 (type: string)
           TableScan
-            alias: test2
+            alias: test2_n4
             Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int), col_2 (type: string)
@@ -111,18 +111,18 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.value=test2.value AND test1.key between 100 and 102)
+FROM test1_n7 LEFT OUTER JOIN test2_n4
+ON (test1_n7.value=test2_n4.value AND test1_n7.key between 100 and 102)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test1
-PREHOOK: Input: default@test2
+PREHOOK: Input: default@test1_n7
+PREHOOK: Input: default@test2_n4
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.value=test2.value AND test1.key between 100 and 102)
+FROM test1_n7 LEFT OUTER JOIN test2_n4
+ON (test1_n7.value=test2_n4.value AND test1_n7.key between 100 and 102)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test1
-POSTHOOK: Input: default@test2
+POSTHOOK: Input: default@test1_n7
+POSTHOOK: Input: default@test2_n4
 #### A masked pattern was here ####
 98	NULL	None	NULL	NULL	NULL
 NULL	NULL	None	NULL	NULL	NULL
@@ -134,13 +134,13 @@ NULL	NULL	None	NULL	NULL	NULL
 Warning: Shuffle Join JOIN[6][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: EXPLAIN
 SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.key between 100 and 102)
+FROM test1_n7 LEFT OUTER JOIN test2_n4
+ON (test1_n7.key between 100 and 102)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.key between 100 and 102)
+FROM test1_n7 LEFT OUTER JOIN test2_n4
+ON (test1_n7.key between 100 and 102)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -151,7 +151,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: test1
+            alias: test1_n7
             Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int), col_1 (type: string)
@@ -162,7 +162,7 @@ STAGE PLANS:
                 Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
           TableScan
-            alias: test2
+            alias: test2_n4
             Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int), col_2 (type: string)
@@ -200,18 +200,18 @@ STAGE PLANS:
 
 Warning: Shuffle Join JOIN[6][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.key between 100 and 102)
+FROM test1_n7 LEFT OUTER JOIN test2_n4
+ON (test1_n7.key between 100 and 102)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test1
-PREHOOK: Input: default@test2
+PREHOOK: Input: default@test1_n7
+PREHOOK: Input: default@test2_n4
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.key between 100 and 102)
+FROM test1_n7 LEFT OUTER JOIN test2_n4
+ON (test1_n7.key between 100 and 102)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test1
-POSTHOOK: Input: default@test2
+POSTHOOK: Input: default@test1_n7
+POSTHOOK: Input: default@test2_n4
 #### A masked pattern was here ####
 101	2	Car	105	NULL	None
 101	2	Car	104	3	Fli

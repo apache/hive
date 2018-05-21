@@ -11,26 +11,26 @@ set hive.explain.user=false;
 
 -- union case: all subqueries are a map-reduce jobs, 3 way union, same input for all sub-queries, followed by filesink
 
-create table tmptable(key string, value int);
+create table tmptable_n9(key string, value int);
 
 explain 
-insert overwrite table tmptable
-  select unionsrc.key, unionsrc.value FROM (select 'tst1' as key, count(1) as value from src s1
+insert overwrite table tmptable_n9
+  select unionsrc.key, unionsrc.value FROM (select 'tst1_n93' as key, count(1) as value from src s1
                                         UNION DISTINCT  
-                                            select 'tst2' as key, count(1) as value from src s2
+                                            select 'tst2_n58' as key, count(1) as value from src s2
                                         UNION DISTINCT
-                                            select 'tst3' as key, count(1) as value from src s3) unionsrc;
+                                            select 'tst3_n22' as key, count(1) as value from src s3) unionsrc;
 
 
-insert overwrite table tmptable
-  select unionsrc.key, unionsrc.value FROM (select 'tst1' as key, count(1) as value from src s1
+insert overwrite table tmptable_n9
+  select unionsrc.key, unionsrc.value FROM (select 'tst1_n93' as key, count(1) as value from src s1
                                         UNION DISTINCT  
-                                            select 'tst2' as key, count(1) as value from src s2
+                                            select 'tst2_n58' as key, count(1) as value from src s2
                                         UNION DISTINCT
-                                            select 'tst3' as key, count(1) as value from src s3) unionsrc;
+                                            select 'tst3_n22' as key, count(1) as value from src s3) unionsrc;
 
 
-select * from tmptable x sort by x.key;
+select * from tmptable_n9 x sort by x.key;
 
 
 -- union12.q
@@ -43,19 +43,19 @@ create table tmptable12(key string, value int);
 
 explain 
 insert overwrite table tmptable12
-  select unionsrc.key, unionsrc.value FROM (select 'tst1' as key, count(1) as value from src s1
+  select unionsrc.key, unionsrc.value FROM (select 'tst1_n93' as key, count(1) as value from src s1
                                         UNION DISTINCT  
-                                            select 'tst2' as key, count(1) as value from src1 s2
+                                            select 'tst2_n58' as key, count(1) as value from src1 s2
                                         UNION DISTINCT
-                                            select 'tst3' as key, count(1) as value from srcbucket s3) unionsrc;
+                                            select 'tst3_n22' as key, count(1) as value from srcbucket s3) unionsrc;
 
 
 insert overwrite table tmptable12
-  select unionsrc.key, unionsrc.value FROM (select 'tst1' as key, count(1) as value from src s1
+  select unionsrc.key, unionsrc.value FROM (select 'tst1_n93' as key, count(1) as value from src s1
                                         UNION DISTINCT  
-                                            select 'tst2' as key, count(1) as value from src1 s2
+                                            select 'tst2_n58' as key, count(1) as value from src1 s2
                                         UNION DISTINCT
-                                            select 'tst3' as key, count(1) as value from srcbucket s3) unionsrc;
+                                            select 'tst3_n22' as key, count(1) as value from srcbucket s3) unionsrc;
 
 select * from tmptable12 x sort by x.key;
 -- union13.q
@@ -71,27 +71,27 @@ select unionsrc.key, unionsrc.value FROM (select s1.key as key, s1.value as valu
                                           select s2.key as key, s2.value as value from src s2) unionsrc;
 -- union17.q
 
-CREATE TABLE DEST1(key STRING, value STRING) STORED AS TEXTFILE;
-CREATE TABLE DEST2(key STRING, val1 STRING, val2 STRING) STORED AS TEXTFILE;
+CREATE TABLE DEST1_n96(key STRING, value STRING) STORED AS TEXTFILE;
+CREATE TABLE DEST2_n26(key STRING, val1 STRING, val2 STRING) STORED AS TEXTFILE;
 
 -- SORT_BEFORE_DIFF
 -- union case:map-reduce sub-queries followed by multi-table insert
 
 explain 
-FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
+FROM (select 'tst1_n93' as key, cast(count(1) as string) as value from src s1
                          UNION DISTINCT  
       select s2.key as key, s2.value as value from src s2) unionsrc
-INSERT OVERWRITE TABLE DEST1 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
-INSERT OVERWRITE TABLE DEST2 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key, unionsrc.value;
+INSERT OVERWRITE TABLE DEST1_n96 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
+INSERT OVERWRITE TABLE DEST2_n26 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key, unionsrc.value;
 
-FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
+FROM (select 'tst1_n93' as key, cast(count(1) as string) as value from src s1
                          UNION DISTINCT  
       select s2.key as key, s2.value as value from src s2) unionsrc
-INSERT OVERWRITE TABLE DEST1 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
-INSERT OVERWRITE TABLE DEST2 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key, unionsrc.value;
+INSERT OVERWRITE TABLE DEST1_n96 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
+INSERT OVERWRITE TABLE DEST2_n26 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key, unionsrc.value;
 
-SELECT DEST1.* FROM DEST1;
-SELECT DEST2.* FROM DEST2;
+SELECT DEST1_n96.* FROM DEST1_n96;
+SELECT DEST2_n26.* FROM DEST2_n26;
 -- union18.q
 
 CREATE TABLE DEST118(key STRING, value STRING) STORED AS TEXTFILE;
@@ -100,13 +100,13 @@ CREATE TABLE DEST218(key STRING, val1 STRING, val2 STRING) STORED AS TEXTFILE;
 -- union case:map-reduce sub-queries followed by multi-table insert 
 
 explain 
-FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
+FROM (select 'tst1_n93' as key, cast(count(1) as string) as value from src s1
                          UNION DISTINCT  
       select s2.key as key, s2.value as value from src s2) unionsrc
 INSERT OVERWRITE TABLE DEST118 SELECT unionsrc.key, unionsrc.value
 INSERT OVERWRITE TABLE DEST218 SELECT unionsrc.key, unionsrc.value, unionsrc.value;
 
-FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
+FROM (select 'tst1_n93' as key, cast(count(1) as string) as value from src s1
                          UNION DISTINCT  
       select s2.key as key, s2.value as value from src s2) unionsrc
 INSERT OVERWRITE TABLE DEST118 SELECT unionsrc.key, unionsrc.value
@@ -125,13 +125,13 @@ CREATE TABLE DEST219(key STRING, val1 STRING, val2 STRING) STORED AS TEXTFILE;
 -- union case:map-reduce sub-queries followed by multi-table insert
 
 explain 
-FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
+FROM (select 'tst1_n93' as key, cast(count(1) as string) as value from src s1
                          UNION DISTINCT  
       select s2.key as key, s2.value as value from src s2) unionsrc
 INSERT OVERWRITE TABLE DEST119 SELECT unionsrc.key, count(unionsrc.value) group by unionsrc.key
 INSERT OVERWRITE TABLE DEST219 SELECT unionsrc.key, unionsrc.value, unionsrc.value;
 
-FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
+FROM (select 'tst1_n93' as key, cast(count(1) as string) as value from src s1
                          UNION DISTINCT  
       select s2.key as key, s2.value as value from src s2) unionsrc
 INSERT OVERWRITE TABLE DEST119 SELECT unionsrc.key, count(unionsrc.value) group by unionsrc.key
@@ -145,13 +145,13 @@ SELECT DEST219.* FROM DEST219 SORT BY DEST219.key, DEST219.val1, DEST219.val2;
 
 -- SORT_QUERY_RESULTS
 
-create table dst_union22(k1 string, k2 string, k3 string, k4 string) partitioned by (ds string);
-create table dst_union22_delta(k0 string, k1 string, k2 string, k3 string, k4 string, k5 string) partitioned by (ds string);
+create table dst_union22_n0(k1 string, k2 string, k3 string, k4 string) partitioned by (ds string);
+create table dst_union22_delta_n0(k0 string, k1 string, k2 string, k3 string, k4 string, k5 string) partitioned by (ds string);
 
-insert overwrite table dst_union22 partition (ds='1')
+insert overwrite table dst_union22_n0 partition (ds='1')
 select key, value, key , value from src;
 
-insert overwrite table dst_union22_delta partition (ds='1')
+insert overwrite table dst_union22_delta_n0 partition (ds='1')
 select key, key, value, key, value, value from src;
 
 set hive.merge.mapfiles=false;
@@ -163,31 +163,31 @@ set hive.auto.convert.join.noconditionaltask.size=10000;
 -- Since the inputs are small, it should be automatically converted to mapjoin
 
 explain extended
-insert overwrite table dst_union22 partition (ds='2')
+insert overwrite table dst_union22_n0 partition (ds='2')
 select * from
 (
-select k1 as k1, k2 as k2, k3 as k3, k4 as k4 from dst_union22_delta where ds = '1' and k0 <= 50
+select k1 as k1, k2 as k2, k3 as k3, k4 as k4 from dst_union22_delta_n0 where ds = '1' and k0 <= 50
 UNION DISTINCT
 select a.k1 as k1, a.k2 as k2, b.k3 as k3, b.k4 as k4
-from dst_union22 a left outer join (select * from dst_union22_delta where ds = '1' and k0 > 50) b on
+from dst_union22_n0 a left outer join (select * from dst_union22_delta_n0 where ds = '1' and k0 > 50) b on
 a.k1 = b.k1 and a.ds='1'
 where a.k1 > 20
 )
 subq;
 
-insert overwrite table dst_union22 partition (ds='2')
+insert overwrite table dst_union22_n0 partition (ds='2')
 select * from
 (
-select k1 as k1, k2 as k2, k3 as k3, k4 as k4 from dst_union22_delta where ds = '1' and k0 <= 50
+select k1 as k1, k2 as k2, k3 as k3, k4 as k4 from dst_union22_delta_n0 where ds = '1' and k0 <= 50
 UNION DISTINCT
 select a.k1 as k1, a.k2 as k2, b.k3 as k3, b.k4 as k4
-from dst_union22 a left outer join (select * from dst_union22_delta where ds = '1' and k0 > 50) b on
+from dst_union22_n0 a left outer join (select * from dst_union22_delta_n0 where ds = '1' and k0 > 50) b on
 a.k1 = b.k1 and a.ds='1'
 where a.k1 > 20
 )
 subq;
 
-select * from dst_union22 where ds = '2';
+select * from dst_union22_n0 where ds = '2';
 -- union23.q
 
 explain
@@ -209,10 +209,10 @@ from (
 
 -- SORT_QUERY_RESULTS
 
-create table src2 as select key, count(1) as count from src group by key;
-create table src3 as select * from src2;
-create table src4 as select * from src2;
-create table src5 as select * from src2;
+create table src2_n2 as select key, count(1) as count from src group by key;
+create table src3 as select * from src2_n2;
+create table src4 as select * from src2_n2;
+create table src5_n1 as select * from src2_n2;
 
 
 set hive.merge.mapfiles=false;
@@ -221,73 +221,73 @@ set hive.merge.mapredfiles=false;
 
 explain extended
 select s.key, s.count from (
-  select key, count from src2  where key < 10
+  select key, count from src2_n2  where key < 10
   UNION DISTINCT
   select key, count from src3  where key < 10
   UNION DISTINCT
   select key, count from src4  where key < 10
   UNION DISTINCT
-  select key, count(1) as count from src5 where key < 10 group by key
+  select key, count(1) as count from src5_n1 where key < 10 group by key
 )s
 ;
 
 select s.key, s.count from (
-  select key, count from src2  where key < 10
+  select key, count from src2_n2  where key < 10
   UNION DISTINCT
   select key, count from src3  where key < 10
   UNION DISTINCT
   select key, count from src4  where key < 10
   UNION DISTINCT
-  select key, count(1) as count from src5 where key < 10 group by key
+  select key, count(1) as count from src5_n1 where key < 10 group by key
 )s
 ;
 
 explain extended
 select s.key, s.count from (
-  select key, count from src2  where key < 10
+  select key, count from src2_n2  where key < 10
   UNION DISTINCT
   select key, count from src3  where key < 10
   UNION DISTINCT
-  select a.key as key, b.count as count from src4 a join src5 b on a.key=b.key where a.key < 10
+  select a.key as key, b.count as count from src4 a join src5_n1 b on a.key=b.key where a.key < 10
 )s
 ;
 
 select s.key, s.count from (
-  select key, count from src2  where key < 10
+  select key, count from src2_n2  where key < 10
   UNION DISTINCT
   select key, count from src3  where key < 10
   UNION DISTINCT
-  select a.key as key, b.count as count from src4 a join src5 b on a.key=b.key where a.key < 10
+  select a.key as key, b.count as count from src4 a join src5_n1 b on a.key=b.key where a.key < 10
 )s
 ;
 
 explain extended
 select s.key, s.count from (
-  select key, count from src2  where key < 10
+  select key, count from src2_n2  where key < 10
   UNION DISTINCT
   select key, count from src3  where key < 10
   UNION DISTINCT
-  select a.key as key, count(1) as count from src4 a join src5 b on a.key=b.key where a.key < 10 group by a.key
+  select a.key as key, count(1) as count from src4 a join src5_n1 b on a.key=b.key where a.key < 10 group by a.key
 )s
 ;
 
 select s.key, s.count from (
-  select key, count from src2  where key < 10
+  select key, count from src2_n2  where key < 10
   UNION DISTINCT
   select key, count from src3  where key < 10
   UNION DISTINCT
-  select a.key as key, count(1) as count from src4 a join src5 b on a.key=b.key where a.key < 10 group by a.key
+  select a.key as key, count(1) as count from src4 a join src5_n1 b on a.key=b.key where a.key < 10 group by a.key
 )s
 ;
 -- union25.q
 
-create table tmp_srcpart like srcpart;
+create table tmp_srcpart_n0 like srcpart;
 
-insert overwrite table tmp_srcpart partition (ds='2008-04-08', hr='11')
+insert overwrite table tmp_srcpart_n0 partition (ds='2008-04-08', hr='11')
 select key, value from srcpart where ds='2008-04-08' and hr='11';
 
 explain
-create table tmp_unionall as
+create table tmp_unionall_n0 as
 SELECT count(1) as counts, key, value
 FROM
 (
@@ -297,9 +297,9 @@ FROM
 
   SELECT key, key as value FROM (
     SELECT distinct key FROM (
-      SELECT key, value FROM tmp_srcpart a WHERE a.ds='2008-04-08' and a.hr='11'
+      SELECT key, value FROM tmp_srcpart_n0 a WHERE a.ds='2008-04-08' and a.hr='11'
         UNION DISTINCT
-      SELECT key, value FROM tmp_srcpart b WHERE b.ds='2008-04-08' and b.hr='11'
+      SELECT key, value FROM tmp_srcpart_n0 b WHERE b.ds='2008-04-08' and b.hr='11'
     )t
   ) master_table
 ) a GROUP BY key, value
@@ -411,10 +411,10 @@ explain select b.* from jackson_sev_same a join (select * from dim_pho UNION DIS
 select b.* from jackson_sev_same a join (select * from dim_pho UNION DISTINCT select * from jackson_sev_add)b on a.key=b.key and b.key=97;
 -- union28.q
 
-create table union_subq_union(key int, value string);
+create table union_subq_union_n0(key int, value string);
 
 explain
-insert overwrite table union_subq_union 
+insert overwrite table union_subq_union_n0 
 select * from (
   select key, value from src 
   UNION DISTINCT 
@@ -427,7 +427,7 @@ select * from (
 ) a
 ;
 
-insert overwrite table union_subq_union 
+insert overwrite table union_subq_union_n0 
 select * from (
   select key, value from src 
   UNION DISTINCT 
@@ -440,7 +440,7 @@ select * from (
 ) a
 ;
 
-select * from union_subq_union order by key, value limit 20;
+select * from union_subq_union_n0 order by key, value limit 20;
 -- union29.q
 
 create table union_subq_union29(key int, value string);
@@ -566,100 +566,100 @@ select * from union_subq_union30 order by key, value limit 20;
 
 -- SORT_QUERY_RESULTS
 
-drop table t1;
-drop table t2;
+drop table t1_n93;
+drop table t2_n58;
 
 
-create table t1 as select * from src where key < 10;
-create table t2 as select * from src where key < 10;
+create table t1_n93 as select * from src where key < 10;
+create table t2_n58 as select * from src where key < 10;
 
-create table t3(key string, cnt int);
-create table t4(value string, cnt int);
+create table t3_n22(key string, cnt int);
+create table t4_n11(value string, cnt int);
 
 explain
 from
-(select * from t1
+(select * from t1_n93
  UNION DISTINCT
- select * from t2
+ select * from t2_n58
 ) x
-insert overwrite table t3
+insert overwrite table t3_n22
   select key, count(1) group by key
-insert overwrite table t4
+insert overwrite table t4_n11
   select value, count(1) group by value;
 
 from
-(select * from t1
+(select * from t1_n93
  UNION DISTINCT
- select * from t2
+ select * from t2_n58
 ) x
-insert overwrite table t3
+insert overwrite table t3_n22
   select key, count(1) group by key
-insert overwrite table t4
+insert overwrite table t4_n11
   select value, count(1) group by value;
 
-select * from t3;
-select * from t4;
+select * from t3_n22;
+select * from t4_n11;
 
-create table t5(c1 string, cnt int);
-create table t6(c1 string, cnt int);
+create table t5_n4(c1 string, cnt int);
+create table t6_n3(c1 string, cnt int);
 
 explain
 from
 (
- select key as c1, count(1) as cnt from t1 group by key
+ select key as c1, count(1) as cnt from t1_n93 group by key
    UNION DISTINCT
- select key as c1, count(1) as cnt from t2 group by key
+ select key as c1, count(1) as cnt from t2_n58 group by key
 ) x
-insert overwrite table t5
+insert overwrite table t5_n4
   select c1, sum(cnt) group by c1
-insert overwrite table t6
+insert overwrite table t6_n3
   select c1, sum(cnt) group by c1;
 
 from
 (
- select key as c1, count(1) as cnt from t1 group by key
+ select key as c1, count(1) as cnt from t1_n93 group by key
    UNION DISTINCT
- select key as c1, count(1) as cnt from t2 group by key
+ select key as c1, count(1) as cnt from t2_n58 group by key
 ) x
-insert overwrite table t5
+insert overwrite table t5_n4
   select c1, sum(cnt) group by c1
-insert overwrite table t6
+insert overwrite table t6_n3
   select c1, sum(cnt) group by c1;
 
-select * from t5;
-select * from t6;
+select * from t5_n4;
+select * from t6_n3;
 
 
-create table t9 as select key, count(1) as cnt from src where key < 10 group by key;
+create table t9_n1 as select key, count(1) as cnt from src where key < 10 group by key;
 
-create table t7(c1 string, cnt int);
-create table t8(c1 string, cnt int);
+create table t7_n4(c1 string, cnt int);
+create table t8_n2(c1 string, cnt int);
 
 explain
 from
 (
- select key as c1, count(1) as cnt from t1 group by key
+ select key as c1, count(1) as cnt from t1_n93 group by key
    UNION DISTINCT
- select key as c1, cnt from t9
+ select key as c1, cnt from t9_n1
 ) x
-insert overwrite table t7
+insert overwrite table t7_n4
   select c1, count(1) group by c1
-insert overwrite table t8
+insert overwrite table t8_n2
   select c1, count(1) group by c1;
 
 from
 (
- select key as c1, count(1) as cnt from t1 group by key
+ select key as c1, count(1) as cnt from t1_n93 group by key
    UNION DISTINCT
- select key as c1, cnt from t9
+ select key as c1, cnt from t9_n1
 ) x
-insert overwrite table t7
+insert overwrite table t7_n4
   select c1, count(1) group by c1
-insert overwrite table t8
+insert overwrite table t8_n2
   select c1, count(1) group by c1;
 
-select * from t7;
-select * from t8;
+select * from t7_n4;
+select * from t8_n2;
 -- union32.q
 
 -- SORT_QUERY_RESULTS
@@ -670,70 +670,70 @@ select * from t8;
 -- Test simple union with double
 EXPLAIN
 SELECT * FROM 
-(SELECT CAST(key AS DOUBLE) AS key FROM t1
+(SELECT CAST(key AS DOUBLE) AS key FROM t1_n93
 UNION DISTINCT
-SELECT CAST(key AS BIGINT) AS key FROM t2) a;
+SELECT CAST(key AS BIGINT) AS key FROM t2_n58) a;
 
 SELECT * FROM 
-(SELECT CAST(key AS DOUBLE) AS key FROM t1
+(SELECT CAST(key AS DOUBLE) AS key FROM t1_n93
 UNION DISTINCT
-SELECT CAST(key AS BIGINT) AS key FROM t2) a
+SELECT CAST(key AS BIGINT) AS key FROM t2_n58) a
 ;
 
 -- Test union with join on the left
 EXPLAIN
 SELECT * FROM 
-(SELECT CAST(a.key AS BIGINT) AS key FROM t1 a JOIN t2 b ON a.key = b.key
+(SELECT CAST(a.key AS BIGINT) AS key FROM t1_n93 a JOIN t2_n58 b ON a.key = b.key
 UNION DISTINCT
-SELECT CAST(key AS DOUBLE) AS key FROM t2) a
+SELECT CAST(key AS DOUBLE) AS key FROM t2_n58) a
 ;
 
 SELECT * FROM 
-(SELECT CAST(a.key AS BIGINT) AS key FROM t1 a JOIN t2 b ON a.key = b.key
+(SELECT CAST(a.key AS BIGINT) AS key FROM t1_n93 a JOIN t2_n58 b ON a.key = b.key
 UNION DISTINCT
-SELECT CAST(key AS DOUBLE) AS key FROM t2) a
+SELECT CAST(key AS DOUBLE) AS key FROM t2_n58) a
 ;
 
 -- Test union with join on the right
 EXPLAIN
 SELECT * FROM 
-(SELECT CAST(key AS DOUBLE) AS key FROM t2
+(SELECT CAST(key AS DOUBLE) AS key FROM t2_n58
 UNION DISTINCT
-SELECT CAST(a.key AS BIGINT) AS key FROM t1 a JOIN t2 b ON a.key = b.key) a
+SELECT CAST(a.key AS BIGINT) AS key FROM t1_n93 a JOIN t2_n58 b ON a.key = b.key) a
 ;
 
 SELECT * FROM 
-(SELECT CAST(key AS DOUBLE) AS key FROM t2
+(SELECT CAST(key AS DOUBLE) AS key FROM t2_n58
 UNION DISTINCT
-SELECT CAST(a.key AS BIGINT) AS key FROM t1 a JOIN t2 b ON a.key = b.key) a
+SELECT CAST(a.key AS BIGINT) AS key FROM t1_n93 a JOIN t2_n58 b ON a.key = b.key) a
 ;
 
 -- Test union with join on the left selecting multiple columns
 EXPLAIN
 SELECT * FROM 
-(SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS STRING) AS value FROM t1 a JOIN t2 b ON a.key = b.key
+(SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS STRING) AS value FROM t1_n93 a JOIN t2_n58 b ON a.key = b.key
 UNION DISTINCT
-SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2) a
+SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2_n58) a
 ;
 
 SELECT * FROM 
-(SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS CHAR(20)) AS value FROM t1 a JOIN t2 b ON a.key = b.key
+(SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS CHAR(20)) AS value FROM t1_n93 a JOIN t2_n58 b ON a.key = b.key
 UNION DISTINCT
-SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2) a
+SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2_n58) a
 ;
 
 -- Test union with join on the right selecting multiple columns
 EXPLAIN
 SELECT * FROM 
-(SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2
+(SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2_n58
 UNION DISTINCT
-SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS VARCHAR(20)) AS value FROM t1 a JOIN t2 b ON a.key = b.key) a
+SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS VARCHAR(20)) AS value FROM t1_n93 a JOIN t2_n58 b ON a.key = b.key) a
 ;
 
 SELECT * FROM 
-(SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2
+(SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2_n58
 UNION DISTINCT
-SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS VARCHAR(20)) AS value FROM t1 a JOIN t2 b ON a.key = b.key) a
+SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS VARCHAR(20)) AS value FROM t1_n93 a JOIN t2_n58 b ON a.key = b.key) a
 ;
 -- union33.q
 

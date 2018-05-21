@@ -201,7 +201,7 @@ window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 precedi
 
 set hive.cbo.returnpath.hiveop=false;
 -- 22. testViewAsTableInputWithWindowing
-create view IF NOT EXISTS mfgr_price_view as 
+create view IF NOT EXISTS mfgr_price_view_n4 as 
 select p_mfgr, p_brand, 
 round(sum(p_retailprice),2) as s 
 from part 
@@ -212,26 +212,26 @@ select *
 from (
 select p_mfgr, p_brand, s, 
 round(sum(s) over w1 , 2)  as s1
-from mfgr_price_view 
+from mfgr_price_view_n4 
 window w1 as (distribute by p_mfgr sort by p_mfgr )
 ) sq
 order by p_mfgr, p_brand;
 
 select p_mfgr, p_brand, s, 
 round(sum(s) over w1 ,2)  as s1
-from mfgr_price_view 
+from mfgr_price_view_n4 
 window w1 as (distribute by p_mfgr sort by p_brand rows between 2 preceding and current row);
 
 set hive.cbo.returnpath.hiveop=false;
 -- 23. testCreateViewWithWindowingQuery
-create view IF NOT EXISTS mfgr_brand_price_view as 
+create view IF NOT EXISTS mfgr_brand_price_view_n1 as 
 select p_mfgr, p_brand, 
 round(sum(p_retailprice) over w1,2) as s
 from part 
 window w1 as (distribute by p_mfgr sort by p_name rows between 2 preceding and current row);
         
 set hive.cbo.returnpath.hiveop=true ;
-select * from mfgr_brand_price_view;        
+select * from mfgr_brand_price_view_n1;        
         
 -- 24. testLateralViews
 select p_mfgr, p_name, 
@@ -241,7 +241,7 @@ lateral view explode(arr) part_lv as lv_col
 window w1 as (distribute by p_mfgr sort by p_size, lv_col rows between 2 preceding and current row);        
 
 -- 25. testMultipleInserts3SWQs
-CREATE TABLE part_1( 
+CREATE TABLE part_1_n1( 
 p_mfgr STRING, 
 p_name STRING, 
 p_size INT, 
@@ -249,7 +249,7 @@ r INT,
 dr INT, 
 s DOUBLE);
 
-CREATE TABLE part_2( 
+CREATE TABLE part_2_n1( 
 p_mfgr STRING, 
 p_name STRING, 
 p_size INT, 
@@ -259,7 +259,7 @@ cud INT,
 s2 DOUBLE, 
 fv1 INT);
 
-CREATE TABLE part_3( 
+CREATE TABLE part_3_n1( 
 p_mfgr STRING, 
 p_name STRING, 
 p_size INT, 
@@ -268,12 +268,12 @@ ca INT,
 fv INT);
 
 from part 
-INSERT OVERWRITE TABLE part_1 
+INSERT OVERWRITE TABLE part_1_n1 
 select p_mfgr, p_name, p_size, 
 rank() over(distribute by p_mfgr sort by p_name ) as r, 
 dense_rank() over(distribute by p_mfgr sort by p_name ) as dr, 
 round(sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row),2) as s
-INSERT OVERWRITE TABLE part_2 
+INSERT OVERWRITE TABLE part_2_n1 
 select  p_mfgr,p_name, p_size,  
 rank() over(distribute by p_mfgr sort by p_name) as r, 
 dense_rank() over(distribute by p_mfgr sort by p_name) as dr, 
@@ -281,18 +281,18 @@ cume_dist() over(distribute by p_mfgr sort by p_name) as cud,
 round(sum(p_size) over (distribute by p_mfgr sort by p_size range between 5 preceding and current row),1) as s2, 
 first_value(p_size) over w1  as fv1
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following) 
-INSERT OVERWRITE TABLE part_3 
+INSERT OVERWRITE TABLE part_3_n1 
 select  p_mfgr,p_name, p_size,  
 count(*) over(distribute by p_mfgr sort by p_name) as c, 
 count(p_size) over(distribute by p_mfgr sort by p_name) as ca, 
 first_value(p_size) over w1  as fv
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following);
 
-select * from part_1;
+select * from part_1_n1;
 
-select * from part_2;
+select * from part_2_n1;
 
-select * from part_3;
+select * from part_3_n1;
 
 -- 26. testGroupByHavingWithSWQAndAlias
 select p_mfgr, p_name, p_size, min(p_retailprice) as mi,

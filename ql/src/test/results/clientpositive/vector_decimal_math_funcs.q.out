@@ -1,29 +1,29 @@
-PREHOOK: query: CREATE TABLE decimal_test STORED AS ORC AS SELECT cbigint, cdouble, CAST (((cdouble*22.1)/37) AS DECIMAL(20,10)) AS cdecimal1, CAST (((cdouble*9.3)/13) AS DECIMAL(23,14)) AS cdecimal2 FROM alltypesorc
+PREHOOK: query: CREATE TABLE decimal_test_n0 STORED AS ORC AS SELECT cbigint, cdouble, CAST (((cdouble*22.1)/37) AS DECIMAL(20,10)) AS cdecimal1, CAST (((cdouble*9.3)/13) AS DECIMAL(23,14)) AS cdecimal2 FROM alltypesorc
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
-PREHOOK: Output: default@decimal_test
-POSTHOOK: query: CREATE TABLE decimal_test STORED AS ORC AS SELECT cbigint, cdouble, CAST (((cdouble*22.1)/37) AS DECIMAL(20,10)) AS cdecimal1, CAST (((cdouble*9.3)/13) AS DECIMAL(23,14)) AS cdecimal2 FROM alltypesorc
+PREHOOK: Output: default@decimal_test_n0
+POSTHOOK: query: CREATE TABLE decimal_test_n0 STORED AS ORC AS SELECT cbigint, cdouble, CAST (((cdouble*22.1)/37) AS DECIMAL(20,10)) AS cdecimal1, CAST (((cdouble*9.3)/13) AS DECIMAL(23,14)) AS cdecimal2 FROM alltypesorc
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@decimal_test
-POSTHOOK: Lineage: decimal_test.cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
-POSTHOOK: Lineage: decimal_test.cdecimal1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
-POSTHOOK: Lineage: decimal_test.cdecimal2 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
-POSTHOOK: Lineage: decimal_test.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
-PREHOOK: query: insert into decimal_test values (NULL, NULL, NULL, NULL)
+POSTHOOK: Output: default@decimal_test_n0
+POSTHOOK: Lineage: decimal_test_n0.cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: decimal_test_n0.cdecimal1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: decimal_test_n0.cdecimal2 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: decimal_test_n0.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+PREHOOK: query: insert into decimal_test_n0 values (NULL, NULL, NULL, NULL)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@decimal_test
-POSTHOOK: query: insert into decimal_test values (NULL, NULL, NULL, NULL)
+PREHOOK: Output: default@decimal_test_n0
+POSTHOOK: query: insert into decimal_test_n0 values (NULL, NULL, NULL, NULL)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@decimal_test
-POSTHOOK: Lineage: decimal_test.cbigint EXPRESSION []
-POSTHOOK: Lineage: decimal_test.cdecimal1 EXPRESSION []
-POSTHOOK: Lineage: decimal_test.cdecimal2 EXPRESSION []
-POSTHOOK: Lineage: decimal_test.cdouble EXPRESSION []
+POSTHOOK: Output: default@decimal_test_n0
+POSTHOOK: Lineage: decimal_test_n0.cbigint EXPRESSION []
+POSTHOOK: Lineage: decimal_test_n0.cdecimal1 EXPRESSION []
+POSTHOOK: Lineage: decimal_test_n0.cdecimal2 EXPRESSION []
+POSTHOOK: Lineage: decimal_test_n0.cdouble EXPRESSION []
 PREHOOK: query: explain vectorization detail
 select
    cdecimal1
@@ -55,7 +55,7 @@ select
   ,Sign(cdecimal1)
   -- Test nesting
   ,cos(-sin(log(cdecimal1)) + 3.14159)
-from decimal_test
+from decimal_test_n0
 
 where cbigint % 500 = 0
 
@@ -92,7 +92,7 @@ select
   ,Sign(cdecimal1)
   -- Test nesting
   ,cos(-sin(log(cdecimal1)) + 3.14159)
-from decimal_test
+from decimal_test_n0
 
 where cbigint % 500 = 0
 
@@ -111,7 +111,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: decimal_test
+            alias: decimal_test_n0
             Statistics: Num rows: 12289 Data size: 2201752 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -195,13 +195,13 @@ PREHOOK: query: select
   ,Sign(cdecimal1)
   -- Test nesting
   ,cos(-sin(log(cdecimal1)) + 3.14159)
-from decimal_test
+from decimal_test_n0
 
 where cbigint % 500 = 0
 
 and sin(cdecimal1) >= -1.0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_test
+PREHOOK: Input: default@decimal_test_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select
    cdecimal1
@@ -233,13 +233,13 @@ POSTHOOK: query: select
   ,Sign(cdecimal1)
   -- Test nesting
   ,cos(-sin(log(cdecimal1)) + 3.14159)
-from decimal_test
+from decimal_test_n0
 
 where cbigint % 500 = 0
 
 and sin(cdecimal1) >= -1.0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_test
+POSTHOOK: Input: default@decimal_test_n0
 #### A masked pattern was here ####
 -119.4594594595	-119.46	-119	-120	-119	1.316485E-52	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	119.4594594595	-0.07885666683797002	NULL	0.9968859644388647	NULL	-1.5624254815943668	-6844.522849943508	-2.0849608902209606	-119.4594594595	119.4594594595	-1	NULL
 9318.4351351351	9318.44	9318	9318	9319	Infinity	9.13974998962673	3.969342986470191	13.185871984999437	NULL	13.185871984999437	173.867220004793	173.867220004793	96.53204201266593	9318.4351351351	0.4540668481851705	NULL	0.8909676185918236	NULL	1.5706890126394983	533907.0049096602	162.63737424163023	9318.4351351351	-9318.4351351351	1	-0.9607267417229353

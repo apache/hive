@@ -7,132 +7,132 @@ set hive.strict.checks.cartesian.product=false;
 set hive.stats.fetch.column.stats=true;
 set hive.materializedview.rewriting=true;
 
-create table emps (
+create table emps_n8 (
   empid int,
   deptno int,
   name varchar(256),
   salary float,
   commission int)
 stored as orc TBLPROPERTIES ('transactional'='true');
-insert into emps values (100, 10, 'Bill', 10000, 1000), (200, 20, 'Eric', 8000, 500),
+insert into emps_n8 values (100, 10, 'Bill', 10000, 1000), (200, 20, 'Eric', 8000, 500),
   (150, 10, 'Sebastian', 7000, null), (110, 10, 'Theodore', 10000, 250);
-analyze table emps compute statistics for columns;
+analyze table emps_n8 compute statistics for columns;
 
-create table depts (
+create table depts_n6 (
   deptno int,
   name varchar(256),
   locationid int)
 stored as orc TBLPROPERTIES ('transactional'='true');
-insert into depts values (10, 'Sales', 10), (30, 'Marketing', null), (20, 'HR', 20);
-analyze table depts compute statistics for columns;
+insert into depts_n6 values (10, 'Sales', 10), (30, 'Marketing', null), (20, 'HR', 20);
+analyze table depts_n6 compute statistics for columns;
 
-create table dependents (
+create table dependents_n4 (
   empid int,
   name varchar(256))
 stored as orc TBLPROPERTIES ('transactional'='true');
-insert into dependents values (10, 'Michael'), (10, 'Jane');
-analyze table dependents compute statistics for columns;
+insert into dependents_n4 values (10, 'Michael'), (10, 'Jane');
+analyze table dependents_n4 compute statistics for columns;
 
-create table locations (
+create table locations_n4 (
   locationid int,
   name varchar(256))
 stored as orc TBLPROPERTIES ('transactional'='true');
-insert into locations values (10, 'San Francisco'), (10, 'San Diego');
-analyze table locations compute statistics for columns;
+insert into locations_n4 values (10, 'San Francisco'), (10, 'San Diego');
+analyze table locations_n4 compute statistics for columns;
 
-alter table emps add constraint pk1 primary key (empid) disable novalidate rely;
-alter table depts add constraint pk2 primary key (deptno) disable novalidate rely;
-alter table dependents add constraint pk3 primary key (empid) disable novalidate rely;
-alter table locations add constraint pk4 primary key (locationid) disable novalidate rely;
+alter table emps_n8 add constraint pk1 primary key (empid) disable novalidate rely;
+alter table depts_n6 add constraint pk2 primary key (deptno) disable novalidate rely;
+alter table dependents_n4 add constraint pk3 primary key (empid) disable novalidate rely;
+alter table locations_n4 add constraint pk4 primary key (locationid) disable novalidate rely;
 
-alter table emps add constraint fk1 foreign key (deptno) references depts(deptno) disable novalidate rely;
-alter table depts add constraint fk2 foreign key (locationid) references locations(locationid) disable novalidate rely;
+alter table emps_n8 add constraint fk1 foreign key (deptno) references depts_n6(deptno) disable novalidate rely;
+alter table depts_n6 add constraint fk2 foreign key (locationid) references locations_n4(locationid) disable novalidate rely;
 
-alter table emps change column deptno deptno int constraint nn1 not null disable novalidate rely;
-alter table depts change column locationid locationid int constraint nn2 not null disable novalidate rely;
+alter table emps_n8 change column deptno deptno int constraint nn1 not null disable novalidate rely;
+alter table depts_n6 change column locationid locationid int constraint nn2 not null disable novalidate rely;
 
 
 -- EXAMPLE 21 -- WORKS NOW
-create materialized view mv1 enable rewrite as
-select depts.deptno, dependents.empid
-from depts
-join dependents on (depts.name = dependents.name)
-join locations on (locations.name = dependents.name)
-join emps on (emps.deptno = depts.deptno)
-where depts.deptno > 11
-group by depts.deptno, dependents.empid;
-analyze table mv1 compute statistics for columns;
+create materialized view mv1_n4 enable rewrite as
+select depts_n6.deptno, dependents_n4.empid
+from depts_n6
+join dependents_n4 on (depts_n6.name = dependents_n4.name)
+join locations_n4 on (locations_n4.name = dependents_n4.name)
+join emps_n8 on (emps_n8.deptno = depts_n6.deptno)
+where depts_n6.deptno > 11
+group by depts_n6.deptno, dependents_n4.empid;
+analyze table mv1_n4 compute statistics for columns;
 
 explain
-select dependents.empid, depts.deptno
-from depts
-join dependents on (depts.name = dependents.name)
-join locations on (locations.name = dependents.name)
-join emps on (emps.deptno = depts.deptno)
-where depts.deptno > 10
-group by dependents.empid, depts.deptno;
+select dependents_n4.empid, depts_n6.deptno
+from depts_n6
+join dependents_n4 on (depts_n6.name = dependents_n4.name)
+join locations_n4 on (locations_n4.name = dependents_n4.name)
+join emps_n8 on (emps_n8.deptno = depts_n6.deptno)
+where depts_n6.deptno > 10
+group by dependents_n4.empid, depts_n6.deptno;
 
-select dependents.empid, depts.deptno
-from depts
-join dependents on (depts.name = dependents.name)
-join locations on (locations.name = dependents.name)
-join emps on (emps.deptno = depts.deptno)
-where depts.deptno > 10
-group by dependents.empid, depts.deptno;
+select dependents_n4.empid, depts_n6.deptno
+from depts_n6
+join dependents_n4 on (depts_n6.name = dependents_n4.name)
+join locations_n4 on (locations_n4.name = dependents_n4.name)
+join emps_n8 on (emps_n8.deptno = depts_n6.deptno)
+where depts_n6.deptno > 10
+group by dependents_n4.empid, depts_n6.deptno;
 
-drop materialized view mv1;
+drop materialized view mv1_n4;
 
 -- EXAMPLE 33
-create materialized view mv1 enable rewrite as
-select depts.deptno, dependents.empid, count(emps.salary) as s
-from depts
-join dependents on (depts.name = dependents.name)
-join locations on (locations.name = dependents.name)
-join emps on (emps.deptno = depts.deptno)
-where depts.deptno > 11 and depts.deptno < 19
-group by depts.deptno, dependents.empid;
-analyze table mv1 compute statistics for columns;
+create materialized view mv1_n4 enable rewrite as
+select depts_n6.deptno, dependents_n4.empid, count(emps_n8.salary) as s
+from depts_n6
+join dependents_n4 on (depts_n6.name = dependents_n4.name)
+join locations_n4 on (locations_n4.name = dependents_n4.name)
+join emps_n8 on (emps_n8.deptno = depts_n6.deptno)
+where depts_n6.deptno > 11 and depts_n6.deptno < 19
+group by depts_n6.deptno, dependents_n4.empid;
+analyze table mv1_n4 compute statistics for columns;
 
 explain
-select dependents.empid, count(emps.salary) + 1
-from depts
-join dependents on (depts.name = dependents.name)
-join locations on (locations.name = dependents.name)
-join emps on (emps.deptno = depts.deptno)
-where depts.deptno > 10 and depts.deptno < 20
-group by dependents.empid;
+select dependents_n4.empid, count(emps_n8.salary) + 1
+from depts_n6
+join dependents_n4 on (depts_n6.name = dependents_n4.name)
+join locations_n4 on (locations_n4.name = dependents_n4.name)
+join emps_n8 on (emps_n8.deptno = depts_n6.deptno)
+where depts_n6.deptno > 10 and depts_n6.deptno < 20
+group by dependents_n4.empid;
 
-select dependents.empid, count(emps.salary) + 1
-from depts
-join dependents on (depts.name = dependents.name)
-join locations on (locations.name = dependents.name)
-join emps on (emps.deptno = depts.deptno)
-where depts.deptno > 10 and depts.deptno < 20
-group by dependents.empid;
+select dependents_n4.empid, count(emps_n8.salary) + 1
+from depts_n6
+join dependents_n4 on (depts_n6.name = dependents_n4.name)
+join locations_n4 on (locations_n4.name = dependents_n4.name)
+join emps_n8 on (emps_n8.deptno = depts_n6.deptno)
+where depts_n6.deptno > 10 and depts_n6.deptno < 20
+group by dependents_n4.empid;
 
-drop materialized view mv1;
+drop materialized view mv1_n4;
 
 -- EXAMPLE 40 -- REWRITING HAPPENS BUT DISCARDED
 -- DUE TO COST EXCEPT WITH HEURISTICS
-create materialized view mv1 enable rewrite as
-select depts.deptno, dependents.empid
-from depts
-join dependents on (depts.name = dependents.name)
-join emps on (emps.deptno = depts.deptno)
-where depts.deptno >= 10;
-analyze table mv1 compute statistics for columns;
+create materialized view mv1_n4 enable rewrite as
+select depts_n6.deptno, dependents_n4.empid
+from depts_n6
+join dependents_n4 on (depts_n6.name = dependents_n4.name)
+join emps_n8 on (emps_n8.deptno = depts_n6.deptno)
+where depts_n6.deptno >= 10;
+analyze table mv1_n4 compute statistics for columns;
 
 explain
-select dependents.empid
-from depts
-join dependents on (depts.name = dependents.name)
-join emps on (emps.deptno = depts.deptno)
-where depts.deptno > 0;
+select dependents_n4.empid
+from depts_n6
+join dependents_n4 on (depts_n6.name = dependents_n4.name)
+join emps_n8 on (emps_n8.deptno = depts_n6.deptno)
+where depts_n6.deptno > 0;
 
-select dependents.empid
-from depts
-join dependents on (depts.name = dependents.name)
-join emps on (emps.deptno = depts.deptno)
-where depts.deptno > 0;
+select dependents_n4.empid
+from depts_n6
+join dependents_n4 on (depts_n6.name = dependents_n4.name)
+join emps_n8 on (emps_n8.deptno = depts_n6.deptno)
+where depts_n6.deptno > 0;
 
-drop materialized view mv1;
+drop materialized view mv1_n4;

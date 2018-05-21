@@ -1,39 +1,39 @@
-PREHOOK: query: CREATE TABLE schema_evolution_data(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
+PREHOOK: query: CREATE TABLE schema_evolution_data_n9(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
 row format delimited fields terminated by '|' stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@schema_evolution_data
-POSTHOOK: query: CREATE TABLE schema_evolution_data(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
+PREHOOK: Output: default@schema_evolution_data_n9
+POSTHOOK: query: CREATE TABLE schema_evolution_data_n9(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
 row format delimited fields terminated by '|' stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@schema_evolution_data
-PREHOOK: query: load data local inpath '../../data/files/schema_evolution/schema_evolution_data.txt' overwrite into table schema_evolution_data
+POSTHOOK: Output: default@schema_evolution_data_n9
+PREHOOK: query: load data local inpath '../../data/files/schema_evolution/schema_evolution_data.txt' overwrite into table schema_evolution_data_n9
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@schema_evolution_data
-POSTHOOK: query: load data local inpath '../../data/files/schema_evolution/schema_evolution_data.txt' overwrite into table schema_evolution_data
+PREHOOK: Output: default@schema_evolution_data_n9
+POSTHOOK: query: load data local inpath '../../data/files/schema_evolution/schema_evolution_data.txt' overwrite into table schema_evolution_data_n9
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@schema_evolution_data
-PREHOOK: query: CREATE TABLE schema_evolution_data_2(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
+POSTHOOK: Output: default@schema_evolution_data_n9
+PREHOOK: query: CREATE TABLE schema_evolution_data_2_n3(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
 row format delimited fields terminated by '|' stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@schema_evolution_data_2
-POSTHOOK: query: CREATE TABLE schema_evolution_data_2(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
+PREHOOK: Output: default@schema_evolution_data_2_n3
+POSTHOOK: query: CREATE TABLE schema_evolution_data_2_n3(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
 row format delimited fields terminated by '|' stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@schema_evolution_data_2
-PREHOOK: query: load data local inpath '../../data/files/schema_evolution/schema_evolution_data_2.txt' overwrite into table schema_evolution_data_2
+POSTHOOK: Output: default@schema_evolution_data_2_n3
+PREHOOK: query: load data local inpath '../../data/files/schema_evolution/schema_evolution_data_2.txt' overwrite into table schema_evolution_data_2_n3
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@schema_evolution_data_2
-POSTHOOK: query: load data local inpath '../../data/files/schema_evolution/schema_evolution_data_2.txt' overwrite into table schema_evolution_data_2
+PREHOOK: Output: default@schema_evolution_data_2_n3
+POSTHOOK: query: load data local inpath '../../data/files/schema_evolution/schema_evolution_data_2.txt' overwrite into table schema_evolution_data_2_n3
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@schema_evolution_data_2
+POSTHOOK: Output: default@schema_evolution_data_2_n3
 PREHOOK: query: CREATE TABLE partitioned_update_1(insert_num int, a INT, b STRING) PARTITIONED BY(part INT) clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -42,17 +42,17 @@ POSTHOOK: query: CREATE TABLE partitioned_update_1(insert_num int, a INT, b STRI
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partitioned_update_1
-PREHOOK: query: insert into table partitioned_update_1 partition(part=1) SELECT insert_num, int1, 'original' FROM schema_evolution_data
+PREHOOK: query: insert into table partitioned_update_1 partition(part=1) SELECT insert_num, int1, 'original' FROM schema_evolution_data_n9
 PREHOOK: type: QUERY
-PREHOOK: Input: default@schema_evolution_data
+PREHOOK: Input: default@schema_evolution_data_n9
 PREHOOK: Output: default@partitioned_update_1@part=1
-POSTHOOK: query: insert into table partitioned_update_1 partition(part=1) SELECT insert_num, int1, 'original' FROM schema_evolution_data
+POSTHOOK: query: insert into table partitioned_update_1 partition(part=1) SELECT insert_num, int1, 'original' FROM schema_evolution_data_n9
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@schema_evolution_data
+POSTHOOK: Input: default@schema_evolution_data_n9
 POSTHOOK: Output: default@partitioned_update_1@part=1
-POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=1).a SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=1).a SIMPLE [(schema_evolution_data_n9)schema_evolution_data_n9.FieldSchema(name:int1, type:int, comment:null), ]
 POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=1).b SIMPLE []
-POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:insert_num, type:int, comment:null), ]
+POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data_n9)schema_evolution_data_n9.FieldSchema(name:insert_num, type:int, comment:null), ]
 insert_num	int1	_c2
 PREHOOK: query: alter table partitioned_update_1 add columns(c int, d string)
 PREHOOK: type: ALTERTABLE_ADDCOLS
@@ -62,33 +62,33 @@ POSTHOOK: query: alter table partitioned_update_1 add columns(c int, d string)
 POSTHOOK: type: ALTERTABLE_ADDCOLS
 POSTHOOK: Input: default@partitioned_update_1
 POSTHOOK: Output: default@partitioned_update_1
-PREHOOK: query: insert into table partitioned_update_1 partition(part=2) SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2 WHERE insert_num <=110
+PREHOOK: query: insert into table partitioned_update_1 partition(part=2) SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2_n3 WHERE insert_num <=110
 PREHOOK: type: QUERY
-PREHOOK: Input: default@schema_evolution_data_2
+PREHOOK: Input: default@schema_evolution_data_2_n3
 PREHOOK: Output: default@partitioned_update_1@part=2
-POSTHOOK: query: insert into table partitioned_update_1 partition(part=2) SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2 WHERE insert_num <=110
+POSTHOOK: query: insert into table partitioned_update_1 partition(part=2) SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2_n3 WHERE insert_num <=110
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@schema_evolution_data_2
+POSTHOOK: Input: default@schema_evolution_data_2_n3
 POSTHOOK: Output: default@partitioned_update_1@part=2
-POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=2).a SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=2).a SIMPLE [(schema_evolution_data_2_n3)schema_evolution_data_2_n3.FieldSchema(name:int1, type:int, comment:null), ]
 POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=2).b SIMPLE []
-POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=2).c SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:int1, type:int, comment:null), ]
-POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=2).d SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=2).insert_num SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:insert_num, type:int, comment:null), ]
+POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=2).c SIMPLE [(schema_evolution_data_2_n3)schema_evolution_data_2_n3.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=2).d SIMPLE [(schema_evolution_data_2_n3)schema_evolution_data_2_n3.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=2).insert_num SIMPLE [(schema_evolution_data_2_n3)schema_evolution_data_2_n3.FieldSchema(name:insert_num, type:int, comment:null), ]
 insert_num	int1	_c2	int1	string1
-PREHOOK: query: insert into table partitioned_update_1 partition(part=1) SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2 WHERE insert_num > 110
+PREHOOK: query: insert into table partitioned_update_1 partition(part=1) SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2_n3 WHERE insert_num > 110
 PREHOOK: type: QUERY
-PREHOOK: Input: default@schema_evolution_data_2
+PREHOOK: Input: default@schema_evolution_data_2_n3
 PREHOOK: Output: default@partitioned_update_1@part=1
-POSTHOOK: query: insert into table partitioned_update_1 partition(part=1) SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2 WHERE insert_num > 110
+POSTHOOK: query: insert into table partitioned_update_1 partition(part=1) SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2_n3 WHERE insert_num > 110
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@schema_evolution_data_2
+POSTHOOK: Input: default@schema_evolution_data_2_n3
 POSTHOOK: Output: default@partitioned_update_1@part=1
-POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=1).a SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=1).a SIMPLE [(schema_evolution_data_2_n3)schema_evolution_data_2_n3.FieldSchema(name:int1, type:int, comment:null), ]
 POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=1).b SIMPLE []
-POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=1).c SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:int1, type:int, comment:null), ]
-POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=1).d SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:insert_num, type:int, comment:null), ]
+POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=1).c SIMPLE [(schema_evolution_data_2_n3)schema_evolution_data_2_n3.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=1).d SIMPLE [(schema_evolution_data_2_n3)schema_evolution_data_2_n3.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data_2_n3)schema_evolution_data_2_n3.FieldSchema(name:insert_num, type:int, comment:null), ]
 insert_num	int1	_c2	int1	string1
 PREHOOK: query: select insert_num,part,a,b,c,d from partitioned_update_1
 PREHOOK: type: QUERY
@@ -213,17 +213,17 @@ POSTHOOK: query: CREATE TABLE partitioned_delete_1(insert_num int, a INT, b STRI
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partitioned_delete_1
-PREHOOK: query: insert into table partitioned_delete_1 partition(part=1) SELECT insert_num, int1, 'original' FROM schema_evolution_data
+PREHOOK: query: insert into table partitioned_delete_1 partition(part=1) SELECT insert_num, int1, 'original' FROM schema_evolution_data_n9
 PREHOOK: type: QUERY
-PREHOOK: Input: default@schema_evolution_data
+PREHOOK: Input: default@schema_evolution_data_n9
 PREHOOK: Output: default@partitioned_delete_1@part=1
-POSTHOOK: query: insert into table partitioned_delete_1 partition(part=1) SELECT insert_num, int1, 'original' FROM schema_evolution_data
+POSTHOOK: query: insert into table partitioned_delete_1 partition(part=1) SELECT insert_num, int1, 'original' FROM schema_evolution_data_n9
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@schema_evolution_data
+POSTHOOK: Input: default@schema_evolution_data_n9
 POSTHOOK: Output: default@partitioned_delete_1@part=1
-POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=1).a SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=1).a SIMPLE [(schema_evolution_data_n9)schema_evolution_data_n9.FieldSchema(name:int1, type:int, comment:null), ]
 POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=1).b SIMPLE []
-POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:insert_num, type:int, comment:null), ]
+POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data_n9)schema_evolution_data_n9.FieldSchema(name:insert_num, type:int, comment:null), ]
 insert_num	int1	_c2
 PREHOOK: query: alter table partitioned_delete_1 add columns(c int, d string)
 PREHOOK: type: ALTERTABLE_ADDCOLS
@@ -233,33 +233,33 @@ POSTHOOK: query: alter table partitioned_delete_1 add columns(c int, d string)
 POSTHOOK: type: ALTERTABLE_ADDCOLS
 POSTHOOK: Input: default@partitioned_delete_1
 POSTHOOK: Output: default@partitioned_delete_1
-PREHOOK: query: insert into table partitioned_delete_1 partition(part=2) SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2 WHERE insert_num <=110
+PREHOOK: query: insert into table partitioned_delete_1 partition(part=2) SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2_n3 WHERE insert_num <=110
 PREHOOK: type: QUERY
-PREHOOK: Input: default@schema_evolution_data_2
+PREHOOK: Input: default@schema_evolution_data_2_n3
 PREHOOK: Output: default@partitioned_delete_1@part=2
-POSTHOOK: query: insert into table partitioned_delete_1 partition(part=2) SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2 WHERE insert_num <=110
+POSTHOOK: query: insert into table partitioned_delete_1 partition(part=2) SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2_n3 WHERE insert_num <=110
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@schema_evolution_data_2
+POSTHOOK: Input: default@schema_evolution_data_2_n3
 POSTHOOK: Output: default@partitioned_delete_1@part=2
-POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=2).a SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=2).a SIMPLE [(schema_evolution_data_2_n3)schema_evolution_data_2_n3.FieldSchema(name:int1, type:int, comment:null), ]
 POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=2).b SIMPLE []
-POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=2).c SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:int1, type:int, comment:null), ]
-POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=2).d SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=2).insert_num SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:insert_num, type:int, comment:null), ]
+POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=2).c SIMPLE [(schema_evolution_data_2_n3)schema_evolution_data_2_n3.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=2).d SIMPLE [(schema_evolution_data_2_n3)schema_evolution_data_2_n3.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=2).insert_num SIMPLE [(schema_evolution_data_2_n3)schema_evolution_data_2_n3.FieldSchema(name:insert_num, type:int, comment:null), ]
 insert_num	int1	_c2	int1	string1
-PREHOOK: query: insert into table partitioned_delete_1 partition(part=1) SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2 WHERE insert_num > 110
+PREHOOK: query: insert into table partitioned_delete_1 partition(part=1) SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2_n3 WHERE insert_num > 110
 PREHOOK: type: QUERY
-PREHOOK: Input: default@schema_evolution_data_2
+PREHOOK: Input: default@schema_evolution_data_2_n3
 PREHOOK: Output: default@partitioned_delete_1@part=1
-POSTHOOK: query: insert into table partitioned_delete_1 partition(part=1) SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2 WHERE insert_num > 110
+POSTHOOK: query: insert into table partitioned_delete_1 partition(part=1) SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2_n3 WHERE insert_num > 110
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@schema_evolution_data_2
+POSTHOOK: Input: default@schema_evolution_data_2_n3
 POSTHOOK: Output: default@partitioned_delete_1@part=1
-POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=1).a SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=1).a SIMPLE [(schema_evolution_data_2_n3)schema_evolution_data_2_n3.FieldSchema(name:int1, type:int, comment:null), ]
 POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=1).b SIMPLE []
-POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=1).c SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:int1, type:int, comment:null), ]
-POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=1).d SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:insert_num, type:int, comment:null), ]
+POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=1).c SIMPLE [(schema_evolution_data_2_n3)schema_evolution_data_2_n3.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=1).d SIMPLE [(schema_evolution_data_2_n3)schema_evolution_data_2_n3.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data_2_n3)schema_evolution_data_2_n3.FieldSchema(name:insert_num, type:int, comment:null), ]
 insert_num	int1	_c2	int1	string1
 PREHOOK: query: select part,a,b,c,d from partitioned_delete_1
 PREHOOK: type: QUERY
@@ -378,17 +378,17 @@ POSTHOOK: query: CREATE TABLE partitioned_delete_2(insert_num int, a INT, b STRI
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partitioned_delete_2
-PREHOOK: query: insert into table partitioned_delete_2 partition(part=1) SELECT insert_num, int1, 'original' FROM schema_evolution_data
+PREHOOK: query: insert into table partitioned_delete_2 partition(part=1) SELECT insert_num, int1, 'original' FROM schema_evolution_data_n9
 PREHOOK: type: QUERY
-PREHOOK: Input: default@schema_evolution_data
+PREHOOK: Input: default@schema_evolution_data_n9
 PREHOOK: Output: default@partitioned_delete_2@part=1
-POSTHOOK: query: insert into table partitioned_delete_2 partition(part=1) SELECT insert_num, int1, 'original' FROM schema_evolution_data
+POSTHOOK: query: insert into table partitioned_delete_2 partition(part=1) SELECT insert_num, int1, 'original' FROM schema_evolution_data_n9
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@schema_evolution_data
+POSTHOOK: Input: default@schema_evolution_data_n9
 POSTHOOK: Output: default@partitioned_delete_2@part=1
-POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=1).a SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=1).a SIMPLE [(schema_evolution_data_n9)schema_evolution_data_n9.FieldSchema(name:int1, type:int, comment:null), ]
 POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=1).b SIMPLE []
-POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:insert_num, type:int, comment:null), ]
+POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data_n9)schema_evolution_data_n9.FieldSchema(name:insert_num, type:int, comment:null), ]
 insert_num	int1	_c2
 PREHOOK: query: alter table partitioned_delete_2 add columns(c int, d string)
 PREHOOK: type: ALTERTABLE_ADDCOLS
@@ -398,33 +398,33 @@ POSTHOOK: query: alter table partitioned_delete_2 add columns(c int, d string)
 POSTHOOK: type: ALTERTABLE_ADDCOLS
 POSTHOOK: Input: default@partitioned_delete_2
 POSTHOOK: Output: default@partitioned_delete_2
-PREHOOK: query: insert into table partitioned_delete_2 partition(part=2) SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2 WHERE insert_num <=110
+PREHOOK: query: insert into table partitioned_delete_2 partition(part=2) SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2_n3 WHERE insert_num <=110
 PREHOOK: type: QUERY
-PREHOOK: Input: default@schema_evolution_data_2
+PREHOOK: Input: default@schema_evolution_data_2_n3
 PREHOOK: Output: default@partitioned_delete_2@part=2
-POSTHOOK: query: insert into table partitioned_delete_2 partition(part=2) SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2 WHERE insert_num <=110
+POSTHOOK: query: insert into table partitioned_delete_2 partition(part=2) SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2_n3 WHERE insert_num <=110
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@schema_evolution_data_2
+POSTHOOK: Input: default@schema_evolution_data_2_n3
 POSTHOOK: Output: default@partitioned_delete_2@part=2
-POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=2).a SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=2).a SIMPLE [(schema_evolution_data_2_n3)schema_evolution_data_2_n3.FieldSchema(name:int1, type:int, comment:null), ]
 POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=2).b SIMPLE []
-POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=2).c SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:int1, type:int, comment:null), ]
-POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=2).d SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=2).insert_num SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:insert_num, type:int, comment:null), ]
+POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=2).c SIMPLE [(schema_evolution_data_2_n3)schema_evolution_data_2_n3.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=2).d SIMPLE [(schema_evolution_data_2_n3)schema_evolution_data_2_n3.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=2).insert_num SIMPLE [(schema_evolution_data_2_n3)schema_evolution_data_2_n3.FieldSchema(name:insert_num, type:int, comment:null), ]
 insert_num	int1	_c2	int1	string1
-PREHOOK: query: insert into table partitioned_delete_2 partition(part=1)  SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2 WHERE insert_num > 110
+PREHOOK: query: insert into table partitioned_delete_2 partition(part=1)  SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2_n3 WHERE insert_num > 110
 PREHOOK: type: QUERY
-PREHOOK: Input: default@schema_evolution_data_2
+PREHOOK: Input: default@schema_evolution_data_2_n3
 PREHOOK: Output: default@partitioned_delete_2@part=1
-POSTHOOK: query: insert into table partitioned_delete_2 partition(part=1)  SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2 WHERE insert_num > 110
+POSTHOOK: query: insert into table partitioned_delete_2 partition(part=1)  SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2_n3 WHERE insert_num > 110
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@schema_evolution_data_2
+POSTHOOK: Input: default@schema_evolution_data_2_n3
 POSTHOOK: Output: default@partitioned_delete_2@part=1
-POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=1).a SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=1).a SIMPLE [(schema_evolution_data_2_n3)schema_evolution_data_2_n3.FieldSchema(name:int1, type:int, comment:null), ]
 POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=1).b SIMPLE []
-POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=1).c SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:int1, type:int, comment:null), ]
-POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=1).d SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:insert_num, type:int, comment:null), ]
+POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=1).c SIMPLE [(schema_evolution_data_2_n3)schema_evolution_data_2_n3.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=1).d SIMPLE [(schema_evolution_data_2_n3)schema_evolution_data_2_n3.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data_2_n3)schema_evolution_data_2_n3.FieldSchema(name:insert_num, type:int, comment:null), ]
 insert_num	int1	_c2	int1	string1
 PREHOOK: query: select insert_num,part,a,b,c,d from partitioned_delete_2
 PREHOOK: type: QUERY

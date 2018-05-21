@@ -1,36 +1,36 @@
-PREHOOK: query: CREATE TABLE T1_text(key STRING, val STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE T1_text_n5(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1_text
-POSTHOOK: query: CREATE TABLE T1_text(key STRING, val STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@T1_text_n5
+POSTHOOK: query: CREATE TABLE T1_text_n5(key STRING, val STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1_text
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_text
+POSTHOOK: Output: default@T1_text_n5
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_text_n5
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t1_text
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_text
+PREHOOK: Output: default@t1_text_n5
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_text_n5
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t1_text
-PREHOOK: query: CREATE TABLE T1 STORED AS ORC AS SELECT * FROM T1_text
+POSTHOOK: Output: default@t1_text_n5
+PREHOOK: query: CREATE TABLE T1_n83 STORED AS ORC AS SELECT * FROM T1_text_n5
 PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: default@t1_text
+PREHOOK: Input: default@t1_text_n5
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1
-POSTHOOK: query: CREATE TABLE T1 STORED AS ORC AS SELECT * FROM T1_text
+PREHOOK: Output: default@T1_n83
+POSTHOOK: query: CREATE TABLE T1_n83 STORED AS ORC AS SELECT * FROM T1_text_n5
 POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: default@t1_text
+POSTHOOK: Input: default@t1_text_n5
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1
-POSTHOOK: Lineage: t1.key SIMPLE [(t1_text)t1_text.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.val SIMPLE [(t1_text)t1_text.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Output: default@T1_n83
+POSTHOOK: Lineage: t1_n83.key SIMPLE [(t1_text_n5)t1_text_n5.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t1_n83.val SIMPLE [(t1_text_n5)t1_text_n5.FieldSchema(name:val, type:string, comment:null), ]
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key, val, count(1) FROM T1 GROUP BY key, val with rollup
+SELECT key, val, count(1) FROM T1_n83 GROUP BY key, val with rollup
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key, val, count(1) FROM T1 GROUP BY key, val with rollup
+SELECT key, val, count(1) FROM T1_n83 GROUP BY key, val with rollup
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -51,7 +51,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n83
                   Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -163,13 +163,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT key, val, count(1) FROM T1 GROUP BY key, val with rollup
+PREHOOK: query: SELECT key, val, count(1) FROM T1_n83 GROUP BY key, val with rollup
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n83
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key, val, count(1) FROM T1 GROUP BY key, val with rollup
+POSTHOOK: query: SELECT key, val, count(1) FROM T1_n83 GROUP BY key, val with rollup
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n83
 #### A masked pattern was here ####
 1	11	1
 1	NULL	1
@@ -184,10 +184,10 @@ POSTHOOK: Input: default@t1
 8	NULL	2
 NULL	NULL	6
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key, count(distinct val) FROM T1 GROUP BY key with rollup
+SELECT key, count(distinct val) FROM T1_n83 GROUP BY key with rollup
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key, count(distinct val) FROM T1 GROUP BY key with rollup
+SELECT key, count(distinct val) FROM T1_n83 GROUP BY key with rollup
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -208,7 +208,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n83
                   Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), val (type: string)
@@ -266,13 +266,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT key, count(distinct val) FROM T1 GROUP BY key with rollup
+PREHOOK: query: SELECT key, count(distinct val) FROM T1_n83 GROUP BY key with rollup
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n83
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key, count(distinct val) FROM T1 GROUP BY key with rollup
+POSTHOOK: query: SELECT key, count(distinct val) FROM T1_n83 GROUP BY key with rollup
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n83
 #### A masked pattern was here ####
 1	1
 2	1
@@ -281,10 +281,10 @@ POSTHOOK: Input: default@t1
 8	2
 NULL	6
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key, val, count(1) FROM T1 GROUP BY key, val with rollup
+SELECT key, val, count(1) FROM T1_n83 GROUP BY key, val with rollup
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key, val, count(1) FROM T1 GROUP BY key, val with rollup
+SELECT key, val, count(1) FROM T1_n83 GROUP BY key, val with rollup
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -306,7 +306,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n83
                   Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -462,13 +462,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT key, val, count(1) FROM T1 GROUP BY key, val with rollup
+PREHOOK: query: SELECT key, val, count(1) FROM T1_n83 GROUP BY key, val with rollup
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n83
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key, val, count(1) FROM T1 GROUP BY key, val with rollup
+POSTHOOK: query: SELECT key, val, count(1) FROM T1_n83 GROUP BY key, val with rollup
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n83
 #### A masked pattern was here ####
 1	11	1
 1	NULL	1
@@ -483,10 +483,10 @@ POSTHOOK: Input: default@t1
 8	NULL	2
 NULL	NULL	6
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key, count(distinct val) FROM T1 GROUP BY key with rollup
+SELECT key, count(distinct val) FROM T1_n83 GROUP BY key with rollup
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key, count(distinct val) FROM T1 GROUP BY key with rollup
+SELECT key, count(distinct val) FROM T1_n83 GROUP BY key with rollup
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -508,7 +508,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n83
                   Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), val (type: string)
@@ -586,13 +586,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT key, count(distinct val) FROM T1 GROUP BY key with rollup
+PREHOOK: query: SELECT key, count(distinct val) FROM T1_n83 GROUP BY key with rollup
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n83
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key, count(distinct val) FROM T1 GROUP BY key with rollup
+POSTHOOK: query: SELECT key, count(distinct val) FROM T1_n83 GROUP BY key with rollup
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n83
 #### A masked pattern was here ####
 1	1
 2	1
@@ -600,31 +600,31 @@ POSTHOOK: Input: default@t1
 7	1
 8	2
 NULL	6
-PREHOOK: query: CREATE TABLE T2(key1 STRING, key2 STRING, val INT) STORED AS ORC
+PREHOOK: query: CREATE TABLE T2_n52(key1 STRING, key2 STRING, val INT) STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T2
-POSTHOOK: query: CREATE TABLE T2(key1 STRING, key2 STRING, val INT) STORED AS ORC
+PREHOOK: Output: default@T2_n52
+POSTHOOK: query: CREATE TABLE T2_n52(key1 STRING, key2 STRING, val INT) STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T2
-PREHOOK: query: CREATE TABLE T3(key1 STRING, key2 STRING, val INT) STORED AS ORC
+POSTHOOK: Output: default@T2_n52
+PREHOOK: query: CREATE TABLE T3_n17(key1 STRING, key2 STRING, val INT) STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T3
-POSTHOOK: query: CREATE TABLE T3(key1 STRING, key2 STRING, val INT) STORED AS ORC
+PREHOOK: Output: default@T3_n17
+POSTHOOK: query: CREATE TABLE T3_n17(key1 STRING, key2 STRING, val INT) STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T3
+POSTHOOK: Output: default@T3_n17
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-FROM T1
-INSERT OVERWRITE TABLE T2 SELECT key, val, count(1) group by key, val with rollup
-INSERT OVERWRITE TABLE T3 SELECT key, val, sum(1) group by rollup(key, val)
+FROM T1_n83
+INSERT OVERWRITE TABLE T2_n52 SELECT key, val, count(1) group by key, val with rollup
+INSERT OVERWRITE TABLE T3_n17 SELECT key, val, sum(1) group by rollup(key, val)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-FROM T1
-INSERT OVERWRITE TABLE T2 SELECT key, val, count(1) group by key, val with rollup
-INSERT OVERWRITE TABLE T3 SELECT key, val, sum(1) group by rollup(key, val)
+FROM T1_n83
+INSERT OVERWRITE TABLE T2_n52 SELECT key, val, count(1) group by key, val with rollup
+INSERT OVERWRITE TABLE T3_n17 SELECT key, val, sum(1) group by rollup(key, val)
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -652,7 +652,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n83
                   Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -836,7 +836,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                         output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                         serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                        name: default.t2
+                        name: default.t2_n52
         Reducer 4 
             Execution mode: vectorized, llap
             Reduce Vectorization:
@@ -929,7 +929,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                         output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                         serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                        name: default.t3
+                        name: default.t3_n17
 
   Stage: Stage-3
     Dependency Collection
@@ -942,7 +942,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.t2
+              name: default.t2_n52
 
   Stage: Stage-4
     Stats Work
@@ -956,29 +956,29 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.t3
+              name: default.t3_n17
 
   Stage: Stage-5
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: FROM T1
-INSERT OVERWRITE TABLE T2 SELECT key, val, count(1) group by key, val with rollup
-INSERT OVERWRITE TABLE T3 SELECT key, val, sum(1) group by key, val with rollup
+PREHOOK: query: FROM T1_n83
+INSERT OVERWRITE TABLE T2_n52 SELECT key, val, count(1) group by key, val with rollup
+INSERT OVERWRITE TABLE T3_n17 SELECT key, val, sum(1) group by key, val with rollup
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@t2
-PREHOOK: Output: default@t3
-POSTHOOK: query: FROM T1
-INSERT OVERWRITE TABLE T2 SELECT key, val, count(1) group by key, val with rollup
-INSERT OVERWRITE TABLE T3 SELECT key, val, sum(1) group by key, val with rollup
+PREHOOK: Input: default@t1_n83
+PREHOOK: Output: default@t2_n52
+PREHOOK: Output: default@t3_n17
+POSTHOOK: query: FROM T1_n83
+INSERT OVERWRITE TABLE T2_n52 SELECT key, val, count(1) group by key, val with rollup
+INSERT OVERWRITE TABLE T3_n17 SELECT key, val, sum(1) group by key, val with rollup
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@t2
-POSTHOOK: Output: default@t3
-POSTHOOK: Lineage: t2.key1 SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t2.key2 SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: t2.val EXPRESSION [(t1)t1.null, ]
-POSTHOOK: Lineage: t3.key1 SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t3.key2 SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: t3.val EXPRESSION [(t1)t1.null, ]
+POSTHOOK: Input: default@t1_n83
+POSTHOOK: Output: default@t2_n52
+POSTHOOK: Output: default@t3_n17
+POSTHOOK: Lineage: t2_n52.key1 SIMPLE [(t1_n83)t1_n83.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t2_n52.key2 SIMPLE [(t1_n83)t1_n83.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: t2_n52.val EXPRESSION [(t1_n83)t1_n83.null, ]
+POSTHOOK: Lineage: t3_n17.key1 SIMPLE [(t1_n83)t1_n83.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t3_n17.key2 SIMPLE [(t1_n83)t1_n83.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: t3_n17.val EXPRESSION [(t1_n83)t1_n83.null, ]

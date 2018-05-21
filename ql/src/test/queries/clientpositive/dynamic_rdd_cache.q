@@ -21,33 +21,33 @@ ON (X.key = Z.key)
 SELECT sum(hash(Y.key,Y.value)) GROUP BY Y.key;
 
 
-CREATE TABLE dest1(key INT, value STRING);
-CREATE TABLE dest2(key INT, value STRING);
+CREATE TABLE dest1_n90(key INT, value STRING);
+CREATE TABLE dest2_n24(key INT, value STRING);
 
 EXPLAIN
 FROM src
-INSERT OVERWRITE TABLE dest1 SELECT src.key, sum(SUBSTR(src.value,5)) GROUP BY src.key
-INSERT OVERWRITE TABLE dest2 SELECT src.key, sum(SUBSTR(src.value,5)) GROUP BY src.key;
+INSERT OVERWRITE TABLE dest1_n90 SELECT src.key, sum(SUBSTR(src.value,5)) GROUP BY src.key
+INSERT OVERWRITE TABLE dest2_n24 SELECT src.key, sum(SUBSTR(src.value,5)) GROUP BY src.key;
 
-SELECT dest1.* FROM dest1;
-SELECT dest2.* FROM dest2;
+SELECT dest1_n90.* FROM dest1_n90;
+SELECT dest2_n24.* FROM dest2_n24;
 
-DROP TABLE dest1;
-DROP TABLE dest2;
+DROP TABLE dest1_n90;
+DROP TABLE dest2_n24;
 
 
 -- UNION TEST
 
-CREATE TABLE tmptable(key STRING, value INT);
+CREATE TABLE tmptable_n8(key STRING, value INT);
 
 EXPLAIN
-INSERT OVERWRITE TABLE tmptable
+INSERT OVERWRITE TABLE tmptable_n8
   SELECT unionsrc.key, unionsrc.value FROM (SELECT 'tst1' AS key, count(1) AS value FROM src s1
                                         UNION  ALL
                                             SELECT 'tst2' AS key, count(1) AS value FROM src s2
                                         UNION ALL
                                             SELECT 'tst3' AS key, count(1) AS value FROM src s3) unionsrc;
-SELECT * FROM tmptable x SORT BY x.key;
+SELECT * FROM tmptable_n8 x SORT BY x.key;
 
 DROP TABLE tmtable;
 

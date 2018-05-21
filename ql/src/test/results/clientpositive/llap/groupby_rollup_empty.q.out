@@ -1,143 +1,143 @@
-PREHOOK: query: drop table if exists tx1
+PREHOOK: query: drop table if exists tx1_n2
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table if exists tx1
+POSTHOOK: query: drop table if exists tx1_n2
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: drop table if exists tx2
+PREHOOK: query: drop table if exists tx2_n1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table if exists tx2
+POSTHOOK: query: drop table if exists tx2_n1
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table tx1 (a integer,b integer,c integer)
+PREHOOK: query: create table tx1_n2 (a integer,b integer,c integer)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tx1
-POSTHOOK: query: create table tx1 (a integer,b integer,c integer)
+PREHOOK: Output: default@tx1_n2
+POSTHOOK: query: create table tx1_n2 (a integer,b integer,c integer)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tx1
+POSTHOOK: Output: default@tx1_n2
 PREHOOK: query: select sum(c)
-from tx1
+from tx1_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tx1
+PREHOOK: Input: default@tx1_n2
 #### A masked pattern was here ####
 POSTHOOK: query: select sum(c)
-from tx1
+from tx1_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tx1
+POSTHOOK: Input: default@tx1_n2
 #### A masked pattern was here ####
 NULL
 PREHOOK: query: select  sum(c),
         grouping(b),
 	'NULL,1' as expected
-from    tx1
+from    tx1_n2
 where	a<0
 group by a,b grouping sets ((), b, a)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tx1
+PREHOOK: Input: default@tx1_n2
 #### A masked pattern was here ####
 POSTHOOK: query: select  sum(c),
         grouping(b),
 	'NULL,1' as expected
-from    tx1
+from    tx1_n2
 where	a<0
 group by a,b grouping sets ((), b, a)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tx1
+POSTHOOK: Input: default@tx1_n2
 #### A masked pattern was here ####
 NULL	1	NULL,1
 PREHOOK: query: select  sum(c),
         grouping(b),
 	'NULL,1' as expected
-from    tx1
+from    tx1_n2
 where	a<0
 group by rollup (b)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tx1
+PREHOOK: Input: default@tx1_n2
 #### A masked pattern was here ####
 POSTHOOK: query: select  sum(c),
         grouping(b),
 	'NULL,1' as expected
-from    tx1
+from    tx1_n2
 where	a<0
 group by rollup (b)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tx1
+POSTHOOK: Input: default@tx1_n2
 #### A masked pattern was here ####
 NULL	1	NULL,1
-PREHOOK: query: select '2 rows expected',sum(c) from tx1 group by rollup (a)
+PREHOOK: query: select '2 rows expected',sum(c) from tx1_n2 group by rollup (a)
 union all
-select '2 rows expected',sum(c) from tx1 group by rollup (a)
+select '2 rows expected',sum(c) from tx1_n2 group by rollup (a)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tx1
+PREHOOK: Input: default@tx1_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select '2 rows expected',sum(c) from tx1 group by rollup (a)
+POSTHOOK: query: select '2 rows expected',sum(c) from tx1_n2 group by rollup (a)
 union all
-select '2 rows expected',sum(c) from tx1 group by rollup (a)
+select '2 rows expected',sum(c) from tx1_n2 group by rollup (a)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tx1
+POSTHOOK: Input: default@tx1_n2
 #### A masked pattern was here ####
 2 rows expected	NULL
 2 rows expected	NULL
-PREHOOK: query: insert into tx1 values (1,1,1)
+PREHOOK: query: insert into tx1_n2 values (1,1,1)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@tx1
-POSTHOOK: query: insert into tx1 values (1,1,1)
+PREHOOK: Output: default@tx1_n2
+POSTHOOK: query: insert into tx1_n2 values (1,1,1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@tx1
-POSTHOOK: Lineage: tx1.a SCRIPT []
-POSTHOOK: Lineage: tx1.b SCRIPT []
-POSTHOOK: Lineage: tx1.c SCRIPT []
+POSTHOOK: Output: default@tx1_n2
+POSTHOOK: Lineage: tx1_n2.a SCRIPT []
+POSTHOOK: Lineage: tx1_n2.b SCRIPT []
+POSTHOOK: Lineage: tx1_n2.c SCRIPT []
 PREHOOK: query: select  sum(c),
         grouping(b),
 	'NULL,1' as expected
-from    tx1
+from    tx1_n2
 where	a<0
 group by rollup (b)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tx1
+PREHOOK: Input: default@tx1_n2
 #### A masked pattern was here ####
 POSTHOOK: query: select  sum(c),
         grouping(b),
 	'NULL,1' as expected
-from    tx1
+from    tx1_n2
 where	a<0
 group by rollup (b)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tx1
+POSTHOOK: Input: default@tx1_n2
 #### A masked pattern was here ####
 NULL	1	NULL,1
 PREHOOK: query: select  sum(c),
         grouping(b),
 	'1,1 and 1,0' as expected
-from    tx1
+from    tx1_n2
 group by rollup (b)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tx1
+PREHOOK: Input: default@tx1_n2
 #### A masked pattern was here ####
 POSTHOOK: query: select  sum(c),
         grouping(b),
 	'1,1 and 1,0' as expected
-from    tx1
+from    tx1_n2
 group by rollup (b)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tx1
+POSTHOOK: Input: default@tx1_n2
 #### A masked pattern was here ####
 1	1	1,1 and 1,0
 1	0	1,1 and 1,0
-PREHOOK: query: create table tx2 (a integer,b integer,c integer,d double,u string,bi binary) stored as orc
+PREHOOK: query: create table tx2_n1 (a integer,b integer,c integer,d double,u string,bi binary) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tx2
-POSTHOOK: query: create table tx2 (a integer,b integer,c integer,d double,u string,bi binary) stored as orc
+PREHOOK: Output: default@tx2_n1
+POSTHOOK: query: create table tx2_n1 (a integer,b integer,c integer,d double,u string,bi binary) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tx2
+POSTHOOK: Output: default@tx2_n1
 PREHOOK: query: explain
 select  sum(c),
         grouping(b),
 	'NULL,1' as expected
-from    tx2
+from    tx2_n1
 where	a<0
 group by a,b grouping sets ((), b, a)
 PREHOOK: type: QUERY
@@ -145,7 +145,7 @@ POSTHOOK: query: explain
 select  sum(c),
         grouping(b),
 	'NULL,1' as expected
-from    tx2
+from    tx2_n1
 where	a<0
 group by a,b grouping sets ((), b, a)
 POSTHOOK: type: QUERY
@@ -164,7 +164,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: tx2
+                  alias: tx2_n1
                   Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (a < 0) (type: boolean)
@@ -215,14 +215,14 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select sum(c),'NULL' as expected
-from tx2
+from tx2_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tx2
+PREHOOK: Input: default@tx2_n1
 #### A masked pattern was here ####
 POSTHOOK: query: select sum(c),'NULL' as expected
-from tx2
+from tx2_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tx2
+POSTHOOK: Input: default@tx2_n1
 #### A masked pattern was here ####
 NULL	NULL
 PREHOOK: query: select  sum(c),
@@ -230,67 +230,67 @@ PREHOOK: query: select  sum(c),
 	'asd',
         grouping(b),
 	'NULL,1' as expected
-from    tx2
+from    tx2_n1
 where	a<0
 group by a,b,d grouping sets ((), b, a, d)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tx2
+PREHOOK: Input: default@tx2_n1
 #### A masked pattern was here ####
 POSTHOOK: query: select  sum(c),
 	max(u),
 	'asd',
         grouping(b),
 	'NULL,1' as expected
-from    tx2
+from    tx2_n1
 where	a<0
 group by a,b,d grouping sets ((), b, a, d)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tx2
+POSTHOOK: Input: default@tx2_n1
 #### A masked pattern was here ####
 NULL	NULL	asd	1	NULL,1
-PREHOOK: query: select '2 rows expected',sum(c) from tx2 group by rollup (a)
+PREHOOK: query: select '2 rows expected',sum(c) from tx2_n1 group by rollup (a)
 union all
-select '2 rows expected',sum(c) from tx2 group by rollup (a)
+select '2 rows expected',sum(c) from tx2_n1 group by rollup (a)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tx2
+PREHOOK: Input: default@tx2_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select '2 rows expected',sum(c) from tx2 group by rollup (a)
+POSTHOOK: query: select '2 rows expected',sum(c) from tx2_n1 group by rollup (a)
 union all
-select '2 rows expected',sum(c) from tx2 group by rollup (a)
+select '2 rows expected',sum(c) from tx2_n1 group by rollup (a)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tx2
+POSTHOOK: Input: default@tx2_n1
 #### A masked pattern was here ####
 2 rows expected	NULL
 2 rows expected	NULL
-PREHOOK: query: insert into tx2 values
+PREHOOK: query: insert into tx2_n1 values
 (1,2,3,1.1,'x','b'),
 (3,2,3,1.1,'y','b')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@tx2
-POSTHOOK: query: insert into tx2 values
+PREHOOK: Output: default@tx2_n1
+POSTHOOK: query: insert into tx2_n1 values
 (1,2,3,1.1,'x','b'),
 (3,2,3,1.1,'y','b')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@tx2
-POSTHOOK: Lineage: tx2.a SCRIPT []
-POSTHOOK: Lineage: tx2.b SCRIPT []
-POSTHOOK: Lineage: tx2.bi SCRIPT []
-POSTHOOK: Lineage: tx2.c SCRIPT []
-POSTHOOK: Lineage: tx2.d SCRIPT []
-POSTHOOK: Lineage: tx2.u SCRIPT []
+POSTHOOK: Output: default@tx2_n1
+POSTHOOK: Lineage: tx2_n1.a SCRIPT []
+POSTHOOK: Lineage: tx2_n1.b SCRIPT []
+POSTHOOK: Lineage: tx2_n1.bi SCRIPT []
+POSTHOOK: Lineage: tx2_n1.c SCRIPT []
+POSTHOOK: Lineage: tx2_n1.d SCRIPT []
+POSTHOOK: Lineage: tx2_n1.u SCRIPT []
 PREHOOK: query: select  sum(a),
 	u,
 	bi,
 	'asd',
         grouping(bi),
 	'NULL,1' as expected
-from    tx2
+from    tx2_n1
 where	a=2
 group by a,u,bi grouping sets ( u, (), bi)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tx2
+PREHOOK: Input: default@tx2_n1
 #### A masked pattern was here ####
 POSTHOOK: query: select  sum(a),
 	u,
@@ -298,10 +298,10 @@ POSTHOOK: query: select  sum(a),
 	'asd',
         grouping(bi),
 	'NULL,1' as expected
-from    tx2
+from    tx2_n1
 where	a=2
 group by a,u,bi grouping sets ( u, (), bi)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tx2
+POSTHOOK: Input: default@tx2_n1
 #### A masked pattern was here ####
 NULL	NULL	NULL	asd	1	NULL,1

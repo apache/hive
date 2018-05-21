@@ -31105,44 +31105,44 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: drop table if exists cast_string_to_int_1
+PREHOOK: query: drop table if exists cast_string_to_int_1_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table if exists cast_string_to_int_1
+POSTHOOK: query: drop table if exists cast_string_to_int_1_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: drop table if exists cast_string_to_int_2
+PREHOOK: query: drop table if exists cast_string_to_int_2_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table if exists cast_string_to_int_2
+POSTHOOK: query: drop table if exists cast_string_to_int_2_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table cast_string_to_int_1 as select CAST(CAST(key as float) as string),value from srcbucket
+PREHOOK: query: create table cast_string_to_int_1_n0 as select CAST(CAST(key as float) as string),value from srcbucket
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@srcbucket
 PREHOOK: Output: database:default
-PREHOOK: Output: default@cast_string_to_int_1
-POSTHOOK: query: create table cast_string_to_int_1 as select CAST(CAST(key as float) as string),value from srcbucket
+PREHOOK: Output: default@cast_string_to_int_1_n0
+POSTHOOK: query: create table cast_string_to_int_1_n0 as select CAST(CAST(key as float) as string),value from srcbucket
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@srcbucket
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@cast_string_to_int_1
-POSTHOOK: Lineage: cast_string_to_int_1._c0 EXPRESSION [(srcbucket)srcbucket.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: cast_string_to_int_1.value SIMPLE [(srcbucket)srcbucket.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: create table cast_string_to_int_2(i int,s string)
+POSTHOOK: Output: default@cast_string_to_int_1_n0
+POSTHOOK: Lineage: cast_string_to_int_1_n0._c0 EXPRESSION [(srcbucket)srcbucket.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: cast_string_to_int_1_n0.value SIMPLE [(srcbucket)srcbucket.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: create table cast_string_to_int_2_n0(i int,s string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@cast_string_to_int_2
-POSTHOOK: query: create table cast_string_to_int_2(i int,s string)
+PREHOOK: Output: default@cast_string_to_int_2_n0
+POSTHOOK: query: create table cast_string_to_int_2_n0(i int,s string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@cast_string_to_int_2
-PREHOOK: query: insert overwrite table cast_string_to_int_2 select * from cast_string_to_int_1
+POSTHOOK: Output: default@cast_string_to_int_2_n0
+PREHOOK: query: insert overwrite table cast_string_to_int_2_n0 select * from cast_string_to_int_1_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@cast_string_to_int_1
-PREHOOK: Output: default@cast_string_to_int_2
-POSTHOOK: query: insert overwrite table cast_string_to_int_2 select * from cast_string_to_int_1
+PREHOOK: Input: default@cast_string_to_int_1_n0
+PREHOOK: Output: default@cast_string_to_int_2_n0
+POSTHOOK: query: insert overwrite table cast_string_to_int_2_n0 select * from cast_string_to_int_1_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@cast_string_to_int_1
-POSTHOOK: Output: default@cast_string_to_int_2
-POSTHOOK: Lineage: cast_string_to_int_2.i EXPRESSION [(cast_string_to_int_1)cast_string_to_int_1.FieldSchema(name:_c0, type:string, comment:null), ]
-POSTHOOK: Lineage: cast_string_to_int_2.s SIMPLE [(cast_string_to_int_1)cast_string_to_int_1.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Input: default@cast_string_to_int_1_n0
+POSTHOOK: Output: default@cast_string_to_int_2_n0
+POSTHOOK: Lineage: cast_string_to_int_2_n0.i EXPRESSION [(cast_string_to_int_1_n0)cast_string_to_int_1_n0.FieldSchema(name:_c0, type:string, comment:null), ]
+POSTHOOK: Lineage: cast_string_to_int_2_n0.s SIMPLE [(cast_string_to_int_1_n0)cast_string_to_int_1_n0.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: select all key from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src

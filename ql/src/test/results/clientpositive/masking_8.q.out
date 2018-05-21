@@ -1,289 +1,1708 @@
-PREHOOK: query: drop table masking_test
+PREHOOK: query: drop table masking_test_n2
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table masking_test
+POSTHOOK: query: drop table masking_test_n2
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table masking_test as select cast(key as int) as key, value, '12' from src
+PREHOOK: query: create table masking_test_n2 as select cast(key as int) as key, value, '12' from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@masking_test
-POSTHOOK: query: create table masking_test as select cast(key as int) as key, value, '12' from src
+PREHOOK: Output: default@masking_test_n2
+POSTHOOK: query: create table masking_test_n2 as select cast(key as int) as key, value, '12' from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@masking_test
-POSTHOOK: Lineage: masking_test._c2 SIMPLE []
-POSTHOOK: Lineage: masking_test.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: masking_test.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: explain select *, ROW__ID from masking_test
+POSTHOOK: Output: default@masking_test_n2
+POSTHOOK: Lineage: masking_test_n2._c2 SIMPLE []
+POSTHOOK: Lineage: masking_test_n2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: masking_test_n2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: explain select *, ROW__ID from masking_test_n2
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select *, ROW__ID from masking_test
+POSTHOOK: query: explain select *, ROW__ID from masking_test_n2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            alias: masking_test
-            Statistics: Num rows: 500 Data size: 6812 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: (((key % 2) = 0) and (key < 10)) (type: boolean)
-              Statistics: Num rows: 83 Data size: 1130 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: key (type: int), reverse(value) (type: string), _c2 (type: string), ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
-                outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 83 Data size: 1130 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 83 Data size: 1130 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-      Execution mode: vectorized
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
       Processor Tree:
-        ListSink
+        TableScan
+          alias: masking_test_n2
+          Statistics: Num rows: 500 Data size: 6812 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: key (type: int), value (type: string), _c2 (type: string), ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+            outputColumnNames: _col0, _col1, _col2, _col3
+            Statistics: Num rows: 500 Data size: 6812 Basic stats: COMPLETE Column stats: NONE
+            ListSink
 
-PREHOOK: query: select *, ROW__ID from masking_test
+PREHOOK: query: select *, ROW__ID from masking_test_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@masking_test
+PREHOOK: Input: default@masking_test_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select *, ROW__ID from masking_test
+POSTHOOK: query: select *, ROW__ID from masking_test_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@masking_test
+POSTHOOK: Input: default@masking_test_n2
 #### A masked pattern was here ####
-0	0_lav	12	NULL
-4	4_lav	12	NULL
-8	8_lav	12	NULL
-0	0_lav	12	NULL
-0	0_lav	12	NULL
-2	2_lav	12	NULL
-PREHOOK: query: explain select * from masking_test
+238	val_238	12	NULL
+86	val_86	12	NULL
+311	val_311	12	NULL
+27	val_27	12	NULL
+165	val_165	12	NULL
+409	val_409	12	NULL
+255	val_255	12	NULL
+278	val_278	12	NULL
+98	val_98	12	NULL
+484	val_484	12	NULL
+265	val_265	12	NULL
+193	val_193	12	NULL
+401	val_401	12	NULL
+150	val_150	12	NULL
+273	val_273	12	NULL
+224	val_224	12	NULL
+369	val_369	12	NULL
+66	val_66	12	NULL
+128	val_128	12	NULL
+213	val_213	12	NULL
+146	val_146	12	NULL
+406	val_406	12	NULL
+429	val_429	12	NULL
+374	val_374	12	NULL
+152	val_152	12	NULL
+469	val_469	12	NULL
+145	val_145	12	NULL
+495	val_495	12	NULL
+37	val_37	12	NULL
+327	val_327	12	NULL
+281	val_281	12	NULL
+277	val_277	12	NULL
+209	val_209	12	NULL
+15	val_15	12	NULL
+82	val_82	12	NULL
+403	val_403	12	NULL
+166	val_166	12	NULL
+417	val_417	12	NULL
+430	val_430	12	NULL
+252	val_252	12	NULL
+292	val_292	12	NULL
+219	val_219	12	NULL
+287	val_287	12	NULL
+153	val_153	12	NULL
+193	val_193	12	NULL
+338	val_338	12	NULL
+446	val_446	12	NULL
+459	val_459	12	NULL
+394	val_394	12	NULL
+237	val_237	12	NULL
+482	val_482	12	NULL
+174	val_174	12	NULL
+413	val_413	12	NULL
+494	val_494	12	NULL
+207	val_207	12	NULL
+199	val_199	12	NULL
+466	val_466	12	NULL
+208	val_208	12	NULL
+174	val_174	12	NULL
+399	val_399	12	NULL
+396	val_396	12	NULL
+247	val_247	12	NULL
+417	val_417	12	NULL
+489	val_489	12	NULL
+162	val_162	12	NULL
+377	val_377	12	NULL
+397	val_397	12	NULL
+309	val_309	12	NULL
+365	val_365	12	NULL
+266	val_266	12	NULL
+439	val_439	12	NULL
+342	val_342	12	NULL
+367	val_367	12	NULL
+325	val_325	12	NULL
+167	val_167	12	NULL
+195	val_195	12	NULL
+475	val_475	12	NULL
+17	val_17	12	NULL
+113	val_113	12	NULL
+155	val_155	12	NULL
+203	val_203	12	NULL
+339	val_339	12	NULL
+0	val_0	12	NULL
+455	val_455	12	NULL
+128	val_128	12	NULL
+311	val_311	12	NULL
+316	val_316	12	NULL
+57	val_57	12	NULL
+302	val_302	12	NULL
+205	val_205	12	NULL
+149	val_149	12	NULL
+438	val_438	12	NULL
+345	val_345	12	NULL
+129	val_129	12	NULL
+170	val_170	12	NULL
+20	val_20	12	NULL
+489	val_489	12	NULL
+157	val_157	12	NULL
+378	val_378	12	NULL
+221	val_221	12	NULL
+92	val_92	12	NULL
+111	val_111	12	NULL
+47	val_47	12	NULL
+72	val_72	12	NULL
+4	val_4	12	NULL
+280	val_280	12	NULL
+35	val_35	12	NULL
+427	val_427	12	NULL
+277	val_277	12	NULL
+208	val_208	12	NULL
+356	val_356	12	NULL
+399	val_399	12	NULL
+169	val_169	12	NULL
+382	val_382	12	NULL
+498	val_498	12	NULL
+125	val_125	12	NULL
+386	val_386	12	NULL
+437	val_437	12	NULL
+469	val_469	12	NULL
+192	val_192	12	NULL
+286	val_286	12	NULL
+187	val_187	12	NULL
+176	val_176	12	NULL
+54	val_54	12	NULL
+459	val_459	12	NULL
+51	val_51	12	NULL
+138	val_138	12	NULL
+103	val_103	12	NULL
+239	val_239	12	NULL
+213	val_213	12	NULL
+216	val_216	12	NULL
+430	val_430	12	NULL
+278	val_278	12	NULL
+176	val_176	12	NULL
+289	val_289	12	NULL
+221	val_221	12	NULL
+65	val_65	12	NULL
+318	val_318	12	NULL
+332	val_332	12	NULL
+311	val_311	12	NULL
+275	val_275	12	NULL
+137	val_137	12	NULL
+241	val_241	12	NULL
+83	val_83	12	NULL
+333	val_333	12	NULL
+180	val_180	12	NULL
+284	val_284	12	NULL
+12	val_12	12	NULL
+230	val_230	12	NULL
+181	val_181	12	NULL
+67	val_67	12	NULL
+260	val_260	12	NULL
+404	val_404	12	NULL
+384	val_384	12	NULL
+489	val_489	12	NULL
+353	val_353	12	NULL
+373	val_373	12	NULL
+272	val_272	12	NULL
+138	val_138	12	NULL
+217	val_217	12	NULL
+84	val_84	12	NULL
+348	val_348	12	NULL
+466	val_466	12	NULL
+58	val_58	12	NULL
+8	val_8	12	NULL
+411	val_411	12	NULL
+230	val_230	12	NULL
+208	val_208	12	NULL
+348	val_348	12	NULL
+24	val_24	12	NULL
+463	val_463	12	NULL
+431	val_431	12	NULL
+179	val_179	12	NULL
+172	val_172	12	NULL
+42	val_42	12	NULL
+129	val_129	12	NULL
+158	val_158	12	NULL
+119	val_119	12	NULL
+496	val_496	12	NULL
+0	val_0	12	NULL
+322	val_322	12	NULL
+197	val_197	12	NULL
+468	val_468	12	NULL
+393	val_393	12	NULL
+454	val_454	12	NULL
+100	val_100	12	NULL
+298	val_298	12	NULL
+199	val_199	12	NULL
+191	val_191	12	NULL
+418	val_418	12	NULL
+96	val_96	12	NULL
+26	val_26	12	NULL
+165	val_165	12	NULL
+327	val_327	12	NULL
+230	val_230	12	NULL
+205	val_205	12	NULL
+120	val_120	12	NULL
+131	val_131	12	NULL
+51	val_51	12	NULL
+404	val_404	12	NULL
+43	val_43	12	NULL
+436	val_436	12	NULL
+156	val_156	12	NULL
+469	val_469	12	NULL
+468	val_468	12	NULL
+308	val_308	12	NULL
+95	val_95	12	NULL
+196	val_196	12	NULL
+288	val_288	12	NULL
+481	val_481	12	NULL
+457	val_457	12	NULL
+98	val_98	12	NULL
+282	val_282	12	NULL
+197	val_197	12	NULL
+187	val_187	12	NULL
+318	val_318	12	NULL
+318	val_318	12	NULL
+409	val_409	12	NULL
+470	val_470	12	NULL
+137	val_137	12	NULL
+369	val_369	12	NULL
+316	val_316	12	NULL
+169	val_169	12	NULL
+413	val_413	12	NULL
+85	val_85	12	NULL
+77	val_77	12	NULL
+0	val_0	12	NULL
+490	val_490	12	NULL
+87	val_87	12	NULL
+364	val_364	12	NULL
+179	val_179	12	NULL
+118	val_118	12	NULL
+134	val_134	12	NULL
+395	val_395	12	NULL
+282	val_282	12	NULL
+138	val_138	12	NULL
+238	val_238	12	NULL
+419	val_419	12	NULL
+15	val_15	12	NULL
+118	val_118	12	NULL
+72	val_72	12	NULL
+90	val_90	12	NULL
+307	val_307	12	NULL
+19	val_19	12	NULL
+435	val_435	12	NULL
+10	val_10	12	NULL
+277	val_277	12	NULL
+273	val_273	12	NULL
+306	val_306	12	NULL
+224	val_224	12	NULL
+309	val_309	12	NULL
+389	val_389	12	NULL
+327	val_327	12	NULL
+242	val_242	12	NULL
+369	val_369	12	NULL
+392	val_392	12	NULL
+272	val_272	12	NULL
+331	val_331	12	NULL
+401	val_401	12	NULL
+242	val_242	12	NULL
+452	val_452	12	NULL
+177	val_177	12	NULL
+226	val_226	12	NULL
+5	val_5	12	NULL
+497	val_497	12	NULL
+402	val_402	12	NULL
+396	val_396	12	NULL
+317	val_317	12	NULL
+395	val_395	12	NULL
+58	val_58	12	NULL
+35	val_35	12	NULL
+336	val_336	12	NULL
+95	val_95	12	NULL
+11	val_11	12	NULL
+168	val_168	12	NULL
+34	val_34	12	NULL
+229	val_229	12	NULL
+233	val_233	12	NULL
+143	val_143	12	NULL
+472	val_472	12	NULL
+322	val_322	12	NULL
+498	val_498	12	NULL
+160	val_160	12	NULL
+195	val_195	12	NULL
+42	val_42	12	NULL
+321	val_321	12	NULL
+430	val_430	12	NULL
+119	val_119	12	NULL
+489	val_489	12	NULL
+458	val_458	12	NULL
+78	val_78	12	NULL
+76	val_76	12	NULL
+41	val_41	12	NULL
+223	val_223	12	NULL
+492	val_492	12	NULL
+149	val_149	12	NULL
+449	val_449	12	NULL
+218	val_218	12	NULL
+228	val_228	12	NULL
+138	val_138	12	NULL
+453	val_453	12	NULL
+30	val_30	12	NULL
+209	val_209	12	NULL
+64	val_64	12	NULL
+468	val_468	12	NULL
+76	val_76	12	NULL
+74	val_74	12	NULL
+342	val_342	12	NULL
+69	val_69	12	NULL
+230	val_230	12	NULL
+33	val_33	12	NULL
+368	val_368	12	NULL
+103	val_103	12	NULL
+296	val_296	12	NULL
+113	val_113	12	NULL
+216	val_216	12	NULL
+367	val_367	12	NULL
+344	val_344	12	NULL
+167	val_167	12	NULL
+274	val_274	12	NULL
+219	val_219	12	NULL
+239	val_239	12	NULL
+485	val_485	12	NULL
+116	val_116	12	NULL
+223	val_223	12	NULL
+256	val_256	12	NULL
+263	val_263	12	NULL
+70	val_70	12	NULL
+487	val_487	12	NULL
+480	val_480	12	NULL
+401	val_401	12	NULL
+288	val_288	12	NULL
+191	val_191	12	NULL
+5	val_5	12	NULL
+244	val_244	12	NULL
+438	val_438	12	NULL
+128	val_128	12	NULL
+467	val_467	12	NULL
+432	val_432	12	NULL
+202	val_202	12	NULL
+316	val_316	12	NULL
+229	val_229	12	NULL
+469	val_469	12	NULL
+463	val_463	12	NULL
+280	val_280	12	NULL
+2	val_2	12	NULL
+35	val_35	12	NULL
+283	val_283	12	NULL
+331	val_331	12	NULL
+235	val_235	12	NULL
+80	val_80	12	NULL
+44	val_44	12	NULL
+193	val_193	12	NULL
+321	val_321	12	NULL
+335	val_335	12	NULL
+104	val_104	12	NULL
+466	val_466	12	NULL
+366	val_366	12	NULL
+175	val_175	12	NULL
+403	val_403	12	NULL
+483	val_483	12	NULL
+53	val_53	12	NULL
+105	val_105	12	NULL
+257	val_257	12	NULL
+406	val_406	12	NULL
+409	val_409	12	NULL
+190	val_190	12	NULL
+406	val_406	12	NULL
+401	val_401	12	NULL
+114	val_114	12	NULL
+258	val_258	12	NULL
+90	val_90	12	NULL
+203	val_203	12	NULL
+262	val_262	12	NULL
+348	val_348	12	NULL
+424	val_424	12	NULL
+12	val_12	12	NULL
+396	val_396	12	NULL
+201	val_201	12	NULL
+217	val_217	12	NULL
+164	val_164	12	NULL
+431	val_431	12	NULL
+454	val_454	12	NULL
+478	val_478	12	NULL
+298	val_298	12	NULL
+125	val_125	12	NULL
+431	val_431	12	NULL
+164	val_164	12	NULL
+424	val_424	12	NULL
+187	val_187	12	NULL
+382	val_382	12	NULL
+5	val_5	12	NULL
+70	val_70	12	NULL
+397	val_397	12	NULL
+480	val_480	12	NULL
+291	val_291	12	NULL
+24	val_24	12	NULL
+351	val_351	12	NULL
+255	val_255	12	NULL
+104	val_104	12	NULL
+70	val_70	12	NULL
+163	val_163	12	NULL
+438	val_438	12	NULL
+119	val_119	12	NULL
+414	val_414	12	NULL
+200	val_200	12	NULL
+491	val_491	12	NULL
+237	val_237	12	NULL
+439	val_439	12	NULL
+360	val_360	12	NULL
+248	val_248	12	NULL
+479	val_479	12	NULL
+305	val_305	12	NULL
+417	val_417	12	NULL
+199	val_199	12	NULL
+444	val_444	12	NULL
+120	val_120	12	NULL
+429	val_429	12	NULL
+169	val_169	12	NULL
+443	val_443	12	NULL
+323	val_323	12	NULL
+325	val_325	12	NULL
+277	val_277	12	NULL
+230	val_230	12	NULL
+478	val_478	12	NULL
+178	val_178	12	NULL
+468	val_468	12	NULL
+310	val_310	12	NULL
+317	val_317	12	NULL
+333	val_333	12	NULL
+493	val_493	12	NULL
+460	val_460	12	NULL
+207	val_207	12	NULL
+249	val_249	12	NULL
+265	val_265	12	NULL
+480	val_480	12	NULL
+83	val_83	12	NULL
+136	val_136	12	NULL
+353	val_353	12	NULL
+172	val_172	12	NULL
+214	val_214	12	NULL
+462	val_462	12	NULL
+233	val_233	12	NULL
+406	val_406	12	NULL
+133	val_133	12	NULL
+175	val_175	12	NULL
+189	val_189	12	NULL
+454	val_454	12	NULL
+375	val_375	12	NULL
+401	val_401	12	NULL
+421	val_421	12	NULL
+407	val_407	12	NULL
+384	val_384	12	NULL
+256	val_256	12	NULL
+26	val_26	12	NULL
+134	val_134	12	NULL
+67	val_67	12	NULL
+384	val_384	12	NULL
+379	val_379	12	NULL
+18	val_18	12	NULL
+462	val_462	12	NULL
+492	val_492	12	NULL
+100	val_100	12	NULL
+298	val_298	12	NULL
+9	val_9	12	NULL
+341	val_341	12	NULL
+498	val_498	12	NULL
+146	val_146	12	NULL
+458	val_458	12	NULL
+362	val_362	12	NULL
+186	val_186	12	NULL
+285	val_285	12	NULL
+348	val_348	12	NULL
+167	val_167	12	NULL
+18	val_18	12	NULL
+273	val_273	12	NULL
+183	val_183	12	NULL
+281	val_281	12	NULL
+344	val_344	12	NULL
+97	val_97	12	NULL
+469	val_469	12	NULL
+315	val_315	12	NULL
+84	val_84	12	NULL
+28	val_28	12	NULL
+37	val_37	12	NULL
+448	val_448	12	NULL
+152	val_152	12	NULL
+348	val_348	12	NULL
+307	val_307	12	NULL
+194	val_194	12	NULL
+414	val_414	12	NULL
+477	val_477	12	NULL
+222	val_222	12	NULL
+126	val_126	12	NULL
+90	val_90	12	NULL
+169	val_169	12	NULL
+403	val_403	12	NULL
+400	val_400	12	NULL
+200	val_200	12	NULL
+97	val_97	12	NULL
+PREHOOK: query: explain select * from masking_test_n2
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from masking_test
+POSTHOOK: query: explain select * from masking_test_n2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            alias: masking_test
-            Statistics: Num rows: 500 Data size: 6812 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: (((key % 2) = 0) and (key < 10)) (type: boolean)
-              Statistics: Num rows: 83 Data size: 1130 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: key (type: int), reverse(value) (type: string), _c2 (type: string)
-                outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 83 Data size: 1130 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 83 Data size: 1130 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-      Execution mode: vectorized
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
       Processor Tree:
-        ListSink
+        TableScan
+          alias: masking_test_n2
+          Statistics: Num rows: 500 Data size: 6812 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: key (type: int), value (type: string), _c2 (type: string)
+            outputColumnNames: _col0, _col1, _col2
+            Statistics: Num rows: 500 Data size: 6812 Basic stats: COMPLETE Column stats: NONE
+            ListSink
 
-PREHOOK: query: select * from masking_test
+PREHOOK: query: select * from masking_test_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@masking_test
+PREHOOK: Input: default@masking_test_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select * from masking_test
+POSTHOOK: query: select * from masking_test_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@masking_test
+POSTHOOK: Input: default@masking_test_n2
 #### A masked pattern was here ####
-0	0_lav	12
-4	4_lav	12
-8	8_lav	12
-0	0_lav	12
-0	0_lav	12
-2	2_lav	12
-PREHOOK: query: explain select INPUT__FILE__NAME, *, ROW__ID from masking_test
+238	val_238	12
+86	val_86	12
+311	val_311	12
+27	val_27	12
+165	val_165	12
+409	val_409	12
+255	val_255	12
+278	val_278	12
+98	val_98	12
+484	val_484	12
+265	val_265	12
+193	val_193	12
+401	val_401	12
+150	val_150	12
+273	val_273	12
+224	val_224	12
+369	val_369	12
+66	val_66	12
+128	val_128	12
+213	val_213	12
+146	val_146	12
+406	val_406	12
+429	val_429	12
+374	val_374	12
+152	val_152	12
+469	val_469	12
+145	val_145	12
+495	val_495	12
+37	val_37	12
+327	val_327	12
+281	val_281	12
+277	val_277	12
+209	val_209	12
+15	val_15	12
+82	val_82	12
+403	val_403	12
+166	val_166	12
+417	val_417	12
+430	val_430	12
+252	val_252	12
+292	val_292	12
+219	val_219	12
+287	val_287	12
+153	val_153	12
+193	val_193	12
+338	val_338	12
+446	val_446	12
+459	val_459	12
+394	val_394	12
+237	val_237	12
+482	val_482	12
+174	val_174	12
+413	val_413	12
+494	val_494	12
+207	val_207	12
+199	val_199	12
+466	val_466	12
+208	val_208	12
+174	val_174	12
+399	val_399	12
+396	val_396	12
+247	val_247	12
+417	val_417	12
+489	val_489	12
+162	val_162	12
+377	val_377	12
+397	val_397	12
+309	val_309	12
+365	val_365	12
+266	val_266	12
+439	val_439	12
+342	val_342	12
+367	val_367	12
+325	val_325	12
+167	val_167	12
+195	val_195	12
+475	val_475	12
+17	val_17	12
+113	val_113	12
+155	val_155	12
+203	val_203	12
+339	val_339	12
+0	val_0	12
+455	val_455	12
+128	val_128	12
+311	val_311	12
+316	val_316	12
+57	val_57	12
+302	val_302	12
+205	val_205	12
+149	val_149	12
+438	val_438	12
+345	val_345	12
+129	val_129	12
+170	val_170	12
+20	val_20	12
+489	val_489	12
+157	val_157	12
+378	val_378	12
+221	val_221	12
+92	val_92	12
+111	val_111	12
+47	val_47	12
+72	val_72	12
+4	val_4	12
+280	val_280	12
+35	val_35	12
+427	val_427	12
+277	val_277	12
+208	val_208	12
+356	val_356	12
+399	val_399	12
+169	val_169	12
+382	val_382	12
+498	val_498	12
+125	val_125	12
+386	val_386	12
+437	val_437	12
+469	val_469	12
+192	val_192	12
+286	val_286	12
+187	val_187	12
+176	val_176	12
+54	val_54	12
+459	val_459	12
+51	val_51	12
+138	val_138	12
+103	val_103	12
+239	val_239	12
+213	val_213	12
+216	val_216	12
+430	val_430	12
+278	val_278	12
+176	val_176	12
+289	val_289	12
+221	val_221	12
+65	val_65	12
+318	val_318	12
+332	val_332	12
+311	val_311	12
+275	val_275	12
+137	val_137	12
+241	val_241	12
+83	val_83	12
+333	val_333	12
+180	val_180	12
+284	val_284	12
+12	val_12	12
+230	val_230	12
+181	val_181	12
+67	val_67	12
+260	val_260	12
+404	val_404	12
+384	val_384	12
+489	val_489	12
+353	val_353	12
+373	val_373	12
+272	val_272	12
+138	val_138	12
+217	val_217	12
+84	val_84	12
+348	val_348	12
+466	val_466	12
+58	val_58	12
+8	val_8	12
+411	val_411	12
+230	val_230	12
+208	val_208	12
+348	val_348	12
+24	val_24	12
+463	val_463	12
+431	val_431	12
+179	val_179	12
+172	val_172	12
+42	val_42	12
+129	val_129	12
+158	val_158	12
+119	val_119	12
+496	val_496	12
+0	val_0	12
+322	val_322	12
+197	val_197	12
+468	val_468	12
+393	val_393	12
+454	val_454	12
+100	val_100	12
+298	val_298	12
+199	val_199	12
+191	val_191	12
+418	val_418	12
+96	val_96	12
+26	val_26	12
+165	val_165	12
+327	val_327	12
+230	val_230	12
+205	val_205	12
+120	val_120	12
+131	val_131	12
+51	val_51	12
+404	val_404	12
+43	val_43	12
+436	val_436	12
+156	val_156	12
+469	val_469	12
+468	val_468	12
+308	val_308	12
+95	val_95	12
+196	val_196	12
+288	val_288	12
+481	val_481	12
+457	val_457	12
+98	val_98	12
+282	val_282	12
+197	val_197	12
+187	val_187	12
+318	val_318	12
+318	val_318	12
+409	val_409	12
+470	val_470	12
+137	val_137	12
+369	val_369	12
+316	val_316	12
+169	val_169	12
+413	val_413	12
+85	val_85	12
+77	val_77	12
+0	val_0	12
+490	val_490	12
+87	val_87	12
+364	val_364	12
+179	val_179	12
+118	val_118	12
+134	val_134	12
+395	val_395	12
+282	val_282	12
+138	val_138	12
+238	val_238	12
+419	val_419	12
+15	val_15	12
+118	val_118	12
+72	val_72	12
+90	val_90	12
+307	val_307	12
+19	val_19	12
+435	val_435	12
+10	val_10	12
+277	val_277	12
+273	val_273	12
+306	val_306	12
+224	val_224	12
+309	val_309	12
+389	val_389	12
+327	val_327	12
+242	val_242	12
+369	val_369	12
+392	val_392	12
+272	val_272	12
+331	val_331	12
+401	val_401	12
+242	val_242	12
+452	val_452	12
+177	val_177	12
+226	val_226	12
+5	val_5	12
+497	val_497	12
+402	val_402	12
+396	val_396	12
+317	val_317	12
+395	val_395	12
+58	val_58	12
+35	val_35	12
+336	val_336	12
+95	val_95	12
+11	val_11	12
+168	val_168	12
+34	val_34	12
+229	val_229	12
+233	val_233	12
+143	val_143	12
+472	val_472	12
+322	val_322	12
+498	val_498	12
+160	val_160	12
+195	val_195	12
+42	val_42	12
+321	val_321	12
+430	val_430	12
+119	val_119	12
+489	val_489	12
+458	val_458	12
+78	val_78	12
+76	val_76	12
+41	val_41	12
+223	val_223	12
+492	val_492	12
+149	val_149	12
+449	val_449	12
+218	val_218	12
+228	val_228	12
+138	val_138	12
+453	val_453	12
+30	val_30	12
+209	val_209	12
+64	val_64	12
+468	val_468	12
+76	val_76	12
+74	val_74	12
+342	val_342	12
+69	val_69	12
+230	val_230	12
+33	val_33	12
+368	val_368	12
+103	val_103	12
+296	val_296	12
+113	val_113	12
+216	val_216	12
+367	val_367	12
+344	val_344	12
+167	val_167	12
+274	val_274	12
+219	val_219	12
+239	val_239	12
+485	val_485	12
+116	val_116	12
+223	val_223	12
+256	val_256	12
+263	val_263	12
+70	val_70	12
+487	val_487	12
+480	val_480	12
+401	val_401	12
+288	val_288	12
+191	val_191	12
+5	val_5	12
+244	val_244	12
+438	val_438	12
+128	val_128	12
+467	val_467	12
+432	val_432	12
+202	val_202	12
+316	val_316	12
+229	val_229	12
+469	val_469	12
+463	val_463	12
+280	val_280	12
+2	val_2	12
+35	val_35	12
+283	val_283	12
+331	val_331	12
+235	val_235	12
+80	val_80	12
+44	val_44	12
+193	val_193	12
+321	val_321	12
+335	val_335	12
+104	val_104	12
+466	val_466	12
+366	val_366	12
+175	val_175	12
+403	val_403	12
+483	val_483	12
+53	val_53	12
+105	val_105	12
+257	val_257	12
+406	val_406	12
+409	val_409	12
+190	val_190	12
+406	val_406	12
+401	val_401	12
+114	val_114	12
+258	val_258	12
+90	val_90	12
+203	val_203	12
+262	val_262	12
+348	val_348	12
+424	val_424	12
+12	val_12	12
+396	val_396	12
+201	val_201	12
+217	val_217	12
+164	val_164	12
+431	val_431	12
+454	val_454	12
+478	val_478	12
+298	val_298	12
+125	val_125	12
+431	val_431	12
+164	val_164	12
+424	val_424	12
+187	val_187	12
+382	val_382	12
+5	val_5	12
+70	val_70	12
+397	val_397	12
+480	val_480	12
+291	val_291	12
+24	val_24	12
+351	val_351	12
+255	val_255	12
+104	val_104	12
+70	val_70	12
+163	val_163	12
+438	val_438	12
+119	val_119	12
+414	val_414	12
+200	val_200	12
+491	val_491	12
+237	val_237	12
+439	val_439	12
+360	val_360	12
+248	val_248	12
+479	val_479	12
+305	val_305	12
+417	val_417	12
+199	val_199	12
+444	val_444	12
+120	val_120	12
+429	val_429	12
+169	val_169	12
+443	val_443	12
+323	val_323	12
+325	val_325	12
+277	val_277	12
+230	val_230	12
+478	val_478	12
+178	val_178	12
+468	val_468	12
+310	val_310	12
+317	val_317	12
+333	val_333	12
+493	val_493	12
+460	val_460	12
+207	val_207	12
+249	val_249	12
+265	val_265	12
+480	val_480	12
+83	val_83	12
+136	val_136	12
+353	val_353	12
+172	val_172	12
+214	val_214	12
+462	val_462	12
+233	val_233	12
+406	val_406	12
+133	val_133	12
+175	val_175	12
+189	val_189	12
+454	val_454	12
+375	val_375	12
+401	val_401	12
+421	val_421	12
+407	val_407	12
+384	val_384	12
+256	val_256	12
+26	val_26	12
+134	val_134	12
+67	val_67	12
+384	val_384	12
+379	val_379	12
+18	val_18	12
+462	val_462	12
+492	val_492	12
+100	val_100	12
+298	val_298	12
+9	val_9	12
+341	val_341	12
+498	val_498	12
+146	val_146	12
+458	val_458	12
+362	val_362	12
+186	val_186	12
+285	val_285	12
+348	val_348	12
+167	val_167	12
+18	val_18	12
+273	val_273	12
+183	val_183	12
+281	val_281	12
+344	val_344	12
+97	val_97	12
+469	val_469	12
+315	val_315	12
+84	val_84	12
+28	val_28	12
+37	val_37	12
+448	val_448	12
+152	val_152	12
+348	val_348	12
+307	val_307	12
+194	val_194	12
+414	val_414	12
+477	val_477	12
+222	val_222	12
+126	val_126	12
+90	val_90	12
+169	val_169	12
+403	val_403	12
+400	val_400	12
+200	val_200	12
+97	val_97	12
+PREHOOK: query: explain select INPUT__FILE__NAME, *, ROW__ID from masking_test_n2
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select INPUT__FILE__NAME, *, ROW__ID from masking_test
+POSTHOOK: query: explain select INPUT__FILE__NAME, *, ROW__ID from masking_test_n2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            alias: masking_test
-            Statistics: Num rows: 500 Data size: 6812 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: (((key % 2) = 0) and (key < 10)) (type: boolean)
-              Statistics: Num rows: 83 Data size: 1130 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: INPUT__FILE__NAME (type: string), key (type: int), reverse(value) (type: string), _c2 (type: string), ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                Statistics: Num rows: 83 Data size: 1130 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 83 Data size: 1130 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
       Processor Tree:
-        ListSink
+        TableScan
+          alias: masking_test_n2
+          Statistics: Num rows: 500 Data size: 6812 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: INPUT__FILE__NAME (type: string), key (type: int), value (type: string), _c2 (type: string), ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4
+            Statistics: Num rows: 500 Data size: 6812 Basic stats: COMPLETE Column stats: NONE
+            ListSink
 
-PREHOOK: query: select INPUT__FILE__NAME, *, ROW__ID from masking_test
+PREHOOK: query: select INPUT__FILE__NAME, *, ROW__ID from masking_test_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@masking_test
+PREHOOK: Input: default@masking_test_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select INPUT__FILE__NAME, *, ROW__ID from masking_test
+POSTHOOK: query: select INPUT__FILE__NAME, *, ROW__ID from masking_test_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@masking_test
+POSTHOOK: Input: default@masking_test_n2
 #### A masked pattern was here ####
-PREHOOK: query: drop table masking_test
+PREHOOK: query: drop table masking_test_n2
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@masking_test
-PREHOOK: Output: default@masking_test
-POSTHOOK: query: drop table masking_test
+PREHOOK: Input: default@masking_test_n2
+PREHOOK: Output: default@masking_test_n2
+POSTHOOK: query: drop table masking_test_n2
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@masking_test
-POSTHOOK: Output: default@masking_test
-PREHOOK: query: create table masking_test as select cast(key as int) as key, '12'
+POSTHOOK: Input: default@masking_test_n2
+POSTHOOK: Output: default@masking_test_n2
+PREHOOK: query: create table masking_test_n2 as select cast(key as int) as key, '12'
 '12', '12', '12', '12', '12', '12', '12', '12', '12', '12'
  from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@masking_test
-POSTHOOK: query: create table masking_test as select cast(key as int) as key, '12'
+PREHOOK: Output: default@masking_test_n2
+POSTHOOK: query: create table masking_test_n2 as select cast(key as int) as key, '12'
 '12', '12', '12', '12', '12', '12', '12', '12', '12', '12'
  from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@masking_test
-POSTHOOK: Lineage: masking_test._c1 SIMPLE []
-POSTHOOK: Lineage: masking_test._c10 SIMPLE []
-POSTHOOK: Lineage: masking_test._c2 SIMPLE []
-POSTHOOK: Lineage: masking_test._c3 SIMPLE []
-POSTHOOK: Lineage: masking_test._c4 SIMPLE []
-POSTHOOK: Lineage: masking_test._c5 SIMPLE []
-POSTHOOK: Lineage: masking_test._c6 SIMPLE []
-POSTHOOK: Lineage: masking_test._c7 SIMPLE []
-POSTHOOK: Lineage: masking_test._c8 SIMPLE []
-POSTHOOK: Lineage: masking_test._c9 SIMPLE []
-POSTHOOK: Lineage: masking_test.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: explain select ROW__ID, * from masking_test
+POSTHOOK: Output: default@masking_test_n2
+POSTHOOK: Lineage: masking_test_n2._c1 SIMPLE []
+POSTHOOK: Lineage: masking_test_n2._c10 SIMPLE []
+POSTHOOK: Lineage: masking_test_n2._c2 SIMPLE []
+POSTHOOK: Lineage: masking_test_n2._c3 SIMPLE []
+POSTHOOK: Lineage: masking_test_n2._c4 SIMPLE []
+POSTHOOK: Lineage: masking_test_n2._c5 SIMPLE []
+POSTHOOK: Lineage: masking_test_n2._c6 SIMPLE []
+POSTHOOK: Lineage: masking_test_n2._c7 SIMPLE []
+POSTHOOK: Lineage: masking_test_n2._c8 SIMPLE []
+POSTHOOK: Lineage: masking_test_n2._c9 SIMPLE []
+POSTHOOK: Lineage: masking_test_n2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: explain select ROW__ID, * from masking_test_n2
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select ROW__ID, * from masking_test
+POSTHOOK: query: explain select ROW__ID, * from masking_test_n2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            alias: masking_test
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: masking_test_n2
+          Statistics: Num rows: 500 Data size: 17406 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), key (type: int), _c1 (type: string), _c2 (type: string), _c3 (type: string), _c4 (type: string), _c5 (type: string), _c6 (type: string), _c7 (type: string), _c8 (type: string), _c9 (type: string), _c10 (type: string)
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
             Statistics: Num rows: 500 Data size: 17406 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: (((key % 2) = 0) and (key < 10)) (type: boolean)
-              Statistics: Num rows: 83 Data size: 2889 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), key (type: int), _c1 (type: string), _c2 (type: string), _c3 (type: string), _c4 (type: string), _c5 (type: string), _c6 (type: string), _c7 (type: string), _c8 (type: string), _c9 (type: string), _c10 (type: string)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
-                Statistics: Num rows: 83 Data size: 2889 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 83 Data size: 2889 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-      Execution mode: vectorized
+            ListSink
 
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        ListSink
-
-PREHOOK: query: select ROW__ID, * from masking_test
+PREHOOK: query: select ROW__ID, * from masking_test_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@masking_test
+PREHOOK: Input: default@masking_test_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select ROW__ID, * from masking_test
+POSTHOOK: query: select ROW__ID, * from masking_test_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@masking_test
+POSTHOOK: Input: default@masking_test_n2
 #### A masked pattern was here ####
+NULL	238	1212	12	12	12	12	12	12	12	12	12
+NULL	86	1212	12	12	12	12	12	12	12	12	12
+NULL	311	1212	12	12	12	12	12	12	12	12	12
+NULL	27	1212	12	12	12	12	12	12	12	12	12
+NULL	165	1212	12	12	12	12	12	12	12	12	12
+NULL	409	1212	12	12	12	12	12	12	12	12	12
+NULL	255	1212	12	12	12	12	12	12	12	12	12
+NULL	278	1212	12	12	12	12	12	12	12	12	12
+NULL	98	1212	12	12	12	12	12	12	12	12	12
+NULL	484	1212	12	12	12	12	12	12	12	12	12
+NULL	265	1212	12	12	12	12	12	12	12	12	12
+NULL	193	1212	12	12	12	12	12	12	12	12	12
+NULL	401	1212	12	12	12	12	12	12	12	12	12
+NULL	150	1212	12	12	12	12	12	12	12	12	12
+NULL	273	1212	12	12	12	12	12	12	12	12	12
+NULL	224	1212	12	12	12	12	12	12	12	12	12
+NULL	369	1212	12	12	12	12	12	12	12	12	12
+NULL	66	1212	12	12	12	12	12	12	12	12	12
+NULL	128	1212	12	12	12	12	12	12	12	12	12
+NULL	213	1212	12	12	12	12	12	12	12	12	12
+NULL	146	1212	12	12	12	12	12	12	12	12	12
+NULL	406	1212	12	12	12	12	12	12	12	12	12
+NULL	429	1212	12	12	12	12	12	12	12	12	12
+NULL	374	1212	12	12	12	12	12	12	12	12	12
+NULL	152	1212	12	12	12	12	12	12	12	12	12
+NULL	469	1212	12	12	12	12	12	12	12	12	12
+NULL	145	1212	12	12	12	12	12	12	12	12	12
+NULL	495	1212	12	12	12	12	12	12	12	12	12
+NULL	37	1212	12	12	12	12	12	12	12	12	12
+NULL	327	1212	12	12	12	12	12	12	12	12	12
+NULL	281	1212	12	12	12	12	12	12	12	12	12
+NULL	277	1212	12	12	12	12	12	12	12	12	12
+NULL	209	1212	12	12	12	12	12	12	12	12	12
+NULL	15	1212	12	12	12	12	12	12	12	12	12
+NULL	82	1212	12	12	12	12	12	12	12	12	12
+NULL	403	1212	12	12	12	12	12	12	12	12	12
+NULL	166	1212	12	12	12	12	12	12	12	12	12
+NULL	417	1212	12	12	12	12	12	12	12	12	12
+NULL	430	1212	12	12	12	12	12	12	12	12	12
+NULL	252	1212	12	12	12	12	12	12	12	12	12
+NULL	292	1212	12	12	12	12	12	12	12	12	12
+NULL	219	1212	12	12	12	12	12	12	12	12	12
+NULL	287	1212	12	12	12	12	12	12	12	12	12
+NULL	153	1212	12	12	12	12	12	12	12	12	12
+NULL	193	1212	12	12	12	12	12	12	12	12	12
+NULL	338	1212	12	12	12	12	12	12	12	12	12
+NULL	446	1212	12	12	12	12	12	12	12	12	12
+NULL	459	1212	12	12	12	12	12	12	12	12	12
+NULL	394	1212	12	12	12	12	12	12	12	12	12
+NULL	237	1212	12	12	12	12	12	12	12	12	12
+NULL	482	1212	12	12	12	12	12	12	12	12	12
+NULL	174	1212	12	12	12	12	12	12	12	12	12
+NULL	413	1212	12	12	12	12	12	12	12	12	12
+NULL	494	1212	12	12	12	12	12	12	12	12	12
+NULL	207	1212	12	12	12	12	12	12	12	12	12
+NULL	199	1212	12	12	12	12	12	12	12	12	12
+NULL	466	1212	12	12	12	12	12	12	12	12	12
+NULL	208	1212	12	12	12	12	12	12	12	12	12
+NULL	174	1212	12	12	12	12	12	12	12	12	12
+NULL	399	1212	12	12	12	12	12	12	12	12	12
+NULL	396	1212	12	12	12	12	12	12	12	12	12
+NULL	247	1212	12	12	12	12	12	12	12	12	12
+NULL	417	1212	12	12	12	12	12	12	12	12	12
+NULL	489	1212	12	12	12	12	12	12	12	12	12
+NULL	162	1212	12	12	12	12	12	12	12	12	12
+NULL	377	1212	12	12	12	12	12	12	12	12	12
+NULL	397	1212	12	12	12	12	12	12	12	12	12
+NULL	309	1212	12	12	12	12	12	12	12	12	12
+NULL	365	1212	12	12	12	12	12	12	12	12	12
+NULL	266	1212	12	12	12	12	12	12	12	12	12
+NULL	439	1212	12	12	12	12	12	12	12	12	12
+NULL	342	1212	12	12	12	12	12	12	12	12	12
+NULL	367	1212	12	12	12	12	12	12	12	12	12
+NULL	325	1212	12	12	12	12	12	12	12	12	12
+NULL	167	1212	12	12	12	12	12	12	12	12	12
+NULL	195	1212	12	12	12	12	12	12	12	12	12
+NULL	475	1212	12	12	12	12	12	12	12	12	12
+NULL	17	1212	12	12	12	12	12	12	12	12	12
+NULL	113	1212	12	12	12	12	12	12	12	12	12
+NULL	155	1212	12	12	12	12	12	12	12	12	12
+NULL	203	1212	12	12	12	12	12	12	12	12	12
+NULL	339	1212	12	12	12	12	12	12	12	12	12
 NULL	0	1212	12	12	12	12	12	12	12	12	12
+NULL	455	1212	12	12	12	12	12	12	12	12	12
+NULL	128	1212	12	12	12	12	12	12	12	12	12
+NULL	311	1212	12	12	12	12	12	12	12	12	12
+NULL	316	1212	12	12	12	12	12	12	12	12	12
+NULL	57	1212	12	12	12	12	12	12	12	12	12
+NULL	302	1212	12	12	12	12	12	12	12	12	12
+NULL	205	1212	12	12	12	12	12	12	12	12	12
+NULL	149	1212	12	12	12	12	12	12	12	12	12
+NULL	438	1212	12	12	12	12	12	12	12	12	12
+NULL	345	1212	12	12	12	12	12	12	12	12	12
+NULL	129	1212	12	12	12	12	12	12	12	12	12
+NULL	170	1212	12	12	12	12	12	12	12	12	12
+NULL	20	1212	12	12	12	12	12	12	12	12	12
+NULL	489	1212	12	12	12	12	12	12	12	12	12
+NULL	157	1212	12	12	12	12	12	12	12	12	12
+NULL	378	1212	12	12	12	12	12	12	12	12	12
+NULL	221	1212	12	12	12	12	12	12	12	12	12
+NULL	92	1212	12	12	12	12	12	12	12	12	12
+NULL	111	1212	12	12	12	12	12	12	12	12	12
+NULL	47	1212	12	12	12	12	12	12	12	12	12
+NULL	72	1212	12	12	12	12	12	12	12	12	12
 NULL	4	1212	12	12	12	12	12	12	12	12	12
+NULL	280	1212	12	12	12	12	12	12	12	12	12
+NULL	35	1212	12	12	12	12	12	12	12	12	12
+NULL	427	1212	12	12	12	12	12	12	12	12	12
+NULL	277	1212	12	12	12	12	12	12	12	12	12
+NULL	208	1212	12	12	12	12	12	12	12	12	12
+NULL	356	1212	12	12	12	12	12	12	12	12	12
+NULL	399	1212	12	12	12	12	12	12	12	12	12
+NULL	169	1212	12	12	12	12	12	12	12	12	12
+NULL	382	1212	12	12	12	12	12	12	12	12	12
+NULL	498	1212	12	12	12	12	12	12	12	12	12
+NULL	125	1212	12	12	12	12	12	12	12	12	12
+NULL	386	1212	12	12	12	12	12	12	12	12	12
+NULL	437	1212	12	12	12	12	12	12	12	12	12
+NULL	469	1212	12	12	12	12	12	12	12	12	12
+NULL	192	1212	12	12	12	12	12	12	12	12	12
+NULL	286	1212	12	12	12	12	12	12	12	12	12
+NULL	187	1212	12	12	12	12	12	12	12	12	12
+NULL	176	1212	12	12	12	12	12	12	12	12	12
+NULL	54	1212	12	12	12	12	12	12	12	12	12
+NULL	459	1212	12	12	12	12	12	12	12	12	12
+NULL	51	1212	12	12	12	12	12	12	12	12	12
+NULL	138	1212	12	12	12	12	12	12	12	12	12
+NULL	103	1212	12	12	12	12	12	12	12	12	12
+NULL	239	1212	12	12	12	12	12	12	12	12	12
+NULL	213	1212	12	12	12	12	12	12	12	12	12
+NULL	216	1212	12	12	12	12	12	12	12	12	12
+NULL	430	1212	12	12	12	12	12	12	12	12	12
+NULL	278	1212	12	12	12	12	12	12	12	12	12
+NULL	176	1212	12	12	12	12	12	12	12	12	12
+NULL	289	1212	12	12	12	12	12	12	12	12	12
+NULL	221	1212	12	12	12	12	12	12	12	12	12
+NULL	65	1212	12	12	12	12	12	12	12	12	12
+NULL	318	1212	12	12	12	12	12	12	12	12	12
+NULL	332	1212	12	12	12	12	12	12	12	12	12
+NULL	311	1212	12	12	12	12	12	12	12	12	12
+NULL	275	1212	12	12	12	12	12	12	12	12	12
+NULL	137	1212	12	12	12	12	12	12	12	12	12
+NULL	241	1212	12	12	12	12	12	12	12	12	12
+NULL	83	1212	12	12	12	12	12	12	12	12	12
+NULL	333	1212	12	12	12	12	12	12	12	12	12
+NULL	180	1212	12	12	12	12	12	12	12	12	12
+NULL	284	1212	12	12	12	12	12	12	12	12	12
+NULL	12	1212	12	12	12	12	12	12	12	12	12
+NULL	230	1212	12	12	12	12	12	12	12	12	12
+NULL	181	1212	12	12	12	12	12	12	12	12	12
+NULL	67	1212	12	12	12	12	12	12	12	12	12
+NULL	260	1212	12	12	12	12	12	12	12	12	12
+NULL	404	1212	12	12	12	12	12	12	12	12	12
+NULL	384	1212	12	12	12	12	12	12	12	12	12
+NULL	489	1212	12	12	12	12	12	12	12	12	12
+NULL	353	1212	12	12	12	12	12	12	12	12	12
+NULL	373	1212	12	12	12	12	12	12	12	12	12
+NULL	272	1212	12	12	12	12	12	12	12	12	12
+NULL	138	1212	12	12	12	12	12	12	12	12	12
+NULL	217	1212	12	12	12	12	12	12	12	12	12
+NULL	84	1212	12	12	12	12	12	12	12	12	12
+NULL	348	1212	12	12	12	12	12	12	12	12	12
+NULL	466	1212	12	12	12	12	12	12	12	12	12
+NULL	58	1212	12	12	12	12	12	12	12	12	12
 NULL	8	1212	12	12	12	12	12	12	12	12	12
+NULL	411	1212	12	12	12	12	12	12	12	12	12
+NULL	230	1212	12	12	12	12	12	12	12	12	12
+NULL	208	1212	12	12	12	12	12	12	12	12	12
+NULL	348	1212	12	12	12	12	12	12	12	12	12
+NULL	24	1212	12	12	12	12	12	12	12	12	12
+NULL	463	1212	12	12	12	12	12	12	12	12	12
+NULL	431	1212	12	12	12	12	12	12	12	12	12
+NULL	179	1212	12	12	12	12	12	12	12	12	12
+NULL	172	1212	12	12	12	12	12	12	12	12	12
+NULL	42	1212	12	12	12	12	12	12	12	12	12
+NULL	129	1212	12	12	12	12	12	12	12	12	12
+NULL	158	1212	12	12	12	12	12	12	12	12	12
+NULL	119	1212	12	12	12	12	12	12	12	12	12
+NULL	496	1212	12	12	12	12	12	12	12	12	12
 NULL	0	1212	12	12	12	12	12	12	12	12	12
+NULL	322	1212	12	12	12	12	12	12	12	12	12
+NULL	197	1212	12	12	12	12	12	12	12	12	12
+NULL	468	1212	12	12	12	12	12	12	12	12	12
+NULL	393	1212	12	12	12	12	12	12	12	12	12
+NULL	454	1212	12	12	12	12	12	12	12	12	12
+NULL	100	1212	12	12	12	12	12	12	12	12	12
+NULL	298	1212	12	12	12	12	12	12	12	12	12
+NULL	199	1212	12	12	12	12	12	12	12	12	12
+NULL	191	1212	12	12	12	12	12	12	12	12	12
+NULL	418	1212	12	12	12	12	12	12	12	12	12
+NULL	96	1212	12	12	12	12	12	12	12	12	12
+NULL	26	1212	12	12	12	12	12	12	12	12	12
+NULL	165	1212	12	12	12	12	12	12	12	12	12
+NULL	327	1212	12	12	12	12	12	12	12	12	12
+NULL	230	1212	12	12	12	12	12	12	12	12	12
+NULL	205	1212	12	12	12	12	12	12	12	12	12
+NULL	120	1212	12	12	12	12	12	12	12	12	12
+NULL	131	1212	12	12	12	12	12	12	12	12	12
+NULL	51	1212	12	12	12	12	12	12	12	12	12
+NULL	404	1212	12	12	12	12	12	12	12	12	12
+NULL	43	1212	12	12	12	12	12	12	12	12	12
+NULL	436	1212	12	12	12	12	12	12	12	12	12
+NULL	156	1212	12	12	12	12	12	12	12	12	12
+NULL	469	1212	12	12	12	12	12	12	12	12	12
+NULL	468	1212	12	12	12	12	12	12	12	12	12
+NULL	308	1212	12	12	12	12	12	12	12	12	12
+NULL	95	1212	12	12	12	12	12	12	12	12	12
+NULL	196	1212	12	12	12	12	12	12	12	12	12
+NULL	288	1212	12	12	12	12	12	12	12	12	12
+NULL	481	1212	12	12	12	12	12	12	12	12	12
+NULL	457	1212	12	12	12	12	12	12	12	12	12
+NULL	98	1212	12	12	12	12	12	12	12	12	12
+NULL	282	1212	12	12	12	12	12	12	12	12	12
+NULL	197	1212	12	12	12	12	12	12	12	12	12
+NULL	187	1212	12	12	12	12	12	12	12	12	12
+NULL	318	1212	12	12	12	12	12	12	12	12	12
+NULL	318	1212	12	12	12	12	12	12	12	12	12
+NULL	409	1212	12	12	12	12	12	12	12	12	12
+NULL	470	1212	12	12	12	12	12	12	12	12	12
+NULL	137	1212	12	12	12	12	12	12	12	12	12
+NULL	369	1212	12	12	12	12	12	12	12	12	12
+NULL	316	1212	12	12	12	12	12	12	12	12	12
+NULL	169	1212	12	12	12	12	12	12	12	12	12
+NULL	413	1212	12	12	12	12	12	12	12	12	12
+NULL	85	1212	12	12	12	12	12	12	12	12	12
+NULL	77	1212	12	12	12	12	12	12	12	12	12
 NULL	0	1212	12	12	12	12	12	12	12	12	12
+NULL	490	1212	12	12	12	12	12	12	12	12	12
+NULL	87	1212	12	12	12	12	12	12	12	12	12
+NULL	364	1212	12	12	12	12	12	12	12	12	12
+NULL	179	1212	12	12	12	12	12	12	12	12	12
+NULL	118	1212	12	12	12	12	12	12	12	12	12
+NULL	134	1212	12	12	12	12	12	12	12	12	12
+NULL	395	1212	12	12	12	12	12	12	12	12	12
+NULL	282	1212	12	12	12	12	12	12	12	12	12
+NULL	138	1212	12	12	12	12	12	12	12	12	12
+NULL	238	1212	12	12	12	12	12	12	12	12	12
+NULL	419	1212	12	12	12	12	12	12	12	12	12
+NULL	15	1212	12	12	12	12	12	12	12	12	12
+NULL	118	1212	12	12	12	12	12	12	12	12	12
+NULL	72	1212	12	12	12	12	12	12	12	12	12
+NULL	90	1212	12	12	12	12	12	12	12	12	12
+NULL	307	1212	12	12	12	12	12	12	12	12	12
+NULL	19	1212	12	12	12	12	12	12	12	12	12
+NULL	435	1212	12	12	12	12	12	12	12	12	12
+NULL	10	1212	12	12	12	12	12	12	12	12	12
+NULL	277	1212	12	12	12	12	12	12	12	12	12
+NULL	273	1212	12	12	12	12	12	12	12	12	12
+NULL	306	1212	12	12	12	12	12	12	12	12	12
+NULL	224	1212	12	12	12	12	12	12	12	12	12
+NULL	309	1212	12	12	12	12	12	12	12	12	12
+NULL	389	1212	12	12	12	12	12	12	12	12	12
+NULL	327	1212	12	12	12	12	12	12	12	12	12
+NULL	242	1212	12	12	12	12	12	12	12	12	12
+NULL	369	1212	12	12	12	12	12	12	12	12	12
+NULL	392	1212	12	12	12	12	12	12	12	12	12
+NULL	272	1212	12	12	12	12	12	12	12	12	12
+NULL	331	1212	12	12	12	12	12	12	12	12	12
+NULL	401	1212	12	12	12	12	12	12	12	12	12
+NULL	242	1212	12	12	12	12	12	12	12	12	12
+NULL	452	1212	12	12	12	12	12	12	12	12	12
+NULL	177	1212	12	12	12	12	12	12	12	12	12
+NULL	226	1212	12	12	12	12	12	12	12	12	12
+NULL	5	1212	12	12	12	12	12	12	12	12	12
+NULL	497	1212	12	12	12	12	12	12	12	12	12
+NULL	402	1212	12	12	12	12	12	12	12	12	12
+NULL	396	1212	12	12	12	12	12	12	12	12	12
+NULL	317	1212	12	12	12	12	12	12	12	12	12
+NULL	395	1212	12	12	12	12	12	12	12	12	12
+NULL	58	1212	12	12	12	12	12	12	12	12	12
+NULL	35	1212	12	12	12	12	12	12	12	12	12
+NULL	336	1212	12	12	12	12	12	12	12	12	12
+NULL	95	1212	12	12	12	12	12	12	12	12	12
+NULL	11	1212	12	12	12	12	12	12	12	12	12
+NULL	168	1212	12	12	12	12	12	12	12	12	12
+NULL	34	1212	12	12	12	12	12	12	12	12	12
+NULL	229	1212	12	12	12	12	12	12	12	12	12
+NULL	233	1212	12	12	12	12	12	12	12	12	12
+NULL	143	1212	12	12	12	12	12	12	12	12	12
+NULL	472	1212	12	12	12	12	12	12	12	12	12
+NULL	322	1212	12	12	12	12	12	12	12	12	12
+NULL	498	1212	12	12	12	12	12	12	12	12	12
+NULL	160	1212	12	12	12	12	12	12	12	12	12
+NULL	195	1212	12	12	12	12	12	12	12	12	12
+NULL	42	1212	12	12	12	12	12	12	12	12	12
+NULL	321	1212	12	12	12	12	12	12	12	12	12
+NULL	430	1212	12	12	12	12	12	12	12	12	12
+NULL	119	1212	12	12	12	12	12	12	12	12	12
+NULL	489	1212	12	12	12	12	12	12	12	12	12
+NULL	458	1212	12	12	12	12	12	12	12	12	12
+NULL	78	1212	12	12	12	12	12	12	12	12	12
+NULL	76	1212	12	12	12	12	12	12	12	12	12
+NULL	41	1212	12	12	12	12	12	12	12	12	12
+NULL	223	1212	12	12	12	12	12	12	12	12	12
+NULL	492	1212	12	12	12	12	12	12	12	12	12
+NULL	149	1212	12	12	12	12	12	12	12	12	12
+NULL	449	1212	12	12	12	12	12	12	12	12	12
+NULL	218	1212	12	12	12	12	12	12	12	12	12
+NULL	228	1212	12	12	12	12	12	12	12	12	12
+NULL	138	1212	12	12	12	12	12	12	12	12	12
+NULL	453	1212	12	12	12	12	12	12	12	12	12
+NULL	30	1212	12	12	12	12	12	12	12	12	12
+NULL	209	1212	12	12	12	12	12	12	12	12	12
+NULL	64	1212	12	12	12	12	12	12	12	12	12
+NULL	468	1212	12	12	12	12	12	12	12	12	12
+NULL	76	1212	12	12	12	12	12	12	12	12	12
+NULL	74	1212	12	12	12	12	12	12	12	12	12
+NULL	342	1212	12	12	12	12	12	12	12	12	12
+NULL	69	1212	12	12	12	12	12	12	12	12	12
+NULL	230	1212	12	12	12	12	12	12	12	12	12
+NULL	33	1212	12	12	12	12	12	12	12	12	12
+NULL	368	1212	12	12	12	12	12	12	12	12	12
+NULL	103	1212	12	12	12	12	12	12	12	12	12
+NULL	296	1212	12	12	12	12	12	12	12	12	12
+NULL	113	1212	12	12	12	12	12	12	12	12	12
+NULL	216	1212	12	12	12	12	12	12	12	12	12
+NULL	367	1212	12	12	12	12	12	12	12	12	12
+NULL	344	1212	12	12	12	12	12	12	12	12	12
+NULL	167	1212	12	12	12	12	12	12	12	12	12
+NULL	274	1212	12	12	12	12	12	12	12	12	12
+NULL	219	1212	12	12	12	12	12	12	12	12	12
+NULL	239	1212	12	12	12	12	12	12	12	12	12
+NULL	485	1212	12	12	12	12	12	12	12	12	12
+NULL	116	1212	12	12	12	12	12	12	12	12	12
+NULL	223	1212	12	12	12	12	12	12	12	12	12
+NULL	256	1212	12	12	12	12	12	12	12	12	12
+NULL	263	1212	12	12	12	12	12	12	12	12	12
+NULL	70	1212	12	12	12	12	12	12	12	12	12
+NULL	487	1212	12	12	12	12	12	12	12	12	12
+NULL	480	1212	12	12	12	12	12	12	12	12	12
+NULL	401	1212	12	12	12	12	12	12	12	12	12
+NULL	288	1212	12	12	12	12	12	12	12	12	12
+NULL	191	1212	12	12	12	12	12	12	12	12	12
+NULL	5	1212	12	12	12	12	12	12	12	12	12
+NULL	244	1212	12	12	12	12	12	12	12	12	12
+NULL	438	1212	12	12	12	12	12	12	12	12	12
+NULL	128	1212	12	12	12	12	12	12	12	12	12
+NULL	467	1212	12	12	12	12	12	12	12	12	12
+NULL	432	1212	12	12	12	12	12	12	12	12	12
+NULL	202	1212	12	12	12	12	12	12	12	12	12
+NULL	316	1212	12	12	12	12	12	12	12	12	12
+NULL	229	1212	12	12	12	12	12	12	12	12	12
+NULL	469	1212	12	12	12	12	12	12	12	12	12
+NULL	463	1212	12	12	12	12	12	12	12	12	12
+NULL	280	1212	12	12	12	12	12	12	12	12	12
 NULL	2	1212	12	12	12	12	12	12	12	12	12
-PREHOOK: query: drop table masking_test
+NULL	35	1212	12	12	12	12	12	12	12	12	12
+NULL	283	1212	12	12	12	12	12	12	12	12	12
+NULL	331	1212	12	12	12	12	12	12	12	12	12
+NULL	235	1212	12	12	12	12	12	12	12	12	12
+NULL	80	1212	12	12	12	12	12	12	12	12	12
+NULL	44	1212	12	12	12	12	12	12	12	12	12
+NULL	193	1212	12	12	12	12	12	12	12	12	12
+NULL	321	1212	12	12	12	12	12	12	12	12	12
+NULL	335	1212	12	12	12	12	12	12	12	12	12
+NULL	104	1212	12	12	12	12	12	12	12	12	12
+NULL	466	1212	12	12	12	12	12	12	12	12	12
+NULL	366	1212	12	12	12	12	12	12	12	12	12
+NULL	175	1212	12	12	12	12	12	12	12	12	12
+NULL	403	1212	12	12	12	12	12	12	12	12	12
+NULL	483	1212	12	12	12	12	12	12	12	12	12
+NULL	53	1212	12	12	12	12	12	12	12	12	12
+NULL	105	1212	12	12	12	12	12	12	12	12	12
+NULL	257	1212	12	12	12	12	12	12	12	12	12
+NULL	406	1212	12	12	12	12	12	12	12	12	12
+NULL	409	1212	12	12	12	12	12	12	12	12	12
+NULL	190	1212	12	12	12	12	12	12	12	12	12
+NULL	406	1212	12	12	12	12	12	12	12	12	12
+NULL	401	1212	12	12	12	12	12	12	12	12	12
+NULL	114	1212	12	12	12	12	12	12	12	12	12
+NULL	258	1212	12	12	12	12	12	12	12	12	12
+NULL	90	1212	12	12	12	12	12	12	12	12	12
+NULL	203	1212	12	12	12	12	12	12	12	12	12
+NULL	262	1212	12	12	12	12	12	12	12	12	12
+NULL	348	1212	12	12	12	12	12	12	12	12	12
+NULL	424	1212	12	12	12	12	12	12	12	12	12
+NULL	12	1212	12	12	12	12	12	12	12	12	12
+NULL	396	1212	12	12	12	12	12	12	12	12	12
+NULL	201	1212	12	12	12	12	12	12	12	12	12
+NULL	217	1212	12	12	12	12	12	12	12	12	12
+NULL	164	1212	12	12	12	12	12	12	12	12	12
+NULL	431	1212	12	12	12	12	12	12	12	12	12
+NULL	454	1212	12	12	12	12	12	12	12	12	12
+NULL	478	1212	12	12	12	12	12	12	12	12	12
+NULL	298	1212	12	12	12	12	12	12	12	12	12
+NULL	125	1212	12	12	12	12	12	12	12	12	12
+NULL	431	1212	12	12	12	12	12	12	12	12	12
+NULL	164	1212	12	12	12	12	12	12	12	12	12
+NULL	424	1212	12	12	12	12	12	12	12	12	12
+NULL	187	1212	12	12	12	12	12	12	12	12	12
+NULL	382	1212	12	12	12	12	12	12	12	12	12
+NULL	5	1212	12	12	12	12	12	12	12	12	12
+NULL	70	1212	12	12	12	12	12	12	12	12	12
+NULL	397	1212	12	12	12	12	12	12	12	12	12
+NULL	480	1212	12	12	12	12	12	12	12	12	12
+NULL	291	1212	12	12	12	12	12	12	12	12	12
+NULL	24	1212	12	12	12	12	12	12	12	12	12
+NULL	351	1212	12	12	12	12	12	12	12	12	12
+NULL	255	1212	12	12	12	12	12	12	12	12	12
+NULL	104	1212	12	12	12	12	12	12	12	12	12
+NULL	70	1212	12	12	12	12	12	12	12	12	12
+NULL	163	1212	12	12	12	12	12	12	12	12	12
+NULL	438	1212	12	12	12	12	12	12	12	12	12
+NULL	119	1212	12	12	12	12	12	12	12	12	12
+NULL	414	1212	12	12	12	12	12	12	12	12	12
+NULL	200	1212	12	12	12	12	12	12	12	12	12
+NULL	491	1212	12	12	12	12	12	12	12	12	12
+NULL	237	1212	12	12	12	12	12	12	12	12	12
+NULL	439	1212	12	12	12	12	12	12	12	12	12
+NULL	360	1212	12	12	12	12	12	12	12	12	12
+NULL	248	1212	12	12	12	12	12	12	12	12	12
+NULL	479	1212	12	12	12	12	12	12	12	12	12
+NULL	305	1212	12	12	12	12	12	12	12	12	12
+NULL	417	1212	12	12	12	12	12	12	12	12	12
+NULL	199	1212	12	12	12	12	12	12	12	12	12
+NULL	444	1212	12	12	12	12	12	12	12	12	12
+NULL	120	1212	12	12	12	12	12	12	12	12	12
+NULL	429	1212	12	12	12	12	12	12	12	12	12
+NULL	169	1212	12	12	12	12	12	12	12	12	12
+NULL	443	1212	12	12	12	12	12	12	12	12	12
+NULL	323	1212	12	12	12	12	12	12	12	12	12
+NULL	325	1212	12	12	12	12	12	12	12	12	12
+NULL	277	1212	12	12	12	12	12	12	12	12	12
+NULL	230	1212	12	12	12	12	12	12	12	12	12
+NULL	478	1212	12	12	12	12	12	12	12	12	12
+NULL	178	1212	12	12	12	12	12	12	12	12	12
+NULL	468	1212	12	12	12	12	12	12	12	12	12
+NULL	310	1212	12	12	12	12	12	12	12	12	12
+NULL	317	1212	12	12	12	12	12	12	12	12	12
+NULL	333	1212	12	12	12	12	12	12	12	12	12
+NULL	493	1212	12	12	12	12	12	12	12	12	12
+NULL	460	1212	12	12	12	12	12	12	12	12	12
+NULL	207	1212	12	12	12	12	12	12	12	12	12
+NULL	249	1212	12	12	12	12	12	12	12	12	12
+NULL	265	1212	12	12	12	12	12	12	12	12	12
+NULL	480	1212	12	12	12	12	12	12	12	12	12
+NULL	83	1212	12	12	12	12	12	12	12	12	12
+NULL	136	1212	12	12	12	12	12	12	12	12	12
+NULL	353	1212	12	12	12	12	12	12	12	12	12
+NULL	172	1212	12	12	12	12	12	12	12	12	12
+NULL	214	1212	12	12	12	12	12	12	12	12	12
+NULL	462	1212	12	12	12	12	12	12	12	12	12
+NULL	233	1212	12	12	12	12	12	12	12	12	12
+NULL	406	1212	12	12	12	12	12	12	12	12	12
+NULL	133	1212	12	12	12	12	12	12	12	12	12
+NULL	175	1212	12	12	12	12	12	12	12	12	12
+NULL	189	1212	12	12	12	12	12	12	12	12	12
+NULL	454	1212	12	12	12	12	12	12	12	12	12
+NULL	375	1212	12	12	12	12	12	12	12	12	12
+NULL	401	1212	12	12	12	12	12	12	12	12	12
+NULL	421	1212	12	12	12	12	12	12	12	12	12
+NULL	407	1212	12	12	12	12	12	12	12	12	12
+NULL	384	1212	12	12	12	12	12	12	12	12	12
+NULL	256	1212	12	12	12	12	12	12	12	12	12
+NULL	26	1212	12	12	12	12	12	12	12	12	12
+NULL	134	1212	12	12	12	12	12	12	12	12	12
+NULL	67	1212	12	12	12	12	12	12	12	12	12
+NULL	384	1212	12	12	12	12	12	12	12	12	12
+NULL	379	1212	12	12	12	12	12	12	12	12	12
+NULL	18	1212	12	12	12	12	12	12	12	12	12
+NULL	462	1212	12	12	12	12	12	12	12	12	12
+NULL	492	1212	12	12	12	12	12	12	12	12	12
+NULL	100	1212	12	12	12	12	12	12	12	12	12
+NULL	298	1212	12	12	12	12	12	12	12	12	12
+NULL	9	1212	12	12	12	12	12	12	12	12	12
+NULL	341	1212	12	12	12	12	12	12	12	12	12
+NULL	498	1212	12	12	12	12	12	12	12	12	12
+NULL	146	1212	12	12	12	12	12	12	12	12	12
+NULL	458	1212	12	12	12	12	12	12	12	12	12
+NULL	362	1212	12	12	12	12	12	12	12	12	12
+NULL	186	1212	12	12	12	12	12	12	12	12	12
+NULL	285	1212	12	12	12	12	12	12	12	12	12
+NULL	348	1212	12	12	12	12	12	12	12	12	12
+NULL	167	1212	12	12	12	12	12	12	12	12	12
+NULL	18	1212	12	12	12	12	12	12	12	12	12
+NULL	273	1212	12	12	12	12	12	12	12	12	12
+NULL	183	1212	12	12	12	12	12	12	12	12	12
+NULL	281	1212	12	12	12	12	12	12	12	12	12
+NULL	344	1212	12	12	12	12	12	12	12	12	12
+NULL	97	1212	12	12	12	12	12	12	12	12	12
+NULL	469	1212	12	12	12	12	12	12	12	12	12
+NULL	315	1212	12	12	12	12	12	12	12	12	12
+NULL	84	1212	12	12	12	12	12	12	12	12	12
+NULL	28	1212	12	12	12	12	12	12	12	12	12
+NULL	37	1212	12	12	12	12	12	12	12	12	12
+NULL	448	1212	12	12	12	12	12	12	12	12	12
+NULL	152	1212	12	12	12	12	12	12	12	12	12
+NULL	348	1212	12	12	12	12	12	12	12	12	12
+NULL	307	1212	12	12	12	12	12	12	12	12	12
+NULL	194	1212	12	12	12	12	12	12	12	12	12
+NULL	414	1212	12	12	12	12	12	12	12	12	12
+NULL	477	1212	12	12	12	12	12	12	12	12	12
+NULL	222	1212	12	12	12	12	12	12	12	12	12
+NULL	126	1212	12	12	12	12	12	12	12	12	12
+NULL	90	1212	12	12	12	12	12	12	12	12	12
+NULL	169	1212	12	12	12	12	12	12	12	12	12
+NULL	403	1212	12	12	12	12	12	12	12	12	12
+NULL	400	1212	12	12	12	12	12	12	12	12	12
+NULL	200	1212	12	12	12	12	12	12	12	12	12
+NULL	97	1212	12	12	12	12	12	12	12	12	12
+PREHOOK: query: drop table masking_test_n2
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@masking_test
-PREHOOK: Output: default@masking_test
-POSTHOOK: query: drop table masking_test
+PREHOOK: Input: default@masking_test_n2
+PREHOOK: Output: default@masking_test_n2
+POSTHOOK: query: drop table masking_test_n2
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@masking_test
-POSTHOOK: Output: default@masking_test
-PREHOOK: query: create table masking_test as select cast(key as int) as key, '12'
+POSTHOOK: Input: default@masking_test_n2
+POSTHOOK: Output: default@masking_test_n2
+PREHOOK: query: create table masking_test_n2 as select cast(key as int) as key, '12'
 '12', '12', '12', '12', '12', INPUT__FILE__NAME, '12', '12', '12', '12', '12'
  from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@masking_test
-POSTHOOK: query: create table masking_test as select cast(key as int) as key, '12'
+PREHOOK: Output: default@masking_test_n2
+POSTHOOK: query: create table masking_test_n2 as select cast(key as int) as key, '12'
 '12', '12', '12', '12', '12', INPUT__FILE__NAME, '12', '12', '12', '12', '12'
  from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@masking_test
-POSTHOOK: Lineage: masking_test._c1 SIMPLE []
-POSTHOOK: Lineage: masking_test._c10 SIMPLE []
-POSTHOOK: Lineage: masking_test._c11 SIMPLE []
-POSTHOOK: Lineage: masking_test._c2 SIMPLE []
-POSTHOOK: Lineage: masking_test._c3 SIMPLE []
-POSTHOOK: Lineage: masking_test._c4 SIMPLE []
-POSTHOOK: Lineage: masking_test._c5 SIMPLE []
-POSTHOOK: Lineage: masking_test._c7 SIMPLE []
-POSTHOOK: Lineage: masking_test._c8 SIMPLE []
-POSTHOOK: Lineage: masking_test._c9 SIMPLE []
-POSTHOOK: Lineage: masking_test.input__file__name SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
-POSTHOOK: Lineage: masking_test.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: select INPUT__FILE__NAME, *, ROW__ID from masking_test
+POSTHOOK: Output: default@masking_test_n2
+POSTHOOK: Lineage: masking_test_n2._c1 SIMPLE []
+POSTHOOK: Lineage: masking_test_n2._c10 SIMPLE []
+POSTHOOK: Lineage: masking_test_n2._c11 SIMPLE []
+POSTHOOK: Lineage: masking_test_n2._c2 SIMPLE []
+POSTHOOK: Lineage: masking_test_n2._c3 SIMPLE []
+POSTHOOK: Lineage: masking_test_n2._c4 SIMPLE []
+POSTHOOK: Lineage: masking_test_n2._c5 SIMPLE []
+POSTHOOK: Lineage: masking_test_n2._c7 SIMPLE []
+POSTHOOK: Lineage: masking_test_n2._c8 SIMPLE []
+POSTHOOK: Lineage: masking_test_n2._c9 SIMPLE []
+POSTHOOK: Lineage: masking_test_n2.input__file__name SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: masking_test_n2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: select INPUT__FILE__NAME, *, ROW__ID from masking_test_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@masking_test
+PREHOOK: Input: default@masking_test_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select INPUT__FILE__NAME, *, ROW__ID from masking_test
+POSTHOOK: query: select INPUT__FILE__NAME, *, ROW__ID from masking_test_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@masking_test
+POSTHOOK: Input: default@masking_test_n2
 #### A masked pattern was here ####

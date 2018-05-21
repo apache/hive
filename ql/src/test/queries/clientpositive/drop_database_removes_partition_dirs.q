@@ -7,15 +7,15 @@ CREATE DATABASE test_database;
 
 USE test_database;
 
-CREATE TABLE test_table (key STRING, value STRING)
+CREATE TABLE test_table_n12 (key STRING, value STRING)
 PARTITIONED BY (part STRING)
 STORED AS RCFILE
 LOCATION 'file:${system:test.tmp.dir}/drop_database_removes_partition_dirs_table';
 
-ALTER TABLE test_table ADD PARTITION (part = '1')
+ALTER TABLE test_table_n12 ADD PARTITION (part = '1')
 LOCATION 'file:${system:test.tmp.dir}/drop_database_removes_partition_dirs_table2/part=1';
 
-INSERT OVERWRITE TABLE test_table PARTITION (part = '1')
+INSERT OVERWRITE TABLE test_table_n12 PARTITION (part = '1')
 SELECT * FROM default.src;
 
 dfs -ls ${system:test.tmp.dir}/drop_database_removes_partition_dirs_table2;

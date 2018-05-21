@@ -1,30 +1,30 @@
 --! qt:dataset:src
-drop table tstsrc;
-create table tstsrc like src;
-insert overwrite table tstsrc select key, value from src;
+drop table tstsrc_n1;
+create table tstsrc_n1 like src;
+insert overwrite table tstsrc_n1 select key, value from src;
 
 SHOW LOCKS;
-SHOW LOCKS tstsrc;
+SHOW LOCKS tstsrc_n1;
 
-LOCK TABLE tstsrc shared;
+LOCK TABLE tstsrc_n1 shared;
 SHOW LOCKS;
-SHOW LOCKS tstsrc;
-SHOW LOCKS tstsrc extended;
+SHOW LOCKS tstsrc_n1;
+SHOW LOCKS tstsrc_n1 extended;
 
-UNLOCK TABLE tstsrc;
+UNLOCK TABLE tstsrc_n1;
 SHOW LOCKS;
 SHOW LOCKS extended;
-SHOW LOCKS tstsrc;
-lock TABLE tstsrc SHARED;
+SHOW LOCKS tstsrc_n1;
+lock TABLE tstsrc_n1 SHARED;
 SHOW LOCKS;
 SHOW LOCKS extended;
-SHOW LOCKS tstsrc;
-LOCK TABLE tstsrc SHARED;
+SHOW LOCKS tstsrc_n1;
+LOCK TABLE tstsrc_n1 SHARED;
 SHOW LOCKS;
 SHOW LOCKS extended;
-SHOW LOCKS tstsrc;
-UNLOCK TABLE tstsrc;
+SHOW LOCKS tstsrc_n1;
+UNLOCK TABLE tstsrc_n1;
 SHOW LOCKS;
 SHOW LOCKS extended;
-SHOW LOCKS tstsrc;
-drop table tstsrc;
+SHOW LOCKS tstsrc_n1;
+drop table tstsrc_n1;

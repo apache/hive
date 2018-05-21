@@ -1,24 +1,24 @@
-PREHOOK: query: create table t (a int, b int)
+PREHOOK: query: create table t_n8 (a int, b int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t
-POSTHOOK: query: create table t (a int, b int)
+PREHOOK: Output: default@t_n8
+POSTHOOK: query: create table t_n8 (a int, b int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t
-PREHOOK: query: insert into t values (1,2),(2,1),(3,4),(4,3),(3,3),(null,null),(null,1),(2,null)
+POSTHOOK: Output: default@t_n8
+PREHOOK: query: insert into t_n8 values (1,2),(2,1),(3,4),(4,3),(3,3),(null,null),(null,1),(2,null)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values (1,2),(2,1),(3,4),(4,3),(3,3),(null,null),(null,1),(2,null)
+PREHOOK: Output: default@t_n8
+POSTHOOK: query: insert into t_n8 values (1,2),(2,1),(3,4),(4,3),(3,3),(null,null),(null,1),(2,null)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.a SCRIPT []
-POSTHOOK: Lineage: t.b SCRIPT []
-PREHOOK: query: explain select * from t t1 join t t2 using (a)
+POSTHOOK: Output: default@t_n8
+POSTHOOK: Lineage: t_n8.a SCRIPT []
+POSTHOOK: Lineage: t_n8.b SCRIPT []
+PREHOOK: query: explain select * from t_n8 t1 join t_n8 t2 using (a)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from t t1 join t t2 using (a)
+POSTHOOK: query: explain select * from t_n8 t1 join t_n8 t2 using (a)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -87,13 +87,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from t t1 join t t2 using (a)
+PREHOOK: query: select * from t_n8 t1 join t_n8 t2 using (a)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t
+PREHOOK: Input: default@t_n8
 #### A masked pattern was here ####
-POSTHOOK: query: select * from t t1 join t t2 using (a)
+POSTHOOK: query: select * from t_n8 t1 join t_n8 t2 using (a)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n8
 #### A masked pattern was here ####
 1	2	2
 2	1	1
@@ -105,26 +105,26 @@ POSTHOOK: Input: default@t
 3	4	3
 3	4	4
 4	3	3
-PREHOOK: query: select * from t t1 join t t2 using (a,b)
+PREHOOK: query: select * from t_n8 t1 join t_n8 t2 using (a,b)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t
+PREHOOK: Input: default@t_n8
 #### A masked pattern was here ####
-POSTHOOK: query: select * from t t1 join t t2 using (a,b)
+POSTHOOK: query: select * from t_n8 t1 join t_n8 t2 using (a,b)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n8
 #### A masked pattern was here ####
 1	2
 2	1
 3	3
 3	4
 4	3
-PREHOOK: query: select t1.a,t2.b,t1.b,t2.a from t t1 join t t2 using (a)
+PREHOOK: query: select t1.a,t2.b,t1.b,t2.a from t_n8 t1 join t_n8 t2 using (a)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t
+PREHOOK: Input: default@t_n8
 #### A masked pattern was here ####
-POSTHOOK: query: select t1.a,t2.b,t1.b,t2.a from t t1 join t t2 using (a)
+POSTHOOK: query: select t1.a,t2.b,t1.b,t2.a from t_n8 t1 join t_n8 t2 using (a)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n8
 #### A masked pattern was here ####
 1	2	2	1
 2	1	1	2
@@ -136,13 +136,13 @@ POSTHOOK: Input: default@t
 3	4	3	3
 3	4	4	3
 4	3	3	4
-PREHOOK: query: select * from t t1 left outer join t t2 using (a,b)
+PREHOOK: query: select * from t_n8 t1 left outer join t_n8 t2 using (a,b)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t
+PREHOOK: Input: default@t_n8
 #### A masked pattern was here ####
-POSTHOOK: query: select * from t t1 left outer join t t2 using (a,b)
+POSTHOOK: query: select * from t_n8 t1 left outer join t_n8 t2 using (a,b)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n8
 #### A masked pattern was here ####
 1	2
 2	1
@@ -152,13 +152,13 @@ POSTHOOK: Input: default@t
 4	3
 NULL	1
 NULL	NULL
-PREHOOK: query: select t1.a,t1.b from t t1 right outer join t t2 on (t1.a=t2.a and t1.b=t2.b)
+PREHOOK: query: select t1.a,t1.b from t_n8 t1 right outer join t_n8 t2 on (t1.a=t2.a and t1.b=t2.b)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t
+PREHOOK: Input: default@t_n8
 #### A masked pattern was here ####
-POSTHOOK: query: select t1.a,t1.b from t t1 right outer join t t2 on (t1.a=t2.a and t1.b=t2.b)
+POSTHOOK: query: select t1.a,t1.b from t_n8 t1 right outer join t_n8 t2 on (t1.a=t2.a and t1.b=t2.b)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n8
 #### A masked pattern was here ####
 1	2
 2	1
@@ -168,13 +168,13 @@ POSTHOOK: Input: default@t
 NULL	NULL
 NULL	NULL
 NULL	NULL
-PREHOOK: query: select * from t t1 right outer join t t2 using (a,b)
+PREHOOK: query: select * from t_n8 t1 right outer join t_n8 t2 using (a,b)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t
+PREHOOK: Input: default@t_n8
 #### A masked pattern was here ####
-POSTHOOK: query: select * from t t1 right outer join t t2 using (a,b)
+POSTHOOK: query: select * from t_n8 t1 right outer join t_n8 t2 using (a,b)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n8
 #### A masked pattern was here ####
 1	2
 2	1
@@ -184,26 +184,26 @@ POSTHOOK: Input: default@t
 4	3
 NULL	1
 NULL	NULL
-PREHOOK: query: select * from t t1 inner join t t2 using (a,b)
+PREHOOK: query: select * from t_n8 t1 inner join t_n8 t2 using (a,b)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t
+PREHOOK: Input: default@t_n8
 #### A masked pattern was here ####
-POSTHOOK: query: select * from t t1 inner join t t2 using (a,b)
+POSTHOOK: query: select * from t_n8 t1 inner join t_n8 t2 using (a,b)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n8
 #### A masked pattern was here ####
 1	2
 2	1
 3	3
 3	4
 4	3
-PREHOOK: query: select * from t t1 left outer join t t2 using (b)
+PREHOOK: query: select * from t_n8 t1 left outer join t_n8 t2 using (b)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t
+PREHOOK: Input: default@t_n8
 #### A masked pattern was here ####
-POSTHOOK: query: select * from t t1 left outer join t t2 using (b)
+POSTHOOK: query: select * from t_n8 t1 left outer join t_n8 t2 using (b)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n8
 #### A masked pattern was here ####
 1	2	2
 1	2	NULL
@@ -217,13 +217,13 @@ POSTHOOK: Input: default@t
 4	3	3
 NULL	2	NULL
 NULL	NULL	NULL
-PREHOOK: query: select * from t t1 right outer join t t2 using (b)
+PREHOOK: query: select * from t_n8 t1 right outer join t_n8 t2 using (b)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t
+PREHOOK: Input: default@t_n8
 #### A masked pattern was here ####
-POSTHOOK: query: select * from t t1 right outer join t t2 using (b)
+POSTHOOK: query: select * from t_n8 t1 right outer join t_n8 t2 using (b)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n8
 #### A masked pattern was here ####
 1	2	2
 1	2	NULL
@@ -237,13 +237,13 @@ POSTHOOK: Input: default@t
 4	3	3
 NULL	NULL	2
 NULL	NULL	NULL
-PREHOOK: query: select * from t t1 inner join t t2 using (b)
+PREHOOK: query: select * from t_n8 t1 inner join t_n8 t2 using (b)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t
+PREHOOK: Input: default@t_n8
 #### A masked pattern was here ####
-POSTHOOK: query: select * from t t1 inner join t t2 using (b)
+POSTHOOK: query: select * from t_n8 t1 inner join t_n8 t2 using (b)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n8
 #### A masked pattern was here ####
 1	2	2
 1	2	NULL
@@ -255,28 +255,28 @@ POSTHOOK: Input: default@t
 3	4	3
 3	4	4
 4	3	3
-PREHOOK: query: drop view v
+PREHOOK: query: drop view v_n4
 PREHOOK: type: DROPVIEW
-POSTHOOK: query: drop view v
+POSTHOOK: query: drop view v_n4
 POSTHOOK: type: DROPVIEW
-PREHOOK: query: create view v as select * from t t1 join t t2 using (a,b)
+PREHOOK: query: create view v_n4 as select * from t_n8 t1 join t_n8 t2 using (a,b)
 PREHOOK: type: CREATEVIEW
-PREHOOK: Input: default@t
+PREHOOK: Input: default@t_n8
 PREHOOK: Output: database:default
-PREHOOK: Output: default@v
-POSTHOOK: query: create view v as select * from t t1 join t t2 using (a,b)
+PREHOOK: Output: default@v_n4
+POSTHOOK: query: create view v_n4 as select * from t_n8 t1 join t_n8 t2 using (a,b)
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n8
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@v
-POSTHOOK: Lineage: v.a SIMPLE [(t)t1.FieldSchema(name:a, type:int, comment:null), ]
-POSTHOOK: Lineage: v.b SIMPLE [(t)t1.FieldSchema(name:b, type:int, comment:null), ]
-PREHOOK: query: desc formatted v
+POSTHOOK: Output: default@v_n4
+POSTHOOK: Lineage: v_n4.a SIMPLE [(t_n8)t1.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: v_n4.b SIMPLE [(t_n8)t1.FieldSchema(name:b, type:int, comment:null), ]
+PREHOOK: query: desc formatted v_n4
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@v
-POSTHOOK: query: desc formatted v
+PREHOOK: Input: default@v_n4
+POSTHOOK: query: desc formatted v_n4
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@v_n4
 # col_name            	data_type           	comment             
 a                   	int                 	                    
 b                   	int                 	                    
@@ -300,50 +300,50 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	select * from t t1 join t t2 using (a,b)	 
-View Expanded Text: 	select `t1`.`a`, `t1`.`b` from `default`.`t` `t1` join `default`.`t` `t2` using (`a`,`b`)	 
+View Original Text: 	select * from t_n8 t1 join t_n8 t2 using (a,b)	 
+View Expanded Text: 	select `t1`.`a`, `t1`.`b` from `default`.`t_n8` `t1` join `default`.`t_n8` `t2` using (`a`,`b`)	 
 View Rewrite Enabled:	No                  	 
-PREHOOK: query: select * from v
+PREHOOK: query: select * from v_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t
-PREHOOK: Input: default@v
+PREHOOK: Input: default@t_n8
+PREHOOK: Input: default@v_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select * from v
+POSTHOOK: query: select * from v_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@t_n8
+POSTHOOK: Input: default@v_n4
 #### A masked pattern was here ####
 1	2
 2	1
 3	3
 3	4
 4	3
-PREHOOK: query: drop view v
+PREHOOK: query: drop view v_n4
 PREHOOK: type: DROPVIEW
-PREHOOK: Input: default@v
-PREHOOK: Output: default@v
-POSTHOOK: query: drop view v
+PREHOOK: Input: default@v_n4
+PREHOOK: Output: default@v_n4
+POSTHOOK: query: drop view v_n4
 POSTHOOK: type: DROPVIEW
-POSTHOOK: Input: default@v
-POSTHOOK: Output: default@v
-PREHOOK: query: create view v as select * from t t1 right outer join t t2 using (b,a)
+POSTHOOK: Input: default@v_n4
+POSTHOOK: Output: default@v_n4
+PREHOOK: query: create view v_n4 as select * from t_n8 t1 right outer join t_n8 t2 using (b,a)
 PREHOOK: type: CREATEVIEW
-PREHOOK: Input: default@t
+PREHOOK: Input: default@t_n8
 PREHOOK: Output: database:default
-PREHOOK: Output: default@v
-POSTHOOK: query: create view v as select * from t t1 right outer join t t2 using (b,a)
+PREHOOK: Output: default@v_n4
+POSTHOOK: query: create view v_n4 as select * from t_n8 t1 right outer join t_n8 t2 using (b,a)
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n8
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@v
-POSTHOOK: Lineage: v.a SIMPLE [(t)t2.FieldSchema(name:a, type:int, comment:null), ]
-POSTHOOK: Lineage: v.b SIMPLE [(t)t2.FieldSchema(name:b, type:int, comment:null), ]
-PREHOOK: query: desc formatted v
+POSTHOOK: Output: default@v_n4
+POSTHOOK: Lineage: v_n4.a SIMPLE [(t_n8)t2.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: v_n4.b SIMPLE [(t_n8)t2.FieldSchema(name:b, type:int, comment:null), ]
+PREHOOK: query: desc formatted v_n4
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@v
-POSTHOOK: query: desc formatted v
+PREHOOK: Input: default@v_n4
+POSTHOOK: query: desc formatted v_n4
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@v_n4
 # col_name            	data_type           	comment             
 b                   	int                 	                    
 a                   	int                 	                    
@@ -367,18 +367,18 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 	 	 
 # View Information	 	 
-View Original Text: 	select * from t t1 right outer join t t2 using (b,a)	 
-View Expanded Text: 	select `t2`.`b`, `t2`.`a` from `default`.`t` `t1` right outer join `default`.`t` `t2` using (`b`,`a`)	 
+View Original Text: 	select * from t_n8 t1 right outer join t_n8 t2 using (b,a)	 
+View Expanded Text: 	select `t2`.`b`, `t2`.`a` from `default`.`t_n8` `t1` right outer join `default`.`t_n8` `t2` using (`b`,`a`)	 
 View Rewrite Enabled:	No                  	 
-PREHOOK: query: select * from v
+PREHOOK: query: select * from v_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t
-PREHOOK: Input: default@v
+PREHOOK: Input: default@t_n8
+PREHOOK: Input: default@v_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select * from v
+POSTHOOK: query: select * from v_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@t_n8
+POSTHOOK: Input: default@v_n4
 #### A masked pattern was here ####
 1	2
 1	NULL
@@ -388,13 +388,13 @@ POSTHOOK: Input: default@v
 4	3
 NULL	2
 NULL	NULL
-PREHOOK: query: select * from (select t1.b b from t t1 inner join t t2 using (b)) t3 join t t4 using(b)
+PREHOOK: query: select * from (select t1.b b from t_n8 t1 inner join t_n8 t2 using (b)) t3 join t_n8 t4 using(b)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t
+PREHOOK: Input: default@t_n8
 #### A masked pattern was here ####
-POSTHOOK: query: select * from (select t1.b b from t t1 inner join t t2 using (b)) t3 join t t4 using(b)
+POSTHOOK: query: select * from (select t1.b b from t_n8 t1 inner join t_n8 t2 using (b)) t3 join t_n8 t4 using(b)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n8
 #### A masked pattern was here ####
 1	2
 1	2
@@ -414,13 +414,13 @@ POSTHOOK: Input: default@t
 3	4
 3	4
 4	3
-PREHOOK: query: select * from (select t2.a a from t t1 inner join t t2 using (b)) t3 join t t4 using(a)
+PREHOOK: query: select * from (select t2.a a from t_n8 t1 inner join t_n8 t2 using (b)) t3 join t_n8 t4 using(a)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t
+PREHOOK: Input: default@t_n8
 #### A masked pattern was here ####
-POSTHOOK: query: select * from (select t2.a a from t t1 inner join t t2 using (b)) t3 join t t4 using(a)
+POSTHOOK: query: select * from (select t2.a a from t_n8 t1 inner join t_n8 t2 using (b)) t3 join t_n8 t4 using(a)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n8
 #### A masked pattern was here ####
 1	2
 2	1
@@ -435,24 +435,24 @@ POSTHOOK: Input: default@t
 3	4
 4	3
 4	3
-PREHOOK: query: create table tt as select * from (select t2.a a from t t1 inner join t t2 using (b)) t3 join t t4 using(a)
+PREHOOK: query: create table tt_n0 as select * from (select t2.a a from t_n8 t1 inner join t_n8 t2 using (b)) t3 join t_n8 t4 using(a)
 PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: default@t
+PREHOOK: Input: default@t_n8
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tt
-POSTHOOK: query: create table tt as select * from (select t2.a a from t t1 inner join t t2 using (b)) t3 join t t4 using(a)
+PREHOOK: Output: default@tt_n0
+POSTHOOK: query: create table tt_n0 as select * from (select t2.a a from t_n8 t1 inner join t_n8 t2 using (b)) t3 join t_n8 t4 using(a)
 POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n8
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tt
-POSTHOOK: Lineage: tt.a SIMPLE [(t)t2.FieldSchema(name:a, type:int, comment:null), ]
-POSTHOOK: Lineage: tt.b SIMPLE [(t)t4.FieldSchema(name:b, type:int, comment:null), ]
-PREHOOK: query: desc formatted tt
+POSTHOOK: Output: default@tt_n0
+POSTHOOK: Lineage: tt_n0.a SIMPLE [(t_n8)t2.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: tt_n0.b SIMPLE [(t_n8)t4.FieldSchema(name:b, type:int, comment:null), ]
+PREHOOK: query: desc formatted tt_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@tt
-POSTHOOK: query: desc formatted tt
+PREHOOK: Input: default@tt_n0
+POSTHOOK: query: desc formatted tt_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@tt
+POSTHOOK: Input: default@tt_n0
 # col_name            	data_type           	comment             
 a                   	int                 	                    
 b                   	int                 	                    

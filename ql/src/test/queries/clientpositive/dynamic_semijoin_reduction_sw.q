@@ -15,48 +15,48 @@ set hive.tez.min.bloom.filter.entries=1;
 set hive.stats.fetch.column.stats=true;
 
 -- Create Tables
-create table alltypesorc_int ( cint int, cstring string ) stored as ORC;
-create table srcpart_date (key string, value string) partitioned by (ds string ) stored as ORC;
-CREATE TABLE srcpart_small(key1 STRING, value1 STRING) partitioned by (ds1 string) STORED as ORC;
+create table alltypesorc_int_n0 ( cint int, cstring string ) stored as ORC;
+create table srcpart_date_n6 (key string, value string) partitioned by (ds string ) stored as ORC;
+CREATE TABLE srcpart_small_n2(key1 STRING, value1 STRING) partitioned by (ds1 string) STORED as ORC;
 
 -- Add Partitions
-alter table srcpart_date add partition (ds = "2008-04-08");
-alter table srcpart_date add partition (ds = "2008-04-09");
+alter table srcpart_date_n6 add partition (ds = "2008-04-08");
+alter table srcpart_date_n6 add partition (ds = "2008-04-09");
 
-alter table srcpart_small add partition (ds1 = "2008-04-08");
-alter table srcpart_small add partition (ds1 = "2008-04-09");
+alter table srcpart_small_n2 add partition (ds1 = "2008-04-08");
+alter table srcpart_small_n2 add partition (ds1 = "2008-04-09");
 
 -- Load
-insert overwrite table alltypesorc_int select cint, cstring1 from alltypesorc;
-insert overwrite table srcpart_date partition (ds = "2008-04-08" ) select key, value from srcpart where ds = "2008-04-08";
-insert overwrite table srcpart_date partition (ds = "2008-04-09") select key, value from srcpart where ds = "2008-04-09";
-insert overwrite table srcpart_small partition (ds1 = "2008-04-09") select key, value from srcpart where ds = "2008-04-09" limit 20;
+insert overwrite table alltypesorc_int_n0 select cint, cstring1 from alltypesorc;
+insert overwrite table srcpart_date_n6 partition (ds = "2008-04-08" ) select key, value from srcpart where ds = "2008-04-08";
+insert overwrite table srcpart_date_n6 partition (ds = "2008-04-09") select key, value from srcpart where ds = "2008-04-09";
+insert overwrite table srcpart_small_n2 partition (ds1 = "2008-04-09") select key, value from srcpart where ds = "2008-04-09" limit 20;
 
 set hive.tez.dynamic.semijoin.reduction=false;
 
-analyze table alltypesorc_int compute statistics for columns;
-analyze table srcpart_date compute statistics for columns;
-analyze table srcpart_small compute statistics for columns;
+analyze table alltypesorc_int_n0 compute statistics for columns;
+analyze table srcpart_date_n6 compute statistics for columns;
+analyze table srcpart_small_n2 compute statistics for columns;
 
 set hive.tez.dynamic.semijoin.reduction=true;
 EXPLAIN
 SELECT count(*)
 FROM (
   SELECT *
-  FROM (SELECT * FROM srcpart_date WHERE ds = "2008-04-09") `srcpart_date`
-  JOIN (SELECT * FROM srcpart_small WHERE ds1 = "2008-04-08") `srcpart_small`
-    ON (srcpart_date.key = srcpart_small.key1)
-  JOIN alltypesorc_int
-    ON (srcpart_small.key1 = alltypesorc_int.cstring)) a
+  FROM (SELECT * FROM srcpart_date_n6 WHERE ds = "2008-04-09") `srcpart_date_n6`
+  JOIN (SELECT * FROM srcpart_small_n2 WHERE ds1 = "2008-04-08") `srcpart_small_n2`
+    ON (srcpart_date_n6.key = srcpart_small_n2.key1)
+  JOIN alltypesorc_int_n0
+    ON (srcpart_small_n2.key1 = alltypesorc_int_n0.cstring)) a
 JOIN (
   SELECT *
-  FROM (SELECT * FROM srcpart_date WHERE ds = "2008-04-08") `srcpart_date`
-  JOIN (SELECT * FROM srcpart_small WHERE ds1 = "2008-04-08") `srcpart_small`
-    ON (srcpart_date.key = srcpart_small.key1)
-  JOIN alltypesorc_int
-    ON (srcpart_small.key1 = alltypesorc_int.cstring)) b
+  FROM (SELECT * FROM srcpart_date_n6 WHERE ds = "2008-04-08") `srcpart_date_n6`
+  JOIN (SELECT * FROM srcpart_small_n2 WHERE ds1 = "2008-04-08") `srcpart_small_n2`
+    ON (srcpart_date_n6.key = srcpart_small_n2.key1)
+  JOIN alltypesorc_int_n0
+    ON (srcpart_small_n2.key1 = alltypesorc_int_n0.cstring)) b
 ON ('1' = '1');
 
-drop table srcpart_date;
-drop table srcpart_small;
-drop table alltypesorc_int;
+drop table srcpart_date_n6;
+drop table srcpart_small_n2;
+drop table alltypesorc_int_n0;

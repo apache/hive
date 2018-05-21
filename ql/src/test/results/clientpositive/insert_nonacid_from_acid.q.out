@@ -30,32 +30,32 @@ bbb	32	3.00
 ccc	32	3.00
 ddd	35	3.00
 eee	32	3.00
-PREHOOK: query: create table tab1 (name varchar(50), age int, gpa decimal(3, 2))
+PREHOOK: query: create table tab1_n2 (name varchar(50), age int, gpa decimal(3, 2))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tab1
-POSTHOOK: query: create table tab1 (name varchar(50), age int, gpa decimal(3, 2))
+PREHOOK: Output: default@tab1_n2
+POSTHOOK: query: create table tab1_n2 (name varchar(50), age int, gpa decimal(3, 2))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tab1
-PREHOOK: query: insert into table tab1 select * from sample_06 where gpa = 3.00
+POSTHOOK: Output: default@tab1_n2
+PREHOOK: query: insert into table tab1_n2 select * from sample_06 where gpa = 3.00
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sample_06
-PREHOOK: Output: default@tab1
-POSTHOOK: query: insert into table tab1 select * from sample_06 where gpa = 3.00
+PREHOOK: Output: default@tab1_n2
+POSTHOOK: query: insert into table tab1_n2 select * from sample_06 where gpa = 3.00
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sample_06
-POSTHOOK: Output: default@tab1
-POSTHOOK: Lineage: tab1.age SIMPLE [(sample_06)sample_06.FieldSchema(name:age, type:int, comment:null), ]
-POSTHOOK: Lineage: tab1.gpa SIMPLE []
-POSTHOOK: Lineage: tab1.name SIMPLE [(sample_06)sample_06.FieldSchema(name:name, type:varchar(50), comment:null), ]
-PREHOOK: query: select * from tab1
+POSTHOOK: Output: default@tab1_n2
+POSTHOOK: Lineage: tab1_n2.age SIMPLE [(sample_06)sample_06.FieldSchema(name:age, type:int, comment:null), ]
+POSTHOOK: Lineage: tab1_n2.gpa SIMPLE []
+POSTHOOK: Lineage: tab1_n2.name SIMPLE [(sample_06)sample_06.FieldSchema(name:name, type:varchar(50), comment:null), ]
+PREHOOK: query: select * from tab1_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab1
+PREHOOK: Input: default@tab1_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select * from tab1
+POSTHOOK: query: select * from tab1_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab1
+POSTHOOK: Input: default@tab1_n2
 #### A masked pattern was here ####
 aaa	35	3.00
 bbb	32	3.00

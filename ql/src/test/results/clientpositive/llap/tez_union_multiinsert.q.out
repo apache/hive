@@ -1,19 +1,19 @@
-PREHOOK: query: CREATE TABLE DEST1(key STRING, value STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE DEST1_n150(key STRING, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEST1
-POSTHOOK: query: CREATE TABLE DEST1(key STRING, value STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@DEST1_n150
+POSTHOOK: query: CREATE TABLE DEST1_n150(key STRING, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEST1
-PREHOOK: query: CREATE TABLE DEST2(key STRING, val1 STRING, val2 STRING) STORED AS TEXTFILE
+POSTHOOK: Output: default@DEST1_n150
+PREHOOK: query: CREATE TABLE DEST2_n39(key STRING, val1 STRING, val2 STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEST2
-POSTHOOK: query: CREATE TABLE DEST2(key STRING, val1 STRING, val2 STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@DEST2_n39
+POSTHOOK: query: CREATE TABLE DEST2_n39(key STRING, val1 STRING, val2 STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEST2
+POSTHOOK: Output: default@DEST2_n39
 PREHOOK: query: explain
 FROM (
       select key, value from (
@@ -23,8 +23,8 @@ FROM (
                          UNION all
       select key, value from src s0
                              ) unionsrc
-INSERT OVERWRITE TABLE DEST1 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
-INSERT OVERWRITE TABLE DEST2 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
+INSERT OVERWRITE TABLE DEST1_n150 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
+INSERT OVERWRITE TABLE DEST2_n39 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
 GROUP BY unionsrc.key, unionsrc.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
@@ -36,8 +36,8 @@ FROM (
                          UNION all
       select key, value from src s0
                              ) unionsrc
-INSERT OVERWRITE TABLE DEST1 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
-INSERT OVERWRITE TABLE DEST2 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
+INSERT OVERWRITE TABLE DEST1_n150 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
+INSERT OVERWRITE TABLE DEST2_n39 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
 GROUP BY unionsrc.key, unionsrc.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -200,7 +200,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.dest1
+                        name: default.dest1_n150
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string)
                     outputColumnNames: key, value
@@ -249,7 +249,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.dest2
+                        name: default.dest2_n39
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
                     outputColumnNames: key, val1, val2
@@ -292,7 +292,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n150
 
   Stage: Stage-4
     Stats Work
@@ -300,7 +300,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: string, string
-          Table: default.dest1
+          Table: default.dest1_n150
 
   Stage: Stage-1
     Move Operator
@@ -310,7 +310,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest2
+              name: default.dest2_n39
 
   Stage: Stage-5
     Stats Work
@@ -318,7 +318,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, val1, val2
           Column Types: string, string, string
-          Table: default.dest2
+          Table: default.dest2_n39
 
 PREHOOK: query: FROM (
       select key, value from (
@@ -328,13 +328,13 @@ PREHOOK: query: FROM (
                          UNION all
       select key, value from src s0
                              ) unionsrc
-INSERT OVERWRITE TABLE DEST1 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
-INSERT OVERWRITE TABLE DEST2 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
+INSERT OVERWRITE TABLE DEST1_n150 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
+INSERT OVERWRITE TABLE DEST2_n39 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
 GROUP BY unionsrc.key, unionsrc.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@dest1
-PREHOOK: Output: default@dest2
+PREHOOK: Output: default@dest1_n150
+PREHOOK: Output: default@dest2_n39
 POSTHOOK: query: FROM (
       select key, value from (
       select 'tst1' as key, cast(count(1) as string) as value, 'tst1' as value2 from src s1
@@ -343,25 +343,25 @@ POSTHOOK: query: FROM (
                          UNION all
       select key, value from src s0
                              ) unionsrc
-INSERT OVERWRITE TABLE DEST1 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
-INSERT OVERWRITE TABLE DEST2 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
+INSERT OVERWRITE TABLE DEST1_n150 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
+INSERT OVERWRITE TABLE DEST2_n39 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
 GROUP BY unionsrc.key, unionsrc.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@dest1
-POSTHOOK: Output: default@dest2
-POSTHOOK: Lineage: dest1.key EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), (src)s0.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.value EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), (src)s0.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.key EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), (src)s0.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.val1 EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), (src)s0.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.val2 EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), (src)s0.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from DEST1
+POSTHOOK: Output: default@dest1_n150
+POSTHOOK: Output: default@dest2_n39
+POSTHOOK: Lineage: dest1_n150.key EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), (src)s0.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n150.value EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), (src)s0.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n39.key EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), (src)s0.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n39.val1 EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), (src)s0.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n39.val2 EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), (src)s0.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from DEST1_n150
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n150
 #### A masked pattern was here ####
-POSTHOOK: query: select * from DEST1
+POSTHOOK: query: select * from DEST1_n150
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n150
 #### A masked pattern was here ####
 0	1
 10	1
@@ -673,13 +673,13 @@ POSTHOOK: Input: default@dest1
 97	1
 98	1
 tst1	1
-PREHOOK: query: select * from DEST2
+PREHOOK: query: select * from DEST2_n39
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest2
+PREHOOK: Input: default@dest2_n39
 #### A masked pattern was here ####
-POSTHOOK: query: select * from DEST2
+POSTHOOK: query: select * from DEST2_n39
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest2
+POSTHOOK: Input: default@dest2_n39
 #### A masked pattern was here ####
 0	val_0	1
 10	val_10	1
@@ -999,8 +999,8 @@ FROM (
       select 'tst1' as key, cast(count(1) as string) as value, 'tst1' as value2 from src s1
                          UNION all 
       select s2.key as key, s2.value as value, 'tst1' as value2 from src s2) unionsub) unionsrc
-INSERT OVERWRITE TABLE DEST1 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
-INSERT OVERWRITE TABLE DEST2 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
+INSERT OVERWRITE TABLE DEST1_n150 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
+INSERT OVERWRITE TABLE DEST2_n39 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
 GROUP BY unionsrc.key, unionsrc.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
@@ -1011,8 +1011,8 @@ FROM (
       select 'tst1' as key, cast(count(1) as string) as value, 'tst1' as value2 from src s1
                          UNION all 
       select s2.key as key, s2.value as value, 'tst1' as value2 from src s2) unionsub) unionsrc
-INSERT OVERWRITE TABLE DEST1 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
-INSERT OVERWRITE TABLE DEST2 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
+INSERT OVERWRITE TABLE DEST1_n150 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
+INSERT OVERWRITE TABLE DEST2_n39 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
 GROUP BY unionsrc.key, unionsrc.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -1141,7 +1141,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.dest1
+                        name: default.dest1_n150
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string)
                     outputColumnNames: key, value
@@ -1190,7 +1190,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.dest2
+                        name: default.dest2_n39
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
                     outputColumnNames: key, val1, val2
@@ -1267,7 +1267,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n150
 
   Stage: Stage-4
     Stats Work
@@ -1275,7 +1275,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: string, string
-          Table: default.dest1
+          Table: default.dest1_n150
 
   Stage: Stage-1
     Move Operator
@@ -1285,7 +1285,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest2
+              name: default.dest2_n39
 
   Stage: Stage-5
     Stats Work
@@ -1293,7 +1293,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, val1, val2
           Column Types: string, string, string
-          Table: default.dest2
+          Table: default.dest2_n39
 
 PREHOOK: query: FROM (
       select key, value from src s0
@@ -1302,13 +1302,13 @@ PREHOOK: query: FROM (
       select 'tst1' as key, cast(count(1) as string) as value, 'tst1' as value2 from src s1
                          UNION all 
       select s2.key as key, s2.value as value, 'tst1' as value2 from src s2) unionsub) unionsrc
-INSERT OVERWRITE TABLE DEST1 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
-INSERT OVERWRITE TABLE DEST2 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
+INSERT OVERWRITE TABLE DEST1_n150 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
+INSERT OVERWRITE TABLE DEST2_n39 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
 GROUP BY unionsrc.key, unionsrc.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@dest1
-PREHOOK: Output: default@dest2
+PREHOOK: Output: default@dest1_n150
+PREHOOK: Output: default@dest2_n39
 POSTHOOK: query: FROM (
       select key, value from src s0
                          UNION all
@@ -1316,25 +1316,25 @@ POSTHOOK: query: FROM (
       select 'tst1' as key, cast(count(1) as string) as value, 'tst1' as value2 from src s1
                          UNION all 
       select s2.key as key, s2.value as value, 'tst1' as value2 from src s2) unionsub) unionsrc
-INSERT OVERWRITE TABLE DEST1 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
-INSERT OVERWRITE TABLE DEST2 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
+INSERT OVERWRITE TABLE DEST1_n150 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
+INSERT OVERWRITE TABLE DEST2_n39 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
 GROUP BY unionsrc.key, unionsrc.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@dest1
-POSTHOOK: Output: default@dest2
-POSTHOOK: Lineage: dest1.key EXPRESSION [(src)s0.FieldSchema(name:key, type:string, comment:default), (src)s2.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.value EXPRESSION [(src)s0.FieldSchema(name:value, type:string, comment:default), (src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.key EXPRESSION [(src)s0.FieldSchema(name:key, type:string, comment:default), (src)s2.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.val1 EXPRESSION [(src)s0.FieldSchema(name:value, type:string, comment:default), (src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.val2 EXPRESSION [(src)s0.FieldSchema(name:value, type:string, comment:default), (src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from DEST1
+POSTHOOK: Output: default@dest1_n150
+POSTHOOK: Output: default@dest2_n39
+POSTHOOK: Lineage: dest1_n150.key EXPRESSION [(src)s0.FieldSchema(name:key, type:string, comment:default), (src)s2.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n150.value EXPRESSION [(src)s0.FieldSchema(name:value, type:string, comment:default), (src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n39.key EXPRESSION [(src)s0.FieldSchema(name:key, type:string, comment:default), (src)s2.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n39.val1 EXPRESSION [(src)s0.FieldSchema(name:value, type:string, comment:default), (src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n39.val2 EXPRESSION [(src)s0.FieldSchema(name:value, type:string, comment:default), (src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from DEST1_n150
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n150
 #### A masked pattern was here ####
-POSTHOOK: query: select * from DEST1
+POSTHOOK: query: select * from DEST1_n150
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n150
 #### A masked pattern was here ####
 0	1
 10	1
@@ -1646,13 +1646,13 @@ POSTHOOK: Input: default@dest1
 97	1
 98	1
 tst1	1
-PREHOOK: query: select * from DEST2
+PREHOOK: query: select * from DEST2_n39
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest2
+PREHOOK: Input: default@dest2_n39
 #### A masked pattern was here ####
-POSTHOOK: query: select * from DEST2
+POSTHOOK: query: select * from DEST2_n39
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest2
+POSTHOOK: Input: default@dest2_n39
 #### A masked pattern was here ####
 0	val_0	1
 10	val_10	1
@@ -1971,8 +1971,8 @@ FROM (
       select 'tst1' as key, cast(count(1) as string) as value from src s1
                          UNION all 
       select s2.key as key, s2.value as value from src s2) unionsrc
-INSERT OVERWRITE TABLE DEST1 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
-INSERT OVERWRITE TABLE DEST2 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
+INSERT OVERWRITE TABLE DEST1_n150 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
+INSERT OVERWRITE TABLE DEST2_n39 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
 GROUP BY unionsrc.key, unionsrc.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
@@ -1982,8 +1982,8 @@ FROM (
       select 'tst1' as key, cast(count(1) as string) as value from src s1
                          UNION all 
       select s2.key as key, s2.value as value from src s2) unionsrc
-INSERT OVERWRITE TABLE DEST1 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
-INSERT OVERWRITE TABLE DEST2 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
+INSERT OVERWRITE TABLE DEST1_n150 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
+INSERT OVERWRITE TABLE DEST2_n39 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
 GROUP BY unionsrc.key, unionsrc.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -2112,7 +2112,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.dest1
+                        name: default.dest1_n150
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string)
                     outputColumnNames: key, value
@@ -2161,7 +2161,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.dest2
+                        name: default.dest2_n39
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
                     outputColumnNames: key, val1, val2
@@ -2238,7 +2238,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n150
 
   Stage: Stage-4
     Stats Work
@@ -2246,7 +2246,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: string, string
-          Table: default.dest1
+          Table: default.dest1_n150
 
   Stage: Stage-1
     Move Operator
@@ -2256,7 +2256,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest2
+              name: default.dest2_n39
 
   Stage: Stage-5
     Stats Work
@@ -2264,7 +2264,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, val1, val2
           Column Types: string, string, string
-          Table: default.dest2
+          Table: default.dest2_n39
 
 PREHOOK: query: FROM (
       select key, value from src s0
@@ -2272,38 +2272,38 @@ PREHOOK: query: FROM (
       select 'tst1' as key, cast(count(1) as string) as value from src s1
                          UNION all 
       select s2.key as key, s2.value as value from src s2) unionsrc
-INSERT OVERWRITE TABLE DEST1 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
-INSERT OVERWRITE TABLE DEST2 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
+INSERT OVERWRITE TABLE DEST1_n150 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
+INSERT OVERWRITE TABLE DEST2_n39 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
 GROUP BY unionsrc.key, unionsrc.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@dest1
-PREHOOK: Output: default@dest2
+PREHOOK: Output: default@dest1_n150
+PREHOOK: Output: default@dest2_n39
 POSTHOOK: query: FROM (
       select key, value from src s0
                          UNION all
       select 'tst1' as key, cast(count(1) as string) as value from src s1
                          UNION all 
       select s2.key as key, s2.value as value from src s2) unionsrc
-INSERT OVERWRITE TABLE DEST1 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
-INSERT OVERWRITE TABLE DEST2 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
+INSERT OVERWRITE TABLE DEST1_n150 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
+INSERT OVERWRITE TABLE DEST2_n39 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
 GROUP BY unionsrc.key, unionsrc.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@dest1
-POSTHOOK: Output: default@dest2
-POSTHOOK: Lineage: dest1.key EXPRESSION [(src)s0.FieldSchema(name:key, type:string, comment:default), (src)s2.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.value EXPRESSION [(src)s0.FieldSchema(name:value, type:string, comment:default), (src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.key EXPRESSION [(src)s0.FieldSchema(name:key, type:string, comment:default), (src)s2.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.val1 EXPRESSION [(src)s0.FieldSchema(name:value, type:string, comment:default), (src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.val2 EXPRESSION [(src)s0.FieldSchema(name:value, type:string, comment:default), (src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from DEST1
+POSTHOOK: Output: default@dest1_n150
+POSTHOOK: Output: default@dest2_n39
+POSTHOOK: Lineage: dest1_n150.key EXPRESSION [(src)s0.FieldSchema(name:key, type:string, comment:default), (src)s2.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n150.value EXPRESSION [(src)s0.FieldSchema(name:value, type:string, comment:default), (src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n39.key EXPRESSION [(src)s0.FieldSchema(name:key, type:string, comment:default), (src)s2.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n39.val1 EXPRESSION [(src)s0.FieldSchema(name:value, type:string, comment:default), (src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n39.val2 EXPRESSION [(src)s0.FieldSchema(name:value, type:string, comment:default), (src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from DEST1_n150
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n150
 #### A masked pattern was here ####
-POSTHOOK: query: select * from DEST1
+POSTHOOK: query: select * from DEST1_n150
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n150
 #### A masked pattern was here ####
 0	1
 10	1
@@ -2615,13 +2615,13 @@ POSTHOOK: Input: default@dest1
 97	1
 98	1
 tst1	1
-PREHOOK: query: select * from DEST2
+PREHOOK: query: select * from DEST2_n39
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest2
+PREHOOK: Input: default@dest2_n39
 #### A masked pattern was here ####
-POSTHOOK: query: select * from DEST2
+POSTHOOK: query: select * from DEST2_n39
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest2
+POSTHOOK: Input: default@dest2_n39
 #### A masked pattern was here ####
 0	val_0	1
 10	val_10	1
@@ -2937,16 +2937,16 @@ PREHOOK: query: explain
 FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
                          UNION all 
       select s2.key as key, s2.value as value from src s2) unionsrc
-INSERT OVERWRITE TABLE DEST1 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
-INSERT OVERWRITE TABLE DEST2 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
+INSERT OVERWRITE TABLE DEST1_n150 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
+INSERT OVERWRITE TABLE DEST2_n39 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
 GROUP BY unionsrc.key, unionsrc.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain 
 FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
                          UNION all 
       select s2.key as key, s2.value as value from src s2) unionsrc
-INSERT OVERWRITE TABLE DEST1 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
-INSERT OVERWRITE TABLE DEST2 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
+INSERT OVERWRITE TABLE DEST1_n150 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
+INSERT OVERWRITE TABLE DEST2_n39 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
 GROUP BY unionsrc.key, unionsrc.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -3075,7 +3075,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.dest1
+                        name: default.dest1_n150
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string)
                     outputColumnNames: key, value
@@ -3124,7 +3124,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.dest2
+                        name: default.dest2_n39
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
                     outputColumnNames: key, val1, val2
@@ -3167,7 +3167,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n150
 
   Stage: Stage-4
     Stats Work
@@ -3175,7 +3175,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: string, string
-          Table: default.dest1
+          Table: default.dest1_n150
 
   Stage: Stage-1
     Move Operator
@@ -3185,7 +3185,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest2
+              name: default.dest2_n39
 
   Stage: Stage-5
     Stats Work
@@ -3193,40 +3193,40 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, val1, val2
           Column Types: string, string, string
-          Table: default.dest2
+          Table: default.dest2_n39
 
 PREHOOK: query: FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
                          UNION all 
       select s2.key as key, s2.value as value from src s2) unionsrc
-INSERT OVERWRITE TABLE DEST1 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
-INSERT OVERWRITE TABLE DEST2 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
+INSERT OVERWRITE TABLE DEST1_n150 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
+INSERT OVERWRITE TABLE DEST2_n39 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
 GROUP BY unionsrc.key, unionsrc.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@dest1
-PREHOOK: Output: default@dest2
+PREHOOK: Output: default@dest1_n150
+PREHOOK: Output: default@dest2_n39
 POSTHOOK: query: FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
                          UNION all 
       select s2.key as key, s2.value as value from src s2) unionsrc
-INSERT OVERWRITE TABLE DEST1 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
-INSERT OVERWRITE TABLE DEST2 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
+INSERT OVERWRITE TABLE DEST1_n150 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
+INSERT OVERWRITE TABLE DEST2_n39 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
 GROUP BY unionsrc.key, unionsrc.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@dest1
-POSTHOOK: Output: default@dest2
-POSTHOOK: Lineage: dest1.key EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.value EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.key EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.val1 EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.val2 EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from DEST1
+POSTHOOK: Output: default@dest1_n150
+POSTHOOK: Output: default@dest2_n39
+POSTHOOK: Lineage: dest1_n150.key EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n150.value EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n39.key EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n39.val1 EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n39.val2 EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from DEST1_n150
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n150
 #### A masked pattern was here ####
-POSTHOOK: query: select * from DEST1
+POSTHOOK: query: select * from DEST1_n150
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n150
 #### A masked pattern was here ####
 0	1
 10	1
@@ -3538,13 +3538,13 @@ POSTHOOK: Input: default@dest1
 97	1
 98	1
 tst1	1
-PREHOOK: query: select * from DEST2
+PREHOOK: query: select * from DEST2_n39
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest2
+PREHOOK: Input: default@dest2_n39
 #### A masked pattern was here ####
-POSTHOOK: query: select * from DEST2
+POSTHOOK: query: select * from DEST2_n39
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest2
+POSTHOOK: Input: default@dest2_n39
 #### A masked pattern was here ####
 0	val_0	1
 10	val_10	1
@@ -3860,16 +3860,16 @@ PREHOOK: query: explain
 FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
                          UNION distinct 
       select s2.key as key, s2.value as value from src s2) unionsrc
-INSERT OVERWRITE TABLE DEST1 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
-INSERT OVERWRITE TABLE DEST2 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
+INSERT OVERWRITE TABLE DEST1_n150 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
+INSERT OVERWRITE TABLE DEST2_n39 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
 GROUP BY unionsrc.key, unionsrc.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
                          UNION distinct 
       select s2.key as key, s2.value as value from src s2) unionsrc
-INSERT OVERWRITE TABLE DEST1 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
-INSERT OVERWRITE TABLE DEST2 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
+INSERT OVERWRITE TABLE DEST1_n150 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
+INSERT OVERWRITE TABLE DEST2_n39 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
 GROUP BY unionsrc.key, unionsrc.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -3990,7 +3990,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.dest2
+                          name: default.dest2_n39
                     Select Operator
                       expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
                       outputColumnNames: key, val1, val2
@@ -4024,7 +4024,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.dest1
+                        name: default.dest1_n150
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string)
                     outputColumnNames: key, value
@@ -4082,7 +4082,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n150
 
   Stage: Stage-4
     Stats Work
@@ -4090,7 +4090,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: string, string
-          Table: default.dest1
+          Table: default.dest1_n150
 
   Stage: Stage-1
     Move Operator
@@ -4100,7 +4100,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest2
+              name: default.dest2_n39
 
   Stage: Stage-5
     Stats Work
@@ -4108,40 +4108,40 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, val1, val2
           Column Types: string, string, string
-          Table: default.dest2
+          Table: default.dest2_n39
 
 PREHOOK: query: FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
                          UNION distinct 
       select s2.key as key, s2.value as value from src s2) unionsrc
-INSERT OVERWRITE TABLE DEST1 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
-INSERT OVERWRITE TABLE DEST2 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
+INSERT OVERWRITE TABLE DEST1_n150 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
+INSERT OVERWRITE TABLE DEST2_n39 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
 GROUP BY unionsrc.key, unionsrc.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@dest1
-PREHOOK: Output: default@dest2
+PREHOOK: Output: default@dest1_n150
+PREHOOK: Output: default@dest2_n39
 POSTHOOK: query: FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
                          UNION distinct 
       select s2.key as key, s2.value as value from src s2) unionsrc
-INSERT OVERWRITE TABLE DEST1 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
-INSERT OVERWRITE TABLE DEST2 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
+INSERT OVERWRITE TABLE DEST1_n150 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
+INSERT OVERWRITE TABLE DEST2_n39 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
 GROUP BY unionsrc.key, unionsrc.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@dest1
-POSTHOOK: Output: default@dest2
-POSTHOOK: Lineage: dest1.key EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.value EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.key EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.val1 EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.val2 EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from DEST1
+POSTHOOK: Output: default@dest1_n150
+POSTHOOK: Output: default@dest2_n39
+POSTHOOK: Lineage: dest1_n150.key EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n150.value EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n39.key EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n39.val1 EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n39.val2 EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from DEST1_n150
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n150
 #### A masked pattern was here ####
-POSTHOOK: query: select * from DEST1
+POSTHOOK: query: select * from DEST1_n150
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n150
 #### A masked pattern was here ####
 0	1
 10	1
@@ -4453,13 +4453,13 @@ POSTHOOK: Input: default@dest1
 97	1
 98	1
 tst1	1
-PREHOOK: query: select * from DEST2
+PREHOOK: query: select * from DEST2_n39
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest2
+PREHOOK: Input: default@dest2_n39
 #### A masked pattern was here ####
-POSTHOOK: query: select * from DEST2
+POSTHOOK: query: select * from DEST2_n39
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest2
+POSTHOOK: Input: default@dest2_n39
 #### A masked pattern was here ####
 0	val_0	1
 10	val_10	1

@@ -1,44 +1,44 @@
-PREHOOK: query: CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: query: CREATE TABLE tbl1_n11(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tbl1
-POSTHOOK: query: CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: Output: default@tbl1_n11
+POSTHOOK: query: CREATE TABLE tbl1_n11(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tbl1
-PREHOOK: query: CREATE TABLE tbl2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+POSTHOOK: Output: default@tbl1_n11
+PREHOOK: query: CREATE TABLE tbl2_n10(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tbl2
-POSTHOOK: query: CREATE TABLE tbl2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: Output: default@tbl2_n10
+POSTHOOK: query: CREATE TABLE tbl2_n10(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tbl2
-PREHOOK: query: insert overwrite table tbl1 select * from src where key < 20
+POSTHOOK: Output: default@tbl2_n10
+PREHOOK: query: insert overwrite table tbl1_n11 select * from src where key < 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@tbl1
-POSTHOOK: query: insert overwrite table tbl1 select * from src where key < 20
+PREHOOK: Output: default@tbl1_n11
+POSTHOOK: query: insert overwrite table tbl1_n11 select * from src where key < 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@tbl1
-POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: insert overwrite table tbl2 select * from src where key < 10
+POSTHOOK: Output: default@tbl1_n11
+POSTHOOK: Lineage: tbl1_n11.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl1_n11.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table tbl2_n10 select * from src where key < 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@tbl2
-POSTHOOK: query: insert overwrite table tbl2 select * from src where key < 10
+PREHOOK: Output: default@tbl2_n10
+POSTHOOK: query: insert overwrite table tbl2_n10 select * from src where key < 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@tbl2
-POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@tbl2_n10
+POSTHOOK: Lineage: tbl2_n10.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2_n10.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain
-select count(*) FROM tbl1 a LEFT OUTER JOIN tbl2 b ON a.key = b.key
+select count(*) FROM tbl1_n11 a LEFT OUTER JOIN tbl2_n10 b ON a.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select count(*) FROM tbl1 a LEFT OUTER JOIN tbl2 b ON a.key = b.key
+select count(*) FROM tbl1_n11 a LEFT OUTER JOIN tbl2_n10 b ON a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -109,10 +109,10 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain
-select count(*) FROM tbl1 a RIGHT OUTER JOIN tbl2 b ON a.key = b.key
+select count(*) FROM tbl1_n11 a RIGHT OUTER JOIN tbl2_n10 b ON a.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select count(*) FROM tbl1 a RIGHT OUTER JOIN tbl2 b ON a.key = b.key
+select count(*) FROM tbl1_n11 a RIGHT OUTER JOIN tbl2_n10 b ON a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage

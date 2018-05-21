@@ -1,28 +1,28 @@
-PREHOOK: query: CREATE TABLE DEST1(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE DEST1_n52(key INT, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEST1
-POSTHOOK: query: CREATE TABLE DEST1(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@DEST1_n52
+POSTHOOK: query: CREATE TABLE DEST1_n52(key INT, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEST1
-PREHOOK: query: create table s as select * from src where key='10'
+POSTHOOK: Output: default@DEST1_n52
+PREHOOK: query: create table s_n129 as select * from src where key='10'
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@s
-POSTHOOK: query: create table s as select * from src where key='10'
+PREHOOK: Output: default@s_n129
+POSTHOOK: query: create table s_n129 as select * from src where key='10'
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@s
-POSTHOOK: Lineage: s.key SIMPLE []
-POSTHOOK: Lineage: s.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: explain FROM S
-INSERT OVERWRITE TABLE DEST1 SELECT key, sum(SUBSTR(value,5)) GROUP BY key
+POSTHOOK: Output: default@s_n129
+POSTHOOK: Lineage: s_n129.key SIMPLE []
+POSTHOOK: Lineage: s_n129.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: explain FROM S_n129
+INSERT OVERWRITE TABLE DEST1_n52 SELECT key, sum(SUBSTR(value,5)) GROUP BY key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain FROM S
-INSERT OVERWRITE TABLE DEST1 SELECT key, sum(SUBSTR(value,5)) GROUP BY key
+POSTHOOK: query: explain FROM S_n129
+INSERT OVERWRITE TABLE DEST1_n52 SELECT key, sum(SUBSTR(value,5)) GROUP BY key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -35,7 +35,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: s
+            alias: s_n129
             Statistics: Num rows: 1 Data size: 9 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), substr(value, 5) (type: string)
@@ -66,7 +66,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.dest1
+                  name: default.dest1_n52
             Select Operator
               expressions: _col0 (type: int), _col1 (type: string)
               outputColumnNames: key, value
@@ -86,7 +86,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n52
 
   Stage: Stage-2
     Stats Work
@@ -94,7 +94,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: int, string
-          Table: default.dest1
+          Table: default.dest1_n52
 
   Stage: Stage-3
     Map Reduce
@@ -119,24 +119,24 @@ STAGE PLANS:
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
-PREHOOK: query: FROM S
-INSERT OVERWRITE TABLE DEST1 SELECT key, sum(SUBSTR(value,5)) GROUP BY key
+PREHOOK: query: FROM S_n129
+INSERT OVERWRITE TABLE DEST1_n52 SELECT key, sum(SUBSTR(value,5)) GROUP BY key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@s
-PREHOOK: Output: default@dest1
-POSTHOOK: query: FROM S
-INSERT OVERWRITE TABLE DEST1 SELECT key, sum(SUBSTR(value,5)) GROUP BY key
+PREHOOK: Input: default@s_n129
+PREHOOK: Output: default@dest1_n52
+POSTHOOK: query: FROM S_n129
+INSERT OVERWRITE TABLE DEST1_n52 SELECT key, sum(SUBSTR(value,5)) GROUP BY key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@s
-POSTHOOK: Output: default@dest1
-POSTHOOK: Lineage: dest1.key EXPRESSION [(s)s.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.value EXPRESSION [(s)s.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: desc formatted DEST1
+POSTHOOK: Input: default@s_n129
+POSTHOOK: Output: default@dest1_n52
+POSTHOOK: Lineage: dest1_n52.key EXPRESSION [(s_n129)s_n129.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: dest1_n52.value EXPRESSION [(s_n129)s_n129.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: desc formatted DEST1_n52
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@dest1
-POSTHOOK: query: desc formatted DEST1
+PREHOOK: Input: default@dest1_n52
+POSTHOOK: query: desc formatted DEST1_n52
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n52
 # col_name            	data_type           	comment             
 key                 	int                 	                    
 value               	string              	                    
@@ -166,12 +166,12 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: desc formatted DEST1 key
+PREHOOK: query: desc formatted DEST1_n52 key
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@dest1
-POSTHOOK: query: desc formatted DEST1 key
+PREHOOK: Input: default@dest1_n52
+POSTHOOK: query: desc formatted DEST1_n52 key
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n52
 col_name            	key                 	 	 	 	 	 	 	 	 	 	 
 data_type           	int                 	 	 	 	 	 	 	 	 	 	 
 min                 	10                  	 	 	 	 	 	 	 	 	 	 
@@ -185,12 +185,12 @@ num_falses
 bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
-PREHOOK: query: desc formatted DEST1 value
+PREHOOK: query: desc formatted DEST1_n52 value
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@dest1
-POSTHOOK: query: desc formatted DEST1 value
+PREHOOK: Input: default@dest1_n52
+POSTHOOK: query: desc formatted DEST1_n52 value
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n52
 col_name            	value               	 	 	 	 	 	 	 	 	 	 
 data_type           	string              	 	 	 	 	 	 	 	 	 	 
 min                 	                    	 	 	 	 	 	 	 	 	 	 

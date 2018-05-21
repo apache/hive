@@ -1,23 +1,23 @@
-PREHOOK: query: create table interval_arithmetic_1 (dateval date, tsval timestamp)
+PREHOOK: query: create table interval_arithmetic_1_n0 (dateval date, tsval timestamp)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@interval_arithmetic_1
-POSTHOOK: query: create table interval_arithmetic_1 (dateval date, tsval timestamp)
+PREHOOK: Output: default@interval_arithmetic_1_n0
+POSTHOOK: query: create table interval_arithmetic_1_n0 (dateval date, tsval timestamp)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@interval_arithmetic_1
-PREHOOK: query: insert overwrite table interval_arithmetic_1
+POSTHOOK: Output: default@interval_arithmetic_1_n0
+PREHOOK: query: insert overwrite table interval_arithmetic_1_n0
   select cast(ctimestamp1 as date), ctimestamp1 from alltypesorc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
-PREHOOK: Output: default@interval_arithmetic_1
-POSTHOOK: query: insert overwrite table interval_arithmetic_1
+PREHOOK: Output: default@interval_arithmetic_1_n0
+POSTHOOK: query: insert overwrite table interval_arithmetic_1_n0
   select cast(ctimestamp1 as date), ctimestamp1 from alltypesorc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
-POSTHOOK: Output: default@interval_arithmetic_1
-POSTHOOK: Lineage: interval_arithmetic_1.dateval EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: interval_arithmetic_1.tsval SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Output: default@interval_arithmetic_1_n0
+POSTHOOK: Lineage: interval_arithmetic_1_n0.dateval EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: interval_arithmetic_1_n0.tsval SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
 PREHOOK: query: explain
 select
   dateval,
@@ -27,7 +27,7 @@ select
   dateval + interval '-2-2' year to month,
   - interval '2-2' year to month + dateval,
   interval '2-2' year to month + dateval
-from interval_arithmetic_1
+from interval_arithmetic_1_n0
 limit 2
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
@@ -39,7 +39,7 @@ select
   dateval + interval '-2-2' year to month,
   - interval '2-2' year to month + dateval,
   interval '2-2' year to month + dateval
-from interval_arithmetic_1
+from interval_arithmetic_1_n0
 limit 2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -51,7 +51,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: interval_arithmetic_1
+            alias: interval_arithmetic_1_n0
             Statistics: Num rows: 12288 Data size: 326837 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: dateval (type: date), (dateval - INTERVAL'2-2') (type: date), (dateval - INTERVAL'-2-2') (type: date), (dateval + INTERVAL'2-2') (type: date), (dateval + INTERVAL'-2-2') (type: date), (INTERVAL'-2-2' + dateval) (type: date), (INTERVAL'2-2' + dateval) (type: date)
@@ -83,10 +83,10 @@ PREHOOK: query: select
   dateval + interval '-2-2' year to month,
   - interval '2-2' year to month + dateval,
   interval '2-2' year to month + dateval
-from interval_arithmetic_1
+from interval_arithmetic_1_n0
 limit 2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@interval_arithmetic_1
+PREHOOK: Input: default@interval_arithmetic_1_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select
   dateval,
@@ -96,10 +96,10 @@ POSTHOOK: query: select
   dateval + interval '-2-2' year to month,
   - interval '2-2' year to month + dateval,
   interval '2-2' year to month + dateval
-from interval_arithmetic_1
+from interval_arithmetic_1_n0
 limit 2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@interval_arithmetic_1
+POSTHOOK: Input: default@interval_arithmetic_1_n0
 #### A masked pattern was here ####
 1969-12-31	1967-10-31	1972-02-29	1972-02-29	1967-10-31	1967-10-31	1972-02-29
 NULL	NULL	NULL	NULL	NULL	NULL	NULL
@@ -109,7 +109,7 @@ select
   dateval - date '1999-06-07',
   date '1999-06-07' - dateval,
   dateval - dateval
-from interval_arithmetic_1
+from interval_arithmetic_1_n0
 limit 2
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
@@ -118,7 +118,7 @@ select
   dateval - date '1999-06-07',
   date '1999-06-07' - dateval,
   dateval - dateval
-from interval_arithmetic_1
+from interval_arithmetic_1_n0
 limit 2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -130,7 +130,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: interval_arithmetic_1
+            alias: interval_arithmetic_1_n0
             Statistics: Num rows: 12288 Data size: 326837 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: dateval (type: date), (dateval - DATE'1999-06-07') (type: interval_day_time), (DATE'1999-06-07' - dateval) (type: interval_day_time), (dateval - dateval) (type: interval_day_time)
@@ -159,20 +159,20 @@ PREHOOK: query: select
   dateval - date '1999-06-07',
   date '1999-06-07' - dateval,
   dateval - dateval
-from interval_arithmetic_1
+from interval_arithmetic_1_n0
 limit 2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@interval_arithmetic_1
+PREHOOK: Input: default@interval_arithmetic_1_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select
   dateval,
   dateval - date '1999-06-07',
   date '1999-06-07' - dateval,
   dateval - dateval
-from interval_arithmetic_1
+from interval_arithmetic_1_n0
 limit 2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@interval_arithmetic_1
+POSTHOOK: Input: default@interval_arithmetic_1_n0
 #### A masked pattern was here ####
 1969-12-31	-10749 23:00:00.000000000	10749 23:00:00.000000000	0 00:00:00.000000000
 NULL	NULL	NULL	NULL
@@ -185,7 +185,7 @@ select
   tsval + interval '-2-2' year to month,
   - interval '2-2' year to month + tsval,
   interval '2-2' year to month + tsval
-from interval_arithmetic_1
+from interval_arithmetic_1_n0
 limit 2
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
@@ -197,7 +197,7 @@ select
   tsval + interval '-2-2' year to month,
   - interval '2-2' year to month + tsval,
   interval '2-2' year to month + tsval
-from interval_arithmetic_1
+from interval_arithmetic_1_n0
 limit 2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -209,7 +209,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: interval_arithmetic_1
+            alias: interval_arithmetic_1_n0
             Statistics: Num rows: 12288 Data size: 326837 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: tsval (type: timestamp), (tsval - INTERVAL'2-2') (type: timestamp), (tsval - INTERVAL'-2-2') (type: timestamp), (tsval + INTERVAL'2-2') (type: timestamp), (tsval + INTERVAL'-2-2') (type: timestamp), (INTERVAL'-2-2' + tsval) (type: timestamp), (INTERVAL'2-2' + tsval) (type: timestamp)
@@ -241,10 +241,10 @@ PREHOOK: query: select
   tsval + interval '-2-2' year to month,
   - interval '2-2' year to month + tsval,
   interval '2-2' year to month + tsval
-from interval_arithmetic_1
+from interval_arithmetic_1_n0
 limit 2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@interval_arithmetic_1
+PREHOOK: Input: default@interval_arithmetic_1_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select
   tsval,
@@ -254,10 +254,10 @@ POSTHOOK: query: select
   tsval + interval '-2-2' year to month,
   - interval '2-2' year to month + tsval,
   interval '2-2' year to month + tsval
-from interval_arithmetic_1
+from interval_arithmetic_1_n0
 limit 2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@interval_arithmetic_1
+POSTHOOK: Input: default@interval_arithmetic_1_n0
 #### A masked pattern was here ####
 1969-12-31 15:59:46.674	1967-10-31 15:59:46.674	1972-02-29 15:59:46.674	1972-02-29 15:59:46.674	1967-10-31 15:59:46.674	1967-10-31 15:59:46.674	1972-02-29 15:59:46.674
 NULL	NULL	NULL	NULL	NULL	NULL	NULL
@@ -265,14 +265,14 @@ PREHOOK: query: explain
 select
   interval '2-2' year to month + interval '3-3' year to month,
   interval '2-2' year to month - interval '3-3' year to month
-from interval_arithmetic_1
+from interval_arithmetic_1_n0
 limit 2
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select
   interval '2-2' year to month + interval '3-3' year to month,
   interval '2-2' year to month - interval '3-3' year to month
-from interval_arithmetic_1
+from interval_arithmetic_1_n0
 limit 2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -284,7 +284,7 @@ STAGE PLANS:
       limit: 2
       Processor Tree:
         TableScan
-          alias: interval_arithmetic_1
+          alias: interval_arithmetic_1_n0
           Statistics: Num rows: 12288 Data size: 326837 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: INTERVAL'5-5' (type: interval_year_month), INTERVAL'-1-1' (type: interval_year_month)
@@ -298,18 +298,18 @@ STAGE PLANS:
 PREHOOK: query: select
   interval '2-2' year to month + interval '3-3' year to month,
   interval '2-2' year to month - interval '3-3' year to month
-from interval_arithmetic_1
+from interval_arithmetic_1_n0
 limit 2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@interval_arithmetic_1
+PREHOOK: Input: default@interval_arithmetic_1_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select
   interval '2-2' year to month + interval '3-3' year to month,
   interval '2-2' year to month - interval '3-3' year to month
-from interval_arithmetic_1
+from interval_arithmetic_1_n0
 limit 2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@interval_arithmetic_1
+POSTHOOK: Input: default@interval_arithmetic_1_n0
 #### A masked pattern was here ####
 5-5	-1-1
 5-5	-1-1
@@ -322,7 +322,7 @@ select
   dateval + interval '-99 11:22:33.123456789' day to second,
   -interval '99 11:22:33.123456789' day to second + dateval,
   interval '99 11:22:33.123456789' day to second + dateval
-from interval_arithmetic_1
+from interval_arithmetic_1_n0
 limit 2
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
@@ -334,7 +334,7 @@ select
   dateval + interval '-99 11:22:33.123456789' day to second,
   -interval '99 11:22:33.123456789' day to second + dateval,
   interval '99 11:22:33.123456789' day to second + dateval
-from interval_arithmetic_1
+from interval_arithmetic_1_n0
 limit 2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -346,7 +346,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: interval_arithmetic_1
+            alias: interval_arithmetic_1_n0
             Statistics: Num rows: 12288 Data size: 326837 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: dateval (type: date), (dateval - INTERVAL'99 11:22:33.123456789') (type: timestamp), (dateval - INTERVAL'-99 11:22:33.123456789') (type: timestamp), (dateval + INTERVAL'99 11:22:33.123456789') (type: timestamp), (dateval + INTERVAL'-99 11:22:33.123456789') (type: timestamp), (INTERVAL'-99 11:22:33.123456789' + dateval) (type: timestamp), (INTERVAL'99 11:22:33.123456789' + dateval) (type: timestamp)
@@ -378,10 +378,10 @@ PREHOOK: query: select
   dateval + interval '-99 11:22:33.123456789' day to second,
   -interval '99 11:22:33.123456789' day to second + dateval,
   interval '99 11:22:33.123456789' day to second + dateval
-from interval_arithmetic_1
+from interval_arithmetic_1_n0
 limit 2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@interval_arithmetic_1
+PREHOOK: Input: default@interval_arithmetic_1_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select
   dateval,
@@ -391,10 +391,10 @@ POSTHOOK: query: select
   dateval + interval '-99 11:22:33.123456789' day to second,
   -interval '99 11:22:33.123456789' day to second + dateval,
   interval '99 11:22:33.123456789' day to second + dateval
-from interval_arithmetic_1
+from interval_arithmetic_1_n0
 limit 2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@interval_arithmetic_1
+POSTHOOK: Input: default@interval_arithmetic_1_n0
 #### A masked pattern was here ####
 1969-12-31	1969-09-22 13:37:26.876543211	1970-04-09 11:22:33.123456789	1970-04-09 11:22:33.123456789	1969-09-22 13:37:26.876543211	1969-09-22 13:37:26.876543211	1970-04-09 11:22:33.123456789
 NULL	NULL	NULL	NULL	NULL	NULL	NULL
@@ -405,7 +405,7 @@ select
   dateval - tsval,
   tsval - dateval,
   tsval - tsval
-from interval_arithmetic_1
+from interval_arithmetic_1_n0
 limit 2
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
@@ -415,7 +415,7 @@ select
   dateval - tsval,
   tsval - dateval,
   tsval - tsval
-from interval_arithmetic_1
+from interval_arithmetic_1_n0
 limit 2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -427,7 +427,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: interval_arithmetic_1
+            alias: interval_arithmetic_1_n0
             Statistics: Num rows: 12288 Data size: 326837 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: dateval (type: date), tsval (type: timestamp), (dateval - tsval) (type: interval_day_time), (tsval - dateval) (type: interval_day_time), (tsval - tsval) (type: interval_day_time)
@@ -457,10 +457,10 @@ PREHOOK: query: select
   dateval - tsval,
   tsval - dateval,
   tsval - tsval
-from interval_arithmetic_1
+from interval_arithmetic_1_n0
 limit 2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@interval_arithmetic_1
+PREHOOK: Input: default@interval_arithmetic_1_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select
   dateval,
@@ -468,10 +468,10 @@ POSTHOOK: query: select
   dateval - tsval,
   tsval - dateval,
   tsval - tsval
-from interval_arithmetic_1
+from interval_arithmetic_1_n0
 limit 2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@interval_arithmetic_1
+POSTHOOK: Input: default@interval_arithmetic_1_n0
 #### A masked pattern was here ####
 1969-12-31	1969-12-31 15:59:46.674	-0 15:59:47.674000000	0 15:59:47.674000000	0 00:00:00.000000000
 NULL	NULL	NULL	NULL	NULL
@@ -484,7 +484,7 @@ select
   tsval + interval '-99 11:22:33.123456789' day to second,
   -interval '99 11:22:33.123456789' day to second + tsval,
   interval '99 11:22:33.123456789' day to second + tsval
-from interval_arithmetic_1
+from interval_arithmetic_1_n0
 limit 2
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
@@ -496,7 +496,7 @@ select
   tsval + interval '-99 11:22:33.123456789' day to second,
   -interval '99 11:22:33.123456789' day to second + tsval,
   interval '99 11:22:33.123456789' day to second + tsval
-from interval_arithmetic_1
+from interval_arithmetic_1_n0
 limit 2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -508,7 +508,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: interval_arithmetic_1
+            alias: interval_arithmetic_1_n0
             Statistics: Num rows: 12288 Data size: 326837 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: tsval (type: timestamp), (tsval - INTERVAL'99 11:22:33.123456789') (type: timestamp), (tsval - INTERVAL'-99 11:22:33.123456789') (type: timestamp), (tsval + INTERVAL'99 11:22:33.123456789') (type: timestamp), (tsval + INTERVAL'-99 11:22:33.123456789') (type: timestamp), (INTERVAL'-99 11:22:33.123456789' + tsval) (type: timestamp), (INTERVAL'99 11:22:33.123456789' + tsval) (type: timestamp)
@@ -540,10 +540,10 @@ PREHOOK: query: select
   tsval + interval '-99 11:22:33.123456789' day to second,
   -interval '99 11:22:33.123456789' day to second + tsval,
   interval '99 11:22:33.123456789' day to second + tsval
-from interval_arithmetic_1
+from interval_arithmetic_1_n0
 limit 2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@interval_arithmetic_1
+PREHOOK: Input: default@interval_arithmetic_1_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select
   tsval,
@@ -553,10 +553,10 @@ POSTHOOK: query: select
   tsval + interval '-99 11:22:33.123456789' day to second,
   -interval '99 11:22:33.123456789' day to second + tsval,
   interval '99 11:22:33.123456789' day to second + tsval
-from interval_arithmetic_1
+from interval_arithmetic_1_n0
 limit 2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@interval_arithmetic_1
+POSTHOOK: Input: default@interval_arithmetic_1_n0
 #### A masked pattern was here ####
 1969-12-31 15:59:46.674	1969-09-23 05:37:13.550543211	1970-04-10 03:22:19.797456789	1970-04-10 03:22:19.797456789	1969-09-23 05:37:13.550543211	1969-09-23 05:37:13.550543211	1970-04-10 03:22:19.797456789
 NULL	NULL	NULL	NULL	NULL	NULL	NULL
@@ -564,14 +564,14 @@ PREHOOK: query: explain
 select
   interval '99 11:22:33.123456789' day to second + interval '10 9:8:7.123456789' day to second,
   interval '99 11:22:33.123456789' day to second - interval '10 9:8:7.123456789' day to second
-from interval_arithmetic_1
+from interval_arithmetic_1_n0
 limit 2
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select
   interval '99 11:22:33.123456789' day to second + interval '10 9:8:7.123456789' day to second,
   interval '99 11:22:33.123456789' day to second - interval '10 9:8:7.123456789' day to second
-from interval_arithmetic_1
+from interval_arithmetic_1_n0
 limit 2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -583,7 +583,7 @@ STAGE PLANS:
       limit: 2
       Processor Tree:
         TableScan
-          alias: interval_arithmetic_1
+          alias: interval_arithmetic_1_n0
           Statistics: Num rows: 12288 Data size: 326837 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: INTERVAL'109 20:30:40.246913578' (type: interval_day_time), INTERVAL'89 02:14:26.000000000' (type: interval_day_time)
@@ -597,26 +597,26 @@ STAGE PLANS:
 PREHOOK: query: select
   interval '99 11:22:33.123456789' day to second + interval '10 9:8:7.123456789' day to second,
   interval '99 11:22:33.123456789' day to second - interval '10 9:8:7.123456789' day to second
-from interval_arithmetic_1
+from interval_arithmetic_1_n0
 limit 2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@interval_arithmetic_1
+PREHOOK: Input: default@interval_arithmetic_1_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select
   interval '99 11:22:33.123456789' day to second + interval '10 9:8:7.123456789' day to second,
   interval '99 11:22:33.123456789' day to second - interval '10 9:8:7.123456789' day to second
-from interval_arithmetic_1
+from interval_arithmetic_1_n0
 limit 2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@interval_arithmetic_1
+POSTHOOK: Input: default@interval_arithmetic_1_n0
 #### A masked pattern was here ####
 109 20:30:40.246913578	89 02:14:26.000000000
 109 20:30:40.246913578	89 02:14:26.000000000
 PREHOOK: query: explain
-select date '2016-11-08' + interval '1 2:02:00' day to second + interval '2' day + interval '1' hour + interval '1' minute + interval '60' second from interval_arithmetic_1 limit 1
+select date '2016-11-08' + interval '1 2:02:00' day to second + interval '2' day + interval '1' hour + interval '1' minute + interval '60' second from interval_arithmetic_1_n0 limit 1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select date '2016-11-08' + interval '1 2:02:00' day to second + interval '2' day + interval '1' hour + interval '1' minute + interval '60' second from interval_arithmetic_1 limit 1
+select date '2016-11-08' + interval '1 2:02:00' day to second + interval '2' day + interval '1' hour + interval '1' minute + interval '60' second from interval_arithmetic_1_n0 limit 1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -627,7 +627,7 @@ STAGE PLANS:
       limit: 1
       Processor Tree:
         TableScan
-          alias: interval_arithmetic_1
+          alias: interval_arithmetic_1_n0
           Statistics: Num rows: 12288 Data size: 326837 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: TIMESTAMP'2016-11-11 03:04:00.0' (type: timestamp)
@@ -638,20 +638,20 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
               ListSink
 
-PREHOOK: query: select date '2016-11-08' + interval '1 2:02:00' day to second + interval '2' day + interval '1' hour + interval '1' minute + interval '60' second from interval_arithmetic_1 limit 1
+PREHOOK: query: select date '2016-11-08' + interval '1 2:02:00' day to second + interval '2' day + interval '1' hour + interval '1' minute + interval '60' second from interval_arithmetic_1_n0 limit 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@interval_arithmetic_1
+PREHOOK: Input: default@interval_arithmetic_1_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select date '2016-11-08' + interval '1 2:02:00' day to second + interval '2' day + interval '1' hour + interval '1' minute + interval '60' second from interval_arithmetic_1 limit 1
+POSTHOOK: query: select date '2016-11-08' + interval '1 2:02:00' day to second + interval '2' day + interval '1' hour + interval '1' minute + interval '60' second from interval_arithmetic_1_n0 limit 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@interval_arithmetic_1
+POSTHOOK: Input: default@interval_arithmetic_1_n0
 #### A masked pattern was here ####
 2016-11-11 03:04:00
-PREHOOK: query: drop table interval_arithmetic_1
+PREHOOK: query: drop table interval_arithmetic_1_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@interval_arithmetic_1
-PREHOOK: Output: default@interval_arithmetic_1
-POSTHOOK: query: drop table interval_arithmetic_1
+PREHOOK: Input: default@interval_arithmetic_1_n0
+PREHOOK: Output: default@interval_arithmetic_1_n0
+POSTHOOK: query: drop table interval_arithmetic_1_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@interval_arithmetic_1
-POSTHOOK: Output: default@interval_arithmetic_1
+POSTHOOK: Input: default@interval_arithmetic_1_n0
+POSTHOOK: Output: default@interval_arithmetic_1_n0

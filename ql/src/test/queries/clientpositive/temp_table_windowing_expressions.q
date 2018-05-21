@@ -41,11 +41,11 @@ select p_mfgr, avg(p_retailprice) over(partition by p_mfgr, p_type order by p_mf
 select p_mfgr, avg(p_retailprice) over(partition by p_mfgr order by p_type,p_mfgr rows between unbounded preceding and current row) from part;
 
 -- multi table insert test
-create table t1 (a1 int, b1 string); 
-create table t2 (a1 int, b1 string);
-from (select sum(i) over (partition by ts order by i), s from over10k) tt insert overwrite table t1 select * insert overwrite table t2 select * ;
-select * from t1 limit 3;
-select * from t2 limit 3;
+create table t1_n144 (a1 int, b1 string); 
+create table t2_n84 (a1 int, b1 string);
+from (select sum(i) over (partition by ts order by i), s from over10k) tt insert overwrite table t1_n144 select * insert overwrite table t2_n84 select * ;
+select * from t1_n144 limit 3;
+select * from t2_n84 limit 3;
 
 select p_mfgr, p_retailprice, p_size,
 round(sum(p_retailprice) over w1 , 2) + 50.0 = round(sum(lag(p_retailprice,1,50.0)) over w1 + (last_value(p_retailprice) over w1),2)

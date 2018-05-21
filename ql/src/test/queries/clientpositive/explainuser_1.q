@@ -13,26 +13,26 @@ set hive.strict.checks.bucketing=false;
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=true;
 
-explain create table src_orc_merge_test_part(key int, value string) partitioned by (ds string, ts string) stored as orc;
-create table src_orc_merge_test_part(key int, value string) partitioned by (ds string, ts string) stored as orc;
+explain create table src_orc_merge_test_part_n1(key int, value string) partitioned by (ds string, ts string) stored as orc;
+create table src_orc_merge_test_part_n1(key int, value string) partitioned by (ds string, ts string) stored as orc;
 
-alter table src_orc_merge_test_part add partition (ds='2012-01-03', ts='2012-01-03+14:46:31');
-desc extended src_orc_merge_test_part partition (ds='2012-01-03', ts='2012-01-03+14:46:31');
+alter table src_orc_merge_test_part_n1 add partition (ds='2012-01-03', ts='2012-01-03+14:46:31');
+desc extended src_orc_merge_test_part_n1 partition (ds='2012-01-03', ts='2012-01-03+14:46:31');
 
-explain insert overwrite table src_orc_merge_test_part partition(ds='2012-01-03', ts='2012-01-03+14:46:31') select * from src;
-insert overwrite table src_orc_merge_test_part partition(ds='2012-01-03', ts='2012-01-03+14:46:31') select * from src;
-explain insert into table src_orc_merge_test_part partition(ds='2012-01-03', ts='2012-01-03+14:46:31') select * from src limit 100;
+explain insert overwrite table src_orc_merge_test_part_n1 partition(ds='2012-01-03', ts='2012-01-03+14:46:31') select * from src;
+insert overwrite table src_orc_merge_test_part_n1 partition(ds='2012-01-03', ts='2012-01-03+14:46:31') select * from src;
+explain insert into table src_orc_merge_test_part_n1 partition(ds='2012-01-03', ts='2012-01-03+14:46:31') select * from src limit 100;
 
-explain select count(1) from src_orc_merge_test_part where ds='2012-01-03' and ts='2012-01-03+14:46:31';
-explain select sum(hash(key)), sum(hash(value)) from src_orc_merge_test_part where ds='2012-01-03' and ts='2012-01-03+14:46:31';
+explain select count(1) from src_orc_merge_test_part_n1 where ds='2012-01-03' and ts='2012-01-03+14:46:31';
+explain select sum(hash(key)), sum(hash(value)) from src_orc_merge_test_part_n1 where ds='2012-01-03' and ts='2012-01-03+14:46:31';
 
-alter table src_orc_merge_test_part partition (ds='2012-01-03', ts='2012-01-03+14:46:31') concatenate;
+alter table src_orc_merge_test_part_n1 partition (ds='2012-01-03', ts='2012-01-03+14:46:31') concatenate;
 
 
-explain select count(1) from src_orc_merge_test_part where ds='2012-01-03' and ts='2012-01-03+14:46:31';
-explain select sum(hash(key)), sum(hash(value)) from src_orc_merge_test_part where ds='2012-01-03' and ts='2012-01-03+14:46:31';
+explain select count(1) from src_orc_merge_test_part_n1 where ds='2012-01-03' and ts='2012-01-03+14:46:31';
+explain select sum(hash(key)), sum(hash(value)) from src_orc_merge_test_part_n1 where ds='2012-01-03' and ts='2012-01-03+14:46:31';
 
-drop table src_orc_merge_test_part;
+drop table src_orc_merge_test_part_n1;
 
 set hive.auto.convert.join=true;
 
@@ -128,7 +128,7 @@ having not exists
   )
 ;
 
-create view cv1 as 
+create view cv1_n5 as 
 select * 
 from src_cbo b 
 where exists
@@ -137,7 +137,7 @@ where exists
   where b.value = a.value  and a.key = b.key and a.value > 'val_9')
 ;
 
-explain select * from cv1;
+explain select * from cv1_n5;
 
 explain select * 
 from (select * 
@@ -250,59 +250,59 @@ FROM (select x.key AS key, count(1) AS cnt
       FROM src1 x LEFT SEMI JOIN src y ON (x.key = y.key)
       GROUP BY x.key) tmp;
 
-explain create table abcd (a int, b int, c int, d int);
-create table abcd (a int, b int, c int, d int);
-LOAD DATA LOCAL INPATH '../../data/files/in4.txt' INTO TABLE abcd;
+explain create table abcd_n1 (a int, b int, c int, d int);
+create table abcd_n1 (a int, b int, c int, d int);
+LOAD DATA LOCAL INPATH '../../data/files/in4.txt' INTO TABLE abcd_n1;
 
 set hive.map.aggr=true;
-explain select a, count(distinct b), count(distinct c), sum(d) from abcd group by a;
+explain select a, count(distinct b), count(distinct c), sum(d) from abcd_n1 group by a;
 
 set hive.map.aggr=false;
-explain select a, count(distinct b), count(distinct c), sum(d) from abcd group by a;
+explain select a, count(distinct b), count(distinct c), sum(d) from abcd_n1 group by a;
 
-explain create table src_rc_merge_test(key int, value string) stored as rcfile;
-create table src_rc_merge_test(key int, value string) stored as rcfile;
+explain create table src_rc_merge_test_n0(key int, value string) stored as rcfile;
+create table src_rc_merge_test_n0(key int, value string) stored as rcfile;
 
-load data local inpath '../../data/files/smbbucket_1.rc' into table src_rc_merge_test;
+load data local inpath '../../data/files/smbbucket_1.rc' into table src_rc_merge_test_n0;
 
 set hive.exec.compress.output = true;
 
-explain create table tgt_rc_merge_test(key int, value string) stored as rcfile;
-create table tgt_rc_merge_test(key int, value string) stored as rcfile;
-insert into table tgt_rc_merge_test select * from src_rc_merge_test;
+explain create table tgt_rc_merge_test_n0(key int, value string) stored as rcfile;
+create table tgt_rc_merge_test_n0(key int, value string) stored as rcfile;
+insert into table tgt_rc_merge_test_n0 select * from src_rc_merge_test_n0;
 
-show table extended like `tgt_rc_merge_test`;
+show table extended like `tgt_rc_merge_test_n0`;
 
-explain select count(1) from tgt_rc_merge_test;
-explain select sum(hash(key)), sum(hash(value)) from tgt_rc_merge_test;
+explain select count(1) from tgt_rc_merge_test_n0;
+explain select sum(hash(key)), sum(hash(value)) from tgt_rc_merge_test_n0;
 
-alter table tgt_rc_merge_test concatenate;
+alter table tgt_rc_merge_test_n0 concatenate;
 
-show table extended like `tgt_rc_merge_test`;
+show table extended like `tgt_rc_merge_test_n0`;
 
-explain select count(1) from tgt_rc_merge_test;
-explain select sum(hash(key)), sum(hash(value)) from tgt_rc_merge_test;
+explain select count(1) from tgt_rc_merge_test_n0;
+explain select sum(hash(key)), sum(hash(value)) from tgt_rc_merge_test_n0;
 
-drop table src_rc_merge_test;
-drop table tgt_rc_merge_test;
+drop table src_rc_merge_test_n0;
+drop table tgt_rc_merge_test_n0;
 
 explain select src.key from src cross join src src2;
 
 
-explain create table nzhang_Tmp(a int, b string);
-create table nzhang_Tmp(a int, b string);
+explain create table nzhang_Tmp_n1(a int, b string);
+create table nzhang_Tmp_n1(a int, b string);
 
-explain create table nzhang_CTAS1 as select key k, value from src sort by k, value limit 10;
-create table nzhang_CTAS1 as select key k, value from src sort by k, value limit 10;
+explain create table nzhang_CTAS1_n1 as select key k, value from src sort by k, value limit 10;
+create table nzhang_CTAS1_n1 as select key k, value from src sort by k, value limit 10;
 
 
-explain create table nzhang_ctas3 row format serde "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe" stored as RCFile as select key/2 half_key, concat(value, "_con") conb  from src sort by half_key, conb limit 10;
+explain create table nzhang_ctas3_n1 row format serde "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe" stored as RCFile as select key/2 half_key, concat(value, "_con") conb  from src sort by half_key, conb limit 10;
 
-create table nzhang_ctas3 row format serde "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe" stored as RCFile as select key/2 half_key, concat(value, "_con") conb  from src sort by half_key, conb limit 10;
+create table nzhang_ctas3_n1 row format serde "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe" stored as RCFile as select key/2 half_key, concat(value, "_con") conb  from src sort by half_key, conb limit 10;
 
-explain create table if not exists nzhang_ctas3 as select key, value from src sort by key, value limit 2;
+explain create table if not exists nzhang_ctas3_n1 as select key, value from src sort by key, value limit 2;
 
-create table if not exists nzhang_ctas3 as select key, value from src sort by key, value limit 2;
+create table if not exists nzhang_ctas3_n1 as select key, value from src sort by key, value limit 2;
 
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
@@ -324,70 +324,70 @@ select src1.key as k1, src1.value as v1,
   SORT BY k1, v1, k2, v2;
 
 
-CREATE TABLE myinput1(key int, value int);
-LOAD DATA LOCAL INPATH '../../data/files/in8.txt' INTO TABLE myinput1;
+CREATE TABLE myinput1_n7(key int, value int);
+LOAD DATA LOCAL INPATH '../../data/files/in8.txt' INTO TABLE myinput1_n7;
 
-explain select * from myinput1 a join myinput1 b on a.key<=>b.value;
+explain select * from myinput1_n7 a join myinput1_n7 b on a.key<=>b.value;
 
-explain select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key=c.key;
+explain select * from myinput1_n7 a join myinput1_n7 b on a.key<=>b.value join myinput1_n7 c on a.key=c.key;
 
-explain select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key<=>c.key;
+explain select * from myinput1_n7 a join myinput1_n7 b on a.key<=>b.value join myinput1_n7 c on a.key<=>c.key;
 
-explain select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value=b.key join myinput1 c on a.key<=>c.key AND a.value=c.value;
+explain select * from myinput1_n7 a join myinput1_n7 b on a.key<=>b.value AND a.value=b.key join myinput1_n7 c on a.key<=>c.key AND a.value=c.value;
 
-explain select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value<=>b.key join myinput1 c on a.key<=>c.key AND a.value<=>c.value;
+explain select * from myinput1_n7 a join myinput1_n7 b on a.key<=>b.value AND a.value<=>b.key join myinput1_n7 c on a.key<=>c.key AND a.value<=>c.value;
 
-explain select * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key<=>b.value;
-explain select * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key<=>b.value;
-explain select * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key<=>b.value;
+explain select * FROM myinput1_n7 a LEFT OUTER JOIN myinput1_n7 b ON a.key<=>b.value;
+explain select * FROM myinput1_n7 a RIGHT OUTER JOIN myinput1_n7 b ON a.key<=>b.value;
+explain select * FROM myinput1_n7 a FULL OUTER JOIN myinput1_n7 b ON a.key<=>b.value;
 
-explain select /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.key<=>b.value;
+explain select /*+ MAPJOIN(b) */ * FROM myinput1_n7 a JOIN myinput1_n7 b ON a.key<=>b.value;
 
-CREATE TABLE smb_input(key int, value int);
-LOAD DATA LOCAL INPATH '../../data/files/in4.txt' into table smb_input;
-LOAD DATA LOCAL INPATH '../../data/files/in5.txt' into table smb_input;
+CREATE TABLE smb_input_n0(key int, value int);
+LOAD DATA LOCAL INPATH '../../data/files/in4.txt' into table smb_input_n0;
+LOAD DATA LOCAL INPATH '../../data/files/in5.txt' into table smb_input_n0;
 
 
 ;
 
-CREATE TABLE smb_input1(key int, value int) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS;
-CREATE TABLE smb_input2(key int, value int) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS;
+CREATE TABLE smb_input1_n2(key int, value int) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS;
+CREATE TABLE smb_input2_n2(key int, value int) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS;
 
-from smb_input
-insert overwrite table smb_input1 select *
-insert overwrite table smb_input2 select *;
+from smb_input_n0
+insert overwrite table smb_input1_n2 select *
+insert overwrite table smb_input2_n2 select *;
 
 SET hive.optimize.bucketmapjoin = true;
 SET hive.optimize.bucketmapjoin.sortedmerge = true;
 SET hive.input.format = org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
 
-analyze table smb_input1 compute statistics;
+analyze table smb_input1_n2 compute statistics;
 
-explain select /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key <=> b.key;
-explain select /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key <=> b.key AND a.value <=> b.value;
-explain select /*+ MAPJOIN(a) */ * FROM smb_input1 a RIGHT OUTER JOIN smb_input1 b ON a.key <=> b.key;
-explain select /*+ MAPJOIN(b) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key <=> b.key;
-explain select /*+ MAPJOIN(b) */ * FROM smb_input1 a LEFT OUTER JOIN smb_input1 b ON a.key <=> b.key;
+explain select /*+ MAPJOIN(a) */ * FROM smb_input1_n2 a JOIN smb_input1_n2 b ON a.key <=> b.key;
+explain select /*+ MAPJOIN(a) */ * FROM smb_input1_n2 a JOIN smb_input1_n2 b ON a.key <=> b.key AND a.value <=> b.value;
+explain select /*+ MAPJOIN(a) */ * FROM smb_input1_n2 a RIGHT OUTER JOIN smb_input1_n2 b ON a.key <=> b.key;
+explain select /*+ MAPJOIN(b) */ * FROM smb_input1_n2 a JOIN smb_input1_n2 b ON a.key <=> b.key;
+explain select /*+ MAPJOIN(b) */ * FROM smb_input1_n2 a LEFT OUTER JOIN smb_input1_n2 b ON a.key <=> b.key;
 
-drop table sales;
-drop table things;
+drop table sales_n0;
+drop table things_n0;
 
 set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 
-CREATE TABLE sales (name STRING, id INT)
+CREATE TABLE sales_n0 (name STRING, id INT)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t';
 
-CREATE TABLE things (id INT, name STRING) partitioned by (ds string)
+CREATE TABLE things_n0 (id INT, name STRING) partitioned by (ds string)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t';
 
-load data local inpath '../../data/files/sales.txt' INTO TABLE sales;
-load data local inpath '../../data/files/things.txt' INTO TABLE things partition(ds='2011-10-23');
-load data local inpath '../../data/files/things2.txt' INTO TABLE things partition(ds='2011-10-24');
+load data local inpath '../../data/files/sales.txt' INTO TABLE sales_n0;
+load data local inpath '../../data/files/things.txt' INTO TABLE things_n0 partition(ds='2011-10-23');
+load data local inpath '../../data/files/things2.txt' INTO TABLE things_n0 partition(ds='2011-10-24');
 
-explain select name,id FROM sales LEFT SEMI JOIN things ON (sales.id = things.id);
+explain select name,id FROM sales_n0 LEFT SEMI JOIN things_n0 ON (sales_n0.id = things_n0.id);
 
-drop table sales;
-drop table things;
+drop table sales_n0;
+drop table things_n0;
 
 set hive.auto.convert.join=true;
 set hive.auto.convert.join.noconditionaltask=true;
@@ -525,13 +525,13 @@ order by p_name
 ;
 
   
-explain create view IF NOT EXISTS mfgr_price_view as 
+explain create view IF NOT EXISTS mfgr_price_view_n3 as 
 select p_mfgr, p_brand, 
 sum(p_retailprice) as s 
 from part 
 group by p_mfgr, p_brand;
 
-CREATE TABLE part_4( 
+CREATE TABLE part_4_n1( 
 p_mfgr STRING, 
 p_name STRING, 
 p_size INT, 
@@ -539,7 +539,7 @@ r INT,
 dr INT, 
 s DOUBLE);
 
-CREATE TABLE part_5( 
+CREATE TABLE part_5_n1( 
 p_mfgr STRING, 
 p_name STRING, 
 p_size INT, 
@@ -553,11 +553,11 @@ explain
 from noop(on part 
 partition by p_mfgr 
 order by p_name) 
-INSERT OVERWRITE TABLE part_4 select p_mfgr, p_name, p_size, 
+INSERT OVERWRITE TABLE part_4_n1 select p_mfgr, p_name, p_size, 
 rank() over (distribute by p_mfgr sort by p_name) as r, 
 dense_rank() over (distribute by p_mfgr sort by p_name) as dr, 
 sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row)  as s  
-INSERT OVERWRITE TABLE part_5 select  p_mfgr,p_name, p_size,  
+INSERT OVERWRITE TABLE part_5_n1 select  p_mfgr,p_name, p_size,  
 round(sum(p_size) over (distribute by p_mfgr sort by p_size range between 5 preceding and current row),1) as s2,
 rank() over (distribute by p_mfgr sort by p_mfgr, p_name) as r, 
 dense_rank() over (distribute by p_mfgr sort by p_mfgr, p_name) as dr, 
@@ -622,41 +622,41 @@ explain select explode(array('a', 'b'));
 set hive.optimize.skewjoin = true;
 set hive.skewjoin.key = 2;
 
-CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE;
-CREATE TABLE T2(key STRING, val STRING) STORED AS TEXTFILE;
-CREATE TABLE T3(key STRING, val STRING) STORED AS TEXTFILE;
-CREATE TABLE T4(key STRING, val STRING) STORED AS TEXTFILE;
-CREATE TABLE dest_j1(key INT, value STRING) STORED AS TEXTFILE;
+CREATE TABLE T1_n119(key STRING, val STRING) STORED AS TEXTFILE;
+CREATE TABLE T2_n70(key STRING, val STRING) STORED AS TEXTFILE;
+CREATE TABLE T3_n26(key STRING, val STRING) STORED AS TEXTFILE;
+CREATE TABLE T4_n15(key STRING, val STRING) STORED AS TEXTFILE;
+CREATE TABLE dest_j1_n16(key INT, value STRING) STORED AS TEXTFILE;
 
-LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1;
-LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2;
-LOAD DATA LOCAL INPATH '../../data/files/T3.txt' INTO TABLE T3;
-LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T4;
+LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_n119;
+LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2_n70;
+LOAD DATA LOCAL INPATH '../../data/files/T3.txt' INTO TABLE T3_n26;
+LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T4_n15;
 
 
 explain
 FROM src src1 JOIN src src2 ON (src1.key = src2.key)
-INSERT OVERWRITE TABLE dest_j1 select src1.key, src2.value;
+INSERT OVERWRITE TABLE dest_j1_n16 select src1.key, src2.value;
 
 FROM src src1 JOIN src src2 ON (src1.key = src2.key)
-INSERT OVERWRITE TABLE dest_j1 select src1.key, src2.value;
+INSERT OVERWRITE TABLE dest_j1_n16 select src1.key, src2.value;
 
 
 
 explain
 select /*+ STREAMTABLE(a) */ *
-FROM T1 a JOIN T2 b ON a.key = b.key
-          JOIN T3 c ON b.key = c.key
-          JOIN T4 d ON c.key = d.key;
+FROM T1_n119 a JOIN T2_n70 b ON a.key = b.key
+          JOIN T3_n26 c ON b.key = c.key
+          JOIN T4_n15 d ON c.key = d.key;
 
 explain
 select /*+ STREAMTABLE(a,c) */ *
-FROM T1 a JOIN T2 b ON a.key = b.key
-          JOIN T3 c ON b.key = c.key
-          JOIN T4 d ON c.key = d.key;
+FROM T1_n119 a JOIN T2_n70 b ON a.key = b.key
+          JOIN T3_n26 c ON b.key = c.key
+          JOIN T4_n15 d ON c.key = d.key;
 
-explain FROM T1 a JOIN src c ON c.key+1=a.key select /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key));
-FROM T1 a JOIN src c ON c.key+1=a.key select /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key));
+explain FROM T1_n119 a JOIN src c ON c.key+1=a.key select /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key));
+FROM T1_n119 a JOIN src c ON c.key+1=a.key select /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key));
 
 explain 
 select * FROM 
@@ -666,16 +666,16 @@ JOIN
 ON (x.key = Y.key);
 
 
-explain select /*+ mapjoin(k)*/ sum(hash(k.key)), sum(hash(v.val)) from T1 k join T1 v on k.key=v.val;
+explain select /*+ mapjoin(k)*/ sum(hash(k.key)), sum(hash(v.val)) from T1_n119 k join T1_n119 v on k.key=v.val;
 
-explain select sum(hash(k.key)), sum(hash(v.val)) from T1 k join T1 v on k.key=v.key;
+explain select sum(hash(k.key)), sum(hash(v.val)) from T1_n119 k join T1_n119 v on k.key=v.key;
 
-explain select count(1) from  T1 a join T1 b on a.key = b.key;
+explain select count(1) from  T1_n119 a join T1_n119 b on a.key = b.key;
 
-explain FROM T1 a LEFT OUTER JOIN T2 c ON c.key+1=a.key select sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key));
+explain FROM T1_n119 a LEFT OUTER JOIN T2_n70 c ON c.key+1=a.key select sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key));
 
-explain FROM T1 a RIGHT OUTER JOIN T2 c ON c.key+1=a.key select /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key));
+explain FROM T1_n119 a RIGHT OUTER JOIN T2_n70 c ON c.key+1=a.key select /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key));
 
-explain FROM T1 a FULL OUTER JOIN T2 c ON c.key+1=a.key select /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key));
+explain FROM T1_n119 a FULL OUTER JOIN T2_n70 c ON c.key+1=a.key select /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key));
 
-explain select /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) from T1 k left outer join T1 v on k.key+1=v.key;
+explain select /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) from T1_n119 k left outer join T1_n119 v on k.key+1=v.key;

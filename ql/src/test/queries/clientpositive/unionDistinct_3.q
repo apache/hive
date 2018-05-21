@@ -21,24 +21,24 @@ select count(1) FROM (select s1.key as key, s1.value as value from src s1 UNION 
 
 -- union case: 1 subquery is a map-reduce job, different inputs for sub-queries, followed by filesink
 
-drop table if exists tmptable;
+drop table if exists tmptable_n0;
 
-create table tmptable(key string, value string);
+create table tmptable_n0(key string, value string);
 
 explain 
-insert overwrite table tmptable
+insert overwrite table tmptable_n0
   select unionsrc.key, unionsrc.value FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
                                         UNION DISTINCT  
                                             select s2.key as key, s2.value as value from src1 s2) unionsrc;
 
-insert overwrite table tmptable
+insert overwrite table tmptable_n0
 select unionsrc.key, unionsrc.value FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
                                       UNION DISTINCT  
                                           select s2.key as key, s2.value as value from src1 s2) unionsrc;
 
-select * from tmptable x sort by x.key, x.value;
+select * from tmptable_n0 x sort by x.key, x.value;
 
-drop table if exists tmptable;
+drop table if exists tmptable_n0;
 
 
 -- union8.q

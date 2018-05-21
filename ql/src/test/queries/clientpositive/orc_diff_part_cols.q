@@ -6,7 +6,7 @@ set hive.mapred.mode=nonstrict;
 
 -- SORT_QUERY_RESULTS
 
-CREATE TABLE test_orc (key STRING)
+CREATE TABLE test_orc_n0 (key STRING)
 PARTITIONED BY (part STRING)
 ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.io.orc.OrcSerde' 
 STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat' 
@@ -18,10 +18,10 @@ set hive.input.format=org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 -- to another partition
 -- This can produce unexpected results with CombineHiveInputFormat
 
-INSERT OVERWRITE TABLE test_orc PARTITION (part = '1') SELECT key FROM src tablesample (5 rows);
+INSERT OVERWRITE TABLE test_orc_n0 PARTITION (part = '1') SELECT key FROM src tablesample (5 rows);
 
-ALTER TABLE test_orc ADD COLUMNS (cnt INT);
+ALTER TABLE test_orc_n0 ADD COLUMNS (cnt INT);
 
-INSERT OVERWRITE TABLE test_orc PARTITION (part = '2') SELECT key, count(*) FROM src GROUP BY key LIMIT 5;
+INSERT OVERWRITE TABLE test_orc_n0 PARTITION (part = '2') SELECT key, count(*) FROM src GROUP BY key LIMIT 5;
 
-SELECT * FROM test_orc;
+SELECT * FROM test_orc_n0;

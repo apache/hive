@@ -125,54 +125,54 @@ PREHOOK: Input: database:newdb
 POSTHOOK: query: use newDB
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:newdb
-PREHOOK: query: create table tab (name string)
+PREHOOK: query: create table tab_n2 (name string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:newdb
-PREHOOK: Output: newDB@tab
-POSTHOOK: query: create table tab (name string)
+PREHOOK: Output: newDB@tab_n2
+POSTHOOK: query: create table tab_n2 (name string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:newdb
-POSTHOOK: Output: newDB@tab
-PREHOOK: query: alter table tab rename to newName
+POSTHOOK: Output: newDB@tab_n2
+PREHOOK: query: alter table tab_n2 rename to newName
 PREHOOK: type: ALTERTABLE_RENAME
-PREHOOK: Input: newdb@tab
-PREHOOK: Output: newdb@tab
-POSTHOOK: query: alter table tab rename to newName
+PREHOOK: Input: newdb@tab_n2
+PREHOOK: Output: newdb@tab_n2
+POSTHOOK: query: alter table tab_n2 rename to newName
 POSTHOOK: type: ALTERTABLE_RENAME
-POSTHOOK: Input: newdb@tab
-POSTHOOK: Output: newdb@tab
-PREHOOK: query: explain analyze alter table tab rename to newName
+POSTHOOK: Input: newdb@tab_n2
+POSTHOOK: Output: newdb@tab_n2
+PREHOOK: query: explain analyze alter table tab_n2 rename to newName
 PREHOOK: type: ALTERTABLE_RENAME
-POSTHOOK: query: explain analyze alter table tab rename to newName
+POSTHOOK: query: explain analyze alter table tab_n2 rename to newName
 POSTHOOK: type: ALTERTABLE_RENAME
 Stage-0
   Alter Table Operator:
-    new name:newDB.newName,old name:newDB.tab,type:rename
+    new name:newDB.newName,old name:newDB.tab_n2,type:rename
 
-PREHOOK: query: drop table tab
+PREHOOK: query: drop table tab_n2
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: newdb@tab
-PREHOOK: Output: newdb@tab
-POSTHOOK: query: drop table tab
+PREHOOK: Input: newdb@tab_n2
+PREHOOK: Output: newdb@tab_n2
+POSTHOOK: query: drop table tab_n2
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: newdb@tab
-POSTHOOK: Output: newdb@tab
-PREHOOK: query: explain analyze drop table tab
+POSTHOOK: Input: newdb@tab_n2
+POSTHOOK: Output: newdb@tab_n2
+PREHOOK: query: explain analyze drop table tab_n2
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: explain analyze drop table tab
+POSTHOOK: query: explain analyze drop table tab_n2
 POSTHOOK: type: DROPTABLE
 Stage-0
   Drop Table Operator:
-    table:tab
+    table:tab_n2
 
-PREHOOK: query: drop table tab
+PREHOOK: query: drop table tab_n2
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: newdb@tab
-PREHOOK: Output: newdb@tab
-POSTHOOK: query: drop table tab
+PREHOOK: Input: newdb@tab_n2
+PREHOOK: Output: newdb@tab_n2
+POSTHOOK: query: drop table tab_n2
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: newdb@tab
-POSTHOOK: Output: newdb@tab
+POSTHOOK: Input: newdb@tab_n2
+POSTHOOK: Output: newdb@tab_n2
 PREHOOK: query: use default
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:default
@@ -326,19 +326,19 @@ PREHOOK: Output: database:default
 POSTHOOK: query: DROP TEMPORARY MACRO SIGMOID
 POSTHOOK: type: DROPMACRO
 POSTHOOK: Output: database:default
-PREHOOK: query: create table src_autho_test as select * from src
+PREHOOK: query: create table src_autho_test_n4 as select * from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src_autho_test
-POSTHOOK: query: create table src_autho_test as select * from src
+PREHOOK: Output: default@src_autho_test_n4
+POSTHOOK: query: create table src_autho_test_n4 as select * from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src_autho_test
-PREHOOK: query: explain analyze create table src_autho_test as select * from src
+POSTHOOK: Output: default@src_autho_test_n4
+PREHOOK: query: explain analyze create table src_autho_test_n4 as select * from src
 PREHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: query: explain analyze create table src_autho_test as select * from src
+POSTHOOK: query: explain analyze create table src_autho_test_n4 as select * from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 Plan optimized by CBO.
 
@@ -346,13 +346,13 @@ Stage-3
   Stats Work{}
     Stage-4
       Create Table Operator:
-        name:default.src_autho_test
+        name:default.src_autho_test_n4
         Stage-2
           Dependency Collection{}
             Stage-1
               Map 1 vectorized
               File Output Operator [FS_4]
-                table:{"name:":"default.src_autho_test"}
+                table:{"name:":"default.src_autho_test_n4"}
                 Select Operator [SEL_3] (rows=500/500 width=178)
                   Output:["_col0","_col1"]
                   TableScan [TS_0] (rows=500/500 width=178)
@@ -361,69 +361,69 @@ Stage-3
           Move Operator
              Please refer to the previous Stage-1
 
-PREHOOK: query: create table src_autho_test as select * from src
+PREHOOK: query: create table src_autho_test_n4 as select * from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src_autho_test
-POSTHOOK: query: create table src_autho_test as select * from src
+PREHOOK: Output: default@src_autho_test_n4
+POSTHOOK: query: create table src_autho_test_n4 as select * from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src_autho_test
-POSTHOOK: Lineage: src_autho_test.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_autho_test.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: grant select on table src_autho_test to user hive_test_user
+POSTHOOK: Output: default@src_autho_test_n4
+POSTHOOK: Lineage: src_autho_test_n4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_autho_test_n4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: grant select on table src_autho_test_n4 to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE
-PREHOOK: Output: default@src_autho_test
-POSTHOOK: query: grant select on table src_autho_test to user hive_test_user
+PREHOOK: Output: default@src_autho_test_n4
+POSTHOOK: query: grant select on table src_autho_test_n4 to user hive_test_user
 POSTHOOK: type: GRANT_PRIVILEGE
-POSTHOOK: Output: default@src_autho_test
-PREHOOK: query: explain analyze grant select on table src_autho_test to user hive_test_user
+POSTHOOK: Output: default@src_autho_test_n4
+PREHOOK: query: explain analyze grant select on table src_autho_test_n4 to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE
-POSTHOOK: query: explain analyze grant select on table src_autho_test to user hive_test_user
+POSTHOOK: query: explain analyze grant select on table src_autho_test_n4 to user hive_test_user
 POSTHOOK: type: GRANT_PRIVILEGE
 Stage-0
 
-PREHOOK: query: grant select on table src_autho_test to user hive_test_user
+PREHOOK: query: grant select on table src_autho_test_n4 to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE
-PREHOOK: Output: default@src_autho_test
-POSTHOOK: query: grant select on table src_autho_test to user hive_test_user
+PREHOOK: Output: default@src_autho_test_n4
+POSTHOOK: query: grant select on table src_autho_test_n4 to user hive_test_user
 POSTHOOK: type: GRANT_PRIVILEGE
-POSTHOOK: Output: default@src_autho_test
-PREHOOK: query: show grant user hive_test_user on table src_autho_test
+POSTHOOK: Output: default@src_autho_test_n4
+PREHOOK: query: show grant user hive_test_user on table src_autho_test_n4
 PREHOOK: type: SHOW_GRANT
-POSTHOOK: query: show grant user hive_test_user on table src_autho_test
+POSTHOOK: query: show grant user hive_test_user on table src_autho_test_n4
 POSTHOOK: type: SHOW_GRANT
-PREHOOK: query: explain analyze show grant user hive_test_user on table src_autho_test
+PREHOOK: query: explain analyze show grant user hive_test_user on table src_autho_test_n4
 PREHOOK: type: SHOW_GRANT
-POSTHOOK: query: explain analyze show grant user hive_test_user on table src_autho_test
-POSTHOOK: type: SHOW_GRANT
-Stage-1
-  Fetch Operator
-    limit:-1
-    Stage-0
-
-PREHOOK: query: show grant user hive_test_user on table src_autho_test(key)
-PREHOOK: type: SHOW_GRANT
-POSTHOOK: query: show grant user hive_test_user on table src_autho_test(key)
-POSTHOOK: type: SHOW_GRANT
-PREHOOK: query: explain analyze show grant user hive_test_user on table src_autho_test(key)
-PREHOOK: type: SHOW_GRANT
-POSTHOOK: query: explain analyze show grant user hive_test_user on table src_autho_test(key)
+POSTHOOK: query: explain analyze show grant user hive_test_user on table src_autho_test_n4
 POSTHOOK: type: SHOW_GRANT
 Stage-1
   Fetch Operator
     limit:-1
     Stage-0
 
-PREHOOK: query: select key from src_autho_test order by key limit 20
+PREHOOK: query: show grant user hive_test_user on table src_autho_test_n4(key)
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user hive_test_user on table src_autho_test_n4(key)
+POSTHOOK: type: SHOW_GRANT
+PREHOOK: query: explain analyze show grant user hive_test_user on table src_autho_test_n4(key)
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: explain analyze show grant user hive_test_user on table src_autho_test_n4(key)
+POSTHOOK: type: SHOW_GRANT
+Stage-1
+  Fetch Operator
+    limit:-1
+    Stage-0
+
+PREHOOK: query: select key from src_autho_test_n4 order by key limit 20
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_autho_test
+PREHOOK: Input: default@src_autho_test_n4
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select key from src_autho_test order by key limit 20
+POSTHOOK: query: select key from src_autho_test_n4 order by key limit 20
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_autho_test
+POSTHOOK: Input: default@src_autho_test_n4
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 0
@@ -445,39 +445,39 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 118
 118
 119
-PREHOOK: query: revoke select on table src_autho_test from user hive_test_user
+PREHOOK: query: revoke select on table src_autho_test_n4 from user hive_test_user
 PREHOOK: type: REVOKE_PRIVILEGE
-PREHOOK: Output: default@src_autho_test
-POSTHOOK: query: revoke select on table src_autho_test from user hive_test_user
+PREHOOK: Output: default@src_autho_test_n4
+POSTHOOK: query: revoke select on table src_autho_test_n4 from user hive_test_user
 POSTHOOK: type: REVOKE_PRIVILEGE
-POSTHOOK: Output: default@src_autho_test
-PREHOOK: query: explain analyze revoke select on table src_autho_test from user hive_test_user
+POSTHOOK: Output: default@src_autho_test_n4
+PREHOOK: query: explain analyze revoke select on table src_autho_test_n4 from user hive_test_user
 PREHOOK: type: REVOKE_PRIVILEGE
-POSTHOOK: query: explain analyze revoke select on table src_autho_test from user hive_test_user
+POSTHOOK: query: explain analyze revoke select on table src_autho_test_n4 from user hive_test_user
 POSTHOOK: type: REVOKE_PRIVILEGE
 Stage-0
 
-PREHOOK: query: grant select(key) on table src_autho_test to user hive_test_user
+PREHOOK: query: grant select(key) on table src_autho_test_n4 to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE
-PREHOOK: Output: default@src_autho_test
-POSTHOOK: query: grant select(key) on table src_autho_test to user hive_test_user
+PREHOOK: Output: default@src_autho_test_n4
+POSTHOOK: query: grant select(key) on table src_autho_test_n4 to user hive_test_user
 POSTHOOK: type: GRANT_PRIVILEGE
-POSTHOOK: Output: default@src_autho_test
-PREHOOK: query: explain analyze grant select(key) on table src_autho_test to user hive_test_user
+POSTHOOK: Output: default@src_autho_test_n4
+PREHOOK: query: explain analyze grant select(key) on table src_autho_test_n4 to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE
-POSTHOOK: query: explain analyze grant select(key) on table src_autho_test to user hive_test_user
+POSTHOOK: query: explain analyze grant select(key) on table src_autho_test_n4 to user hive_test_user
 POSTHOOK: type: GRANT_PRIVILEGE
 Stage-0
 
-PREHOOK: query: revoke select(key) on table src_autho_test from user hive_test_user
+PREHOOK: query: revoke select(key) on table src_autho_test_n4 from user hive_test_user
 PREHOOK: type: REVOKE_PRIVILEGE
-PREHOOK: Output: default@src_autho_test
-POSTHOOK: query: revoke select(key) on table src_autho_test from user hive_test_user
+PREHOOK: Output: default@src_autho_test_n4
+POSTHOOK: query: revoke select(key) on table src_autho_test_n4 from user hive_test_user
 POSTHOOK: type: REVOKE_PRIVILEGE
-POSTHOOK: Output: default@src_autho_test
-PREHOOK: query: explain analyze revoke select(key) on table src_autho_test from user hive_test_user
+POSTHOOK: Output: default@src_autho_test_n4
+PREHOOK: query: explain analyze revoke select(key) on table src_autho_test_n4 from user hive_test_user
 PREHOOK: type: REVOKE_PRIVILEGE
-POSTHOOK: query: explain analyze revoke select(key) on table src_autho_test from user hive_test_user
+POSTHOOK: query: explain analyze revoke select(key) on table src_autho_test_n4 from user hive_test_user
 POSTHOOK: type: REVOKE_PRIVILEGE
 Stage-0
 
@@ -540,49 +540,49 @@ PREHOOK: query: drop role sRc_roLE
 PREHOOK: type: DROPROLE
 POSTHOOK: query: drop role sRc_roLE
 POSTHOOK: type: DROPROLE
-PREHOOK: query: drop table src_autho_test
+PREHOOK: query: drop table src_autho_test_n4
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@src_autho_test
-PREHOOK: Output: default@src_autho_test
-POSTHOOK: query: drop table src_autho_test
+PREHOOK: Input: default@src_autho_test_n4
+PREHOOK: Output: default@src_autho_test_n4
+POSTHOOK: query: drop table src_autho_test_n4
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@src_autho_test
-POSTHOOK: Output: default@src_autho_test
-PREHOOK: query: drop view v
+POSTHOOK: Input: default@src_autho_test_n4
+POSTHOOK: Output: default@src_autho_test_n4
+PREHOOK: query: drop view v_n5
 PREHOOK: type: DROPVIEW
-POSTHOOK: query: drop view v
+POSTHOOK: query: drop view v_n5
 POSTHOOK: type: DROPVIEW
-PREHOOK: query: explain analyze drop view v
+PREHOOK: query: explain analyze drop view v_n5
 PREHOOK: type: DROPVIEW
-POSTHOOK: query: explain analyze drop view v
+POSTHOOK: query: explain analyze drop view v_n5
 POSTHOOK: type: DROPVIEW
 Stage-0
   Drop Table Operator:
-    table:v
+    table:v_n5
 
-PREHOOK: query: create view v as with cte as (select * from src  order by key limit 5)
+PREHOOK: query: create view v_n5 as with cte as (select * from src  order by key limit 5)
 select * from cte
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@v
-POSTHOOK: query: create view v as with cte as (select * from src  order by key limit 5)
+PREHOOK: Output: default@v_n5
+POSTHOOK: query: create view v_n5 as with cte as (select * from src  order by key limit 5)
 select * from cte
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@v
-PREHOOK: query: explain analyze create view v as with cte as (select * from src  order by key limit 5)
+POSTHOOK: Output: default@v_n5
+PREHOOK: query: explain analyze create view v_n5 as with cte as (select * from src  order by key limit 5)
 select * from cte
 PREHOOK: type: CREATEVIEW
-POSTHOOK: query: explain analyze create view v as with cte as (select * from src  order by key limit 5)
+POSTHOOK: query: explain analyze create view v_n5 as with cte as (select * from src  order by key limit 5)
 select * from cte
 POSTHOOK: type: CREATEVIEW
 Plan optimized by CBO.
 
 Stage-1
   Create View Operator:
-    name:default.v,original text:with cte as (select * from src  order by key limit 5)
+    name:default.v_n5,original text:with cte as (select * from src  order by key limit 5)
 select * from cte
 
 PREHOOK: query: with cte as (select * from src  order by key limit 5)
@@ -623,33 +623,33 @@ Stage-0
                 TableScan [TS_0] (rows=500/500 width=178)
                   default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
 
-PREHOOK: query: create table orc_merge5 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc
+PREHOOK: query: create table orc_merge5_n1 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@orc_merge5
-POSTHOOK: query: create table orc_merge5 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc
+PREHOOK: Output: default@orc_merge5_n1
+POSTHOOK: query: create table orc_merge5_n1 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@orc_merge5
-PREHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' into table orc_merge5
+POSTHOOK: Output: default@orc_merge5_n1
+PREHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' into table orc_merge5_n1
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@orc_merge5
-POSTHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' into table orc_merge5
+PREHOOK: Output: default@orc_merge5_n1
+POSTHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' into table orc_merge5_n1
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@orc_merge5
-PREHOOK: query: insert overwrite table orc_merge5 select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
+POSTHOOK: Output: default@orc_merge5_n1
+PREHOOK: query: insert overwrite table orc_merge5_n1 select userid,string1,subtype,decimal1,ts from orc_merge5_n1 where userid<=13
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5
-PREHOOK: Output: default@orc_merge5
-POSTHOOK: query: insert overwrite table orc_merge5 select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
+PREHOOK: Input: default@orc_merge5_n1
+PREHOOK: Output: default@orc_merge5_n1
+POSTHOOK: query: insert overwrite table orc_merge5_n1 select userid,string1,subtype,decimal1,ts from orc_merge5_n1 where userid<=13
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5
-POSTHOOK: Output: default@orc_merge5
-PREHOOK: query: explain analyze insert overwrite table orc_merge5 select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
+POSTHOOK: Input: default@orc_merge5_n1
+POSTHOOK: Output: default@orc_merge5_n1
+PREHOOK: query: explain analyze insert overwrite table orc_merge5_n1 select userid,string1,subtype,decimal1,ts from orc_merge5_n1 where userid<=13
 PREHOOK: type: QUERY
-POSTHOOK: query: explain analyze insert overwrite table orc_merge5 select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
+POSTHOOK: query: explain analyze insert overwrite table orc_merge5_n1 select userid,string1,subtype,decimal1,ts from orc_merge5_n1 where userid<=13
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -660,7 +660,7 @@ Stage-3
   Stats Work{}
     Stage-0
       Move Operator
-        table:{"name:":"default.orc_merge5"}
+        table:{"name:":"default.orc_merge5_n1"}
         Stage-2
           Dependency Collection{}
             Stage-5(CONDITIONAL)
@@ -674,13 +674,13 @@ Stage-3
                           Output:["_col0","_col1","_col2","_col3","_col4"],aggregations:["compute_stats(VALUE._col0, 'hll')","compute_stats(VALUE._col2, 'hll')","compute_stats(VALUE._col3, 'hll')","compute_stats(VALUE._col4, 'hll')","compute_stats(VALUE._col5, 'hll')"]
                         <-Map 1 [CUSTOM_SIMPLE_EDGE] vectorized
                           File Output Operator [FS_8]
-                            table:{"name:":"default.orc_merge5"}
+                            table:{"name:":"default.orc_merge5_n1"}
                             Select Operator [SEL_7] (rows=1/3 width=352)
                               Output:["_col0","_col1","_col2","_col3","_col4"]
                               Filter Operator [FIL_6] (rows=1/3 width=352)
                                 predicate:(userid <= 13L)
                                 TableScan [TS_0] (rows=1/15000 width=352)
-                                  default@orc_merge5,orc_merge5,Tbl:COMPLETE,Col:NONE,Output:["userid","string1","subtype","decimal1","ts"]
+                                  default@orc_merge5_n1,orc_merge5_n1,Tbl:COMPLETE,Col:NONE,Output:["userid","string1","subtype","decimal1","ts"]
                           PARTITION_ONLY_SHUFFLE [RS_7]
                             Select Operator [SEL_6] (rows=1/3 width=352)
                               Output:["userid","string1","subtype","decimal1","ts"]
@@ -694,147 +694,147 @@ Stage-3
                   File Merge
                      Please refer to the previous Stage-8(CONDITIONAL CHILD TASKS: Stage-5, Stage-4, Stage-6)
 
-PREHOOK: query: drop table orc_merge5
+PREHOOK: query: drop table orc_merge5_n1
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@orc_merge5
-PREHOOK: Output: default@orc_merge5
-POSTHOOK: query: drop table orc_merge5
+PREHOOK: Input: default@orc_merge5_n1
+PREHOOK: Output: default@orc_merge5_n1
+POSTHOOK: query: drop table orc_merge5_n1
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@orc_merge5
-POSTHOOK: Output: default@orc_merge5
-PREHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+POSTHOOK: Input: default@orc_merge5_n1
+POSTHOOK: Output: default@orc_merge5_n1
+PREHOOK: query: CREATE TABLE srcbucket_mapjoin_n4(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+PREHOOK: Output: default@srcbucket_mapjoin_n4
+POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_n4(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcbucket_mapjoin
-PREHOOK: query: CREATE TABLE tab_part (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+POSTHOOK: Output: default@srcbucket_mapjoin_n4
+PREHOOK: query: CREATE TABLE tab_part_n3 (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tab_part
-POSTHOOK: query: CREATE TABLE tab_part (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+PREHOOK: Output: default@tab_part_n3
+POSTHOOK: query: CREATE TABLE tab_part_n3 (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tab_part
-PREHOOK: query: CREATE TABLE srcbucket_mapjoin_part (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+POSTHOOK: Output: default@tab_part_n3
+PREHOOK: query: CREATE TABLE srcbucket_mapjoin_part_n5 (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@srcbucket_mapjoin_part
-POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_part (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+PREHOOK: Output: default@srcbucket_mapjoin_part_n5
+POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_part_n5 (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcbucket_mapjoin_part
-PREHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n5
+PREHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_n4 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_n4
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_n4 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/bmj1/000001_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_n4
+POSTHOOK: Output: default@srcbucket_mapjoin_n4@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj1/000001_0' INTO TABLE srcbucket_mapjoin_n4 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/bmj1/000001_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_n4@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/bmj1/000001_0' INTO TABLE srcbucket_mapjoin_n4 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_n4@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part_n5 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin_part
-POSTHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_part_n5
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part_n5 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin_part
-POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n5
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n5@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part_n5 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_part_n5@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part_n5 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n5@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part_n5 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_part_n5@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part_n5 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n5@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part_n5 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_part_n5@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part_n5 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: query: insert overwrite table tab_part partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin_part
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n5@ds=2008-04-08
+PREHOOK: query: insert overwrite table tab_part_n3 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_part_n5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin_part
-PREHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: Output: default@tab_part@ds=2008-04-08
-POSTHOOK: query: insert overwrite table tab_part partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin_part
+PREHOOK: Input: default@srcbucket_mapjoin_part_n5
+PREHOOK: Input: default@srcbucket_mapjoin_part_n5@ds=2008-04-08
+PREHOOK: Output: default@tab_part_n3@ds=2008-04-08
+POSTHOOK: query: insert overwrite table tab_part_n3 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_part_n5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin_part
-POSTHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
-POSTHOOK: Output: default@tab_part@ds=2008-04-08
-POSTHOOK: Lineage: tab_part PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_part)srcbucket_mapjoin_part.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: tab_part PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_part)srcbucket_mapjoin_part.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: CREATE TABLE tab(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+POSTHOOK: Input: default@srcbucket_mapjoin_part_n5
+POSTHOOK: Input: default@srcbucket_mapjoin_part_n5@ds=2008-04-08
+POSTHOOK: Output: default@tab_part_n3@ds=2008-04-08
+POSTHOOK: Lineage: tab_part_n3 PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_part_n5)srcbucket_mapjoin_part_n5.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tab_part_n3 PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_part_n5)srcbucket_mapjoin_part_n5.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: CREATE TABLE tab_n2(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tab
-POSTHOOK: query: CREATE TABLE tab(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+PREHOOK: Output: default@tab_n2
+POSTHOOK: query: CREATE TABLE tab_n2(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tab
-PREHOOK: query: insert overwrite table tab partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin
+POSTHOOK: Output: default@tab_n2
+PREHOOK: query: insert overwrite table tab_n2 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin
-PREHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
-PREHOOK: Output: default@tab@ds=2008-04-08
-POSTHOOK: query: insert overwrite table tab partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin
+PREHOOK: Input: default@srcbucket_mapjoin_n4
+PREHOOK: Input: default@srcbucket_mapjoin_n4@ds=2008-04-08
+PREHOOK: Output: default@tab_n2@ds=2008-04-08
+POSTHOOK: query: insert overwrite table tab_n2 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin
-POSTHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
-POSTHOOK: Output: default@tab@ds=2008-04-08
-POSTHOOK: Lineage: tab PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin)srcbucket_mapjoin.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: tab PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin)srcbucket_mapjoin.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Input: default@srcbucket_mapjoin_n4
+POSTHOOK: Input: default@srcbucket_mapjoin_n4@ds=2008-04-08
+POSTHOOK: Output: default@tab_n2@ds=2008-04-08
+POSTHOOK: Lineage: tab_n2 PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_n4)srcbucket_mapjoin_n4.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tab_n2 PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_n4)srcbucket_mapjoin_n4.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: select a.key, a.value, b.value
-from tab a join tab_part b on a.key = b.key
+from tab_n2 a join tab_part_n3 b on a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab@ds=2008-04-08
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
+PREHOOK: Input: default@tab_n2
+PREHOOK: Input: default@tab_n2@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n3
+PREHOOK: Input: default@tab_part_n3@ds=2008-04-08
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select a.key, a.value, b.value
-from tab a join tab_part b on a.key = b.key
+from tab_n2 a join tab_part_n3 b on a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab@ds=2008-04-08
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
+POSTHOOK: Input: default@tab_n2
+POSTHOOK: Input: default@tab_n2@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n3
+POSTHOOK: Input: default@tab_part_n3@ds=2008-04-08
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain analyze
 select a.key, a.value, b.value
-from tab a join tab_part b on a.key = b.key
+from tab_n2 a join tab_part_n3 b on a.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain analyze
 select a.key, a.value, b.value
-from tab a join tab_part b on a.key = b.key
+from tab_n2 a join tab_part_n3 b on a.key = b.key
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -859,11 +859,11 @@ Stage-0
                 Filter Operator [FIL_27] (rows=242/242 width=95)
                   predicate:key is not null
                   TableScan [TS_0] (rows=242/242 width=95)
-                    default@tab,a,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
+                    default@tab_n2,a,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
           <-Select Operator [SEL_31] (rows=500/500 width=95)
               Output:["_col0","_col1"]
               Filter Operator [FIL_30] (rows=500/500 width=95)
                 predicate:key is not null
                 TableScan [TS_3] (rows=500/500 width=95)
-                  default@tab_part,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
+                  default@tab_part_n3,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
 

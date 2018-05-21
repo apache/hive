@@ -1,33 +1,33 @@
-PREHOOK: query: create table if not exists emp (
+PREHOOK: query: create table if not exists emp_n2 (
   lastname string,
   deptid int,
   locid int
 ) row format delimited fields terminated by '|' stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@emp
-POSTHOOK: query: create table if not exists emp (
+PREHOOK: Output: default@emp_n2
+POSTHOOK: query: create table if not exists emp_n2 (
   lastname string,
   deptid int,
   locid int
 ) row format delimited fields terminated by '|' stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@emp
-PREHOOK: query: create table if not exists dept (
+POSTHOOK: Output: default@emp_n2
+PREHOOK: query: create table if not exists dept_n1 (
   deptid int,
   deptname string
 ) row format delimited fields terminated by '|' stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dept
-POSTHOOK: query: create table if not exists dept (
+PREHOOK: Output: default@dept_n1
+POSTHOOK: query: create table if not exists dept_n1 (
   deptid int,
   deptname string
 ) row format delimited fields terminated by '|' stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dept
+POSTHOOK: Output: default@dept_n1
 PREHOOK: query: create table if not exists loc (
   state string,
   locid int,
@@ -46,22 +46,22 @@ POSTHOOK: query: create table if not exists loc (
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@loc
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/emp.txt' OVERWRITE INTO TABLE emp
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/emp.txt' OVERWRITE INTO TABLE emp_n2
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@emp
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/emp.txt' OVERWRITE INTO TABLE emp
+PREHOOK: Output: default@emp_n2
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/emp.txt' OVERWRITE INTO TABLE emp_n2
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@emp
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dept.txt' OVERWRITE INTO TABLE dept
+POSTHOOK: Output: default@emp_n2
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dept.txt' OVERWRITE INTO TABLE dept_n1
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@dept
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dept.txt' OVERWRITE INTO TABLE dept
+PREHOOK: Output: default@dept_n1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dept.txt' OVERWRITE INTO TABLE dept_n1
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@dept
+POSTHOOK: Output: default@dept_n1
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/loc.txt' OVERWRITE INTO TABLE loc
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -70,22 +70,22 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/loc.txt' OVERWRITE INT
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@loc
-PREHOOK: query: analyze table emp compute statistics
+PREHOOK: query: analyze table emp_n2 compute statistics
 PREHOOK: type: QUERY
-PREHOOK: Input: default@emp
-PREHOOK: Output: default@emp
-POSTHOOK: query: analyze table emp compute statistics
+PREHOOK: Input: default@emp_n2
+PREHOOK: Output: default@emp_n2
+POSTHOOK: query: analyze table emp_n2 compute statistics
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@emp
-POSTHOOK: Output: default@emp
-PREHOOK: query: analyze table dept compute statistics
+POSTHOOK: Input: default@emp_n2
+POSTHOOK: Output: default@emp_n2
+PREHOOK: query: analyze table dept_n1 compute statistics
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dept
-PREHOOK: Output: default@dept
-POSTHOOK: query: analyze table dept compute statistics
+PREHOOK: Input: default@dept_n1
+PREHOOK: Output: default@dept_n1
+POSTHOOK: query: analyze table dept_n1 compute statistics
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dept
-POSTHOOK: Output: default@dept
+POSTHOOK: Input: default@dept_n1
+POSTHOOK: Output: default@dept_n1
 PREHOOK: query: analyze table loc compute statistics
 PREHOOK: type: QUERY
 PREHOOK: Input: default@loc
@@ -94,25 +94,25 @@ POSTHOOK: query: analyze table loc compute statistics
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@loc
 POSTHOOK: Output: default@loc
-PREHOOK: query: analyze table emp compute statistics for columns lastname,deptid,locid
+PREHOOK: query: analyze table emp_n2 compute statistics for columns lastname,deptid,locid
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@emp
-PREHOOK: Output: default@emp
+PREHOOK: Input: default@emp_n2
+PREHOOK: Output: default@emp_n2
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table emp compute statistics for columns lastname,deptid,locid
+POSTHOOK: query: analyze table emp_n2 compute statistics for columns lastname,deptid,locid
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@emp
-POSTHOOK: Output: default@emp
+POSTHOOK: Input: default@emp_n2
+POSTHOOK: Output: default@emp_n2
 #### A masked pattern was here ####
-PREHOOK: query: analyze table dept compute statistics for columns deptname,deptid
+PREHOOK: query: analyze table dept_n1 compute statistics for columns deptname,deptid
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@dept
-PREHOOK: Output: default@dept
+PREHOOK: Input: default@dept_n1
+PREHOOK: Output: default@dept_n1
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table dept compute statistics for columns deptname,deptid
+POSTHOOK: query: analyze table dept_n1 compute statistics for columns deptname,deptid
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@dept
-POSTHOOK: Output: default@dept
+POSTHOOK: Input: default@dept_n1
+POSTHOOK: Output: default@dept_n1
 #### A masked pattern was here ####
 PREHOOK: query: analyze table loc compute statistics for columns state,locid,zip,year
 PREHOOK: type: ANALYZE_TABLE
@@ -124,9 +124,9 @@ POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@loc
 POSTHOOK: Output: default@loc
 #### A masked pattern was here ####
-PREHOOK: query: explain select * from emp e join dept d on (e.deptid = d.deptid)
+PREHOOK: query: explain select * from emp_n2 e join dept_n1 d on (e.deptid = d.deptid)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from emp e join dept d on (e.deptid = d.deptid)
+POSTHOOK: query: explain select * from emp_n2 e join dept_n1 d on (e.deptid = d.deptid)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -191,9 +191,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select * from emp,dept where emp.deptid = dept.deptid and emp.lastname = dept.deptname
+PREHOOK: query: explain select * from emp_n2,dept_n1 where emp_n2.deptid = dept_n1.deptid and emp_n2.lastname = dept_n1.deptname
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from emp,dept where emp.deptid = dept.deptid and emp.lastname = dept.deptname
+POSTHOOK: query: explain select * from emp_n2,dept_n1 where emp_n2.deptid = dept_n1.deptid and emp_n2.lastname = dept_n1.deptname
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -204,7 +204,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: emp
+            alias: emp_n2
             Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (deptid is not null and lastname is not null) (type: boolean)
@@ -220,7 +220,7 @@ STAGE PLANS:
                   Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col2 (type: int)
           TableScan
-            alias: dept
+            alias: dept_n1
             Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (deptid is not null and deptname is not null) (type: boolean)
@@ -257,9 +257,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select * from emp e join dept d on (e.deptid = d.deptid and e.lastname = d.deptname)
+PREHOOK: query: explain select * from emp_n2 e join dept_n1 d on (e.deptid = d.deptid and e.lastname = d.deptname)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from emp e join dept d on (e.deptid = d.deptid and e.lastname = d.deptname)
+POSTHOOK: query: explain select * from emp_n2 e join dept_n1 d on (e.deptid = d.deptid and e.lastname = d.deptname)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -323,9 +323,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select * from emp,dept where emp.deptid = dept.deptid and emp.lastname = dept.deptname and dept.deptname = emp.lastname
+PREHOOK: query: explain select * from emp_n2,dept_n1 where emp_n2.deptid = dept_n1.deptid and emp_n2.lastname = dept_n1.deptname and dept_n1.deptname = emp_n2.lastname
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from emp,dept where emp.deptid = dept.deptid and emp.lastname = dept.deptname and dept.deptname = emp.lastname
+POSTHOOK: query: explain select * from emp_n2,dept_n1 where emp_n2.deptid = dept_n1.deptid and emp_n2.lastname = dept_n1.deptname and dept_n1.deptname = emp_n2.lastname
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -336,7 +336,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: emp
+            alias: emp_n2
             Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (deptid is not null and lastname is not null) (type: boolean)
@@ -352,7 +352,7 @@ STAGE PLANS:
                   Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col2 (type: int)
           TableScan
-            alias: dept
+            alias: dept_n1
             Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (deptid is not null and deptname is not null) (type: boolean)
@@ -389,9 +389,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select * from emp e join dept d on (e.deptid = d.deptid) join emp e1 on (e.deptid = e1.deptid)
+PREHOOK: query: explain select * from emp_n2 e join dept_n1 d on (e.deptid = d.deptid) join emp_n2 e1 on (e.deptid = e1.deptid)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from emp e join dept d on (e.deptid = d.deptid) join emp e1 on (e.deptid = e1.deptid)
+POSTHOOK: query: explain select * from emp_n2 e join dept_n1 d on (e.deptid = d.deptid) join emp_n2 e1 on (e.deptid = e1.deptid)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -474,9 +474,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select * from emp e join dept d  on (e.deptid = d.deptid) join loc l on (e.deptid = l.locid)
+PREHOOK: query: explain select * from emp_n2 e join dept_n1 d  on (e.deptid = d.deptid) join loc l on (e.deptid = l.locid)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from emp e join dept d  on (e.deptid = d.deptid) join loc l on (e.deptid = l.locid)
+POSTHOOK: query: explain select * from emp_n2 e join dept_n1 d  on (e.deptid = d.deptid) join loc l on (e.deptid = l.locid)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -559,9 +559,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select * from emp e join dept d on (e.deptid = d.deptid and e.lastname = d.deptname) join loc l on (e.deptid = l.locid and e.lastname = l.state)
+PREHOOK: query: explain select * from emp_n2 e join dept_n1 d on (e.deptid = d.deptid and e.lastname = d.deptname) join loc l on (e.deptid = l.locid and e.lastname = l.state)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from emp e join dept d on (e.deptid = d.deptid and e.lastname = d.deptname) join loc l on (e.deptid = l.locid and e.lastname = l.state)
+POSTHOOK: query: explain select * from emp_n2 e join dept_n1 d on (e.deptid = d.deptid and e.lastname = d.deptname) join loc l on (e.deptid = l.locid and e.lastname = l.state)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -643,9 +643,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select * from emp left outer join dept on emp.deptid = dept.deptid and emp.lastname = dept.deptname and dept.deptname = emp.lastname
+PREHOOK: query: explain select * from emp_n2 left outer join dept_n1 on emp_n2.deptid = dept_n1.deptid and emp_n2.lastname = dept_n1.deptname and dept_n1.deptname = emp_n2.lastname
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from emp left outer join dept on emp.deptid = dept.deptid and emp.lastname = dept.deptname and dept.deptname = emp.lastname
+POSTHOOK: query: explain select * from emp_n2 left outer join dept_n1 on emp_n2.deptid = dept_n1.deptid and emp_n2.lastname = dept_n1.deptname and dept_n1.deptname = emp_n2.lastname
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -656,7 +656,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: emp
+            alias: emp_n2
             Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: lastname (type: string), deptid (type: int), locid (type: int)
@@ -669,7 +669,7 @@ STAGE PLANS:
                 Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
                 value expressions: _col2 (type: int)
           TableScan
-            alias: dept
+            alias: dept_n1
             Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: deptid (type: int), deptname (type: string)
@@ -703,9 +703,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select * from emp left semi join dept on emp.deptid = dept.deptid and emp.lastname = dept.deptname and dept.deptname = emp.lastname
+PREHOOK: query: explain select * from emp_n2 left semi join dept_n1 on emp_n2.deptid = dept_n1.deptid and emp_n2.lastname = dept_n1.deptname and dept_n1.deptname = emp_n2.lastname
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from emp left semi join dept on emp.deptid = dept.deptid and emp.lastname = dept.deptname and dept.deptname = emp.lastname
+POSTHOOK: query: explain select * from emp_n2 left semi join dept_n1 on emp_n2.deptid = dept_n1.deptid and emp_n2.lastname = dept_n1.deptname and dept_n1.deptname = emp_n2.lastname
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -716,7 +716,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: emp
+            alias: emp_n2
             Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (deptid is not null and lastname is not null) (type: boolean)
@@ -732,7 +732,7 @@ STAGE PLANS:
                   Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col2 (type: int)
           TableScan
-            alias: dept
+            alias: dept_n1
             Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (deptid is not null and deptname is not null) (type: boolean)
@@ -774,9 +774,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select * from emp right outer join dept on emp.deptid = dept.deptid and emp.lastname = dept.deptname and dept.deptname = emp.lastname
+PREHOOK: query: explain select * from emp_n2 right outer join dept_n1 on emp_n2.deptid = dept_n1.deptid and emp_n2.lastname = dept_n1.deptname and dept_n1.deptname = emp_n2.lastname
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from emp right outer join dept on emp.deptid = dept.deptid and emp.lastname = dept.deptname and dept.deptname = emp.lastname
+POSTHOOK: query: explain select * from emp_n2 right outer join dept_n1 on emp_n2.deptid = dept_n1.deptid and emp_n2.lastname = dept_n1.deptname and dept_n1.deptname = emp_n2.lastname
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -787,7 +787,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: emp
+            alias: emp_n2
             Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: lastname (type: string), deptid (type: int), locid (type: int)
@@ -800,7 +800,7 @@ STAGE PLANS:
                 Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
                 value expressions: _col2 (type: int)
           TableScan
-            alias: dept
+            alias: dept_n1
             Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: deptid (type: int), deptname (type: string)
@@ -834,9 +834,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select * from emp full outer join dept on emp.deptid = dept.deptid and emp.lastname = dept.deptname and dept.deptname = emp.lastname
+PREHOOK: query: explain select * from emp_n2 full outer join dept_n1 on emp_n2.deptid = dept_n1.deptid and emp_n2.lastname = dept_n1.deptname and dept_n1.deptname = emp_n2.lastname
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from emp full outer join dept on emp.deptid = dept.deptid and emp.lastname = dept.deptname and dept.deptname = emp.lastname
+POSTHOOK: query: explain select * from emp_n2 full outer join dept_n1 on emp_n2.deptid = dept_n1.deptid and emp_n2.lastname = dept_n1.deptname and dept_n1.deptname = emp_n2.lastname
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -847,7 +847,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: emp
+            alias: emp_n2
             Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: lastname (type: string), deptid (type: int), locid (type: int)
@@ -860,7 +860,7 @@ STAGE PLANS:
                 Statistics: Num rows: 48 Data size: 4752 Basic stats: COMPLETE Column stats: COMPLETE
                 value expressions: _col2 (type: int)
           TableScan
-            alias: dept
+            alias: dept_n1
             Statistics: Num rows: 6 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: deptid (type: int), deptname (type: string)

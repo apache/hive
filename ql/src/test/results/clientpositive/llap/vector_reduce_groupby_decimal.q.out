@@ -1,28 +1,28 @@
-PREHOOK: query: CREATE TABLE decimal_test STORED AS ORC AS SELECT cint, cdouble, CAST (((cdouble*22.1)/37) AS DECIMAL(20,10)) AS cdecimal1, CAST (((cdouble*9.3)/13) AS DECIMAL(23,14)) AS cdecimal2 FROM alltypesorc
+PREHOOK: query: CREATE TABLE decimal_test_n2 STORED AS ORC AS SELECT cint, cdouble, CAST (((cdouble*22.1)/37) AS DECIMAL(20,10)) AS cdecimal1, CAST (((cdouble*9.3)/13) AS DECIMAL(23,14)) AS cdecimal2 FROM alltypesorc
 WHERE cint is not null and cdouble is not null
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
-PREHOOK: Output: default@decimal_test
-POSTHOOK: query: CREATE TABLE decimal_test STORED AS ORC AS SELECT cint, cdouble, CAST (((cdouble*22.1)/37) AS DECIMAL(20,10)) AS cdecimal1, CAST (((cdouble*9.3)/13) AS DECIMAL(23,14)) AS cdecimal2 FROM alltypesorc
+PREHOOK: Output: default@decimal_test_n2
+POSTHOOK: query: CREATE TABLE decimal_test_n2 STORED AS ORC AS SELECT cint, cdouble, CAST (((cdouble*22.1)/37) AS DECIMAL(20,10)) AS cdecimal1, CAST (((cdouble*9.3)/13) AS DECIMAL(23,14)) AS cdecimal2 FROM alltypesorc
 WHERE cint is not null and cdouble is not null
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@decimal_test
-POSTHOOK: Lineage: decimal_test.cdecimal1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
-POSTHOOK: Lineage: decimal_test.cdecimal2 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
-POSTHOOK: Lineage: decimal_test.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
-POSTHOOK: Lineage: decimal_test.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Output: default@decimal_test_n2
+POSTHOOK: Lineage: decimal_test_n2.cdecimal1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: decimal_test_n2.cdecimal2 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: decimal_test_n2.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: decimal_test_n2.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
-SELECT cint, cdouble, cdecimal1, cdecimal2, min(cdecimal1) as min_decimal1 FROM decimal_test
+SELECT cint, cdouble, cdecimal1, cdecimal2, min(cdecimal1) as min_decimal1 FROM decimal_test_n2
 WHERE cdecimal1 is not null and cdecimal2 is not null
 GROUP BY cint, cdouble, cdecimal1, cdecimal2
 ORDER BY cint, cdouble, cdecimal1, cdecimal2
 LIMIT 50
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
-SELECT cint, cdouble, cdecimal1, cdecimal2, min(cdecimal1) as min_decimal1 FROM decimal_test
+SELECT cint, cdouble, cdecimal1, cdecimal2, min(cdecimal1) as min_decimal1 FROM decimal_test_n2
 WHERE cdecimal1 is not null and cdecimal2 is not null
 GROUP BY cint, cdouble, cdecimal1, cdecimal2
 ORDER BY cint, cdouble, cdecimal1, cdecimal2
@@ -48,7 +48,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: decimal_test
+                  alias: decimal_test_n2
                   Statistics: Num rows: 6102 Data size: 1368328 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -168,21 +168,21 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT cint, cdouble, cdecimal1, cdecimal2, min(cdecimal1) as min_decimal1 FROM decimal_test
+PREHOOK: query: SELECT cint, cdouble, cdecimal1, cdecimal2, min(cdecimal1) as min_decimal1 FROM decimal_test_n2
 WHERE cdecimal1 is not null and cdecimal2 is not null
 GROUP BY cint, cdouble, cdecimal1, cdecimal2
 ORDER BY cint, cdouble, cdecimal1, cdecimal2
 LIMIT 50
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_test
+PREHOOK: Input: default@decimal_test_n2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT cint, cdouble, cdecimal1, cdecimal2, min(cdecimal1) as min_decimal1 FROM decimal_test
+POSTHOOK: query: SELECT cint, cdouble, cdecimal1, cdecimal2, min(cdecimal1) as min_decimal1 FROM decimal_test_n2
 WHERE cdecimal1 is not null and cdecimal2 is not null
 GROUP BY cint, cdouble, cdecimal1, cdecimal2
 ORDER BY cint, cdouble, cdecimal1, cdecimal2
 LIMIT 50
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_test
+POSTHOOK: Input: default@decimal_test_n2
 #### A masked pattern was here ####
 -1073051226	-7382.0	-4409.2486486486	-5280.96923076923100	-4409.2486486486
 -1072081801	8373.0	5001.1702702703	5989.91538461538500	5001.1702702703
@@ -235,40 +235,40 @@ POSTHOOK: Input: default@decimal_test
 -1039776293	13704.0	8185.3621621622	9803.63076923077100	8185.3621621622
 -1039762548	-3802.0	-2270.9243243243	-2719.89230769230830	-2270.9243243243
 PREHOOK: query: SELECT sum(hash(*))
-  FROM (SELECT cint, cdouble, cdecimal1, cdecimal2, min(cdecimal1) as min_decimal1 FROM decimal_test
+  FROM (SELECT cint, cdouble, cdecimal1, cdecimal2, min(cdecimal1) as min_decimal1 FROM decimal_test_n2
         WHERE cdecimal1 is not null and cdecimal2 is not null
         GROUP BY cint, cdouble, cdecimal1, cdecimal2
         ORDER BY cint, cdouble, cdecimal1, cdecimal2
         LIMIT 50) as q
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_test
+PREHOOK: Input: default@decimal_test_n2
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT sum(hash(*))
-  FROM (SELECT cint, cdouble, cdecimal1, cdecimal2, min(cdecimal1) as min_decimal1 FROM decimal_test
+  FROM (SELECT cint, cdouble, cdecimal1, cdecimal2, min(cdecimal1) as min_decimal1 FROM decimal_test_n2
         WHERE cdecimal1 is not null and cdecimal2 is not null
         GROUP BY cint, cdouble, cdecimal1, cdecimal2
         ORDER BY cint, cdouble, cdecimal1, cdecimal2
         LIMIT 50) as q
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_test
+POSTHOOK: Input: default@decimal_test_n2
 #### A masked pattern was here ####
 12703057972
 PREHOOK: query: SELECT sum(hash(*))
-  FROM (SELECT cint, cdouble, cdecimal1, cdecimal2, min(cdecimal1) as min_decimal1 FROM decimal_test
+  FROM (SELECT cint, cdouble, cdecimal1, cdecimal2, min(cdecimal1) as min_decimal1 FROM decimal_test_n2
         WHERE cdecimal1 is not null and cdecimal2 is not null
         GROUP BY cint, cdouble, cdecimal1, cdecimal2
         ORDER BY cint, cdouble, cdecimal1, cdecimal2
         LIMIT 50) as q
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_test
+PREHOOK: Input: default@decimal_test_n2
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT sum(hash(*))
-  FROM (SELECT cint, cdouble, cdecimal1, cdecimal2, min(cdecimal1) as min_decimal1 FROM decimal_test
+  FROM (SELECT cint, cdouble, cdecimal1, cdecimal2, min(cdecimal1) as min_decimal1 FROM decimal_test_n2
         WHERE cdecimal1 is not null and cdecimal2 is not null
         GROUP BY cint, cdouble, cdecimal1, cdecimal2
         ORDER BY cint, cdouble, cdecimal1, cdecimal2
         LIMIT 50) as q
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_test
+POSTHOOK: Input: default@decimal_test_n2
 #### A masked pattern was here ####
 12703057972

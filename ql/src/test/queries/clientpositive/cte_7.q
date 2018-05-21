@@ -1,14 +1,14 @@
 set hive.cbo.enable=false;
 
-create table t (i int,a string,b string);
+create table t_n1 (i int,a string,b string);
 
-insert into t values (1,'hello','world'),(2,'bye',null);
+insert into t_n1 values (1,'hello','world'),(2,'bye',null);
 
-select * from t where t.b is null;
+select * from t_n1 where t_n1.b is null;
 
-with cte as (select t.a as a,t.a as b,t.a as c from t where t.b is null) select * from cte;
+with cte as (select t_n1.a as a,t_n1.a as b,t_n1.a as c from t_n1 where t_n1.b is null) select * from cte;
 
-select t.a as a,t.a as b,t.a as c from t where t.b is null;
+select t_n1.a as a,t_n1.a as b,t_n1.a as c from t_n1 where t_n1.b is null;
 
-with cte as (select t.a as a,t.a as b,t.a as c from t where t.b is not null) select * from cte;
+with cte as (select t_n1.a as a,t_n1.a as b,t_n1.a as c from t_n1 where t_n1.b is not null) select * from cte;
 

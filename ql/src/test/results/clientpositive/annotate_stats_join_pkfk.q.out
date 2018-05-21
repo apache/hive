@@ -1,16 +1,16 @@
-PREHOOK: query: drop table store_sales
+PREHOOK: query: drop table store_sales_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table store_sales
+POSTHOOK: query: drop table store_sales_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: drop table store
+PREHOOK: query: drop table store_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table store
+POSTHOOK: query: drop table store_n0
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: drop table customer_address
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table customer_address
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table store_sales
+PREHOOK: query: create table store_sales_n0
 (
     ss_sold_date_sk           int,
     ss_sold_time_sk           int,
@@ -39,8 +39,8 @@ PREHOOK: query: create table store_sales
 row format delimited fields terminated by '|'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@store_sales
-POSTHOOK: query: create table store_sales
+PREHOOK: Output: default@store_sales_n0
+POSTHOOK: query: create table store_sales_n0
 (
     ss_sold_date_sk           int,
     ss_sold_time_sk           int,
@@ -69,8 +69,8 @@ POSTHOOK: query: create table store_sales
 row format delimited fields terminated by '|'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@store_sales
-PREHOOK: query: create table store
+POSTHOOK: Output: default@store_sales_n0
+PREHOOK: query: create table store_n0
 (
     s_store_sk                int,
     s_store_id                string,
@@ -105,8 +105,8 @@ PREHOOK: query: create table store
 row format delimited fields terminated by '|'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@store
-POSTHOOK: query: create table store
+PREHOOK: Output: default@store_n0
+POSTHOOK: query: create table store_n0
 (
     s_store_sk                int,
     s_store_id                string,
@@ -141,7 +141,7 @@ POSTHOOK: query: create table store
 row format delimited fields terminated by '|'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@store
+POSTHOOK: Output: default@store_n0
 PREHOOK: query: create table store_bigint
 (
     s_store_sk                bigint,
@@ -254,14 +254,14 @@ row format delimited fields terminated by '|'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@customer_address
-PREHOOK: query: load data local inpath '../../data/files/store.txt' overwrite into table store
+PREHOOK: query: load data local inpath '../../data/files/store.txt' overwrite into table store_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@store
-POSTHOOK: query: load data local inpath '../../data/files/store.txt' overwrite into table store
+PREHOOK: Output: default@store_n0
+POSTHOOK: query: load data local inpath '../../data/files/store.txt' overwrite into table store_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@store
+POSTHOOK: Output: default@store_n0
 PREHOOK: query: load data local inpath '../../data/files/store.txt' overwrite into table store_bigint
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -270,14 +270,14 @@ POSTHOOK: query: load data local inpath '../../data/files/store.txt' overwrite i
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@store_bigint
-PREHOOK: query: load data local inpath '../../data/files/store_sales.txt' overwrite into table store_sales
+PREHOOK: query: load data local inpath '../../data/files/store_sales.txt' overwrite into table store_sales_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@store_sales
-POSTHOOK: query: load data local inpath '../../data/files/store_sales.txt' overwrite into table store_sales
+PREHOOK: Output: default@store_sales_n0
+POSTHOOK: query: load data local inpath '../../data/files/store_sales.txt' overwrite into table store_sales_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@store_sales
+POSTHOOK: Output: default@store_sales_n0
 PREHOOK: query: load data local inpath '../../data/files/customer_address.txt' overwrite into table customer_address
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -286,23 +286,23 @@ POSTHOOK: query: load data local inpath '../../data/files/customer_address.txt' 
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@customer_address
-PREHOOK: query: analyze table store compute statistics
+PREHOOK: query: analyze table store_n0 compute statistics
 PREHOOK: type: QUERY
-PREHOOK: Input: default@store
-PREHOOK: Output: default@store
-POSTHOOK: query: analyze table store compute statistics
+PREHOOK: Input: default@store_n0
+PREHOOK: Output: default@store_n0
+POSTHOOK: query: analyze table store_n0 compute statistics
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@store
-POSTHOOK: Output: default@store
-PREHOOK: query: analyze table store compute statistics for columns s_store_sk, s_floor_space
+POSTHOOK: Input: default@store_n0
+POSTHOOK: Output: default@store_n0
+PREHOOK: query: analyze table store_n0 compute statistics for columns s_store_sk, s_floor_space
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@store
-PREHOOK: Output: default@store
+PREHOOK: Input: default@store_n0
+PREHOOK: Output: default@store_n0
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table store compute statistics for columns s_store_sk, s_floor_space
+POSTHOOK: query: analyze table store_n0 compute statistics for columns s_store_sk, s_floor_space
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@store
-POSTHOOK: Output: default@store
+POSTHOOK: Input: default@store_n0
+POSTHOOK: Output: default@store_n0
 #### A masked pattern was here ####
 PREHOOK: query: analyze table store_bigint compute statistics
 PREHOOK: type: QUERY
@@ -322,23 +322,23 @@ POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@store_bigint
 POSTHOOK: Output: default@store_bigint
 #### A masked pattern was here ####
-PREHOOK: query: analyze table store_sales compute statistics
+PREHOOK: query: analyze table store_sales_n0 compute statistics
 PREHOOK: type: QUERY
-PREHOOK: Input: default@store_sales
-PREHOOK: Output: default@store_sales
-POSTHOOK: query: analyze table store_sales compute statistics
+PREHOOK: Input: default@store_sales_n0
+PREHOOK: Output: default@store_sales_n0
+POSTHOOK: query: analyze table store_sales_n0 compute statistics
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@store_sales
-POSTHOOK: Output: default@store_sales
-PREHOOK: query: analyze table store_sales compute statistics for columns ss_store_sk, ss_addr_sk, ss_quantity
+POSTHOOK: Input: default@store_sales_n0
+POSTHOOK: Output: default@store_sales_n0
+PREHOOK: query: analyze table store_sales_n0 compute statistics for columns ss_store_sk, ss_addr_sk, ss_quantity
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@store_sales
-PREHOOK: Output: default@store_sales
+PREHOOK: Input: default@store_sales_n0
+PREHOOK: Output: default@store_sales_n0
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table store_sales compute statistics for columns ss_store_sk, ss_addr_sk, ss_quantity
+POSTHOOK: query: analyze table store_sales_n0 compute statistics for columns ss_store_sk, ss_addr_sk, ss_quantity
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@store_sales
-POSTHOOK: Output: default@store_sales
+POSTHOOK: Input: default@store_sales_n0
+POSTHOOK: Output: default@store_sales_n0
 #### A masked pattern was here ####
 PREHOOK: query: analyze table customer_address compute statistics
 PREHOOK: type: QUERY
@@ -358,9 +358,9 @@ POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@customer_address
 POSTHOOK: Output: default@customer_address
 #### A masked pattern was here ####
-PREHOOK: query: explain select s.s_store_sk from store s join store_sales ss on (s.s_store_sk = ss.ss_store_sk)
+PREHOOK: query: explain select s.s_store_sk from store_n0 s join store_sales_n0 ss on (s.s_store_sk = ss.ss_store_sk)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select s.s_store_sk from store s join store_sales ss on (s.s_store_sk = ss.ss_store_sk)
+POSTHOOK: query: explain select s.s_store_sk from store_n0 s join store_sales_n0 ss on (s.s_store_sk = ss.ss_store_sk)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -423,9 +423,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select s.s_store_sk from store_bigint s join store_sales ss on (s.s_store_sk = ss.ss_store_sk)
+PREHOOK: query: explain select s.s_store_sk from store_bigint s join store_sales_n0 ss on (s.s_store_sk = ss.ss_store_sk)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select s.s_store_sk from store_bigint s join store_sales ss on (s.s_store_sk = ss.ss_store_sk)
+POSTHOOK: query: explain select s.s_store_sk from store_bigint s join store_sales_n0 ss on (s.s_store_sk = ss.ss_store_sk)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -488,9 +488,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select s.s_store_sk from store s join store_sales ss on (s.s_store_sk = ss.ss_store_sk) where s.s_store_sk > 0
+PREHOOK: query: explain select s.s_store_sk from store_n0 s join store_sales_n0 ss on (s.s_store_sk = ss.ss_store_sk) where s.s_store_sk > 0
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select s.s_store_sk from store s join store_sales ss on (s.s_store_sk = ss.ss_store_sk) where s.s_store_sk > 0
+POSTHOOK: query: explain select s.s_store_sk from store_n0 s join store_sales_n0 ss on (s.s_store_sk = ss.ss_store_sk) where s.s_store_sk > 0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -553,9 +553,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select s.s_store_sk from store s join store_sales ss on (s.s_store_sk = ss.ss_store_sk) where s.s_company_id > 0 and ss.ss_quantity > 10
+PREHOOK: query: explain select s.s_store_sk from store_n0 s join store_sales_n0 ss on (s.s_store_sk = ss.ss_store_sk) where s.s_company_id > 0 and ss.ss_quantity > 10
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select s.s_store_sk from store s join store_sales ss on (s.s_store_sk = ss.ss_store_sk) where s.s_company_id > 0 and ss.ss_quantity > 10
+POSTHOOK: query: explain select s.s_store_sk from store_n0 s join store_sales_n0 ss on (s.s_store_sk = ss.ss_store_sk) where s.s_company_id > 0 and ss.ss_quantity > 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -618,9 +618,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select s.s_store_sk from store s join store_sales ss on (s.s_store_sk = ss.ss_store_sk) where s.s_floor_space > 0
+PREHOOK: query: explain select s.s_store_sk from store_n0 s join store_sales_n0 ss on (s.s_store_sk = ss.ss_store_sk) where s.s_floor_space > 0
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select s.s_store_sk from store s join store_sales ss on (s.s_store_sk = ss.ss_store_sk) where s.s_floor_space > 0
+POSTHOOK: query: explain select s.s_store_sk from store_n0 s join store_sales_n0 ss on (s.s_store_sk = ss.ss_store_sk) where s.s_floor_space > 0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -683,9 +683,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select s.s_store_sk from store s join store_sales ss on (s.s_store_sk = ss.ss_store_sk) where ss.ss_quantity > 10
+PREHOOK: query: explain select s.s_store_sk from store_n0 s join store_sales_n0 ss on (s.s_store_sk = ss.ss_store_sk) where ss.ss_quantity > 10
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select s.s_store_sk from store s join store_sales ss on (s.s_store_sk = ss.ss_store_sk) where ss.ss_quantity > 10
+POSTHOOK: query: explain select s.s_store_sk from store_n0 s join store_sales_n0 ss on (s.s_store_sk = ss.ss_store_sk) where ss.ss_quantity > 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -748,9 +748,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select s.s_store_sk from store s join store_sales ss on (s.s_store_sk = ss.ss_store_sk) join store s1 on (s1.s_store_sk = ss.ss_store_sk)
+PREHOOK: query: explain select s.s_store_sk from store_n0 s join store_sales_n0 ss on (s.s_store_sk = ss.ss_store_sk) join store_n0 s1 on (s1.s_store_sk = ss.ss_store_sk)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select s.s_store_sk from store s join store_sales ss on (s.s_store_sk = ss.ss_store_sk) join store s1 on (s1.s_store_sk = ss.ss_store_sk)
+POSTHOOK: query: explain select s.s_store_sk from store_n0 s join store_sales_n0 ss on (s.s_store_sk = ss.ss_store_sk) join store_n0 s1 on (s1.s_store_sk = ss.ss_store_sk)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -834,9 +834,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select s.s_store_sk from store s join store_sales ss on (s.s_store_sk = ss.ss_store_sk) join store s1 on (s1.s_store_sk = ss.ss_store_sk) where s.s_store_sk > 1000
+PREHOOK: query: explain select s.s_store_sk from store_n0 s join store_sales_n0 ss on (s.s_store_sk = ss.ss_store_sk) join store_n0 s1 on (s1.s_store_sk = ss.ss_store_sk) where s.s_store_sk > 1000
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select s.s_store_sk from store s join store_sales ss on (s.s_store_sk = ss.ss_store_sk) join store s1 on (s1.s_store_sk = ss.ss_store_sk) where s.s_store_sk > 1000
+POSTHOOK: query: explain select s.s_store_sk from store_n0 s join store_sales_n0 ss on (s.s_store_sk = ss.ss_store_sk) join store_n0 s1 on (s1.s_store_sk = ss.ss_store_sk) where s.s_store_sk > 1000
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -920,9 +920,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select s.s_store_sk from store s join store_sales ss on (s.s_store_sk = ss.ss_store_sk) join store s1 on (s1.s_store_sk = ss.ss_store_sk) where s.s_floor_space > 1000
+PREHOOK: query: explain select s.s_store_sk from store_n0 s join store_sales_n0 ss on (s.s_store_sk = ss.ss_store_sk) join store_n0 s1 on (s1.s_store_sk = ss.ss_store_sk) where s.s_floor_space > 1000
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select s.s_store_sk from store s join store_sales ss on (s.s_store_sk = ss.ss_store_sk) join store s1 on (s1.s_store_sk = ss.ss_store_sk) where s.s_floor_space > 1000
+POSTHOOK: query: explain select s.s_store_sk from store_n0 s join store_sales_n0 ss on (s.s_store_sk = ss.ss_store_sk) join store_n0 s1 on (s1.s_store_sk = ss.ss_store_sk) where s.s_floor_space > 1000
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1006,9 +1006,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select s.s_store_sk from store s join store_sales ss on (s.s_store_sk = ss.ss_store_sk) join store s1 on (s1.s_store_sk = ss.ss_store_sk) where ss.ss_quantity > 10
+PREHOOK: query: explain select s.s_store_sk from store_n0 s join store_sales_n0 ss on (s.s_store_sk = ss.ss_store_sk) join store_n0 s1 on (s1.s_store_sk = ss.ss_store_sk) where ss.ss_quantity > 10
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select s.s_store_sk from store s join store_sales ss on (s.s_store_sk = ss.ss_store_sk) join store s1 on (s1.s_store_sk = ss.ss_store_sk) where ss.ss_quantity > 10
+POSTHOOK: query: explain select s.s_store_sk from store_n0 s join store_sales_n0 ss on (s.s_store_sk = ss.ss_store_sk) join store_n0 s1 on (s1.s_store_sk = ss.ss_store_sk) where ss.ss_quantity > 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1092,9 +1092,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select s.s_store_sk from store s join store_sales ss on (s.s_store_sk = ss.ss_store_sk) join customer_address ca on (ca.ca_address_sk = ss.ss_addr_sk)
+PREHOOK: query: explain select s.s_store_sk from store_n0 s join store_sales_n0 ss on (s.s_store_sk = ss.ss_store_sk) join customer_address ca on (ca.ca_address_sk = ss.ss_addr_sk)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select s.s_store_sk from store s join store_sales ss on (s.s_store_sk = ss.ss_store_sk) join customer_address ca on (ca.ca_address_sk = ss.ss_addr_sk)
+POSTHOOK: query: explain select s.s_store_sk from store_n0 s join store_sales_n0 ss on (s.s_store_sk = ss.ss_store_sk) join customer_address ca on (ca.ca_address_sk = ss.ss_addr_sk)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1204,22 +1204,22 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: drop table store_sales
+PREHOOK: query: drop table store_sales_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@store_sales
-PREHOOK: Output: default@store_sales
-POSTHOOK: query: drop table store_sales
+PREHOOK: Input: default@store_sales_n0
+PREHOOK: Output: default@store_sales_n0
+POSTHOOK: query: drop table store_sales_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@store_sales
-POSTHOOK: Output: default@store_sales
-PREHOOK: query: drop table store
+POSTHOOK: Input: default@store_sales_n0
+POSTHOOK: Output: default@store_sales_n0
+PREHOOK: query: drop table store_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@store
-PREHOOK: Output: default@store
-POSTHOOK: query: drop table store
+PREHOOK: Input: default@store_n0
+PREHOOK: Output: default@store_n0
+POSTHOOK: query: drop table store_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@store
-POSTHOOK: Output: default@store
+POSTHOOK: Input: default@store_n0
+POSTHOOK: Output: default@store_n0
 PREHOOK: query: drop table store_bigint
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@store_bigint
