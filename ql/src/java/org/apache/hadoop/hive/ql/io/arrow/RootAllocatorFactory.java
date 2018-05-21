@@ -15,6 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.hadoop.hive.ql.io.arrow;
 
 import org.apache.arrow.memory.RootAllocator;
@@ -38,6 +39,14 @@ public enum RootAllocatorFactory {
     if (rootAllocator == null) {
       final long limit = HiveConf.getLongVar(conf, HIVE_ARROW_ROOT_ALLOCATOR_LIMIT);
       rootAllocator = new RootAllocator(limit);
+    }
+    return rootAllocator;
+  }
+
+  //arrowAllocatorLimit is ignored if an allocator was previously created
+  public synchronized RootAllocator getOrCreateRootAllocator(long arrowAllocatorLimit) {
+    if (rootAllocator == null) {
+      rootAllocator = new RootAllocator(arrowAllocatorLimit);
     }
     return rootAllocator;
   }

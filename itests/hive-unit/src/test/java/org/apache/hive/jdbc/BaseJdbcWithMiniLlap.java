@@ -77,7 +77,6 @@ import org.apache.hadoop.io.Text;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.apache.hive.jdbc.miniHS2.MiniHS2.MiniClusterType;
 import org.apache.hadoop.hive.llap.LlapBaseInputFormat;
-import org.apache.hadoop.hive.llap.LlapRowInputFormat;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
@@ -93,20 +92,25 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
+import org.apache.hadoop.mapred.InputFormat;
 
-public class TestJdbcWithMiniLlap {
+/**
+ * Specialize this base class for different serde's/formats
+ * {@link #beforeTest(boolean) beforeTest} should be called
+ * by sub-classes in a {@link org.junit.BeforeClass} initializer
+ */
+public abstract class BaseJdbcWithMiniLlap {
   private static MiniHS2 miniHS2 = null;
   private static String dataFileDir;
   private static Path kvDataFilePath;
   private static Path dataTypesFilePath;
 
   private static HiveConf conf = null;
-  private Connection hs2Conn = null;
+  private static Connection hs2Conn = null;
 
-  @BeforeClass
-  public static void beforeTest() throws Exception {
+  // This method should be called by sub-classes in a @BeforeClass initializer
+  public static void beforeTest(boolean useArrow) throws Exception {
     Class.forName(MiniHS2.getJdbcDriverName());
 
     String confDir = "../../data/conf/llap/";
@@ -118,6 +122,11 @@ public class TestJdbcWithMiniLlap {
     conf = new HiveConf();
     conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     conf.setBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS, false);
+    if(useArrow) {
+      conf.setBoolVar(ConfVars.LLAP_OUTPUT_FORMAT_ARROW, true);
+    } else {
+      conf.setBoolVar(ConfVars.LLAP_OUTPUT_FORMAT_ARROW, false);
+    }
 
     conf.addResource(new URL("file://" + new File(confDir).toURI().getPath()
         + "/tez-site.xml"));
@@ -184,7 +193,7 @@ public class TestJdbcWithMiniLlap {
     stmt.close();
   }
 
-  private void createDataTypesTable(String tableName) throws Exception {
+  protected void createDataTypesTable(String tableName) throws Exception {
     Statement stmt = hs2Conn.createStatement();
 
     // create table
@@ -235,12 +244,12 @@ public class TestJdbcWithMiniLlap {
 
   @Test(timeout = 60000)
   public void testNonAsciiStrings() throws Exception {
-    createTestTable(hs2Conn, "nonascii", "testtab_nonascii", kvDataFilePath.toString());
+    createTestTable("testtab_nonascii");
 
     RowCollector rowCollector = new RowCollector();
     String nonAscii = "À côté du garçon";
     String query = "select value, '" + nonAscii + "' from testtab_nonascii where under_col=0";
-    int rowCount = processQuery("nonascii", query, 1, rowCollector);
+    int rowCount = processQuery(query, 1, rowCollector);
     assertEquals(3, rowCount);
 
     assertArrayEquals(new String[] {"val_0", nonAscii}, rowCollector.rows.get(0));
@@ -456,7 +465,7 @@ public class TestJdbcWithMiniLlap {
     void process(Row row);
   }
 
-  private static class RowCollector implements RowProcessor {
+  protected static class RowCollector implements RowProcessor {
     ArrayList<String[]> rows = new ArrayList<String[]>();
     Schema schema = null;
     int numColumns = 0;
@@ -477,7 +486,7 @@ public class TestJdbcWithMiniLlap {
   }
 
   // Save the actual values from each row as opposed to the String representation.
-  private static class RowCollector2 implements RowProcessor {
+  protected static class RowCollector2 implements RowProcessor {
     ArrayList<Object[]> rows = new ArrayList<Object[]>();
     Schema schema = null;
     int numColumns = 0;
@@ -496,9 +505,11 @@ public class TestJdbcWithMiniLlap {
     }
   }
 
-  private int processQuery(String query, int numSplits, RowProcessor rowProcessor) throws Exception {
+  protected int processQuery(String query, int numSplits, RowProcessor rowProcessor) throws Exception {
     return processQuery(null, query, numSplits, rowProcessor);
   }
+
+  protected abstract InputFormat<NullWritable, Row> getInputFormat();
 
   private int processQuery(String currentDatabase, String query, int numSplits, RowProcessor rowProcessor) throws Exception {
     String url = miniHS2.getJdbcURL();
@@ -506,7 +517,7 @@ public class TestJdbcWithMiniLlap {
     String pwd = user;
     String handleId = UUID.randomUUID().toString();
 
-    LlapRowInputFormat inputFormat = new LlapRowInputFormat();
+    InputFormat<NullWritable, Row> inputFormat = getInputFormat();
 
     // Get splits
     JobConf job = new JobConf(conf);
@@ -614,3 +625,4 @@ public class TestJdbcWithMiniLlap {
     Throwable throwable;
   }
 }
+
