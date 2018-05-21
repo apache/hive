@@ -1,42 +1,42 @@
-PREHOOK: query: CREATE TABLE test_table1 (key INT, value STRING) PARTITIONED BY (ds STRING)
+PREHOOK: query: CREATE TABLE test_table1_n17 (key INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_table1
-POSTHOOK: query: CREATE TABLE test_table1 (key INT, value STRING) PARTITIONED BY (ds STRING)
+PREHOOK: Output: default@test_table1_n17
+POSTHOOK: query: CREATE TABLE test_table1_n17 (key INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_table1
-PREHOOK: query: CREATE TABLE test_table2 (key INT, value STRING) PARTITIONED BY (ds STRING)
+POSTHOOK: Output: default@test_table1_n17
+PREHOOK: query: CREATE TABLE test_table2_n16 (key INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_table2
-POSTHOOK: query: CREATE TABLE test_table2 (key INT, value STRING) PARTITIONED BY (ds STRING)
+PREHOOK: Output: default@test_table2_n16
+POSTHOOK: query: CREATE TABLE test_table2_n16 (key INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_table2
+POSTHOOK: Output: default@test_table2_n16
 PREHOOK: query: FROM src
-INSERT OVERWRITE TABLE test_table1 PARTITION (ds = '1') SELECT *
+INSERT OVERWRITE TABLE test_table1_n17 PARTITION (ds = '1') SELECT *
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@test_table1@ds=1
+PREHOOK: Output: default@test_table1_n17@ds=1
 POSTHOOK: query: FROM src
-INSERT OVERWRITE TABLE test_table1 PARTITION (ds = '1') SELECT *
+INSERT OVERWRITE TABLE test_table1_n17 PARTITION (ds = '1') SELECT *
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@test_table1@ds=1
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@test_table1_n17@ds=1
+POSTHOOK: Lineage: test_table1_n17 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table1_n17 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1')
-SELECT a.key, a.value FROM test_table1 a WHERE a.ds = '1'
+INSERT OVERWRITE TABLE test_table2_n16 PARTITION (ds = '1')
+SELECT a.key, a.value FROM test_table1_n17 a WHERE a.ds = '1'
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1')
-SELECT a.key, a.value FROM test_table1 a WHERE a.ds = '1'
+INSERT OVERWRITE TABLE test_table2_n16 PARTITION (ds = '1')
+SELECT a.key, a.value FROM test_table1_n17 a WHERE a.ds = '1'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -64,7 +64,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.test_table2
+                          name: default.test_table2_n16
             Execution mode: vectorized
 
   Stage: Stage-0
@@ -77,37 +77,37 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.test_table2
+              name: default.test_table2_n16
 
   Stage: Stage-2
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: drop table test_table2
+PREHOOK: query: drop table test_table2_n16
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@test_table2
-PREHOOK: Output: default@test_table2
-POSTHOOK: query: drop table test_table2
+PREHOOK: Input: default@test_table2_n16
+PREHOOK: Output: default@test_table2_n16
+POSTHOOK: query: drop table test_table2_n16
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@test_table2
-POSTHOOK: Output: default@test_table2
-PREHOOK: query: CREATE TABLE test_table2 (key INT, value STRING) PARTITIONED BY (ds STRING)
+POSTHOOK: Input: default@test_table2_n16
+POSTHOOK: Output: default@test_table2_n16
+PREHOOK: query: CREATE TABLE test_table2_n16 (key INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key) SORTED BY (key desc) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_table2
-POSTHOOK: query: CREATE TABLE test_table2 (key INT, value STRING) PARTITIONED BY (ds STRING)
+PREHOOK: Output: default@test_table2_n16
+POSTHOOK: query: CREATE TABLE test_table2_n16 (key INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key) SORTED BY (key desc) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_table2
+POSTHOOK: Output: default@test_table2_n16
 PREHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1')
-SELECT a.key, a.value FROM test_table1 a WHERE a.ds = '1'
+INSERT OVERWRITE TABLE test_table2_n16 PARTITION (ds = '1')
+SELECT a.key, a.value FROM test_table1_n17 a WHERE a.ds = '1'
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1')
-SELECT a.key, a.value FROM test_table1 a WHERE a.ds = '1'
+INSERT OVERWRITE TABLE test_table2_n16 PARTITION (ds = '1')
+SELECT a.key, a.value FROM test_table1_n17 a WHERE a.ds = '1'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -151,7 +151,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.test_table2
+                      name: default.test_table2_n16
 
   Stage: Stage-0
     Move Operator
@@ -163,37 +163,37 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.test_table2
+              name: default.test_table2_n16
 
   Stage: Stage-2
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: drop table test_table2
+PREHOOK: query: drop table test_table2_n16
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@test_table2
-PREHOOK: Output: default@test_table2
-POSTHOOK: query: drop table test_table2
+PREHOOK: Input: default@test_table2_n16
+PREHOOK: Output: default@test_table2_n16
+POSTHOOK: query: drop table test_table2_n16
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@test_table2
-POSTHOOK: Output: default@test_table2
-PREHOOK: query: CREATE TABLE test_table2 (key INT, value STRING) PARTITIONED BY (ds STRING)
+POSTHOOK: Input: default@test_table2_n16
+POSTHOOK: Output: default@test_table2_n16
+PREHOOK: query: CREATE TABLE test_table2_n16 (key INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key) SORTED BY (key, value) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_table2
-POSTHOOK: query: CREATE TABLE test_table2 (key INT, value STRING) PARTITIONED BY (ds STRING)
+PREHOOK: Output: default@test_table2_n16
+POSTHOOK: query: CREATE TABLE test_table2_n16 (key INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key) SORTED BY (key, value) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_table2
+POSTHOOK: Output: default@test_table2_n16
 PREHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1')
-SELECT a.key, a.value FROM test_table1 a WHERE a.ds = '1'
+INSERT OVERWRITE TABLE test_table2_n16 PARTITION (ds = '1')
+SELECT a.key, a.value FROM test_table1_n17 a WHERE a.ds = '1'
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1')
-SELECT a.key, a.value FROM test_table1 a WHERE a.ds = '1'
+INSERT OVERWRITE TABLE test_table2_n16 PARTITION (ds = '1')
+SELECT a.key, a.value FROM test_table1_n17 a WHERE a.ds = '1'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -236,7 +236,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.test_table2
+                      name: default.test_table2_n16
 
   Stage: Stage-0
     Move Operator
@@ -248,37 +248,37 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.test_table2
+              name: default.test_table2_n16
 
   Stage: Stage-2
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: drop table test_table2
+PREHOOK: query: drop table test_table2_n16
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@test_table2
-PREHOOK: Output: default@test_table2
-POSTHOOK: query: drop table test_table2
+PREHOOK: Input: default@test_table2_n16
+PREHOOK: Output: default@test_table2_n16
+POSTHOOK: query: drop table test_table2_n16
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@test_table2
-POSTHOOK: Output: default@test_table2
-PREHOOK: query: CREATE TABLE test_table2 (key INT, value STRING) PARTITIONED BY (ds STRING)
+POSTHOOK: Input: default@test_table2_n16
+POSTHOOK: Output: default@test_table2_n16
+PREHOOK: query: CREATE TABLE test_table2_n16 (key INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key) SORTED BY (value) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_table2
-POSTHOOK: query: CREATE TABLE test_table2 (key INT, value STRING) PARTITIONED BY (ds STRING)
+PREHOOK: Output: default@test_table2_n16
+POSTHOOK: query: CREATE TABLE test_table2_n16 (key INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key) SORTED BY (value) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_table2
+POSTHOOK: Output: default@test_table2_n16
 PREHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1')
-SELECT a.key, a.value FROM test_table1 a WHERE a.ds = '1'
+INSERT OVERWRITE TABLE test_table2_n16 PARTITION (ds = '1')
+SELECT a.key, a.value FROM test_table1_n17 a WHERE a.ds = '1'
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1')
-SELECT a.key, a.value FROM test_table1 a WHERE a.ds = '1'
+INSERT OVERWRITE TABLE test_table2_n16 PARTITION (ds = '1')
+SELECT a.key, a.value FROM test_table1_n17 a WHERE a.ds = '1'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -322,7 +322,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.test_table2
+                      name: default.test_table2_n16
 
   Stage: Stage-0
     Move Operator
@@ -334,37 +334,37 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.test_table2
+              name: default.test_table2_n16
 
   Stage: Stage-2
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: drop table test_table2
+PREHOOK: query: drop table test_table2_n16
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@test_table2
-PREHOOK: Output: default@test_table2
-POSTHOOK: query: drop table test_table2
+PREHOOK: Input: default@test_table2_n16
+PREHOOK: Output: default@test_table2_n16
+POSTHOOK: query: drop table test_table2_n16
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@test_table2
-POSTHOOK: Output: default@test_table2
-PREHOOK: query: CREATE TABLE test_table2 (key INT, value STRING) PARTITIONED BY (ds STRING)
+POSTHOOK: Input: default@test_table2_n16
+POSTHOOK: Output: default@test_table2_n16
+PREHOOK: query: CREATE TABLE test_table2_n16 (key INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_table2
-POSTHOOK: query: CREATE TABLE test_table2 (key INT, value STRING) PARTITIONED BY (ds STRING)
+PREHOOK: Output: default@test_table2_n16
+POSTHOOK: query: CREATE TABLE test_table2_n16 (key INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_table2
+POSTHOOK: Output: default@test_table2_n16
 PREHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1')
-SELECT a.key, a.value FROM test_table1 a WHERE a.ds = '1'
+INSERT OVERWRITE TABLE test_table2_n16 PARTITION (ds = '1')
+SELECT a.key, a.value FROM test_table1_n17 a WHERE a.ds = '1'
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1')
-SELECT a.key, a.value FROM test_table1 a WHERE a.ds = '1'
+INSERT OVERWRITE TABLE test_table2_n16 PARTITION (ds = '1')
+SELECT a.key, a.value FROM test_table1_n17 a WHERE a.ds = '1'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -408,7 +408,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.test_table2
+                      name: default.test_table2_n16
 
   Stage: Stage-0
     Move Operator
@@ -420,37 +420,37 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.test_table2
+              name: default.test_table2_n16
 
   Stage: Stage-2
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: drop table test_table2
+PREHOOK: query: drop table test_table2_n16
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@test_table2
-PREHOOK: Output: default@test_table2
-POSTHOOK: query: drop table test_table2
+PREHOOK: Input: default@test_table2_n16
+PREHOOK: Output: default@test_table2_n16
+POSTHOOK: query: drop table test_table2_n16
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@test_table2
-POSTHOOK: Output: default@test_table2
-PREHOOK: query: CREATE TABLE test_table2 (key INT, value STRING) PARTITIONED BY (ds STRING)
+POSTHOOK: Input: default@test_table2_n16
+POSTHOOK: Output: default@test_table2_n16
+PREHOOK: query: CREATE TABLE test_table2_n16 (key INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_table2
-POSTHOOK: query: CREATE TABLE test_table2 (key INT, value STRING) PARTITIONED BY (ds STRING)
+PREHOOK: Output: default@test_table2_n16
+POSTHOOK: query: CREATE TABLE test_table2_n16 (key INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_table2
+POSTHOOK: Output: default@test_table2_n16
 PREHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1')
-SELECT a.key, a.value FROM test_table1 a WHERE a.ds = '1'
+INSERT OVERWRITE TABLE test_table2_n16 PARTITION (ds = '1')
+SELECT a.key, a.value FROM test_table1_n17 a WHERE a.ds = '1'
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1')
-SELECT a.key, a.value FROM test_table1 a WHERE a.ds = '1'
+INSERT OVERWRITE TABLE test_table2_n16 PARTITION (ds = '1')
+SELECT a.key, a.value FROM test_table1_n17 a WHERE a.ds = '1'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -493,7 +493,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.test_table2
+                      name: default.test_table2_n16
 
   Stage: Stage-0
     Move Operator
@@ -505,7 +505,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.test_table2
+              name: default.test_table2_n16
 
   Stage: Stage-2
     Stats Work

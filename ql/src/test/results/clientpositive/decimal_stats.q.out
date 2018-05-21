@@ -1,53 +1,53 @@
-PREHOOK: query: drop table if exists decimal_1
+PREHOOK: query: drop table if exists decimal_1_n1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table if exists decimal_1
+POSTHOOK: query: drop table if exists decimal_1_n1
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table decimal_1 (t decimal(4,2), u decimal(5), v decimal)
+PREHOOK: query: create table decimal_1_n1 (t decimal(4,2), u decimal(5), v decimal)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@decimal_1
-POSTHOOK: query: create table decimal_1 (t decimal(4,2), u decimal(5), v decimal)
+PREHOOK: Output: default@decimal_1_n1
+POSTHOOK: query: create table decimal_1_n1 (t decimal(4,2), u decimal(5), v decimal)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@decimal_1
-PREHOOK: query: desc decimal_1
+POSTHOOK: Output: default@decimal_1_n1
+PREHOOK: query: desc decimal_1_n1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@decimal_1
-POSTHOOK: query: desc decimal_1
+PREHOOK: Input: default@decimal_1_n1
+POSTHOOK: query: desc decimal_1_n1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@decimal_1
+POSTHOOK: Input: default@decimal_1_n1
 t                   	decimal(4,2)        	                    
 u                   	decimal(5,0)        	                    
 v                   	decimal(10,0)       	                    
-PREHOOK: query: insert overwrite table decimal_1
+PREHOOK: query: insert overwrite table decimal_1_n1
   select cast('17.29' as decimal(4,2)), 3.1415926BD, null from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@decimal_1
-POSTHOOK: query: insert overwrite table decimal_1
+PREHOOK: Output: default@decimal_1_n1
+POSTHOOK: query: insert overwrite table decimal_1_n1
   select cast('17.29' as decimal(4,2)), 3.1415926BD, null from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@decimal_1
-POSTHOOK: Lineage: decimal_1.t SIMPLE []
-POSTHOOK: Lineage: decimal_1.u EXPRESSION []
-POSTHOOK: Lineage: decimal_1.v EXPRESSION []
-PREHOOK: query: analyze table decimal_1 compute statistics for columns
+POSTHOOK: Output: default@decimal_1_n1
+POSTHOOK: Lineage: decimal_1_n1.t SIMPLE []
+POSTHOOK: Lineage: decimal_1_n1.u EXPRESSION []
+POSTHOOK: Lineage: decimal_1_n1.v EXPRESSION []
+PREHOOK: query: analyze table decimal_1_n1 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@decimal_1
-PREHOOK: Output: default@decimal_1
+PREHOOK: Input: default@decimal_1_n1
+PREHOOK: Output: default@decimal_1_n1
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table decimal_1 compute statistics for columns
+POSTHOOK: query: analyze table decimal_1_n1 compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@decimal_1
-POSTHOOK: Output: default@decimal_1
+POSTHOOK: Input: default@decimal_1_n1
+POSTHOOK: Output: default@decimal_1_n1
 #### A masked pattern was here ####
-PREHOOK: query: desc formatted decimal_1 v
+PREHOOK: query: desc formatted decimal_1_n1 v
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@decimal_1
-POSTHOOK: query: desc formatted decimal_1 v
+PREHOOK: Input: default@decimal_1_n1
+POSTHOOK: query: desc formatted decimal_1_n1 v
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@decimal_1
+POSTHOOK: Input: default@decimal_1_n1
 col_name            	v                   	 	 	 	 	 	 	 	 	 	 
 data_type           	decimal(10,0)       	 	 	 	 	 	 	 	 	 	 
 min                 	                    	 	 	 	 	 	 	 	 	 	 
@@ -61,9 +61,9 @@ num_falses
 bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"t\":\"true\",\"u\":\"true\",\"v\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
-PREHOOK: query: explain select * from decimal_1 order by t limit 100
+PREHOOK: query: explain select * from decimal_1_n1 order by t limit 100
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from decimal_1 order by t limit 100
+POSTHOOK: query: explain select * from decimal_1_n1 order by t limit 100
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -74,7 +74,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: decimal_1
+            alias: decimal_1_n1
             Statistics: Num rows: 500 Data size: 112112 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: t (type: decimal(4,2)), u (type: decimal(5,0)), v (type: decimal(10,0))
@@ -109,11 +109,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: drop table decimal_1
+PREHOOK: query: drop table decimal_1_n1
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@decimal_1
-PREHOOK: Output: default@decimal_1
-POSTHOOK: query: drop table decimal_1
+PREHOOK: Input: default@decimal_1_n1
+PREHOOK: Output: default@decimal_1_n1
+POSTHOOK: query: drop table decimal_1_n1
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@decimal_1
-POSTHOOK: Output: default@decimal_1
+POSTHOOK: Input: default@decimal_1_n1
+POSTHOOK: Output: default@decimal_1_n1

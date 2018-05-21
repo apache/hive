@@ -1,17 +1,17 @@
-PREHOOK: query: CREATE TABLE bucket3_1(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS
+PREHOOK: query: CREATE TABLE bucket3_1_n0(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@bucket3_1
-POSTHOOK: query: CREATE TABLE bucket3_1(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS
+PREHOOK: Output: default@bucket3_1_n0
+POSTHOOK: query: CREATE TABLE bucket3_1_n0(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@bucket3_1
+POSTHOOK: Output: default@bucket3_1_n0
 PREHOOK: query: explain
-insert overwrite table bucket3_1 partition (ds='1')
+insert overwrite table bucket3_1_n0 partition (ds='1')
 select * from src
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-insert overwrite table bucket3_1 partition (ds='1')
+insert overwrite table bucket3_1_n0 partition (ds='1')
 select * from src
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -49,7 +49,7 @@ STAGE PLANS:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: default.bucket3_1
+                name: default.bucket3_1_n0
           Select Operator
             expressions: _col0 (type: int), _col1 (type: string), '1' (type: string)
             outputColumnNames: key, value, ds
@@ -77,7 +77,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.bucket3_1
+              name: default.bucket3_1_n0
 
   Stage: Stage-2
     Stats Work
@@ -85,7 +85,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: int, string
-          Table: default.bucket3_1
+          Table: default.bucket3_1_n0
 
   Stage: Stage-3
     Map Reduce
@@ -117,51 +117,51 @@ STAGE PLANS:
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
-PREHOOK: query: insert overwrite table bucket3_1 partition (ds='1')
+PREHOOK: query: insert overwrite table bucket3_1_n0 partition (ds='1')
 select * from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@bucket3_1@ds=1
-POSTHOOK: query: insert overwrite table bucket3_1 partition (ds='1')
+PREHOOK: Output: default@bucket3_1_n0@ds=1
+POSTHOOK: query: insert overwrite table bucket3_1_n0 partition (ds='1')
 select * from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@bucket3_1@ds=1
-POSTHOOK: Lineage: bucket3_1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: bucket3_1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: insert overwrite table bucket3_1 partition (ds='1')
+POSTHOOK: Output: default@bucket3_1_n0@ds=1
+POSTHOOK: Lineage: bucket3_1_n0 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: bucket3_1_n0 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table bucket3_1_n0 partition (ds='1')
 select * from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@bucket3_1@ds=1
-POSTHOOK: query: insert overwrite table bucket3_1 partition (ds='1')
+PREHOOK: Output: default@bucket3_1_n0@ds=1
+POSTHOOK: query: insert overwrite table bucket3_1_n0 partition (ds='1')
 select * from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@bucket3_1@ds=1
-POSTHOOK: Lineage: bucket3_1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: bucket3_1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: insert overwrite table bucket3_1 partition (ds='2')
+POSTHOOK: Output: default@bucket3_1_n0@ds=1
+POSTHOOK: Lineage: bucket3_1_n0 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: bucket3_1_n0 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table bucket3_1_n0 partition (ds='2')
 select * from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@bucket3_1@ds=2
-POSTHOOK: query: insert overwrite table bucket3_1 partition (ds='2')
+PREHOOK: Output: default@bucket3_1_n0@ds=2
+POSTHOOK: query: insert overwrite table bucket3_1_n0 partition (ds='2')
 select * from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@bucket3_1@ds=2
-POSTHOOK: Lineage: bucket3_1 PARTITION(ds=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: bucket3_1 PARTITION(ds=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from bucket3_1 tablesample (bucket 1 out of 2) s where ds = '1' order by key
+POSTHOOK: Output: default@bucket3_1_n0@ds=2
+POSTHOOK: Lineage: bucket3_1_n0 PARTITION(ds=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: bucket3_1_n0 PARTITION(ds=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from bucket3_1_n0 tablesample (bucket 1 out of 2) s where ds = '1' order by key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@bucket3_1
-PREHOOK: Input: default@bucket3_1@ds=1
+PREHOOK: Input: default@bucket3_1_n0
+PREHOOK: Input: default@bucket3_1_n0@ds=1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from bucket3_1 tablesample (bucket 1 out of 2) s where ds = '1' order by key
+POSTHOOK: query: select * from bucket3_1_n0 tablesample (bucket 1 out of 2) s where ds = '1' order by key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@bucket3_1
-POSTHOOK: Input: default@bucket3_1@ds=1
+POSTHOOK: Input: default@bucket3_1_n0
+POSTHOOK: Input: default@bucket3_1_n0@ds=1
 #### A masked pattern was here ####
 2	val_2	1
 10	val_10	1
@@ -406,9 +406,9 @@ POSTHOOK: Input: default@bucket3_1@ds=1
 498	val_498	1
 498	val_498	1
 498	val_498	1
-PREHOOK: query: explain analyze table bucket3_1 partition (ds) compute statistics
+PREHOOK: query: explain analyze table bucket3_1_n0 partition (ds) compute statistics
 PREHOOK: type: QUERY
-POSTHOOK: query: explain analyze table bucket3_1 partition (ds) compute statistics
+POSTHOOK: query: explain analyze table bucket3_1_n0 partition (ds) compute statistics
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -419,35 +419,35 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: bucket3_1
+            alias: bucket3_1_n0
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
 
   Stage: Stage-1
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: analyze table bucket3_1 partition (ds) compute statistics
+PREHOOK: query: analyze table bucket3_1_n0 partition (ds) compute statistics
 PREHOOK: type: QUERY
-PREHOOK: Input: default@bucket3_1
-PREHOOK: Input: default@bucket3_1@ds=1
-PREHOOK: Input: default@bucket3_1@ds=2
-PREHOOK: Output: default@bucket3_1
-PREHOOK: Output: default@bucket3_1@ds=1
-PREHOOK: Output: default@bucket3_1@ds=2
-POSTHOOK: query: analyze table bucket3_1 partition (ds) compute statistics
+PREHOOK: Input: default@bucket3_1_n0
+PREHOOK: Input: default@bucket3_1_n0@ds=1
+PREHOOK: Input: default@bucket3_1_n0@ds=2
+PREHOOK: Output: default@bucket3_1_n0
+PREHOOK: Output: default@bucket3_1_n0@ds=1
+PREHOOK: Output: default@bucket3_1_n0@ds=2
+POSTHOOK: query: analyze table bucket3_1_n0 partition (ds) compute statistics
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@bucket3_1
-POSTHOOK: Input: default@bucket3_1@ds=1
-POSTHOOK: Input: default@bucket3_1@ds=2
-POSTHOOK: Output: default@bucket3_1
-POSTHOOK: Output: default@bucket3_1@ds=1
-POSTHOOK: Output: default@bucket3_1@ds=2
-PREHOOK: query: describe formatted bucket3_1 partition (ds='1')
+POSTHOOK: Input: default@bucket3_1_n0
+POSTHOOK: Input: default@bucket3_1_n0@ds=1
+POSTHOOK: Input: default@bucket3_1_n0@ds=2
+POSTHOOK: Output: default@bucket3_1_n0
+POSTHOOK: Output: default@bucket3_1_n0@ds=1
+POSTHOOK: Output: default@bucket3_1_n0@ds=2
+PREHOOK: query: describe formatted bucket3_1_n0 partition (ds='1')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@bucket3_1
-POSTHOOK: query: describe formatted bucket3_1 partition (ds='1')
+PREHOOK: Input: default@bucket3_1_n0
+POSTHOOK: query: describe formatted bucket3_1_n0 partition (ds='1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@bucket3_1
+POSTHOOK: Input: default@bucket3_1_n0
 # col_name            	data_type           	comment             
 key                 	int                 	                    
 value               	string              	                    
@@ -459,7 +459,7 @@ ds                  	string
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
 Database:           	default             	 
-Table:              	bucket3_1           	 
+Table:              	bucket3_1_n0        	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
@@ -479,12 +479,12 @@ Bucket Columns:     	[key]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: describe formatted bucket3_1 partition (ds='2')
+PREHOOK: query: describe formatted bucket3_1_n0 partition (ds='2')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@bucket3_1
-POSTHOOK: query: describe formatted bucket3_1 partition (ds='2')
+PREHOOK: Input: default@bucket3_1_n0
+POSTHOOK: query: describe formatted bucket3_1_n0 partition (ds='2')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@bucket3_1
+POSTHOOK: Input: default@bucket3_1_n0
 # col_name            	data_type           	comment             
 key                 	int                 	                    
 value               	string              	                    
@@ -496,7 +496,7 @@ ds                  	string
 # Detailed Partition Information	 	 
 Partition Value:    	[2]                 	 
 Database:           	default             	 
-Table:              	bucket3_1           	 
+Table:              	bucket3_1_n0        	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
@@ -516,12 +516,12 @@ Bucket Columns:     	[key]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: describe formatted bucket3_1
+PREHOOK: query: describe formatted bucket3_1_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@bucket3_1
-POSTHOOK: query: describe formatted bucket3_1
+PREHOOK: Input: default@bucket3_1_n0
+POSTHOOK: query: describe formatted bucket3_1_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@bucket3_1
+POSTHOOK: Input: default@bucket3_1_n0
 # col_name            	data_type           	comment             
 key                 	int                 	                    
 value               	string              	                    

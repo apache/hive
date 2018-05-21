@@ -4,9 +4,9 @@ set hive.strict.checks.cartesian.product=false;
 SET hive.vectorized.execution.enabled=true;
 
 -- First, create source tables
-DROP TABLE IF EXISTS dummy;
-CREATE TABLE dummy (i int);
-INSERT INTO TABLE dummy VALUES (42);
+DROP TABLE IF EXISTS dummy_n0;
+CREATE TABLE dummy_n0 (i int);
+INSERT INTO TABLE dummy_n0 VALUES (42);
 
 DROP TABLE IF EXISTS nested_tbl_1;
 CREATE TABLE nested_tbl_1 (
@@ -27,7 +27,7 @@ INSERT INTO TABLE nested_tbl_1 SELECT
   named_struct('f16', array(named_struct('f17', 'foo', 'f18', named_struct('f19', 14)), named_struct('f17', 'bar', 'f18', named_struct('f19', 28)))),
   map('key1', named_struct('f20', array(named_struct('f21', named_struct('f22', 1)))),
       'key2', named_struct('f20', array(named_struct('f21', named_struct('f22', 2)))))
-FROM dummy;
+FROM dummy_n0;
 
 DROP TABLE IF EXISTS nested_tbl_2;
 CREATE TABLE nested_tbl_2 LIKE nested_tbl_1;
@@ -40,7 +40,7 @@ INSERT INTO TABLE nested_tbl_2 SELECT
   named_struct('f16', array(named_struct('f17', 'bar', 'f18', named_struct('f19', 28)), named_struct('f17', 'foo', 'f18', named_struct('f19', 56)))),
   map('key3', named_struct('f20', array(named_struct('f21', named_struct('f22', 3)))),
       'key4', named_struct('f20', array(named_struct('f21', named_struct('f22', 4)))))
-FROM dummy;
+FROM dummy_n0;
 
 -- Testing only select statements
 

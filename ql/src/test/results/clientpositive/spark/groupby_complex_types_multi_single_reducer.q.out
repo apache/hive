@@ -1,28 +1,28 @@
-PREHOOK: query: CREATE TABLE DEST1(key ARRAY<STRING>, value BIGINT) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE DEST1_n47(key ARRAY<STRING>, value BIGINT) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEST1
-POSTHOOK: query: CREATE TABLE DEST1(key ARRAY<STRING>, value BIGINT) STORED AS TEXTFILE
+PREHOOK: Output: default@DEST1_n47
+POSTHOOK: query: CREATE TABLE DEST1_n47(key ARRAY<STRING>, value BIGINT) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEST1
-PREHOOK: query: CREATE TABLE DEST2(key MAP<STRING, STRING>, value BIGINT) STORED AS TEXTFILE
+POSTHOOK: Output: default@DEST1_n47
+PREHOOK: query: CREATE TABLE DEST2_n8(key MAP<STRING, STRING>, value BIGINT) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEST2
-POSTHOOK: query: CREATE TABLE DEST2(key MAP<STRING, STRING>, value BIGINT) STORED AS TEXTFILE
+PREHOOK: Output: default@DEST2_n8
+POSTHOOK: query: CREATE TABLE DEST2_n8(key MAP<STRING, STRING>, value BIGINT) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEST2
+POSTHOOK: Output: default@DEST2_n8
 PREHOOK: query: EXPLAIN
 FROM SRC
-INSERT OVERWRITE TABLE DEST1 SELECT ARRAY(SRC.key) as keyarray, COUNT(1) GROUP BY ARRAY(SRC.key) ORDER BY keyarray limit 10
-INSERT OVERWRITE TABLE DEST2 SELECT MAP(SRC.key, SRC.value) as kvmap, COUNT(1) GROUP BY MAP(SRC.key, SRC.value) ORDER BY kvmap limit 10
+INSERT OVERWRITE TABLE DEST1_n47 SELECT ARRAY(SRC.key) as keyarray, COUNT(1) GROUP BY ARRAY(SRC.key) ORDER BY keyarray limit 10
+INSERT OVERWRITE TABLE DEST2_n8 SELECT MAP(SRC.key, SRC.value) as kvmap, COUNT(1) GROUP BY MAP(SRC.key, SRC.value) ORDER BY kvmap limit 10
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 FROM SRC
-INSERT OVERWRITE TABLE DEST1 SELECT ARRAY(SRC.key) as keyarray, COUNT(1) GROUP BY ARRAY(SRC.key) ORDER BY keyarray limit 10
-INSERT OVERWRITE TABLE DEST2 SELECT MAP(SRC.key, SRC.value) as kvmap, COUNT(1) GROUP BY MAP(SRC.key, SRC.value) ORDER BY kvmap limit 10
+INSERT OVERWRITE TABLE DEST1_n47 SELECT ARRAY(SRC.key) as keyarray, COUNT(1) GROUP BY ARRAY(SRC.key) ORDER BY keyarray limit 10
+INSERT OVERWRITE TABLE DEST2_n8 SELECT MAP(SRC.key, SRC.value) as kvmap, COUNT(1) GROUP BY MAP(SRC.key, SRC.value) ORDER BY kvmap limit 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -116,7 +116,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.dest1
+                        name: default.dest1_n47
         Reducer 4 
             Reduce Operator Tree:
               Group By Operator
@@ -148,7 +148,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.dest2
+                        name: default.dest2_n8
 
   Stage: Stage-0
     Move Operator
@@ -158,7 +158,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n47
 
   Stage: Stage-3
     Stats Work
@@ -172,37 +172,37 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest2
+              name: default.dest2_n8
 
   Stage: Stage-4
     Stats Work
       Basic Stats Work:
 
 PREHOOK: query: FROM SRC
-INSERT OVERWRITE TABLE DEST1 SELECT ARRAY(SRC.key) as keyarray, COUNT(1) GROUP BY ARRAY(SRC.key) ORDER BY keyarray limit 10
-INSERT OVERWRITE TABLE DEST2 SELECT MAP(SRC.key, SRC.value) as kvmap, COUNT(1) GROUP BY MAP(SRC.key, SRC.value) ORDER BY kvmap limit 10
+INSERT OVERWRITE TABLE DEST1_n47 SELECT ARRAY(SRC.key) as keyarray, COUNT(1) GROUP BY ARRAY(SRC.key) ORDER BY keyarray limit 10
+INSERT OVERWRITE TABLE DEST2_n8 SELECT MAP(SRC.key, SRC.value) as kvmap, COUNT(1) GROUP BY MAP(SRC.key, SRC.value) ORDER BY kvmap limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@dest1
-PREHOOK: Output: default@dest2
+PREHOOK: Output: default@dest1_n47
+PREHOOK: Output: default@dest2_n8
 POSTHOOK: query: FROM SRC
-INSERT OVERWRITE TABLE DEST1 SELECT ARRAY(SRC.key) as keyarray, COUNT(1) GROUP BY ARRAY(SRC.key) ORDER BY keyarray limit 10
-INSERT OVERWRITE TABLE DEST2 SELECT MAP(SRC.key, SRC.value) as kvmap, COUNT(1) GROUP BY MAP(SRC.key, SRC.value) ORDER BY kvmap limit 10
+INSERT OVERWRITE TABLE DEST1_n47 SELECT ARRAY(SRC.key) as keyarray, COUNT(1) GROUP BY ARRAY(SRC.key) ORDER BY keyarray limit 10
+INSERT OVERWRITE TABLE DEST2_n8 SELECT MAP(SRC.key, SRC.value) as kvmap, COUNT(1) GROUP BY MAP(SRC.key, SRC.value) ORDER BY kvmap limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@dest1
-POSTHOOK: Output: default@dest2
-POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.value EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: dest2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.value EXPRESSION [(src)src.null, ]
-PREHOOK: query: SELECT DEST1.* FROM DEST1
+POSTHOOK: Output: default@dest1_n47
+POSTHOOK: Output: default@dest2_n8
+POSTHOOK: Lineage: dest1_n47.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n47.value EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: dest2_n8.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n8.value EXPRESSION [(src)src.null, ]
+PREHOOK: query: SELECT DEST1_n47.* FROM DEST1_n47
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n47
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT DEST1.* FROM DEST1
+POSTHOOK: query: SELECT DEST1_n47.* FROM DEST1_n47
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n47
 #### A masked pattern was here ####
 ["0"]	3
 ["10"]	1
@@ -214,13 +214,13 @@ POSTHOOK: Input: default@dest1
 ["111"]	1
 ["113"]	2
 ["114"]	1
-PREHOOK: query: SELECT DEST2.* FROM DEST2
+PREHOOK: query: SELECT DEST2_n8.* FROM DEST2_n8
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest2
+PREHOOK: Input: default@dest2_n8
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT DEST2.* FROM DEST2
+POSTHOOK: query: SELECT DEST2_n8.* FROM DEST2_n8
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest2
+POSTHOOK: Input: default@dest2_n8
 #### A masked pattern was here ####
 {"0":"val_0"}	3
 {"10":"val_10"}	1

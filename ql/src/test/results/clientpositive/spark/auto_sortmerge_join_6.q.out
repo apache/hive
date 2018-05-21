@@ -1,27 +1,27 @@
-PREHOOK: query: CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: query: CREATE TABLE tbl1_n4(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tbl1
-POSTHOOK: query: CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: Output: default@tbl1_n4
+POSTHOOK: query: CREATE TABLE tbl1_n4(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tbl1
-PREHOOK: query: CREATE TABLE tbl2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+POSTHOOK: Output: default@tbl1_n4
+PREHOOK: query: CREATE TABLE tbl2_n3(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tbl2
-POSTHOOK: query: CREATE TABLE tbl2(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: Output: default@tbl2_n3
+POSTHOOK: query: CREATE TABLE tbl2_n3(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tbl2
-PREHOOK: query: CREATE TABLE tbl3(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+POSTHOOK: Output: default@tbl2_n3
+PREHOOK: query: CREATE TABLE tbl3_n0(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tbl3
-POSTHOOK: query: CREATE TABLE tbl3(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: Output: default@tbl3_n0
+POSTHOOK: query: CREATE TABLE tbl3_n0(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tbl3
+POSTHOOK: Output: default@tbl3_n0
 PREHOOK: query: CREATE TABLE tbl4(key int, value string) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -30,36 +30,36 @@ POSTHOOK: query: CREATE TABLE tbl4(key int, value string) CLUSTERED BY (value) S
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl4
-PREHOOK: query: insert overwrite table tbl1 select * from src
+PREHOOK: query: insert overwrite table tbl1_n4 select * from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@tbl1
-POSTHOOK: query: insert overwrite table tbl1 select * from src
+PREHOOK: Output: default@tbl1_n4
+POSTHOOK: query: insert overwrite table tbl1_n4 select * from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@tbl1
-POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: insert overwrite table tbl2 select * from src
+POSTHOOK: Output: default@tbl1_n4
+POSTHOOK: Lineage: tbl1_n4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl1_n4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table tbl2_n3 select * from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@tbl2
-POSTHOOK: query: insert overwrite table tbl2 select * from src
+PREHOOK: Output: default@tbl2_n3
+POSTHOOK: query: insert overwrite table tbl2_n3 select * from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@tbl2
-POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: insert overwrite table tbl3 select * from src
+POSTHOOK: Output: default@tbl2_n3
+POSTHOOK: Lineage: tbl2_n3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2_n3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table tbl3_n0 select * from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@tbl3
-POSTHOOK: query: insert overwrite table tbl3 select * from src
+PREHOOK: Output: default@tbl3_n0
+POSTHOOK: query: insert overwrite table tbl3_n0 select * from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@tbl3
-POSTHOOK: Lineage: tbl3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@tbl3_n0
+POSTHOOK: Lineage: tbl3_n0.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl3_n0.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: insert overwrite table tbl4 select * from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -70,9 +70,9 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@tbl4
 POSTHOOK: Lineage: tbl4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: explain select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src c on c.value = a.value
+PREHOOK: query: explain select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join src c on c.value = a.value
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src c on c.value = a.value
+POSTHOOK: query: explain select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join src c on c.value = a.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -197,22 +197,22 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src c on c.value = a.value
+PREHOOK: query: select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join src c on c.value = a.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Input: default@tbl1
-PREHOOK: Input: default@tbl2
+PREHOOK: Input: default@tbl1_n4
+PREHOOK: Input: default@tbl2_n3
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src c on c.value = a.value
+POSTHOOK: query: select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join src c on c.value = a.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Input: default@tbl1
-POSTHOOK: Input: default@tbl2
+POSTHOOK: Input: default@tbl1_n4
+POSTHOOK: Input: default@tbl2_n3
 #### A masked pattern was here ####
 2654
-PREHOOK: query: explain select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src d on d.value = a.value
+PREHOOK: query: explain select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join src d on d.value = a.value
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src d on d.value = a.value
+POSTHOOK: query: explain select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join src d on d.value = a.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -337,22 +337,22 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src d on d.value = a.value
+PREHOOK: query: select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join src d on d.value = a.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Input: default@tbl1
-PREHOOK: Input: default@tbl2
+PREHOOK: Input: default@tbl1_n4
+PREHOOK: Input: default@tbl2_n3
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src d on d.value = a.value
+POSTHOOK: query: select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join src d on d.value = a.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Input: default@tbl1
-POSTHOOK: Input: default@tbl2
+POSTHOOK: Input: default@tbl1_n4
+POSTHOOK: Input: default@tbl2_n3
 #### A masked pattern was here ####
 2654
-PREHOOK: query: explain select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src h on h.value = a.value
+PREHOOK: query: explain select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join src h on h.value = a.value
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src h on h.value = a.value
+POSTHOOK: query: explain select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join src h on h.value = a.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -477,22 +477,22 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src h on h.value = a.value
+PREHOOK: query: select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join src h on h.value = a.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Input: default@tbl1
-PREHOOK: Input: default@tbl2
+PREHOOK: Input: default@tbl1_n4
+PREHOOK: Input: default@tbl2_n3
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src h on h.value = a.value
+POSTHOOK: query: select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join src h on h.value = a.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Input: default@tbl1
-POSTHOOK: Input: default@tbl2
+POSTHOOK: Input: default@tbl1_n4
+POSTHOOK: Input: default@tbl2_n3
 #### A masked pattern was here ####
 2654
-PREHOOK: query: explain select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src c on c.key = a.key
+PREHOOK: query: explain select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join src c on c.key = a.key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src c on c.key = a.key
+POSTHOOK: query: explain select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join src c on c.key = a.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -617,22 +617,22 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src c on c.key = a.key
+PREHOOK: query: select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join src c on c.key = a.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Input: default@tbl1
-PREHOOK: Input: default@tbl2
+PREHOOK: Input: default@tbl1_n4
+PREHOOK: Input: default@tbl2_n3
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src c on c.key = a.key
+POSTHOOK: query: select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join src c on c.key = a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Input: default@tbl1
-POSTHOOK: Input: default@tbl2
+POSTHOOK: Input: default@tbl1_n4
+POSTHOOK: Input: default@tbl2_n3
 #### A masked pattern was here ####
 2654
-PREHOOK: query: explain select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join tbl3 c on c.key = a.key
+PREHOOK: query: explain select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join tbl3_n0 c on c.key = a.key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join tbl3 c on c.key = a.key
+POSTHOOK: query: explain select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join tbl3_n0 c on c.key = a.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -697,22 +697,22 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join tbl3 c on c.key = a.key
+PREHOOK: query: select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join tbl3_n0 c on c.key = a.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tbl1
-PREHOOK: Input: default@tbl2
-PREHOOK: Input: default@tbl3
+PREHOOK: Input: default@tbl1_n4
+PREHOOK: Input: default@tbl2_n3
+PREHOOK: Input: default@tbl3_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join tbl3 c on c.key = a.key
+POSTHOOK: query: select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join tbl3_n0 c on c.key = a.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tbl1
-POSTHOOK: Input: default@tbl2
-POSTHOOK: Input: default@tbl3
+POSTHOOK: Input: default@tbl1_n4
+POSTHOOK: Input: default@tbl2_n3
+POSTHOOK: Input: default@tbl3_n0
 #### A masked pattern was here ####
 2654
-PREHOOK: query: explain select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join tbl4 c on c.value = a.value
+PREHOOK: query: explain select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join tbl4 c on c.value = a.value
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join tbl4 c on c.value = a.value
+POSTHOOK: query: explain select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join tbl4 c on c.value = a.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -809,22 +809,22 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join tbl4 c on c.value = a.value
+PREHOOK: query: select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join tbl4 c on c.value = a.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tbl1
-PREHOOK: Input: default@tbl2
+PREHOOK: Input: default@tbl1_n4
+PREHOOK: Input: default@tbl2_n3
 PREHOOK: Input: default@tbl4
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join tbl4 c on c.value = a.value
+POSTHOOK: query: select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join tbl4 c on c.value = a.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tbl1
-POSTHOOK: Input: default@tbl2
+POSTHOOK: Input: default@tbl1_n4
+POSTHOOK: Input: default@tbl2_n3
 POSTHOOK: Input: default@tbl4
 #### A masked pattern was here ####
 2654
-PREHOOK: query: explain select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src c on c.value = a.value
+PREHOOK: query: explain select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join src c on c.value = a.value
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src c on c.value = a.value
+POSTHOOK: query: explain select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join src c on c.value = a.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -949,22 +949,22 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src c on c.value = a.value
+PREHOOK: query: select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join src c on c.value = a.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Input: default@tbl1
-PREHOOK: Input: default@tbl2
+PREHOOK: Input: default@tbl1_n4
+PREHOOK: Input: default@tbl2_n3
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src c on c.value = a.value
+POSTHOOK: query: select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join src c on c.value = a.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Input: default@tbl1
-POSTHOOK: Input: default@tbl2
+POSTHOOK: Input: default@tbl1_n4
+POSTHOOK: Input: default@tbl2_n3
 #### A masked pattern was here ####
 2654
-PREHOOK: query: explain select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src c on c.key = a.key
+PREHOOK: query: explain select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join src c on c.key = a.key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src c on c.key = a.key
+POSTHOOK: query: explain select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join src c on c.key = a.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1089,22 +1089,22 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src c on c.key = a.key
+PREHOOK: query: select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join src c on c.key = a.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Input: default@tbl1
-PREHOOK: Input: default@tbl2
+PREHOOK: Input: default@tbl1_n4
+PREHOOK: Input: default@tbl2_n3
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src c on c.key = a.key
+POSTHOOK: query: select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join src c on c.key = a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Input: default@tbl1
-POSTHOOK: Input: default@tbl2
+POSTHOOK: Input: default@tbl1_n4
+POSTHOOK: Input: default@tbl2_n3
 #### A masked pattern was here ####
 2654
-PREHOOK: query: explain select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join tbl3 c on c.key = a.key
+PREHOOK: query: explain select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join tbl3_n0 c on c.key = a.key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join tbl3 c on c.key = a.key
+POSTHOOK: query: explain select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join tbl3_n0 c on c.key = a.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1169,22 +1169,22 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join tbl3 c on c.key = a.key
+PREHOOK: query: select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join tbl3_n0 c on c.key = a.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tbl1
-PREHOOK: Input: default@tbl2
-PREHOOK: Input: default@tbl3
+PREHOOK: Input: default@tbl1_n4
+PREHOOK: Input: default@tbl2_n3
+PREHOOK: Input: default@tbl3_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join tbl3 c on c.key = a.key
+POSTHOOK: query: select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join tbl3_n0 c on c.key = a.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tbl1
-POSTHOOK: Input: default@tbl2
-POSTHOOK: Input: default@tbl3
+POSTHOOK: Input: default@tbl1_n4
+POSTHOOK: Input: default@tbl2_n3
+POSTHOOK: Input: default@tbl3_n0
 #### A masked pattern was here ####
 2654
-PREHOOK: query: explain select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join tbl4 c on c.value = a.value
+PREHOOK: query: explain select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join tbl4 c on c.value = a.value
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join tbl4 c on c.value = a.value
+POSTHOOK: query: explain select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join tbl4 c on c.value = a.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1281,16 +1281,16 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join tbl4 c on c.value = a.value
+PREHOOK: query: select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join tbl4 c on c.value = a.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tbl1
-PREHOOK: Input: default@tbl2
+PREHOOK: Input: default@tbl1_n4
+PREHOOK: Input: default@tbl2_n3
 PREHOOK: Input: default@tbl4
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join tbl4 c on c.value = a.value
+POSTHOOK: query: select count(*) FROM tbl1_n4 a JOIN tbl2_n3 b ON a.key = b.key join tbl4 c on c.value = a.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tbl1
-POSTHOOK: Input: default@tbl2
+POSTHOOK: Input: default@tbl1_n4
+POSTHOOK: Input: default@tbl2_n3
 POSTHOOK: Input: default@tbl4
 #### A masked pattern was here ####
 2654

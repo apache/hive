@@ -1,59 +1,59 @@
-PREHOOK: query: create table tbl (n bigint, t string)
+PREHOOK: query: create table tbl_n1 (n bigint, t string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tbl
-POSTHOOK: query: create table tbl (n bigint, t string)
+PREHOOK: Output: default@tbl_n1
+POSTHOOK: query: create table tbl_n1 (n bigint, t string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tbl
-PREHOOK: query: insert into tbl values (1, 'one')
+POSTHOOK: Output: default@tbl_n1
+PREHOOK: query: insert into tbl_n1 values (1, 'one')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@tbl
-POSTHOOK: query: insert into tbl values (1, 'one')
+PREHOOK: Output: default@tbl_n1
+POSTHOOK: query: insert into tbl_n1 values (1, 'one')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@tbl
-POSTHOOK: Lineage: tbl.n SCRIPT []
-POSTHOOK: Lineage: tbl.t SCRIPT []
-PREHOOK: query: insert into tbl values(2, 'two')
+POSTHOOK: Output: default@tbl_n1
+POSTHOOK: Lineage: tbl_n1.n SCRIPT []
+POSTHOOK: Lineage: tbl_n1.t SCRIPT []
+PREHOOK: query: insert into tbl_n1 values(2, 'two')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@tbl
-POSTHOOK: query: insert into tbl values(2, 'two')
+PREHOOK: Output: default@tbl_n1
+POSTHOOK: query: insert into tbl_n1 values(2, 'two')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@tbl
-POSTHOOK: Lineage: tbl.n SCRIPT []
-POSTHOOK: Lineage: tbl.t SCRIPT []
+POSTHOOK: Output: default@tbl_n1
+POSTHOOK: Lineage: tbl_n1.n SCRIPT []
+POSTHOOK: Lineage: tbl_n1.t SCRIPT []
 Warning: Map Join MAPJOIN[13][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
-PREHOOK: query: select a.n, a.t, isnull(b.n), isnull(b.t) from (select * from tbl where n = 1) a  left outer join  (select * from tbl where 1 = 2) b on a.n = b.n
+PREHOOK: query: select a.n, a.t, isnull(b.n), isnull(b.t) from (select * from tbl_n1 where n = 1) a  left outer join  (select * from tbl_n1 where 1 = 2) b on a.n = b.n
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tbl
+PREHOOK: Input: default@tbl_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select a.n, a.t, isnull(b.n), isnull(b.t) from (select * from tbl where n = 1) a  left outer join  (select * from tbl where 1 = 2) b on a.n = b.n
+POSTHOOK: query: select a.n, a.t, isnull(b.n), isnull(b.t) from (select * from tbl_n1 where n = 1) a  left outer join  (select * from tbl_n1 where 1 = 2) b on a.n = b.n
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tbl
+POSTHOOK: Input: default@tbl_n1
 #### A masked pattern was here ####
 1	one	true	true
 Warning: Map Join MAPJOIN[13][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
-PREHOOK: query: select isnull(a.n), isnull(a.t), b.n, b.t from (select * from tbl where 2 = 1) a  right outer join  (select * from tbl where n = 2) b on a.n = b.n
+PREHOOK: query: select isnull(a.n), isnull(a.t), b.n, b.t from (select * from tbl_n1 where 2 = 1) a  right outer join  (select * from tbl_n1 where n = 2) b on a.n = b.n
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tbl
+PREHOOK: Input: default@tbl_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select isnull(a.n), isnull(a.t), b.n, b.t from (select * from tbl where 2 = 1) a  right outer join  (select * from tbl where n = 2) b on a.n = b.n
+POSTHOOK: query: select isnull(a.n), isnull(a.t), b.n, b.t from (select * from tbl_n1 where 2 = 1) a  right outer join  (select * from tbl_n1 where n = 2) b on a.n = b.n
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tbl
+POSTHOOK: Input: default@tbl_n1
 #### A masked pattern was here ####
 true	true	2	two
 Warning: Shuffle Join JOIN[8][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
-PREHOOK: query: select isnull(a.n), isnull(a.t), isnull(b.n), isnull(b.t) from (select * from tbl where n = 1) a  full outer join  (select * from tbl where n = 2) b on a.n = b.n
+PREHOOK: query: select isnull(a.n), isnull(a.t), isnull(b.n), isnull(b.t) from (select * from tbl_n1 where n = 1) a  full outer join  (select * from tbl_n1 where n = 2) b on a.n = b.n
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tbl
+PREHOOK: Input: default@tbl_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select isnull(a.n), isnull(a.t), isnull(b.n), isnull(b.t) from (select * from tbl where n = 1) a  full outer join  (select * from tbl where n = 2) b on a.n = b.n
+POSTHOOK: query: select isnull(a.n), isnull(a.t), isnull(b.n), isnull(b.t) from (select * from tbl_n1 where n = 1) a  full outer join  (select * from tbl_n1 where n = 2) b on a.n = b.n
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tbl
+POSTHOOK: Input: default@tbl_n1
 #### A masked pattern was here ####
 false	false	true	true
 true	true	false	false

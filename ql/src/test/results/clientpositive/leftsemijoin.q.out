@@ -1,113 +1,113 @@
-PREHOOK: query: drop table sales
+PREHOOK: query: drop table sales_n1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table sales
+POSTHOOK: query: drop table sales_n1
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: drop table things
+PREHOOK: query: drop table things_n1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table things
+POSTHOOK: query: drop table things_n1
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE sales (name STRING, id INT)
+PREHOOK: query: CREATE TABLE sales_n1 (name STRING, id INT)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@sales
-POSTHOOK: query: CREATE TABLE sales (name STRING, id INT)
+PREHOOK: Output: default@sales_n1
+POSTHOOK: query: CREATE TABLE sales_n1 (name STRING, id INT)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@sales
-PREHOOK: query: CREATE TABLE things (id INT, name STRING) partitioned by (ds string)
+POSTHOOK: Output: default@sales_n1
+PREHOOK: query: CREATE TABLE things_n1 (id INT, name STRING) partitioned by (ds string)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@things
-POSTHOOK: query: CREATE TABLE things (id INT, name STRING) partitioned by (ds string)
+PREHOOK: Output: default@things_n1
+POSTHOOK: query: CREATE TABLE things_n1 (id INT, name STRING) partitioned by (ds string)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@things
-PREHOOK: query: load data local inpath '../../data/files/sales.txt' INTO TABLE sales
+POSTHOOK: Output: default@things_n1
+PREHOOK: query: load data local inpath '../../data/files/sales.txt' INTO TABLE sales_n1
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@sales
-POSTHOOK: query: load data local inpath '../../data/files/sales.txt' INTO TABLE sales
+PREHOOK: Output: default@sales_n1
+POSTHOOK: query: load data local inpath '../../data/files/sales.txt' INTO TABLE sales_n1
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@sales
-PREHOOK: query: load data local inpath '../../data/files/things.txt' INTO TABLE things partition(ds='2011-10-23')
+POSTHOOK: Output: default@sales_n1
+PREHOOK: query: load data local inpath '../../data/files/things.txt' INTO TABLE things_n1 partition(ds='2011-10-23')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@things
-POSTHOOK: query: load data local inpath '../../data/files/things.txt' INTO TABLE things partition(ds='2011-10-23')
+PREHOOK: Output: default@things_n1
+POSTHOOK: query: load data local inpath '../../data/files/things.txt' INTO TABLE things_n1 partition(ds='2011-10-23')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@things
-POSTHOOK: Output: default@things@ds=2011-10-23
-PREHOOK: query: load data local inpath '../../data/files/things2.txt' INTO TABLE things partition(ds='2011-10-24')
+POSTHOOK: Output: default@things_n1
+POSTHOOK: Output: default@things_n1@ds=2011-10-23
+PREHOOK: query: load data local inpath '../../data/files/things2.txt' INTO TABLE things_n1 partition(ds='2011-10-24')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@things
-POSTHOOK: query: load data local inpath '../../data/files/things2.txt' INTO TABLE things partition(ds='2011-10-24')
+PREHOOK: Output: default@things_n1
+POSTHOOK: query: load data local inpath '../../data/files/things2.txt' INTO TABLE things_n1 partition(ds='2011-10-24')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@things
-POSTHOOK: Output: default@things@ds=2011-10-24
-PREHOOK: query: SELECT name,id FROM sales
+POSTHOOK: Output: default@things_n1
+POSTHOOK: Output: default@things_n1@ds=2011-10-24
+PREHOOK: query: SELECT name,id FROM sales_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@sales
+PREHOOK: Input: default@sales_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT name,id FROM sales
+POSTHOOK: query: SELECT name,id FROM sales_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@sales
+POSTHOOK: Input: default@sales_n1
 #### A masked pattern was here ####
 Hank	2
 Joe	2
-PREHOOK: query: SELECT id,name FROM things
+PREHOOK: query: SELECT id,name FROM things_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@things
-PREHOOK: Input: default@things@ds=2011-10-23
-PREHOOK: Input: default@things@ds=2011-10-24
+PREHOOK: Input: default@things_n1
+PREHOOK: Input: default@things_n1@ds=2011-10-23
+PREHOOK: Input: default@things_n1@ds=2011-10-24
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT id,name FROM things
+POSTHOOK: query: SELECT id,name FROM things_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@things
-POSTHOOK: Input: default@things@ds=2011-10-23
-POSTHOOK: Input: default@things@ds=2011-10-24
+POSTHOOK: Input: default@things_n1
+POSTHOOK: Input: default@things_n1@ds=2011-10-23
+POSTHOOK: Input: default@things_n1@ds=2011-10-24
 #### A masked pattern was here ####
 2	Tie
 2	Tie
-PREHOOK: query: SELECT name,id FROM sales LEFT SEMI JOIN things ON (sales.id = things.id)
+PREHOOK: query: SELECT name,id FROM sales_n1 LEFT SEMI JOIN things_n1 ON (sales_n1.id = things_n1.id)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@sales
-PREHOOK: Input: default@things
-PREHOOK: Input: default@things@ds=2011-10-23
-PREHOOK: Input: default@things@ds=2011-10-24
+PREHOOK: Input: default@sales_n1
+PREHOOK: Input: default@things_n1
+PREHOOK: Input: default@things_n1@ds=2011-10-23
+PREHOOK: Input: default@things_n1@ds=2011-10-24
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT name,id FROM sales LEFT SEMI JOIN things ON (sales.id = things.id)
+POSTHOOK: query: SELECT name,id FROM sales_n1 LEFT SEMI JOIN things_n1 ON (sales_n1.id = things_n1.id)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@sales
-POSTHOOK: Input: default@things
-POSTHOOK: Input: default@things@ds=2011-10-23
-POSTHOOK: Input: default@things@ds=2011-10-24
+POSTHOOK: Input: default@sales_n1
+POSTHOOK: Input: default@things_n1
+POSTHOOK: Input: default@things_n1@ds=2011-10-23
+POSTHOOK: Input: default@things_n1@ds=2011-10-24
 #### A masked pattern was here ####
 Hank	2
 Joe	2
-PREHOOK: query: drop table sales
+PREHOOK: query: drop table sales_n1
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@sales
-PREHOOK: Output: default@sales
-POSTHOOK: query: drop table sales
+PREHOOK: Input: default@sales_n1
+PREHOOK: Output: default@sales_n1
+POSTHOOK: query: drop table sales_n1
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@sales
-POSTHOOK: Output: default@sales
-PREHOOK: query: drop table things
+POSTHOOK: Input: default@sales_n1
+POSTHOOK: Output: default@sales_n1
+PREHOOK: query: drop table things_n1
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@things
-PREHOOK: Output: default@things
-POSTHOOK: query: drop table things
+PREHOOK: Input: default@things_n1
+PREHOOK: Output: default@things_n1
+POSTHOOK: query: drop table things_n1
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@things
-POSTHOOK: Output: default@things
+POSTHOOK: Input: default@things_n1
+POSTHOOK: Output: default@things_n1
 Warning: Shuffle Join JOIN[10][tables = [$hdt$_1, $hdt$_2]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: explain select part.p_type from part join (select p1.p_name from part p1, part p2 group by p1.p_name) pp ON pp.p_name = part.p_name
 PREHOOK: type: QUERY

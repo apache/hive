@@ -1,8 +1,8 @@
-PREHOOK: query: DROP TABLE IF EXISTS parquet_types_staging
+PREHOOK: query: DROP TABLE IF EXISTS parquet_types_staging_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE IF EXISTS parquet_types_staging
+POSTHOOK: query: DROP TABLE IF EXISTS parquet_types_staging_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE parquet_types_staging (
+PREHOOK: query: CREATE TABLE parquet_types_staging_n0 (
   cint int,
   ctinyint tinyint,
   csmallint smallint,
@@ -23,8 +23,8 @@ COLLECTION ITEMS TERMINATED BY ','
 MAP KEYS TERMINATED BY ':'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@parquet_types_staging
-POSTHOOK: query: CREATE TABLE parquet_types_staging (
+PREHOOK: Output: default@parquet_types_staging_n0
+POSTHOOK: query: CREATE TABLE parquet_types_staging_n0 (
   cint int,
   ctinyint tinyint,
   csmallint smallint,
@@ -45,15 +45,15 @@ COLLECTION ITEMS TERMINATED BY ','
 MAP KEYS TERMINATED BY ':'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@parquet_types_staging
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_types.txt' OVERWRITE INTO TABLE parquet_types_staging
+POSTHOOK: Output: default@parquet_types_staging_n0
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_types.txt' OVERWRITE INTO TABLE parquet_types_staging_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@parquet_types_staging
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_types.txt' OVERWRITE INTO TABLE parquet_types_staging
+PREHOOK: Output: default@parquet_types_staging_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_types.txt' OVERWRITE INTO TABLE parquet_types_staging_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@parquet_types_staging
+POSTHOOK: Output: default@parquet_types_staging_n0
 PREHOOK: query: DROP TABLE IF EXISTS parquet_project_test
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE IF EXISTS parquet_project_test
@@ -73,44 +73,44 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_project_test
 PREHOOK: query: insert into parquet_project_test
-select ctinyint, map("color","red") from parquet_types_staging
+select ctinyint, map("color","red") from parquet_types_staging_n0
 where ctinyint = 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@parquet_types_staging
+PREHOOK: Input: default@parquet_types_staging_n0
 PREHOOK: Output: default@parquet_project_test
 POSTHOOK: query: insert into parquet_project_test
-select ctinyint, map("color","red") from parquet_types_staging
+select ctinyint, map("color","red") from parquet_types_staging_n0
 where ctinyint = 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@parquet_types_staging
+POSTHOOK: Input: default@parquet_types_staging_n0
 POSTHOOK: Output: default@parquet_project_test
 POSTHOOK: Lineage: parquet_project_test.cint EXPRESSION []
 POSTHOOK: Lineage: parquet_project_test.m1 EXPRESSION []
 PREHOOK: query: insert into parquet_project_test
-select ctinyint, map("color","green") from parquet_types_staging
+select ctinyint, map("color","green") from parquet_types_staging_n0
 where ctinyint = 2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@parquet_types_staging
+PREHOOK: Input: default@parquet_types_staging_n0
 PREHOOK: Output: default@parquet_project_test
 POSTHOOK: query: insert into parquet_project_test
-select ctinyint, map("color","green") from parquet_types_staging
+select ctinyint, map("color","green") from parquet_types_staging_n0
 where ctinyint = 2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@parquet_types_staging
+POSTHOOK: Input: default@parquet_types_staging_n0
 POSTHOOK: Output: default@parquet_project_test
 POSTHOOK: Lineage: parquet_project_test.cint EXPRESSION []
 POSTHOOK: Lineage: parquet_project_test.m1 EXPRESSION []
 PREHOOK: query: insert into parquet_project_test
-select ctinyint, map("color","blue") from parquet_types_staging
+select ctinyint, map("color","blue") from parquet_types_staging_n0
 where ctinyint = 3
 PREHOOK: type: QUERY
-PREHOOK: Input: default@parquet_types_staging
+PREHOOK: Input: default@parquet_types_staging_n0
 PREHOOK: Output: default@parquet_project_test
 POSTHOOK: query: insert into parquet_project_test
-select ctinyint, map("color","blue") from parquet_types_staging
+select ctinyint, map("color","blue") from parquet_types_staging_n0
 where ctinyint = 3
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@parquet_types_staging
+POSTHOOK: Input: default@parquet_types_staging_n0
 POSTHOOK: Output: default@parquet_project_test
 POSTHOOK: Lineage: parquet_project_test.cint EXPRESSION []
 POSTHOOK: Lineage: parquet_project_test.m1 EXPRESSION []
@@ -613,11 +613,11 @@ POSTHOOK: query: drop table parquet_project_test
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@parquet_project_test
 POSTHOOK: Output: default@parquet_project_test
-PREHOOK: query: drop table parquet_types_staging
+PREHOOK: query: drop table parquet_types_staging_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@parquet_types_staging
-PREHOOK: Output: default@parquet_types_staging
-POSTHOOK: query: drop table parquet_types_staging
+PREHOOK: Input: default@parquet_types_staging_n0
+PREHOOK: Output: default@parquet_types_staging_n0
+POSTHOOK: query: drop table parquet_types_staging_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@parquet_types_staging
-POSTHOOK: Output: default@parquet_types_staging
+POSTHOOK: Input: default@parquet_types_staging_n0
+POSTHOOK: Output: default@parquet_types_staging_n0

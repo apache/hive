@@ -1,19 +1,19 @@
-PREHOOK: query: drop table src2
+PREHOOK: query: drop table src2_n5
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table src2
+POSTHOOK: query: drop table src2_n5
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table src2 (key int) partitioned by (value string) stored as orc tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: query: create table src2_n5 (key int) partitioned by (value string) stored as orc tblproperties ("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src2
-POSTHOOK: query: create table src2 (key int) partitioned by (value string) stored as orc tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: Output: default@src2_n5
+POSTHOOK: query: create table src2_n5 (key int) partitioned by (value string) stored as orc tblproperties ("transactional"="true", "transactional_properties"="insert_only")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src2
-PREHOOK: query: insert overwrite table src2 partition (value) select * from src where key < 100
+POSTHOOK: Output: default@src2_n5
+PREHOOK: query: insert overwrite table src2_n5 partition (value) select * from src where key < 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@src2
+PREHOOK: Output: default@src2_n5
 Stage-1 FILE SYSTEM COUNTERS:
 Stage-1 HIVE COUNTERS:
    CREATED_DYNAMIC_PARTITIONS: 57
@@ -21,7 +21,7 @@ Stage-1 HIVE COUNTERS:
    DESERIALIZE_ERRORS: 0
    RECORDS_IN_Map_1: 500
    RECORDS_OUT_0: 57
-   RECORDS_OUT_1_default.src2: 84
+   RECORDS_OUT_1_default.src2_n5: 84
    RECORDS_OUT_INTERMEDIATE_Map_1: 57
    RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
    RECORDS_OUT_OPERATOR_FIL_5: 84
@@ -40,10 +40,10 @@ Stage-1 INPUT COUNTERS:
    INPUT_DIRECTORIES_Map_1: 1
    INPUT_FILES_Map_1: 1
    RAW_INPUT_SPLITS_Map_1: 1
-PREHOOK: query: insert into table src2 partition (value) select * from src where key < 200
+PREHOOK: query: insert into table src2_n5 partition (value) select * from src where key < 200
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@src2
+PREHOOK: Output: default@src2_n5
 Stage-1 FILE SYSTEM COUNTERS:
 Stage-1 HIVE COUNTERS:
    CREATED_DYNAMIC_PARTITIONS: 64
@@ -51,7 +51,7 @@ Stage-1 HIVE COUNTERS:
    DESERIALIZE_ERRORS: 0
    RECORDS_IN_Map_1: 500
    RECORDS_OUT_0: 121
-   RECORDS_OUT_1_default.src2: 189
+   RECORDS_OUT_1_default.src2_n5: 189
    RECORDS_OUT_INTERMEDIATE_Map_1: 121
    RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
    RECORDS_OUT_OPERATOR_FIL_5: 189
@@ -70,18 +70,18 @@ Stage-1 INPUT COUNTERS:
    INPUT_DIRECTORIES_Map_1: 1
    INPUT_FILES_Map_1: 1
    RAW_INPUT_SPLITS_Map_1: 1
-PREHOOK: query: drop table src2
+PREHOOK: query: drop table src2_n5
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@src2
-PREHOOK: Output: default@src2
-PREHOOK: query: create table src2 (key int) partitioned by (value string) stored as orc tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: Input: default@src2_n5
+PREHOOK: Output: default@src2_n5
+PREHOOK: query: create table src2_n5 (key int) partitioned by (value string) stored as orc tblproperties ("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src2
-PREHOOK: query: insert overwrite table src2 partition (value) select * from src where key < 200
+PREHOOK: Output: default@src2_n5
+PREHOOK: query: insert overwrite table src2_n5 partition (value) select * from src where key < 200
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@src2
+PREHOOK: Output: default@src2_n5
 Stage-1 FILE SYSTEM COUNTERS:
 Stage-1 HIVE COUNTERS:
    CREATED_DYNAMIC_PARTITIONS: 121
@@ -89,7 +89,7 @@ Stage-1 HIVE COUNTERS:
    DESERIALIZE_ERRORS: 0
    RECORDS_IN_Map_1: 500
    RECORDS_OUT_0: 121
-   RECORDS_OUT_1_default.src2: 189
+   RECORDS_OUT_1_default.src2_n5: 189
    RECORDS_OUT_INTERMEDIATE_Map_1: 121
    RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
    RECORDS_OUT_OPERATOR_FIL_5: 189
@@ -108,10 +108,10 @@ Stage-1 INPUT COUNTERS:
    INPUT_DIRECTORIES_Map_1: 1
    INPUT_FILES_Map_1: 1
    RAW_INPUT_SPLITS_Map_1: 1
-PREHOOK: query: insert into table src2 partition (value) select * from src where key < 300
+PREHOOK: query: insert into table src2_n5 partition (value) select * from src where key < 300
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@src2
+PREHOOK: Output: default@src2_n5
 Stage-1 FILE SYSTEM COUNTERS:
 Stage-1 HIVE COUNTERS:
    CREATED_DYNAMIC_PARTITIONS: 63
@@ -119,7 +119,7 @@ Stage-1 HIVE COUNTERS:
    DESERIALIZE_ERRORS: 0
    RECORDS_IN_Map_1: 500
    RECORDS_OUT_0: 184
-   RECORDS_OUT_1_default.src2: 292
+   RECORDS_OUT_1_default.src2_n5: 292
    RECORDS_OUT_INTERMEDIATE_Map_1: 184
    RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
    RECORDS_OUT_OPERATOR_FIL_5: 292
@@ -138,27 +138,27 @@ Stage-1 INPUT COUNTERS:
    INPUT_DIRECTORIES_Map_1: 1
    INPUT_FILES_Map_1: 1
    RAW_INPUT_SPLITS_Map_1: 1
-PREHOOK: query: drop table src2
+PREHOOK: query: drop table src2_n5
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@src2
-PREHOOK: Output: default@src2
-PREHOOK: query: drop table src3
+PREHOOK: Input: default@src2_n5
+PREHOOK: Output: default@src2_n5
+PREHOOK: query: drop table src3_n1
 PREHOOK: type: DROPTABLE
-PREHOOK: query: create table src2 (key int) partitioned by (value string) stored as orc tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: query: create table src2_n5 (key int) partitioned by (value string) stored as orc tblproperties ("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src2
-PREHOOK: query: create table src3 (key int) partitioned by (value string) stored as orc tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: Output: default@src2_n5
+PREHOOK: query: create table src3_n1 (key int) partitioned by (value string) stored as orc tblproperties ("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src3
+PREHOOK: Output: default@src3_n1
 PREHOOK: query: from src
-insert overwrite table src2 partition (value) select * where key < 100
-insert overwrite table src3 partition (value) select * where key >= 100 and key < 200
+insert overwrite table src2_n5 partition (value) select * where key < 100
+insert overwrite table src3_n1 partition (value) select * where key >= 100 and key < 200
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@src2
-PREHOOK: Output: default@src3
+PREHOOK: Output: default@src2_n5
+PREHOOK: Output: default@src3_n1
 Stage-2 FILE SYSTEM COUNTERS:
 Stage-2 HIVE COUNTERS:
    CREATED_DYNAMIC_PARTITIONS: 121
@@ -166,8 +166,8 @@ Stage-2 HIVE COUNTERS:
    DESERIALIZE_ERRORS: 0
    RECORDS_IN_Map_1: 500
    RECORDS_OUT_0: 121
-   RECORDS_OUT_1_default.src2: 84
-   RECORDS_OUT_2_default.src3: 105
+   RECORDS_OUT_1_default.src2_n5: 84
+   RECORDS_OUT_2_default.src3_n1: 105
    RECORDS_OUT_INTERMEDIATE_Map_1: 121
    RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
    RECORDS_OUT_INTERMEDIATE_Reducer_3: 0
@@ -191,12 +191,12 @@ Stage-2 INPUT COUNTERS:
    INPUT_FILES_Map_1: 1
    RAW_INPUT_SPLITS_Map_1: 1
 PREHOOK: query: from src
-insert into table src2 partition (value) select * where key < 100
-insert into table src3 partition (value) select * where key >= 100 and key < 300
+insert into table src2_n5 partition (value) select * where key < 100
+insert into table src3_n1 partition (value) select * where key >= 100 and key < 300
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@src2
-PREHOOK: Output: default@src3
+PREHOOK: Output: default@src2_n5
+PREHOOK: Output: default@src3_n1
 Stage-2 FILE SYSTEM COUNTERS:
 Stage-2 HIVE COUNTERS:
    CREATED_DYNAMIC_PARTITIONS: 63
@@ -204,8 +204,8 @@ Stage-2 HIVE COUNTERS:
    DESERIALIZE_ERRORS: 0
    RECORDS_IN_Map_1: 500
    RECORDS_OUT_0: 184
-   RECORDS_OUT_1_default.src2: 84
-   RECORDS_OUT_2_default.src3: 208
+   RECORDS_OUT_1_default.src2_n5: 84
+   RECORDS_OUT_2_default.src3_n1: 208
    RECORDS_OUT_INTERMEDIATE_Map_1: 184
    RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
    RECORDS_OUT_INTERMEDIATE_Reducer_3: 0
@@ -228,22 +228,22 @@ Stage-2 INPUT COUNTERS:
    INPUT_DIRECTORIES_Map_1: 1
    INPUT_FILES_Map_1: 1
    RAW_INPUT_SPLITS_Map_1: 1
-PREHOOK: query: drop table src2
+PREHOOK: query: drop table src2_n5
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@src2
-PREHOOK: Output: default@src2
-PREHOOK: query: create table src2 (key int) partitioned by (value string) stored as orc tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: Input: default@src2_n5
+PREHOOK: Output: default@src2_n5
+PREHOOK: query: create table src2_n5 (key int) partitioned by (value string) stored as orc tblproperties ("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src2
-PREHOOK: query: insert overwrite table src2 partition (value)
+PREHOOK: Output: default@src2_n5
+PREHOOK: query: insert overwrite table src2_n5 partition (value)
 select temps.* from (
   select * from src where key < 100
   union all
   select * from src where key >= 100 and key < 200) temps
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@src2
+PREHOOK: Output: default@src2_n5
 Stage-1 FILE SYSTEM COUNTERS:
 Stage-1 HIVE COUNTERS:
    CREATED_DYNAMIC_PARTITIONS: 121
@@ -252,7 +252,7 @@ Stage-1 HIVE COUNTERS:
    RECORDS_IN_Map_1: 500
    RECORDS_IN_Map_4: 500
    RECORDS_OUT_0: 121
-   RECORDS_OUT_1_default.src2: 189
+   RECORDS_OUT_1_default.src2_n5: 189
    RECORDS_OUT_INTERMEDIATE_Map_1: 57
    RECORDS_OUT_INTERMEDIATE_Map_4: 64
    RECORDS_OUT_INTERMEDIATE_Reducer_3: 0
@@ -279,14 +279,14 @@ Stage-1 INPUT COUNTERS:
    INPUT_FILES_Map_4: 1
    RAW_INPUT_SPLITS_Map_1: 1
    RAW_INPUT_SPLITS_Map_4: 1
-PREHOOK: query: insert into table src2 partition (value)
+PREHOOK: query: insert into table src2_n5 partition (value)
 select temps.* from (
   select * from src where key < 100
   union all
   select * from src where key >= 100 and key < 300) temps
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@src2
+PREHOOK: Output: default@src2_n5
 Stage-1 FILE SYSTEM COUNTERS:
 Stage-1 HIVE COUNTERS:
    CREATED_DYNAMIC_PARTITIONS: 63
@@ -295,7 +295,7 @@ Stage-1 HIVE COUNTERS:
    RECORDS_IN_Map_1: 500
    RECORDS_IN_Map_4: 500
    RECORDS_OUT_0: 184
-   RECORDS_OUT_1_default.src2: 292
+   RECORDS_OUT_1_default.src2_n5: 292
    RECORDS_OUT_INTERMEDIATE_Map_1: 57
    RECORDS_OUT_INTERMEDIATE_Map_4: 127
    RECORDS_OUT_INTERMEDIATE_Reducer_3: 0

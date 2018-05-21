@@ -1,44 +1,44 @@
-PREHOOK: query: CREATE TABLE T1(key STRING, val STRING)
+PREHOOK: query: CREATE TABLE T1_n57(key STRING, val STRING)
 SKEWED BY (key) ON ((2)) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1
-POSTHOOK: query: CREATE TABLE T1(key STRING, val STRING)
+PREHOOK: Output: default@T1_n57
+POSTHOOK: query: CREATE TABLE T1_n57(key STRING, val STRING)
 SKEWED BY (key) ON ((2)) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1
+POSTHOOK: Output: default@T1_n57
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_n57
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1
+PREHOOK: Output: default@t1_n57
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_n57
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t1
-PREHOOK: query: CREATE TABLE T2(key STRING, val STRING)
+POSTHOOK: Output: default@t1_n57
+PREHOOK: query: CREATE TABLE T2_n35(key STRING, val STRING)
 SKEWED BY (key) ON ((3)) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T2
-POSTHOOK: query: CREATE TABLE T2(key STRING, val STRING)
+PREHOOK: Output: default@T2_n35
+POSTHOOK: query: CREATE TABLE T2_n35(key STRING, val STRING)
 SKEWED BY (key) ON ((3)) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T2
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2
+POSTHOOK: Output: default@T2_n35
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2_n35
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t2
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2
+PREHOOK: Output: default@t2_n35
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2_n35
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t2
+POSTHOOK: Output: default@t2_n35
 PREHOOK: query: EXPLAIN
-SELECT * FROM T1 a JOIN T2 b ON a.key = b.key
+SELECT * FROM T1_n57 a JOIN T2_n35 b ON a.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-SELECT * FROM T1 a JOIN T2 b ON a.key = b.key
+SELECT * FROM T1_n57 a JOIN T2_n35 b ON a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -163,17 +163,17 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT * FROM T1 a JOIN T2 b ON a.key = b.key
+PREHOOK: query: SELECT * FROM T1_n57 a JOIN T2_n35 b ON a.key = b.key
 ORDER BY a.key, b.key, a.val, b.val
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
+PREHOOK: Input: default@t1_n57
+PREHOOK: Input: default@t2_n35
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM T1 a JOIN T2 b ON a.key = b.key
+POSTHOOK: query: SELECT * FROM T1_n57 a JOIN T2_n35 b ON a.key = b.key
 ORDER BY a.key, b.key, a.val, b.val
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t1_n57
+POSTHOOK: Input: default@t2_n35
 #### A masked pattern was here ####
 2	12	2	22
 3	13	3	13
@@ -182,10 +182,10 @@ POSTHOOK: Input: default@t2
 8	28	8	18
 8	28	8	18
 PREHOOK: query: EXPLAIN
-SELECT a.*, b.* FROM T1 a RIGHT OUTER JOIN T2 b ON a.key = b.key
+SELECT a.*, b.* FROM T1_n57 a RIGHT OUTER JOIN T2_n35 b ON a.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-SELECT a.*, b.* FROM T1 a RIGHT OUTER JOIN T2 b ON a.key = b.key
+SELECT a.*, b.* FROM T1_n57 a RIGHT OUTER JOIN T2_n35 b ON a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -310,17 +310,17 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT a.*, b.* FROM T1 a RIGHT OUTER JOIN T2 b ON a.key = b.key
+PREHOOK: query: SELECT a.*, b.* FROM T1_n57 a RIGHT OUTER JOIN T2_n35 b ON a.key = b.key
 ORDER BY a.key, b.key, a.val, b.val
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
+PREHOOK: Input: default@t1_n57
+PREHOOK: Input: default@t2_n35
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a.*, b.* FROM T1 a RIGHT OUTER JOIN T2 b ON a.key = b.key
+POSTHOOK: query: SELECT a.*, b.* FROM T1_n57 a RIGHT OUTER JOIN T2_n35 b ON a.key = b.key
 ORDER BY a.key, b.key, a.val, b.val
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t1_n57
+POSTHOOK: Input: default@t2_n35
 #### A masked pattern was here ####
 NULL	NULL	4	14
 NULL	NULL	5	15
@@ -330,21 +330,21 @@ NULL	NULL	5	15
 8	18	8	18
 8	28	8	18
 8	28	8	18
-PREHOOK: query: create table DEST1(key1 STRING, val1 STRING, key2 STRING, val2 STRING)
+PREHOOK: query: create table DEST1_n58(key1 STRING, val1 STRING, key2 STRING, val2 STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEST1
-POSTHOOK: query: create table DEST1(key1 STRING, val1 STRING, key2 STRING, val2 STRING)
+PREHOOK: Output: default@DEST1_n58
+POSTHOOK: query: create table DEST1_n58(key1 STRING, val1 STRING, key2 STRING, val2 STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEST1
+POSTHOOK: Output: default@DEST1_n58
 PREHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE DEST1
-SELECT * FROM T1 a JOIN T2 b ON a.key = b.key
+INSERT OVERWRITE TABLE DEST1_n58
+SELECT * FROM T1_n57 a JOIN T2_n35 b ON a.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE DEST1
-SELECT * FROM T1 a JOIN T2 b ON a.key = b.key
+INSERT OVERWRITE TABLE DEST1_n58
+SELECT * FROM T1_n57 a JOIN T2_n35 b ON a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -448,7 +448,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.dest1
+                      name: default.dest1_n58
         Reducer 5 
             Reduce Operator Tree:
               Join Operator
@@ -463,7 +463,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.dest1
+                      name: default.dest1_n58
 
   Stage: Stage-0
     Move Operator
@@ -473,33 +473,33 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n58
 
-PREHOOK: query: INSERT OVERWRITE TABLE DEST1
-SELECT * FROM T1 a JOIN T2 b ON a.key = b.key
+PREHOOK: query: INSERT OVERWRITE TABLE DEST1_n58
+SELECT * FROM T1_n57 a JOIN T2_n35 b ON a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
-PREHOOK: Output: default@dest1
-POSTHOOK: query: INSERT OVERWRITE TABLE DEST1
-SELECT * FROM T1 a JOIN T2 b ON a.key = b.key
+PREHOOK: Input: default@t1_n57
+PREHOOK: Input: default@t2_n35
+PREHOOK: Output: default@dest1_n58
+POSTHOOK: query: INSERT OVERWRITE TABLE DEST1_n58
+SELECT * FROM T1_n57 a JOIN T2_n35 b ON a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
-POSTHOOK: Output: default@dest1
-POSTHOOK: Lineage: dest1.key1 SIMPLE [(t1)a.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.key2 SIMPLE [(t2)b.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.val1 SIMPLE [(t1)a.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.val2 SIMPLE [(t2)b.FieldSchema(name:val, type:string, comment:null), ]
-PREHOOK: query: SELECT * FROM DEST1
+POSTHOOK: Input: default@t1_n57
+POSTHOOK: Input: default@t2_n35
+POSTHOOK: Output: default@dest1_n58
+POSTHOOK: Lineage: dest1_n58.key1 SIMPLE [(t1_n57)a.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: dest1_n58.key2 SIMPLE [(t2_n35)b.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: dest1_n58.val1 SIMPLE [(t1_n57)a.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: dest1_n58.val2 SIMPLE [(t2_n35)b.FieldSchema(name:val, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM DEST1_n58
 ORDER BY key1, key2, val1, val2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n58
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM DEST1
+POSTHOOK: query: SELECT * FROM DEST1_n58
 ORDER BY key1, key2, val1, val2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n58
 #### A masked pattern was here ####
 2	12	2	22
 3	13	3	13
@@ -508,12 +508,12 @@ POSTHOOK: Input: default@dest1
 8	28	8	18
 8	28	8	18
 PREHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE DEST1
-SELECT * FROM T1 a RIGHT OUTER JOIN T2 b ON a.key = b.key
+INSERT OVERWRITE TABLE DEST1_n58
+SELECT * FROM T1_n57 a RIGHT OUTER JOIN T2_n35 b ON a.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE DEST1
-SELECT * FROM T1 a RIGHT OUTER JOIN T2 b ON a.key = b.key
+INSERT OVERWRITE TABLE DEST1_n58
+SELECT * FROM T1_n57 a RIGHT OUTER JOIN T2_n35 b ON a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -617,7 +617,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.dest1
+                      name: default.dest1_n58
         Reducer 5 
             Reduce Operator Tree:
               Join Operator
@@ -632,7 +632,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.dest1
+                      name: default.dest1_n58
 
   Stage: Stage-0
     Move Operator
@@ -642,33 +642,33 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n58
 
-PREHOOK: query: INSERT OVERWRITE TABLE DEST1
-SELECT * FROM T1 a RIGHT OUTER JOIN T2 b ON a.key = b.key
+PREHOOK: query: INSERT OVERWRITE TABLE DEST1_n58
+SELECT * FROM T1_n57 a RIGHT OUTER JOIN T2_n35 b ON a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
-PREHOOK: Output: default@dest1
-POSTHOOK: query: INSERT OVERWRITE TABLE DEST1
-SELECT * FROM T1 a RIGHT OUTER JOIN T2 b ON a.key = b.key
+PREHOOK: Input: default@t1_n57
+PREHOOK: Input: default@t2_n35
+PREHOOK: Output: default@dest1_n58
+POSTHOOK: query: INSERT OVERWRITE TABLE DEST1_n58
+SELECT * FROM T1_n57 a RIGHT OUTER JOIN T2_n35 b ON a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
-POSTHOOK: Output: default@dest1
-POSTHOOK: Lineage: dest1.key1 SIMPLE [(t1)a.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.key2 SIMPLE [(t2)b.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.val1 SIMPLE [(t1)a.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.val2 SIMPLE [(t2)b.FieldSchema(name:val, type:string, comment:null), ]
-PREHOOK: query: SELECT * FROM DEST1
+POSTHOOK: Input: default@t1_n57
+POSTHOOK: Input: default@t2_n35
+POSTHOOK: Output: default@dest1_n58
+POSTHOOK: Lineage: dest1_n58.key1 SIMPLE [(t1_n57)a.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: dest1_n58.key2 SIMPLE [(t2_n35)b.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: dest1_n58.val1 SIMPLE [(t1_n57)a.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: dest1_n58.val2 SIMPLE [(t2_n35)b.FieldSchema(name:val, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM DEST1_n58
 ORDER BY key1, key2, val1, val2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n58
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM DEST1
+POSTHOOK: query: SELECT * FROM DEST1_n58
 ORDER BY key1, key2, val1, val2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n58
 #### A masked pattern was here ####
 NULL	NULL	4	14
 NULL	NULL	5	15

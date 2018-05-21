@@ -1,40 +1,40 @@
-PREHOOK: query: create table t1 (id int, key string, value string)
+PREHOOK: query: create table t1_n98 (id int, key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t1
-POSTHOOK: query: create table t1 (id int, key string, value string)
+PREHOOK: Output: default@t1_n98
+POSTHOOK: query: create table t1_n98 (id int, key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t1
-PREHOOK: query: create table t2 (id int, key string, value string)
+POSTHOOK: Output: default@t1_n98
+PREHOOK: query: create table t2_n61 (id int, key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t2
-POSTHOOK: query: create table t2 (id int, key string, value string)
+PREHOOK: Output: default@t2_n61
+POSTHOOK: query: create table t2_n61 (id int, key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t2
-PREHOOK: query: create table t3 (id int, key string, value string)
+POSTHOOK: Output: default@t2_n61
+PREHOOK: query: create table t3_n23 (id int, key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t3
-POSTHOOK: query: create table t3 (id int, key string, value string)
+PREHOOK: Output: default@t3_n23
+POSTHOOK: query: create table t3_n23 (id int, key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t3
-PREHOOK: query: create table t4 (id int, key string, value string)
+POSTHOOK: Output: default@t3_n23
+PREHOOK: query: create table t4_n12 (id int, key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t4
-POSTHOOK: query: create table t4 (id int, key string, value string)
+PREHOOK: Output: default@t4_n12
+POSTHOOK: query: create table t4_n12 (id int, key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t4
+POSTHOOK: Output: default@t4_n12
 Warning: Shuffle Join JOIN[14][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-2:MAPRED' is a cross product
 Warning: Shuffle Join JOIN[11][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
-PREHOOK: query: explain select * from t1 full outer join t2 on t1.id=t2.id join t3 on t2.id=t3.id where t3.id=20
+PREHOOK: query: explain select * from t1_n98 full outer join t2_n61 on t1_n98.id=t2_n61.id join t3_n23 on t2_n61.id=t3_n23.id where t3_n23.id=20
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from t1 full outer join t2 on t1.id=t2.id join t3 on t2.id=t3.id where t3.id=20
+POSTHOOK: query: explain select * from t1_n98 full outer join t2_n61 on t1_n98.id=t2_n61.id join t3_n23 on t2_n61.id=t3_n23.id where t3_n23.id=20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -46,7 +46,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
+            alias: t1_n98
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (id = 20) (type: boolean)
@@ -60,7 +60,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string)
           TableScan
-            alias: t2
+            alias: t2_n61
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (id = 20) (type: boolean)
@@ -101,7 +101,7 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 1 Basic stats: PARTIAL Column stats: NONE
               value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col4 (type: string), _col5 (type: string)
           TableScan
-            alias: t3
+            alias: t3_n23
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (id = 20) (type: boolean)
@@ -143,9 +143,9 @@ STAGE PLANS:
 
 Warning: Shuffle Join JOIN[14][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-2:MAPRED' is a cross product
 Warning: Shuffle Join JOIN[11][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
-PREHOOK: query: explain select * from t1 join t2 on (t1.id=t2.id) left outer join t3 on (t2.id=t3.id) where t2.id=20
+PREHOOK: query: explain select * from t1_n98 join t2_n61 on (t1_n98.id=t2_n61.id) left outer join t3_n23 on (t2_n61.id=t3_n23.id) where t2_n61.id=20
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from t1 join t2 on (t1.id=t2.id) left outer join t3 on (t2.id=t3.id) where t2.id=20
+POSTHOOK: query: explain select * from t1_n98 join t2_n61 on (t1_n98.id=t2_n61.id) left outer join t3_n23 on (t2_n61.id=t3_n23.id) where t2_n61.id=20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -157,7 +157,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
+            alias: t1_n98
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (id = 20) (type: boolean)
@@ -171,7 +171,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   value expressions: _col1 (type: string), _col2 (type: string)
           TableScan
-            alias: t3
+            alias: t3_n23
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (id = 20) (type: boolean)
@@ -209,7 +209,7 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 1 Basic stats: PARTIAL Column stats: NONE
               value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: int), _col4 (type: string), _col5 (type: string)
           TableScan
-            alias: t2
+            alias: t2_n61
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (id = 20) (type: boolean)
@@ -251,9 +251,9 @@ STAGE PLANS:
 
 Warning: Shuffle Join JOIN[14][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-2:MAPRED' is a cross product
 Warning: Shuffle Join JOIN[11][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
-PREHOOK: query: explain select * from t1 join t2 on (t1.id=t2.id) left outer join t3 on (t1.id=t3.id) where t2.id=20
+PREHOOK: query: explain select * from t1_n98 join t2_n61 on (t1_n98.id=t2_n61.id) left outer join t3_n23 on (t1_n98.id=t3_n23.id) where t2_n61.id=20
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from t1 join t2 on (t1.id=t2.id) left outer join t3 on (t1.id=t3.id) where t2.id=20
+POSTHOOK: query: explain select * from t1_n98 join t2_n61 on (t1_n98.id=t2_n61.id) left outer join t3_n23 on (t1_n98.id=t3_n23.id) where t2_n61.id=20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -265,7 +265,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
+            alias: t1_n98
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (id = 20) (type: boolean)
@@ -279,7 +279,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   value expressions: _col1 (type: string), _col2 (type: string)
           TableScan
-            alias: t3
+            alias: t3_n23
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (id = 20) (type: boolean)
@@ -317,7 +317,7 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 1 Basic stats: PARTIAL Column stats: NONE
               value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: int), _col4 (type: string), _col5 (type: string)
           TableScan
-            alias: t2
+            alias: t2_n61
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (id = 20) (type: boolean)
@@ -357,35 +357,35 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: drop table t1
+PREHOOK: query: drop table t1_n98
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@t1
-POSTHOOK: query: drop table t1
+PREHOOK: Input: default@t1_n98
+PREHOOK: Output: default@t1_n98
+POSTHOOK: query: drop table t1_n98
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@t1
-PREHOOK: query: drop table t2
+POSTHOOK: Input: default@t1_n98
+POSTHOOK: Output: default@t1_n98
+PREHOOK: query: drop table t2_n61
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@t2
-PREHOOK: Output: default@t2
-POSTHOOK: query: drop table t2
+PREHOOK: Input: default@t2_n61
+PREHOOK: Output: default@t2_n61
+POSTHOOK: query: drop table t2_n61
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@t2
-POSTHOOK: Output: default@t2
-PREHOOK: query: drop table t3
+POSTHOOK: Input: default@t2_n61
+POSTHOOK: Output: default@t2_n61
+PREHOOK: query: drop table t3_n23
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@t3
-PREHOOK: Output: default@t3
-POSTHOOK: query: drop table t3
+PREHOOK: Input: default@t3_n23
+PREHOOK: Output: default@t3_n23
+POSTHOOK: query: drop table t3_n23
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@t3
-POSTHOOK: Output: default@t3
-PREHOOK: query: drop table t4
+POSTHOOK: Input: default@t3_n23
+POSTHOOK: Output: default@t3_n23
+PREHOOK: query: drop table t4_n12
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@t4
-PREHOOK: Output: default@t4
-POSTHOOK: query: drop table t4
+PREHOOK: Input: default@t4_n12
+PREHOOK: Output: default@t4_n12
+POSTHOOK: query: drop table t4_n12
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@t4
-POSTHOOK: Output: default@t4
+POSTHOOK: Input: default@t4_n12
+POSTHOOK: Output: default@t4_n12

@@ -1,14 +1,14 @@
 set hive.stats.column.autogather=false;
 -- Currently, a query with multiple FileSinkOperators are not supported.
 set hive.mapred.mode=nonstrict;
-CREATE TABLE T1(key INT, val STRING);
-LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE T1;
-CREATE TABLE T2(key INT, val STRING);
-LOAD DATA LOCAL INPATH '../../data/files/kv2.txt' INTO TABLE T2;
-CREATE TABLE T3(key INT, val STRING);
-LOAD DATA LOCAL INPATH '../../data/files/kv3.txt' INTO TABLE T3;
-CREATE TABLE T4(key INT, val STRING);
-LOAD DATA LOCAL INPATH '../../data/files/kv5.txt' INTO TABLE T4;
+CREATE TABLE T1_n19(key INT, val STRING);
+LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE T1_n19;
+CREATE TABLE T2_n11(key INT, val STRING);
+LOAD DATA LOCAL INPATH '../../data/files/kv2.txt' INTO TABLE T2_n11;
+CREATE TABLE T3_n5(key INT, val STRING);
+LOAD DATA LOCAL INPATH '../../data/files/kv3.txt' INTO TABLE T3_n5;
+CREATE TABLE T4_n1(key INT, val STRING);
+LOAD DATA LOCAL INPATH '../../data/files/kv5.txt' INTO TABLE T4_n1;
 
 CREATE TABLE dest_co1(key INT, val STRING);
 CREATE TABLE dest_co2(key INT, val STRING);
@@ -22,17 +22,17 @@ EXPLAIN
 INSERT OVERWRITE TABLE dest_co1
 SELECT b.key, d.val
 FROM
-(SELECT x.key, x.val FROM T1 x JOIN T2 y ON (x.key = y.key)) b
+(SELECT x.key, x.val FROM T1_n19 x JOIN T2_n11 y ON (x.key = y.key)) b
 JOIN
-(SELECT m.key, n.val FROM T3 m JOIN T4 n ON (m.key = n.key)) d
+(SELECT m.key, n.val FROM T3_n5 m JOIN T4_n1 n ON (m.key = n.key)) d
 ON b.key = d.key;
 
 INSERT OVERWRITE TABLE dest_co1
 SELECT b.key, d.val
 FROM
-(SELECT x.key, x.val FROM T1 x JOIN T2 y ON (x.key = y.key)) b
+(SELECT x.key, x.val FROM T1_n19 x JOIN T2_n11 y ON (x.key = y.key)) b
 JOIN
-(SELECT m.key, n.val FROM T3 m JOIN T4 n ON (m.key = n.key)) d
+(SELECT m.key, n.val FROM T3_n5 m JOIN T4_n1 n ON (m.key = n.key)) d
 ON b.key = d.key;
 
 set hive.optimize.correlation=true;
@@ -40,17 +40,17 @@ EXPLAIN
 INSERT OVERWRITE TABLE dest_co2
 SELECT b.key, d.val
 FROM
-(SELECT x.key, x.val FROM T1 x JOIN T2 y ON (x.key = y.key)) b
+(SELECT x.key, x.val FROM T1_n19 x JOIN T2_n11 y ON (x.key = y.key)) b
 JOIN
-(SELECT m.key, n.val FROM T3 m JOIN T4 n ON (m.key = n.key)) d
+(SELECT m.key, n.val FROM T3_n5 m JOIN T4_n1 n ON (m.key = n.key)) d
 ON b.key = d.key;
 
 INSERT OVERWRITE TABLE dest_co2
 SELECT b.key, d.val
 FROM
-(SELECT x.key, x.val FROM T1 x JOIN T2 y ON (x.key = y.key)) b
+(SELECT x.key, x.val FROM T1_n19 x JOIN T2_n11 y ON (x.key = y.key)) b
 JOIN
-(SELECT m.key, n.val FROM T3 m JOIN T4 n ON (m.key = n.key)) d
+(SELECT m.key, n.val FROM T3_n5 m JOIN T4_n1 n ON (m.key = n.key)) d
 ON b.key = d.key;
 
 set hive.optimize.correlation=true;
@@ -61,17 +61,17 @@ EXPLAIN
 INSERT OVERWRITE TABLE dest_co3
 SELECT b.key, d.val
 FROM
-(SELECT x.key, x.val FROM T1 x JOIN T2 y ON (x.key = y.key)) b
+(SELECT x.key, x.val FROM T1_n19 x JOIN T2_n11 y ON (x.key = y.key)) b
 JOIN
-(SELECT m.key, n.val FROM T3 m JOIN T4 n ON (m.key = n.key)) d
+(SELECT m.key, n.val FROM T3_n5 m JOIN T4_n1 n ON (m.key = n.key)) d
 ON b.key = d.key;
 
 INSERT OVERWRITE TABLE dest_co3
 SELECT b.key, d.val
 FROM
-(SELECT x.key, x.val FROM T1 x JOIN T2 y ON (x.key = y.key)) b
+(SELECT x.key, x.val FROM T1_n19 x JOIN T2_n11 y ON (x.key = y.key)) b
 JOIN
-(SELECT m.key, n.val FROM T3 m JOIN T4 n ON (m.key = n.key)) d
+(SELECT m.key, n.val FROM T3_n5 m JOIN T4_n1 n ON (m.key = n.key)) d
 ON b.key = d.key;
 
 -- dest_co1, dest_co2 and dest_co3 should be same

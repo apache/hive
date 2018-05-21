@@ -1,51 +1,51 @@
 set hive.mapred.mode=nonstrict;
 set hive.cbo.enable=true;
 
-create table a(key int, value int);
+create table a_n1(key int, value int);
 
-insert into table a values (1,2),(1,2),(1,2),(1,3),(2,3);
+insert into table a_n1 values (1,2),(1,2),(1,2),(1,3),(2,3);
 
-create table b(key int, value int);
+create table b_n1(key int, value int);
 
-insert into table b values (1,2),(1,2),(2,3);
+insert into table b_n1 values (1,2),(1,2),(2,3);
 
-select * from a intersect select * from b;
+select * from a_n1 intersect select * from b_n1;
 
-(select * from b intersect (select * from a)) intersect select * from b;
+(select * from b_n1 intersect (select * from a_n1)) intersect select * from b_n1;
 
-select * from b intersect all select * from a intersect select * from b;
+select * from b_n1 intersect all select * from a_n1 intersect select * from b_n1;
 
-(select * from b) intersect all ((select * from a) intersect select * from b);
+(select * from b_n1) intersect all ((select * from a_n1) intersect select * from b_n1);
 
-select * from (select a.key, b.value from a join b on a.key=b.key)sub1 
+select * from (select a_n1.key, b_n1.value from a_n1 join b_n1 on a_n1.key=b_n1.key)sub1 
 intersect 
-select * from (select a.key, b.value from a join b on a.key=b.key)sub2; 
+select * from (select a_n1.key, b_n1.value from a_n1 join b_n1 on a_n1.key=b_n1.key)sub2; 
 
-drop table a;
+drop table a_n1;
 
-drop table b;
+drop table b_n1;
 
-create table a(key int);
+create table a_n1(key int);
 
-insert into table a values (0),(1),(2),(2),(2),(2),(3),(NULL),(NULL),(NULL),(NULL),(NULL);
+insert into table a_n1 values (0),(1),(2),(2),(2),(2),(3),(NULL),(NULL),(NULL),(NULL),(NULL);
 
-create table b(key bigint);
+create table b_n1(key bigint);
 
-insert into table b values (1),(2),(2),(3),(5),(5),(NULL),(NULL),(NULL);
+insert into table b_n1 values (1),(2),(2),(3),(5),(5),(NULL),(NULL),(NULL);
 
-select * from a except select * from b;
+select * from a_n1 except select * from b_n1;
 
-(select * from a) minus select * from b union (select * from a) minus select * from b;
+(select * from a_n1) minus select * from b_n1 union (select * from a_n1) minus select * from b_n1;
 
-(select * from a) minus select * from b union all ((select * from a) minus select * from b);
+(select * from a_n1) minus select * from b_n1 union all ((select * from a_n1) minus select * from b_n1);
 
-(select * from a) minus select * from b union all (select * from a) minus all select * from b;
+(select * from a_n1) minus select * from b_n1 union all (select * from a_n1) minus all select * from b_n1;
 
-select * from a minus select * from b minus (select * from a minus select * from b);
+select * from a_n1 minus select * from b_n1 minus (select * from a_n1 minus select * from b_n1);
 
-(select * from a) minus (select * from b minus (select * from a minus select * from b));
+(select * from a_n1) minus (select * from b_n1 minus (select * from a_n1 minus select * from b_n1));
 
-drop table a;
+drop table a_n1;
 
-drop table b;
+drop table b_n1;
 

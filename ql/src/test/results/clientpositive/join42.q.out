@@ -9,19 +9,19 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@L
 POSTHOOK: Lineage: l.id SIMPLE []
-PREHOOK: query: create table LA as select 4436 loan_id, 4748 aid, 4415 pi_id
+PREHOOK: query: create table LA_n11 as select 4436 loan_id, 4748 aid, 4415 pi_id
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: database:default
-PREHOOK: Output: default@LA
-POSTHOOK: query: create table LA as select 4436 loan_id, 4748 aid, 4415 pi_id
+PREHOOK: Output: default@LA_n11
+POSTHOOK: query: create table LA_n11 as select 4436 loan_id, 4748 aid, 4415 pi_id
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@LA
-POSTHOOK: Lineage: la.aid SIMPLE []
-POSTHOOK: Lineage: la.loan_id SIMPLE []
-POSTHOOK: Lineage: la.pi_id SIMPLE []
+POSTHOOK: Output: default@LA_n11
+POSTHOOK: Lineage: la_n11.aid SIMPLE []
+POSTHOOK: Lineage: la_n11.loan_id SIMPLE []
+POSTHOOK: Lineage: la_n11.pi_id SIMPLE []
 PREHOOK: query: create table FR as select 4436 loan_id
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -33,17 +33,17 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@FR
 POSTHOOK: Lineage: fr.loan_id SIMPLE []
-PREHOOK: query: create table A as select 4748 id
+PREHOOK: query: create table A_n11 as select 4748 id
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: database:default
-PREHOOK: Output: default@A
-POSTHOOK: query: create table A as select 4748 id
+PREHOOK: Output: default@A_n11
+POSTHOOK: query: create table A_n11 as select 4748 id
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@A
-POSTHOOK: Lineage: a.id SIMPLE []
+POSTHOOK: Output: default@A_n11
+POSTHOOK: Lineage: a_n11.id SIMPLE []
 PREHOOK: query: create table PI as select 4415 id
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -95,11 +95,11 @@ PREHOOK: query: explain select
   acct.ACC_N,
   acct.brn
 FROM L
-JOIN LA ON L.id = LA.loan_id
+JOIN LA_n11 ON L.id = LA_n11.loan_id
 JOIN FR ON L.id = FR.loan_id
-JOIN A ON LA.aid = A.id
-JOIN PI ON PI.id = LA.pi_id
-JOIN acct ON A.id = acct.aid
+JOIN A_n11 ON LA_n11.aid = A_n11.id
+JOIN PI ON PI.id = LA_n11.pi_id
+JOIN acct ON A_n11.id = acct.aid
 WHERE
   L.id = 4436
   and acct.brn is not null
@@ -108,11 +108,11 @@ POSTHOOK: query: explain select
   acct.ACC_N,
   acct.brn
 FROM L
-JOIN LA ON L.id = LA.loan_id
+JOIN LA_n11 ON L.id = LA_n11.loan_id
 JOIN FR ON L.id = FR.loan_id
-JOIN A ON LA.aid = A.id
-JOIN PI ON PI.id = LA.pi_id
-JOIN acct ON A.id = acct.aid
+JOIN A_n11 ON LA_n11.aid = A_n11.id
+JOIN PI ON PI.id = LA_n11.pi_id
+JOIN acct ON A_n11.id = acct.aid
 WHERE
   L.id = 4436
   and acct.brn is not null
@@ -223,7 +223,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: la
+            alias: la_n11
             Statistics: Num rows: 1 Data size: 14 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((loan_id = 4436) and aid is not null and pi_id is not null) (type: boolean)
@@ -239,7 +239,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 14 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col2 (type: int)
           TableScan
-            alias: a
+            alias: a_n11
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: id is not null (type: boolean)
@@ -321,40 +321,40 @@ PREHOOK: query: select
   acct.ACC_N,
   acct.brn
 FROM L
-JOIN LA ON L.id = LA.loan_id
+JOIN LA_n11 ON L.id = LA_n11.loan_id
 JOIN FR ON L.id = FR.loan_id
-JOIN A ON LA.aid = A.id
-JOIN PI ON PI.id = LA.pi_id
-JOIN acct ON A.id = acct.aid
+JOIN A_n11 ON LA_n11.aid = A_n11.id
+JOIN PI ON PI.id = LA_n11.pi_id
+JOIN acct ON A_n11.id = acct.aid
 WHERE
   L.id = 4436
   and acct.brn is not null
 PREHOOK: type: QUERY
-PREHOOK: Input: default@a
+PREHOOK: Input: default@a_n11
 PREHOOK: Input: default@acct
 PREHOOK: Input: default@fr
 PREHOOK: Input: default@l
-PREHOOK: Input: default@la
+PREHOOK: Input: default@la_n11
 PREHOOK: Input: default@pi
 #### A masked pattern was here ####
 POSTHOOK: query: select
   acct.ACC_N,
   acct.brn
 FROM L
-JOIN LA ON L.id = LA.loan_id
+JOIN LA_n11 ON L.id = LA_n11.loan_id
 JOIN FR ON L.id = FR.loan_id
-JOIN A ON LA.aid = A.id
-JOIN PI ON PI.id = LA.pi_id
-JOIN acct ON A.id = acct.aid
+JOIN A_n11 ON LA_n11.aid = A_n11.id
+JOIN PI ON PI.id = LA_n11.pi_id
+JOIN acct ON A_n11.id = acct.aid
 WHERE
   L.id = 4436
   and acct.brn is not null
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@a
+POSTHOOK: Input: default@a_n11
 POSTHOOK: Input: default@acct
 POSTHOOK: Input: default@fr
 POSTHOOK: Input: default@l
-POSTHOOK: Input: default@la
+POSTHOOK: Input: default@la_n11
 POSTHOOK: Input: default@pi
 #### A masked pattern was here ####
 10	122

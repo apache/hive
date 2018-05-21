@@ -1,11 +1,11 @@
-PREHOOK: query: create table result (key string, value string)
+PREHOOK: query: create table result_n2 (key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@result
-POSTHOOK: query: create table result (key string, value string)
+PREHOOK: Output: default@result_n2
+POSTHOOK: query: create table result_n2 (key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@result
+POSTHOOK: Output: default@result_n2
 PREHOOK: query: create table loader (key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -22,19 +22,19 @@ POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' into table lo
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@loader
-PREHOOK: query: load data inpath '/build/ql/test/data/warehouse/loader/kv1.txt' into table result
+PREHOOK: query: load data inpath '/build/ql/test/data/warehouse/loader/kv1.txt' into table result_n2
 PREHOOK: type: LOAD
 PREHOOK: Input: hdfs://### HDFS PATH ###
-PREHOOK: Output: default@result
-POSTHOOK: query: load data inpath '/build/ql/test/data/warehouse/loader/kv1.txt' into table result
+PREHOOK: Output: default@result_n2
+POSTHOOK: query: load data inpath '/build/ql/test/data/warehouse/loader/kv1.txt' into table result_n2
 POSTHOOK: type: LOAD
 POSTHOOK: Input: hdfs://### HDFS PATH ###
-POSTHOOK: Output: default@result
-PREHOOK: query: show table extended like result
+POSTHOOK: Output: default@result_n2
+PREHOOK: query: show table extended like result_n2
 PREHOOK: type: SHOW_TABLESTATUS
-POSTHOOK: query: show table extended like result
+POSTHOOK: query: show table extended like result_n2
 POSTHOOK: type: SHOW_TABLESTATUS
-tableName:result
+tableName:result_n2
 #### A masked pattern was here ####
 location:hdfs://### HDFS PATH ###
 inputformat:org.apache.hadoop.mapred.TextInputFormat
@@ -56,19 +56,19 @@ POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' into table lo
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@loader
-PREHOOK: query: load data inpath '/build/ql/test/data/warehouse/loader/kv1.txt' into table result
+PREHOOK: query: load data inpath '/build/ql/test/data/warehouse/loader/kv1.txt' into table result_n2
 PREHOOK: type: LOAD
 PREHOOK: Input: hdfs://### HDFS PATH ###
-PREHOOK: Output: default@result
-POSTHOOK: query: load data inpath '/build/ql/test/data/warehouse/loader/kv1.txt' into table result
+PREHOOK: Output: default@result_n2
+POSTHOOK: query: load data inpath '/build/ql/test/data/warehouse/loader/kv1.txt' into table result_n2
 POSTHOOK: type: LOAD
 POSTHOOK: Input: hdfs://### HDFS PATH ###
-POSTHOOK: Output: default@result
-PREHOOK: query: show table extended like result
+POSTHOOK: Output: default@result_n2
+PREHOOK: query: show table extended like result_n2
 PREHOOK: type: SHOW_TABLESTATUS
-POSTHOOK: query: show table extended like result
+POSTHOOK: query: show table extended like result_n2
 POSTHOOK: type: SHOW_TABLESTATUS
-tableName:result
+tableName:result_n2
 #### A masked pattern was here ####
 location:hdfs://### HDFS PATH ###
 inputformat:org.apache.hadoop.mapred.TextInputFormat
@@ -90,19 +90,19 @@ POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' into table lo
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@loader
-PREHOOK: query: load data inpath '/build/ql/test/data/warehouse/loader/kv1.txt' into table result
+PREHOOK: query: load data inpath '/build/ql/test/data/warehouse/loader/kv1.txt' into table result_n2
 PREHOOK: type: LOAD
 PREHOOK: Input: hdfs://### HDFS PATH ###
-PREHOOK: Output: default@result
-POSTHOOK: query: load data inpath '/build/ql/test/data/warehouse/loader/kv1.txt' into table result
+PREHOOK: Output: default@result_n2
+POSTHOOK: query: load data inpath '/build/ql/test/data/warehouse/loader/kv1.txt' into table result_n2
 POSTHOOK: type: LOAD
 POSTHOOK: Input: hdfs://### HDFS PATH ###
-POSTHOOK: Output: default@result
-PREHOOK: query: show table extended like result
+POSTHOOK: Output: default@result_n2
+PREHOOK: query: show table extended like result_n2
 PREHOOK: type: SHOW_TABLESTATUS
-POSTHOOK: query: show table extended like result
+POSTHOOK: query: show table extended like result_n2
 POSTHOOK: type: SHOW_TABLESTATUS
-tableName:result
+tableName:result_n2
 #### A masked pattern was here ####
 location:hdfs://### HDFS PATH ###
 inputformat:org.apache.hadoop.mapred.TextInputFormat

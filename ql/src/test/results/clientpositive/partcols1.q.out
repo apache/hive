@@ -1,24 +1,24 @@
-PREHOOK: query: create table test1(col1 string) partitioned by (partitionId int)
+PREHOOK: query: create table test1_n15(col1 string) partitioned by (partitionId int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test1
-POSTHOOK: query: create table test1(col1 string) partitioned by (partitionId int)
+PREHOOK: Output: default@test1_n15
+POSTHOOK: query: create table test1_n15(col1 string) partitioned by (partitionId int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test1
-PREHOOK: query: insert overwrite table test1 partition (partitionId=1)
+POSTHOOK: Output: default@test1_n15
+PREHOOK: query: insert overwrite table test1_n15 partition (partitionId=1)
   select key from src tablesample (10 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@test1@partitionid=1
-POSTHOOK: query: insert overwrite table test1 partition (partitionId=1)
+PREHOOK: Output: default@test1_n15@partitionid=1
+POSTHOOK: query: insert overwrite table test1_n15 partition (partitionId=1)
   select key from src tablesample (10 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@test1@partitionid=1
-POSTHOOK: Lineage: test1 PARTITION(partitionid=1).col1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Output: default@test1_n15@partitionid=1
+POSTHOOK: Lineage: test1_n15 PARTITION(partitionid=1).col1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: FROM (
- FROM test1
+ FROM test1_n15
  SELECT partitionId, 111 as col2, 222 as col3, 333 as col4
  WHERE partitionId = 1
  DISTRIBUTE BY partitionId
@@ -31,11 +31,11 @@ SELECT TRANSFORM(
 
  USING 'cat' as (a,b,c,d)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test1
-PREHOOK: Input: default@test1@partitionid=1
+PREHOOK: Input: default@test1_n15
+PREHOOK: Input: default@test1_n15@partitionid=1
 #### A masked pattern was here ####
 POSTHOOK: query: FROM (
- FROM test1
+ FROM test1_n15
  SELECT partitionId, 111 as col2, 222 as col3, 333 as col4
  WHERE partitionId = 1
  DISTRIBUTE BY partitionId
@@ -48,8 +48,8 @@ SELECT TRANSFORM(
 
  USING 'cat' as (a,b,c,d)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test1
-POSTHOOK: Input: default@test1@partitionid=1
+POSTHOOK: Input: default@test1_n15
+POSTHOOK: Input: default@test1_n15@partitionid=1
 #### A masked pattern was here ####
 1	111	222	333
 1	111	222	333

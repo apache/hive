@@ -2064,27 +2064,27 @@ POSTHOOK: Input: default@src
 95	val_95
 95	val_95
 96	val_96
-PREHOOK: query: CREATE table tnull(i int)
+PREHOOK: query: CREATE table tnull_n3(i int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tnull
-POSTHOOK: query: CREATE table tnull(i int)
+PREHOOK: Output: default@tnull_n3
+POSTHOOK: query: CREATE table tnull_n3(i int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tnull
-PREHOOK: query: insert into tnull values(null)
+POSTHOOK: Output: default@tnull_n3
+PREHOOK: query: insert into tnull_n3 values(null)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@tnull
-POSTHOOK: query: insert into tnull values(null)
+PREHOOK: Output: default@tnull_n3
+POSTHOOK: query: insert into tnull_n3 values(null)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@tnull
-POSTHOOK: Lineage: tnull.i EXPRESSION []
+POSTHOOK: Output: default@tnull_n3
+POSTHOOK: Lineage: tnull_n3.i EXPRESSION []
 Warning: Shuffle Join JOIN[16][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 2' is a cross product
-PREHOOK: query: explain select p_size, p_size IN (select i from tnull) from part
+PREHOOK: query: explain select p_size, p_size IN (select i from tnull_n3) from part
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select p_size, p_size IN (select i from tnull) from part
+POSTHOOK: query: explain select p_size, p_size IN (select i from tnull_n3) from part
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2117,7 +2117,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: tnull
+                  alias: tnull_n3
                   Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: i (type: int)
@@ -2136,7 +2136,7 @@ STAGE PLANS:
         Map 6 
             Map Operator Tree:
                 TableScan
-                  alias: tnull
+                  alias: tnull_n3
                   Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: i (type: int)
@@ -2228,15 +2228,15 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join JOIN[16][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 2' is a cross product
-PREHOOK: query: select p_size, p_size IN (select i from tnull) from part
+PREHOOK: query: select p_size, p_size IN (select i from tnull_n3) from part
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
-PREHOOK: Input: default@tnull
+PREHOOK: Input: default@tnull_n3
 #### A masked pattern was here ####
-POSTHOOK: query: select p_size, p_size IN (select i from tnull) from part
+POSTHOOK: query: select p_size, p_size IN (select i from tnull_n3) from part
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
-POSTHOOK: Input: default@tnull
+POSTHOOK: Input: default@tnull_n3
 #### A masked pattern was here ####
 1	NULL
 10	NULL
@@ -2264,18 +2264,18 @@ POSTHOOK: Input: default@tnull
 40	NULL
 45	NULL
 46	NULL
-PREHOOK: query: CREATE TABLE tempty(i int)
+PREHOOK: query: CREATE TABLE tempty_n3(i int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tempty
-POSTHOOK: query: CREATE TABLE tempty(i int)
+PREHOOK: Output: default@tempty_n3
+POSTHOOK: query: CREATE TABLE tempty_n3(i int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tempty
+POSTHOOK: Output: default@tempty_n3
 Warning: Shuffle Join JOIN[10][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 2' is a cross product
-PREHOOK: query: explain select p_size, (select count(*) from tempty) from part
+PREHOOK: query: explain select p_size, (select count(*) from tempty_n3) from part
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select p_size, (select count(*) from tempty) from part
+POSTHOOK: query: explain select p_size, (select count(*) from tempty_n3) from part
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2306,7 +2306,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: tempty
+                  alias: tempty_n3
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
                   Select Operator
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
@@ -2357,15 +2357,15 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join JOIN[10][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 2' is a cross product
-PREHOOK: query: select p_size, (select count(*) from tempty) from part
+PREHOOK: query: select p_size, (select count(*) from tempty_n3) from part
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
-PREHOOK: Input: default@tempty
+PREHOOK: Input: default@tempty_n3
 #### A masked pattern was here ####
-POSTHOOK: query: select p_size, (select count(*) from tempty) from part
+POSTHOOK: query: select p_size, (select count(*) from tempty_n3) from part
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
-POSTHOOK: Input: default@tempty
+POSTHOOK: Input: default@tempty_n3
 #### A masked pattern was here ####
 2	0
 2	0
@@ -2394,9 +2394,9 @@ POSTHOOK: Input: default@tempty
 46	0
 23	0
 Warning: Shuffle Join JOIN[10][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 2' is a cross product
-PREHOOK: query: explain select p_size, (select max(i) from tempty) from part
+PREHOOK: query: explain select p_size, (select max(i) from tempty_n3) from part
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select p_size, (select max(i) from tempty) from part
+POSTHOOK: query: explain select p_size, (select max(i) from tempty_n3) from part
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2427,7 +2427,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: tempty
+                  alias: tempty_n3
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Select Operator
                     expressions: i (type: int)
@@ -2480,15 +2480,15 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join JOIN[10][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 2' is a cross product
-PREHOOK: query: select p_size, (select max(i) from tempty) from part
+PREHOOK: query: select p_size, (select max(i) from tempty_n3) from part
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
-PREHOOK: Input: default@tempty
+PREHOOK: Input: default@tempty_n3
 #### A masked pattern was here ####
-POSTHOOK: query: select p_size, (select max(i) from tempty) from part
+POSTHOOK: query: select p_size, (select max(i) from tempty_n3) from part
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
-POSTHOOK: Input: default@tempty
+POSTHOOK: Input: default@tempty_n3
 #### A masked pattern was here ####
 2	NULL
 2	NULL
@@ -2516,22 +2516,22 @@ POSTHOOK: Input: default@tempty
 2	NULL
 46	NULL
 23	NULL
-PREHOOK: query: DROP table tempty
+PREHOOK: query: DROP table tempty_n3
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@tempty
-PREHOOK: Output: default@tempty
-POSTHOOK: query: DROP table tempty
+PREHOOK: Input: default@tempty_n3
+PREHOOK: Output: default@tempty_n3
+POSTHOOK: query: DROP table tempty_n3
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@tempty
-POSTHOOK: Output: default@tempty
-PREHOOK: query: DROP table tnull
+POSTHOOK: Input: default@tempty_n3
+POSTHOOK: Output: default@tempty_n3
+PREHOOK: query: DROP table tnull_n3
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@tnull
-PREHOOK: Output: default@tnull
-POSTHOOK: query: DROP table tnull
+PREHOOK: Input: default@tnull_n3
+PREHOOK: Output: default@tnull_n3
+POSTHOOK: query: DROP table tnull_n3
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@tnull
-POSTHOOK: Output: default@tnull
+POSTHOOK: Input: default@tnull_n3
+POSTHOOK: Output: default@tnull_n3
 PREHOOK: query: explain SELECT p_size, 1+(SELECT max(p_size) FROM part p
     WHERE p.p_type = part.p_type) from part
 PREHOOK: type: QUERY

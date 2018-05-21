@@ -1,124 +1,124 @@
-PREHOOK: query: create table dim_shops (id int, label string) row format delimited fields terminated by ',' stored as textfile
+PREHOOK: query: create table dim_shops_n0 (id int, label string) row format delimited fields terminated by ',' stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dim_shops
-POSTHOOK: query: create table dim_shops (id int, label string) row format delimited fields terminated by ',' stored as textfile
+PREHOOK: Output: default@dim_shops_n0
+POSTHOOK: query: create table dim_shops_n0 (id int, label string) row format delimited fields terminated by ',' stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dim_shops
-PREHOOK: query: load data local inpath '../../data/files/dim_shops.txt' into table dim_shops
+POSTHOOK: Output: default@dim_shops_n0
+PREHOOK: query: load data local inpath '../../data/files/dim_shops.txt' into table dim_shops_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@dim_shops
-POSTHOOK: query: load data local inpath '../../data/files/dim_shops.txt' into table dim_shops
+PREHOOK: Output: default@dim_shops_n0
+POSTHOOK: query: load data local inpath '../../data/files/dim_shops.txt' into table dim_shops_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@dim_shops
-PREHOOK: query: create table agg_01 (amount decimal) partitioned by (dim_shops_id int) row format delimited fields terminated by ',' stored as textfile
+POSTHOOK: Output: default@dim_shops_n0
+PREHOOK: query: create table agg_01_n0 (amount decimal) partitioned by (dim_shops_id int) row format delimited fields terminated by ',' stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@agg_01
-POSTHOOK: query: create table agg_01 (amount decimal) partitioned by (dim_shops_id int) row format delimited fields terminated by ',' stored as textfile
+PREHOOK: Output: default@agg_01_n0
+POSTHOOK: query: create table agg_01_n0 (amount decimal) partitioned by (dim_shops_id int) row format delimited fields terminated by ',' stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@agg_01
-PREHOOK: query: alter table agg_01 add partition (dim_shops_id = 1)
+POSTHOOK: Output: default@agg_01_n0
+PREHOOK: query: alter table agg_01_n0 add partition (dim_shops_id = 1)
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Output: default@agg_01
-POSTHOOK: query: alter table agg_01 add partition (dim_shops_id = 1)
+PREHOOK: Output: default@agg_01_n0
+POSTHOOK: query: alter table agg_01_n0 add partition (dim_shops_id = 1)
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Output: default@agg_01
-POSTHOOK: Output: default@agg_01@dim_shops_id=1
-PREHOOK: query: alter table agg_01 add partition (dim_shops_id = 2)
+POSTHOOK: Output: default@agg_01_n0
+POSTHOOK: Output: default@agg_01_n0@dim_shops_id=1
+PREHOOK: query: alter table agg_01_n0 add partition (dim_shops_id = 2)
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Output: default@agg_01
-POSTHOOK: query: alter table agg_01 add partition (dim_shops_id = 2)
+PREHOOK: Output: default@agg_01_n0
+POSTHOOK: query: alter table agg_01_n0 add partition (dim_shops_id = 2)
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Output: default@agg_01
-POSTHOOK: Output: default@agg_01@dim_shops_id=2
-PREHOOK: query: alter table agg_01 add partition (dim_shops_id = 3)
+POSTHOOK: Output: default@agg_01_n0
+POSTHOOK: Output: default@agg_01_n0@dim_shops_id=2
+PREHOOK: query: alter table agg_01_n0 add partition (dim_shops_id = 3)
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Output: default@agg_01
-POSTHOOK: query: alter table agg_01 add partition (dim_shops_id = 3)
+PREHOOK: Output: default@agg_01_n0
+POSTHOOK: query: alter table agg_01_n0 add partition (dim_shops_id = 3)
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Output: default@agg_01
-POSTHOOK: Output: default@agg_01@dim_shops_id=3
-PREHOOK: query: load data local inpath '../../data/files/agg_01-p1.txt' into table agg_01 partition (dim_shops_id=1)
+POSTHOOK: Output: default@agg_01_n0
+POSTHOOK: Output: default@agg_01_n0@dim_shops_id=3
+PREHOOK: query: load data local inpath '../../data/files/agg_01-p1.txt' into table agg_01_n0 partition (dim_shops_id=1)
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@agg_01@dim_shops_id=1
-POSTHOOK: query: load data local inpath '../../data/files/agg_01-p1.txt' into table agg_01 partition (dim_shops_id=1)
+PREHOOK: Output: default@agg_01_n0@dim_shops_id=1
+POSTHOOK: query: load data local inpath '../../data/files/agg_01-p1.txt' into table agg_01_n0 partition (dim_shops_id=1)
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@agg_01@dim_shops_id=1
-PREHOOK: query: load data local inpath '../../data/files/agg_01-p2.txt' into table agg_01 partition (dim_shops_id=2)
+POSTHOOK: Output: default@agg_01_n0@dim_shops_id=1
+PREHOOK: query: load data local inpath '../../data/files/agg_01-p2.txt' into table agg_01_n0 partition (dim_shops_id=2)
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@agg_01@dim_shops_id=2
-POSTHOOK: query: load data local inpath '../../data/files/agg_01-p2.txt' into table agg_01 partition (dim_shops_id=2)
+PREHOOK: Output: default@agg_01_n0@dim_shops_id=2
+POSTHOOK: query: load data local inpath '../../data/files/agg_01-p2.txt' into table agg_01_n0 partition (dim_shops_id=2)
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@agg_01@dim_shops_id=2
-PREHOOK: query: load data local inpath '../../data/files/agg_01-p3.txt' into table agg_01 partition (dim_shops_id=3)
+POSTHOOK: Output: default@agg_01_n0@dim_shops_id=2
+PREHOOK: query: load data local inpath '../../data/files/agg_01-p3.txt' into table agg_01_n0 partition (dim_shops_id=3)
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@agg_01@dim_shops_id=3
-POSTHOOK: query: load data local inpath '../../data/files/agg_01-p3.txt' into table agg_01 partition (dim_shops_id=3)
+PREHOOK: Output: default@agg_01_n0@dim_shops_id=3
+POSTHOOK: query: load data local inpath '../../data/files/agg_01-p3.txt' into table agg_01_n0 partition (dim_shops_id=3)
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@agg_01@dim_shops_id=3
-PREHOOK: query: analyze table dim_shops compute statistics
+POSTHOOK: Output: default@agg_01_n0@dim_shops_id=3
+PREHOOK: query: analyze table dim_shops_n0 compute statistics
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dim_shops
-PREHOOK: Output: default@dim_shops
-POSTHOOK: query: analyze table dim_shops compute statistics
+PREHOOK: Input: default@dim_shops_n0
+PREHOOK: Output: default@dim_shops_n0
+POSTHOOK: query: analyze table dim_shops_n0 compute statistics
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dim_shops
-POSTHOOK: Output: default@dim_shops
-PREHOOK: query: analyze table agg_01 partition (dim_shops_id) compute statistics
+POSTHOOK: Input: default@dim_shops_n0
+POSTHOOK: Output: default@dim_shops_n0
+PREHOOK: query: analyze table agg_01_n0 partition (dim_shops_id) compute statistics
 PREHOOK: type: QUERY
-PREHOOK: Input: default@agg_01
-PREHOOK: Input: default@agg_01@dim_shops_id=1
-PREHOOK: Input: default@agg_01@dim_shops_id=2
-PREHOOK: Input: default@agg_01@dim_shops_id=3
-PREHOOK: Output: default@agg_01
-PREHOOK: Output: default@agg_01@dim_shops_id=1
-PREHOOK: Output: default@agg_01@dim_shops_id=2
-PREHOOK: Output: default@agg_01@dim_shops_id=3
-POSTHOOK: query: analyze table agg_01 partition (dim_shops_id) compute statistics
+PREHOOK: Input: default@agg_01_n0
+PREHOOK: Input: default@agg_01_n0@dim_shops_id=1
+PREHOOK: Input: default@agg_01_n0@dim_shops_id=2
+PREHOOK: Input: default@agg_01_n0@dim_shops_id=3
+PREHOOK: Output: default@agg_01_n0
+PREHOOK: Output: default@agg_01_n0@dim_shops_id=1
+PREHOOK: Output: default@agg_01_n0@dim_shops_id=2
+PREHOOK: Output: default@agg_01_n0@dim_shops_id=3
+POSTHOOK: query: analyze table agg_01_n0 partition (dim_shops_id) compute statistics
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@agg_01
-POSTHOOK: Input: default@agg_01@dim_shops_id=1
-POSTHOOK: Input: default@agg_01@dim_shops_id=2
-POSTHOOK: Input: default@agg_01@dim_shops_id=3
-POSTHOOK: Output: default@agg_01
-POSTHOOK: Output: default@agg_01@dim_shops_id=1
-POSTHOOK: Output: default@agg_01@dim_shops_id=2
-POSTHOOK: Output: default@agg_01@dim_shops_id=3
-PREHOOK: query: select * from dim_shops
+POSTHOOK: Input: default@agg_01_n0
+POSTHOOK: Input: default@agg_01_n0@dim_shops_id=1
+POSTHOOK: Input: default@agg_01_n0@dim_shops_id=2
+POSTHOOK: Input: default@agg_01_n0@dim_shops_id=3
+POSTHOOK: Output: default@agg_01_n0
+POSTHOOK: Output: default@agg_01_n0@dim_shops_id=1
+POSTHOOK: Output: default@agg_01_n0@dim_shops_id=2
+POSTHOOK: Output: default@agg_01_n0@dim_shops_id=3
+PREHOOK: query: select * from dim_shops_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dim_shops
+PREHOOK: Input: default@dim_shops_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from dim_shops
+POSTHOOK: query: select * from dim_shops_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dim_shops
+POSTHOOK: Input: default@dim_shops_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	foo
 2	bar
 3	baz
-PREHOOK: query: select * from agg_01
+PREHOOK: query: select * from agg_01_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@agg_01
-PREHOOK: Input: default@agg_01@dim_shops_id=1
-PREHOOK: Input: default@agg_01@dim_shops_id=2
-PREHOOK: Input: default@agg_01@dim_shops_id=3
+PREHOOK: Input: default@agg_01_n0
+PREHOOK: Input: default@agg_01_n0@dim_shops_id=1
+PREHOOK: Input: default@agg_01_n0@dim_shops_id=2
+PREHOOK: Input: default@agg_01_n0@dim_shops_id=3
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from agg_01
+POSTHOOK: query: select * from agg_01_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@agg_01
-POSTHOOK: Input: default@agg_01@dim_shops_id=1
-POSTHOOK: Input: default@agg_01@dim_shops_id=2
-POSTHOOK: Input: default@agg_01@dim_shops_id=3
+POSTHOOK: Input: default@agg_01_n0
+POSTHOOK: Input: default@agg_01_n0@dim_shops_id=1
+POSTHOOK: Input: default@agg_01_n0@dim_shops_id=2
+POSTHOOK: Input: default@agg_01_n0@dim_shops_id=3
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	1
 2	1
@@ -130,8 +130,8 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 8	3
 9	3
 PREHOOK: query: EXPLAIN SELECT d1.label, count(*), sum(agg.amount)
-FROM agg_01 agg,
-dim_shops d1
+FROM agg_01_n0 agg,
+dim_shops_n0 d1
 WHERE agg.dim_shops_id = d1.id
 and
 d1.label in ('foo', 'bar')
@@ -139,8 +139,8 @@ GROUP BY d1.label
 ORDER BY d1.label
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT d1.label, count(*), sum(agg.amount)
-FROM agg_01 agg,
-dim_shops d1
+FROM agg_01_n0 agg,
+dim_shops_n0 d1
 WHERE agg.dim_shops_id = d1.id
 and
 d1.label in ('foo', 'bar')
@@ -264,40 +264,40 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT d1.label, count(*), sum(agg.amount)
-FROM agg_01 agg,
-dim_shops d1
+FROM agg_01_n0 agg,
+dim_shops_n0 d1
 WHERE agg.dim_shops_id = d1.id
 and
 d1.label in ('foo', 'bar')
 GROUP BY d1.label
 ORDER BY d1.label
 PREHOOK: type: QUERY
-PREHOOK: Input: default@agg_01
-PREHOOK: Input: default@agg_01@dim_shops_id=1
-PREHOOK: Input: default@agg_01@dim_shops_id=2
-PREHOOK: Input: default@agg_01@dim_shops_id=3
-PREHOOK: Input: default@dim_shops
+PREHOOK: Input: default@agg_01_n0
+PREHOOK: Input: default@agg_01_n0@dim_shops_id=1
+PREHOOK: Input: default@agg_01_n0@dim_shops_id=2
+PREHOOK: Input: default@agg_01_n0@dim_shops_id=3
+PREHOOK: Input: default@dim_shops_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT d1.label, count(*), sum(agg.amount)
-FROM agg_01 agg,
-dim_shops d1
+FROM agg_01_n0 agg,
+dim_shops_n0 d1
 WHERE agg.dim_shops_id = d1.id
 and
 d1.label in ('foo', 'bar')
 GROUP BY d1.label
 ORDER BY d1.label
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@agg_01
-POSTHOOK: Input: default@agg_01@dim_shops_id=1
-POSTHOOK: Input: default@agg_01@dim_shops_id=2
-POSTHOOK: Input: default@agg_01@dim_shops_id=3
-POSTHOOK: Input: default@dim_shops
+POSTHOOK: Input: default@agg_01_n0
+POSTHOOK: Input: default@agg_01_n0@dim_shops_id=1
+POSTHOOK: Input: default@agg_01_n0@dim_shops_id=2
+POSTHOOK: Input: default@agg_01_n0@dim_shops_id=3
+POSTHOOK: Input: default@dim_shops_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 bar	3	15
 foo	3	6
 PREHOOK: query: EXPLAIN SELECT d1.label, count(*), sum(agg.amount)
-FROM agg_01 agg,
-dim_shops d1
+FROM agg_01_n0 agg,
+dim_shops_n0 d1
 WHERE agg.dim_shops_id = d1.id
 and
 d1.label in ('foo', 'bar')
@@ -305,8 +305,8 @@ GROUP BY d1.label
 ORDER BY d1.label
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT d1.label, count(*), sum(agg.amount)
-FROM agg_01 agg,
-dim_shops d1
+FROM agg_01_n0 agg,
+dim_shops_n0 d1
 WHERE agg.dim_shops_id = d1.id
 and
 d1.label in ('foo', 'bar')
@@ -418,45 +418,45 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT d1.label, count(*), sum(agg.amount)
-FROM agg_01 agg,
-dim_shops d1
+FROM agg_01_n0 agg,
+dim_shops_n0 d1
 WHERE agg.dim_shops_id = d1.id
 and
 d1.label in ('foo', 'bar')
 GROUP BY d1.label
 ORDER BY d1.label
 PREHOOK: type: QUERY
-PREHOOK: Input: default@agg_01
-PREHOOK: Input: default@agg_01@dim_shops_id=1
-PREHOOK: Input: default@agg_01@dim_shops_id=2
-PREHOOK: Input: default@agg_01@dim_shops_id=3
-PREHOOK: Input: default@dim_shops
+PREHOOK: Input: default@agg_01_n0
+PREHOOK: Input: default@agg_01_n0@dim_shops_id=1
+PREHOOK: Input: default@agg_01_n0@dim_shops_id=2
+PREHOOK: Input: default@agg_01_n0@dim_shops_id=3
+PREHOOK: Input: default@dim_shops_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT d1.label, count(*), sum(agg.amount)
-FROM agg_01 agg,
-dim_shops d1
+FROM agg_01_n0 agg,
+dim_shops_n0 d1
 WHERE agg.dim_shops_id = d1.id
 and
 d1.label in ('foo', 'bar')
 GROUP BY d1.label
 ORDER BY d1.label
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@agg_01
-POSTHOOK: Input: default@agg_01@dim_shops_id=1
-POSTHOOK: Input: default@agg_01@dim_shops_id=2
-POSTHOOK: Input: default@agg_01@dim_shops_id=3
-POSTHOOK: Input: default@dim_shops
+POSTHOOK: Input: default@agg_01_n0
+POSTHOOK: Input: default@agg_01_n0@dim_shops_id=1
+POSTHOOK: Input: default@agg_01_n0@dim_shops_id=2
+POSTHOOK: Input: default@agg_01_n0@dim_shops_id=3
+POSTHOOK: Input: default@dim_shops_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 bar	3	15
 foo	3	6
 PREHOOK: query: EXPLAIN SELECT d1.label
-FROM agg_01 agg,
-dim_shops d1
+FROM agg_01_n0 agg,
+dim_shops_n0 d1
 WHERE agg.dim_shops_id = d1.id
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT d1.label
-FROM agg_01 agg,
-dim_shops d1
+FROM agg_01_n0 agg,
+dim_shops_n0 d1
 WHERE agg.dim_shops_id = d1.id
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -534,26 +534,26 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT d1.label
-FROM agg_01 agg,
-dim_shops d1
+FROM agg_01_n0 agg,
+dim_shops_n0 d1
 WHERE agg.dim_shops_id = d1.id
 PREHOOK: type: QUERY
-PREHOOK: Input: default@agg_01
-PREHOOK: Input: default@agg_01@dim_shops_id=1
-PREHOOK: Input: default@agg_01@dim_shops_id=2
-PREHOOK: Input: default@agg_01@dim_shops_id=3
-PREHOOK: Input: default@dim_shops
+PREHOOK: Input: default@agg_01_n0
+PREHOOK: Input: default@agg_01_n0@dim_shops_id=1
+PREHOOK: Input: default@agg_01_n0@dim_shops_id=2
+PREHOOK: Input: default@agg_01_n0@dim_shops_id=3
+PREHOOK: Input: default@dim_shops_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT d1.label
-FROM agg_01 agg,
-dim_shops d1
+FROM agg_01_n0 agg,
+dim_shops_n0 d1
 WHERE agg.dim_shops_id = d1.id
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@agg_01
-POSTHOOK: Input: default@agg_01@dim_shops_id=1
-POSTHOOK: Input: default@agg_01@dim_shops_id=2
-POSTHOOK: Input: default@agg_01@dim_shops_id=3
-POSTHOOK: Input: default@dim_shops
+POSTHOOK: Input: default@agg_01_n0
+POSTHOOK: Input: default@agg_01_n0@dim_shops_id=1
+POSTHOOK: Input: default@agg_01_n0@dim_shops_id=2
+POSTHOOK: Input: default@agg_01_n0@dim_shops_id=3
+POSTHOOK: Input: default@dim_shops_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 bar
 bar
@@ -566,14 +566,14 @@ foo
 foo
 Warning: Map Join MAPJOIN[13][bigTable=?] in task 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: EXPLAIN SELECT agg.amount
-FROM agg_01 agg,
-dim_shops d1
+FROM agg_01_n0 agg,
+dim_shops_n0 d1
 WHERE agg.dim_shops_id = d1.id
 and agg.dim_shops_id = 1
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT agg.amount
-FROM agg_01 agg,
-dim_shops d1
+FROM agg_01_n0 agg,
+dim_shops_n0 d1
 WHERE agg.dim_shops_id = d1.id
 and agg.dim_shops_id = 1
 POSTHOOK: type: QUERY
@@ -647,31 +647,31 @@ STAGE PLANS:
 
 Warning: Map Join MAPJOIN[13][bigTable=?] in task 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: SELECT agg.amount
-FROM agg_01 agg,
-dim_shops d1
+FROM agg_01_n0 agg,
+dim_shops_n0 d1
 WHERE agg.dim_shops_id = d1.id
 and agg.dim_shops_id = 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@agg_01
-PREHOOK: Input: default@agg_01@dim_shops_id=1
-PREHOOK: Input: default@dim_shops
+PREHOOK: Input: default@agg_01_n0
+PREHOOK: Input: default@agg_01_n0@dim_shops_id=1
+PREHOOK: Input: default@dim_shops_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT agg.amount
-FROM agg_01 agg,
-dim_shops d1
+FROM agg_01_n0 agg,
+dim_shops_n0 d1
 WHERE agg.dim_shops_id = d1.id
 and agg.dim_shops_id = 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@agg_01
-POSTHOOK: Input: default@agg_01@dim_shops_id=1
-POSTHOOK: Input: default@dim_shops
+POSTHOOK: Input: default@agg_01_n0
+POSTHOOK: Input: default@agg_01_n0@dim_shops_id=1
+POSTHOOK: Input: default@dim_shops_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1
 2
 3
 PREHOOK: query: EXPLAIN SELECT d1.label, count(*), sum(agg.amount)
-FROM agg_01 agg,
-dim_shops d1
+FROM agg_01_n0 agg,
+dim_shops_n0 d1
 WHERE agg.dim_shops_id = d1.id
 and
 d1.label in ('foo', 'bar')
@@ -679,8 +679,8 @@ GROUP BY d1.label
 ORDER BY d1.label
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT d1.label, count(*), sum(agg.amount)
-FROM agg_01 agg,
-dim_shops d1
+FROM agg_01_n0 agg,
+dim_shops_n0 d1
 WHERE agg.dim_shops_id = d1.id
 and
 d1.label in ('foo', 'bar')
@@ -804,46 +804,46 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT d1.label, count(*), sum(agg.amount)
-FROM agg_01 agg,
-dim_shops d1
+FROM agg_01_n0 agg,
+dim_shops_n0 d1
 WHERE agg.dim_shops_id = d1.id
 and
 d1.label in ('foo', 'bar')
 GROUP BY d1.label
 ORDER BY d1.label
 PREHOOK: type: QUERY
-PREHOOK: Input: default@agg_01
-PREHOOK: Input: default@agg_01@dim_shops_id=1
-PREHOOK: Input: default@agg_01@dim_shops_id=2
-PREHOOK: Input: default@agg_01@dim_shops_id=3
-PREHOOK: Input: default@dim_shops
+PREHOOK: Input: default@agg_01_n0
+PREHOOK: Input: default@agg_01_n0@dim_shops_id=1
+PREHOOK: Input: default@agg_01_n0@dim_shops_id=2
+PREHOOK: Input: default@agg_01_n0@dim_shops_id=3
+PREHOOK: Input: default@dim_shops_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT d1.label, count(*), sum(agg.amount)
-FROM agg_01 agg,
-dim_shops d1
+FROM agg_01_n0 agg,
+dim_shops_n0 d1
 WHERE agg.dim_shops_id = d1.id
 and
 d1.label in ('foo', 'bar')
 GROUP BY d1.label
 ORDER BY d1.label
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@agg_01
-POSTHOOK: Input: default@agg_01@dim_shops_id=1
-POSTHOOK: Input: default@agg_01@dim_shops_id=2
-POSTHOOK: Input: default@agg_01@dim_shops_id=3
-POSTHOOK: Input: default@dim_shops
+POSTHOOK: Input: default@agg_01_n0
+POSTHOOK: Input: default@agg_01_n0@dim_shops_id=1
+POSTHOOK: Input: default@agg_01_n0@dim_shops_id=2
+POSTHOOK: Input: default@agg_01_n0@dim_shops_id=3
+POSTHOOK: Input: default@dim_shops_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 bar	3	15
 foo	3	6
 PREHOOK: query: EXPLAIN 
-SELECT amount FROM agg_01, dim_shops WHERE dim_shops_id = id AND label = 'foo'
+SELECT amount FROM agg_01_n0, dim_shops_n0 WHERE dim_shops_id = id AND label = 'foo'
 UNION ALL
-SELECT amount FROM agg_01, dim_shops WHERE dim_shops_id = id AND label = 'bar'
+SELECT amount FROM agg_01_n0, dim_shops_n0 WHERE dim_shops_id = id AND label = 'bar'
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN 
-SELECT amount FROM agg_01, dim_shops WHERE dim_shops_id = id AND label = 'foo'
+SELECT amount FROM agg_01_n0, dim_shops_n0 WHERE dim_shops_id = id AND label = 'foo'
 UNION ALL
-SELECT amount FROM agg_01, dim_shops WHERE dim_shops_id = id AND label = 'bar'
+SELECT amount FROM agg_01_n0, dim_shops_n0 WHERE dim_shops_id = id AND label = 'bar'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -859,7 +859,7 @@ STAGE PLANS:
         Map 2 
             Map Operator Tree:
                 TableScan
-                  alias: dim_shops
+                  alias: dim_shops_n0
                   filterExpr: ((label = 'foo') and id is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -895,7 +895,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: dim_shops
+                  alias: dim_shops_n0
                   filterExpr: ((label = 'bar') and id is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -931,7 +931,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: agg_01
+                  alias: agg_01_n0
                   filterExpr: dim_shops_id is not null (type: boolean)
                   Statistics: Num rows: 9 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
@@ -960,7 +960,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: agg_01
+                  alias: agg_01_n0
                   filterExpr: dim_shops_id is not null (type: boolean)
                   Statistics: Num rows: 9 Data size: 27 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
@@ -993,25 +993,25 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT amount FROM agg_01, dim_shops WHERE dim_shops_id = id AND label = 'foo'
+PREHOOK: query: SELECT amount FROM agg_01_n0, dim_shops_n0 WHERE dim_shops_id = id AND label = 'foo'
 UNION ALL
-SELECT amount FROM agg_01, dim_shops WHERE dim_shops_id = id AND label = 'bar'
+SELECT amount FROM agg_01_n0, dim_shops_n0 WHERE dim_shops_id = id AND label = 'bar'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@agg_01
-PREHOOK: Input: default@agg_01@dim_shops_id=1
-PREHOOK: Input: default@agg_01@dim_shops_id=2
-PREHOOK: Input: default@agg_01@dim_shops_id=3
-PREHOOK: Input: default@dim_shops
+PREHOOK: Input: default@agg_01_n0
+PREHOOK: Input: default@agg_01_n0@dim_shops_id=1
+PREHOOK: Input: default@agg_01_n0@dim_shops_id=2
+PREHOOK: Input: default@agg_01_n0@dim_shops_id=3
+PREHOOK: Input: default@dim_shops_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: SELECT amount FROM agg_01, dim_shops WHERE dim_shops_id = id AND label = 'foo'
+POSTHOOK: query: SELECT amount FROM agg_01_n0, dim_shops_n0 WHERE dim_shops_id = id AND label = 'foo'
 UNION ALL
-SELECT amount FROM agg_01, dim_shops WHERE dim_shops_id = id AND label = 'bar'
+SELECT amount FROM agg_01_n0, dim_shops_n0 WHERE dim_shops_id = id AND label = 'bar'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@agg_01
-POSTHOOK: Input: default@agg_01@dim_shops_id=1
-POSTHOOK: Input: default@agg_01@dim_shops_id=2
-POSTHOOK: Input: default@agg_01@dim_shops_id=3
-POSTHOOK: Input: default@dim_shops
+POSTHOOK: Input: default@agg_01_n0
+POSTHOOK: Input: default@agg_01_n0@dim_shops_id=1
+POSTHOOK: Input: default@agg_01_n0@dim_shops_id=2
+POSTHOOK: Input: default@agg_01_n0@dim_shops_id=3
+POSTHOOK: Input: default@dim_shops_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1
 2

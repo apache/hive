@@ -60,19 +60,19 @@ Stage-0
       TableScan [TS_0]
         Output:["key"]
 
-PREHOOK: query: create table t as select key from src
+PREHOOK: query: create table t_n28 as select key from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t
-POSTHOOK: query: create table t as select key from src
+PREHOOK: Output: default@t_n28
+POSTHOOK: query: create table t_n28 as select key from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t
-PREHOOK: query: explain analyze create table t as select key from src
+POSTHOOK: Output: default@t_n28
+PREHOOK: query: explain analyze create table t_n28 as select key from src
 PREHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: query: explain analyze create table t as select key from src
+POSTHOOK: query: explain analyze create table t_n28 as select key from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 Plan optimized by CBO.
 
@@ -80,13 +80,13 @@ Stage-3
   Stats Work{}
     Stage-4
       Create Table Operator:
-        name:default.t
+        name:default.t_n28
         Stage-2
           Dependency Collection{}
             Stage-1
               Map 1
               File Output Operator [FS_2]
-                table:{"name:":"default.t"}
+                table:{"name:":"default.t_n28"}
                 Select Operator [SEL_1] (rows=500/500 width=87)
                   Output:["_col0"]
                   TableScan [TS_0] (rows=500/500 width=87)
@@ -95,28 +95,28 @@ Stage-3
           Move Operator
              Please refer to the previous Stage-1
 
-PREHOOK: query: create table t as select key from src
+PREHOOK: query: create table t_n28 as select key from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t
-POSTHOOK: query: create table t as select key from src
+PREHOOK: Output: default@t_n28
+POSTHOOK: query: create table t_n28 as select key from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: insert overwrite table t select key from src
+POSTHOOK: Output: default@t_n28
+POSTHOOK: Lineage: t_n28.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table t_n28 select key from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@t
-POSTHOOK: query: insert overwrite table t select key from src
+PREHOOK: Output: default@t_n28
+POSTHOOK: query: insert overwrite table t_n28 select key from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@t
-PREHOOK: query: explain analyze insert overwrite table t select key from src
+POSTHOOK: Output: default@t_n28
+PREHOOK: query: explain analyze insert overwrite table t_n28 select key from src
 PREHOOK: type: QUERY
-POSTHOOK: query: explain analyze insert overwrite table t select key from src
+POSTHOOK: query: explain analyze insert overwrite table t_n28 select key from src
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -127,7 +127,7 @@ Stage-3
   Stats Work{}
     Stage-0
       Move Operator
-        table:{"name:":"default.t"}
+        table:{"name:":"default.t_n28"}
         Stage-2
           Dependency Collection{}
             Stage-1
@@ -137,7 +137,7 @@ Stage-3
                   Output:["_col0"],aggregations:["compute_stats(VALUE._col0, 'hll')"]
                 <-Map 1 [CUSTOM_SIMPLE_EDGE]
                   File Output Operator [FS_2]
-                    table:{"name:":"default.t"}
+                    table:{"name:":"default.t_n28"}
                     Select Operator [SEL_1] (rows=500/500 width=87)
                       Output:["_col0"]
                       TableScan [TS_0] (rows=500/500 width=87)

@@ -1,4 +1,4 @@
-PREHOOK: query: create table if not exists ext_loc (
+PREHOOK: query: create table if not exists ext_loc_n1 (
   state string,
   locid int,
   zip int,
@@ -6,8 +6,8 @@ PREHOOK: query: create table if not exists ext_loc (
 ) row format delimited fields terminated by '|' stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@ext_loc
-POSTHOOK: query: create table if not exists ext_loc (
+PREHOOK: Output: default@ext_loc_n1
+POSTHOOK: query: create table if not exists ext_loc_n1 (
   state string,
   locid int,
   zip int,
@@ -15,88 +15,88 @@ POSTHOOK: query: create table if not exists ext_loc (
 ) row format delimited fields terminated by '|' stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@ext_loc
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/extrapolate_stats_partial.txt' OVERWRITE INTO TABLE ext_loc
+POSTHOOK: Output: default@ext_loc_n1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/extrapolate_stats_partial.txt' OVERWRITE INTO TABLE ext_loc_n1
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@ext_loc
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/extrapolate_stats_partial.txt' OVERWRITE INTO TABLE ext_loc
+PREHOOK: Output: default@ext_loc_n1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/extrapolate_stats_partial.txt' OVERWRITE INTO TABLE ext_loc_n1
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@ext_loc
-PREHOOK: query: create table if not exists loc_orc_1d (
+POSTHOOK: Output: default@ext_loc_n1
+PREHOOK: query: create table if not exists loc_orc_1d_n1 (
   state string,
   locid int,
   zip int
 ) partitioned by(year string) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@loc_orc_1d
-POSTHOOK: query: create table if not exists loc_orc_1d (
+PREHOOK: Output: default@loc_orc_1d_n1
+POSTHOOK: query: create table if not exists loc_orc_1d_n1 (
   state string,
   locid int,
   zip int
 ) partitioned by(year string) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@loc_orc_1d
-PREHOOK: query: insert overwrite table loc_orc_1d partition(year) select * from ext_loc
+POSTHOOK: Output: default@loc_orc_1d_n1
+PREHOOK: query: insert overwrite table loc_orc_1d_n1 partition(year) select * from ext_loc_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@ext_loc
-PREHOOK: Output: default@loc_orc_1d
-POSTHOOK: query: insert overwrite table loc_orc_1d partition(year) select * from ext_loc
+PREHOOK: Input: default@ext_loc_n1
+PREHOOK: Output: default@loc_orc_1d_n1
+POSTHOOK: query: insert overwrite table loc_orc_1d_n1 partition(year) select * from ext_loc_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ext_loc
-POSTHOOK: Output: default@loc_orc_1d@year=2000
-POSTHOOK: Output: default@loc_orc_1d@year=2001
-POSTHOOK: Output: default@loc_orc_1d@year=2002
-POSTHOOK: Output: default@loc_orc_1d@year=2003
-POSTHOOK: Lineage: loc_orc_1d PARTITION(year=2000).locid SIMPLE [(ext_loc)ext_loc.FieldSchema(name:locid, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc_1d PARTITION(year=2000).state SIMPLE [(ext_loc)ext_loc.FieldSchema(name:state, type:string, comment:null), ]
-POSTHOOK: Lineage: loc_orc_1d PARTITION(year=2000).zip SIMPLE [(ext_loc)ext_loc.FieldSchema(name:zip, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc_1d PARTITION(year=2001).locid SIMPLE [(ext_loc)ext_loc.FieldSchema(name:locid, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc_1d PARTITION(year=2001).state SIMPLE [(ext_loc)ext_loc.FieldSchema(name:state, type:string, comment:null), ]
-POSTHOOK: Lineage: loc_orc_1d PARTITION(year=2001).zip SIMPLE [(ext_loc)ext_loc.FieldSchema(name:zip, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc_1d PARTITION(year=2002).locid SIMPLE [(ext_loc)ext_loc.FieldSchema(name:locid, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc_1d PARTITION(year=2002).state SIMPLE [(ext_loc)ext_loc.FieldSchema(name:state, type:string, comment:null), ]
-POSTHOOK: Lineage: loc_orc_1d PARTITION(year=2002).zip SIMPLE [(ext_loc)ext_loc.FieldSchema(name:zip, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc_1d PARTITION(year=2003).locid SIMPLE [(ext_loc)ext_loc.FieldSchema(name:locid, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc_1d PARTITION(year=2003).state SIMPLE [(ext_loc)ext_loc.FieldSchema(name:state, type:string, comment:null), ]
-POSTHOOK: Lineage: loc_orc_1d PARTITION(year=2003).zip SIMPLE [(ext_loc)ext_loc.FieldSchema(name:zip, type:int, comment:null), ]
-PREHOOK: query: analyze table loc_orc_1d partition(year='2001') compute statistics for columns state,locid
+POSTHOOK: Input: default@ext_loc_n1
+POSTHOOK: Output: default@loc_orc_1d_n1@year=2000
+POSTHOOK: Output: default@loc_orc_1d_n1@year=2001
+POSTHOOK: Output: default@loc_orc_1d_n1@year=2002
+POSTHOOK: Output: default@loc_orc_1d_n1@year=2003
+POSTHOOK: Lineage: loc_orc_1d_n1 PARTITION(year=2000).locid SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_1d_n1 PARTITION(year=2000).state SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc_1d_n1 PARTITION(year=2000).zip SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:zip, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_1d_n1 PARTITION(year=2001).locid SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_1d_n1 PARTITION(year=2001).state SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc_1d_n1 PARTITION(year=2001).zip SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:zip, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_1d_n1 PARTITION(year=2002).locid SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_1d_n1 PARTITION(year=2002).state SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc_1d_n1 PARTITION(year=2002).zip SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:zip, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_1d_n1 PARTITION(year=2003).locid SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_1d_n1 PARTITION(year=2003).state SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc_1d_n1 PARTITION(year=2003).zip SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:zip, type:int, comment:null), ]
+PREHOOK: query: analyze table loc_orc_1d_n1 partition(year='2001') compute statistics for columns state,locid
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@loc_orc_1d
-PREHOOK: Input: default@loc_orc_1d@year=2001
-PREHOOK: Output: default@loc_orc_1d
-PREHOOK: Output: default@loc_orc_1d@year=2001
+PREHOOK: Input: default@loc_orc_1d_n1
+PREHOOK: Input: default@loc_orc_1d_n1@year=2001
+PREHOOK: Output: default@loc_orc_1d_n1
+PREHOOK: Output: default@loc_orc_1d_n1@year=2001
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table loc_orc_1d partition(year='2001') compute statistics for columns state,locid
+POSTHOOK: query: analyze table loc_orc_1d_n1 partition(year='2001') compute statistics for columns state,locid
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@loc_orc_1d
-POSTHOOK: Input: default@loc_orc_1d@year=2001
-POSTHOOK: Output: default@loc_orc_1d
-POSTHOOK: Output: default@loc_orc_1d@year=2001
+POSTHOOK: Input: default@loc_orc_1d_n1
+POSTHOOK: Input: default@loc_orc_1d_n1@year=2001
+POSTHOOK: Output: default@loc_orc_1d_n1
+POSTHOOK: Output: default@loc_orc_1d_n1@year=2001
 #### A masked pattern was here ####
-PREHOOK: query: analyze table loc_orc_1d partition(year='2002') compute statistics for columns state,locid
+PREHOOK: query: analyze table loc_orc_1d_n1 partition(year='2002') compute statistics for columns state,locid
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@loc_orc_1d
-PREHOOK: Input: default@loc_orc_1d@year=2002
-PREHOOK: Output: default@loc_orc_1d
-PREHOOK: Output: default@loc_orc_1d@year=2002
+PREHOOK: Input: default@loc_orc_1d_n1
+PREHOOK: Input: default@loc_orc_1d_n1@year=2002
+PREHOOK: Output: default@loc_orc_1d_n1
+PREHOOK: Output: default@loc_orc_1d_n1@year=2002
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table loc_orc_1d partition(year='2002') compute statistics for columns state,locid
+POSTHOOK: query: analyze table loc_orc_1d_n1 partition(year='2002') compute statistics for columns state,locid
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@loc_orc_1d
-POSTHOOK: Input: default@loc_orc_1d@year=2002
-POSTHOOK: Output: default@loc_orc_1d
-POSTHOOK: Output: default@loc_orc_1d@year=2002
+POSTHOOK: Input: default@loc_orc_1d_n1
+POSTHOOK: Input: default@loc_orc_1d_n1@year=2002
+POSTHOOK: Output: default@loc_orc_1d_n1
+POSTHOOK: Output: default@loc_orc_1d_n1@year=2002
 #### A masked pattern was here ####
-PREHOOK: query: describe formatted loc_orc_1d PARTITION(year='2001') state
+PREHOOK: query: describe formatted loc_orc_1d_n1 PARTITION(year='2001') state
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@loc_orc_1d
-POSTHOOK: query: describe formatted loc_orc_1d PARTITION(year='2001') state
+PREHOOK: Input: default@loc_orc_1d_n1
+POSTHOOK: query: describe formatted loc_orc_1d_n1 PARTITION(year='2001') state
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@loc_orc_1d
+POSTHOOK: Input: default@loc_orc_1d_n1
 col_name            	state               	 	 	 	 	 	 	 	 	 	 
 data_type           	string              	 	 	 	 	 	 	 	 	 	 
 min                 	                    	 	 	 	 	 	 	 	 	 	 
@@ -109,12 +109,12 @@ num_trues
 num_falses          	                    	 	 	 	 	 	 	 	 	 	 
 bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-PREHOOK: query: describe formatted loc_orc_1d PARTITION(year='2002') state
+PREHOOK: query: describe formatted loc_orc_1d_n1 PARTITION(year='2002') state
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@loc_orc_1d
-POSTHOOK: query: describe formatted loc_orc_1d PARTITION(year='2002') state
+PREHOOK: Input: default@loc_orc_1d_n1
+POSTHOOK: query: describe formatted loc_orc_1d_n1 PARTITION(year='2002') state
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@loc_orc_1d
+POSTHOOK: Input: default@loc_orc_1d_n1
 col_name            	state               	 	 	 	 	 	 	 	 	 	 
 data_type           	string              	 	 	 	 	 	 	 	 	 	 
 min                 	                    	 	 	 	 	 	 	 	 	 	 
@@ -127,9 +127,9 @@ num_trues
 num_falses          	                    	 	 	 	 	 	 	 	 	 	 
 bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-PREHOOK: query: explain extended select state from loc_orc_1d
+PREHOOK: query: explain extended select state from loc_orc_1d_n1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended select state from loc_orc_1d
+POSTHOOK: query: explain extended select state from loc_orc_1d_n1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -152,13 +152,13 @@ STAGE PLANS:
               columns.comments 
               columns.types string:int:int
 #### A masked pattern was here ####
-              name default.loc_orc_1d
+              name default.loc_orc_1d_n1
               numFiles 1
               numRows 2
               partition_columns year
               partition_columns.types string
               rawDataSize 184
-              serialization.ddl struct loc_orc_1d { string state, i32 locid, i32 zip}
+              serialization.ddl struct loc_orc_1d_n1 { string state, i32 locid, i32 zip}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
               totalSize 369
@@ -175,16 +175,16 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:int:int
 #### A masked pattern was here ####
-                name default.loc_orc_1d
+                name default.loc_orc_1d_n1
                 partition_columns year
                 partition_columns.types string
-                serialization.ddl struct loc_orc_1d { string state, i32 locid, i32 zip}
+                serialization.ddl struct loc_orc_1d_n1 { string state, i32 locid, i32 zip}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.loc_orc_1d
-            name: default.loc_orc_1d
+              name: default.loc_orc_1d_n1
+            name: default.loc_orc_1d_n1
           Partition
             input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
             output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -198,13 +198,13 @@ STAGE PLANS:
               columns.comments 
               columns.types string:int:int
 #### A masked pattern was here ####
-              name default.loc_orc_1d
+              name default.loc_orc_1d_n1
               numFiles 1
               numRows 4
               partition_columns year
               partition_columns.types string
               rawDataSize 368
-              serialization.ddl struct loc_orc_1d { string state, i32 locid, i32 zip}
+              serialization.ddl struct loc_orc_1d_n1 { string state, i32 locid, i32 zip}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
               totalSize 390
@@ -221,16 +221,16 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:int:int
 #### A masked pattern was here ####
-                name default.loc_orc_1d
+                name default.loc_orc_1d_n1
                 partition_columns year
                 partition_columns.types string
-                serialization.ddl struct loc_orc_1d { string state, i32 locid, i32 zip}
+                serialization.ddl struct loc_orc_1d_n1 { string state, i32 locid, i32 zip}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.loc_orc_1d
-            name: default.loc_orc_1d
+              name: default.loc_orc_1d_n1
+            name: default.loc_orc_1d_n1
           Partition
             input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
             output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -244,13 +244,13 @@ STAGE PLANS:
               columns.comments 
               columns.types string:int:int
 #### A masked pattern was here ####
-              name default.loc_orc_1d
+              name default.loc_orc_1d_n1
               numFiles 1
               numRows 6
               partition_columns year
               partition_columns.types string
               rawDataSize 570
-              serialization.ddl struct loc_orc_1d { string state, i32 locid, i32 zip}
+              serialization.ddl struct loc_orc_1d_n1 { string state, i32 locid, i32 zip}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
               totalSize 410
@@ -267,16 +267,16 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:int:int
 #### A masked pattern was here ####
-                name default.loc_orc_1d
+                name default.loc_orc_1d_n1
                 partition_columns year
                 partition_columns.types string
-                serialization.ddl struct loc_orc_1d { string state, i32 locid, i32 zip}
+                serialization.ddl struct loc_orc_1d_n1 { string state, i32 locid, i32 zip}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.loc_orc_1d
-            name: default.loc_orc_1d
+              name: default.loc_orc_1d_n1
+            name: default.loc_orc_1d_n1
           Partition
             input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
             output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -290,13 +290,13 @@ STAGE PLANS:
               columns.comments 
               columns.types string:int:int
 #### A masked pattern was here ####
-              name default.loc_orc_1d
+              name default.loc_orc_1d_n1
               numFiles 1
               numRows 8
               partition_columns year
               partition_columns.types string
               rawDataSize 744
-              serialization.ddl struct loc_orc_1d { string state, i32 locid, i32 zip}
+              serialization.ddl struct loc_orc_1d_n1 { string state, i32 locid, i32 zip}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
               totalSize 419
@@ -313,19 +313,19 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:int:int
 #### A masked pattern was here ####
-                name default.loc_orc_1d
+                name default.loc_orc_1d_n1
                 partition_columns year
                 partition_columns.types string
-                serialization.ddl struct loc_orc_1d { string state, i32 locid, i32 zip}
+                serialization.ddl struct loc_orc_1d_n1 { string state, i32 locid, i32 zip}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.loc_orc_1d
-            name: default.loc_orc_1d
+              name: default.loc_orc_1d_n1
+            name: default.loc_orc_1d_n1
       Processor Tree:
         TableScan
-          alias: loc_orc_1d
+          alias: loc_orc_1d_n1
           Statistics: Num rows: 20 Data size: 1740 Basic stats: COMPLETE Column stats: COMPLETE
           GatherStats: false
           Select Operator
@@ -334,9 +334,9 @@ STAGE PLANS:
             Statistics: Num rows: 20 Data size: 1740 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
-PREHOOK: query: explain extended select state,locid from loc_orc_1d
+PREHOOK: query: explain extended select state,locid from loc_orc_1d_n1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended select state,locid from loc_orc_1d
+POSTHOOK: query: explain extended select state,locid from loc_orc_1d_n1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -359,13 +359,13 @@ STAGE PLANS:
               columns.comments 
               columns.types string:int:int
 #### A masked pattern was here ####
-              name default.loc_orc_1d
+              name default.loc_orc_1d_n1
               numFiles 1
               numRows 2
               partition_columns year
               partition_columns.types string
               rawDataSize 184
-              serialization.ddl struct loc_orc_1d { string state, i32 locid, i32 zip}
+              serialization.ddl struct loc_orc_1d_n1 { string state, i32 locid, i32 zip}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
               totalSize 369
@@ -382,16 +382,16 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:int:int
 #### A masked pattern was here ####
-                name default.loc_orc_1d
+                name default.loc_orc_1d_n1
                 partition_columns year
                 partition_columns.types string
-                serialization.ddl struct loc_orc_1d { string state, i32 locid, i32 zip}
+                serialization.ddl struct loc_orc_1d_n1 { string state, i32 locid, i32 zip}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.loc_orc_1d
-            name: default.loc_orc_1d
+              name: default.loc_orc_1d_n1
+            name: default.loc_orc_1d_n1
           Partition
             input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
             output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -405,13 +405,13 @@ STAGE PLANS:
               columns.comments 
               columns.types string:int:int
 #### A masked pattern was here ####
-              name default.loc_orc_1d
+              name default.loc_orc_1d_n1
               numFiles 1
               numRows 4
               partition_columns year
               partition_columns.types string
               rawDataSize 368
-              serialization.ddl struct loc_orc_1d { string state, i32 locid, i32 zip}
+              serialization.ddl struct loc_orc_1d_n1 { string state, i32 locid, i32 zip}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
               totalSize 390
@@ -428,16 +428,16 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:int:int
 #### A masked pattern was here ####
-                name default.loc_orc_1d
+                name default.loc_orc_1d_n1
                 partition_columns year
                 partition_columns.types string
-                serialization.ddl struct loc_orc_1d { string state, i32 locid, i32 zip}
+                serialization.ddl struct loc_orc_1d_n1 { string state, i32 locid, i32 zip}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.loc_orc_1d
-            name: default.loc_orc_1d
+              name: default.loc_orc_1d_n1
+            name: default.loc_orc_1d_n1
           Partition
             input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
             output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -451,13 +451,13 @@ STAGE PLANS:
               columns.comments 
               columns.types string:int:int
 #### A masked pattern was here ####
-              name default.loc_orc_1d
+              name default.loc_orc_1d_n1
               numFiles 1
               numRows 6
               partition_columns year
               partition_columns.types string
               rawDataSize 570
-              serialization.ddl struct loc_orc_1d { string state, i32 locid, i32 zip}
+              serialization.ddl struct loc_orc_1d_n1 { string state, i32 locid, i32 zip}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
               totalSize 410
@@ -474,16 +474,16 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:int:int
 #### A masked pattern was here ####
-                name default.loc_orc_1d
+                name default.loc_orc_1d_n1
                 partition_columns year
                 partition_columns.types string
-                serialization.ddl struct loc_orc_1d { string state, i32 locid, i32 zip}
+                serialization.ddl struct loc_orc_1d_n1 { string state, i32 locid, i32 zip}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.loc_orc_1d
-            name: default.loc_orc_1d
+              name: default.loc_orc_1d_n1
+            name: default.loc_orc_1d_n1
           Partition
             input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
             output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -497,13 +497,13 @@ STAGE PLANS:
               columns.comments 
               columns.types string:int:int
 #### A masked pattern was here ####
-              name default.loc_orc_1d
+              name default.loc_orc_1d_n1
               numFiles 1
               numRows 8
               partition_columns year
               partition_columns.types string
               rawDataSize 744
-              serialization.ddl struct loc_orc_1d { string state, i32 locid, i32 zip}
+              serialization.ddl struct loc_orc_1d_n1 { string state, i32 locid, i32 zip}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
               totalSize 419
@@ -520,19 +520,19 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:int:int
 #### A masked pattern was here ####
-                name default.loc_orc_1d
+                name default.loc_orc_1d_n1
                 partition_columns year
                 partition_columns.types string
-                serialization.ddl struct loc_orc_1d { string state, i32 locid, i32 zip}
+                serialization.ddl struct loc_orc_1d_n1 { string state, i32 locid, i32 zip}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.loc_orc_1d
-            name: default.loc_orc_1d
+              name: default.loc_orc_1d_n1
+            name: default.loc_orc_1d_n1
       Processor Tree:
         TableScan
-          alias: loc_orc_1d
+          alias: loc_orc_1d_n1
           Statistics: Num rows: 20 Data size: 1820 Basic stats: COMPLETE Column stats: COMPLETE
           GatherStats: false
           Select Operator
@@ -541,37 +541,37 @@ STAGE PLANS:
             Statistics: Num rows: 20 Data size: 1820 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
-PREHOOK: query: analyze table loc_orc_1d partition(year='2000') compute statistics for columns state
+PREHOOK: query: analyze table loc_orc_1d_n1 partition(year='2000') compute statistics for columns state
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@loc_orc_1d
-PREHOOK: Input: default@loc_orc_1d@year=2000
-PREHOOK: Output: default@loc_orc_1d
-PREHOOK: Output: default@loc_orc_1d@year=2000
+PREHOOK: Input: default@loc_orc_1d_n1
+PREHOOK: Input: default@loc_orc_1d_n1@year=2000
+PREHOOK: Output: default@loc_orc_1d_n1
+PREHOOK: Output: default@loc_orc_1d_n1@year=2000
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table loc_orc_1d partition(year='2000') compute statistics for columns state
+POSTHOOK: query: analyze table loc_orc_1d_n1 partition(year='2000') compute statistics for columns state
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@loc_orc_1d
-POSTHOOK: Input: default@loc_orc_1d@year=2000
-POSTHOOK: Output: default@loc_orc_1d
-POSTHOOK: Output: default@loc_orc_1d@year=2000
+POSTHOOK: Input: default@loc_orc_1d_n1
+POSTHOOK: Input: default@loc_orc_1d_n1@year=2000
+POSTHOOK: Output: default@loc_orc_1d_n1
+POSTHOOK: Output: default@loc_orc_1d_n1@year=2000
 #### A masked pattern was here ####
-PREHOOK: query: analyze table loc_orc_1d partition(year='2003') compute statistics for columns state
+PREHOOK: query: analyze table loc_orc_1d_n1 partition(year='2003') compute statistics for columns state
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@loc_orc_1d
-PREHOOK: Input: default@loc_orc_1d@year=2003
-PREHOOK: Output: default@loc_orc_1d
-PREHOOK: Output: default@loc_orc_1d@year=2003
+PREHOOK: Input: default@loc_orc_1d_n1
+PREHOOK: Input: default@loc_orc_1d_n1@year=2003
+PREHOOK: Output: default@loc_orc_1d_n1
+PREHOOK: Output: default@loc_orc_1d_n1@year=2003
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table loc_orc_1d partition(year='2003') compute statistics for columns state
+POSTHOOK: query: analyze table loc_orc_1d_n1 partition(year='2003') compute statistics for columns state
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@loc_orc_1d
-POSTHOOK: Input: default@loc_orc_1d@year=2003
-POSTHOOK: Output: default@loc_orc_1d
-POSTHOOK: Output: default@loc_orc_1d@year=2003
+POSTHOOK: Input: default@loc_orc_1d_n1
+POSTHOOK: Input: default@loc_orc_1d_n1@year=2003
+POSTHOOK: Output: default@loc_orc_1d_n1
+POSTHOOK: Output: default@loc_orc_1d_n1@year=2003
 #### A masked pattern was here ####
-PREHOOK: query: explain extended select state from loc_orc_1d
+PREHOOK: query: explain extended select state from loc_orc_1d_n1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended select state from loc_orc_1d
+POSTHOOK: query: explain extended select state from loc_orc_1d_n1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -594,13 +594,13 @@ STAGE PLANS:
               columns.comments 
               columns.types string:int:int
 #### A masked pattern was here ####
-              name default.loc_orc_1d
+              name default.loc_orc_1d_n1
               numFiles 1
               numRows 2
               partition_columns year
               partition_columns.types string
               rawDataSize 184
-              serialization.ddl struct loc_orc_1d { string state, i32 locid, i32 zip}
+              serialization.ddl struct loc_orc_1d_n1 { string state, i32 locid, i32 zip}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
               totalSize 369
@@ -617,16 +617,16 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:int:int
 #### A masked pattern was here ####
-                name default.loc_orc_1d
+                name default.loc_orc_1d_n1
                 partition_columns year
                 partition_columns.types string
-                serialization.ddl struct loc_orc_1d { string state, i32 locid, i32 zip}
+                serialization.ddl struct loc_orc_1d_n1 { string state, i32 locid, i32 zip}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.loc_orc_1d
-            name: default.loc_orc_1d
+              name: default.loc_orc_1d_n1
+            name: default.loc_orc_1d_n1
           Partition
             input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
             output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -640,13 +640,13 @@ STAGE PLANS:
               columns.comments 
               columns.types string:int:int
 #### A masked pattern was here ####
-              name default.loc_orc_1d
+              name default.loc_orc_1d_n1
               numFiles 1
               numRows 4
               partition_columns year
               partition_columns.types string
               rawDataSize 368
-              serialization.ddl struct loc_orc_1d { string state, i32 locid, i32 zip}
+              serialization.ddl struct loc_orc_1d_n1 { string state, i32 locid, i32 zip}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
               totalSize 390
@@ -663,16 +663,16 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:int:int
 #### A masked pattern was here ####
-                name default.loc_orc_1d
+                name default.loc_orc_1d_n1
                 partition_columns year
                 partition_columns.types string
-                serialization.ddl struct loc_orc_1d { string state, i32 locid, i32 zip}
+                serialization.ddl struct loc_orc_1d_n1 { string state, i32 locid, i32 zip}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.loc_orc_1d
-            name: default.loc_orc_1d
+              name: default.loc_orc_1d_n1
+            name: default.loc_orc_1d_n1
           Partition
             input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
             output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -686,13 +686,13 @@ STAGE PLANS:
               columns.comments 
               columns.types string:int:int
 #### A masked pattern was here ####
-              name default.loc_orc_1d
+              name default.loc_orc_1d_n1
               numFiles 1
               numRows 6
               partition_columns year
               partition_columns.types string
               rawDataSize 570
-              serialization.ddl struct loc_orc_1d { string state, i32 locid, i32 zip}
+              serialization.ddl struct loc_orc_1d_n1 { string state, i32 locid, i32 zip}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
               totalSize 410
@@ -709,16 +709,16 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:int:int
 #### A masked pattern was here ####
-                name default.loc_orc_1d
+                name default.loc_orc_1d_n1
                 partition_columns year
                 partition_columns.types string
-                serialization.ddl struct loc_orc_1d { string state, i32 locid, i32 zip}
+                serialization.ddl struct loc_orc_1d_n1 { string state, i32 locid, i32 zip}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.loc_orc_1d
-            name: default.loc_orc_1d
+              name: default.loc_orc_1d_n1
+            name: default.loc_orc_1d_n1
           Partition
             input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
             output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -732,13 +732,13 @@ STAGE PLANS:
               columns.comments 
               columns.types string:int:int
 #### A masked pattern was here ####
-              name default.loc_orc_1d
+              name default.loc_orc_1d_n1
               numFiles 1
               numRows 8
               partition_columns year
               partition_columns.types string
               rawDataSize 744
-              serialization.ddl struct loc_orc_1d { string state, i32 locid, i32 zip}
+              serialization.ddl struct loc_orc_1d_n1 { string state, i32 locid, i32 zip}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
               totalSize 419
@@ -755,19 +755,19 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:int:int
 #### A masked pattern was here ####
-                name default.loc_orc_1d
+                name default.loc_orc_1d_n1
                 partition_columns year
                 partition_columns.types string
-                serialization.ddl struct loc_orc_1d { string state, i32 locid, i32 zip}
+                serialization.ddl struct loc_orc_1d_n1 { string state, i32 locid, i32 zip}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.loc_orc_1d
-            name: default.loc_orc_1d
+              name: default.loc_orc_1d_n1
+            name: default.loc_orc_1d_n1
       Processor Tree:
         TableScan
-          alias: loc_orc_1d
+          alias: loc_orc_1d_n1
           Statistics: Num rows: 20 Data size: 1740 Basic stats: COMPLETE Column stats: COMPLETE
           GatherStats: false
           Select Operator
@@ -776,9 +776,9 @@ STAGE PLANS:
             Statistics: Num rows: 20 Data size: 1740 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
-PREHOOK: query: explain extended select state,locid from loc_orc_1d
+PREHOOK: query: explain extended select state,locid from loc_orc_1d_n1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended select state,locid from loc_orc_1d
+POSTHOOK: query: explain extended select state,locid from loc_orc_1d_n1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -801,13 +801,13 @@ STAGE PLANS:
               columns.comments 
               columns.types string:int:int
 #### A masked pattern was here ####
-              name default.loc_orc_1d
+              name default.loc_orc_1d_n1
               numFiles 1
               numRows 2
               partition_columns year
               partition_columns.types string
               rawDataSize 184
-              serialization.ddl struct loc_orc_1d { string state, i32 locid, i32 zip}
+              serialization.ddl struct loc_orc_1d_n1 { string state, i32 locid, i32 zip}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
               totalSize 369
@@ -824,16 +824,16 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:int:int
 #### A masked pattern was here ####
-                name default.loc_orc_1d
+                name default.loc_orc_1d_n1
                 partition_columns year
                 partition_columns.types string
-                serialization.ddl struct loc_orc_1d { string state, i32 locid, i32 zip}
+                serialization.ddl struct loc_orc_1d_n1 { string state, i32 locid, i32 zip}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.loc_orc_1d
-            name: default.loc_orc_1d
+              name: default.loc_orc_1d_n1
+            name: default.loc_orc_1d_n1
           Partition
             input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
             output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -847,13 +847,13 @@ STAGE PLANS:
               columns.comments 
               columns.types string:int:int
 #### A masked pattern was here ####
-              name default.loc_orc_1d
+              name default.loc_orc_1d_n1
               numFiles 1
               numRows 4
               partition_columns year
               partition_columns.types string
               rawDataSize 368
-              serialization.ddl struct loc_orc_1d { string state, i32 locid, i32 zip}
+              serialization.ddl struct loc_orc_1d_n1 { string state, i32 locid, i32 zip}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
               totalSize 390
@@ -870,16 +870,16 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:int:int
 #### A masked pattern was here ####
-                name default.loc_orc_1d
+                name default.loc_orc_1d_n1
                 partition_columns year
                 partition_columns.types string
-                serialization.ddl struct loc_orc_1d { string state, i32 locid, i32 zip}
+                serialization.ddl struct loc_orc_1d_n1 { string state, i32 locid, i32 zip}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.loc_orc_1d
-            name: default.loc_orc_1d
+              name: default.loc_orc_1d_n1
+            name: default.loc_orc_1d_n1
           Partition
             input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
             output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -893,13 +893,13 @@ STAGE PLANS:
               columns.comments 
               columns.types string:int:int
 #### A masked pattern was here ####
-              name default.loc_orc_1d
+              name default.loc_orc_1d_n1
               numFiles 1
               numRows 6
               partition_columns year
               partition_columns.types string
               rawDataSize 570
-              serialization.ddl struct loc_orc_1d { string state, i32 locid, i32 zip}
+              serialization.ddl struct loc_orc_1d_n1 { string state, i32 locid, i32 zip}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
               totalSize 410
@@ -916,16 +916,16 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:int:int
 #### A masked pattern was here ####
-                name default.loc_orc_1d
+                name default.loc_orc_1d_n1
                 partition_columns year
                 partition_columns.types string
-                serialization.ddl struct loc_orc_1d { string state, i32 locid, i32 zip}
+                serialization.ddl struct loc_orc_1d_n1 { string state, i32 locid, i32 zip}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.loc_orc_1d
-            name: default.loc_orc_1d
+              name: default.loc_orc_1d_n1
+            name: default.loc_orc_1d_n1
           Partition
             input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
             output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -939,13 +939,13 @@ STAGE PLANS:
               columns.comments 
               columns.types string:int:int
 #### A masked pattern was here ####
-              name default.loc_orc_1d
+              name default.loc_orc_1d_n1
               numFiles 1
               numRows 8
               partition_columns year
               partition_columns.types string
               rawDataSize 744
-              serialization.ddl struct loc_orc_1d { string state, i32 locid, i32 zip}
+              serialization.ddl struct loc_orc_1d_n1 { string state, i32 locid, i32 zip}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
               totalSize 419
@@ -962,19 +962,19 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:int:int
 #### A masked pattern was here ####
-                name default.loc_orc_1d
+                name default.loc_orc_1d_n1
                 partition_columns year
                 partition_columns.types string
-                serialization.ddl struct loc_orc_1d { string state, i32 locid, i32 zip}
+                serialization.ddl struct loc_orc_1d_n1 { string state, i32 locid, i32 zip}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.loc_orc_1d
-            name: default.loc_orc_1d
+              name: default.loc_orc_1d_n1
+            name: default.loc_orc_1d_n1
       Processor Tree:
         TableScan
-          alias: loc_orc_1d
+          alias: loc_orc_1d_n1
           Statistics: Num rows: 20 Data size: 1820 Basic stats: COMPLETE Column stats: COMPLETE
           GatherStats: false
           Select Operator
@@ -983,91 +983,91 @@ STAGE PLANS:
             Statistics: Num rows: 20 Data size: 1820 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
-PREHOOK: query: create table if not exists loc_orc_2d (
+PREHOOK: query: create table if not exists loc_orc_2d_n1 (
   state string,
   locid int
 ) partitioned by(zip int, year string) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@loc_orc_2d
-POSTHOOK: query: create table if not exists loc_orc_2d (
+PREHOOK: Output: default@loc_orc_2d_n1
+POSTHOOK: query: create table if not exists loc_orc_2d_n1 (
   state string,
   locid int
 ) partitioned by(zip int, year string) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@loc_orc_2d
-PREHOOK: query: insert overwrite table loc_orc_2d partition(zip, year) select * from ext_loc
+POSTHOOK: Output: default@loc_orc_2d_n1
+PREHOOK: query: insert overwrite table loc_orc_2d_n1 partition(zip, year) select * from ext_loc_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@ext_loc
-PREHOOK: Output: default@loc_orc_2d
-POSTHOOK: query: insert overwrite table loc_orc_2d partition(zip, year) select * from ext_loc
+PREHOOK: Input: default@ext_loc_n1
+PREHOOK: Output: default@loc_orc_2d_n1
+POSTHOOK: query: insert overwrite table loc_orc_2d_n1 partition(zip, year) select * from ext_loc_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ext_loc
-POSTHOOK: Output: default@loc_orc_2d@zip=43201/year=2001
-POSTHOOK: Output: default@loc_orc_2d@zip=43201/year=2002
-POSTHOOK: Output: default@loc_orc_2d@zip=43201/year=2003
-POSTHOOK: Output: default@loc_orc_2d@zip=94086/year=2000
-POSTHOOK: Output: default@loc_orc_2d@zip=94086/year=2001
-POSTHOOK: Output: default@loc_orc_2d@zip=94086/year=2002
-POSTHOOK: Output: default@loc_orc_2d@zip=94086/year=2003
-POSTHOOK: Output: default@loc_orc_2d@zip=94087/year=2000
-POSTHOOK: Output: default@loc_orc_2d@zip=94087/year=2001
-POSTHOOK: Output: default@loc_orc_2d@zip=94087/year=2002
-POSTHOOK: Output: default@loc_orc_2d@zip=94087/year=2003
-POSTHOOK: Lineage: loc_orc_2d PARTITION(zip=43201,year=2001).locid SIMPLE [(ext_loc)ext_loc.FieldSchema(name:locid, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc_2d PARTITION(zip=43201,year=2001).state SIMPLE [(ext_loc)ext_loc.FieldSchema(name:state, type:string, comment:null), ]
-POSTHOOK: Lineage: loc_orc_2d PARTITION(zip=43201,year=2002).locid SIMPLE [(ext_loc)ext_loc.FieldSchema(name:locid, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc_2d PARTITION(zip=43201,year=2002).state SIMPLE [(ext_loc)ext_loc.FieldSchema(name:state, type:string, comment:null), ]
-POSTHOOK: Lineage: loc_orc_2d PARTITION(zip=43201,year=2003).locid SIMPLE [(ext_loc)ext_loc.FieldSchema(name:locid, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc_2d PARTITION(zip=43201,year=2003).state SIMPLE [(ext_loc)ext_loc.FieldSchema(name:state, type:string, comment:null), ]
-POSTHOOK: Lineage: loc_orc_2d PARTITION(zip=94086,year=2000).locid SIMPLE [(ext_loc)ext_loc.FieldSchema(name:locid, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc_2d PARTITION(zip=94086,year=2000).state SIMPLE [(ext_loc)ext_loc.FieldSchema(name:state, type:string, comment:null), ]
-POSTHOOK: Lineage: loc_orc_2d PARTITION(zip=94086,year=2001).locid SIMPLE [(ext_loc)ext_loc.FieldSchema(name:locid, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc_2d PARTITION(zip=94086,year=2001).state SIMPLE [(ext_loc)ext_loc.FieldSchema(name:state, type:string, comment:null), ]
-POSTHOOK: Lineage: loc_orc_2d PARTITION(zip=94086,year=2002).locid SIMPLE [(ext_loc)ext_loc.FieldSchema(name:locid, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc_2d PARTITION(zip=94086,year=2002).state SIMPLE [(ext_loc)ext_loc.FieldSchema(name:state, type:string, comment:null), ]
-POSTHOOK: Lineage: loc_orc_2d PARTITION(zip=94086,year=2003).locid SIMPLE [(ext_loc)ext_loc.FieldSchema(name:locid, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc_2d PARTITION(zip=94086,year=2003).state SIMPLE [(ext_loc)ext_loc.FieldSchema(name:state, type:string, comment:null), ]
-POSTHOOK: Lineage: loc_orc_2d PARTITION(zip=94087,year=2000).locid SIMPLE [(ext_loc)ext_loc.FieldSchema(name:locid, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc_2d PARTITION(zip=94087,year=2000).state SIMPLE [(ext_loc)ext_loc.FieldSchema(name:state, type:string, comment:null), ]
-POSTHOOK: Lineage: loc_orc_2d PARTITION(zip=94087,year=2001).locid SIMPLE [(ext_loc)ext_loc.FieldSchema(name:locid, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc_2d PARTITION(zip=94087,year=2001).state SIMPLE [(ext_loc)ext_loc.FieldSchema(name:state, type:string, comment:null), ]
-POSTHOOK: Lineage: loc_orc_2d PARTITION(zip=94087,year=2002).locid SIMPLE [(ext_loc)ext_loc.FieldSchema(name:locid, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc_2d PARTITION(zip=94087,year=2002).state SIMPLE [(ext_loc)ext_loc.FieldSchema(name:state, type:string, comment:null), ]
-POSTHOOK: Lineage: loc_orc_2d PARTITION(zip=94087,year=2003).locid SIMPLE [(ext_loc)ext_loc.FieldSchema(name:locid, type:int, comment:null), ]
-POSTHOOK: Lineage: loc_orc_2d PARTITION(zip=94087,year=2003).state SIMPLE [(ext_loc)ext_loc.FieldSchema(name:state, type:string, comment:null), ]
-PREHOOK: query: analyze table loc_orc_2d partition(zip=94086, year='2001') compute statistics for columns state,locid
+POSTHOOK: Input: default@ext_loc_n1
+POSTHOOK: Output: default@loc_orc_2d_n1@zip=43201/year=2001
+POSTHOOK: Output: default@loc_orc_2d_n1@zip=43201/year=2002
+POSTHOOK: Output: default@loc_orc_2d_n1@zip=43201/year=2003
+POSTHOOK: Output: default@loc_orc_2d_n1@zip=94086/year=2000
+POSTHOOK: Output: default@loc_orc_2d_n1@zip=94086/year=2001
+POSTHOOK: Output: default@loc_orc_2d_n1@zip=94086/year=2002
+POSTHOOK: Output: default@loc_orc_2d_n1@zip=94086/year=2003
+POSTHOOK: Output: default@loc_orc_2d_n1@zip=94087/year=2000
+POSTHOOK: Output: default@loc_orc_2d_n1@zip=94087/year=2001
+POSTHOOK: Output: default@loc_orc_2d_n1@zip=94087/year=2002
+POSTHOOK: Output: default@loc_orc_2d_n1@zip=94087/year=2003
+POSTHOOK: Lineage: loc_orc_2d_n1 PARTITION(zip=43201,year=2001).locid SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_2d_n1 PARTITION(zip=43201,year=2001).state SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc_2d_n1 PARTITION(zip=43201,year=2002).locid SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_2d_n1 PARTITION(zip=43201,year=2002).state SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc_2d_n1 PARTITION(zip=43201,year=2003).locid SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_2d_n1 PARTITION(zip=43201,year=2003).state SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc_2d_n1 PARTITION(zip=94086,year=2000).locid SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_2d_n1 PARTITION(zip=94086,year=2000).state SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc_2d_n1 PARTITION(zip=94086,year=2001).locid SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_2d_n1 PARTITION(zip=94086,year=2001).state SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc_2d_n1 PARTITION(zip=94086,year=2002).locid SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_2d_n1 PARTITION(zip=94086,year=2002).state SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc_2d_n1 PARTITION(zip=94086,year=2003).locid SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_2d_n1 PARTITION(zip=94086,year=2003).state SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc_2d_n1 PARTITION(zip=94087,year=2000).locid SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_2d_n1 PARTITION(zip=94087,year=2000).state SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc_2d_n1 PARTITION(zip=94087,year=2001).locid SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_2d_n1 PARTITION(zip=94087,year=2001).state SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc_2d_n1 PARTITION(zip=94087,year=2002).locid SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_2d_n1 PARTITION(zip=94087,year=2002).state SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc_2d_n1 PARTITION(zip=94087,year=2003).locid SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_2d_n1 PARTITION(zip=94087,year=2003).state SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:state, type:string, comment:null), ]
+PREHOOK: query: analyze table loc_orc_2d_n1 partition(zip=94086, year='2001') compute statistics for columns state,locid
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@loc_orc_2d
-PREHOOK: Input: default@loc_orc_2d@zip=94086/year=2001
-PREHOOK: Output: default@loc_orc_2d
-PREHOOK: Output: default@loc_orc_2d@zip=94086/year=2001
+PREHOOK: Input: default@loc_orc_2d_n1
+PREHOOK: Input: default@loc_orc_2d_n1@zip=94086/year=2001
+PREHOOK: Output: default@loc_orc_2d_n1
+PREHOOK: Output: default@loc_orc_2d_n1@zip=94086/year=2001
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table loc_orc_2d partition(zip=94086, year='2001') compute statistics for columns state,locid
+POSTHOOK: query: analyze table loc_orc_2d_n1 partition(zip=94086, year='2001') compute statistics for columns state,locid
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@loc_orc_2d
-POSTHOOK: Input: default@loc_orc_2d@zip=94086/year=2001
-POSTHOOK: Output: default@loc_orc_2d
-POSTHOOK: Output: default@loc_orc_2d@zip=94086/year=2001
+POSTHOOK: Input: default@loc_orc_2d_n1
+POSTHOOK: Input: default@loc_orc_2d_n1@zip=94086/year=2001
+POSTHOOK: Output: default@loc_orc_2d_n1
+POSTHOOK: Output: default@loc_orc_2d_n1@zip=94086/year=2001
 #### A masked pattern was here ####
-PREHOOK: query: analyze table loc_orc_2d partition(zip=94087, year='2002') compute statistics for columns state,locid
+PREHOOK: query: analyze table loc_orc_2d_n1 partition(zip=94087, year='2002') compute statistics for columns state,locid
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@loc_orc_2d
-PREHOOK: Input: default@loc_orc_2d@zip=94087/year=2002
-PREHOOK: Output: default@loc_orc_2d
-PREHOOK: Output: default@loc_orc_2d@zip=94087/year=2002
+PREHOOK: Input: default@loc_orc_2d_n1
+PREHOOK: Input: default@loc_orc_2d_n1@zip=94087/year=2002
+PREHOOK: Output: default@loc_orc_2d_n1
+PREHOOK: Output: default@loc_orc_2d_n1@zip=94087/year=2002
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table loc_orc_2d partition(zip=94087, year='2002') compute statistics for columns state,locid
+POSTHOOK: query: analyze table loc_orc_2d_n1 partition(zip=94087, year='2002') compute statistics for columns state,locid
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@loc_orc_2d
-POSTHOOK: Input: default@loc_orc_2d@zip=94087/year=2002
-POSTHOOK: Output: default@loc_orc_2d
-POSTHOOK: Output: default@loc_orc_2d@zip=94087/year=2002
+POSTHOOK: Input: default@loc_orc_2d_n1
+POSTHOOK: Input: default@loc_orc_2d_n1@zip=94087/year=2002
+POSTHOOK: Output: default@loc_orc_2d_n1
+POSTHOOK: Output: default@loc_orc_2d_n1@zip=94087/year=2002
 #### A masked pattern was here ####
-PREHOOK: query: explain extended select state from loc_orc_2d
+PREHOOK: query: explain extended select state from loc_orc_2d_n1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended select state from loc_orc_2d
+POSTHOOK: query: explain extended select state from loc_orc_2d_n1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -1091,13 +1091,13 @@ STAGE PLANS:
               columns.comments 
               columns.types string:int
 #### A masked pattern was here ####
-              name default.loc_orc_2d
+              name default.loc_orc_2d_n1
               numFiles 1
               numRows 1
               partition_columns zip/year
               partition_columns.types int:string
               rawDataSize 90
-              serialization.ddl struct loc_orc_2d { string state, i32 locid}
+              serialization.ddl struct loc_orc_2d_n1 { string state, i32 locid}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
               totalSize 286
@@ -1114,16 +1114,16 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:int
 #### A masked pattern was here ####
-                name default.loc_orc_2d
+                name default.loc_orc_2d_n1
                 partition_columns zip/year
                 partition_columns.types int:string
-                serialization.ddl struct loc_orc_2d { string state, i32 locid}
+                serialization.ddl struct loc_orc_2d_n1 { string state, i32 locid}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.loc_orc_2d
-            name: default.loc_orc_2d
+              name: default.loc_orc_2d_n1
+            name: default.loc_orc_2d_n1
           Partition
             input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
             output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -1138,13 +1138,13 @@ STAGE PLANS:
               columns.comments 
               columns.types string:int
 #### A masked pattern was here ####
-              name default.loc_orc_2d
+              name default.loc_orc_2d_n1
               numFiles 1
               numRows 2
               partition_columns zip/year
               partition_columns.types int:string
               rawDataSize 182
-              serialization.ddl struct loc_orc_2d { string state, i32 locid}
+              serialization.ddl struct loc_orc_2d_n1 { string state, i32 locid}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
               totalSize 295
@@ -1161,16 +1161,16 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:int
 #### A masked pattern was here ####
-                name default.loc_orc_2d
+                name default.loc_orc_2d_n1
                 partition_columns zip/year
                 partition_columns.types int:string
-                serialization.ddl struct loc_orc_2d { string state, i32 locid}
+                serialization.ddl struct loc_orc_2d_n1 { string state, i32 locid}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.loc_orc_2d
-            name: default.loc_orc_2d
+              name: default.loc_orc_2d_n1
+            name: default.loc_orc_2d_n1
           Partition
             input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
             output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -1185,13 +1185,13 @@ STAGE PLANS:
               columns.comments 
               columns.types string:int
 #### A masked pattern was here ####
-              name default.loc_orc_2d
+              name default.loc_orc_2d_n1
               numFiles 1
               numRows 3
               partition_columns zip/year
               partition_columns.types int:string
               rawDataSize 267
-              serialization.ddl struct loc_orc_2d { string state, i32 locid}
+              serialization.ddl struct loc_orc_2d_n1 { string state, i32 locid}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
               totalSize 302
@@ -1208,16 +1208,16 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:int
 #### A masked pattern was here ####
-                name default.loc_orc_2d
+                name default.loc_orc_2d_n1
                 partition_columns zip/year
                 partition_columns.types int:string
-                serialization.ddl struct loc_orc_2d { string state, i32 locid}
+                serialization.ddl struct loc_orc_2d_n1 { string state, i32 locid}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.loc_orc_2d
-            name: default.loc_orc_2d
+              name: default.loc_orc_2d_n1
+            name: default.loc_orc_2d_n1
           Partition
             input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
             output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -1232,13 +1232,13 @@ STAGE PLANS:
               columns.comments 
               columns.types string:int
 #### A masked pattern was here ####
-              name default.loc_orc_2d
+              name default.loc_orc_2d_n1
               numFiles 1
               numRows 1
               partition_columns zip/year
               partition_columns.types int:string
               rawDataSize 89
-              serialization.ddl struct loc_orc_2d { string state, i32 locid}
+              serialization.ddl struct loc_orc_2d_n1 { string state, i32 locid}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
               totalSize 281
@@ -1255,16 +1255,16 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:int
 #### A masked pattern was here ####
-                name default.loc_orc_2d
+                name default.loc_orc_2d_n1
                 partition_columns zip/year
                 partition_columns.types int:string
-                serialization.ddl struct loc_orc_2d { string state, i32 locid}
+                serialization.ddl struct loc_orc_2d_n1 { string state, i32 locid}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.loc_orc_2d
-            name: default.loc_orc_2d
+              name: default.loc_orc_2d_n1
+            name: default.loc_orc_2d_n1
           Partition
             input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
             output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -1279,13 +1279,13 @@ STAGE PLANS:
               columns.comments 
               columns.types string:int
 #### A masked pattern was here ####
-              name default.loc_orc_2d
+              name default.loc_orc_2d_n1
               numFiles 1
               numRows 2
               partition_columns zip/year
               partition_columns.types int:string
               rawDataSize 176
-              serialization.ddl struct loc_orc_2d { string state, i32 locid}
+              serialization.ddl struct loc_orc_2d_n1 { string state, i32 locid}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
               totalSize 276
@@ -1302,16 +1302,16 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:int
 #### A masked pattern was here ####
-                name default.loc_orc_2d
+                name default.loc_orc_2d_n1
                 partition_columns zip/year
                 partition_columns.types int:string
-                serialization.ddl struct loc_orc_2d { string state, i32 locid}
+                serialization.ddl struct loc_orc_2d_n1 { string state, i32 locid}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.loc_orc_2d
-            name: default.loc_orc_2d
+              name: default.loc_orc_2d_n1
+            name: default.loc_orc_2d_n1
           Partition
             input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
             output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -1326,13 +1326,13 @@ STAGE PLANS:
               columns.comments 
               columns.types string:int
 #### A masked pattern was here ####
-              name default.loc_orc_2d
+              name default.loc_orc_2d_n1
               numFiles 1
               numRows 1
               partition_columns zip/year
               partition_columns.types int:string
               rawDataSize 91
-              serialization.ddl struct loc_orc_2d { string state, i32 locid}
+              serialization.ddl struct loc_orc_2d_n1 { string state, i32 locid}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
               totalSize 288
@@ -1349,16 +1349,16 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:int
 #### A masked pattern was here ####
-                name default.loc_orc_2d
+                name default.loc_orc_2d_n1
                 partition_columns zip/year
                 partition_columns.types int:string
-                serialization.ddl struct loc_orc_2d { string state, i32 locid}
+                serialization.ddl struct loc_orc_2d_n1 { string state, i32 locid}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.loc_orc_2d
-            name: default.loc_orc_2d
+              name: default.loc_orc_2d_n1
+            name: default.loc_orc_2d_n1
           Partition
             input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
             output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -1373,13 +1373,13 @@ STAGE PLANS:
               columns.comments 
               columns.types string:int
 #### A masked pattern was here ####
-              name default.loc_orc_2d
+              name default.loc_orc_2d_n1
               numFiles 1
               numRows 2
               partition_columns zip/year
               partition_columns.types int:string
               rawDataSize 180
-              serialization.ddl struct loc_orc_2d { string state, i32 locid}
+              serialization.ddl struct loc_orc_2d_n1 { string state, i32 locid}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
               totalSize 297
@@ -1396,16 +1396,16 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:int
 #### A masked pattern was here ####
-                name default.loc_orc_2d
+                name default.loc_orc_2d_n1
                 partition_columns zip/year
                 partition_columns.types int:string
-                serialization.ddl struct loc_orc_2d { string state, i32 locid}
+                serialization.ddl struct loc_orc_2d_n1 { string state, i32 locid}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.loc_orc_2d
-            name: default.loc_orc_2d
+              name: default.loc_orc_2d_n1
+            name: default.loc_orc_2d_n1
           Partition
             input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
             output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -1420,13 +1420,13 @@ STAGE PLANS:
               columns.comments 
               columns.types string:int
 #### A masked pattern was here ####
-              name default.loc_orc_2d
+              name default.loc_orc_2d_n1
               numFiles 1
               numRows 1
               partition_columns zip/year
               partition_columns.types int:string
               rawDataSize 88
-              serialization.ddl struct loc_orc_2d { string state, i32 locid}
+              serialization.ddl struct loc_orc_2d_n1 { string state, i32 locid}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
               totalSize 265
@@ -1443,16 +1443,16 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:int
 #### A masked pattern was here ####
-                name default.loc_orc_2d
+                name default.loc_orc_2d_n1
                 partition_columns zip/year
                 partition_columns.types int:string
-                serialization.ddl struct loc_orc_2d { string state, i32 locid}
+                serialization.ddl struct loc_orc_2d_n1 { string state, i32 locid}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.loc_orc_2d
-            name: default.loc_orc_2d
+              name: default.loc_orc_2d_n1
+            name: default.loc_orc_2d_n1
           Partition
             input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
             output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -1467,13 +1467,13 @@ STAGE PLANS:
               columns.comments 
               columns.types string:int
 #### A masked pattern was here ####
-              name default.loc_orc_2d
+              name default.loc_orc_2d_n1
               numFiles 1
               numRows 1
               partition_columns zip/year
               partition_columns.types int:string
               rawDataSize 88
-              serialization.ddl struct loc_orc_2d { string state, i32 locid}
+              serialization.ddl struct loc_orc_2d_n1 { string state, i32 locid}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
               totalSize 265
@@ -1490,16 +1490,16 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:int
 #### A masked pattern was here ####
-                name default.loc_orc_2d
+                name default.loc_orc_2d_n1
                 partition_columns zip/year
                 partition_columns.types int:string
-                serialization.ddl struct loc_orc_2d { string state, i32 locid}
+                serialization.ddl struct loc_orc_2d_n1 { string state, i32 locid}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.loc_orc_2d
-            name: default.loc_orc_2d
+              name: default.loc_orc_2d_n1
+            name: default.loc_orc_2d_n1
           Partition
             input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
             output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -1514,13 +1514,13 @@ STAGE PLANS:
               columns.comments 
               columns.types string:int
 #### A masked pattern was here ####
-              name default.loc_orc_2d
+              name default.loc_orc_2d_n1
               numFiles 1
               numRows 3
               partition_columns zip/year
               partition_columns.types int:string
               rawDataSize 273
-              serialization.ddl struct loc_orc_2d { string state, i32 locid}
+              serialization.ddl struct loc_orc_2d_n1 { string state, i32 locid}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
               totalSize 298
@@ -1537,16 +1537,16 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:int
 #### A masked pattern was here ####
-                name default.loc_orc_2d
+                name default.loc_orc_2d_n1
                 partition_columns zip/year
                 partition_columns.types int:string
-                serialization.ddl struct loc_orc_2d { string state, i32 locid}
+                serialization.ddl struct loc_orc_2d_n1 { string state, i32 locid}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.loc_orc_2d
-            name: default.loc_orc_2d
+              name: default.loc_orc_2d_n1
+            name: default.loc_orc_2d_n1
           Partition
             input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
             output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -1561,13 +1561,13 @@ STAGE PLANS:
               columns.comments 
               columns.types string:int
 #### A masked pattern was here ####
-              name default.loc_orc_2d
+              name default.loc_orc_2d_n1
               numFiles 1
               numRows 3
               partition_columns zip/year
               partition_columns.types int:string
               rawDataSize 264
-              serialization.ddl struct loc_orc_2d { string state, i32 locid}
+              serialization.ddl struct loc_orc_2d_n1 { string state, i32 locid}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
               totalSize 295
@@ -1584,19 +1584,19 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:int
 #### A masked pattern was here ####
-                name default.loc_orc_2d
+                name default.loc_orc_2d_n1
                 partition_columns zip/year
                 partition_columns.types int:string
-                serialization.ddl struct loc_orc_2d { string state, i32 locid}
+                serialization.ddl struct loc_orc_2d_n1 { string state, i32 locid}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.loc_orc_2d
-            name: default.loc_orc_2d
+              name: default.loc_orc_2d_n1
+            name: default.loc_orc_2d_n1
       Processor Tree:
         TableScan
-          alias: loc_orc_2d
+          alias: loc_orc_2d_n1
           Statistics: Num rows: 20 Data size: 1740 Basic stats: COMPLETE Column stats: COMPLETE
           GatherStats: false
           Select Operator
@@ -1605,9 +1605,9 @@ STAGE PLANS:
             Statistics: Num rows: 20 Data size: 1740 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
-PREHOOK: query: explain extended select state,locid from loc_orc_2d
+PREHOOK: query: explain extended select state,locid from loc_orc_2d_n1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended select state,locid from loc_orc_2d
+POSTHOOK: query: explain extended select state,locid from loc_orc_2d_n1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -1631,13 +1631,13 @@ STAGE PLANS:
               columns.comments 
               columns.types string:int
 #### A masked pattern was here ####
-              name default.loc_orc_2d
+              name default.loc_orc_2d_n1
               numFiles 1
               numRows 1
               partition_columns zip/year
               partition_columns.types int:string
               rawDataSize 90
-              serialization.ddl struct loc_orc_2d { string state, i32 locid}
+              serialization.ddl struct loc_orc_2d_n1 { string state, i32 locid}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
               totalSize 286
@@ -1654,16 +1654,16 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:int
 #### A masked pattern was here ####
-                name default.loc_orc_2d
+                name default.loc_orc_2d_n1
                 partition_columns zip/year
                 partition_columns.types int:string
-                serialization.ddl struct loc_orc_2d { string state, i32 locid}
+                serialization.ddl struct loc_orc_2d_n1 { string state, i32 locid}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.loc_orc_2d
-            name: default.loc_orc_2d
+              name: default.loc_orc_2d_n1
+            name: default.loc_orc_2d_n1
           Partition
             input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
             output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -1678,13 +1678,13 @@ STAGE PLANS:
               columns.comments 
               columns.types string:int
 #### A masked pattern was here ####
-              name default.loc_orc_2d
+              name default.loc_orc_2d_n1
               numFiles 1
               numRows 2
               partition_columns zip/year
               partition_columns.types int:string
               rawDataSize 182
-              serialization.ddl struct loc_orc_2d { string state, i32 locid}
+              serialization.ddl struct loc_orc_2d_n1 { string state, i32 locid}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
               totalSize 295
@@ -1701,16 +1701,16 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:int
 #### A masked pattern was here ####
-                name default.loc_orc_2d
+                name default.loc_orc_2d_n1
                 partition_columns zip/year
                 partition_columns.types int:string
-                serialization.ddl struct loc_orc_2d { string state, i32 locid}
+                serialization.ddl struct loc_orc_2d_n1 { string state, i32 locid}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.loc_orc_2d
-            name: default.loc_orc_2d
+              name: default.loc_orc_2d_n1
+            name: default.loc_orc_2d_n1
           Partition
             input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
             output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -1725,13 +1725,13 @@ STAGE PLANS:
               columns.comments 
               columns.types string:int
 #### A masked pattern was here ####
-              name default.loc_orc_2d
+              name default.loc_orc_2d_n1
               numFiles 1
               numRows 3
               partition_columns zip/year
               partition_columns.types int:string
               rawDataSize 267
-              serialization.ddl struct loc_orc_2d { string state, i32 locid}
+              serialization.ddl struct loc_orc_2d_n1 { string state, i32 locid}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
               totalSize 302
@@ -1748,16 +1748,16 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:int
 #### A masked pattern was here ####
-                name default.loc_orc_2d
+                name default.loc_orc_2d_n1
                 partition_columns zip/year
                 partition_columns.types int:string
-                serialization.ddl struct loc_orc_2d { string state, i32 locid}
+                serialization.ddl struct loc_orc_2d_n1 { string state, i32 locid}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.loc_orc_2d
-            name: default.loc_orc_2d
+              name: default.loc_orc_2d_n1
+            name: default.loc_orc_2d_n1
           Partition
             input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
             output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -1772,13 +1772,13 @@ STAGE PLANS:
               columns.comments 
               columns.types string:int
 #### A masked pattern was here ####
-              name default.loc_orc_2d
+              name default.loc_orc_2d_n1
               numFiles 1
               numRows 1
               partition_columns zip/year
               partition_columns.types int:string
               rawDataSize 89
-              serialization.ddl struct loc_orc_2d { string state, i32 locid}
+              serialization.ddl struct loc_orc_2d_n1 { string state, i32 locid}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
               totalSize 281
@@ -1795,16 +1795,16 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:int
 #### A masked pattern was here ####
-                name default.loc_orc_2d
+                name default.loc_orc_2d_n1
                 partition_columns zip/year
                 partition_columns.types int:string
-                serialization.ddl struct loc_orc_2d { string state, i32 locid}
+                serialization.ddl struct loc_orc_2d_n1 { string state, i32 locid}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.loc_orc_2d
-            name: default.loc_orc_2d
+              name: default.loc_orc_2d_n1
+            name: default.loc_orc_2d_n1
           Partition
             input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
             output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -1819,13 +1819,13 @@ STAGE PLANS:
               columns.comments 
               columns.types string:int
 #### A masked pattern was here ####
-              name default.loc_orc_2d
+              name default.loc_orc_2d_n1
               numFiles 1
               numRows 2
               partition_columns zip/year
               partition_columns.types int:string
               rawDataSize 176
-              serialization.ddl struct loc_orc_2d { string state, i32 locid}
+              serialization.ddl struct loc_orc_2d_n1 { string state, i32 locid}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
               totalSize 276
@@ -1842,16 +1842,16 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:int
 #### A masked pattern was here ####
-                name default.loc_orc_2d
+                name default.loc_orc_2d_n1
                 partition_columns zip/year
                 partition_columns.types int:string
-                serialization.ddl struct loc_orc_2d { string state, i32 locid}
+                serialization.ddl struct loc_orc_2d_n1 { string state, i32 locid}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.loc_orc_2d
-            name: default.loc_orc_2d
+              name: default.loc_orc_2d_n1
+            name: default.loc_orc_2d_n1
           Partition
             input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
             output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -1866,13 +1866,13 @@ STAGE PLANS:
               columns.comments 
               columns.types string:int
 #### A masked pattern was here ####
-              name default.loc_orc_2d
+              name default.loc_orc_2d_n1
               numFiles 1
               numRows 1
               partition_columns zip/year
               partition_columns.types int:string
               rawDataSize 91
-              serialization.ddl struct loc_orc_2d { string state, i32 locid}
+              serialization.ddl struct loc_orc_2d_n1 { string state, i32 locid}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
               totalSize 288
@@ -1889,16 +1889,16 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:int
 #### A masked pattern was here ####
-                name default.loc_orc_2d
+                name default.loc_orc_2d_n1
                 partition_columns zip/year
                 partition_columns.types int:string
-                serialization.ddl struct loc_orc_2d { string state, i32 locid}
+                serialization.ddl struct loc_orc_2d_n1 { string state, i32 locid}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.loc_orc_2d
-            name: default.loc_orc_2d
+              name: default.loc_orc_2d_n1
+            name: default.loc_orc_2d_n1
           Partition
             input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
             output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -1913,13 +1913,13 @@ STAGE PLANS:
               columns.comments 
               columns.types string:int
 #### A masked pattern was here ####
-              name default.loc_orc_2d
+              name default.loc_orc_2d_n1
               numFiles 1
               numRows 2
               partition_columns zip/year
               partition_columns.types int:string
               rawDataSize 180
-              serialization.ddl struct loc_orc_2d { string state, i32 locid}
+              serialization.ddl struct loc_orc_2d_n1 { string state, i32 locid}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
               totalSize 297
@@ -1936,16 +1936,16 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:int
 #### A masked pattern was here ####
-                name default.loc_orc_2d
+                name default.loc_orc_2d_n1
                 partition_columns zip/year
                 partition_columns.types int:string
-                serialization.ddl struct loc_orc_2d { string state, i32 locid}
+                serialization.ddl struct loc_orc_2d_n1 { string state, i32 locid}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.loc_orc_2d
-            name: default.loc_orc_2d
+              name: default.loc_orc_2d_n1
+            name: default.loc_orc_2d_n1
           Partition
             input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
             output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -1960,13 +1960,13 @@ STAGE PLANS:
               columns.comments 
               columns.types string:int
 #### A masked pattern was here ####
-              name default.loc_orc_2d
+              name default.loc_orc_2d_n1
               numFiles 1
               numRows 1
               partition_columns zip/year
               partition_columns.types int:string
               rawDataSize 88
-              serialization.ddl struct loc_orc_2d { string state, i32 locid}
+              serialization.ddl struct loc_orc_2d_n1 { string state, i32 locid}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
               totalSize 265
@@ -1983,16 +1983,16 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:int
 #### A masked pattern was here ####
-                name default.loc_orc_2d
+                name default.loc_orc_2d_n1
                 partition_columns zip/year
                 partition_columns.types int:string
-                serialization.ddl struct loc_orc_2d { string state, i32 locid}
+                serialization.ddl struct loc_orc_2d_n1 { string state, i32 locid}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.loc_orc_2d
-            name: default.loc_orc_2d
+              name: default.loc_orc_2d_n1
+            name: default.loc_orc_2d_n1
           Partition
             input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
             output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -2007,13 +2007,13 @@ STAGE PLANS:
               columns.comments 
               columns.types string:int
 #### A masked pattern was here ####
-              name default.loc_orc_2d
+              name default.loc_orc_2d_n1
               numFiles 1
               numRows 1
               partition_columns zip/year
               partition_columns.types int:string
               rawDataSize 88
-              serialization.ddl struct loc_orc_2d { string state, i32 locid}
+              serialization.ddl struct loc_orc_2d_n1 { string state, i32 locid}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
               totalSize 265
@@ -2030,16 +2030,16 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:int
 #### A masked pattern was here ####
-                name default.loc_orc_2d
+                name default.loc_orc_2d_n1
                 partition_columns zip/year
                 partition_columns.types int:string
-                serialization.ddl struct loc_orc_2d { string state, i32 locid}
+                serialization.ddl struct loc_orc_2d_n1 { string state, i32 locid}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.loc_orc_2d
-            name: default.loc_orc_2d
+              name: default.loc_orc_2d_n1
+            name: default.loc_orc_2d_n1
           Partition
             input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
             output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -2054,13 +2054,13 @@ STAGE PLANS:
               columns.comments 
               columns.types string:int
 #### A masked pattern was here ####
-              name default.loc_orc_2d
+              name default.loc_orc_2d_n1
               numFiles 1
               numRows 3
               partition_columns zip/year
               partition_columns.types int:string
               rawDataSize 273
-              serialization.ddl struct loc_orc_2d { string state, i32 locid}
+              serialization.ddl struct loc_orc_2d_n1 { string state, i32 locid}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
               totalSize 298
@@ -2077,16 +2077,16 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:int
 #### A masked pattern was here ####
-                name default.loc_orc_2d
+                name default.loc_orc_2d_n1
                 partition_columns zip/year
                 partition_columns.types int:string
-                serialization.ddl struct loc_orc_2d { string state, i32 locid}
+                serialization.ddl struct loc_orc_2d_n1 { string state, i32 locid}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.loc_orc_2d
-            name: default.loc_orc_2d
+              name: default.loc_orc_2d_n1
+            name: default.loc_orc_2d_n1
           Partition
             input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
             output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -2101,13 +2101,13 @@ STAGE PLANS:
               columns.comments 
               columns.types string:int
 #### A masked pattern was here ####
-              name default.loc_orc_2d
+              name default.loc_orc_2d_n1
               numFiles 1
               numRows 3
               partition_columns zip/year
               partition_columns.types int:string
               rawDataSize 264
-              serialization.ddl struct loc_orc_2d { string state, i32 locid}
+              serialization.ddl struct loc_orc_2d_n1 { string state, i32 locid}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
               totalSize 295
@@ -2124,19 +2124,19 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:int
 #### A masked pattern was here ####
-                name default.loc_orc_2d
+                name default.loc_orc_2d_n1
                 partition_columns zip/year
                 partition_columns.types int:string
-                serialization.ddl struct loc_orc_2d { string state, i32 locid}
+                serialization.ddl struct loc_orc_2d_n1 { string state, i32 locid}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.loc_orc_2d
-            name: default.loc_orc_2d
+              name: default.loc_orc_2d_n1
+            name: default.loc_orc_2d_n1
       Processor Tree:
         TableScan
-          alias: loc_orc_2d
+          alias: loc_orc_2d_n1
           Statistics: Num rows: 20 Data size: 1820 Basic stats: COMPLETE Column stats: COMPLETE
           GatherStats: false
           Select Operator

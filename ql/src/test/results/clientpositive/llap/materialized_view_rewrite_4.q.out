@@ -1,4 +1,4 @@
-PREHOOK: query: create table emps (
+PREHOOK: query: create table emps_n5 (
   empid int,
   deptno int,
   name varchar(256),
@@ -7,8 +7,8 @@ PREHOOK: query: create table emps (
 stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@emps
-POSTHOOK: query: create table emps (
+PREHOOK: Output: default@emps_n5
+POSTHOOK: query: create table emps_n5 (
   empid int,
   deptno int,
   name varchar(256),
@@ -17,192 +17,192 @@ POSTHOOK: query: create table emps (
 stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@emps
-PREHOOK: query: insert into emps values (100, 10, 'Bill', 10000, 1000), (200, 20, 'Eric', 8000, 500),
+POSTHOOK: Output: default@emps_n5
+PREHOOK: query: insert into emps_n5 values (100, 10, 'Bill', 10000, 1000), (200, 20, 'Eric', 8000, 500),
   (150, 10, 'Sebastian', 7000, null), (110, 10, 'Theodore', 10000, 250), (110, 10, 'Bill', 10000, 250)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@emps
-POSTHOOK: query: insert into emps values (100, 10, 'Bill', 10000, 1000), (200, 20, 'Eric', 8000, 500),
+PREHOOK: Output: default@emps_n5
+POSTHOOK: query: insert into emps_n5 values (100, 10, 'Bill', 10000, 1000), (200, 20, 'Eric', 8000, 500),
   (150, 10, 'Sebastian', 7000, null), (110, 10, 'Theodore', 10000, 250), (110, 10, 'Bill', 10000, 250)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@emps
-POSTHOOK: Lineage: emps.commission SCRIPT []
-POSTHOOK: Lineage: emps.deptno SCRIPT []
-POSTHOOK: Lineage: emps.empid SCRIPT []
-POSTHOOK: Lineage: emps.name SCRIPT []
-POSTHOOK: Lineage: emps.salary SCRIPT []
-PREHOOK: query: analyze table emps compute statistics for columns
+POSTHOOK: Output: default@emps_n5
+POSTHOOK: Lineage: emps_n5.commission SCRIPT []
+POSTHOOK: Lineage: emps_n5.deptno SCRIPT []
+POSTHOOK: Lineage: emps_n5.empid SCRIPT []
+POSTHOOK: Lineage: emps_n5.name SCRIPT []
+POSTHOOK: Lineage: emps_n5.salary SCRIPT []
+PREHOOK: query: analyze table emps_n5 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@emps
-PREHOOK: Output: default@emps
+PREHOOK: Input: default@emps_n5
+PREHOOK: Output: default@emps_n5
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table emps compute statistics for columns
+POSTHOOK: query: analyze table emps_n5 compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@emps
-POSTHOOK: Output: default@emps
+POSTHOOK: Input: default@emps_n5
+POSTHOOK: Output: default@emps_n5
 #### A masked pattern was here ####
-PREHOOK: query: create table depts (
+PREHOOK: query: create table depts_n4 (
   deptno int,
   name varchar(256),
   locationid int)
 stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@depts
-POSTHOOK: query: create table depts (
+PREHOOK: Output: default@depts_n4
+POSTHOOK: query: create table depts_n4 (
   deptno int,
   name varchar(256),
   locationid int)
 stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@depts
-PREHOOK: query: insert into depts values (10, 'Sales', 10), (30, 'Marketing', null), (20, 'HR', 20)
+POSTHOOK: Output: default@depts_n4
+PREHOOK: query: insert into depts_n4 values (10, 'Sales', 10), (30, 'Marketing', null), (20, 'HR', 20)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@depts
-POSTHOOK: query: insert into depts values (10, 'Sales', 10), (30, 'Marketing', null), (20, 'HR', 20)
+PREHOOK: Output: default@depts_n4
+POSTHOOK: query: insert into depts_n4 values (10, 'Sales', 10), (30, 'Marketing', null), (20, 'HR', 20)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@depts
-POSTHOOK: Lineage: depts.deptno SCRIPT []
-POSTHOOK: Lineage: depts.locationid SCRIPT []
-POSTHOOK: Lineage: depts.name SCRIPT []
-PREHOOK: query: analyze table depts compute statistics for columns
+POSTHOOK: Output: default@depts_n4
+POSTHOOK: Lineage: depts_n4.deptno SCRIPT []
+POSTHOOK: Lineage: depts_n4.locationid SCRIPT []
+POSTHOOK: Lineage: depts_n4.name SCRIPT []
+PREHOOK: query: analyze table depts_n4 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@depts
-PREHOOK: Output: default@depts
+PREHOOK: Input: default@depts_n4
+PREHOOK: Output: default@depts_n4
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table depts compute statistics for columns
+POSTHOOK: query: analyze table depts_n4 compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@depts
-POSTHOOK: Output: default@depts
+POSTHOOK: Input: default@depts_n4
+POSTHOOK: Output: default@depts_n4
 #### A masked pattern was here ####
-PREHOOK: query: create table dependents (
+PREHOOK: query: create table dependents_n3 (
   empid int,
   name varchar(256))
 stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dependents
-POSTHOOK: query: create table dependents (
+PREHOOK: Output: default@dependents_n3
+POSTHOOK: query: create table dependents_n3 (
   empid int,
   name varchar(256))
 stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dependents
-PREHOOK: query: insert into dependents values (10, 'Michael'), (10, 'Jane')
+POSTHOOK: Output: default@dependents_n3
+PREHOOK: query: insert into dependents_n3 values (10, 'Michael'), (10, 'Jane')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@dependents
-POSTHOOK: query: insert into dependents values (10, 'Michael'), (10, 'Jane')
+PREHOOK: Output: default@dependents_n3
+POSTHOOK: query: insert into dependents_n3 values (10, 'Michael'), (10, 'Jane')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@dependents
-POSTHOOK: Lineage: dependents.empid SCRIPT []
-POSTHOOK: Lineage: dependents.name SCRIPT []
-PREHOOK: query: analyze table dependents compute statistics for columns
+POSTHOOK: Output: default@dependents_n3
+POSTHOOK: Lineage: dependents_n3.empid SCRIPT []
+POSTHOOK: Lineage: dependents_n3.name SCRIPT []
+PREHOOK: query: analyze table dependents_n3 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@dependents
-PREHOOK: Output: default@dependents
+PREHOOK: Input: default@dependents_n3
+PREHOOK: Output: default@dependents_n3
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table dependents compute statistics for columns
+POSTHOOK: query: analyze table dependents_n3 compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@dependents
-POSTHOOK: Output: default@dependents
+POSTHOOK: Input: default@dependents_n3
+POSTHOOK: Output: default@dependents_n3
 #### A masked pattern was here ####
-PREHOOK: query: create table locations (
+PREHOOK: query: create table locations_n3 (
   locationid int,
   name varchar(256))
 stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@locations
-POSTHOOK: query: create table locations (
+PREHOOK: Output: default@locations_n3
+POSTHOOK: query: create table locations_n3 (
   locationid int,
   name varchar(256))
 stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@locations
-PREHOOK: query: insert into locations values (10, 'San Francisco'), (10, 'San Diego')
+POSTHOOK: Output: default@locations_n3
+PREHOOK: query: insert into locations_n3 values (10, 'San Francisco'), (10, 'San Diego')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@locations
-POSTHOOK: query: insert into locations values (10, 'San Francisco'), (10, 'San Diego')
+PREHOOK: Output: default@locations_n3
+POSTHOOK: query: insert into locations_n3 values (10, 'San Francisco'), (10, 'San Diego')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@locations
-POSTHOOK: Lineage: locations.locationid SCRIPT []
-POSTHOOK: Lineage: locations.name SCRIPT []
-PREHOOK: query: analyze table locations compute statistics for columns
+POSTHOOK: Output: default@locations_n3
+POSTHOOK: Lineage: locations_n3.locationid SCRIPT []
+POSTHOOK: Lineage: locations_n3.name SCRIPT []
+PREHOOK: query: analyze table locations_n3 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@locations
-PREHOOK: Output: default@locations
+PREHOOK: Input: default@locations_n3
+PREHOOK: Output: default@locations_n3
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table locations compute statistics for columns
+POSTHOOK: query: analyze table locations_n3 compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@locations
-POSTHOOK: Output: default@locations
+POSTHOOK: Input: default@locations_n3
+POSTHOOK: Output: default@locations_n3
 #### A masked pattern was here ####
-PREHOOK: query: alter table emps add constraint pk1 primary key (empid) disable novalidate rely
+PREHOOK: query: alter table emps_n5 add constraint pk1 primary key (empid) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
-POSTHOOK: query: alter table emps add constraint pk1 primary key (empid) disable novalidate rely
+POSTHOOK: query: alter table emps_n5 add constraint pk1 primary key (empid) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
-PREHOOK: query: alter table depts add constraint pk2 primary key (deptno) disable novalidate rely
+PREHOOK: query: alter table depts_n4 add constraint pk2 primary key (deptno) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
-POSTHOOK: query: alter table depts add constraint pk2 primary key (deptno) disable novalidate rely
+POSTHOOK: query: alter table depts_n4 add constraint pk2 primary key (deptno) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
-PREHOOK: query: alter table dependents add constraint pk3 primary key (empid) disable novalidate rely
+PREHOOK: query: alter table dependents_n3 add constraint pk3 primary key (empid) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
-POSTHOOK: query: alter table dependents add constraint pk3 primary key (empid) disable novalidate rely
+POSTHOOK: query: alter table dependents_n3 add constraint pk3 primary key (empid) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
-PREHOOK: query: alter table locations add constraint pk4 primary key (locationid) disable novalidate rely
+PREHOOK: query: alter table locations_n3 add constraint pk4 primary key (locationid) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
-POSTHOOK: query: alter table locations add constraint pk4 primary key (locationid) disable novalidate rely
+POSTHOOK: query: alter table locations_n3 add constraint pk4 primary key (locationid) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
-PREHOOK: query: alter table emps add constraint fk1 foreign key (deptno) references depts(deptno) disable novalidate rely
+PREHOOK: query: alter table emps_n5 add constraint fk1 foreign key (deptno) references depts_n4(deptno) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
-POSTHOOK: query: alter table emps add constraint fk1 foreign key (deptno) references depts(deptno) disable novalidate rely
+POSTHOOK: query: alter table emps_n5 add constraint fk1 foreign key (deptno) references depts_n4(deptno) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
-PREHOOK: query: alter table depts add constraint fk2 foreign key (locationid) references locations(locationid) disable novalidate rely
+PREHOOK: query: alter table depts_n4 add constraint fk2 foreign key (locationid) references locations_n3(locationid) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
-POSTHOOK: query: alter table depts add constraint fk2 foreign key (locationid) references locations(locationid) disable novalidate rely
+POSTHOOK: query: alter table depts_n4 add constraint fk2 foreign key (locationid) references locations_n3(locationid) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
-PREHOOK: query: create materialized view mv1 enable rewrite as
+PREHOOK: query: create materialized view mv1_n3 enable rewrite as
 select name, salary, count(*) as c, sum(empid) as s
-from emps group by name, salary
+from emps_n5 group by name, salary
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
-PREHOOK: Input: default@emps
+PREHOOK: Input: default@emps_n5
 PREHOOK: Output: database:default
-PREHOOK: Output: default@mv1
-POSTHOOK: query: create materialized view mv1 enable rewrite as
+PREHOOK: Output: default@mv1_n3
+POSTHOOK: query: create materialized view mv1_n3 enable rewrite as
 select name, salary, count(*) as c, sum(empid) as s
-from emps group by name, salary
+from emps_n5 group by name, salary
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
-POSTHOOK: Input: default@emps
+POSTHOOK: Input: default@emps_n5
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@mv1
-PREHOOK: query: analyze table mv1 compute statistics for columns
+POSTHOOK: Output: default@mv1_n3
+PREHOOK: query: analyze table mv1_n3 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@mv1
-PREHOOK: Output: default@mv1
+PREHOOK: Input: default@mv1_n3
+PREHOOK: Output: default@mv1_n3
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table mv1 compute statistics for columns
+POSTHOOK: query: analyze table mv1_n3 compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@mv1
-POSTHOOK: Output: default@mv1
+POSTHOOK: Input: default@mv1_n3
+POSTHOOK: Output: default@mv1_n3
 #### A masked pattern was here ####
 PREHOOK: query: explain
 select name, count(*) as c, sum(empid) as s
-from emps group by name
+from emps_n5 group by name
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select name, count(*) as c, sum(empid) as s
-from emps group by name
+from emps_n5 group by name
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -219,7 +219,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: default.mv1
+                  alias: default.mv1_n3
                   Statistics: Num rows: 4 Data size: 424 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: name (type: varchar(256)), c (type: bigint), s (type: bigint)
@@ -263,60 +263,60 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select name, count(*) as c, sum(empid) as s
-from emps group by name
+from emps_n5 group by name
 PREHOOK: type: QUERY
-PREHOOK: Input: default@emps
-PREHOOK: Input: default@mv1
+PREHOOK: Input: default@emps_n5
+PREHOOK: Input: default@mv1_n3
 #### A masked pattern was here ####
 POSTHOOK: query: select name, count(*) as c, sum(empid) as s
-from emps group by name
+from emps_n5 group by name
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@emps
-POSTHOOK: Input: default@mv1
+POSTHOOK: Input: default@emps_n5
+POSTHOOK: Input: default@mv1_n3
 #### A masked pattern was here ####
 Bill	2	210
 Eric	1	200
 Sebastian	1	150
 Theodore	1	110
-PREHOOK: query: drop materialized view mv1
+PREHOOK: query: drop materialized view mv1_n3
 PREHOOK: type: DROP_MATERIALIZED_VIEW
-PREHOOK: Input: default@mv1
-PREHOOK: Output: default@mv1
-POSTHOOK: query: drop materialized view mv1
+PREHOOK: Input: default@mv1_n3
+PREHOOK: Output: default@mv1_n3
+POSTHOOK: query: drop materialized view mv1_n3
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
-POSTHOOK: Input: default@mv1
-POSTHOOK: Output: default@mv1
-PREHOOK: query: create materialized view mv1 enable rewrite as
+POSTHOOK: Input: default@mv1_n3
+POSTHOOK: Output: default@mv1_n3
+PREHOOK: query: create materialized view mv1_n3 enable rewrite as
 select name, salary, count(*) as c, sum(empid) as s
-from emps group by name, salary
+from emps_n5 group by name, salary
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
-PREHOOK: Input: default@emps
+PREHOOK: Input: default@emps_n5
 PREHOOK: Output: database:default
-PREHOOK: Output: default@mv1
-POSTHOOK: query: create materialized view mv1 enable rewrite as
+PREHOOK: Output: default@mv1_n3
+POSTHOOK: query: create materialized view mv1_n3 enable rewrite as
 select name, salary, count(*) as c, sum(empid) as s
-from emps group by name, salary
+from emps_n5 group by name, salary
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
-POSTHOOK: Input: default@emps
+POSTHOOK: Input: default@emps_n5
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@mv1
-PREHOOK: query: analyze table mv1 compute statistics for columns
+POSTHOOK: Output: default@mv1_n3
+PREHOOK: query: analyze table mv1_n3 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@mv1
-PREHOOK: Output: default@mv1
+PREHOOK: Input: default@mv1_n3
+PREHOOK: Output: default@mv1_n3
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table mv1 compute statistics for columns
+POSTHOOK: query: analyze table mv1_n3 compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@mv1
-POSTHOOK: Output: default@mv1
+POSTHOOK: Input: default@mv1_n3
+POSTHOOK: Output: default@mv1_n3
 #### A masked pattern was here ####
 PREHOOK: query: explain
 select salary, name, sum(empid) as s, count(*) as c
-from emps group by name, salary
+from emps_n5 group by name, salary
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select salary, name, sum(empid) as s, count(*) as c
-from emps group by name, salary
+from emps_n5 group by name, salary
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -327,73 +327,73 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: default.mv1
+          alias: default.mv1_n3
           Select Operator
             expressions: salary (type: float), name (type: varchar(256)), s (type: bigint), c (type: bigint)
             outputColumnNames: _col0, _col1, _col2, _col3
             ListSink
 
 PREHOOK: query: select salary, name, sum(empid) as s, count(*) as c
-from emps group by name, salary
+from emps_n5 group by name, salary
 PREHOOK: type: QUERY
-PREHOOK: Input: default@emps
-PREHOOK: Input: default@mv1
+PREHOOK: Input: default@emps_n5
+PREHOOK: Input: default@mv1_n3
 #### A masked pattern was here ####
 POSTHOOK: query: select salary, name, sum(empid) as s, count(*) as c
-from emps group by name, salary
+from emps_n5 group by name, salary
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@emps
-POSTHOOK: Input: default@mv1
+POSTHOOK: Input: default@emps_n5
+POSTHOOK: Input: default@mv1_n3
 #### A masked pattern was here ####
 10000.0	Bill	210	2
 10000.0	Theodore	110	1
 7000.0	Sebastian	150	1
 8000.0	Eric	200	1
-PREHOOK: query: drop materialized view mv1
+PREHOOK: query: drop materialized view mv1_n3
 PREHOOK: type: DROP_MATERIALIZED_VIEW
-PREHOOK: Input: default@mv1
-PREHOOK: Output: default@mv1
-POSTHOOK: query: drop materialized view mv1
+PREHOOK: Input: default@mv1_n3
+PREHOOK: Output: default@mv1_n3
+POSTHOOK: query: drop materialized view mv1_n3
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
-POSTHOOK: Input: default@mv1
-POSTHOOK: Output: default@mv1
-PREHOOK: query: create materialized view mv1 enable rewrite as
-select empid, emps.deptno, count(*) as c, sum(empid) as s
-from emps join depts using (deptno)
-group by empid, emps.deptno
+POSTHOOK: Input: default@mv1_n3
+POSTHOOK: Output: default@mv1_n3
+PREHOOK: query: create materialized view mv1_n3 enable rewrite as
+select empid, emps_n5.deptno, count(*) as c, sum(empid) as s
+from emps_n5 join depts_n4 using (deptno)
+group by empid, emps_n5.deptno
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
-PREHOOK: Input: default@depts
-PREHOOK: Input: default@emps
+PREHOOK: Input: default@depts_n4
+PREHOOK: Input: default@emps_n5
 PREHOOK: Output: database:default
-PREHOOK: Output: default@mv1
-POSTHOOK: query: create materialized view mv1 enable rewrite as
-select empid, emps.deptno, count(*) as c, sum(empid) as s
-from emps join depts using (deptno)
-group by empid, emps.deptno
+PREHOOK: Output: default@mv1_n3
+POSTHOOK: query: create materialized view mv1_n3 enable rewrite as
+select empid, emps_n5.deptno, count(*) as c, sum(empid) as s
+from emps_n5 join depts_n4 using (deptno)
+group by empid, emps_n5.deptno
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
-POSTHOOK: Input: default@depts
-POSTHOOK: Input: default@emps
+POSTHOOK: Input: default@depts_n4
+POSTHOOK: Input: default@emps_n5
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@mv1
-PREHOOK: query: analyze table mv1 compute statistics for columns
+POSTHOOK: Output: default@mv1_n3
+PREHOOK: query: analyze table mv1_n3 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@mv1
-PREHOOK: Output: default@mv1
+PREHOOK: Input: default@mv1_n3
+PREHOOK: Output: default@mv1_n3
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table mv1 compute statistics for columns
+POSTHOOK: query: analyze table mv1_n3 compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@mv1
-POSTHOOK: Output: default@mv1
+POSTHOOK: Input: default@mv1_n3
+POSTHOOK: Output: default@mv1_n3
 #### A masked pattern was here ####
 PREHOOK: query: explain
-select depts.deptno, count(*) as c, sum(empid) as s
-from emps join depts using (deptno)
-group by depts.deptno
+select depts_n4.deptno, count(*) as c, sum(empid) as s
+from emps_n5 join depts_n4 using (deptno)
+group by depts_n4.deptno
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select depts.deptno, count(*) as c, sum(empid) as s
-from emps join depts using (deptno)
-group by depts.deptno
+select depts_n4.deptno, count(*) as c, sum(empid) as s
+from emps_n5 join depts_n4 using (deptno)
+group by depts_n4.deptno
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -410,7 +410,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: default.mv1
+                  alias: default.mv1_n3
                   Statistics: Num rows: 4 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: deptno (type: int), c (type: bigint), s (type: bigint)
@@ -453,69 +453,69 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select depts.deptno, count(*) as c, sum(empid) as s
-from emps join depts using (deptno)
-group by depts.deptno
+PREHOOK: query: select depts_n4.deptno, count(*) as c, sum(empid) as s
+from emps_n5 join depts_n4 using (deptno)
+group by depts_n4.deptno
 PREHOOK: type: QUERY
-PREHOOK: Input: default@depts
-PREHOOK: Input: default@emps
-PREHOOK: Input: default@mv1
+PREHOOK: Input: default@depts_n4
+PREHOOK: Input: default@emps_n5
+PREHOOK: Input: default@mv1_n3
 #### A masked pattern was here ####
-POSTHOOK: query: select depts.deptno, count(*) as c, sum(empid) as s
-from emps join depts using (deptno)
-group by depts.deptno
+POSTHOOK: query: select depts_n4.deptno, count(*) as c, sum(empid) as s
+from emps_n5 join depts_n4 using (deptno)
+group by depts_n4.deptno
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@depts
-POSTHOOK: Input: default@emps
-POSTHOOK: Input: default@mv1
+POSTHOOK: Input: default@depts_n4
+POSTHOOK: Input: default@emps_n5
+POSTHOOK: Input: default@mv1_n3
 #### A masked pattern was here ####
 10	4	470
 20	1	200
-PREHOOK: query: drop materialized view mv1
+PREHOOK: query: drop materialized view mv1_n3
 PREHOOK: type: DROP_MATERIALIZED_VIEW
-PREHOOK: Input: default@mv1
-PREHOOK: Output: default@mv1
-POSTHOOK: query: drop materialized view mv1
+PREHOOK: Input: default@mv1_n3
+PREHOOK: Output: default@mv1_n3
+POSTHOOK: query: drop materialized view mv1_n3
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
-POSTHOOK: Input: default@mv1
-POSTHOOK: Output: default@mv1
-PREHOOK: query: create materialized view mv1 enable rewrite as
-select empid, emps.deptno, count(*) as c, sum(empid) as s
-from emps join depts using (deptno)
-where emps.deptno >= 10 group by empid, emps.deptno
+POSTHOOK: Input: default@mv1_n3
+POSTHOOK: Output: default@mv1_n3
+PREHOOK: query: create materialized view mv1_n3 enable rewrite as
+select empid, emps_n5.deptno, count(*) as c, sum(empid) as s
+from emps_n5 join depts_n4 using (deptno)
+where emps_n5.deptno >= 10 group by empid, emps_n5.deptno
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
-PREHOOK: Input: default@depts
-PREHOOK: Input: default@emps
+PREHOOK: Input: default@depts_n4
+PREHOOK: Input: default@emps_n5
 PREHOOK: Output: database:default
-PREHOOK: Output: default@mv1
-POSTHOOK: query: create materialized view mv1 enable rewrite as
-select empid, emps.deptno, count(*) as c, sum(empid) as s
-from emps join depts using (deptno)
-where emps.deptno >= 10 group by empid, emps.deptno
+PREHOOK: Output: default@mv1_n3
+POSTHOOK: query: create materialized view mv1_n3 enable rewrite as
+select empid, emps_n5.deptno, count(*) as c, sum(empid) as s
+from emps_n5 join depts_n4 using (deptno)
+where emps_n5.deptno >= 10 group by empid, emps_n5.deptno
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
-POSTHOOK: Input: default@depts
-POSTHOOK: Input: default@emps
+POSTHOOK: Input: default@depts_n4
+POSTHOOK: Input: default@emps_n5
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@mv1
-PREHOOK: query: analyze table mv1 compute statistics for columns
+POSTHOOK: Output: default@mv1_n3
+PREHOOK: query: analyze table mv1_n3 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@mv1
-PREHOOK: Output: default@mv1
+PREHOOK: Input: default@mv1_n3
+PREHOOK: Output: default@mv1_n3
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table mv1 compute statistics for columns
+POSTHOOK: query: analyze table mv1_n3 compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@mv1
-POSTHOOK: Output: default@mv1
+POSTHOOK: Input: default@mv1_n3
+POSTHOOK: Output: default@mv1_n3
 #### A masked pattern was here ####
 PREHOOK: query: explain
-select depts.deptno, sum(empid) as s
-from emps join depts using (deptno)
-where emps.deptno > 10 group by depts.deptno
+select depts_n4.deptno, sum(empid) as s
+from emps_n5 join depts_n4 using (deptno)
+where emps_n5.deptno > 10 group by depts_n4.deptno
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select depts.deptno, sum(empid) as s
-from emps join depts using (deptno)
-where emps.deptno > 10 group by depts.deptno
+select depts_n4.deptno, sum(empid) as s
+from emps_n5 join depts_n4 using (deptno)
+where emps_n5.deptno > 10 group by depts_n4.deptno
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -532,7 +532,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: default.mv1
+                  alias: default.mv1_n3
                   Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (deptno > 10) (type: boolean)
@@ -574,68 +574,68 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select depts.deptno, sum(empid) as s
-from emps join depts using (deptno)
-where emps.deptno > 10 group by depts.deptno
+PREHOOK: query: select depts_n4.deptno, sum(empid) as s
+from emps_n5 join depts_n4 using (deptno)
+where emps_n5.deptno > 10 group by depts_n4.deptno
 PREHOOK: type: QUERY
-PREHOOK: Input: default@depts
-PREHOOK: Input: default@emps
-PREHOOK: Input: default@mv1
+PREHOOK: Input: default@depts_n4
+PREHOOK: Input: default@emps_n5
+PREHOOK: Input: default@mv1_n3
 #### A masked pattern was here ####
-POSTHOOK: query: select depts.deptno, sum(empid) as s
-from emps join depts using (deptno)
-where emps.deptno > 10 group by depts.deptno
+POSTHOOK: query: select depts_n4.deptno, sum(empid) as s
+from emps_n5 join depts_n4 using (deptno)
+where emps_n5.deptno > 10 group by depts_n4.deptno
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@depts
-POSTHOOK: Input: default@emps
-POSTHOOK: Input: default@mv1
+POSTHOOK: Input: default@depts_n4
+POSTHOOK: Input: default@emps_n5
+POSTHOOK: Input: default@mv1_n3
 #### A masked pattern was here ####
 20	200
-PREHOOK: query: drop materialized view mv1
+PREHOOK: query: drop materialized view mv1_n3
 PREHOOK: type: DROP_MATERIALIZED_VIEW
-PREHOOK: Input: default@mv1
-PREHOOK: Output: default@mv1
-POSTHOOK: query: drop materialized view mv1
+PREHOOK: Input: default@mv1_n3
+PREHOOK: Output: default@mv1_n3
+POSTHOOK: query: drop materialized view mv1_n3
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
-POSTHOOK: Input: default@mv1
-POSTHOOK: Output: default@mv1
-PREHOOK: query: create materialized view mv1 enable rewrite as
-select empid, depts.deptno, count(*) + 1 as c, sum(empid) as s
-from emps join depts using (deptno)
-where depts.deptno >= 10 group by empid, depts.deptno
+POSTHOOK: Input: default@mv1_n3
+POSTHOOK: Output: default@mv1_n3
+PREHOOK: query: create materialized view mv1_n3 enable rewrite as
+select empid, depts_n4.deptno, count(*) + 1 as c, sum(empid) as s
+from emps_n5 join depts_n4 using (deptno)
+where depts_n4.deptno >= 10 group by empid, depts_n4.deptno
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
-PREHOOK: Input: default@depts
-PREHOOK: Input: default@emps
+PREHOOK: Input: default@depts_n4
+PREHOOK: Input: default@emps_n5
 PREHOOK: Output: database:default
-PREHOOK: Output: default@mv1
-POSTHOOK: query: create materialized view mv1 enable rewrite as
-select empid, depts.deptno, count(*) + 1 as c, sum(empid) as s
-from emps join depts using (deptno)
-where depts.deptno >= 10 group by empid, depts.deptno
+PREHOOK: Output: default@mv1_n3
+POSTHOOK: query: create materialized view mv1_n3 enable rewrite as
+select empid, depts_n4.deptno, count(*) + 1 as c, sum(empid) as s
+from emps_n5 join depts_n4 using (deptno)
+where depts_n4.deptno >= 10 group by empid, depts_n4.deptno
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
-POSTHOOK: Input: default@depts
-POSTHOOK: Input: default@emps
+POSTHOOK: Input: default@depts_n4
+POSTHOOK: Input: default@emps_n5
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@mv1
-PREHOOK: query: analyze table mv1 compute statistics for columns
+POSTHOOK: Output: default@mv1_n3
+PREHOOK: query: analyze table mv1_n3 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@mv1
-PREHOOK: Output: default@mv1
+PREHOOK: Input: default@mv1_n3
+PREHOOK: Output: default@mv1_n3
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table mv1 compute statistics for columns
+POSTHOOK: query: analyze table mv1_n3 compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@mv1
-POSTHOOK: Output: default@mv1
+POSTHOOK: Input: default@mv1_n3
+POSTHOOK: Output: default@mv1_n3
 #### A masked pattern was here ####
 PREHOOK: query: explain
-select depts.deptno, sum(empid) + 1 as s
-from emps join depts using (deptno)
-where depts.deptno > 10 group by depts.deptno
+select depts_n4.deptno, sum(empid) + 1 as s
+from emps_n5 join depts_n4 using (deptno)
+where depts_n4.deptno > 10 group by depts_n4.deptno
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select depts.deptno, sum(empid) + 1 as s
-from emps join depts using (deptno)
-where depts.deptno > 10 group by depts.deptno
+select depts_n4.deptno, sum(empid) + 1 as s
+from emps_n5 join depts_n4 using (deptno)
+where depts_n4.deptno > 10 group by depts_n4.deptno
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -652,7 +652,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: default.mv1
+                  alias: default.mv1_n3
                   Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (deptno > 10) (type: boolean)
@@ -702,74 +702,74 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select depts.deptno, sum(empid) + 1 as s
-from emps join depts using (deptno)
-where depts.deptno > 10 group by depts.deptno
+PREHOOK: query: select depts_n4.deptno, sum(empid) + 1 as s
+from emps_n5 join depts_n4 using (deptno)
+where depts_n4.deptno > 10 group by depts_n4.deptno
 PREHOOK: type: QUERY
-PREHOOK: Input: default@depts
-PREHOOK: Input: default@emps
-PREHOOK: Input: default@mv1
+PREHOOK: Input: default@depts_n4
+PREHOOK: Input: default@emps_n5
+PREHOOK: Input: default@mv1_n3
 #### A masked pattern was here ####
-POSTHOOK: query: select depts.deptno, sum(empid) + 1 as s
-from emps join depts using (deptno)
-where depts.deptno > 10 group by depts.deptno
+POSTHOOK: query: select depts_n4.deptno, sum(empid) + 1 as s
+from emps_n5 join depts_n4 using (deptno)
+where depts_n4.deptno > 10 group by depts_n4.deptno
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@depts
-POSTHOOK: Input: default@emps
-POSTHOOK: Input: default@mv1
+POSTHOOK: Input: default@depts_n4
+POSTHOOK: Input: default@emps_n5
+POSTHOOK: Input: default@mv1_n3
 #### A masked pattern was here ####
 20	201
-PREHOOK: query: drop materialized view mv1
+PREHOOK: query: drop materialized view mv1_n3
 PREHOOK: type: DROP_MATERIALIZED_VIEW
-PREHOOK: Input: default@mv1
-PREHOOK: Output: default@mv1
-POSTHOOK: query: drop materialized view mv1
+PREHOOK: Input: default@mv1_n3
+PREHOOK: Output: default@mv1_n3
+POSTHOOK: query: drop materialized view mv1_n3
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
-POSTHOOK: Input: default@mv1
-POSTHOOK: Output: default@mv1
-PREHOOK: query: create materialized view mv1 enable rewrite as
-select depts.name, sum(salary) as s
-from emps
-join depts on (emps.deptno = depts.deptno)
-group by depts.name
+POSTHOOK: Input: default@mv1_n3
+POSTHOOK: Output: default@mv1_n3
+PREHOOK: query: create materialized view mv1_n3 enable rewrite as
+select depts_n4.name, sum(salary) as s
+from emps_n5
+join depts_n4 on (emps_n5.deptno = depts_n4.deptno)
+group by depts_n4.name
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
-PREHOOK: Input: default@depts
-PREHOOK: Input: default@emps
+PREHOOK: Input: default@depts_n4
+PREHOOK: Input: default@emps_n5
 PREHOOK: Output: database:default
-PREHOOK: Output: default@mv1
-POSTHOOK: query: create materialized view mv1 enable rewrite as
-select depts.name, sum(salary) as s
-from emps
-join depts on (emps.deptno = depts.deptno)
-group by depts.name
+PREHOOK: Output: default@mv1_n3
+POSTHOOK: query: create materialized view mv1_n3 enable rewrite as
+select depts_n4.name, sum(salary) as s
+from emps_n5
+join depts_n4 on (emps_n5.deptno = depts_n4.deptno)
+group by depts_n4.name
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
-POSTHOOK: Input: default@depts
-POSTHOOK: Input: default@emps
+POSTHOOK: Input: default@depts_n4
+POSTHOOK: Input: default@emps_n5
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@mv1
-PREHOOK: query: analyze table mv1 compute statistics for columns
+POSTHOOK: Output: default@mv1_n3
+PREHOOK: query: analyze table mv1_n3 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@mv1
-PREHOOK: Output: default@mv1
+PREHOOK: Input: default@mv1_n3
+PREHOOK: Output: default@mv1_n3
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table mv1 compute statistics for columns
+POSTHOOK: query: analyze table mv1_n3 compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@mv1
-POSTHOOK: Output: default@mv1
+POSTHOOK: Input: default@mv1_n3
+POSTHOOK: Output: default@mv1_n3
 #### A masked pattern was here ####
 PREHOOK: query: explain
-select dependents.empid, sum(salary) as s
-from emps
-join depts on (emps.deptno = depts.deptno)
-join dependents on (depts.name = dependents.name)
-group by dependents.empid
+select dependents_n3.empid, sum(salary) as s
+from emps_n5
+join depts_n4 on (emps_n5.deptno = depts_n4.deptno)
+join dependents_n3 on (depts_n4.name = dependents_n3.name)
+group by dependents_n3.empid
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select dependents.empid, sum(salary) as s
-from emps
-join depts on (emps.deptno = depts.deptno)
-join dependents on (depts.name = dependents.name)
-group by dependents.empid
+select dependents_n3.empid, sum(salary) as s
+from emps_n5
+join depts_n4 on (emps_n5.deptno = depts_n4.deptno)
+join dependents_n3 on (depts_n4.name = dependents_n3.name)
+group by dependents_n3.empid
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -787,7 +787,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: default.mv1
+                  alias: default.mv1_n3
                   Statistics: Num rows: 2 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: name is not null (type: boolean)
@@ -807,7 +807,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: dependents
+                  alias: dependents_n3
                   Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: name is not null (type: boolean)
@@ -870,77 +870,77 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select dependents.empid, sum(salary) as s
-from emps
-join depts on (emps.deptno = depts.deptno)
-join dependents on (depts.name = dependents.name)
-group by dependents.empid
+PREHOOK: query: select dependents_n3.empid, sum(salary) as s
+from emps_n5
+join depts_n4 on (emps_n5.deptno = depts_n4.deptno)
+join dependents_n3 on (depts_n4.name = dependents_n3.name)
+group by dependents_n3.empid
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dependents
-PREHOOK: Input: default@depts
-PREHOOK: Input: default@emps
-PREHOOK: Input: default@mv1
+PREHOOK: Input: default@dependents_n3
+PREHOOK: Input: default@depts_n4
+PREHOOK: Input: default@emps_n5
+PREHOOK: Input: default@mv1_n3
 #### A masked pattern was here ####
-POSTHOOK: query: select dependents.empid, sum(salary) as s
-from emps
-join depts on (emps.deptno = depts.deptno)
-join dependents on (depts.name = dependents.name)
-group by dependents.empid
+POSTHOOK: query: select dependents_n3.empid, sum(salary) as s
+from emps_n5
+join depts_n4 on (emps_n5.deptno = depts_n4.deptno)
+join dependents_n3 on (depts_n4.name = dependents_n3.name)
+group by dependents_n3.empid
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dependents
-POSTHOOK: Input: default@depts
-POSTHOOK: Input: default@emps
-POSTHOOK: Input: default@mv1
+POSTHOOK: Input: default@dependents_n3
+POSTHOOK: Input: default@depts_n4
+POSTHOOK: Input: default@emps_n5
+POSTHOOK: Input: default@mv1_n3
 #### A masked pattern was here ####
-PREHOOK: query: drop materialized view mv1
+PREHOOK: query: drop materialized view mv1_n3
 PREHOOK: type: DROP_MATERIALIZED_VIEW
-PREHOOK: Input: default@mv1
-PREHOOK: Output: default@mv1
-POSTHOOK: query: drop materialized view mv1
+PREHOOK: Input: default@mv1_n3
+PREHOOK: Output: default@mv1_n3
+POSTHOOK: query: drop materialized view mv1_n3
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
-POSTHOOK: Input: default@mv1
-POSTHOOK: Output: default@mv1
-PREHOOK: query: create materialized view mv1 enable rewrite as
-select dependents.empid, emps.deptno, count(distinct salary) as s
-from emps
-join dependents on (emps.empid = dependents.empid)
-group by dependents.empid, emps.deptno
+POSTHOOK: Input: default@mv1_n3
+POSTHOOK: Output: default@mv1_n3
+PREHOOK: query: create materialized view mv1_n3 enable rewrite as
+select dependents_n3.empid, emps_n5.deptno, count(distinct salary) as s
+from emps_n5
+join dependents_n3 on (emps_n5.empid = dependents_n3.empid)
+group by dependents_n3.empid, emps_n5.deptno
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
-PREHOOK: Input: default@dependents
-PREHOOK: Input: default@emps
+PREHOOK: Input: default@dependents_n3
+PREHOOK: Input: default@emps_n5
 PREHOOK: Output: database:default
-PREHOOK: Output: default@mv1
-POSTHOOK: query: create materialized view mv1 enable rewrite as
-select dependents.empid, emps.deptno, count(distinct salary) as s
-from emps
-join dependents on (emps.empid = dependents.empid)
-group by dependents.empid, emps.deptno
+PREHOOK: Output: default@mv1_n3
+POSTHOOK: query: create materialized view mv1_n3 enable rewrite as
+select dependents_n3.empid, emps_n5.deptno, count(distinct salary) as s
+from emps_n5
+join dependents_n3 on (emps_n5.empid = dependents_n3.empid)
+group by dependents_n3.empid, emps_n5.deptno
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
-POSTHOOK: Input: default@dependents
-POSTHOOK: Input: default@emps
+POSTHOOK: Input: default@dependents_n3
+POSTHOOK: Input: default@emps_n5
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@mv1
-PREHOOK: query: analyze table mv1 compute statistics for columns
+POSTHOOK: Output: default@mv1_n3
+PREHOOK: query: analyze table mv1_n3 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@mv1
-PREHOOK: Output: default@mv1
+PREHOOK: Input: default@mv1_n3
+PREHOOK: Output: default@mv1_n3
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table mv1 compute statistics for columns
+POSTHOOK: query: analyze table mv1_n3 compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@mv1
-POSTHOOK: Output: default@mv1
+POSTHOOK: Input: default@mv1_n3
+POSTHOOK: Output: default@mv1_n3
 #### A masked pattern was here ####
 PREHOOK: query: explain
-select emps.deptno, count(distinct salary) as s
-from emps
-join dependents on (emps.empid = dependents.empid)
-group by dependents.empid, emps.deptno
+select emps_n5.deptno, count(distinct salary) as s
+from emps_n5
+join dependents_n3 on (emps_n5.empid = dependents_n3.empid)
+group by dependents_n3.empid, emps_n5.deptno
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select emps.deptno, count(distinct salary) as s
-from emps
-join dependents on (emps.empid = dependents.empid)
-group by dependents.empid, emps.deptno
+select emps_n5.deptno, count(distinct salary) as s
+from emps_n5
+join dependents_n3 on (emps_n5.empid = dependents_n3.empid)
+group by dependents_n3.empid, emps_n5.deptno
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -958,7 +958,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: emps
+                  alias: emps_n5
                   Statistics: Num rows: 5 Data size: 60 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: empid (type: int), deptno (type: int), salary (type: float)
@@ -975,7 +975,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: dependents
+                  alias: dependents_n3
                   Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: empid (type: int)
@@ -1045,27 +1045,27 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select emps.deptno, count(distinct salary) as s
-from emps
-join dependents on (emps.empid = dependents.empid)
-group by dependents.empid, emps.deptno
+PREHOOK: query: select emps_n5.deptno, count(distinct salary) as s
+from emps_n5
+join dependents_n3 on (emps_n5.empid = dependents_n3.empid)
+group by dependents_n3.empid, emps_n5.deptno
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dependents
-PREHOOK: Input: default@emps
+PREHOOK: Input: default@dependents_n3
+PREHOOK: Input: default@emps_n5
 #### A masked pattern was here ####
-POSTHOOK: query: select emps.deptno, count(distinct salary) as s
-from emps
-join dependents on (emps.empid = dependents.empid)
-group by dependents.empid, emps.deptno
+POSTHOOK: query: select emps_n5.deptno, count(distinct salary) as s
+from emps_n5
+join dependents_n3 on (emps_n5.empid = dependents_n3.empid)
+group by dependents_n3.empid, emps_n5.deptno
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dependents
-POSTHOOK: Input: default@emps
+POSTHOOK: Input: default@dependents_n3
+POSTHOOK: Input: default@emps_n5
 #### A masked pattern was here ####
-PREHOOK: query: drop materialized view mv1
+PREHOOK: query: drop materialized view mv1_n3
 PREHOOK: type: DROP_MATERIALIZED_VIEW
-PREHOOK: Input: default@mv1
-PREHOOK: Output: default@mv1
-POSTHOOK: query: drop materialized view mv1
+PREHOOK: Input: default@mv1_n3
+PREHOOK: Output: default@mv1_n3
+POSTHOOK: query: drop materialized view mv1_n3
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
-POSTHOOK: Input: default@mv1
-POSTHOOK: Output: default@mv1
+POSTHOOK: Input: default@mv1_n3
+POSTHOOK: Output: default@mv1_n3

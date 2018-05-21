@@ -5,12 +5,12 @@ PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@d1
 PREHOOK: query: from (select a.ctinyint x, b.cstring1 y
-from alltypesorc a join alltypesorc b on a.cint = b.cbigint) t
+from alltypesorc a join alltypesorc b on a.cint = b.cbigint) t_n20
 insert into table d1 select x + length(y)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: default@d1
-{"version":"1.0","engine":"tez","database":"default","hash":"e9e74d186543e1b3e6565b2ced215a1e","queryText":"from (select a.ctinyint x, b.cstring1 y\nfrom alltypesorc a join alltypesorc b on a.cint = b.cbigint) t\ninsert into table d1 select x + length(y)","edges":[{"sources":[1,2],"targets":[0],"expression":"(UDFToInteger(a.ctinyint) + length(b.cstring1))","edgeType":"PROJECTION"},{"sources":[3],"targets":[0],"expression":"a.cint is not null","edgeType":"PREDICATE"},{"sources":[3,4],"targets":[0],"expression":"(UDFToLong(a.cint) = b.cbigint)","edgeType":"PREDICATE"},{"sources":[4],"targets":[0],"expression":"b.cbigint is not null","edgeType":"PREDICATE"},{"sources":[1,2],"targets":[0],"expression":"compute_stats((UDFToInteger(a.ctinyint) + length(b.cstring1)), 'hll')","edgeType":"PROJECTION"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"default.d1.a"},{"id":1,"vertexType":"COLUMN","vertexId":"default.alltypesorc.ctinyint"},{"id":2,"vertexType":"COLUMN","vertexId":"default.alltypesorc.cstring1"},{"id":3,"vertexType":"COLUMN","vertexId":"default.alltypesorc.cint"},{"id":4,"vertexType":"COLUMN","vertexId":"default.alltypesorc.cbigint"}]}
+{"version":"1.0","engine":"tez","database":"default","hash":"a1d51634883428cbc72084be0ec2e641","queryText":"from (select a.ctinyint x, b.cstring1 y\nfrom alltypesorc a join alltypesorc b on a.cint = b.cbigint) t_n20\ninsert into table d1 select x + length(y)","edges":[{"sources":[1,2],"targets":[0],"expression":"(UDFToInteger(a.ctinyint) + length(b.cstring1))","edgeType":"PROJECTION"},{"sources":[3],"targets":[0],"expression":"a.cint is not null","edgeType":"PREDICATE"},{"sources":[3,4],"targets":[0],"expression":"(UDFToLong(a.cint) = b.cbigint)","edgeType":"PREDICATE"},{"sources":[4],"targets":[0],"expression":"b.cbigint is not null","edgeType":"PREDICATE"},{"sources":[1,2],"targets":[0],"expression":"compute_stats((UDFToInteger(a.ctinyint) + length(b.cstring1)), 'hll')","edgeType":"PROJECTION"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"default.d1.a"},{"id":1,"vertexType":"COLUMN","vertexId":"default.alltypesorc.ctinyint"},{"id":2,"vertexType":"COLUMN","vertexId":"default.alltypesorc.cstring1"},{"id":3,"vertexType":"COLUMN","vertexId":"default.alltypesorc.cint"},{"id":4,"vertexType":"COLUMN","vertexId":"default.alltypesorc.cbigint"}]}
 PREHOOK: query: drop table if exists d2
 PREHOOK: type: DROPTABLE
 PREHOOK: query: create table d2(b varchar(128))
@@ -18,41 +18,41 @@ PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@d2
 PREHOOK: query: from (select a.ctinyint x, b.cstring1 y
-from alltypesorc a join alltypesorc b on a.cint = b.cbigint) t
+from alltypesorc a join alltypesorc b on a.cint = b.cbigint) t_n20
 insert into table d1 select x where y is null
 insert into table d2 select y where x > 0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: default@d1
 PREHOOK: Output: default@d2
-{"version":"1.0","engine":"tez","database":"default","hash":"2a73773c7e9a8a03f68ce31ed3972ed0","queryText":"from (select a.ctinyint x, b.cstring1 y\nfrom alltypesorc a join alltypesorc b on a.cint = b.cbigint) t\ninsert into table d1 select x where y is null\ninsert into table d2 select y where x > 0","edges":[{"sources":[2],"targets":[0],"expression":"UDFToInteger(x)","edgeType":"PROJECTION"},{"sources":[3],"targets":[0,1],"expression":"a.cint is not null","edgeType":"PREDICATE"},{"sources":[3,4],"targets":[0,1],"expression":"(UDFToLong(a.cint) = b.cbigint)","edgeType":"PREDICATE"},{"sources":[4],"targets":[0,1],"expression":"b.cbigint is not null","edgeType":"PREDICATE"},{"sources":[5],"targets":[0],"expression":"t.y is null","edgeType":"PREDICATE"},{"sources":[5],"targets":[1],"expression":"CAST( y AS varchar(128))","edgeType":"PROJECTION"},{"sources":[2],"targets":[1],"expression":"(t.x > 0Y)","edgeType":"PREDICATE"},{"sources":[2],"targets":[0],"expression":"compute_stats(UDFToInteger(x), 'hll')","edgeType":"PROJECTION"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"default.d1.a"},{"id":1,"vertexType":"COLUMN","vertexId":"default.d2.b"},{"id":2,"vertexType":"COLUMN","vertexId":"default.alltypesorc.ctinyint"},{"id":3,"vertexType":"COLUMN","vertexId":"default.alltypesorc.cint"},{"id":4,"vertexType":"COLUMN","vertexId":"default.alltypesorc.cbigint"},{"id":5,"vertexType":"COLUMN","vertexId":"default.alltypesorc.cstring1"}]}
-PREHOOK: query: drop table if exists t
+{"version":"1.0","engine":"tez","database":"default","hash":"84e3cdc38011da5842162df175b2a494","queryText":"from (select a.ctinyint x, b.cstring1 y\nfrom alltypesorc a join alltypesorc b on a.cint = b.cbigint) t_n20\ninsert into table d1 select x where y is null\ninsert into table d2 select y where x > 0","edges":[{"sources":[2],"targets":[0],"expression":"UDFToInteger(x)","edgeType":"PROJECTION"},{"sources":[3],"targets":[0,1],"expression":"a.cint is not null","edgeType":"PREDICATE"},{"sources":[3,4],"targets":[0,1],"expression":"(UDFToLong(a.cint) = b.cbigint)","edgeType":"PREDICATE"},{"sources":[4],"targets":[0,1],"expression":"b.cbigint is not null","edgeType":"PREDICATE"},{"sources":[5],"targets":[0],"expression":"t_n20.y is null","edgeType":"PREDICATE"},{"sources":[5],"targets":[1],"expression":"CAST( y AS varchar(128))","edgeType":"PROJECTION"},{"sources":[2],"targets":[1],"expression":"(t_n20.x > 0Y)","edgeType":"PREDICATE"},{"sources":[2],"targets":[0],"expression":"compute_stats(UDFToInteger(x), 'hll')","edgeType":"PROJECTION"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"default.d1.a"},{"id":1,"vertexType":"COLUMN","vertexId":"default.d2.b"},{"id":2,"vertexType":"COLUMN","vertexId":"default.alltypesorc.ctinyint"},{"id":3,"vertexType":"COLUMN","vertexId":"default.alltypesorc.cint"},{"id":4,"vertexType":"COLUMN","vertexId":"default.alltypesorc.cbigint"},{"id":5,"vertexType":"COLUMN","vertexId":"default.alltypesorc.cstring1"}]}
+PREHOOK: query: drop table if exists t_n20
 PREHOOK: type: DROPTABLE
-PREHOOK: query: create table t as
+PREHOOK: query: create table t_n20 as
 select * from
   (select * from
      (select key from src1 limit 1) v1) v2
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src1
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t
-{"version":"1.0","engine":"tez","database":"default","hash":"5e98ab5512dc517e906bba772c68f3e4","queryText":"create table t as\nselect * from\n  (select * from\n     (select key from src1 limit 1) v1) v2","edges":[{"sources":[1],"targets":[0],"edgeType":"PROJECTION"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"default.t.key"},{"id":1,"vertexType":"COLUMN","vertexId":"default.src1.key"}]}
-PREHOOK: query: drop table if exists dest_l1
+PREHOOK: Output: default@t_n20
+{"version":"1.0","engine":"tez","database":"default","hash":"5a2daa3d8508025880412b524351c849","queryText":"create table t_n20 as\nselect * from\n  (select * from\n     (select key from src1 limit 1) v1) v2","edges":[{"sources":[1],"targets":[0],"edgeType":"PROJECTION"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"default.t_n20.key"},{"id":1,"vertexType":"COLUMN","vertexId":"default.src1.key"}]}
+PREHOOK: query: drop table if exists dest_l1_n2
 PREHOOK: type: DROPTABLE
-PREHOOK: query: create table dest_l1(a int, b varchar(128))
+PREHOOK: query: create table dest_l1_n2(a int, b varchar(128))
   partitioned by (ds string) clustered by (a) into 2 buckets
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest_l1
-PREHOOK: query: insert into table dest_l1 partition (ds='today')
+PREHOOK: Output: default@dest_l1_n2
+PREHOOK: query: insert into table dest_l1_n2 partition (ds='today')
 select cint, cast(cstring1 as varchar(128)) as cs
 from alltypesorc
 where cint is not null and cint < 0 order by cint, cs limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
-PREHOOK: Output: default@dest_l1@ds=today
-{"version":"1.0","engine":"tez","database":"default","hash":"f2926a1f8b122cf60b89bc4286b3b2b5","queryText":"insert into table dest_l1 partition (ds='today')\nselect cint, cast(cstring1 as varchar(128)) as cs\nfrom alltypesorc\nwhere cint is not null and cint < 0 order by cint, cs limit 5","edges":[{"sources":[3],"targets":[0],"edgeType":"PROJECTION"},{"sources":[4],"targets":[1],"expression":"CAST( alltypesorc.cstring1 AS varchar(128))","edgeType":"PROJECTION"},{"sources":[3],"targets":[0,1,2],"expression":"(alltypesorc.cint < 0)","edgeType":"PREDICATE"},{"sources":[3],"targets":[0],"expression":"compute_stats(default.alltypesorc.cint, 'hll')","edgeType":"PROJECTION"},{"sources":[4],"targets":[1],"expression":"compute_stats(CAST( alltypesorc.cstring1 AS varchar(128)), 'hll')","edgeType":"PROJECTION"},{"sources":[],"targets":[2],"expression":"'today'","edgeType":"PROJECTION"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"default.dest_l1.a"},{"id":1,"vertexType":"COLUMN","vertexId":"default.dest_l1.b"},{"id":2,"vertexType":"COLUMN","vertexId":"default.dest_l1.ds"},{"id":3,"vertexType":"COLUMN","vertexId":"default.alltypesorc.cint"},{"id":4,"vertexType":"COLUMN","vertexId":"default.alltypesorc.cstring1"}]}
-PREHOOK: query: insert into table dest_l1 partition (ds='tomorrow')
+PREHOOK: Output: default@dest_l1_n2@ds=today
+{"version":"1.0","engine":"tez","database":"default","hash":"b56115e94fe07fda7b4d2ffecf57adc6","queryText":"insert into table dest_l1_n2 partition (ds='today')\nselect cint, cast(cstring1 as varchar(128)) as cs\nfrom alltypesorc\nwhere cint is not null and cint < 0 order by cint, cs limit 5","edges":[{"sources":[3],"targets":[0],"edgeType":"PROJECTION"},{"sources":[4],"targets":[1],"expression":"CAST( alltypesorc.cstring1 AS varchar(128))","edgeType":"PROJECTION"},{"sources":[3],"targets":[0,1,2],"expression":"(alltypesorc.cint < 0)","edgeType":"PREDICATE"},{"sources":[3],"targets":[0],"expression":"compute_stats(default.alltypesorc.cint, 'hll')","edgeType":"PROJECTION"},{"sources":[4],"targets":[1],"expression":"compute_stats(CAST( alltypesorc.cstring1 AS varchar(128)), 'hll')","edgeType":"PROJECTION"},{"sources":[],"targets":[2],"expression":"'today'","edgeType":"PROJECTION"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"default.dest_l1_n2.a"},{"id":1,"vertexType":"COLUMN","vertexId":"default.dest_l1_n2.b"},{"id":2,"vertexType":"COLUMN","vertexId":"default.dest_l1_n2.ds"},{"id":3,"vertexType":"COLUMN","vertexId":"default.alltypesorc.cint"},{"id":4,"vertexType":"COLUMN","vertexId":"default.alltypesorc.cstring1"}]}
+PREHOOK: query: insert into table dest_l1_n2 partition (ds='tomorrow')
 select min(cint), cast(min(cstring1) as varchar(128)) as cs
 from alltypesorc
 where cint is not null and cboolean1 = true
@@ -60,8 +60,8 @@ group by csmallint
 having min(cbigint) > 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
-PREHOOK: Output: default@dest_l1@ds=tomorrow
-{"version":"1.0","engine":"tez","database":"default","hash":"d9978d282bef250892cc64adb1c06356","queryText":"insert into table dest_l1 partition (ds='tomorrow')\nselect min(cint), cast(min(cstring1) as varchar(128)) as cs\nfrom alltypesorc\nwhere cint is not null and cboolean1 = true\ngroup by csmallint\nhaving min(cbigint) > 10","edges":[{"sources":[3],"targets":[0],"expression":"min(default.alltypesorc.cint)","edgeType":"PROJECTION"},{"sources":[4],"targets":[1],"expression":"CAST( min(default.alltypesorc.cstring1) AS varchar(128))","edgeType":"PROJECTION"},{"sources":[5,3],"targets":[0,1,2],"expression":"(alltypesorc.cboolean1 and alltypesorc.cint is not null)","edgeType":"PREDICATE"},{"sources":[6],"targets":[0,1,2],"expression":"(min(default.alltypesorc.cbigint) > 10L)","edgeType":"PREDICATE"},{"sources":[3],"targets":[0],"expression":"compute_stats(min(default.alltypesorc.cint), 'hll')","edgeType":"PROJECTION"},{"sources":[4],"targets":[1],"expression":"compute_stats(CAST( min(default.alltypesorc.cstring1) AS varchar(128)), 'hll')","edgeType":"PROJECTION"},{"sources":[],"targets":[2],"expression":"'tomorrow'","edgeType":"PROJECTION"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"default.dest_l1.a"},{"id":1,"vertexType":"COLUMN","vertexId":"default.dest_l1.b"},{"id":2,"vertexType":"COLUMN","vertexId":"default.dest_l1.ds"},{"id":3,"vertexType":"COLUMN","vertexId":"default.alltypesorc.cint"},{"id":4,"vertexType":"COLUMN","vertexId":"default.alltypesorc.cstring1"},{"id":5,"vertexType":"COLUMN","vertexId":"default.alltypesorc.cboolean1"},{"id":6,"vertexType":"COLUMN","vertexId":"default.alltypesorc.cbigint"}]}
+PREHOOK: Output: default@dest_l1_n2@ds=tomorrow
+{"version":"1.0","engine":"tez","database":"default","hash":"53b7b48554f009345159739b3ab04fa1","queryText":"insert into table dest_l1_n2 partition (ds='tomorrow')\nselect min(cint), cast(min(cstring1) as varchar(128)) as cs\nfrom alltypesorc\nwhere cint is not null and cboolean1 = true\ngroup by csmallint\nhaving min(cbigint) > 10","edges":[{"sources":[3],"targets":[0],"expression":"min(default.alltypesorc.cint)","edgeType":"PROJECTION"},{"sources":[4],"targets":[1],"expression":"CAST( min(default.alltypesorc.cstring1) AS varchar(128))","edgeType":"PROJECTION"},{"sources":[5,3],"targets":[0,1,2],"expression":"(alltypesorc.cboolean1 and alltypesorc.cint is not null)","edgeType":"PREDICATE"},{"sources":[6],"targets":[0,1,2],"expression":"(min(default.alltypesorc.cbigint) > 10L)","edgeType":"PREDICATE"},{"sources":[3],"targets":[0],"expression":"compute_stats(min(default.alltypesorc.cint), 'hll')","edgeType":"PROJECTION"},{"sources":[4],"targets":[1],"expression":"compute_stats(CAST( min(default.alltypesorc.cstring1) AS varchar(128)), 'hll')","edgeType":"PROJECTION"},{"sources":[],"targets":[2],"expression":"'tomorrow'","edgeType":"PROJECTION"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"default.dest_l1_n2.a"},{"id":1,"vertexType":"COLUMN","vertexId":"default.dest_l1_n2.b"},{"id":2,"vertexType":"COLUMN","vertexId":"default.dest_l1_n2.ds"},{"id":3,"vertexType":"COLUMN","vertexId":"default.alltypesorc.cint"},{"id":4,"vertexType":"COLUMN","vertexId":"default.alltypesorc.cstring1"},{"id":5,"vertexType":"COLUMN","vertexId":"default.alltypesorc.cboolean1"},{"id":6,"vertexType":"COLUMN","vertexId":"default.alltypesorc.cbigint"}]}
 PREHOOK: query: select cint, rank() over(order by cint) from alltypesorc
 where cint > 10 and cint < 10000 limit 10
 PREHOOK: type: QUERY
@@ -200,23 +200,23 @@ PREHOOK: Input: default@src1
 369	
 401	val_401
 406	val_406
-PREHOOK: query: with t as (select key x, value y from src1 where key > '2')
-select x, y from t where y > 'v' order by x, y limit 5
+PREHOOK: query: with t_n20 as (select key x, value y from src1 where key > '2')
+select x, y from t_n20 where y > 'v' order by x, y limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
-{"version":"1.0","engine":"tez","database":"default","hash":"7886c7c76377e981f6dd6a85b59da238","queryText":"with t as (select key x, value y from src1 where key > '2')\nselect x, y from t where y > 'v' order by x, y limit 5","edges":[{"sources":[2],"targets":[0],"edgeType":"PROJECTION"},{"sources":[3],"targets":[1],"edgeType":"PROJECTION"},{"sources":[2,3],"targets":[0,1],"expression":"((src1.key > '2') and (src1.value > 'v'))","edgeType":"PREDICATE"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"x"},{"id":1,"vertexType":"COLUMN","vertexId":"y"},{"id":2,"vertexType":"COLUMN","vertexId":"default.src1.key"},{"id":3,"vertexType":"COLUMN","vertexId":"default.src1.value"}]}
+{"version":"1.0","engine":"tez","database":"default","hash":"a6b87006a27baf429287592848eefb8d","queryText":"with t_n20 as (select key x, value y from src1 where key > '2')\nselect x, y from t_n20 where y > 'v' order by x, y limit 5","edges":[{"sources":[2],"targets":[0],"edgeType":"PROJECTION"},{"sources":[3],"targets":[1],"edgeType":"PROJECTION"},{"sources":[2,3],"targets":[0,1],"expression":"((src1.key > '2') and (src1.value > 'v'))","edgeType":"PREDICATE"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"x"},{"id":1,"vertexType":"COLUMN","vertexId":"y"},{"id":2,"vertexType":"COLUMN","vertexId":"default.src1.key"},{"id":3,"vertexType":"COLUMN","vertexId":"default.src1.value"}]}
 213	val_213
 238	val_238
 255	val_255
 273	val_273
 278	val_278
-PREHOOK: query: from (select key x, value y from src1 where key > '2') t
+PREHOOK: query: from (select key x, value y from src1 where key > '2') t_n20
 select x, y where y > 'v' order by x, y limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
-{"version":"1.0","engine":"tez","database":"default","hash":"72dae0445759e1f03bc844e6ddfbd7c2","queryText":"from (select key x, value y from src1 where key > '2') t\nselect x, y where y > 'v' order by x, y limit 5","edges":[{"sources":[2],"targets":[0],"edgeType":"PROJECTION"},{"sources":[3],"targets":[1],"edgeType":"PROJECTION"},{"sources":[2,3],"targets":[0,1],"expression":"((src1.key > '2') and (src1.value > 'v'))","edgeType":"PREDICATE"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"x"},{"id":1,"vertexType":"COLUMN","vertexId":"y"},{"id":2,"vertexType":"COLUMN","vertexId":"default.src1.key"},{"id":3,"vertexType":"COLUMN","vertexId":"default.src1.value"}]}
+{"version":"1.0","engine":"tez","database":"default","hash":"5e6e3a08887e32de12d3c329f8c2ec91","queryText":"from (select key x, value y from src1 where key > '2') t_n20\nselect x, y where y > 'v' order by x, y limit 5","edges":[{"sources":[2],"targets":[0],"edgeType":"PROJECTION"},{"sources":[3],"targets":[1],"edgeType":"PROJECTION"},{"sources":[2,3],"targets":[0,1],"expression":"((src1.key > '2') and (src1.value > 'v'))","edgeType":"PREDICATE"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"x"},{"id":1,"vertexType":"COLUMN","vertexId":"y"},{"id":2,"vertexType":"COLUMN","vertexId":"default.src1.key"},{"id":3,"vertexType":"COLUMN","vertexId":"default.src1.value"}]}
 213	val_213
 238	val_238
 255	val_255
@@ -306,12 +306,12 @@ PREHOOK: query: alter view dest_v3 as
     where a.cboolean2 = true and b.cfloat > 0
     group by a.ctinyint, a.csmallint, b.cboolean1
     having count(a.cint) > 10
-    order by a, x, b.cboolean1 limit 10) t
+    order by a, x, b.cboolean1 limit 10) t_n20
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
 PREHOOK: Output: default@dest_v3
-{"version":"1.0","engine":"tez","database":"default","hash":"aaef165dff0212060ba950bfed68061d","queryText":"alter view dest_v3 as\n  select * from (\n    select sum(a.ctinyint) over (partition by a.csmallint order by a.csmallint) a,\n      count(b.cstring1) x, b.cboolean1\n    from alltypesorc a join alltypesorc b on (a.cint = b.cint)\n    where a.cboolean2 = true and b.cfloat > 0\n    group by a.ctinyint, a.csmallint, b.cboolean1\n    having count(a.cint) > 10\n    order by a, x, b.cboolean1 limit 10) t","edges":[{"sources":[3,4,5,6,7],"targets":[0],"expression":"(tok_function sum (. (tok_table_or_col a) ctinyint) (tok_windowspec (tok_partitioningspec (tok_distributeby (. (tok_table_or_col a) csmallint)) (tok_orderby (tok_tabsortcolnameasc (tok_nulls_first (. (tok_table_or_col a) csmallint)))))))","edgeType":"PROJECTION"},{"sources":[6],"targets":[1],"expression":"count(default.alltypesorc.cstring1)","edgeType":"PROJECTION"},{"sources":[5],"targets":[2],"edgeType":"PROJECTION"},{"sources":[7],"targets":[0,1,2],"expression":"(a.cint = b.cint)","edgeType":"PREDICATE"},{"sources":[8,9],"targets":[0,1,2],"expression":"((a.cboolean2 = true) and (b.cfloat > 0.0))","edgeType":"PREDICATE"},{"sources":[7],"targets":[0,1,2],"expression":"(count(default.alltypesorc.cint) > 10L)","edgeType":"PREDICATE"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"default.dest_v3.a"},{"id":1,"vertexType":"COLUMN","vertexId":"default.dest_v3.x"},{"id":2,"vertexType":"COLUMN","vertexId":"default.dest_v3.cboolean1"},{"id":3,"vertexType":"COLUMN","vertexId":"default.alltypesorc.ctinyint"},{"id":4,"vertexType":"COLUMN","vertexId":"default.alltypesorc.csmallint"},{"id":5,"vertexType":"COLUMN","vertexId":"default.alltypesorc.cboolean1"},{"id":6,"vertexType":"COLUMN","vertexId":"default.alltypesorc.cstring1"},{"id":7,"vertexType":"COLUMN","vertexId":"default.alltypesorc.cint"},{"id":8,"vertexType":"COLUMN","vertexId":"default.alltypesorc.cboolean2"},{"id":9,"vertexType":"COLUMN","vertexId":"default.alltypesorc.cfloat"}]}
+{"version":"1.0","engine":"tez","database":"default","hash":"81bb549360513aeae39a3bd971405be3","queryText":"alter view dest_v3 as\n  select * from (\n    select sum(a.ctinyint) over (partition by a.csmallint order by a.csmallint) a,\n      count(b.cstring1) x, b.cboolean1\n    from alltypesorc a join alltypesorc b on (a.cint = b.cint)\n    where a.cboolean2 = true and b.cfloat > 0\n    group by a.ctinyint, a.csmallint, b.cboolean1\n    having count(a.cint) > 10\n    order by a, x, b.cboolean1 limit 10) t_n20","edges":[{"sources":[3,4,5,6,7],"targets":[0],"expression":"(tok_function sum (. (tok_table_or_col a) ctinyint) (tok_windowspec (tok_partitioningspec (tok_distributeby (. (tok_table_or_col a) csmallint)) (tok_orderby (tok_tabsortcolnameasc (tok_nulls_first (. (tok_table_or_col a) csmallint)))))))","edgeType":"PROJECTION"},{"sources":[6],"targets":[1],"expression":"count(default.alltypesorc.cstring1)","edgeType":"PROJECTION"},{"sources":[5],"targets":[2],"edgeType":"PROJECTION"},{"sources":[7],"targets":[0,1,2],"expression":"(a.cint = b.cint)","edgeType":"PREDICATE"},{"sources":[8,9],"targets":[0,1,2],"expression":"((a.cboolean2 = true) and (b.cfloat > 0.0))","edgeType":"PREDICATE"},{"sources":[7],"targets":[0,1,2],"expression":"(count(default.alltypesorc.cint) > 10L)","edgeType":"PREDICATE"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"default.dest_v3.a"},{"id":1,"vertexType":"COLUMN","vertexId":"default.dest_v3.x"},{"id":2,"vertexType":"COLUMN","vertexId":"default.dest_v3.cboolean1"},{"id":3,"vertexType":"COLUMN","vertexId":"default.alltypesorc.ctinyint"},{"id":4,"vertexType":"COLUMN","vertexId":"default.alltypesorc.csmallint"},{"id":5,"vertexType":"COLUMN","vertexId":"default.alltypesorc.cboolean1"},{"id":6,"vertexType":"COLUMN","vertexId":"default.alltypesorc.cstring1"},{"id":7,"vertexType":"COLUMN","vertexId":"default.alltypesorc.cint"},{"id":8,"vertexType":"COLUMN","vertexId":"default.alltypesorc.cboolean2"},{"id":9,"vertexType":"COLUMN","vertexId":"default.alltypesorc.cfloat"}]}
 PREHOOK: query: select * from dest_v3 limit 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc

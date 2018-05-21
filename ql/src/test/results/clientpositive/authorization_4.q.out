@@ -1,33 +1,33 @@
-PREHOOK: query: create table src_autho_test as select * from src
+PREHOOK: query: create table src_autho_test_n2 as select * from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src_autho_test
-POSTHOOK: query: create table src_autho_test as select * from src
+PREHOOK: Output: default@src_autho_test_n2
+POSTHOOK: query: create table src_autho_test_n2 as select * from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src_autho_test
-POSTHOOK: Lineage: src_autho_test.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_autho_test.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: grant All on table src_autho_test to user hive_test_user
+POSTHOOK: Output: default@src_autho_test_n2
+POSTHOOK: Lineage: src_autho_test_n2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_autho_test_n2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: grant All on table src_autho_test_n2 to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE
-PREHOOK: Output: default@src_autho_test
-POSTHOOK: query: grant All on table src_autho_test to user hive_test_user
+PREHOOK: Output: default@src_autho_test_n2
+POSTHOOK: query: grant All on table src_autho_test_n2 to user hive_test_user
 POSTHOOK: type: GRANT_PRIVILEGE
-POSTHOOK: Output: default@src_autho_test
-PREHOOK: query: show grant user hive_test_user on table src_autho_test
+POSTHOOK: Output: default@src_autho_test_n2
+PREHOOK: query: show grant user hive_test_user on table src_autho_test_n2
 PREHOOK: type: SHOW_GRANT
-POSTHOOK: query: show grant user hive_test_user on table src_autho_test
+POSTHOOK: query: show grant user hive_test_user on table src_autho_test_n2
 POSTHOOK: type: SHOW_GRANT
-default	src_autho_test			hive_test_user	USER	ALL	false	-1	hive_test_user
-PREHOOK: query: select key from src_autho_test order by key limit 20
+default	src_autho_test_n2			hive_test_user	USER	ALL	false	-1	hive_test_user
+PREHOOK: query: select key from src_autho_test_n2 order by key limit 20
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_autho_test
+PREHOOK: Input: default@src_autho_test_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select key from src_autho_test order by key limit 20
+POSTHOOK: query: select key from src_autho_test_n2 order by key limit 20
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_autho_test
+POSTHOOK: Input: default@src_autho_test_n2
 #### A masked pattern was here ####
 0
 0
@@ -49,11 +49,11 @@ POSTHOOK: Input: default@src_autho_test
 118
 118
 119
-PREHOOK: query: drop table src_autho_test
+PREHOOK: query: drop table src_autho_test_n2
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@src_autho_test
-PREHOOK: Output: default@src_autho_test
-POSTHOOK: query: drop table src_autho_test
+PREHOOK: Input: default@src_autho_test_n2
+PREHOOK: Output: default@src_autho_test_n2
+POSTHOOK: query: drop table src_autho_test_n2
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@src_autho_test
-POSTHOOK: Output: default@src_autho_test
+POSTHOOK: Input: default@src_autho_test_n2
+POSTHOOK: Output: default@src_autho_test_n2

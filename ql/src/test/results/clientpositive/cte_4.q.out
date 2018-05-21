@@ -24,57 +24,57 @@ POSTHOOK: Output: default@q2
 5	val_5
 5	val_5
 4	val_4
-PREHOOK: query: create table s1 like src
+PREHOOK: query: create table s1_n0 like src
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@s1
-POSTHOOK: query: create table s1 like src
+PREHOOK: Output: default@s1_n0
+POSTHOOK: query: create table s1_n0 like src
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@s1
+POSTHOOK: Output: default@s1_n0
 PREHOOK: query: with q1 as ( select key, value from src where key = '5')
 from q1
-insert overwrite table s1
+insert overwrite table s1_n0
 select *
 PREHOOK: type: QUERY
 PREHOOK: Input: default@q1
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@q1
-PREHOOK: Output: default@s1
+PREHOOK: Output: default@s1_n0
 #### A masked pattern was here ####
 POSTHOOK: query: with q1 as ( select key, value from src where key = '5')
 from q1
-insert overwrite table s1
+insert overwrite table s1_n0
 select *
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@q1
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@q1
-POSTHOOK: Output: default@s1
+POSTHOOK: Output: default@s1_n0
 #### A masked pattern was here ####
-POSTHOOK: Lineage: s1.key SIMPLE [(q1)q1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: s1.value SIMPLE [(q1)q1.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: select * from s1
+POSTHOOK: Lineage: s1_n0.key SIMPLE [(q1)q1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: s1_n0.value SIMPLE [(q1)q1.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select * from s1_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@s1
+PREHOOK: Input: default@s1_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from s1
+POSTHOOK: query: select * from s1_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@s1
+POSTHOOK: Input: default@s1_n0
 #### A masked pattern was here ####
 5	val_5
 5	val_5
 5	val_5
-PREHOOK: query: drop table s1
+PREHOOK: query: drop table s1_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@s1
-PREHOOK: Output: default@s1
-POSTHOOK: query: drop table s1
+PREHOOK: Input: default@s1_n0
+PREHOOK: Output: default@s1_n0
+POSTHOOK: query: drop table s1_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@s1
-POSTHOOK: Output: default@s1
+POSTHOOK: Input: default@s1_n0
+POSTHOOK: Output: default@s1_n0
 PREHOOK: query: with q1 as (select * from src where key= '5')
 from q1
 select *
@@ -134,77 +134,77 @@ POSTHOOK: query: drop table s2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@s2
 POSTHOOK: Output: default@s2
-PREHOOK: query: create view v1 as
+PREHOOK: query: create view v1_n4 as
 with q1 as ( select key from src where key = '5')
 select * from q1
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@v1
-POSTHOOK: query: create view v1 as
+PREHOOK: Output: default@v1_n4
+POSTHOOK: query: create view v1_n4 as
 with q1 as ( select key from src where key = '5')
 select * from q1
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@v1
-POSTHOOK: Lineage: v1.key SIMPLE []
-PREHOOK: query: select * from v1
+POSTHOOK: Output: default@v1_n4
+POSTHOOK: Lineage: v1_n4.key SIMPLE []
+PREHOOK: query: select * from v1_n4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Input: default@v1
+PREHOOK: Input: default@v1_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select * from v1
+POSTHOOK: query: select * from v1_n4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Input: default@v1
+POSTHOOK: Input: default@v1_n4
 #### A masked pattern was here ####
 5
 5
 5
-PREHOOK: query: drop view v1
+PREHOOK: query: drop view v1_n4
 PREHOOK: type: DROPVIEW
-PREHOOK: Input: default@v1
-PREHOOK: Output: default@v1
-POSTHOOK: query: drop view v1
+PREHOOK: Input: default@v1_n4
+PREHOOK: Output: default@v1_n4
+POSTHOOK: query: drop view v1_n4
 POSTHOOK: type: DROPVIEW
-POSTHOOK: Input: default@v1
-POSTHOOK: Output: default@v1
-PREHOOK: query: create view v1 as
+POSTHOOK: Input: default@v1_n4
+POSTHOOK: Output: default@v1_n4
+PREHOOK: query: create view v1_n4 as
 with q1 as ( select key from src where key = '5')
 select * from q1
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@v1
-POSTHOOK: query: create view v1 as
+PREHOOK: Output: default@v1_n4
+POSTHOOK: query: create view v1_n4 as
 with q1 as ( select key from src where key = '5')
 select * from q1
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@v1
-POSTHOOK: Lineage: v1.key SIMPLE []
+POSTHOOK: Output: default@v1_n4
+POSTHOOK: Lineage: v1_n4.key SIMPLE []
 PREHOOK: query: with q1 as ( select key from src where key = '4')
-select * from v1
+select * from v1_n4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Input: default@v1
+PREHOOK: Input: default@v1_n4
 #### A masked pattern was here ####
 POSTHOOK: query: with q1 as ( select key from src where key = '4')
-select * from v1
+select * from v1_n4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Input: default@v1
+POSTHOOK: Input: default@v1_n4
 #### A masked pattern was here ####
 5
 5
 5
-PREHOOK: query: drop view v1
+PREHOOK: query: drop view v1_n4
 PREHOOK: type: DROPVIEW
-PREHOOK: Input: default@v1
-PREHOOK: Output: default@v1
-POSTHOOK: query: drop view v1
+PREHOOK: Input: default@v1_n4
+PREHOOK: Output: default@v1_n4
+POSTHOOK: query: drop view v1_n4
 POSTHOOK: type: DROPVIEW
-POSTHOOK: Input: default@v1
-POSTHOOK: Output: default@v1
+POSTHOOK: Input: default@v1_n4
+POSTHOOK: Output: default@v1_n4

@@ -17,20 +17,20 @@ PREHOOK: Input: database:db1
 POSTHOOK: query: USE db1
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:db1
-PREHOOK: query: CREATE TABLE table_db1 (name STRING, value INT)
+PREHOOK: query: CREATE TABLE table_db1_n0 (name STRING, value INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:db1
-PREHOOK: Output: db1@table_db1
-POSTHOOK: query: CREATE TABLE table_db1 (name STRING, value INT)
+PREHOOK: Output: db1@table_db1_n0
+POSTHOOK: query: CREATE TABLE table_db1_n0 (name STRING, value INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:db1
-POSTHOOK: Output: db1@table_db1
-PREHOOK: query: DESCRIBE FORMATTED table_db1
+POSTHOOK: Output: db1@table_db1_n0
+PREHOOK: query: DESCRIBE FORMATTED table_db1_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: db1@table_db1
-POSTHOOK: query: DESCRIBE FORMATTED table_db1
+PREHOOK: Input: db1@table_db1_n0
+POSTHOOK: query: DESCRIBE FORMATTED table_db1_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: db1@table_db1
+POSTHOOK: Input: db1@table_db1_n0
 # col_name            	data_type           	comment             
 name                	string              	                    
 value               	int                 	                    
@@ -66,7 +66,7 @@ PREHOOK: Input: database:db1
 POSTHOOK: query: SHOW TABLES
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:db1
-table_db1
+table_db1_n0
 PREHOOK: query: CREATE DATABASE db2
 COMMENT 'database 2'
 #### A masked pattern was here ####

@@ -1,4 +1,4 @@
-PREHOOK: query: CREATE TABLE dest1(mydata STRING)
+PREHOOK: query: CREATE TABLE dest1_n109(mydata STRING)
 ROW FORMAT SERDE
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
 WITH SERDEPROPERTIES (
@@ -9,8 +9,8 @@ STORED AS
   OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.HiveBinaryOutputFormat'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest1
-POSTHOOK: query: CREATE TABLE dest1(mydata STRING)
+PREHOOK: Output: default@dest1_n109
+POSTHOOK: query: CREATE TABLE dest1_n109(mydata STRING)
 ROW FORMAT SERDE
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
 WITH SERDEPROPERTIES (
@@ -21,9 +21,9 @@ STORED AS
   OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.HiveBinaryOutputFormat'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest1
+POSTHOOK: Output: default@dest1_n109
 PREHOOK: query: EXPLAIN EXTENDED
-INSERT OVERWRITE TABLE dest1
+INSERT OVERWRITE TABLE dest1_n109
 SELECT TRANSFORM(*)
   USING 'cat'
   AS mydata STRING
@@ -36,7 +36,7 @@ SELECT TRANSFORM(*)
 FROM src
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED
-INSERT OVERWRITE TABLE dest1
+INSERT OVERWRITE TABLE dest1_n109
 SELECT TRANSFORM(*)
   USING 'cat'
   AS mydata STRING
@@ -103,18 +103,18 @@ STAGE PLANS:
                         columns.comments 
                         columns.types string
 #### A masked pattern was here ####
-                        name default.dest1
+                        name default.dest1_n109
                         numFiles 0
                         numRows 0
                         rawDataSize 0
-                        serialization.ddl struct dest1 { string mydata}
+                        serialization.ddl struct dest1_n109 { string mydata}
                         serialization.format 1
                         serialization.last.column.takes.rest true
                         serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         totalSize 0
 #### A masked pattern was here ####
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.dest1
+                      name: default.dest1_n109
                   TotalFiles: 1
                   GatherStats: true
                   MultiFileSpray: false
@@ -243,18 +243,18 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string
 #### A masked pattern was here ####
-                name default.dest1
+                name default.dest1_n109
                 numFiles 0
                 numRows 0
                 rawDataSize 0
-                serialization.ddl struct dest1 { string mydata}
+                serialization.ddl struct dest1_n109 { string mydata}
                 serialization.format 1
                 serialization.last.column.takes.rest true
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n109
 
   Stage: Stage-2
     Stats Work
@@ -263,7 +263,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: mydata
           Column Types: string
-          Table: default.dest1
+          Table: default.dest1_n109
           Is Table Level Stats: true
 
   Stage: Stage-3
@@ -288,18 +288,18 @@ STAGE PLANS:
                     columns.comments 
                     columns.types string
 #### A masked pattern was here ####
-                    name default.dest1
+                    name default.dest1_n109
                     numFiles 0
                     numRows 0
                     rawDataSize 0
-                    serialization.ddl struct dest1 { string mydata}
+                    serialization.ddl struct dest1_n109 { string mydata}
                     serialization.format 1
                     serialization.last.column.takes.rest true
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 0
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.dest1
+                  name: default.dest1_n109
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
@@ -320,11 +320,11 @@ STAGE PLANS:
               columns.comments 
               columns.types string
 #### A masked pattern was here ####
-              name default.dest1
+              name default.dest1_n109
               numFiles 0
               numRows 0
               rawDataSize 0
-              serialization.ddl struct dest1 { string mydata}
+              serialization.ddl struct dest1_n109 { string mydata}
               serialization.format 1
               serialization.last.column.takes.rest true
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -343,19 +343,19 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string
 #### A masked pattern was here ####
-                name default.dest1
+                name default.dest1_n109
                 numFiles 0
                 numRows 0
                 rawDataSize 0
-                serialization.ddl struct dest1 { string mydata}
+                serialization.ddl struct dest1_n109 { string mydata}
                 serialization.format 1
                 serialization.last.column.takes.rest true
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
-            name: default.dest1
+              name: default.dest1_n109
+            name: default.dest1_n109
       Truncated Path -> Alias:
 #### A masked pattern was here ####
 
@@ -381,18 +381,18 @@ STAGE PLANS:
                     columns.comments 
                     columns.types string
 #### A masked pattern was here ####
-                    name default.dest1
+                    name default.dest1_n109
                     numFiles 0
                     numRows 0
                     rawDataSize 0
-                    serialization.ddl struct dest1 { string mydata}
+                    serialization.ddl struct dest1_n109 { string mydata}
                     serialization.format 1
                     serialization.last.column.takes.rest true
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 0
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.dest1
+                  name: default.dest1_n109
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
@@ -413,11 +413,11 @@ STAGE PLANS:
               columns.comments 
               columns.types string
 #### A masked pattern was here ####
-              name default.dest1
+              name default.dest1_n109
               numFiles 0
               numRows 0
               rawDataSize 0
-              serialization.ddl struct dest1 { string mydata}
+              serialization.ddl struct dest1_n109 { string mydata}
               serialization.format 1
               serialization.last.column.takes.rest true
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -436,19 +436,19 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string
 #### A masked pattern was here ####
-                name default.dest1
+                name default.dest1_n109
                 numFiles 0
                 numRows 0
                 rawDataSize 0
-                serialization.ddl struct dest1 { string mydata}
+                serialization.ddl struct dest1_n109 { string mydata}
                 serialization.format 1
                 serialization.last.column.takes.rest true
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
-            name: default.dest1
+              name: default.dest1_n109
+            name: default.dest1_n109
       Truncated Path -> Alias:
 #### A masked pattern was here ####
 
@@ -458,7 +458,7 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-PREHOOK: query: INSERT OVERWRITE TABLE dest1
+PREHOOK: query: INSERT OVERWRITE TABLE dest1_n109
 SELECT TRANSFORM(*)
   USING 'cat'
   AS mydata STRING
@@ -471,8 +471,8 @@ SELECT TRANSFORM(*)
 FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@dest1
-POSTHOOK: query: INSERT OVERWRITE TABLE dest1
+PREHOOK: Output: default@dest1_n109
+POSTHOOK: query: INSERT OVERWRITE TABLE dest1_n109
 SELECT TRANSFORM(*)
   USING 'cat'
   AS mydata STRING
@@ -485,15 +485,15 @@ SELECT TRANSFORM(*)
 FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@dest1
-POSTHOOK: Lineage: dest1.mydata SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: SELECT * FROM dest1
+POSTHOOK: Output: default@dest1_n109
+POSTHOOK: Lineage: dest1_n109.mydata SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT * FROM dest1_n109
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n109
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM dest1
+POSTHOOK: query: SELECT * FROM dest1_n109
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n109
 #### A masked pattern was here ####
 238	val_238
 86	val_86

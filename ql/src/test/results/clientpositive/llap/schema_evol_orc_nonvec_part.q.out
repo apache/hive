@@ -1,67 +1,67 @@
-PREHOOK: query: CREATE TABLE schema_evolution_data(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
+PREHOOK: query: CREATE TABLE schema_evolution_data_n25(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
 row format delimited fields terminated by '|' stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@schema_evolution_data
-POSTHOOK: query: CREATE TABLE schema_evolution_data(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
+PREHOOK: Output: default@schema_evolution_data_n25
+POSTHOOK: query: CREATE TABLE schema_evolution_data_n25(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
 row format delimited fields terminated by '|' stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@schema_evolution_data
-PREHOOK: query: load data local inpath '../../data/files/schema_evolution/schema_evolution_data.txt' overwrite into table schema_evolution_data
+POSTHOOK: Output: default@schema_evolution_data_n25
+PREHOOK: query: load data local inpath '../../data/files/schema_evolution/schema_evolution_data.txt' overwrite into table schema_evolution_data_n25
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@schema_evolution_data
-POSTHOOK: query: load data local inpath '../../data/files/schema_evolution/schema_evolution_data.txt' overwrite into table schema_evolution_data
+PREHOOK: Output: default@schema_evolution_data_n25
+POSTHOOK: query: load data local inpath '../../data/files/schema_evolution/schema_evolution_data.txt' overwrite into table schema_evolution_data_n25
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@schema_evolution_data
-PREHOOK: query: CREATE TABLE part_add_int_permute_select(insert_num int, a INT, b STRING) PARTITIONED BY(part INT)
+POSTHOOK: Output: default@schema_evolution_data_n25
+PREHOOK: query: CREATE TABLE part_add_int_permute_select_n7(insert_num int, a INT, b STRING) PARTITIONED BY(part INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@part_add_int_permute_select
-POSTHOOK: query: CREATE TABLE part_add_int_permute_select(insert_num int, a INT, b STRING) PARTITIONED BY(part INT)
+PREHOOK: Output: default@part_add_int_permute_select_n7
+POSTHOOK: query: CREATE TABLE part_add_int_permute_select_n7(insert_num int, a INT, b STRING) PARTITIONED BY(part INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@part_add_int_permute_select
-PREHOOK: query: insert into table part_add_int_permute_select partition(part=1) VALUES (1, 1111, 'new')
+POSTHOOK: Output: default@part_add_int_permute_select_n7
+PREHOOK: query: insert into table part_add_int_permute_select_n7 partition(part=1) VALUES (1, 1111, 'new')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@part_add_int_permute_select@part=1
-POSTHOOK: query: insert into table part_add_int_permute_select partition(part=1) VALUES (1, 1111, 'new')
+PREHOOK: Output: default@part_add_int_permute_select_n7@part=1
+POSTHOOK: query: insert into table part_add_int_permute_select_n7 partition(part=1) VALUES (1, 1111, 'new')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@part_add_int_permute_select@part=1
-POSTHOOK: Lineage: part_add_int_permute_select PARTITION(part=1).a SCRIPT []
-POSTHOOK: Lineage: part_add_int_permute_select PARTITION(part=1).b SCRIPT []
-POSTHOOK: Lineage: part_add_int_permute_select PARTITION(part=1).insert_num SCRIPT []
+POSTHOOK: Output: default@part_add_int_permute_select_n7@part=1
+POSTHOOK: Lineage: part_add_int_permute_select_n7 PARTITION(part=1).a SCRIPT []
+POSTHOOK: Lineage: part_add_int_permute_select_n7 PARTITION(part=1).b SCRIPT []
+POSTHOOK: Lineage: part_add_int_permute_select_n7 PARTITION(part=1).insert_num SCRIPT []
 col1	col2	col3
-PREHOOK: query: alter table part_add_int_permute_select add columns(c int)
+PREHOOK: query: alter table part_add_int_permute_select_n7 add columns(c int)
 PREHOOK: type: ALTERTABLE_ADDCOLS
-PREHOOK: Input: default@part_add_int_permute_select
-PREHOOK: Output: default@part_add_int_permute_select
-POSTHOOK: query: alter table part_add_int_permute_select add columns(c int)
+PREHOOK: Input: default@part_add_int_permute_select_n7
+PREHOOK: Output: default@part_add_int_permute_select_n7
+POSTHOOK: query: alter table part_add_int_permute_select_n7 add columns(c int)
 POSTHOOK: type: ALTERTABLE_ADDCOLS
-POSTHOOK: Input: default@part_add_int_permute_select
-POSTHOOK: Output: default@part_add_int_permute_select
-PREHOOK: query: insert into table part_add_int_permute_select partition(part=1) VALUES (2, 2222, 'new', 3333)
+POSTHOOK: Input: default@part_add_int_permute_select_n7
+POSTHOOK: Output: default@part_add_int_permute_select_n7
+PREHOOK: query: insert into table part_add_int_permute_select_n7 partition(part=1) VALUES (2, 2222, 'new', 3333)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@part_add_int_permute_select@part=1
-POSTHOOK: query: insert into table part_add_int_permute_select partition(part=1) VALUES (2, 2222, 'new', 3333)
+PREHOOK: Output: default@part_add_int_permute_select_n7@part=1
+POSTHOOK: query: insert into table part_add_int_permute_select_n7 partition(part=1) VALUES (2, 2222, 'new', 3333)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@part_add_int_permute_select@part=1
-POSTHOOK: Lineage: part_add_int_permute_select PARTITION(part=1).a SCRIPT []
-POSTHOOK: Lineage: part_add_int_permute_select PARTITION(part=1).b SCRIPT []
-POSTHOOK: Lineage: part_add_int_permute_select PARTITION(part=1).c SCRIPT []
-POSTHOOK: Lineage: part_add_int_permute_select PARTITION(part=1).insert_num SCRIPT []
+POSTHOOK: Output: default@part_add_int_permute_select_n7@part=1
+POSTHOOK: Lineage: part_add_int_permute_select_n7 PARTITION(part=1).a SCRIPT []
+POSTHOOK: Lineage: part_add_int_permute_select_n7 PARTITION(part=1).b SCRIPT []
+POSTHOOK: Lineage: part_add_int_permute_select_n7 PARTITION(part=1).c SCRIPT []
+POSTHOOK: Lineage: part_add_int_permute_select_n7 PARTITION(part=1).insert_num SCRIPT []
 col1	col2	col3	col4
 PREHOOK: query: explain vectorization detail
-select insert_num,part,a,b from part_add_int_permute_select
+select insert_num,part,a,b from part_add_int_permute_select_n7
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select insert_num,part,a,b from part_add_int_permute_select
+select insert_num,part,a,b from part_add_int_permute_select_n7
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -80,7 +80,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: part_add_int_permute_select
+                  alias: part_add_int_permute_select_n7
                   Statistics: Num rows: 2 Data size: 198 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: insert_num (type: int), part (type: int), a (type: int), b (type: string)
@@ -101,100 +101,100 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select insert_num,part,a,b from part_add_int_permute_select
+PREHOOK: query: select insert_num,part,a,b from part_add_int_permute_select_n7
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part_add_int_permute_select
-PREHOOK: Input: default@part_add_int_permute_select@part=1
+PREHOOK: Input: default@part_add_int_permute_select_n7
+PREHOOK: Input: default@part_add_int_permute_select_n7@part=1
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,a,b from part_add_int_permute_select
+POSTHOOK: query: select insert_num,part,a,b from part_add_int_permute_select_n7
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part_add_int_permute_select
-POSTHOOK: Input: default@part_add_int_permute_select@part=1
+POSTHOOK: Input: default@part_add_int_permute_select_n7
+POSTHOOK: Input: default@part_add_int_permute_select_n7@part=1
 #### A masked pattern was here ####
 insert_num	part	a	b
 1	1	1111	new
 2	1	2222	new
-PREHOOK: query: select insert_num,part,a,b,c from part_add_int_permute_select
+PREHOOK: query: select insert_num,part,a,b,c from part_add_int_permute_select_n7
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part_add_int_permute_select
-PREHOOK: Input: default@part_add_int_permute_select@part=1
+PREHOOK: Input: default@part_add_int_permute_select_n7
+PREHOOK: Input: default@part_add_int_permute_select_n7@part=1
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,a,b,c from part_add_int_permute_select
+POSTHOOK: query: select insert_num,part,a,b,c from part_add_int_permute_select_n7
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part_add_int_permute_select
-POSTHOOK: Input: default@part_add_int_permute_select@part=1
+POSTHOOK: Input: default@part_add_int_permute_select_n7
+POSTHOOK: Input: default@part_add_int_permute_select_n7@part=1
 #### A masked pattern was here ####
 insert_num	part	a	b	c
 1	1	1111	new	NULL
 2	1	2222	new	3333
-PREHOOK: query: select insert_num,part,c from part_add_int_permute_select
+PREHOOK: query: select insert_num,part,c from part_add_int_permute_select_n7
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part_add_int_permute_select
-PREHOOK: Input: default@part_add_int_permute_select@part=1
+PREHOOK: Input: default@part_add_int_permute_select_n7
+PREHOOK: Input: default@part_add_int_permute_select_n7@part=1
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c from part_add_int_permute_select
+POSTHOOK: query: select insert_num,part,c from part_add_int_permute_select_n7
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part_add_int_permute_select
-POSTHOOK: Input: default@part_add_int_permute_select@part=1
+POSTHOOK: Input: default@part_add_int_permute_select_n7
+POSTHOOK: Input: default@part_add_int_permute_select_n7@part=1
 #### A masked pattern was here ####
 insert_num	part	c
 1	1	NULL
 2	1	3333
-PREHOOK: query: drop table part_add_int_permute_select
+PREHOOK: query: drop table part_add_int_permute_select_n7
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@part_add_int_permute_select
-PREHOOK: Output: default@part_add_int_permute_select
-POSTHOOK: query: drop table part_add_int_permute_select
+PREHOOK: Input: default@part_add_int_permute_select_n7
+PREHOOK: Output: default@part_add_int_permute_select_n7
+POSTHOOK: query: drop table part_add_int_permute_select_n7
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@part_add_int_permute_select
-POSTHOOK: Output: default@part_add_int_permute_select
-PREHOOK: query: CREATE TABLE part_add_int_string_permute_select(insert_num int, a INT, b STRING) PARTITIONED BY(part INT)
+POSTHOOK: Input: default@part_add_int_permute_select_n7
+POSTHOOK: Output: default@part_add_int_permute_select_n7
+PREHOOK: query: CREATE TABLE part_add_int_string_permute_select_n7(insert_num int, a INT, b STRING) PARTITIONED BY(part INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@part_add_int_string_permute_select
-POSTHOOK: query: CREATE TABLE part_add_int_string_permute_select(insert_num int, a INT, b STRING) PARTITIONED BY(part INT)
+PREHOOK: Output: default@part_add_int_string_permute_select_n7
+POSTHOOK: query: CREATE TABLE part_add_int_string_permute_select_n7(insert_num int, a INT, b STRING) PARTITIONED BY(part INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@part_add_int_string_permute_select
-PREHOOK: query: insert into table part_add_int_string_permute_select partition(part=1) VALUES (1, 1111, 'new')
+POSTHOOK: Output: default@part_add_int_string_permute_select_n7
+PREHOOK: query: insert into table part_add_int_string_permute_select_n7 partition(part=1) VALUES (1, 1111, 'new')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@part_add_int_string_permute_select@part=1
-POSTHOOK: query: insert into table part_add_int_string_permute_select partition(part=1) VALUES (1, 1111, 'new')
+PREHOOK: Output: default@part_add_int_string_permute_select_n7@part=1
+POSTHOOK: query: insert into table part_add_int_string_permute_select_n7 partition(part=1) VALUES (1, 1111, 'new')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@part_add_int_string_permute_select@part=1
-POSTHOOK: Lineage: part_add_int_string_permute_select PARTITION(part=1).a SCRIPT []
-POSTHOOK: Lineage: part_add_int_string_permute_select PARTITION(part=1).b SCRIPT []
-POSTHOOK: Lineage: part_add_int_string_permute_select PARTITION(part=1).insert_num SCRIPT []
+POSTHOOK: Output: default@part_add_int_string_permute_select_n7@part=1
+POSTHOOK: Lineage: part_add_int_string_permute_select_n7 PARTITION(part=1).a SCRIPT []
+POSTHOOK: Lineage: part_add_int_string_permute_select_n7 PARTITION(part=1).b SCRIPT []
+POSTHOOK: Lineage: part_add_int_string_permute_select_n7 PARTITION(part=1).insert_num SCRIPT []
 col1	col2	col3
-PREHOOK: query: alter table part_add_int_string_permute_select add columns(c int, d string)
+PREHOOK: query: alter table part_add_int_string_permute_select_n7 add columns(c int, d string)
 PREHOOK: type: ALTERTABLE_ADDCOLS
-PREHOOK: Input: default@part_add_int_string_permute_select
-PREHOOK: Output: default@part_add_int_string_permute_select
-POSTHOOK: query: alter table part_add_int_string_permute_select add columns(c int, d string)
+PREHOOK: Input: default@part_add_int_string_permute_select_n7
+PREHOOK: Output: default@part_add_int_string_permute_select_n7
+POSTHOOK: query: alter table part_add_int_string_permute_select_n7 add columns(c int, d string)
 POSTHOOK: type: ALTERTABLE_ADDCOLS
-POSTHOOK: Input: default@part_add_int_string_permute_select
-POSTHOOK: Output: default@part_add_int_string_permute_select
-PREHOOK: query: insert into table part_add_int_string_permute_select partition(part=1) VALUES (2, 2222, 'new', 3333, '4444')
+POSTHOOK: Input: default@part_add_int_string_permute_select_n7
+POSTHOOK: Output: default@part_add_int_string_permute_select_n7
+PREHOOK: query: insert into table part_add_int_string_permute_select_n7 partition(part=1) VALUES (2, 2222, 'new', 3333, '4444')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@part_add_int_string_permute_select@part=1
-POSTHOOK: query: insert into table part_add_int_string_permute_select partition(part=1) VALUES (2, 2222, 'new', 3333, '4444')
+PREHOOK: Output: default@part_add_int_string_permute_select_n7@part=1
+POSTHOOK: query: insert into table part_add_int_string_permute_select_n7 partition(part=1) VALUES (2, 2222, 'new', 3333, '4444')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@part_add_int_string_permute_select@part=1
-POSTHOOK: Lineage: part_add_int_string_permute_select PARTITION(part=1).a SCRIPT []
-POSTHOOK: Lineage: part_add_int_string_permute_select PARTITION(part=1).b SCRIPT []
-POSTHOOK: Lineage: part_add_int_string_permute_select PARTITION(part=1).c SCRIPT []
-POSTHOOK: Lineage: part_add_int_string_permute_select PARTITION(part=1).d SCRIPT []
-POSTHOOK: Lineage: part_add_int_string_permute_select PARTITION(part=1).insert_num SCRIPT []
+POSTHOOK: Output: default@part_add_int_string_permute_select_n7@part=1
+POSTHOOK: Lineage: part_add_int_string_permute_select_n7 PARTITION(part=1).a SCRIPT []
+POSTHOOK: Lineage: part_add_int_string_permute_select_n7 PARTITION(part=1).b SCRIPT []
+POSTHOOK: Lineage: part_add_int_string_permute_select_n7 PARTITION(part=1).c SCRIPT []
+POSTHOOK: Lineage: part_add_int_string_permute_select_n7 PARTITION(part=1).d SCRIPT []
+POSTHOOK: Lineage: part_add_int_string_permute_select_n7 PARTITION(part=1).insert_num SCRIPT []
 col1	col2	col3	col4	col5
 PREHOOK: query: explain vectorization detail
-select insert_num,part,a,b from part_add_int_string_permute_select
+select insert_num,part,a,b from part_add_int_string_permute_select_n7
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select insert_num,part,a,b from part_add_int_string_permute_select
+select insert_num,part,a,b from part_add_int_string_permute_select_n7
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -213,7 +213,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: part_add_int_string_permute_select
+                  alias: part_add_int_string_permute_select_n7
                   Statistics: Num rows: 2 Data size: 198 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: insert_num (type: int), part (type: int), a (type: int), b (type: string)
@@ -234,154 +234,154 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select insert_num,part,a,b from part_add_int_string_permute_select
+PREHOOK: query: select insert_num,part,a,b from part_add_int_string_permute_select_n7
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part_add_int_string_permute_select
-PREHOOK: Input: default@part_add_int_string_permute_select@part=1
+PREHOOK: Input: default@part_add_int_string_permute_select_n7
+PREHOOK: Input: default@part_add_int_string_permute_select_n7@part=1
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,a,b from part_add_int_string_permute_select
+POSTHOOK: query: select insert_num,part,a,b from part_add_int_string_permute_select_n7
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part_add_int_string_permute_select
-POSTHOOK: Input: default@part_add_int_string_permute_select@part=1
+POSTHOOK: Input: default@part_add_int_string_permute_select_n7
+POSTHOOK: Input: default@part_add_int_string_permute_select_n7@part=1
 #### A masked pattern was here ####
 insert_num	part	a	b
 1	1	1111	new
 2	1	2222	new
-PREHOOK: query: select insert_num,part,a,b,c from part_add_int_string_permute_select
+PREHOOK: query: select insert_num,part,a,b,c from part_add_int_string_permute_select_n7
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part_add_int_string_permute_select
-PREHOOK: Input: default@part_add_int_string_permute_select@part=1
+PREHOOK: Input: default@part_add_int_string_permute_select_n7
+PREHOOK: Input: default@part_add_int_string_permute_select_n7@part=1
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,a,b,c from part_add_int_string_permute_select
+POSTHOOK: query: select insert_num,part,a,b,c from part_add_int_string_permute_select_n7
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part_add_int_string_permute_select
-POSTHOOK: Input: default@part_add_int_string_permute_select@part=1
+POSTHOOK: Input: default@part_add_int_string_permute_select_n7
+POSTHOOK: Input: default@part_add_int_string_permute_select_n7@part=1
 #### A masked pattern was here ####
 insert_num	part	a	b	c
 1	1	1111	new	NULL
 2	1	2222	new	3333
-PREHOOK: query: select insert_num,part,a,b,c,d from part_add_int_string_permute_select
+PREHOOK: query: select insert_num,part,a,b,c,d from part_add_int_string_permute_select_n7
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part_add_int_string_permute_select
-PREHOOK: Input: default@part_add_int_string_permute_select@part=1
+PREHOOK: Input: default@part_add_int_string_permute_select_n7
+PREHOOK: Input: default@part_add_int_string_permute_select_n7@part=1
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,a,b,c,d from part_add_int_string_permute_select
+POSTHOOK: query: select insert_num,part,a,b,c,d from part_add_int_string_permute_select_n7
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part_add_int_string_permute_select
-POSTHOOK: Input: default@part_add_int_string_permute_select@part=1
+POSTHOOK: Input: default@part_add_int_string_permute_select_n7
+POSTHOOK: Input: default@part_add_int_string_permute_select_n7@part=1
 #### A masked pattern was here ####
 insert_num	part	a	b	c	d
 1	1	1111	new	NULL	NULL
 2	1	2222	new	3333	4444
-PREHOOK: query: select insert_num,part,a,c,d from part_add_int_string_permute_select
+PREHOOK: query: select insert_num,part,a,c,d from part_add_int_string_permute_select_n7
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part_add_int_string_permute_select
-PREHOOK: Input: default@part_add_int_string_permute_select@part=1
+PREHOOK: Input: default@part_add_int_string_permute_select_n7
+PREHOOK: Input: default@part_add_int_string_permute_select_n7@part=1
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,a,c,d from part_add_int_string_permute_select
+POSTHOOK: query: select insert_num,part,a,c,d from part_add_int_string_permute_select_n7
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part_add_int_string_permute_select
-POSTHOOK: Input: default@part_add_int_string_permute_select@part=1
+POSTHOOK: Input: default@part_add_int_string_permute_select_n7
+POSTHOOK: Input: default@part_add_int_string_permute_select_n7@part=1
 #### A masked pattern was here ####
 insert_num	part	a	c	d
 1	1	1111	NULL	NULL
 2	1	2222	3333	4444
-PREHOOK: query: select insert_num,part,a,d from part_add_int_string_permute_select
+PREHOOK: query: select insert_num,part,a,d from part_add_int_string_permute_select_n7
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part_add_int_string_permute_select
-PREHOOK: Input: default@part_add_int_string_permute_select@part=1
+PREHOOK: Input: default@part_add_int_string_permute_select_n7
+PREHOOK: Input: default@part_add_int_string_permute_select_n7@part=1
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,a,d from part_add_int_string_permute_select
+POSTHOOK: query: select insert_num,part,a,d from part_add_int_string_permute_select_n7
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part_add_int_string_permute_select
-POSTHOOK: Input: default@part_add_int_string_permute_select@part=1
+POSTHOOK: Input: default@part_add_int_string_permute_select_n7
+POSTHOOK: Input: default@part_add_int_string_permute_select_n7@part=1
 #### A masked pattern was here ####
 insert_num	part	a	d
 1	1	1111	NULL
 2	1	2222	4444
-PREHOOK: query: select insert_num,part,c from part_add_int_string_permute_select
+PREHOOK: query: select insert_num,part,c from part_add_int_string_permute_select_n7
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part_add_int_string_permute_select
-PREHOOK: Input: default@part_add_int_string_permute_select@part=1
+PREHOOK: Input: default@part_add_int_string_permute_select_n7
+PREHOOK: Input: default@part_add_int_string_permute_select_n7@part=1
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c from part_add_int_string_permute_select
+POSTHOOK: query: select insert_num,part,c from part_add_int_string_permute_select_n7
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part_add_int_string_permute_select
-POSTHOOK: Input: default@part_add_int_string_permute_select@part=1
+POSTHOOK: Input: default@part_add_int_string_permute_select_n7
+POSTHOOK: Input: default@part_add_int_string_permute_select_n7@part=1
 #### A masked pattern was here ####
 insert_num	part	c
 1	1	NULL
 2	1	3333
-PREHOOK: query: select insert_num,part,d from part_add_int_string_permute_select
+PREHOOK: query: select insert_num,part,d from part_add_int_string_permute_select_n7
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part_add_int_string_permute_select
-PREHOOK: Input: default@part_add_int_string_permute_select@part=1
+PREHOOK: Input: default@part_add_int_string_permute_select_n7
+PREHOOK: Input: default@part_add_int_string_permute_select_n7@part=1
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,d from part_add_int_string_permute_select
+POSTHOOK: query: select insert_num,part,d from part_add_int_string_permute_select_n7
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part_add_int_string_permute_select
-POSTHOOK: Input: default@part_add_int_string_permute_select@part=1
+POSTHOOK: Input: default@part_add_int_string_permute_select_n7
+POSTHOOK: Input: default@part_add_int_string_permute_select_n7@part=1
 #### A masked pattern was here ####
 insert_num	part	d
 1	1	NULL
 2	1	4444
-PREHOOK: query: drop table part_add_int_string_permute_select
+PREHOOK: query: drop table part_add_int_string_permute_select_n7
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@part_add_int_string_permute_select
-PREHOOK: Output: default@part_add_int_string_permute_select
-POSTHOOK: query: drop table part_add_int_string_permute_select
+PREHOOK: Input: default@part_add_int_string_permute_select_n7
+PREHOOK: Output: default@part_add_int_string_permute_select_n7
+POSTHOOK: query: drop table part_add_int_string_permute_select_n7
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@part_add_int_string_permute_select
-POSTHOOK: Output: default@part_add_int_string_permute_select
-PREHOOK: query: CREATE TABLE part_change_string_group_double(insert_num int, c1 STRING, c2 CHAR(50), c3 VARCHAR(50), b STRING) PARTITIONED BY(part INT)
+POSTHOOK: Input: default@part_add_int_string_permute_select_n7
+POSTHOOK: Output: default@part_add_int_string_permute_select_n7
+PREHOOK: query: CREATE TABLE part_change_string_group_double_n7(insert_num int, c1 STRING, c2 CHAR(50), c3 VARCHAR(50), b STRING) PARTITIONED BY(part INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@part_change_string_group_double
-POSTHOOK: query: CREATE TABLE part_change_string_group_double(insert_num int, c1 STRING, c2 CHAR(50), c3 VARCHAR(50), b STRING) PARTITIONED BY(part INT)
+PREHOOK: Output: default@part_change_string_group_double_n7
+POSTHOOK: query: CREATE TABLE part_change_string_group_double_n7(insert_num int, c1 STRING, c2 CHAR(50), c3 VARCHAR(50), b STRING) PARTITIONED BY(part INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@part_change_string_group_double
-PREHOOK: query: insert into table part_change_string_group_double partition(part=1) SELECT insert_num, double_str, double_str, double_str, 'original' FROM schema_evolution_data
+POSTHOOK: Output: default@part_change_string_group_double_n7
+PREHOOK: query: insert into table part_change_string_group_double_n7 partition(part=1) SELECT insert_num, double_str, double_str, double_str, 'original' FROM schema_evolution_data_n25
 PREHOOK: type: QUERY
-PREHOOK: Input: default@schema_evolution_data
-PREHOOK: Output: default@part_change_string_group_double@part=1
-POSTHOOK: query: insert into table part_change_string_group_double partition(part=1) SELECT insert_num, double_str, double_str, double_str, 'original' FROM schema_evolution_data
+PREHOOK: Input: default@schema_evolution_data_n25
+PREHOOK: Output: default@part_change_string_group_double_n7@part=1
+POSTHOOK: query: insert into table part_change_string_group_double_n7 partition(part=1) SELECT insert_num, double_str, double_str, double_str, 'original' FROM schema_evolution_data_n25
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@schema_evolution_data
-POSTHOOK: Output: default@part_change_string_group_double@part=1
-POSTHOOK: Lineage: part_change_string_group_double PARTITION(part=1).b SIMPLE []
-POSTHOOK: Lineage: part_change_string_group_double PARTITION(part=1).c1 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:double_str, type:string, comment:null), ]
-POSTHOOK: Lineage: part_change_string_group_double PARTITION(part=1).c2 EXPRESSION [(schema_evolution_data)schema_evolution_data.FieldSchema(name:double_str, type:string, comment:null), ]
-POSTHOOK: Lineage: part_change_string_group_double PARTITION(part=1).c3 EXPRESSION [(schema_evolution_data)schema_evolution_data.FieldSchema(name:double_str, type:string, comment:null), ]
-POSTHOOK: Lineage: part_change_string_group_double PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:insert_num, type:int, comment:null), ]
+POSTHOOK: Input: default@schema_evolution_data_n25
+POSTHOOK: Output: default@part_change_string_group_double_n7@part=1
+POSTHOOK: Lineage: part_change_string_group_double_n7 PARTITION(part=1).b SIMPLE []
+POSTHOOK: Lineage: part_change_string_group_double_n7 PARTITION(part=1).c1 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:double_str, type:string, comment:null), ]
+POSTHOOK: Lineage: part_change_string_group_double_n7 PARTITION(part=1).c2 EXPRESSION [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:double_str, type:string, comment:null), ]
+POSTHOOK: Lineage: part_change_string_group_double_n7 PARTITION(part=1).c3 EXPRESSION [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:double_str, type:string, comment:null), ]
+POSTHOOK: Lineage: part_change_string_group_double_n7 PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:insert_num, type:int, comment:null), ]
 _col0	_col1	_col2	_col3	_col4
-PREHOOK: query: alter table part_change_string_group_double replace columns (insert_num int, c1 DOUBLE, c2 DOUBLE, c3 DOUBLE, b STRING)
+PREHOOK: query: alter table part_change_string_group_double_n7 replace columns (insert_num int, c1 DOUBLE, c2 DOUBLE, c3 DOUBLE, b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
-PREHOOK: Input: default@part_change_string_group_double
-PREHOOK: Output: default@part_change_string_group_double
-POSTHOOK: query: alter table part_change_string_group_double replace columns (insert_num int, c1 DOUBLE, c2 DOUBLE, c3 DOUBLE, b STRING)
+PREHOOK: Input: default@part_change_string_group_double_n7
+PREHOOK: Output: default@part_change_string_group_double_n7
+POSTHOOK: query: alter table part_change_string_group_double_n7 replace columns (insert_num int, c1 DOUBLE, c2 DOUBLE, c3 DOUBLE, b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
-POSTHOOK: Input: default@part_change_string_group_double
-POSTHOOK: Output: default@part_change_string_group_double
-PREHOOK: query: insert into table part_change_string_group_double partition(part=1) SELECT insert_num, double1, double1, double1, 'new' FROM schema_evolution_data WHERE insert_num = 111
+POSTHOOK: Input: default@part_change_string_group_double_n7
+POSTHOOK: Output: default@part_change_string_group_double_n7
+PREHOOK: query: insert into table part_change_string_group_double_n7 partition(part=1) SELECT insert_num, double1, double1, double1, 'new' FROM schema_evolution_data_n25 WHERE insert_num = 111
 PREHOOK: type: QUERY
-PREHOOK: Input: default@schema_evolution_data
-PREHOOK: Output: default@part_change_string_group_double@part=1
-POSTHOOK: query: insert into table part_change_string_group_double partition(part=1) SELECT insert_num, double1, double1, double1, 'new' FROM schema_evolution_data WHERE insert_num = 111
+PREHOOK: Input: default@schema_evolution_data_n25
+PREHOOK: Output: default@part_change_string_group_double_n7@part=1
+POSTHOOK: query: insert into table part_change_string_group_double_n7 partition(part=1) SELECT insert_num, double1, double1, double1, 'new' FROM schema_evolution_data_n25 WHERE insert_num = 111
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@schema_evolution_data
-POSTHOOK: Output: default@part_change_string_group_double@part=1
-POSTHOOK: Lineage: part_change_string_group_double PARTITION(part=1).b SIMPLE []
-POSTHOOK: Lineage: part_change_string_group_double PARTITION(part=1).c1 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:double1, type:double, comment:null), ]
-POSTHOOK: Lineage: part_change_string_group_double PARTITION(part=1).c2 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:double1, type:double, comment:null), ]
-POSTHOOK: Lineage: part_change_string_group_double PARTITION(part=1).c3 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:double1, type:double, comment:null), ]
-POSTHOOK: Lineage: part_change_string_group_double PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:insert_num, type:int, comment:null), ]
+POSTHOOK: Input: default@schema_evolution_data_n25
+POSTHOOK: Output: default@part_change_string_group_double_n7@part=1
+POSTHOOK: Lineage: part_change_string_group_double_n7 PARTITION(part=1).b SIMPLE []
+POSTHOOK: Lineage: part_change_string_group_double_n7 PARTITION(part=1).c1 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:double1, type:double, comment:null), ]
+POSTHOOK: Lineage: part_change_string_group_double_n7 PARTITION(part=1).c2 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:double1, type:double, comment:null), ]
+POSTHOOK: Lineage: part_change_string_group_double_n7 PARTITION(part=1).c3 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:double1, type:double, comment:null), ]
+POSTHOOK: Lineage: part_change_string_group_double_n7 PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:insert_num, type:int, comment:null), ]
 insert_num	double1	double1	double1	_c4
 PREHOOK: query: explain vectorization detail
-select insert_num,part,c1,c2,c3,b from part_change_string_group_double
+select insert_num,part,c1,c2,c3,b from part_change_string_group_double_n7
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select insert_num,part,c1,c2,c3,b from part_change_string_group_double
+select insert_num,part,c1,c2,c3,b from part_change_string_group_double_n7
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -400,7 +400,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: part_change_string_group_double
+                  alias: part_change_string_group_double_n7
                   Statistics: Num rows: 5 Data size: 500 Basic stats: COMPLETE Column stats: PARTIAL
                   Select Operator
                     expressions: insert_num (type: int), part (type: int), c1 (type: double), c2 (type: double), c3 (type: double), b (type: string)
@@ -421,15 +421,15 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select insert_num,part,c1,c2,c3,b from part_change_string_group_double
+PREHOOK: query: select insert_num,part,c1,c2,c3,b from part_change_string_group_double_n7
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part_change_string_group_double
-PREHOOK: Input: default@part_change_string_group_double@part=1
+PREHOOK: Input: default@part_change_string_group_double_n7
+PREHOOK: Input: default@part_change_string_group_double_n7@part=1
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,b from part_change_string_group_double
+POSTHOOK: query: select insert_num,part,c1,c2,c3,b from part_change_string_group_double_n7
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part_change_string_group_double
-POSTHOOK: Input: default@part_change_string_group_double@part=1
+POSTHOOK: Input: default@part_change_string_group_double_n7
+POSTHOOK: Input: default@part_change_string_group_double_n7@part=1
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	b
 101	1	1.7976931348623157E308	1.7976931348623157E308	1.7976931348623157E308	original
@@ -437,77 +437,77 @@ insert_num	part	c1	c2	c3	b
 103	1	NULL	NULL	NULL	original
 104	1	30.774	30.774	30.774	original
 105	1	46114.28	46114.28	46114.28	original
-PREHOOK: query: drop table part_change_string_group_double
+PREHOOK: query: drop table part_change_string_group_double_n7
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@part_change_string_group_double
-PREHOOK: Output: default@part_change_string_group_double
-POSTHOOK: query: drop table part_change_string_group_double
+PREHOOK: Input: default@part_change_string_group_double_n7
+PREHOOK: Output: default@part_change_string_group_double_n7
+POSTHOOK: query: drop table part_change_string_group_double_n7
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@part_change_string_group_double
-POSTHOOK: Output: default@part_change_string_group_double
-PREHOOK: query: CREATE TABLE part_change_date_group_string_group_date_timestamp(insert_num int, c1 DATE, c2 DATE, c3 DATE, c4 DATE, c5 DATE, c6 TIMESTAMP, c7 TIMESTAMP, c8 TIMESTAMP, c9 TIMESTAMP, c10 TIMESTAMP, b STRING) PARTITIONED BY(part INT)
+POSTHOOK: Input: default@part_change_string_group_double_n7
+POSTHOOK: Output: default@part_change_string_group_double_n7
+PREHOOK: query: CREATE TABLE part_change_date_group_string_group_date_timestamp_n7(insert_num int, c1 DATE, c2 DATE, c3 DATE, c4 DATE, c5 DATE, c6 TIMESTAMP, c7 TIMESTAMP, c8 TIMESTAMP, c9 TIMESTAMP, c10 TIMESTAMP, b STRING) PARTITIONED BY(part INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@part_change_date_group_string_group_date_timestamp
-POSTHOOK: query: CREATE TABLE part_change_date_group_string_group_date_timestamp(insert_num int, c1 DATE, c2 DATE, c3 DATE, c4 DATE, c5 DATE, c6 TIMESTAMP, c7 TIMESTAMP, c8 TIMESTAMP, c9 TIMESTAMP, c10 TIMESTAMP, b STRING) PARTITIONED BY(part INT)
+PREHOOK: Output: default@part_change_date_group_string_group_date_timestamp_n7
+POSTHOOK: query: CREATE TABLE part_change_date_group_string_group_date_timestamp_n7(insert_num int, c1 DATE, c2 DATE, c3 DATE, c4 DATE, c5 DATE, c6 TIMESTAMP, c7 TIMESTAMP, c8 TIMESTAMP, c9 TIMESTAMP, c10 TIMESTAMP, b STRING) PARTITIONED BY(part INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@part_change_date_group_string_group_date_timestamp
-PREHOOK: query: insert into table part_change_date_group_string_group_date_timestamp partition(part=1) SELECT insert_num, date1, date1, date1, date1, date1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, 'original' FROM schema_evolution_data
+POSTHOOK: Output: default@part_change_date_group_string_group_date_timestamp_n7
+PREHOOK: query: insert into table part_change_date_group_string_group_date_timestamp_n7 partition(part=1) SELECT insert_num, date1, date1, date1, date1, date1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, 'original' FROM schema_evolution_data_n25
 PREHOOK: type: QUERY
-PREHOOK: Input: default@schema_evolution_data
-PREHOOK: Output: default@part_change_date_group_string_group_date_timestamp@part=1
-POSTHOOK: query: insert into table part_change_date_group_string_group_date_timestamp partition(part=1) SELECT insert_num, date1, date1, date1, date1, date1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, 'original' FROM schema_evolution_data
+PREHOOK: Input: default@schema_evolution_data_n25
+PREHOOK: Output: default@part_change_date_group_string_group_date_timestamp_n7@part=1
+POSTHOOK: query: insert into table part_change_date_group_string_group_date_timestamp_n7 partition(part=1) SELECT insert_num, date1, date1, date1, date1, date1, timestamp1, timestamp1, timestamp1, timestamp1, timestamp1, 'original' FROM schema_evolution_data_n25
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@schema_evolution_data
-POSTHOOK: Output: default@part_change_date_group_string_group_date_timestamp@part=1
-POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp PARTITION(part=1).b SIMPLE []
-POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp PARTITION(part=1).c1 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:date1, type:date, comment:null), ]
-POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp PARTITION(part=1).c10 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp PARTITION(part=1).c2 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:date1, type:date, comment:null), ]
-POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp PARTITION(part=1).c3 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:date1, type:date, comment:null), ]
-POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp PARTITION(part=1).c4 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:date1, type:date, comment:null), ]
-POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp PARTITION(part=1).c5 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:date1, type:date, comment:null), ]
-POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp PARTITION(part=1).c6 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp PARTITION(part=1).c7 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp PARTITION(part=1).c8 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp PARTITION(part=1).c9 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:insert_num, type:int, comment:null), ]
+POSTHOOK: Input: default@schema_evolution_data_n25
+POSTHOOK: Output: default@part_change_date_group_string_group_date_timestamp_n7@part=1
+POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp_n7 PARTITION(part=1).b SIMPLE []
+POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp_n7 PARTITION(part=1).c1 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:date1, type:date, comment:null), ]
+POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp_n7 PARTITION(part=1).c10 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp_n7 PARTITION(part=1).c2 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:date1, type:date, comment:null), ]
+POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp_n7 PARTITION(part=1).c3 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:date1, type:date, comment:null), ]
+POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp_n7 PARTITION(part=1).c4 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:date1, type:date, comment:null), ]
+POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp_n7 PARTITION(part=1).c5 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:date1, type:date, comment:null), ]
+POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp_n7 PARTITION(part=1).c6 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp_n7 PARTITION(part=1).c7 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp_n7 PARTITION(part=1).c8 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp_n7 PARTITION(part=1).c9 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:timestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp_n7 PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:insert_num, type:int, comment:null), ]
 insert_num	date1	date1	date1	date1	date1	timestamp1	timestamp1	timestamp1	timestamp1	timestamp1	_c11
-PREHOOK: query: alter table part_change_date_group_string_group_date_timestamp replace columns(insert_num int, c1 STRING, c2 CHAR(50), c3 CHAR(15), c4 VARCHAR(50), c5 VARCHAR(15), c6 STRING, c7 CHAR(50), c8 CHAR(15), c9 VARCHAR(50), c10 VARCHAR(15), b STRING)
+PREHOOK: query: alter table part_change_date_group_string_group_date_timestamp_n7 replace columns(insert_num int, c1 STRING, c2 CHAR(50), c3 CHAR(15), c4 VARCHAR(50), c5 VARCHAR(15), c6 STRING, c7 CHAR(50), c8 CHAR(15), c9 VARCHAR(50), c10 VARCHAR(15), b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
-PREHOOK: Input: default@part_change_date_group_string_group_date_timestamp
-PREHOOK: Output: default@part_change_date_group_string_group_date_timestamp
-POSTHOOK: query: alter table part_change_date_group_string_group_date_timestamp replace columns(insert_num int, c1 STRING, c2 CHAR(50), c3 CHAR(15), c4 VARCHAR(50), c5 VARCHAR(15), c6 STRING, c7 CHAR(50), c8 CHAR(15), c9 VARCHAR(50), c10 VARCHAR(15), b STRING)
+PREHOOK: Input: default@part_change_date_group_string_group_date_timestamp_n7
+PREHOOK: Output: default@part_change_date_group_string_group_date_timestamp_n7
+POSTHOOK: query: alter table part_change_date_group_string_group_date_timestamp_n7 replace columns(insert_num int, c1 STRING, c2 CHAR(50), c3 CHAR(15), c4 VARCHAR(50), c5 VARCHAR(15), c6 STRING, c7 CHAR(50), c8 CHAR(15), c9 VARCHAR(50), c10 VARCHAR(15), b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
-POSTHOOK: Input: default@part_change_date_group_string_group_date_timestamp
-POSTHOOK: Output: default@part_change_date_group_string_group_date_timestamp
-PREHOOK: query: insert into table part_change_date_group_string_group_date_timestamp partition(part=1) VALUES (111, 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'new')
+POSTHOOK: Input: default@part_change_date_group_string_group_date_timestamp_n7
+POSTHOOK: Output: default@part_change_date_group_string_group_date_timestamp_n7
+PREHOOK: query: insert into table part_change_date_group_string_group_date_timestamp_n7 partition(part=1) VALUES (111, 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'new')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@part_change_date_group_string_group_date_timestamp@part=1
-POSTHOOK: query: insert into table part_change_date_group_string_group_date_timestamp partition(part=1) VALUES (111, 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'new')
+PREHOOK: Output: default@part_change_date_group_string_group_date_timestamp_n7@part=1
+POSTHOOK: query: insert into table part_change_date_group_string_group_date_timestamp_n7 partition(part=1) VALUES (111, 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'new')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@part_change_date_group_string_group_date_timestamp@part=1
-POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp PARTITION(part=1).b SCRIPT []
-POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp PARTITION(part=1).c1 SCRIPT []
-POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp PARTITION(part=1).c10 SCRIPT []
-POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp PARTITION(part=1).c2 SCRIPT []
-POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp PARTITION(part=1).c3 SCRIPT []
-POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp PARTITION(part=1).c4 SCRIPT []
-POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp PARTITION(part=1).c5 SCRIPT []
-POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp PARTITION(part=1).c6 SCRIPT []
-POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp PARTITION(part=1).c7 SCRIPT []
-POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp PARTITION(part=1).c8 SCRIPT []
-POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp PARTITION(part=1).c9 SCRIPT []
-POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp PARTITION(part=1).insert_num SCRIPT []
+POSTHOOK: Output: default@part_change_date_group_string_group_date_timestamp_n7@part=1
+POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp_n7 PARTITION(part=1).b SCRIPT []
+POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp_n7 PARTITION(part=1).c1 SCRIPT []
+POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp_n7 PARTITION(part=1).c10 SCRIPT []
+POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp_n7 PARTITION(part=1).c2 SCRIPT []
+POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp_n7 PARTITION(part=1).c3 SCRIPT []
+POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp_n7 PARTITION(part=1).c4 SCRIPT []
+POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp_n7 PARTITION(part=1).c5 SCRIPT []
+POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp_n7 PARTITION(part=1).c6 SCRIPT []
+POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp_n7 PARTITION(part=1).c7 SCRIPT []
+POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp_n7 PARTITION(part=1).c8 SCRIPT []
+POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp_n7 PARTITION(part=1).c9 SCRIPT []
+POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp_n7 PARTITION(part=1).insert_num SCRIPT []
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11
 PREHOOK: query: explain vectorization detail
-select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,b from part_change_date_group_string_group_date_timestamp
+select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,b from part_change_date_group_string_group_date_timestamp_n7
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,b from part_change_date_group_string_group_date_timestamp
+select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,b from part_change_date_group_string_group_date_timestamp_n7
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -526,7 +526,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: part_change_date_group_string_group_date_timestamp
+                  alias: part_change_date_group_string_group_date_timestamp_n7
                   Statistics: Num rows: 6 Data size: 12449 Basic stats: COMPLETE Column stats: PARTIAL
                   Select Operator
                     expressions: insert_num (type: int), part (type: int), c1 (type: string), c2 (type: char(50)), c3 (type: char(15)), c4 (type: varchar(50)), c5 (type: varchar(15)), c6 (type: string), c7 (type: char(50)), c8 (type: char(15)), c9 (type: varchar(50)), c10 (type: varchar(15)), b (type: string)
@@ -547,15 +547,15 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,b from part_change_date_group_string_group_date_timestamp
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,b from part_change_date_group_string_group_date_timestamp_n7
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part_change_date_group_string_group_date_timestamp
-PREHOOK: Input: default@part_change_date_group_string_group_date_timestamp@part=1
+PREHOOK: Input: default@part_change_date_group_string_group_date_timestamp_n7
+PREHOOK: Input: default@part_change_date_group_string_group_date_timestamp_n7@part=1
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,b from part_change_date_group_string_group_date_timestamp
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,b from part_change_date_group_string_group_date_timestamp_n7
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part_change_date_group_string_group_date_timestamp
-POSTHOOK: Input: default@part_change_date_group_string_group_date_timestamp@part=1
+POSTHOOK: Input: default@part_change_date_group_string_group_date_timestamp_n7
+POSTHOOK: Input: default@part_change_date_group_string_group_date_timestamp_n7@part=1
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	b
 101	1	1950-12-18	1950-12-18                                        	1950-12-18     	1950-12-18	1950-12-18	6229-06-28 02:54:28.970117179	6229-06-28 02:54:28.970117179                     	6229-06-28 02:5	6229-06-28 02:54:28.970117179	6229-06-28 02:5	original
@@ -564,78 +564,78 @@ insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	b
 104	1	2021-09-24	2021-09-24                                        	2021-09-24     	2021-09-24	2021-09-24	1978-08-02 06:34:14.0	1978-08-02 06:34:14.0                             	1978-08-02 06:3	1978-08-02 06:34:14.0	1978-08-02 06:3	original
 105	1	2024-11-11	2024-11-11                                        	2024-11-11     	2024-11-11	2024-11-11	1991-01-06 16:20:39.72036854	1991-01-06 16:20:39.72036854                      	1991-01-06 16:2	1991-01-06 16:20:39.72036854	1991-01-06 16:2	original
 111	1	filler	filler                                            	filler         	filler	filler	filler	filler                                            	filler         	filler	filler	new
-PREHOOK: query: drop table part_change_date_group_string_group_date_timestamp
+PREHOOK: query: drop table part_change_date_group_string_group_date_timestamp_n7
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@part_change_date_group_string_group_date_timestamp
-PREHOOK: Output: default@part_change_date_group_string_group_date_timestamp
-POSTHOOK: query: drop table part_change_date_group_string_group_date_timestamp
+PREHOOK: Input: default@part_change_date_group_string_group_date_timestamp_n7
+PREHOOK: Output: default@part_change_date_group_string_group_date_timestamp_n7
+POSTHOOK: query: drop table part_change_date_group_string_group_date_timestamp_n7
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@part_change_date_group_string_group_date_timestamp
-POSTHOOK: Output: default@part_change_date_group_string_group_date_timestamp
-PREHOOK: query: CREATE TABLE part_change_numeric_group_string_group_multi_ints_string_group(insert_num int,
+POSTHOOK: Input: default@part_change_date_group_string_group_date_timestamp_n7
+POSTHOOK: Output: default@part_change_date_group_string_group_date_timestamp_n7
+PREHOOK: query: CREATE TABLE part_change_numeric_group_string_group_multi_ints_string_group_n7(insert_num int,
              c1 tinyint, c2 smallint, c3 int, c4 bigint,
              c5 tinyint, c6 smallint, c7 int, c8 bigint, c9 tinyint, c10 smallint, c11 int, c12 bigint,
              c13 tinyint, c14 smallint, c15 int, c16 bigint, c17 tinyint, c18 smallint, c19 int, c20 bigint,
              b STRING) PARTITIONED BY(part INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@part_change_numeric_group_string_group_multi_ints_string_group
-POSTHOOK: query: CREATE TABLE part_change_numeric_group_string_group_multi_ints_string_group(insert_num int,
+PREHOOK: Output: default@part_change_numeric_group_string_group_multi_ints_string_group_n7
+POSTHOOK: query: CREATE TABLE part_change_numeric_group_string_group_multi_ints_string_group_n7(insert_num int,
              c1 tinyint, c2 smallint, c3 int, c4 bigint,
              c5 tinyint, c6 smallint, c7 int, c8 bigint, c9 tinyint, c10 smallint, c11 int, c12 bigint,
              c13 tinyint, c14 smallint, c15 int, c16 bigint, c17 tinyint, c18 smallint, c19 int, c20 bigint,
              b STRING) PARTITIONED BY(part INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@part_change_numeric_group_string_group_multi_ints_string_group
-PREHOOK: query: insert into table part_change_numeric_group_string_group_multi_ints_string_group partition(part=1) SELECT insert_num,
+POSTHOOK: Output: default@part_change_numeric_group_string_group_multi_ints_string_group_n7
+PREHOOK: query: insert into table part_change_numeric_group_string_group_multi_ints_string_group_n7 partition(part=1) SELECT insert_num,
              tinyint1, smallint1, int1, bigint1,
              tinyint1, smallint1, int1, bigint1, tinyint1, smallint1, int1, bigint1,
              tinyint1, smallint1, int1, bigint1, tinyint1, smallint1, int1, bigint1,
-             'original' FROM schema_evolution_data
+             'original' FROM schema_evolution_data_n25
 PREHOOK: type: QUERY
-PREHOOK: Input: default@schema_evolution_data
-PREHOOK: Output: default@part_change_numeric_group_string_group_multi_ints_string_group@part=1
-POSTHOOK: query: insert into table part_change_numeric_group_string_group_multi_ints_string_group partition(part=1) SELECT insert_num,
+PREHOOK: Input: default@schema_evolution_data_n25
+PREHOOK: Output: default@part_change_numeric_group_string_group_multi_ints_string_group_n7@part=1
+POSTHOOK: query: insert into table part_change_numeric_group_string_group_multi_ints_string_group_n7 partition(part=1) SELECT insert_num,
              tinyint1, smallint1, int1, bigint1,
              tinyint1, smallint1, int1, bigint1, tinyint1, smallint1, int1, bigint1,
              tinyint1, smallint1, int1, bigint1, tinyint1, smallint1, int1, bigint1,
-             'original' FROM schema_evolution_data
+             'original' FROM schema_evolution_data_n25
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@schema_evolution_data
-POSTHOOK: Output: default@part_change_numeric_group_string_group_multi_ints_string_group@part=1
-POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group PARTITION(part=1).b SIMPLE []
-POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group PARTITION(part=1).c1 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group PARTITION(part=1).c10 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:smallint1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group PARTITION(part=1).c11 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:int1, type:int, comment:null), ]
-POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group PARTITION(part=1).c12 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:bigint1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group PARTITION(part=1).c13 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group PARTITION(part=1).c14 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:smallint1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group PARTITION(part=1).c15 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:int1, type:int, comment:null), ]
-POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group PARTITION(part=1).c16 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:bigint1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group PARTITION(part=1).c17 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group PARTITION(part=1).c18 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:smallint1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group PARTITION(part=1).c19 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:int1, type:int, comment:null), ]
-POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group PARTITION(part=1).c2 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:smallint1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group PARTITION(part=1).c20 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:bigint1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group PARTITION(part=1).c3 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:int1, type:int, comment:null), ]
-POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group PARTITION(part=1).c4 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:bigint1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group PARTITION(part=1).c5 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group PARTITION(part=1).c6 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:smallint1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group PARTITION(part=1).c7 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:int1, type:int, comment:null), ]
-POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group PARTITION(part=1).c8 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:bigint1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group PARTITION(part=1).c9 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:insert_num, type:int, comment:null), ]
+POSTHOOK: Input: default@schema_evolution_data_n25
+POSTHOOK: Output: default@part_change_numeric_group_string_group_multi_ints_string_group_n7@part=1
+POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group_n7 PARTITION(part=1).b SIMPLE []
+POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group_n7 PARTITION(part=1).c1 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group_n7 PARTITION(part=1).c10 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:smallint1, type:smallint, comment:null), ]
+POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group_n7 PARTITION(part=1).c11 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group_n7 PARTITION(part=1).c12 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:bigint1, type:bigint, comment:null), ]
+POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group_n7 PARTITION(part=1).c13 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group_n7 PARTITION(part=1).c14 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:smallint1, type:smallint, comment:null), ]
+POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group_n7 PARTITION(part=1).c15 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group_n7 PARTITION(part=1).c16 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:bigint1, type:bigint, comment:null), ]
+POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group_n7 PARTITION(part=1).c17 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group_n7 PARTITION(part=1).c18 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:smallint1, type:smallint, comment:null), ]
+POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group_n7 PARTITION(part=1).c19 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group_n7 PARTITION(part=1).c2 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:smallint1, type:smallint, comment:null), ]
+POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group_n7 PARTITION(part=1).c20 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:bigint1, type:bigint, comment:null), ]
+POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group_n7 PARTITION(part=1).c3 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group_n7 PARTITION(part=1).c4 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:bigint1, type:bigint, comment:null), ]
+POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group_n7 PARTITION(part=1).c5 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group_n7 PARTITION(part=1).c6 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:smallint1, type:smallint, comment:null), ]
+POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group_n7 PARTITION(part=1).c7 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group_n7 PARTITION(part=1).c8 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:bigint1, type:bigint, comment:null), ]
+POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group_n7 PARTITION(part=1).c9 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group_n7 PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:insert_num, type:int, comment:null), ]
 insert_num	tinyint1	smallint1	int1	bigint1	tinyint1	smallint1	int1	bigint1	tinyint1	smallint1	int1	bigint1	tinyint1	smallint1	int1	bigint1	tinyint1	smallint1	int1	bigint1	_c21
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,b from part_change_numeric_group_string_group_multi_ints_string_group
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,b from part_change_numeric_group_string_group_multi_ints_string_group_n7
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part_change_numeric_group_string_group_multi_ints_string_group
-PREHOOK: Input: default@part_change_numeric_group_string_group_multi_ints_string_group@part=1
+PREHOOK: Input: default@part_change_numeric_group_string_group_multi_ints_string_group_n7
+PREHOOK: Input: default@part_change_numeric_group_string_group_multi_ints_string_group_n7@part=1
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,b from part_change_numeric_group_string_group_multi_ints_string_group
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,b from part_change_numeric_group_string_group_multi_ints_string_group_n7
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part_change_numeric_group_string_group_multi_ints_string_group
-POSTHOOK: Input: default@part_change_numeric_group_string_group_multi_ints_string_group@part=1
+POSTHOOK: Input: default@part_change_numeric_group_string_group_multi_ints_string_group_n7
+POSTHOOK: Input: default@part_change_numeric_group_string_group_multi_ints_string_group_n7@part=1
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	c13	c14	c15	c16	c17	c18	c19	c20	b
 101	1	-128	NULL	-2147483648	NULL	-128	NULL	-2147483648	NULL	-128	NULL	-2147483648	NULL	-128	NULL	-2147483648	NULL	-128	NULL	-2147483648	NULL	original
@@ -643,66 +643,66 @@ insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	c13	c14	c15	c16	c17	c18	c
 103	1	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	original
 104	1	23	834	203332	888888857923222	23	834	203332	888888857923222	23	834	203332	888888857923222	23	834	203332	888888857923222	23	834	203332	888888857923222	original
 105	1	-99	-28300	-999992	-222282153733	-99	-28300	-999992	-222282153733	-99	-28300	-999992	-222282153733	-99	-28300	-999992	-222282153733	-99	-28300	-999992	-222282153733	original
-PREHOOK: query: alter table part_change_numeric_group_string_group_multi_ints_string_group replace columns (insert_num int,
+PREHOOK: query: alter table part_change_numeric_group_string_group_multi_ints_string_group_n7 replace columns (insert_num int,
              c1 STRING, c2 STRING, c3 STRING, c4 STRING,
              c5 CHAR(50), c6 CHAR(50), c7 CHAR(50), c8 CHAR(50), c9 CHAR(5), c10 CHAR(5), c11 CHAR(5), c12 CHAR(5),
              c13 VARCHAR(50), c14 VARCHAR(50), c15 VARCHAR(50), c16 VARCHAR(50), c17 VARCHAR(5), c18 VARCHAR(5), c19 VARCHAR(5), c20 VARCHAR(5),
              b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
-PREHOOK: Input: default@part_change_numeric_group_string_group_multi_ints_string_group
-PREHOOK: Output: default@part_change_numeric_group_string_group_multi_ints_string_group
-POSTHOOK: query: alter table part_change_numeric_group_string_group_multi_ints_string_group replace columns (insert_num int,
+PREHOOK: Input: default@part_change_numeric_group_string_group_multi_ints_string_group_n7
+PREHOOK: Output: default@part_change_numeric_group_string_group_multi_ints_string_group_n7
+POSTHOOK: query: alter table part_change_numeric_group_string_group_multi_ints_string_group_n7 replace columns (insert_num int,
              c1 STRING, c2 STRING, c3 STRING, c4 STRING,
              c5 CHAR(50), c6 CHAR(50), c7 CHAR(50), c8 CHAR(50), c9 CHAR(5), c10 CHAR(5), c11 CHAR(5), c12 CHAR(5),
              c13 VARCHAR(50), c14 VARCHAR(50), c15 VARCHAR(50), c16 VARCHAR(50), c17 VARCHAR(5), c18 VARCHAR(5), c19 VARCHAR(5), c20 VARCHAR(5),
              b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
-POSTHOOK: Input: default@part_change_numeric_group_string_group_multi_ints_string_group
-POSTHOOK: Output: default@part_change_numeric_group_string_group_multi_ints_string_group
-PREHOOK: query: insert into table part_change_numeric_group_string_group_multi_ints_string_group partition(part=1) VALUES (111,
+POSTHOOK: Input: default@part_change_numeric_group_string_group_multi_ints_string_group_n7
+POSTHOOK: Output: default@part_change_numeric_group_string_group_multi_ints_string_group_n7
+PREHOOK: query: insert into table part_change_numeric_group_string_group_multi_ints_string_group_n7 partition(part=1) VALUES (111,
             'filler', 'filler', 'filler', 'filler',
             'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler',
             'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler',
             'new')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@part_change_numeric_group_string_group_multi_ints_string_group@part=1
-POSTHOOK: query: insert into table part_change_numeric_group_string_group_multi_ints_string_group partition(part=1) VALUES (111,
+PREHOOK: Output: default@part_change_numeric_group_string_group_multi_ints_string_group_n7@part=1
+POSTHOOK: query: insert into table part_change_numeric_group_string_group_multi_ints_string_group_n7 partition(part=1) VALUES (111,
             'filler', 'filler', 'filler', 'filler',
             'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler',
             'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler',
             'new')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@part_change_numeric_group_string_group_multi_ints_string_group@part=1
-POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group PARTITION(part=1).b SCRIPT []
-POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group PARTITION(part=1).c1 SCRIPT []
-POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group PARTITION(part=1).c10 SCRIPT []
-POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group PARTITION(part=1).c11 SCRIPT []
-POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group PARTITION(part=1).c12 SCRIPT []
-POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group PARTITION(part=1).c13 SCRIPT []
-POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group PARTITION(part=1).c14 SCRIPT []
-POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group PARTITION(part=1).c15 SCRIPT []
-POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group PARTITION(part=1).c16 SCRIPT []
-POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group PARTITION(part=1).c17 SCRIPT []
-POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group PARTITION(part=1).c18 SCRIPT []
-POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group PARTITION(part=1).c19 SCRIPT []
-POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group PARTITION(part=1).c2 SCRIPT []
-POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group PARTITION(part=1).c20 SCRIPT []
-POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group PARTITION(part=1).c3 SCRIPT []
-POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group PARTITION(part=1).c4 SCRIPT []
-POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group PARTITION(part=1).c5 SCRIPT []
-POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group PARTITION(part=1).c6 SCRIPT []
-POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group PARTITION(part=1).c7 SCRIPT []
-POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group PARTITION(part=1).c8 SCRIPT []
-POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group PARTITION(part=1).c9 SCRIPT []
-POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group PARTITION(part=1).insert_num SCRIPT []
+POSTHOOK: Output: default@part_change_numeric_group_string_group_multi_ints_string_group_n7@part=1
+POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group_n7 PARTITION(part=1).b SCRIPT []
+POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group_n7 PARTITION(part=1).c1 SCRIPT []
+POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group_n7 PARTITION(part=1).c10 SCRIPT []
+POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group_n7 PARTITION(part=1).c11 SCRIPT []
+POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group_n7 PARTITION(part=1).c12 SCRIPT []
+POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group_n7 PARTITION(part=1).c13 SCRIPT []
+POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group_n7 PARTITION(part=1).c14 SCRIPT []
+POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group_n7 PARTITION(part=1).c15 SCRIPT []
+POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group_n7 PARTITION(part=1).c16 SCRIPT []
+POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group_n7 PARTITION(part=1).c17 SCRIPT []
+POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group_n7 PARTITION(part=1).c18 SCRIPT []
+POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group_n7 PARTITION(part=1).c19 SCRIPT []
+POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group_n7 PARTITION(part=1).c2 SCRIPT []
+POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group_n7 PARTITION(part=1).c20 SCRIPT []
+POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group_n7 PARTITION(part=1).c3 SCRIPT []
+POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group_n7 PARTITION(part=1).c4 SCRIPT []
+POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group_n7 PARTITION(part=1).c5 SCRIPT []
+POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group_n7 PARTITION(part=1).c6 SCRIPT []
+POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group_n7 PARTITION(part=1).c7 SCRIPT []
+POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group_n7 PARTITION(part=1).c8 SCRIPT []
+POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group_n7 PARTITION(part=1).c9 SCRIPT []
+POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group_n7 PARTITION(part=1).insert_num SCRIPT []
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12	_col13	_col14	_col15	_col16	_col17	_col18	_col19	_col20	_col21
 PREHOOK: query: explain vectorization detail
-select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,b from part_change_numeric_group_string_group_multi_ints_string_group
+select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,b from part_change_numeric_group_string_group_multi_ints_string_group_n7
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,b from part_change_numeric_group_string_group_multi_ints_string_group
+select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,b from part_change_numeric_group_string_group_multi_ints_string_group_n7
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -721,7 +721,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: part_change_numeric_group_string_group_multi_ints_string_group
+                  alias: part_change_numeric_group_string_group_multi_ints_string_group_n7
                   Statistics: Num rows: 6 Data size: 1140 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: insert_num (type: int), part (type: int), c1 (type: string), c2 (type: string), c3 (type: string), c4 (type: string), c5 (type: char(50)), c6 (type: char(50)), c7 (type: char(50)), c8 (type: char(50)), c9 (type: char(5)), c10 (type: char(5)), c11 (type: char(5)), c12 (type: char(5)), c13 (type: varchar(50)), c14 (type: varchar(50)), c15 (type: varchar(50)), c16 (type: varchar(50)), c17 (type: varchar(5)), c18 (type: varchar(5)), c19 (type: varchar(5)), c20 (type: varchar(5)), b (type: string)
@@ -742,15 +742,15 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,b from part_change_numeric_group_string_group_multi_ints_string_group
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,b from part_change_numeric_group_string_group_multi_ints_string_group_n7
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part_change_numeric_group_string_group_multi_ints_string_group
-PREHOOK: Input: default@part_change_numeric_group_string_group_multi_ints_string_group@part=1
+PREHOOK: Input: default@part_change_numeric_group_string_group_multi_ints_string_group_n7
+PREHOOK: Input: default@part_change_numeric_group_string_group_multi_ints_string_group_n7@part=1
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,b from part_change_numeric_group_string_group_multi_ints_string_group
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,b from part_change_numeric_group_string_group_multi_ints_string_group_n7
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part_change_numeric_group_string_group_multi_ints_string_group
-POSTHOOK: Input: default@part_change_numeric_group_string_group_multi_ints_string_group@part=1
+POSTHOOK: Input: default@part_change_numeric_group_string_group_multi_ints_string_group_n7
+POSTHOOK: Input: default@part_change_numeric_group_string_group_multi_ints_string_group_n7@part=1
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	c13	c14	c15	c16	c17	c18	c19	c20	b
 101	1	-128	NULL	-2147483648	NULL	-128                                              	NULL	-2147483648                                       	NULL	-128 	NULL	-2147	NULL	-128	NULL	-2147483648	NULL	-128	NULL	-2147	NULL	original
@@ -759,73 +759,73 @@ insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	c13	c14	c15	c16	c17	c18	c
 104	1	23	834	203332	888888857923222	23                                                	834                                               	203332                                            	888888857923222                                   	23   	834  	20333	88888	23	834	203332	888888857923222	23	834	20333	88888	original
 105	1	-99	-28300	-999992	-222282153733	-99                                               	-28300                                            	-999992                                           	-222282153733                                     	-99  	-2830	-9999	-2222	-99	-28300	-999992	-222282153733	-99	-2830	-9999	-2222	original
 111	1	filler	filler	filler	filler	filler                                            	filler                                            	filler                                            	filler                                            	fille	fille	fille	fille	filler	filler	filler	filler	fille	fille	fille	fille	new
-PREHOOK: query: drop table part_change_numeric_group_string_group_multi_ints_string_group
+PREHOOK: query: drop table part_change_numeric_group_string_group_multi_ints_string_group_n7
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@part_change_numeric_group_string_group_multi_ints_string_group
-PREHOOK: Output: default@part_change_numeric_group_string_group_multi_ints_string_group
-POSTHOOK: query: drop table part_change_numeric_group_string_group_multi_ints_string_group
+PREHOOK: Input: default@part_change_numeric_group_string_group_multi_ints_string_group_n7
+PREHOOK: Output: default@part_change_numeric_group_string_group_multi_ints_string_group_n7
+POSTHOOK: query: drop table part_change_numeric_group_string_group_multi_ints_string_group_n7
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@part_change_numeric_group_string_group_multi_ints_string_group
-POSTHOOK: Output: default@part_change_numeric_group_string_group_multi_ints_string_group
-PREHOOK: query: CREATE TABLE part_change_numeric_group_string_group_floating_string_group(insert_num int,
+POSTHOOK: Input: default@part_change_numeric_group_string_group_multi_ints_string_group_n7
+POSTHOOK: Output: default@part_change_numeric_group_string_group_multi_ints_string_group_n7
+PREHOOK: query: CREATE TABLE part_change_numeric_group_string_group_floating_string_group_n7(insert_num int,
               c1 decimal(38,18), c2 float, c3 double,
               c4 decimal(38,18), c5 float, c6 double, c7 decimal(38,18), c8 float, c9 double,
               c10 decimal(38,18), c11 float, c12 double, c13 decimal(38,18), c14 float, c15 double,
               b STRING) PARTITIONED BY(part INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@part_change_numeric_group_string_group_floating_string_group
-POSTHOOK: query: CREATE TABLE part_change_numeric_group_string_group_floating_string_group(insert_num int,
+PREHOOK: Output: default@part_change_numeric_group_string_group_floating_string_group_n7
+POSTHOOK: query: CREATE TABLE part_change_numeric_group_string_group_floating_string_group_n7(insert_num int,
               c1 decimal(38,18), c2 float, c3 double,
               c4 decimal(38,18), c5 float, c6 double, c7 decimal(38,18), c8 float, c9 double,
               c10 decimal(38,18), c11 float, c12 double, c13 decimal(38,18), c14 float, c15 double,
               b STRING) PARTITIONED BY(part INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@part_change_numeric_group_string_group_floating_string_group
-PREHOOK: query: insert into table part_change_numeric_group_string_group_floating_string_group partition(part=1) SELECT insert_num,
+POSTHOOK: Output: default@part_change_numeric_group_string_group_floating_string_group_n7
+PREHOOK: query: insert into table part_change_numeric_group_string_group_floating_string_group_n7 partition(part=1) SELECT insert_num,
               decimal1, float1, double1,
               decimal1, float1, double1, decimal1, float1, double1,
               decimal1, float1, double1, decimal1, float1, double1,
-             'original' FROM schema_evolution_data
+             'original' FROM schema_evolution_data_n25
 PREHOOK: type: QUERY
-PREHOOK: Input: default@schema_evolution_data
-PREHOOK: Output: default@part_change_numeric_group_string_group_floating_string_group@part=1
-POSTHOOK: query: insert into table part_change_numeric_group_string_group_floating_string_group partition(part=1) SELECT insert_num,
+PREHOOK: Input: default@schema_evolution_data_n25
+PREHOOK: Output: default@part_change_numeric_group_string_group_floating_string_group_n7@part=1
+POSTHOOK: query: insert into table part_change_numeric_group_string_group_floating_string_group_n7 partition(part=1) SELECT insert_num,
               decimal1, float1, double1,
               decimal1, float1, double1, decimal1, float1, double1,
               decimal1, float1, double1, decimal1, float1, double1,
-             'original' FROM schema_evolution_data
+             'original' FROM schema_evolution_data_n25
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@schema_evolution_data
-POSTHOOK: Output: default@part_change_numeric_group_string_group_floating_string_group@part=1
-POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group PARTITION(part=1).b SIMPLE []
-POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group PARTITION(part=1).c1 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
-POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group PARTITION(part=1).c10 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
-POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group PARTITION(part=1).c11 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:float1, type:float, comment:null), ]
-POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group PARTITION(part=1).c12 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:double1, type:double, comment:null), ]
-POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group PARTITION(part=1).c13 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
-POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group PARTITION(part=1).c14 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:float1, type:float, comment:null), ]
-POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group PARTITION(part=1).c15 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:double1, type:double, comment:null), ]
-POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group PARTITION(part=1).c2 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:float1, type:float, comment:null), ]
-POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group PARTITION(part=1).c3 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:double1, type:double, comment:null), ]
-POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group PARTITION(part=1).c4 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
-POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group PARTITION(part=1).c5 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:float1, type:float, comment:null), ]
-POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group PARTITION(part=1).c6 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:double1, type:double, comment:null), ]
-POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group PARTITION(part=1).c7 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
-POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group PARTITION(part=1).c8 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:float1, type:float, comment:null), ]
-POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group PARTITION(part=1).c9 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:double1, type:double, comment:null), ]
-POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:insert_num, type:int, comment:null), ]
+POSTHOOK: Input: default@schema_evolution_data_n25
+POSTHOOK: Output: default@part_change_numeric_group_string_group_floating_string_group_n7@part=1
+POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group_n7 PARTITION(part=1).b SIMPLE []
+POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group_n7 PARTITION(part=1).c1 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
+POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group_n7 PARTITION(part=1).c10 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
+POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group_n7 PARTITION(part=1).c11 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:float1, type:float, comment:null), ]
+POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group_n7 PARTITION(part=1).c12 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:double1, type:double, comment:null), ]
+POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group_n7 PARTITION(part=1).c13 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
+POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group_n7 PARTITION(part=1).c14 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:float1, type:float, comment:null), ]
+POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group_n7 PARTITION(part=1).c15 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:double1, type:double, comment:null), ]
+POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group_n7 PARTITION(part=1).c2 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:float1, type:float, comment:null), ]
+POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group_n7 PARTITION(part=1).c3 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:double1, type:double, comment:null), ]
+POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group_n7 PARTITION(part=1).c4 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
+POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group_n7 PARTITION(part=1).c5 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:float1, type:float, comment:null), ]
+POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group_n7 PARTITION(part=1).c6 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:double1, type:double, comment:null), ]
+POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group_n7 PARTITION(part=1).c7 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
+POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group_n7 PARTITION(part=1).c8 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:float1, type:float, comment:null), ]
+POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group_n7 PARTITION(part=1).c9 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:double1, type:double, comment:null), ]
+POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group_n7 PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:insert_num, type:int, comment:null), ]
 insert_num	decimal1	float1	double1	decimal1	float1	double1	decimal1	float1	double1	decimal1	float1	double1	decimal1	float1	double1	_c16
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,b from part_change_numeric_group_string_group_floating_string_group
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,b from part_change_numeric_group_string_group_floating_string_group_n7
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part_change_numeric_group_string_group_floating_string_group
-PREHOOK: Input: default@part_change_numeric_group_string_group_floating_string_group@part=1
+PREHOOK: Input: default@part_change_numeric_group_string_group_floating_string_group_n7
+PREHOOK: Input: default@part_change_numeric_group_string_group_floating_string_group_n7@part=1
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,b from part_change_numeric_group_string_group_floating_string_group
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,b from part_change_numeric_group_string_group_floating_string_group_n7
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part_change_numeric_group_string_group_floating_string_group
-POSTHOOK: Input: default@part_change_numeric_group_string_group_floating_string_group@part=1
+POSTHOOK: Input: default@part_change_numeric_group_string_group_floating_string_group_n7
+POSTHOOK: Input: default@part_change_numeric_group_string_group_floating_string_group_n7@part=1
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	c13	c14	c15	b
 101	1	99999999999999999999.999999999999999999	Infinity	1.7976931348623157E308	99999999999999999999.999999999999999999	Infinity	1.7976931348623157E308	99999999999999999999.999999999999999999	Infinity	1.7976931348623157E308	99999999999999999999.999999999999999999	Infinity	1.7976931348623157E308	99999999999999999999.999999999999999999	Infinity	1.7976931348623157E308	original
@@ -833,61 +833,61 @@ insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	c13	c14	c15	b
 103	1	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	original
 104	1	66475.561431000000000000	-100.35978	30.774	66475.561431000000000000	-100.35978	30.774	66475.561431000000000000	-100.35978	30.774	66475.561431000000000000	-100.35978	30.774	66475.561431000000000000	-100.35978	30.774	original
 105	1	9250340.750000000000000000	NULL	46114.28	9250340.750000000000000000	NULL	46114.28	9250340.750000000000000000	NULL	46114.28	9250340.750000000000000000	NULL	46114.28	9250340.750000000000000000	NULL	46114.28	original
-PREHOOK: query: alter table part_change_numeric_group_string_group_floating_string_group replace columns (insert_num int,
+PREHOOK: query: alter table part_change_numeric_group_string_group_floating_string_group_n7 replace columns (insert_num int,
               c1 STRING, c2 STRING, c3 STRING,
               c4 CHAR(50), c5 CHAR(50), c6 CHAR(50), c7 CHAR(7), c8 CHAR(7), c9 CHAR(7),
               c10 VARCHAR(50), c11 VARCHAR(50), c12 VARCHAR(50), c13 VARCHAR(7), c14 VARCHAR(7), c15 VARCHAR(7),
               b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
-PREHOOK: Input: default@part_change_numeric_group_string_group_floating_string_group
-PREHOOK: Output: default@part_change_numeric_group_string_group_floating_string_group
-POSTHOOK: query: alter table part_change_numeric_group_string_group_floating_string_group replace columns (insert_num int,
+PREHOOK: Input: default@part_change_numeric_group_string_group_floating_string_group_n7
+PREHOOK: Output: default@part_change_numeric_group_string_group_floating_string_group_n7
+POSTHOOK: query: alter table part_change_numeric_group_string_group_floating_string_group_n7 replace columns (insert_num int,
               c1 STRING, c2 STRING, c3 STRING,
               c4 CHAR(50), c5 CHAR(50), c6 CHAR(50), c7 CHAR(7), c8 CHAR(7), c9 CHAR(7),
               c10 VARCHAR(50), c11 VARCHAR(50), c12 VARCHAR(50), c13 VARCHAR(7), c14 VARCHAR(7), c15 VARCHAR(7),
               b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
-POSTHOOK: Input: default@part_change_numeric_group_string_group_floating_string_group
-POSTHOOK: Output: default@part_change_numeric_group_string_group_floating_string_group
-PREHOOK: query: insert into table part_change_numeric_group_string_group_floating_string_group partition(part=1) VALUES (111,
+POSTHOOK: Input: default@part_change_numeric_group_string_group_floating_string_group_n7
+POSTHOOK: Output: default@part_change_numeric_group_string_group_floating_string_group_n7
+PREHOOK: query: insert into table part_change_numeric_group_string_group_floating_string_group_n7 partition(part=1) VALUES (111,
              'filler', 'filler', 'filler',
              'filler', 'filler', 'filler', 'filler', 'filler', 'filler',
              'filler', 'filler', 'filler', 'filler', 'filler', 'filler',
              'new')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@part_change_numeric_group_string_group_floating_string_group@part=1
-POSTHOOK: query: insert into table part_change_numeric_group_string_group_floating_string_group partition(part=1) VALUES (111,
+PREHOOK: Output: default@part_change_numeric_group_string_group_floating_string_group_n7@part=1
+POSTHOOK: query: insert into table part_change_numeric_group_string_group_floating_string_group_n7 partition(part=1) VALUES (111,
              'filler', 'filler', 'filler',
              'filler', 'filler', 'filler', 'filler', 'filler', 'filler',
              'filler', 'filler', 'filler', 'filler', 'filler', 'filler',
              'new')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@part_change_numeric_group_string_group_floating_string_group@part=1
-POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group PARTITION(part=1).b SCRIPT []
-POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group PARTITION(part=1).c1 SCRIPT []
-POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group PARTITION(part=1).c10 SCRIPT []
-POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group PARTITION(part=1).c11 SCRIPT []
-POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group PARTITION(part=1).c12 SCRIPT []
-POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group PARTITION(part=1).c13 SCRIPT []
-POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group PARTITION(part=1).c14 SCRIPT []
-POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group PARTITION(part=1).c15 SCRIPT []
-POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group PARTITION(part=1).c2 SCRIPT []
-POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group PARTITION(part=1).c3 SCRIPT []
-POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group PARTITION(part=1).c4 SCRIPT []
-POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group PARTITION(part=1).c5 SCRIPT []
-POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group PARTITION(part=1).c6 SCRIPT []
-POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group PARTITION(part=1).c7 SCRIPT []
-POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group PARTITION(part=1).c8 SCRIPT []
-POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group PARTITION(part=1).c9 SCRIPT []
-POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group PARTITION(part=1).insert_num SCRIPT []
+POSTHOOK: Output: default@part_change_numeric_group_string_group_floating_string_group_n7@part=1
+POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group_n7 PARTITION(part=1).b SCRIPT []
+POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group_n7 PARTITION(part=1).c1 SCRIPT []
+POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group_n7 PARTITION(part=1).c10 SCRIPT []
+POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group_n7 PARTITION(part=1).c11 SCRIPT []
+POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group_n7 PARTITION(part=1).c12 SCRIPT []
+POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group_n7 PARTITION(part=1).c13 SCRIPT []
+POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group_n7 PARTITION(part=1).c14 SCRIPT []
+POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group_n7 PARTITION(part=1).c15 SCRIPT []
+POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group_n7 PARTITION(part=1).c2 SCRIPT []
+POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group_n7 PARTITION(part=1).c3 SCRIPT []
+POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group_n7 PARTITION(part=1).c4 SCRIPT []
+POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group_n7 PARTITION(part=1).c5 SCRIPT []
+POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group_n7 PARTITION(part=1).c6 SCRIPT []
+POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group_n7 PARTITION(part=1).c7 SCRIPT []
+POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group_n7 PARTITION(part=1).c8 SCRIPT []
+POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group_n7 PARTITION(part=1).c9 SCRIPT []
+POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group_n7 PARTITION(part=1).insert_num SCRIPT []
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12	_col13	_col14	_col15	_col16
 PREHOOK: query: explain vectorization detail
-select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,b from part_change_numeric_group_string_group_floating_string_group
+select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,b from part_change_numeric_group_string_group_floating_string_group_n7
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,b from part_change_numeric_group_string_group_floating_string_group
+select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,b from part_change_numeric_group_string_group_floating_string_group_n7
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -906,7 +906,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: part_change_numeric_group_string_group_floating_string_group
+                  alias: part_change_numeric_group_string_group_floating_string_group_n7
                   Statistics: Num rows: 6 Data size: 3300 Basic stats: COMPLETE Column stats: PARTIAL
                   Select Operator
                     expressions: insert_num (type: int), part (type: int), c1 (type: string), c2 (type: string), c3 (type: string), c4 (type: char(50)), c5 (type: char(50)), c6 (type: char(50)), c7 (type: char(7)), c8 (type: char(7)), c9 (type: char(7)), c10 (type: varchar(50)), c11 (type: varchar(50)), c12 (type: varchar(50)), c13 (type: varchar(7)), c14 (type: varchar(7)), c15 (type: varchar(7)), b (type: string)
@@ -927,15 +927,15 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,b from part_change_numeric_group_string_group_floating_string_group
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,b from part_change_numeric_group_string_group_floating_string_group_n7
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part_change_numeric_group_string_group_floating_string_group
-PREHOOK: Input: default@part_change_numeric_group_string_group_floating_string_group@part=1
+PREHOOK: Input: default@part_change_numeric_group_string_group_floating_string_group_n7
+PREHOOK: Input: default@part_change_numeric_group_string_group_floating_string_group_n7@part=1
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,b from part_change_numeric_group_string_group_floating_string_group
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,b from part_change_numeric_group_string_group_floating_string_group_n7
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part_change_numeric_group_string_group_floating_string_group
-POSTHOOK: Input: default@part_change_numeric_group_string_group_floating_string_group@part=1
+POSTHOOK: Input: default@part_change_numeric_group_string_group_floating_string_group_n7
+POSTHOOK: Input: default@part_change_numeric_group_string_group_floating_string_group_n7@part=1
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	c13	c14	c15	b
 101	1	99999999999999999999.999999999999999999	Infinity	1.7976931348623157E308	99999999999999999999.999999999999999999           	Infinity                                          	1.7976931348623157E308                            	9999999	Infinit	1.79769	99999999999999999999.999999999999999999	Infinity	1.7976931348623157E308	9999999	Infinit	1.79769	original
@@ -944,66 +944,66 @@ insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	c13	c14	c15	b
 104	1	66475.561431	-100.35978	30.774	66475.561431                                      	-100.35978                                        	30.774                                            	66475.5	-100.35	30.774 	66475.561431	-100.35978	30.774	66475.5	-100.35	30.774	original
 105	1	9250340.75	NULL	46114.28	9250340.75                                        	NULL	46114.28                                          	9250340	NULL	46114.2	9250340.75	NULL	46114.28	9250340	NULL	46114.2	original
 111	1	filler	filler	filler	filler                                            	filler                                            	filler                                            	filler 	filler 	filler 	filler	filler	filler	filler	filler	filler	new
-PREHOOK: query: drop table part_change_numeric_group_string_group_floating_string_group
+PREHOOK: query: drop table part_change_numeric_group_string_group_floating_string_group_n7
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@part_change_numeric_group_string_group_floating_string_group
-PREHOOK: Output: default@part_change_numeric_group_string_group_floating_string_group
-POSTHOOK: query: drop table part_change_numeric_group_string_group_floating_string_group
+PREHOOK: Input: default@part_change_numeric_group_string_group_floating_string_group_n7
+PREHOOK: Output: default@part_change_numeric_group_string_group_floating_string_group_n7
+POSTHOOK: query: drop table part_change_numeric_group_string_group_floating_string_group_n7
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@part_change_numeric_group_string_group_floating_string_group
-POSTHOOK: Output: default@part_change_numeric_group_string_group_floating_string_group
-PREHOOK: query: CREATE TABLE part_change_string_group_string_group_string(insert_num int,
+POSTHOOK: Input: default@part_change_numeric_group_string_group_floating_string_group_n7
+POSTHOOK: Output: default@part_change_numeric_group_string_group_floating_string_group_n7
+PREHOOK: query: CREATE TABLE part_change_string_group_string_group_string_n7(insert_num int,
            c1 string, c2 string, c3 string, c4 string,
            c5 CHAR(50), c6 CHAR(50), c7 CHAR(50),
            c8 VARCHAR(50), c9 VARCHAR(50), c10 VARCHAR(50), b STRING) PARTITIONED BY(part INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@part_change_string_group_string_group_string
-POSTHOOK: query: CREATE TABLE part_change_string_group_string_group_string(insert_num int,
+PREHOOK: Output: default@part_change_string_group_string_group_string_n7
+POSTHOOK: query: CREATE TABLE part_change_string_group_string_group_string_n7(insert_num int,
            c1 string, c2 string, c3 string, c4 string,
            c5 CHAR(50), c6 CHAR(50), c7 CHAR(50),
            c8 VARCHAR(50), c9 VARCHAR(50), c10 VARCHAR(50), b STRING) PARTITIONED BY(part INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@part_change_string_group_string_group_string
-PREHOOK: query: insert into table part_change_string_group_string_group_string partition(part=1) SELECT insert_num,
+POSTHOOK: Output: default@part_change_string_group_string_group_string_n7
+PREHOOK: query: insert into table part_change_string_group_string_group_string_n7 partition(part=1) SELECT insert_num,
            string2, string2, string2, string2,
            string2, string2, string2,
            string2, string2, string2,
-          'original' FROM schema_evolution_data
+          'original' FROM schema_evolution_data_n25
 PREHOOK: type: QUERY
-PREHOOK: Input: default@schema_evolution_data
-PREHOOK: Output: default@part_change_string_group_string_group_string@part=1
-POSTHOOK: query: insert into table part_change_string_group_string_group_string partition(part=1) SELECT insert_num,
+PREHOOK: Input: default@schema_evolution_data_n25
+PREHOOK: Output: default@part_change_string_group_string_group_string_n7@part=1
+POSTHOOK: query: insert into table part_change_string_group_string_group_string_n7 partition(part=1) SELECT insert_num,
            string2, string2, string2, string2,
            string2, string2, string2,
            string2, string2, string2,
-          'original' FROM schema_evolution_data
+          'original' FROM schema_evolution_data_n25
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@schema_evolution_data
-POSTHOOK: Output: default@part_change_string_group_string_group_string@part=1
-POSTHOOK: Lineage: part_change_string_group_string_group_string PARTITION(part=1).b SIMPLE []
-POSTHOOK: Lineage: part_change_string_group_string_group_string PARTITION(part=1).c1 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:string2, type:string, comment:null), ]
-POSTHOOK: Lineage: part_change_string_group_string_group_string PARTITION(part=1).c10 EXPRESSION [(schema_evolution_data)schema_evolution_data.FieldSchema(name:string2, type:string, comment:null), ]
-POSTHOOK: Lineage: part_change_string_group_string_group_string PARTITION(part=1).c2 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:string2, type:string, comment:null), ]
-POSTHOOK: Lineage: part_change_string_group_string_group_string PARTITION(part=1).c3 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:string2, type:string, comment:null), ]
-POSTHOOK: Lineage: part_change_string_group_string_group_string PARTITION(part=1).c4 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:string2, type:string, comment:null), ]
-POSTHOOK: Lineage: part_change_string_group_string_group_string PARTITION(part=1).c5 EXPRESSION [(schema_evolution_data)schema_evolution_data.FieldSchema(name:string2, type:string, comment:null), ]
-POSTHOOK: Lineage: part_change_string_group_string_group_string PARTITION(part=1).c6 EXPRESSION [(schema_evolution_data)schema_evolution_data.FieldSchema(name:string2, type:string, comment:null), ]
-POSTHOOK: Lineage: part_change_string_group_string_group_string PARTITION(part=1).c7 EXPRESSION [(schema_evolution_data)schema_evolution_data.FieldSchema(name:string2, type:string, comment:null), ]
-POSTHOOK: Lineage: part_change_string_group_string_group_string PARTITION(part=1).c8 EXPRESSION [(schema_evolution_data)schema_evolution_data.FieldSchema(name:string2, type:string, comment:null), ]
-POSTHOOK: Lineage: part_change_string_group_string_group_string PARTITION(part=1).c9 EXPRESSION [(schema_evolution_data)schema_evolution_data.FieldSchema(name:string2, type:string, comment:null), ]
-POSTHOOK: Lineage: part_change_string_group_string_group_string PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:insert_num, type:int, comment:null), ]
+POSTHOOK: Input: default@schema_evolution_data_n25
+POSTHOOK: Output: default@part_change_string_group_string_group_string_n7@part=1
+POSTHOOK: Lineage: part_change_string_group_string_group_string_n7 PARTITION(part=1).b SIMPLE []
+POSTHOOK: Lineage: part_change_string_group_string_group_string_n7 PARTITION(part=1).c1 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:string2, type:string, comment:null), ]
+POSTHOOK: Lineage: part_change_string_group_string_group_string_n7 PARTITION(part=1).c10 EXPRESSION [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:string2, type:string, comment:null), ]
+POSTHOOK: Lineage: part_change_string_group_string_group_string_n7 PARTITION(part=1).c2 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:string2, type:string, comment:null), ]
+POSTHOOK: Lineage: part_change_string_group_string_group_string_n7 PARTITION(part=1).c3 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:string2, type:string, comment:null), ]
+POSTHOOK: Lineage: part_change_string_group_string_group_string_n7 PARTITION(part=1).c4 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:string2, type:string, comment:null), ]
+POSTHOOK: Lineage: part_change_string_group_string_group_string_n7 PARTITION(part=1).c5 EXPRESSION [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:string2, type:string, comment:null), ]
+POSTHOOK: Lineage: part_change_string_group_string_group_string_n7 PARTITION(part=1).c6 EXPRESSION [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:string2, type:string, comment:null), ]
+POSTHOOK: Lineage: part_change_string_group_string_group_string_n7 PARTITION(part=1).c7 EXPRESSION [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:string2, type:string, comment:null), ]
+POSTHOOK: Lineage: part_change_string_group_string_group_string_n7 PARTITION(part=1).c8 EXPRESSION [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:string2, type:string, comment:null), ]
+POSTHOOK: Lineage: part_change_string_group_string_group_string_n7 PARTITION(part=1).c9 EXPRESSION [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:string2, type:string, comment:null), ]
+POSTHOOK: Lineage: part_change_string_group_string_group_string_n7 PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:insert_num, type:int, comment:null), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,b from part_change_string_group_string_group_string
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,b from part_change_string_group_string_group_string_n7
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part_change_string_group_string_group_string
-PREHOOK: Input: default@part_change_string_group_string_group_string@part=1
+PREHOOK: Input: default@part_change_string_group_string_group_string_n7
+PREHOOK: Input: default@part_change_string_group_string_group_string_n7@part=1
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,b from part_change_string_group_string_group_string
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,b from part_change_string_group_string_group_string_n7
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part_change_string_group_string_group_string
-POSTHOOK: Input: default@part_change_string_group_string_group_string@part=1
+POSTHOOK: Input: default@part_change_string_group_string_group_string_n7
+POSTHOOK: Input: default@part_change_string_group_string_group_string_n7@part=1
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	b
 101	1	freckled	freckled	freckled	freckled	original
@@ -1011,54 +1011,54 @@ insert_num	part	c1	c2	c3	c4	b
 103	1					original
 104	1	I cooked	I cooked	I cooked	I cooked	original
 105	1	200	200	200	200	original
-PREHOOK: query: alter table part_change_string_group_string_group_string replace columns (insert_num int,
+PREHOOK: query: alter table part_change_string_group_string_group_string_n7 replace columns (insert_num int,
            c1 CHAR(50), c2 CHAR(9), c3 VARCHAR(50), c4 CHAR(9),
            c5 VARCHAR(50), c6 VARCHAR(9), c7 STRING,
            c8 CHAR(50), c9 CHAR(9), c10 STRING, b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
-PREHOOK: Input: default@part_change_string_group_string_group_string
-PREHOOK: Output: default@part_change_string_group_string_group_string
-POSTHOOK: query: alter table part_change_string_group_string_group_string replace columns (insert_num int,
+PREHOOK: Input: default@part_change_string_group_string_group_string_n7
+PREHOOK: Output: default@part_change_string_group_string_group_string_n7
+POSTHOOK: query: alter table part_change_string_group_string_group_string_n7 replace columns (insert_num int,
            c1 CHAR(50), c2 CHAR(9), c3 VARCHAR(50), c4 CHAR(9),
            c5 VARCHAR(50), c6 VARCHAR(9), c7 STRING,
            c8 CHAR(50), c9 CHAR(9), c10 STRING, b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
-POSTHOOK: Input: default@part_change_string_group_string_group_string
-POSTHOOK: Output: default@part_change_string_group_string_group_string
-PREHOOK: query: insert into table part_change_string_group_string_group_string partition(part=1) VALUES (111,
+POSTHOOK: Input: default@part_change_string_group_string_group_string_n7
+POSTHOOK: Output: default@part_change_string_group_string_group_string_n7
+PREHOOK: query: insert into table part_change_string_group_string_group_string_n7 partition(part=1) VALUES (111,
           'filler', 'filler', 'filler', 'filler',
           'filler', 'filler', 'filler',
           'filler', 'filler', 'filler',
           'new')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@part_change_string_group_string_group_string@part=1
-POSTHOOK: query: insert into table part_change_string_group_string_group_string partition(part=1) VALUES (111,
+PREHOOK: Output: default@part_change_string_group_string_group_string_n7@part=1
+POSTHOOK: query: insert into table part_change_string_group_string_group_string_n7 partition(part=1) VALUES (111,
           'filler', 'filler', 'filler', 'filler',
           'filler', 'filler', 'filler',
           'filler', 'filler', 'filler',
           'new')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@part_change_string_group_string_group_string@part=1
-POSTHOOK: Lineage: part_change_string_group_string_group_string PARTITION(part=1).b SCRIPT []
-POSTHOOK: Lineage: part_change_string_group_string_group_string PARTITION(part=1).c1 SCRIPT []
-POSTHOOK: Lineage: part_change_string_group_string_group_string PARTITION(part=1).c10 SCRIPT []
-POSTHOOK: Lineage: part_change_string_group_string_group_string PARTITION(part=1).c2 SCRIPT []
-POSTHOOK: Lineage: part_change_string_group_string_group_string PARTITION(part=1).c3 SCRIPT []
-POSTHOOK: Lineage: part_change_string_group_string_group_string PARTITION(part=1).c4 SCRIPT []
-POSTHOOK: Lineage: part_change_string_group_string_group_string PARTITION(part=1).c5 SCRIPT []
-POSTHOOK: Lineage: part_change_string_group_string_group_string PARTITION(part=1).c6 SCRIPT []
-POSTHOOK: Lineage: part_change_string_group_string_group_string PARTITION(part=1).c7 SCRIPT []
-POSTHOOK: Lineage: part_change_string_group_string_group_string PARTITION(part=1).c8 SCRIPT []
-POSTHOOK: Lineage: part_change_string_group_string_group_string PARTITION(part=1).c9 SCRIPT []
-POSTHOOK: Lineage: part_change_string_group_string_group_string PARTITION(part=1).insert_num SCRIPT []
+POSTHOOK: Output: default@part_change_string_group_string_group_string_n7@part=1
+POSTHOOK: Lineage: part_change_string_group_string_group_string_n7 PARTITION(part=1).b SCRIPT []
+POSTHOOK: Lineage: part_change_string_group_string_group_string_n7 PARTITION(part=1).c1 SCRIPT []
+POSTHOOK: Lineage: part_change_string_group_string_group_string_n7 PARTITION(part=1).c10 SCRIPT []
+POSTHOOK: Lineage: part_change_string_group_string_group_string_n7 PARTITION(part=1).c2 SCRIPT []
+POSTHOOK: Lineage: part_change_string_group_string_group_string_n7 PARTITION(part=1).c3 SCRIPT []
+POSTHOOK: Lineage: part_change_string_group_string_group_string_n7 PARTITION(part=1).c4 SCRIPT []
+POSTHOOK: Lineage: part_change_string_group_string_group_string_n7 PARTITION(part=1).c5 SCRIPT []
+POSTHOOK: Lineage: part_change_string_group_string_group_string_n7 PARTITION(part=1).c6 SCRIPT []
+POSTHOOK: Lineage: part_change_string_group_string_group_string_n7 PARTITION(part=1).c7 SCRIPT []
+POSTHOOK: Lineage: part_change_string_group_string_group_string_n7 PARTITION(part=1).c8 SCRIPT []
+POSTHOOK: Lineage: part_change_string_group_string_group_string_n7 PARTITION(part=1).c9 SCRIPT []
+POSTHOOK: Lineage: part_change_string_group_string_group_string_n7 PARTITION(part=1).insert_num SCRIPT []
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11
 PREHOOK: query: explain vectorization detail
-select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,b from part_change_string_group_string_group_string
+select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,b from part_change_string_group_string_group_string_n7
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,b from part_change_string_group_string_group_string
+select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,b from part_change_string_group_string_group_string_n7
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -1077,7 +1077,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: part_change_string_group_string_group_string
+                  alias: part_change_string_group_string_group_string_n7
                   Statistics: Num rows: 6 Data size: 2712 Basic stats: COMPLETE Column stats: PARTIAL
                   Select Operator
                     expressions: insert_num (type: int), part (type: int), c1 (type: char(50)), c2 (type: char(9)), c3 (type: varchar(50)), c4 (type: char(9)), c5 (type: varchar(50)), c6 (type: varchar(9)), c7 (type: string), c8 (type: char(50)), c9 (type: char(9)), c10 (type: string), b (type: string)
@@ -1098,15 +1098,15 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,b from part_change_string_group_string_group_string
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,b from part_change_string_group_string_group_string_n7
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part_change_string_group_string_group_string
-PREHOOK: Input: default@part_change_string_group_string_group_string@part=1
+PREHOOK: Input: default@part_change_string_group_string_group_string_n7
+PREHOOK: Input: default@part_change_string_group_string_group_string_n7@part=1
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,b from part_change_string_group_string_group_string
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,b from part_change_string_group_string_group_string_n7
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part_change_string_group_string_group_string
-POSTHOOK: Input: default@part_change_string_group_string_group_string@part=1
+POSTHOOK: Input: default@part_change_string_group_string_group_string_n7
+POSTHOOK: Input: default@part_change_string_group_string_group_string_n7@part=1
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	b
 101	1	freckled                                          	freckled 	freckled	freckled 	freckled	freckled	freckled	freckled                                          	freckled 	freckled	original
@@ -1115,15 +1115,15 @@ insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	b
 104	1	I cooked                                          	I cooked 	I cooked	I cooked 	I cooked	I cooked	I cooked	I cooked                                          	I cooked 	I cooked	original
 105	1	200                                               	200      	200	200      	200	200	200	200                                               	200      	200	original
 111	1	filler                                            	filler   	filler	filler   	filler	filler	filler	filler                                            	filler   	filler	new
-PREHOOK: query: drop table part_change_string_group_string_group_string
+PREHOOK: query: drop table part_change_string_group_string_group_string_n7
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@part_change_string_group_string_group_string
-PREHOOK: Output: default@part_change_string_group_string_group_string
-POSTHOOK: query: drop table part_change_string_group_string_group_string
+PREHOOK: Input: default@part_change_string_group_string_group_string_n7
+PREHOOK: Output: default@part_change_string_group_string_group_string_n7
+POSTHOOK: query: drop table part_change_string_group_string_group_string_n7
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@part_change_string_group_string_group_string
-POSTHOOK: Output: default@part_change_string_group_string_group_string
-PREHOOK: query: CREATE TABLE part_change_lower_to_higher_numeric_group_tinyint_to_bigint(insert_num int,
+POSTHOOK: Input: default@part_change_string_group_string_group_string_n7
+POSTHOOK: Output: default@part_change_string_group_string_group_string_n7
+PREHOOK: query: CREATE TABLE part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7(insert_num int,
                                 c1 tinyint, c2 tinyint, c3 tinyint, c4 tinyint, c5 tinyint, c6 tinyint,
                                 c7 smallint, c8 smallint, c9 smallint, c10 smallint, c11 smallint,
                                 c12 int, c13 int, c14 int, c15 int,
@@ -1131,8 +1131,8 @@ PREHOOK: query: CREATE TABLE part_change_lower_to_higher_numeric_group_tinyint_t
                                 b STRING) PARTITIONED BY(part INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@part_change_lower_to_higher_numeric_group_tinyint_to_bigint
-POSTHOOK: query: CREATE TABLE part_change_lower_to_higher_numeric_group_tinyint_to_bigint(insert_num int,
+PREHOOK: Output: default@part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7
+POSTHOOK: query: CREATE TABLE part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7(insert_num int,
                                 c1 tinyint, c2 tinyint, c3 tinyint, c4 tinyint, c5 tinyint, c6 tinyint,
                                 c7 smallint, c8 smallint, c9 smallint, c10 smallint, c11 smallint,
                                 c12 int, c13 int, c14 int, c15 int,
@@ -1140,55 +1140,55 @@ POSTHOOK: query: CREATE TABLE part_change_lower_to_higher_numeric_group_tinyint_
                                 b STRING) PARTITIONED BY(part INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_tinyint_to_bigint
-PREHOOK: query: insert into table part_change_lower_to_higher_numeric_group_tinyint_to_bigint partition(part=1) SELECT insert_num,
+POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7
+PREHOOK: query: insert into table part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7 partition(part=1) SELECT insert_num,
                                 tinyint1, tinyint1, tinyint1, tinyint1, tinyint1, tinyint1,
                                 smallint1, smallint1, smallint1, smallint1, smallint1,
                                 int1, int1, int1, int1,
                                 bigint1, bigint1, bigint1, 
-                                'original' FROM schema_evolution_data
+                                'original' FROM schema_evolution_data_n25
 PREHOOK: type: QUERY
-PREHOOK: Input: default@schema_evolution_data
-PREHOOK: Output: default@part_change_lower_to_higher_numeric_group_tinyint_to_bigint@part=1
-POSTHOOK: query: insert into table part_change_lower_to_higher_numeric_group_tinyint_to_bigint partition(part=1) SELECT insert_num,
+PREHOOK: Input: default@schema_evolution_data_n25
+PREHOOK: Output: default@part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7@part=1
+POSTHOOK: query: insert into table part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7 partition(part=1) SELECT insert_num,
                                 tinyint1, tinyint1, tinyint1, tinyint1, tinyint1, tinyint1,
                                 smallint1, smallint1, smallint1, smallint1, smallint1,
                                 int1, int1, int1, int1,
                                 bigint1, bigint1, bigint1, 
-                                'original' FROM schema_evolution_data
+                                'original' FROM schema_evolution_data_n25
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@schema_evolution_data
-POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_tinyint_to_bigint@part=1
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint PARTITION(part=1).b SIMPLE []
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint PARTITION(part=1).c1 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint PARTITION(part=1).c10 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:smallint1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint PARTITION(part=1).c11 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:smallint1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint PARTITION(part=1).c12 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:int1, type:int, comment:null), ]
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint PARTITION(part=1).c13 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:int1, type:int, comment:null), ]
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint PARTITION(part=1).c14 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:int1, type:int, comment:null), ]
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint PARTITION(part=1).c15 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:int1, type:int, comment:null), ]
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint PARTITION(part=1).c16 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:bigint1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint PARTITION(part=1).c17 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:bigint1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint PARTITION(part=1).c18 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:bigint1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint PARTITION(part=1).c2 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint PARTITION(part=1).c3 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint PARTITION(part=1).c4 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint PARTITION(part=1).c5 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint PARTITION(part=1).c6 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint PARTITION(part=1).c7 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:smallint1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint PARTITION(part=1).c8 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:smallint1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint PARTITION(part=1).c9 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:smallint1, type:smallint, comment:null), ]
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:insert_num, type:int, comment:null), ]
+POSTHOOK: Input: default@schema_evolution_data_n25
+POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7@part=1
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7 PARTITION(part=1).b SIMPLE []
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7 PARTITION(part=1).c1 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7 PARTITION(part=1).c10 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:smallint1, type:smallint, comment:null), ]
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7 PARTITION(part=1).c11 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:smallint1, type:smallint, comment:null), ]
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7 PARTITION(part=1).c12 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7 PARTITION(part=1).c13 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7 PARTITION(part=1).c14 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7 PARTITION(part=1).c15 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7 PARTITION(part=1).c16 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:bigint1, type:bigint, comment:null), ]
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7 PARTITION(part=1).c17 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:bigint1, type:bigint, comment:null), ]
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7 PARTITION(part=1).c18 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:bigint1, type:bigint, comment:null), ]
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7 PARTITION(part=1).c2 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7 PARTITION(part=1).c3 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7 PARTITION(part=1).c4 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7 PARTITION(part=1).c5 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7 PARTITION(part=1).c6 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7 PARTITION(part=1).c7 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:smallint1, type:smallint, comment:null), ]
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7 PARTITION(part=1).c8 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:smallint1, type:smallint, comment:null), ]
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7 PARTITION(part=1).c9 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:smallint1, type:smallint, comment:null), ]
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7 PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:insert_num, type:int, comment:null), ]
 insert_num	tinyint1	tinyint1	tinyint1	tinyint1	tinyint1	tinyint1	smallint1	smallint1	smallint1	smallint1	smallint1	int1	int1	int1	int1	bigint1	bigint1	bigint1	_c19
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,b from part_change_lower_to_higher_numeric_group_tinyint_to_bigint
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,b from part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part_change_lower_to_higher_numeric_group_tinyint_to_bigint
-PREHOOK: Input: default@part_change_lower_to_higher_numeric_group_tinyint_to_bigint@part=1
+PREHOOK: Input: default@part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7
+PREHOOK: Input: default@part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7@part=1
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,b from part_change_lower_to_higher_numeric_group_tinyint_to_bigint
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,b from part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_tinyint_to_bigint
-POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_tinyint_to_bigint@part=1
+POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7
+POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7@part=1
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	c13	c14	c15	c16	c17	c18	b
 101	1	-128	-128	-128	-128	-128	-128	NULL	NULL	NULL	NULL	NULL	-2147483648	-2147483648	-2147483648	-2147483648	NULL	NULL	NULL	original
@@ -1196,25 +1196,25 @@ insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	c13	c14	c15	c16	c17	c18	b
 103	1	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	original
 104	1	23	23	23	23	23	23	834	834	834	834	834	203332	203332	203332	203332	888888857923222	888888857923222	888888857923222	original
 105	1	-99	-99	-99	-99	-99	-99	-28300	-28300	-28300	-28300	-28300	-999992	-999992	-999992	-999992	-222282153733	-222282153733	-222282153733	original
-PREHOOK: query: alter table part_change_lower_to_higher_numeric_group_tinyint_to_bigint replace columns (insert_num int,
+PREHOOK: query: alter table part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7 replace columns (insert_num int,
              c1 SMALLINT, c2 INT, c3 BIGINT, c4 decimal(38,18), c5 FLOAT, c6 DOUBLE,
              c7 INT, c8 BIGINT, c9 decimal(38,18), c10 FLOAT, c11 DOUBLE,
              c12 BIGINT, c13 decimal(38,18), c14 FLOAT, c15 DOUBLE,
              c16 decimal(38,18), c17 FLOAT, c18 DOUBLE,
              b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
-PREHOOK: Input: default@part_change_lower_to_higher_numeric_group_tinyint_to_bigint
-PREHOOK: Output: default@part_change_lower_to_higher_numeric_group_tinyint_to_bigint
-POSTHOOK: query: alter table part_change_lower_to_higher_numeric_group_tinyint_to_bigint replace columns (insert_num int,
+PREHOOK: Input: default@part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7
+PREHOOK: Output: default@part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7
+POSTHOOK: query: alter table part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7 replace columns (insert_num int,
              c1 SMALLINT, c2 INT, c3 BIGINT, c4 decimal(38,18), c5 FLOAT, c6 DOUBLE,
              c7 INT, c8 BIGINT, c9 decimal(38,18), c10 FLOAT, c11 DOUBLE,
              c12 BIGINT, c13 decimal(38,18), c14 FLOAT, c15 DOUBLE,
              c16 decimal(38,18), c17 FLOAT, c18 DOUBLE,
              b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
-POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_tinyint_to_bigint
-POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_tinyint_to_bigint
-PREHOOK: query: insert into table part_change_lower_to_higher_numeric_group_tinyint_to_bigint partition(part=1) VALUES (111,
+POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7
+POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7
+PREHOOK: query: insert into table part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7 partition(part=1) VALUES (111,
             7000, 80000, 90000000, 1234.5678, 9876.543, 789.321,
             80000, 90000000, 1234.5678, 9876.543, 789.321,
             90000000, 1234.5678, 9876.543, 789.321,
@@ -1222,8 +1222,8 @@ PREHOOK: query: insert into table part_change_lower_to_higher_numeric_group_tiny
            'new')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@part_change_lower_to_higher_numeric_group_tinyint_to_bigint@part=1
-POSTHOOK: query: insert into table part_change_lower_to_higher_numeric_group_tinyint_to_bigint partition(part=1) VALUES (111,
+PREHOOK: Output: default@part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7@part=1
+POSTHOOK: query: insert into table part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7 partition(part=1) VALUES (111,
             7000, 80000, 90000000, 1234.5678, 9876.543, 789.321,
             80000, 90000000, 1234.5678, 9876.543, 789.321,
             90000000, 1234.5678, 9876.543, 789.321,
@@ -1231,33 +1231,33 @@ POSTHOOK: query: insert into table part_change_lower_to_higher_numeric_group_tin
            'new')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_tinyint_to_bigint@part=1
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint PARTITION(part=1).b SCRIPT []
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint PARTITION(part=1).c1 SCRIPT []
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint PARTITION(part=1).c10 SCRIPT []
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint PARTITION(part=1).c11 SCRIPT []
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint PARTITION(part=1).c12 SCRIPT []
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint PARTITION(part=1).c13 SCRIPT []
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint PARTITION(part=1).c14 SCRIPT []
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint PARTITION(part=1).c15 SCRIPT []
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint PARTITION(part=1).c16 SCRIPT []
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint PARTITION(part=1).c17 SCRIPT []
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint PARTITION(part=1).c18 SCRIPT []
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint PARTITION(part=1).c2 SCRIPT []
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint PARTITION(part=1).c3 SCRIPT []
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint PARTITION(part=1).c4 SCRIPT []
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint PARTITION(part=1).c5 SCRIPT []
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint PARTITION(part=1).c6 SCRIPT []
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint PARTITION(part=1).c7 SCRIPT []
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint PARTITION(part=1).c8 SCRIPT []
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint PARTITION(part=1).c9 SCRIPT []
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint PARTITION(part=1).insert_num SCRIPT []
+POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7@part=1
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7 PARTITION(part=1).b SCRIPT []
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7 PARTITION(part=1).c1 SCRIPT []
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7 PARTITION(part=1).c10 SCRIPT []
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7 PARTITION(part=1).c11 SCRIPT []
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7 PARTITION(part=1).c12 SCRIPT []
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7 PARTITION(part=1).c13 SCRIPT []
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7 PARTITION(part=1).c14 SCRIPT []
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7 PARTITION(part=1).c15 SCRIPT []
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7 PARTITION(part=1).c16 SCRIPT []
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7 PARTITION(part=1).c17 SCRIPT []
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7 PARTITION(part=1).c18 SCRIPT []
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7 PARTITION(part=1).c2 SCRIPT []
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7 PARTITION(part=1).c3 SCRIPT []
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7 PARTITION(part=1).c4 SCRIPT []
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7 PARTITION(part=1).c5 SCRIPT []
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7 PARTITION(part=1).c6 SCRIPT []
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7 PARTITION(part=1).c7 SCRIPT []
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7 PARTITION(part=1).c8 SCRIPT []
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7 PARTITION(part=1).c9 SCRIPT []
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7 PARTITION(part=1).insert_num SCRIPT []
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12	_col13	_col14	_col15	_col16	_col17	_col18	_col19
 PREHOOK: query: explain vectorization detail
-select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,b from part_change_lower_to_higher_numeric_group_tinyint_to_bigint
+select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,b from part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,b from part_change_lower_to_higher_numeric_group_tinyint_to_bigint
+select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,b from part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -1276,7 +1276,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: part_change_lower_to_higher_numeric_group_tinyint_to_bigint
+                  alias: part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7
                   Statistics: Num rows: 6 Data size: 1060 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: insert_num (type: int), part (type: int), c1 (type: smallint), c2 (type: int), c3 (type: bigint), c4 (type: decimal(38,18)), c5 (type: float), c6 (type: double), c7 (type: int), c8 (type: bigint), c9 (type: decimal(38,18)), c10 (type: float), c11 (type: double), c12 (type: bigint), c13 (type: decimal(38,18)), c14 (type: float), c15 (type: double), c16 (type: decimal(38,18)), c17 (type: float), c18 (type: double), b (type: string)
@@ -1297,15 +1297,15 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,b from part_change_lower_to_higher_numeric_group_tinyint_to_bigint
+PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,b from part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part_change_lower_to_higher_numeric_group_tinyint_to_bigint
-PREHOOK: Input: default@part_change_lower_to_higher_numeric_group_tinyint_to_bigint@part=1
+PREHOOK: Input: default@part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7
+PREHOOK: Input: default@part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7@part=1
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,b from part_change_lower_to_higher_numeric_group_tinyint_to_bigint
+POSTHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,b from part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_tinyint_to_bigint
-POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_tinyint_to_bigint@part=1
+POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7
+POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7@part=1
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	c13	c14	c15	c16	c17	c18	b
 101	1	-128	-128	-128	-128.000000000000000000	-128.0	-128.0	NULL	NULL	NULL	NULL	NULL	-2147483648	-2147483648.000000000000000000	-2.14748365E9	-2.147483648E9	NULL	NULL	NULL	original
@@ -1314,57 +1314,57 @@ insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	c13	c14	c15	c16	c17	c18	b
 104	1	23	23	23	23.000000000000000000	23.0	23.0	834	834	834.000000000000000000	834.0	834.0	203332	203332.000000000000000000	203332.0	203332.0	888888857923222.000000000000000000	8.8888885E14	8.88888857923222E14	original
 105	1	-99	-99	-99	-99.000000000000000000	-99.0	-99.0	-28300	-28300	-28300.000000000000000000	-28300.0	-28300.0	-999992	-999992.000000000000000000	-999992.0	-999992.0	-222282153733.000000000000000000	-2.22282154E11	-2.22282153733E11	original
 111	1	7000	80000	90000000	1234.567800000000000000	9876.543	789.321	80000	90000000	1234.567800000000000000	9876.543	789.321	90000000	1234.567800000000000000	9876.543	789.321	1234.567800000000000000	9876.543	789.321	new
-PREHOOK: query: drop table part_change_lower_to_higher_numeric_group_tinyint_to_bigint
+PREHOOK: query: drop table part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@part_change_lower_to_higher_numeric_group_tinyint_to_bigint
-PREHOOK: Output: default@part_change_lower_to_higher_numeric_group_tinyint_to_bigint
-POSTHOOK: query: drop table part_change_lower_to_higher_numeric_group_tinyint_to_bigint
+PREHOOK: Input: default@part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7
+PREHOOK: Output: default@part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7
+POSTHOOK: query: drop table part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_tinyint_to_bigint
-POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_tinyint_to_bigint
-PREHOOK: query: CREATE TABLE part_change_lower_to_higher_numeric_group_decimal_to_float(insert_num int,
+POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7
+POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_tinyint_to_bigint_n7
+PREHOOK: query: CREATE TABLE part_change_lower_to_higher_numeric_group_decimal_to_float_n7(insert_num int,
            c1 decimal(38,18), c2 decimal(38,18),
            c3 float,
            b STRING) PARTITIONED BY(part INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@part_change_lower_to_higher_numeric_group_decimal_to_float
-POSTHOOK: query: CREATE TABLE part_change_lower_to_higher_numeric_group_decimal_to_float(insert_num int,
+PREHOOK: Output: default@part_change_lower_to_higher_numeric_group_decimal_to_float_n7
+POSTHOOK: query: CREATE TABLE part_change_lower_to_higher_numeric_group_decimal_to_float_n7(insert_num int,
            c1 decimal(38,18), c2 decimal(38,18),
            c3 float,
            b STRING) PARTITIONED BY(part INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_decimal_to_float
-PREHOOK: query: insert into table part_change_lower_to_higher_numeric_group_decimal_to_float partition(part=1) SELECT insert_num,
+POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_decimal_to_float_n7
+PREHOOK: query: insert into table part_change_lower_to_higher_numeric_group_decimal_to_float_n7 partition(part=1) SELECT insert_num,
            decimal1, decimal1,
            float1,
-          'original' FROM schema_evolution_data
+          'original' FROM schema_evolution_data_n25
 PREHOOK: type: QUERY
-PREHOOK: Input: default@schema_evolution_data
-PREHOOK: Output: default@part_change_lower_to_higher_numeric_group_decimal_to_float@part=1
-POSTHOOK: query: insert into table part_change_lower_to_higher_numeric_group_decimal_to_float partition(part=1) SELECT insert_num,
+PREHOOK: Input: default@schema_evolution_data_n25
+PREHOOK: Output: default@part_change_lower_to_higher_numeric_group_decimal_to_float_n7@part=1
+POSTHOOK: query: insert into table part_change_lower_to_higher_numeric_group_decimal_to_float_n7 partition(part=1) SELECT insert_num,
            decimal1, decimal1,
            float1,
-          'original' FROM schema_evolution_data
+          'original' FROM schema_evolution_data_n25
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@schema_evolution_data
-POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_decimal_to_float@part=1
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_decimal_to_float PARTITION(part=1).b SIMPLE []
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_decimal_to_float PARTITION(part=1).c1 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_decimal_to_float PARTITION(part=1).c2 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_decimal_to_float PARTITION(part=1).c3 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:float1, type:float, comment:null), ]
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_decimal_to_float PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:insert_num, type:int, comment:null), ]
+POSTHOOK: Input: default@schema_evolution_data_n25
+POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_decimal_to_float_n7@part=1
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_decimal_to_float_n7 PARTITION(part=1).b SIMPLE []
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_decimal_to_float_n7 PARTITION(part=1).c1 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_decimal_to_float_n7 PARTITION(part=1).c2 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_decimal_to_float_n7 PARTITION(part=1).c3 SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:float1, type:float, comment:null), ]
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_decimal_to_float_n7 PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data_n25)schema_evolution_data_n25.FieldSchema(name:insert_num, type:int, comment:null), ]
 insert_num	decimal1	decimal1	float1	_c4
-PREHOOK: query: select insert_num,part,c1,c2,c3,b from part_change_lower_to_higher_numeric_group_decimal_to_float
+PREHOOK: query: select insert_num,part,c1,c2,c3,b from part_change_lower_to_higher_numeric_group_decimal_to_float_n7
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part_change_lower_to_higher_numeric_group_decimal_to_float
-PREHOOK: Input: default@part_change_lower_to_higher_numeric_group_decimal_to_float@part=1
+PREHOOK: Input: default@part_change_lower_to_higher_numeric_group_decimal_to_float_n7
+PREHOOK: Input: default@part_change_lower_to_higher_numeric_group_decimal_to_float_n7@part=1
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,b from part_change_lower_to_higher_numeric_group_decimal_to_float
+POSTHOOK: query: select insert_num,part,c1,c2,c3,b from part_change_lower_to_higher_numeric_group_decimal_to_float_n7
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_decimal_to_float
-POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_decimal_to_float@part=1
+POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_decimal_to_float_n7
+POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_decimal_to_float_n7@part=1
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	b
 101	1	99999999999999999999.999999999999999999	99999999999999999999.999999999999999999	Infinity	original
@@ -1372,33 +1372,33 @@ insert_num	part	c1	c2	c3	b
 103	1	NULL	NULL	NULL	original
 104	1	66475.561431000000000000	66475.561431000000000000	-100.35978	original
 105	1	9250340.750000000000000000	9250340.750000000000000000	NULL	original
-PREHOOK: query: alter table part_change_lower_to_higher_numeric_group_decimal_to_float replace columns (insert_num int, c1 float, c2 double, c3 DOUBLE, b STRING)
+PREHOOK: query: alter table part_change_lower_to_higher_numeric_group_decimal_to_float_n7 replace columns (insert_num int, c1 float, c2 double, c3 DOUBLE, b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
-PREHOOK: Input: default@part_change_lower_to_higher_numeric_group_decimal_to_float
-PREHOOK: Output: default@part_change_lower_to_higher_numeric_group_decimal_to_float
-POSTHOOK: query: alter table part_change_lower_to_higher_numeric_group_decimal_to_float replace columns (insert_num int, c1 float, c2 double, c3 DOUBLE, b STRING)
+PREHOOK: Input: default@part_change_lower_to_higher_numeric_group_decimal_to_float_n7
+PREHOOK: Output: default@part_change_lower_to_higher_numeric_group_decimal_to_float_n7
+POSTHOOK: query: alter table part_change_lower_to_higher_numeric_group_decimal_to_float_n7 replace columns (insert_num int, c1 float, c2 double, c3 DOUBLE, b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
-POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_decimal_to_float
-POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_decimal_to_float
-PREHOOK: query: insert into table part_change_lower_to_higher_numeric_group_decimal_to_float partition(part=1) VALUES (111, 1234.5678, 9876.543, 1234.5678, 'new')
+POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_decimal_to_float_n7
+POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_decimal_to_float_n7
+PREHOOK: query: insert into table part_change_lower_to_higher_numeric_group_decimal_to_float_n7 partition(part=1) VALUES (111, 1234.5678, 9876.543, 1234.5678, 'new')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@part_change_lower_to_higher_numeric_group_decimal_to_float@part=1
-POSTHOOK: query: insert into table part_change_lower_to_higher_numeric_group_decimal_to_float partition(part=1) VALUES (111, 1234.5678, 9876.543, 1234.5678, 'new')
+PREHOOK: Output: default@part_change_lower_to_higher_numeric_group_decimal_to_float_n7@part=1
+POSTHOOK: query: insert into table part_change_lower_to_higher_numeric_group_decimal_to_float_n7 partition(part=1) VALUES (111, 1234.5678, 9876.543, 1234.5678, 'new')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_decimal_to_float@part=1
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_decimal_to_float PARTITION(part=1).b SCRIPT []
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_decimal_to_float PARTITION(part=1).c1 SCRIPT []
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_decimal_to_float PARTITION(part=1).c2 SCRIPT []
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_decimal_to_float PARTITION(part=1).c3 SCRIPT []
-POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_decimal_to_float PARTITION(part=1).insert_num SCRIPT []
+POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_decimal_to_float_n7@part=1
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_decimal_to_float_n7 PARTITION(part=1).b SCRIPT []
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_decimal_to_float_n7 PARTITION(part=1).c1 SCRIPT []
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_decimal_to_float_n7 PARTITION(part=1).c2 SCRIPT []
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_decimal_to_float_n7 PARTITION(part=1).c3 SCRIPT []
+POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_decimal_to_float_n7 PARTITION(part=1).insert_num SCRIPT []
 _col0	_col1	_col2	_col3	_col4
 PREHOOK: query: explain vectorization detail
-select insert_num,part,c1,c2,c3,b from part_change_lower_to_higher_numeric_group_decimal_to_float
+select insert_num,part,c1,c2,c3,b from part_change_lower_to_higher_numeric_group_decimal_to_float_n7
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select insert_num,part,c1,c2,c3,b from part_change_lower_to_higher_numeric_group_decimal_to_float
+select insert_num,part,c1,c2,c3,b from part_change_lower_to_higher_numeric_group_decimal_to_float_n7
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -1417,7 +1417,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: part_change_lower_to_higher_numeric_group_decimal_to_float
+                  alias: part_change_lower_to_higher_numeric_group_decimal_to_float_n7
                   Statistics: Num rows: 6 Data size: 648 Basic stats: COMPLETE Column stats: PARTIAL
                   Select Operator
                     expressions: insert_num (type: int), part (type: int), c1 (type: float), c2 (type: double), c3 (type: double), b (type: string)
@@ -1438,15 +1438,15 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select insert_num,part,c1,c2,c3,b from part_change_lower_to_higher_numeric_group_decimal_to_float
+PREHOOK: query: select insert_num,part,c1,c2,c3,b from part_change_lower_to_higher_numeric_group_decimal_to_float_n7
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part_change_lower_to_higher_numeric_group_decimal_to_float
-PREHOOK: Input: default@part_change_lower_to_higher_numeric_group_decimal_to_float@part=1
+PREHOOK: Input: default@part_change_lower_to_higher_numeric_group_decimal_to_float_n7
+PREHOOK: Input: default@part_change_lower_to_higher_numeric_group_decimal_to_float_n7@part=1
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,part,c1,c2,c3,b from part_change_lower_to_higher_numeric_group_decimal_to_float
+POSTHOOK: query: select insert_num,part,c1,c2,c3,b from part_change_lower_to_higher_numeric_group_decimal_to_float_n7
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_decimal_to_float
-POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_decimal_to_float@part=1
+POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_decimal_to_float_n7
+POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_decimal_to_float_n7@part=1
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	b
 101	1	1.0E20	1.0E20	Infinity	original
@@ -1455,11 +1455,11 @@ insert_num	part	c1	c2	c3	b
 104	1	66475.56	66475.561431	-100.35978	original
 105	1	9250341.0	9250340.75	NULL	original
 111	1	1234.5677	9876.543	1234.5678	new
-PREHOOK: query: drop table part_change_lower_to_higher_numeric_group_decimal_to_float
+PREHOOK: query: drop table part_change_lower_to_higher_numeric_group_decimal_to_float_n7
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@part_change_lower_to_higher_numeric_group_decimal_to_float
-PREHOOK: Output: default@part_change_lower_to_higher_numeric_group_decimal_to_float
-POSTHOOK: query: drop table part_change_lower_to_higher_numeric_group_decimal_to_float
+PREHOOK: Input: default@part_change_lower_to_higher_numeric_group_decimal_to_float_n7
+PREHOOK: Output: default@part_change_lower_to_higher_numeric_group_decimal_to_float_n7
+POSTHOOK: query: drop table part_change_lower_to_higher_numeric_group_decimal_to_float_n7
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_decimal_to_float
-POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_decimal_to_float
+POSTHOOK: Input: default@part_change_lower_to_higher_numeric_group_decimal_to_float_n7
+POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_decimal_to_float_n7

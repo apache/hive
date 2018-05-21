@@ -49,83 +49,83 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: create table t1(c int)
+PREHOOK: query: create table t1_n3(c int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t1
-POSTHOOK: query: create table t1(c int)
+PREHOOK: Output: default@t1_n3
+POSTHOOK: query: create table t1_n3(c int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t1
-PREHOOK: query: insert into t1 values (1),(1),(2)
+POSTHOOK: Output: default@t1_n3
+PREHOOK: query: insert into t1_n3 values (1),(1),(2)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t1
-POSTHOOK: query: insert into t1 values (1),(1),(2)
+PREHOOK: Output: default@t1_n3
+POSTHOOK: query: insert into t1_n3 values (1),(1),(2)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t1
-POSTHOOK: Lineage: t1.c SCRIPT []
-PREHOOK: query: create table t2(c int)
+POSTHOOK: Output: default@t1_n3
+POSTHOOK: Lineage: t1_n3.c SCRIPT []
+PREHOOK: query: create table t2_n2(c int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t2
-POSTHOOK: query: create table t2(c int)
+PREHOOK: Output: default@t2_n2
+POSTHOOK: query: create table t2_n2(c int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t2
-PREHOOK: query: insert into t2 values (2),(1),(2)
+POSTHOOK: Output: default@t2_n2
+PREHOOK: query: insert into t2_n2 values (2),(1),(2)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t2
-POSTHOOK: query: insert into t2 values (2),(1),(2)
+PREHOOK: Output: default@t2_n2
+POSTHOOK: query: insert into t2_n2 values (2),(1),(2)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t2
-POSTHOOK: Lineage: t2.c SCRIPT []
-PREHOOK: query: create table t3(c int)
+POSTHOOK: Output: default@t2_n2
+POSTHOOK: Lineage: t2_n2.c SCRIPT []
+PREHOOK: query: create table t3_n1(c int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t3
-POSTHOOK: query: create table t3(c int)
+PREHOOK: Output: default@t3_n1
+POSTHOOK: query: create table t3_n1(c int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t3
-PREHOOK: query: insert into t3 values (2),(3),(2)
+POSTHOOK: Output: default@t3_n1
+PREHOOK: query: insert into t3_n1 values (2),(3),(2)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t3
-POSTHOOK: query: insert into t3 values (2),(3),(2)
+PREHOOK: Output: default@t3_n1
+POSTHOOK: query: insert into t3_n1 values (2),(3),(2)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t3
-POSTHOOK: Lineage: t3.c SCRIPT []
-PREHOOK: query: (select * from t1) union all select * from t2 union select * from t3 order by c
+POSTHOOK: Output: default@t3_n1
+POSTHOOK: Lineage: t3_n1.c SCRIPT []
+PREHOOK: query: (select * from t1_n3) union all select * from t2_n2 union select * from t3_n1 order by c
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
-PREHOOK: Input: default@t3
+PREHOOK: Input: default@t1_n3
+PREHOOK: Input: default@t2_n2
+PREHOOK: Input: default@t3_n1
 #### A masked pattern was here ####
-POSTHOOK: query: (select * from t1) union all select * from t2 union select * from t3 order by c
+POSTHOOK: query: (select * from t1_n3) union all select * from t2_n2 union select * from t3_n1 order by c
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
-POSTHOOK: Input: default@t3
+POSTHOOK: Input: default@t1_n3
+POSTHOOK: Input: default@t2_n2
+POSTHOOK: Input: default@t3_n1
 #### A masked pattern was here ####
 1
 2
 3
-PREHOOK: query: (select * from t1) union all (select * from t2 union select * from t3) order by c
+PREHOOK: query: (select * from t1_n3) union all (select * from t2_n2 union select * from t3_n1) order by c
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
-PREHOOK: Input: default@t3
+PREHOOK: Input: default@t1_n3
+PREHOOK: Input: default@t2_n2
+PREHOOK: Input: default@t3_n1
 #### A masked pattern was here ####
-POSTHOOK: query: (select * from t1) union all (select * from t2 union select * from t3) order by c
+POSTHOOK: query: (select * from t1_n3) union all (select * from t2_n2 union select * from t3_n1) order by c
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
-POSTHOOK: Input: default@t3
+POSTHOOK: Input: default@t1_n3
+POSTHOOK: Input: default@t2_n2
+POSTHOOK: Input: default@t3_n1
 #### A masked pattern was here ####
 1
 1

@@ -1,8 +1,8 @@
-PREHOOK: query: DROP TABLE IF EXISTS UserVisits_web_text_none
+PREHOOK: query: DROP TABLE IF EXISTS UserVisits_web_text_none_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE IF EXISTS UserVisits_web_text_none
+POSTHOOK: query: DROP TABLE IF EXISTS UserVisits_web_text_none_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE UserVisits_web_text_none (
+PREHOOK: query: CREATE TABLE UserVisits_web_text_none_n0 (
   sourceIP string,
   destURL string,
   visitDate string,
@@ -15,8 +15,8 @@ PREHOOK: query: CREATE TABLE UserVisits_web_text_none (
 row format delimited fields terminated by '|'  stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@UserVisits_web_text_none
-POSTHOOK: query: CREATE TABLE UserVisits_web_text_none (
+PREHOOK: Output: default@UserVisits_web_text_none_n0
+POSTHOOK: query: CREATE TABLE UserVisits_web_text_none_n0 (
   sourceIP string,
   destURL string,
   visitDate string,
@@ -29,28 +29,28 @@ POSTHOOK: query: CREATE TABLE UserVisits_web_text_none (
 row format delimited fields terminated by '|'  stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@UserVisits_web_text_none
-PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/UserVisits.dat" INTO TABLE UserVisits_web_text_none
+POSTHOOK: Output: default@UserVisits_web_text_none_n0
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/UserVisits.dat" INTO TABLE UserVisits_web_text_none_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@uservisits_web_text_none
-POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/UserVisits.dat" INTO TABLE UserVisits_web_text_none
+PREHOOK: Output: default@uservisits_web_text_none_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/UserVisits.dat" INTO TABLE UserVisits_web_text_none_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@uservisits_web_text_none
-PREHOOK: query: desc extended UserVisits_web_text_none sourceIP
+POSTHOOK: Output: default@uservisits_web_text_none_n0
+PREHOOK: query: desc extended UserVisits_web_text_none_n0 sourceIP
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@uservisits_web_text_none
-POSTHOOK: query: desc extended UserVisits_web_text_none sourceIP
+PREHOOK: Input: default@uservisits_web_text_none_n0
+POSTHOOK: query: desc extended UserVisits_web_text_none_n0 sourceIP
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@uservisits_web_text_none
+POSTHOOK: Input: default@uservisits_web_text_none_n0
 sourceIP            	string              	from deserializer   
-PREHOOK: query: desc formatted UserVisits_web_text_none sourceIP
+PREHOOK: query: desc formatted UserVisits_web_text_none_n0 sourceIP
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@uservisits_web_text_none
-POSTHOOK: query: desc formatted UserVisits_web_text_none sourceIP
+PREHOOK: Input: default@uservisits_web_text_none_n0
+POSTHOOK: query: desc formatted UserVisits_web_text_none_n0 sourceIP
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@uservisits_web_text_none
+POSTHOOK: Input: default@uservisits_web_text_none_n0
 col_name            	sourceIP            	 	 	 	 	 	 	 	 	 	 
 data_type           	string              	 	 	 	 	 	 	 	 	 	 
 min                 	                    	 	 	 	 	 	 	 	 	 	 
@@ -64,10 +64,10 @@ num_falses
 bitVector           	                    	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: explain
-analyze table UserVisits_web_text_none compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
+analyze table UserVisits_web_text_none_n0 compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
 PREHOOK: type: ANALYZE_TABLE
 POSTHOOK: query: explain
-analyze table UserVisits_web_text_none compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
+analyze table UserVisits_web_text_none_n0 compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
 POSTHOOK: type: ANALYZE_TABLE
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -78,7 +78,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: uservisits_web_text_none
+            alias: uservisits_web_text_none_n0
             Statistics: Num rows: 1 Data size: 70600 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: sourceip (type: string), adrevenue (type: float), avgtimeonsite (type: int)
@@ -113,13 +113,13 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: sourceIP, avgTimeOnSite, adRevenue
           Column Types: string, int, float
-          Table: default.uservisits_web_text_none
+          Table: default.uservisits_web_text_none_n0
 
 PREHOOK: query: explain extended
-analyze table UserVisits_web_text_none compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
+analyze table UserVisits_web_text_none_n0 compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
 PREHOOK: type: ANALYZE_TABLE
 POSTHOOK: query: explain extended
-analyze table UserVisits_web_text_none compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
+analyze table UserVisits_web_text_none_n0 compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
 POSTHOOK: type: ANALYZE_TABLE
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -130,9 +130,9 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: uservisits_web_text_none
+            alias: uservisits_web_text_none_n0
             Statistics: Num rows: 1 Data size: 70600 Basic stats: COMPLETE Column stats: NONE
-            Statistics Aggregation Key Prefix: default.uservisits_web_text_none/
+            Statistics Aggregation Key Prefix: default.uservisits_web_text_none_n0/
             GatherStats: true
             Select Operator
               expressions: sourceip (type: string), adrevenue (type: float), avgtimeonsite (type: int)
@@ -155,7 +155,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: uservisits_web_text_none
+            base file name: uservisits_web_text_none_n0
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -167,11 +167,11 @@ STAGE PLANS:
               columns.types string:string:string:float:string:string:string:string:int
               field.delim |
 #### A masked pattern was here ####
-              name default.uservisits_web_text_none
+              name default.uservisits_web_text_none_n0
               numFiles 1
               numRows 0
               rawDataSize 0
-              serialization.ddl struct uservisits_web_text_none { string sourceip, string desturl, string visitdate, float adrevenue, string useragent, string ccode, string lcode, string skeyword, i32 avgtimeonsite}
+              serialization.ddl struct uservisits_web_text_none_n0 { string sourceip, string desturl, string visitdate, float adrevenue, string useragent, string ccode, string lcode, string skeyword, i32 avgtimeonsite}
               serialization.format |
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 7060
@@ -189,20 +189,20 @@ STAGE PLANS:
                 columns.types string:string:string:float:string:string:string:string:int
                 field.delim |
 #### A masked pattern was here ####
-                name default.uservisits_web_text_none
+                name default.uservisits_web_text_none_n0
                 numFiles 1
                 numRows 0
                 rawDataSize 0
-                serialization.ddl struct uservisits_web_text_none { string sourceip, string desturl, string visitdate, float adrevenue, string useragent, string ccode, string lcode, string skeyword, i32 avgtimeonsite}
+                serialization.ddl struct uservisits_web_text_none_n0 { string sourceip, string desturl, string visitdate, float adrevenue, string useragent, string ccode, string lcode, string skeyword, i32 avgtimeonsite}
                 serialization.format |
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 7060
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.uservisits_web_text_none
-            name: default.uservisits_web_text_none
+              name: default.uservisits_web_text_none_n0
+            name: default.uservisits_web_text_none_n0
       Truncated Path -> Alias:
-        /uservisits_web_text_none [uservisits_web_text_none]
+        /uservisits_web_text_none_n0 [uservisits_web_text_none_n0]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -236,29 +236,29 @@ STAGE PLANS:
   Stage: Stage-1
     Stats Work
       Basic Stats Work:
-          Stats Aggregation Key Prefix: default.uservisits_web_text_none/
+          Stats Aggregation Key Prefix: default.uservisits_web_text_none_n0/
       Column Stats Desc:
           Columns: sourceIP, avgTimeOnSite, adRevenue
           Column Types: string, int, float
-          Table: default.uservisits_web_text_none
+          Table: default.uservisits_web_text_none_n0
           Is Table Level Stats: true
 
-PREHOOK: query: analyze table UserVisits_web_text_none compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
+PREHOOK: query: analyze table UserVisits_web_text_none_n0 compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@uservisits_web_text_none
-PREHOOK: Output: default@uservisits_web_text_none
+PREHOOK: Input: default@uservisits_web_text_none_n0
+PREHOOK: Output: default@uservisits_web_text_none_n0
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table UserVisits_web_text_none compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
+POSTHOOK: query: analyze table UserVisits_web_text_none_n0 compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@uservisits_web_text_none
-POSTHOOK: Output: default@uservisits_web_text_none
+POSTHOOK: Input: default@uservisits_web_text_none_n0
+POSTHOOK: Output: default@uservisits_web_text_none_n0
 #### A masked pattern was here ####
-PREHOOK: query: desc formatted UserVisits_web_text_none sourceIP
+PREHOOK: query: desc formatted UserVisits_web_text_none_n0 sourceIP
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@uservisits_web_text_none
-POSTHOOK: query: desc formatted UserVisits_web_text_none sourceIP
+PREHOOK: Input: default@uservisits_web_text_none_n0
+POSTHOOK: query: desc formatted UserVisits_web_text_none_n0 sourceIP
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@uservisits_web_text_none
+POSTHOOK: Input: default@uservisits_web_text_none_n0
 col_name            	sourceIP            	 	 	 	 	 	 	 	 	 	 
 data_type           	string              	 	 	 	 	 	 	 	 	 	 
 min                 	                    	 	 	 	 	 	 	 	 	 	 
@@ -272,12 +272,12 @@ num_falses
 bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"sourceip\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
-PREHOOK: query: desc formatted UserVisits_web_text_none avgTimeOnSite
+PREHOOK: query: desc formatted UserVisits_web_text_none_n0 avgTimeOnSite
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@uservisits_web_text_none
-POSTHOOK: query: desc formatted UserVisits_web_text_none avgTimeOnSite
+PREHOOK: Input: default@uservisits_web_text_none_n0
+POSTHOOK: query: desc formatted UserVisits_web_text_none_n0 avgTimeOnSite
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@uservisits_web_text_none
+POSTHOOK: Input: default@uservisits_web_text_none_n0
 col_name            	avgTimeOnSite       	 	 	 	 	 	 	 	 	 	 
 data_type           	int                 	 	 	 	 	 	 	 	 	 	 
 min                 	1                   	 	 	 	 	 	 	 	 	 	 
@@ -291,12 +291,12 @@ num_falses
 bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"sourceip\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
-PREHOOK: query: desc formatted UserVisits_web_text_none adRevenue
+PREHOOK: query: desc formatted UserVisits_web_text_none_n0 adRevenue
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@uservisits_web_text_none
-POSTHOOK: query: desc formatted UserVisits_web_text_none adRevenue
+PREHOOK: Input: default@uservisits_web_text_none_n0
+POSTHOOK: query: desc formatted UserVisits_web_text_none_n0 adRevenue
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@uservisits_web_text_none
+POSTHOOK: Input: default@uservisits_web_text_none_n0
 col_name            	adRevenue           	 	 	 	 	 	 	 	 	 	 
 data_type           	float               	 	 	 	 	 	 	 	 	 	 
 min                 	13.099044799804688  	 	 	 	 	 	 	 	 	 	 
@@ -310,7 +310,7 @@ num_falses
 bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"sourceip\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
-PREHOOK: query: CREATE TABLE empty_tab(
+PREHOOK: query: CREATE TABLE empty_tab_n0(
    a int,
    b double,
    c string,
@@ -319,8 +319,8 @@ PREHOOK: query: CREATE TABLE empty_tab(
 row format delimited fields terminated by '|'  stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@empty_tab
-POSTHOOK: query: CREATE TABLE empty_tab(
+PREHOOK: Output: default@empty_tab_n0
+POSTHOOK: query: CREATE TABLE empty_tab_n0(
    a int,
    b double,
    c string,
@@ -329,13 +329,13 @@ POSTHOOK: query: CREATE TABLE empty_tab(
 row format delimited fields terminated by '|'  stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@empty_tab
-PREHOOK: query: desc formatted empty_tab a
+POSTHOOK: Output: default@empty_tab_n0
+PREHOOK: query: desc formatted empty_tab_n0 a
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@empty_tab
-POSTHOOK: query: desc formatted empty_tab a
+PREHOOK: Input: default@empty_tab_n0
+POSTHOOK: query: desc formatted empty_tab_n0 a
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@empty_tab
+POSTHOOK: Input: default@empty_tab_n0
 col_name            	a                   	 	 	 	 	 	 	 	 	 	 
 data_type           	int                 	 	 	 	 	 	 	 	 	 	 
 min                 	                    	 	 	 	 	 	 	 	 	 	 
@@ -350,10 +350,10 @@ bitVector
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\",\"d\":\"true\",\"e\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
 PREHOOK: query: explain
-analyze table empty_tab compute statistics for columns a,b,c,d,e
+analyze table empty_tab_n0 compute statistics for columns a,b,c,d,e
 PREHOOK: type: ANALYZE_TABLE
 POSTHOOK: query: explain
-analyze table empty_tab compute statistics for columns a,b,c,d,e
+analyze table empty_tab_n0 compute statistics for columns a,b,c,d,e
 POSTHOOK: type: ANALYZE_TABLE
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -364,7 +364,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: empty_tab
+            alias: empty_tab_n0
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
               expressions: a (type: int), b (type: double), c (type: string), d (type: boolean), e (type: binary)
@@ -399,24 +399,24 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: a, b, c, d, e
           Column Types: int, double, string, boolean, binary
-          Table: default.empty_tab
+          Table: default.empty_tab_n0
 
-PREHOOK: query: analyze table empty_tab compute statistics for columns a,b,c,d,e
+PREHOOK: query: analyze table empty_tab_n0 compute statistics for columns a,b,c,d,e
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@empty_tab
-PREHOOK: Output: default@empty_tab
+PREHOOK: Input: default@empty_tab_n0
+PREHOOK: Output: default@empty_tab_n0
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table empty_tab compute statistics for columns a,b,c,d,e
+POSTHOOK: query: analyze table empty_tab_n0 compute statistics for columns a,b,c,d,e
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@empty_tab
-POSTHOOK: Output: default@empty_tab
+POSTHOOK: Input: default@empty_tab_n0
+POSTHOOK: Output: default@empty_tab_n0
 #### A masked pattern was here ####
-PREHOOK: query: desc formatted empty_tab a
+PREHOOK: query: desc formatted empty_tab_n0 a
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@empty_tab
-POSTHOOK: query: desc formatted empty_tab a
+PREHOOK: Input: default@empty_tab_n0
+POSTHOOK: query: desc formatted empty_tab_n0 a
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@empty_tab
+POSTHOOK: Input: default@empty_tab_n0
 col_name            	a                   	 	 	 	 	 	 	 	 	 	 
 data_type           	int                 	 	 	 	 	 	 	 	 	 	 
 min                 	0                   	 	 	 	 	 	 	 	 	 	 
@@ -430,12 +430,12 @@ num_falses
 bitVector           	                    	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\",\"d\":\"true\",\"e\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
-PREHOOK: query: desc formatted empty_tab b
+PREHOOK: query: desc formatted empty_tab_n0 b
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@empty_tab
-POSTHOOK: query: desc formatted empty_tab b
+PREHOOK: Input: default@empty_tab_n0
+POSTHOOK: query: desc formatted empty_tab_n0 b
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@empty_tab
+POSTHOOK: Input: default@empty_tab_n0
 col_name            	b                   	 	 	 	 	 	 	 	 	 	 
 data_type           	double              	 	 	 	 	 	 	 	 	 	 
 min                 	0.0                 	 	 	 	 	 	 	 	 	 	 
@@ -461,7 +461,7 @@ PREHOOK: Input: database:test
 POSTHOOK: query: USE test
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:test
-PREHOOK: query: CREATE TABLE UserVisits_web_text_none (
+PREHOOK: query: CREATE TABLE UserVisits_web_text_none_n0 (
   sourceIP string,
   destURL string,
   visitDate string,
@@ -474,8 +474,8 @@ PREHOOK: query: CREATE TABLE UserVisits_web_text_none (
 row format delimited fields terminated by '|'  stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:test
-PREHOOK: Output: test@UserVisits_web_text_none
-POSTHOOK: query: CREATE TABLE UserVisits_web_text_none (
+PREHOOK: Output: test@UserVisits_web_text_none_n0
+POSTHOOK: query: CREATE TABLE UserVisits_web_text_none_n0 (
   sourceIP string,
   destURL string,
   visitDate string,
@@ -488,43 +488,43 @@ POSTHOOK: query: CREATE TABLE UserVisits_web_text_none (
 row format delimited fields terminated by '|'  stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:test
-POSTHOOK: Output: test@UserVisits_web_text_none
-PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/UserVisits.dat" INTO TABLE UserVisits_web_text_none
+POSTHOOK: Output: test@UserVisits_web_text_none_n0
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/UserVisits.dat" INTO TABLE UserVisits_web_text_none_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: test@uservisits_web_text_none
-POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/UserVisits.dat" INTO TABLE UserVisits_web_text_none
+PREHOOK: Output: test@uservisits_web_text_none_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/UserVisits.dat" INTO TABLE UserVisits_web_text_none_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: test@uservisits_web_text_none
-PREHOOK: query: desc extended UserVisits_web_text_none sourceIP
+POSTHOOK: Output: test@uservisits_web_text_none_n0
+PREHOOK: query: desc extended UserVisits_web_text_none_n0 sourceIP
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: test@uservisits_web_text_none
-POSTHOOK: query: desc extended UserVisits_web_text_none sourceIP
+PREHOOK: Input: test@uservisits_web_text_none_n0
+POSTHOOK: query: desc extended UserVisits_web_text_none_n0 sourceIP
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: test@uservisits_web_text_none
+POSTHOOK: Input: test@uservisits_web_text_none_n0
 sourceIP            	string              	from deserializer   
-PREHOOK: query: desc extended test.UserVisits_web_text_none sourceIP
+PREHOOK: query: desc extended test.UserVisits_web_text_none_n0 sourceIP
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: test@uservisits_web_text_none
-POSTHOOK: query: desc extended test.UserVisits_web_text_none sourceIP
+PREHOOK: Input: test@uservisits_web_text_none_n0
+POSTHOOK: query: desc extended test.UserVisits_web_text_none_n0 sourceIP
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: test@uservisits_web_text_none
+POSTHOOK: Input: test@uservisits_web_text_none_n0
 sourceIP            	string              	from deserializer   
-PREHOOK: query: desc extended default.UserVisits_web_text_none sourceIP
+PREHOOK: query: desc extended default.UserVisits_web_text_none_n0 sourceIP
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@uservisits_web_text_none
-POSTHOOK: query: desc extended default.UserVisits_web_text_none sourceIP
+PREHOOK: Input: default@uservisits_web_text_none_n0
+POSTHOOK: query: desc extended default.UserVisits_web_text_none_n0 sourceIP
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@uservisits_web_text_none
+POSTHOOK: Input: default@uservisits_web_text_none_n0
 sourceIP            	string              	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"sourceip\":\"true\"}}	 
-PREHOOK: query: desc formatted UserVisits_web_text_none sourceIP
+PREHOOK: query: desc formatted UserVisits_web_text_none_n0 sourceIP
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: test@uservisits_web_text_none
-POSTHOOK: query: desc formatted UserVisits_web_text_none sourceIP
+PREHOOK: Input: test@uservisits_web_text_none_n0
+POSTHOOK: query: desc formatted UserVisits_web_text_none_n0 sourceIP
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: test@uservisits_web_text_none
+POSTHOOK: Input: test@uservisits_web_text_none_n0
 col_name            	sourceIP            	 	 	 	 	 	 	 	 	 	 
 data_type           	string              	 	 	 	 	 	 	 	 	 	 
 min                 	                    	 	 	 	 	 	 	 	 	 	 
@@ -537,12 +537,12 @@ num_trues
 num_falses          	                    	 	 	 	 	 	 	 	 	 	 
 bitVector           	                    	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-PREHOOK: query: desc formatted test.UserVisits_web_text_none sourceIP
+PREHOOK: query: desc formatted test.UserVisits_web_text_none_n0 sourceIP
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: test@uservisits_web_text_none
-POSTHOOK: query: desc formatted test.UserVisits_web_text_none sourceIP
+PREHOOK: Input: test@uservisits_web_text_none_n0
+POSTHOOK: query: desc formatted test.UserVisits_web_text_none_n0 sourceIP
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: test@uservisits_web_text_none
+POSTHOOK: Input: test@uservisits_web_text_none_n0
 col_name            	sourceIP            	 	 	 	 	 	 	 	 	 	 
 data_type           	string              	 	 	 	 	 	 	 	 	 	 
 min                 	                    	 	 	 	 	 	 	 	 	 	 
@@ -555,12 +555,12 @@ num_trues
 num_falses          	                    	 	 	 	 	 	 	 	 	 	 
 bitVector           	                    	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
-PREHOOK: query: desc formatted default.UserVisits_web_text_none sourceIP
+PREHOOK: query: desc formatted default.UserVisits_web_text_none_n0 sourceIP
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@uservisits_web_text_none
-POSTHOOK: query: desc formatted default.UserVisits_web_text_none sourceIP
+PREHOOK: Input: default@uservisits_web_text_none_n0
+POSTHOOK: query: desc formatted default.UserVisits_web_text_none_n0 sourceIP
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@uservisits_web_text_none
+POSTHOOK: Input: default@uservisits_web_text_none_n0
 col_name            	sourceIP            	 	 	 	 	 	 	 	 	 	 
 data_type           	string              	 	 	 	 	 	 	 	 	 	 
 min                 	                    	 	 	 	 	 	 	 	 	 	 
@@ -574,30 +574,30 @@ num_falses
 bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"sourceip\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
-PREHOOK: query: analyze table UserVisits_web_text_none compute statistics for columns sKeyword
+PREHOOK: query: analyze table UserVisits_web_text_none_n0 compute statistics for columns sKeyword
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: test@uservisits_web_text_none
+PREHOOK: Input: test@uservisits_web_text_none_n0
 #### A masked pattern was here ####
-PREHOOK: Output: test@uservisits_web_text_none
-POSTHOOK: query: analyze table UserVisits_web_text_none compute statistics for columns sKeyword
+PREHOOK: Output: test@uservisits_web_text_none_n0
+POSTHOOK: query: analyze table UserVisits_web_text_none_n0 compute statistics for columns sKeyword
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: test@uservisits_web_text_none
+POSTHOOK: Input: test@uservisits_web_text_none_n0
 #### A masked pattern was here ####
-POSTHOOK: Output: test@uservisits_web_text_none
-PREHOOK: query: desc extended UserVisits_web_text_none sKeyword
+POSTHOOK: Output: test@uservisits_web_text_none_n0
+PREHOOK: query: desc extended UserVisits_web_text_none_n0 sKeyword
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: test@uservisits_web_text_none
-POSTHOOK: query: desc extended UserVisits_web_text_none sKeyword
+PREHOOK: Input: test@uservisits_web_text_none_n0
+POSTHOOK: query: desc extended UserVisits_web_text_none_n0 sKeyword
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: test@uservisits_web_text_none
+POSTHOOK: Input: test@uservisits_web_text_none_n0
 sKeyword            	string              	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"skeyword\":\"true\"}}	 
-PREHOOK: query: desc formatted UserVisits_web_text_none sKeyword
+PREHOOK: query: desc formatted UserVisits_web_text_none_n0 sKeyword
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: test@uservisits_web_text_none
-POSTHOOK: query: desc formatted UserVisits_web_text_none sKeyword
+PREHOOK: Input: test@uservisits_web_text_none_n0
+POSTHOOK: query: desc formatted UserVisits_web_text_none_n0 sKeyword
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: test@uservisits_web_text_none
+POSTHOOK: Input: test@uservisits_web_text_none_n0
 col_name            	sKeyword            	 	 	 	 	 	 	 	 	 	 
 data_type           	string              	 	 	 	 	 	 	 	 	 	 
 min                 	                    	 	 	 	 	 	 	 	 	 	 
@@ -611,12 +611,12 @@ num_falses
 bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"skeyword\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
-PREHOOK: query: desc formatted test.UserVisits_web_text_none sKeyword
+PREHOOK: query: desc formatted test.UserVisits_web_text_none_n0 sKeyword
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: test@uservisits_web_text_none
-POSTHOOK: query: desc formatted test.UserVisits_web_text_none sKeyword
+PREHOOK: Input: test@uservisits_web_text_none_n0
+POSTHOOK: query: desc formatted test.UserVisits_web_text_none_n0 sKeyword
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: test@uservisits_web_text_none
+POSTHOOK: Input: test@uservisits_web_text_none_n0
 col_name            	sKeyword            	 	 	 	 	 	 	 	 	 	 
 data_type           	string              	 	 	 	 	 	 	 	 	 	 
 min                 	                    	 	 	 	 	 	 	 	 	 	 

@@ -1,4 +1,4 @@
-PREHOOK: query: create table srcpart_date as select ds as ds, ds as ds2 from srcpart group by ds
+PREHOOK: query: create table srcpart_date_n3 as select ds as ds, ds as ds2 from srcpart group by ds
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -6,8 +6,8 @@ PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 PREHOOK: Output: database:default
-PREHOOK: Output: default@srcpart_date
-POSTHOOK: query: create table srcpart_date as select ds as ds, ds as ds2 from srcpart group by ds
+PREHOOK: Output: default@srcpart_date_n3
+POSTHOOK: query: create table srcpart_date_n3 as select ds as ds, ds as ds2 from srcpart group by ds
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -15,9 +15,9 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcpart_date
-POSTHOOK: Lineage: srcpart_date.ds SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_date.ds2 SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Output: default@srcpart_date_n3
+POSTHOOK: Lineage: srcpart_date_n3.ds SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: srcpart_date_n3.ds2 SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
 PREHOOK: query: create table srcpart2 as select * from srcpart
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@srcpart
@@ -42,16 +42,16 @@ POSTHOOK: Lineage: srcpart2.key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, t
 POSTHOOK: Lineage: srcpart2.value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: EXPLAIN select *
  from srcpart
- join srcpart_date on (srcpart.ds = srcpart_date.ds)
+ join srcpart_date_n3 on (srcpart.ds = srcpart_date_n3.ds)
  join srcpart2 on (srcpart.hr = srcpart2.hr)
- where srcpart_date.ds2 = '2008-04-08'
+ where srcpart_date_n3.ds2 = '2008-04-08'
  and srcpart2.hr = 11
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN select *
  from srcpart
- join srcpart_date on (srcpart.ds = srcpart_date.ds)
+ join srcpart_date_n3 on (srcpart.ds = srcpart_date_n3.ds)
  join srcpart2 on (srcpart.hr = srcpart2.hr)
- where srcpart_date.ds2 = '2008-04-08'
+ where srcpart_date_n3.ds2 = '2008-04-08'
  and srcpart2.hr = 11
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -67,7 +67,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n3
                   filterExpr: ((ds2 = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -167,16 +167,16 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select *
  from srcpart
- join srcpart_date on (srcpart.ds = srcpart_date.ds)
+ join srcpart_date_n3 on (srcpart.ds = srcpart_date_n3.ds)
  join srcpart2 on (srcpart.hr = srcpart2.hr)
- where srcpart_date.ds2 = '2008-04-08'
+ where srcpart_date_n3.ds2 = '2008-04-08'
  and srcpart2.hr = 11
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN select *
  from srcpart
- join srcpart_date on (srcpart.ds = srcpart_date.ds)
+ join srcpart_date_n3 on (srcpart.ds = srcpart_date_n3.ds)
  join srcpart2 on (srcpart.hr = srcpart2.hr)
- where srcpart_date.ds2 = '2008-04-08'
+ where srcpart_date_n3.ds2 = '2008-04-08'
  and srcpart2.hr = 11
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -223,7 +223,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n3
                   filterExpr: ((ds2 = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -334,16 +334,16 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN select *
  from srcpart
- join srcpart_date on (srcpart.ds = srcpart_date.ds)
+ join srcpart_date_n3 on (srcpart.ds = srcpart_date_n3.ds)
  join srcpart2 on (srcpart.hr = srcpart2.hr)
- where srcpart_date.ds2 = '2008-04-08'
+ where srcpart_date_n3.ds2 = '2008-04-08'
  and srcpart2.hr = 11
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN select *
  from srcpart
- join srcpart_date on (srcpart.ds = srcpart_date.ds)
+ join srcpart_date_n3 on (srcpart.ds = srcpart_date_n3.ds)
  join srcpart2 on (srcpart.hr = srcpart2.hr)
- where srcpart_date.ds2 = '2008-04-08'
+ where srcpart_date_n3.ds2 = '2008-04-08'
  and srcpart2.hr = 11
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -359,7 +359,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n3
                   filterExpr: ((ds2 = '2008-04-08') and ds is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 42 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -468,14 +468,14 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: drop table srcpart_date
+PREHOOK: query: drop table srcpart_date_n3
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@srcpart_date
-PREHOOK: Output: default@srcpart_date
-POSTHOOK: query: drop table srcpart_date
+PREHOOK: Input: default@srcpart_date_n3
+PREHOOK: Output: default@srcpart_date_n3
+POSTHOOK: query: drop table srcpart_date_n3
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@srcpart_date
-POSTHOOK: Output: default@srcpart_date
+POSTHOOK: Input: default@srcpart_date_n3
+POSTHOOK: Output: default@srcpart_date_n3
 PREHOOK: query: drop table srcpart2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@srcpart2

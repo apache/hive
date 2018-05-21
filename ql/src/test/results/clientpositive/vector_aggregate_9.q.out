@@ -1,4 +1,4 @@
-PREHOOK: query: create table vectortab2k(
+PREHOOK: query: create table vectortab2k_n4(
             t tinyint,
             si smallint,
             i int,
@@ -16,8 +16,8 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@vectortab2k
-POSTHOOK: query: create table vectortab2k(
+PREHOOK: Output: default@vectortab2k_n4
+POSTHOOK: query: create table vectortab2k_n4(
             t tinyint,
             si smallint,
             i int,
@@ -35,16 +35,16 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@vectortab2k
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/vectortab2k' OVERWRITE INTO TABLE vectortab2k
+POSTHOOK: Output: default@vectortab2k_n4
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/vectortab2k' OVERWRITE INTO TABLE vectortab2k_n4
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@vectortab2k
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/vectortab2k' OVERWRITE INTO TABLE vectortab2k
+PREHOOK: Output: default@vectortab2k_n4
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/vectortab2k' OVERWRITE INTO TABLE vectortab2k_n4
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@vectortab2k
-PREHOOK: query: create table vectortab2korc(
+POSTHOOK: Output: default@vectortab2k_n4
+PREHOOK: query: create table vectortab2korc_n4(
             t tinyint,
             si smallint,
             i int,
@@ -61,8 +61,8 @@ PREHOOK: query: create table vectortab2korc(
 STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@vectortab2korc
-POSTHOOK: query: create table vectortab2korc(
+PREHOOK: Output: default@vectortab2korc_n4
+POSTHOOK: query: create table vectortab2korc_n4(
             t tinyint,
             si smallint,
             i int,
@@ -79,33 +79,33 @@ POSTHOOK: query: create table vectortab2korc(
 STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@vectortab2korc
-PREHOOK: query: INSERT INTO TABLE vectortab2korc SELECT * FROM vectortab2k
+POSTHOOK: Output: default@vectortab2korc_n4
+PREHOOK: query: INSERT INTO TABLE vectortab2korc_n4 SELECT * FROM vectortab2k_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@vectortab2k
-PREHOOK: Output: default@vectortab2korc
-POSTHOOK: query: INSERT INTO TABLE vectortab2korc SELECT * FROM vectortab2k
+PREHOOK: Input: default@vectortab2k_n4
+PREHOOK: Output: default@vectortab2korc_n4
+POSTHOOK: query: INSERT INTO TABLE vectortab2korc_n4 SELECT * FROM vectortab2k_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@vectortab2k
-POSTHOOK: Output: default@vectortab2korc
-POSTHOOK: Lineage: vectortab2korc.b SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: vectortab2korc.bo SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: vectortab2korc.d SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: vectortab2korc.dc SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:dc, type:decimal(38,18), comment:null), ]
-POSTHOOK: Lineage: vectortab2korc.dt SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:dt, type:date, comment:null), ]
-POSTHOOK: Lineage: vectortab2korc.f SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: vectortab2korc.i SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: vectortab2korc.s SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: vectortab2korc.s2 SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:s2, type:string, comment:null), ]
-POSTHOOK: Lineage: vectortab2korc.si SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: vectortab2korc.t SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: vectortab2korc.ts SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:ts, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: vectortab2korc.ts2 SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:ts2, type:timestamp, comment:null), ]
+POSTHOOK: Input: default@vectortab2k_n4
+POSTHOOK: Output: default@vectortab2korc_n4
+POSTHOOK: Lineage: vectortab2korc_n4.b SIMPLE [(vectortab2k_n4)vectortab2k_n4.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc_n4.bo SIMPLE [(vectortab2k_n4)vectortab2k_n4.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc_n4.d SIMPLE [(vectortab2k_n4)vectortab2k_n4.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc_n4.dc SIMPLE [(vectortab2k_n4)vectortab2k_n4.FieldSchema(name:dc, type:decimal(38,18), comment:null), ]
+POSTHOOK: Lineage: vectortab2korc_n4.dt SIMPLE [(vectortab2k_n4)vectortab2k_n4.FieldSchema(name:dt, type:date, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc_n4.f SIMPLE [(vectortab2k_n4)vectortab2k_n4.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc_n4.i SIMPLE [(vectortab2k_n4)vectortab2k_n4.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc_n4.s SIMPLE [(vectortab2k_n4)vectortab2k_n4.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc_n4.s2 SIMPLE [(vectortab2k_n4)vectortab2k_n4.FieldSchema(name:s2, type:string, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc_n4.si SIMPLE [(vectortab2k_n4)vectortab2k_n4.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc_n4.t SIMPLE [(vectortab2k_n4)vectortab2k_n4.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc_n4.ts SIMPLE [(vectortab2k_n4)vectortab2k_n4.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc_n4.ts2 SIMPLE [(vectortab2k_n4)vectortab2k_n4.FieldSchema(name:ts2, type:timestamp, comment:null), ]
 PREHOOK: query: explain vectorization detail
-select min(dc), max(dc), sum(dc), avg(dc) from vectortab2korc
+select min(dc), max(dc), sum(dc), avg(dc) from vectortab2korc_n4
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select min(dc), max(dc), sum(dc), avg(dc) from vectortab2korc
+select min(dc), max(dc), sum(dc), avg(dc) from vectortab2korc_n4
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -120,7 +120,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: vectortab2korc
+            alias: vectortab2korc_n4
             Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -198,20 +198,20 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select min(dc), max(dc), sum(dc), avg(dc) from vectortab2korc
+PREHOOK: query: select min(dc), max(dc), sum(dc), avg(dc) from vectortab2korc_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@vectortab2korc
+PREHOOK: Input: default@vectortab2korc_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select min(dc), max(dc), sum(dc), avg(dc) from vectortab2korc
+POSTHOOK: query: select min(dc), max(dc), sum(dc), avg(dc) from vectortab2korc_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@vectortab2korc
+POSTHOOK: Input: default@vectortab2korc_n4
 #### A masked pattern was here ####
 -4997414117561.546875000000000000	4994550248722.298828000000000000	-10252745435816.024410000000000000	-5399023399.587163986308583465
 PREHOOK: query: explain vectorization detail
-select min(d), max(d), sum(d), avg(d) from vectortab2korc
+select min(d), max(d), sum(d), avg(d) from vectortab2korc_n4
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select min(d), max(d), sum(d), avg(d) from vectortab2korc
+select min(d), max(d), sum(d), avg(d) from vectortab2korc_n4
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -226,7 +226,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: vectortab2korc
+            alias: vectortab2korc_n4
             Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -304,20 +304,20 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select min(d), max(d), sum(d), avg(d) from vectortab2korc
+PREHOOK: query: select min(d), max(d), sum(d), avg(d) from vectortab2korc_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@vectortab2korc
+PREHOOK: Input: default@vectortab2korc_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select min(d), max(d), sum(d), avg(d) from vectortab2korc
+POSTHOOK: query: select min(d), max(d), sum(d), avg(d) from vectortab2korc_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@vectortab2korc
+POSTHOOK: Input: default@vectortab2korc_n4
 #### A masked pattern was here ####
 -4999829.07	4997627.14	-1.7516847286999977E8	-92193.93308947356
 PREHOOK: query: explain vectorization detail
-select min(ts), max(ts), sum(ts), avg(ts) from vectortab2korc
+select min(ts), max(ts), sum(ts), avg(ts) from vectortab2korc_n4
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select min(ts), max(ts), sum(ts), avg(ts) from vectortab2korc
+select min(ts), max(ts), sum(ts), avg(ts) from vectortab2korc_n4
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -332,7 +332,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: vectortab2korc
+            alias: vectortab2korc_n4
             Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -410,12 +410,12 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select min(ts), max(ts), sum(ts), avg(ts) from vectortab2korc
+PREHOOK: query: select min(ts), max(ts), sum(ts), avg(ts) from vectortab2korc_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@vectortab2korc
+PREHOOK: Input: default@vectortab2korc_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select min(ts), max(ts), sum(ts), avg(ts) from vectortab2korc
+POSTHOOK: query: select min(ts), max(ts), sum(ts), avg(ts) from vectortab2korc_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@vectortab2korc
+POSTHOOK: Input: default@vectortab2korc_n4
 #### A masked pattern was here ####
 2013-02-18 21:06:48	2081-02-22 01:21:53	4.591384881081E12	2.4254542425150557E9

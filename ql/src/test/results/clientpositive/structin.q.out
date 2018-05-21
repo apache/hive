@@ -1,12 +1,12 @@
-PREHOOK: query: create table t11 (`id` string, `lineid` string)
+PREHOOK: query: create table t11_n1 (`id` string, `lineid` string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t11
-POSTHOOK: query: create table t11 (`id` string, `lineid` string)
+PREHOOK: Output: default@t11_n1
+POSTHOOK: query: create table t11_n1 (`id` string, `lineid` string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t11
-PREHOOK: query: explain select * from t11 where struct(`id`, `lineid`)
+POSTHOOK: Output: default@t11_n1
+PREHOOK: query: explain select * from t11_n1 where struct(`id`, `lineid`)
 IN (
 struct('1234-1111-0074578664','3'),
 struct('1234-1111-0074578695','1'),
@@ -19,7 +19,7 @@ struct('1234-1111-0074019610','1'),
 struct('1234-1111-0074022106','1')
 )
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from t11 where struct(`id`, `lineid`)
+POSTHOOK: query: explain select * from t11_n1 where struct(`id`, `lineid`)
 IN (
 struct('1234-1111-0074578664','3'),
 struct('1234-1111-0074578695','1'),
@@ -41,7 +41,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t11
+            alias: t11_n1
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (struct(id,lineid)) IN (const struct('1234-1111-0074578664','3'), const struct('1234-1111-0074578695','1'), const struct('1234-1111-0074580704','1'), const struct('1234-1111-0074581619','2'), const struct('1234-1111-0074582745','1'), const struct('1234-1111-0074586625','1'), const struct('1234-1111-0074019112','1'), const struct('1234-1111-0074019610','1'), const struct('1234-1111-0074022106','1')) (type: boolean)
@@ -65,13 +65,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select * from t11 where struct(`id`, `lineid`)
+PREHOOK: query: explain select * from t11_n1 where struct(`id`, `lineid`)
 IN (
 struct('1234-1111-0074578664','3'),
 struct('1234-1111-0074578695',1)
 )
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from t11 where struct(`id`, `lineid`)
+POSTHOOK: query: explain select * from t11_n1 where struct(`id`, `lineid`)
 IN (
 struct('1234-1111-0074578664','3'),
 struct('1234-1111-0074578695',1)
@@ -86,7 +86,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t11
+            alias: t11_n1
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (struct(id,lineid)) IN (const struct('1234-1111-0074578664','3'), const struct('1234-1111-0074578695',1)) (type: boolean)

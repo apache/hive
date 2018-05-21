@@ -1,14 +1,14 @@
-PREHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string) partitioned by (ds string) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE srcbucket_mapjoin_n8(key int, value string) partitioned by (ds string) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string) partitioned by (ds string) STORED AS TEXTFILE
+PREHOOK: Output: default@srcbucket_mapjoin_n8
+POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_n8(key int, value string) partitioned by (ds string) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcbucket_mapjoin
-PREHOOK: query: explain load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_n8
+PREHOOK: query: explain load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_n8 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
-POSTHOOK: query: explain load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+POSTHOOK: query: explain load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_n8 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -25,30 +25,30 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.srcbucket_mapjoin
+              name: default.srcbucket_mapjoin_n8
 
   Stage: Stage-1
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+PREHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_n8 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_n8
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_n8 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08
-PREHOOK: query: select * from srcbucket_mapjoin
+POSTHOOK: Output: default@srcbucket_mapjoin_n8
+POSTHOOK: Output: default@srcbucket_mapjoin_n8@ds=2008-04-08
+PREHOOK: query: select * from srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin
-PREHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
+PREHOOK: Input: default@srcbucket_mapjoin_n8
+PREHOOK: Input: default@srcbucket_mapjoin_n8@ds=2008-04-08
 #### A masked pattern was here ####
-POSTHOOK: query: select * from srcbucket_mapjoin
+POSTHOOK: query: select * from srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin
-POSTHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
+POSTHOOK: Input: default@srcbucket_mapjoin_n8
+POSTHOOK: Input: default@srcbucket_mapjoin_n8@ds=2008-04-08
 #### A masked pattern was here ####
 165	val_165	2008-04-08
 484	val_484	2008-04-08
@@ -168,25 +168,25 @@ POSTHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
 477	val_477	2008-04-08
 169	val_169	2008-04-08
 400	val_400	2008-04-08
-PREHOOK: query: drop table srcbucket_mapjoin
+PREHOOK: query: drop table srcbucket_mapjoin_n8
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@srcbucket_mapjoin
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: drop table srcbucket_mapjoin
+PREHOOK: Input: default@srcbucket_mapjoin_n8
+PREHOOK: Output: default@srcbucket_mapjoin_n8
+POSTHOOK: query: drop table srcbucket_mapjoin_n8
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@srcbucket_mapjoin
-POSTHOOK: Output: default@srcbucket_mapjoin
-PREHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string) partitioned by (ds string) STORED AS TEXTFILE
+POSTHOOK: Input: default@srcbucket_mapjoin_n8
+POSTHOOK: Output: default@srcbucket_mapjoin_n8
+PREHOOK: query: CREATE TABLE srcbucket_mapjoin_n8(key int, value string) partitioned by (ds string) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string) partitioned by (ds string) STORED AS TEXTFILE
+PREHOOK: Output: default@srcbucket_mapjoin_n8
+POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_n8(key int, value string) partitioned by (ds string) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcbucket_mapjoin
-PREHOOK: query: explain load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin
+POSTHOOK: Output: default@srcbucket_mapjoin_n8
+PREHOOK: query: explain load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
-POSTHOOK: query: explain load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin
+POSTHOOK: query: explain load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -202,7 +202,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcbucket_mapjoin__temp_table_for_load_data__
+                  alias: srcbucket_mapjoin_n8__temp_table_for_load_data__
                   Statistics: Num rows: 68 Data size: 24552 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: string), ds (type: string)
@@ -215,7 +215,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.srcbucket_mapjoin
+                          name: default.srcbucket_mapjoin_n8
             Execution mode: vectorized, llap
             LLAP IO: no inputs
 
@@ -232,31 +232,31 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.srcbucket_mapjoin
+              name: default.srcbucket_mapjoin_n8
 
   Stage: Stage-3
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin
+PREHOOK: query: load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin
+PREHOOK: Input: default@srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__
+PREHOOK: Output: default@srcbucket_mapjoin_n8
+POSTHOOK: query: load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__
-POSTHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08
-POSTHOOK: Lineage: srcbucket_mapjoin PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: srcbucket_mapjoin PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: select * from srcbucket_mapjoin
+POSTHOOK: Input: default@srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__
+POSTHOOK: Output: default@srcbucket_mapjoin_n8@ds=2008-04-08
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select * from srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin
-PREHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
+PREHOOK: Input: default@srcbucket_mapjoin_n8
+PREHOOK: Input: default@srcbucket_mapjoin_n8@ds=2008-04-08
 #### A masked pattern was here ####
-POSTHOOK: query: select * from srcbucket_mapjoin
+POSTHOOK: query: select * from srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin
-POSTHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
+POSTHOOK: Input: default@srcbucket_mapjoin_n8
+POSTHOOK: Input: default@srcbucket_mapjoin_n8@ds=2008-04-08
 #### A masked pattern was here ####
 165	val_165	2008-04-08
 484	val_484	2008-04-08
@@ -376,25 +376,25 @@ POSTHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
 477	val_477	2008-04-08
 169	val_169	2008-04-08
 400	val_400	2008-04-08
-PREHOOK: query: drop table srcbucket_mapjoin
+PREHOOK: query: drop table srcbucket_mapjoin_n8
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@srcbucket_mapjoin
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: drop table srcbucket_mapjoin
+PREHOOK: Input: default@srcbucket_mapjoin_n8
+PREHOOK: Output: default@srcbucket_mapjoin_n8
+POSTHOOK: query: drop table srcbucket_mapjoin_n8
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@srcbucket_mapjoin
-POSTHOOK: Output: default@srcbucket_mapjoin
-PREHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string) partitioned by (ds string, hr int) STORED AS TEXTFILE
+POSTHOOK: Input: default@srcbucket_mapjoin_n8
+POSTHOOK: Output: default@srcbucket_mapjoin_n8
+PREHOOK: query: CREATE TABLE srcbucket_mapjoin_n8(key int, value string) partitioned by (ds string, hr int) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string) partitioned by (ds string, hr int) STORED AS TEXTFILE
+PREHOOK: Output: default@srcbucket_mapjoin_n8
+POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_n8(key int, value string) partitioned by (ds string, hr int) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcbucket_mapjoin
-PREHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin
+POSTHOOK: Output: default@srcbucket_mapjoin_n8
+PREHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
-POSTHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin
+POSTHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -410,7 +410,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcbucket_mapjoin__temp_table_for_load_data__
+                  alias: srcbucket_mapjoin_n8__temp_table_for_load_data__
                   Statistics: Num rows: 73 Data size: 26696 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: string), ds (type: string), hr (type: int)
@@ -423,7 +423,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.srcbucket_mapjoin
+                          name: default.srcbucket_mapjoin_n8
             Execution mode: vectorized, llap
             LLAP IO: no inputs
 
@@ -441,36 +441,36 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.srcbucket_mapjoin
+              name: default.srcbucket_mapjoin_n8
 
   Stage: Stage-3
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin
+PREHOOK: query: load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin
+PREHOOK: Input: default@srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__
+PREHOOK: Output: default@srcbucket_mapjoin_n8
+POSTHOOK: query: load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__
-POSTHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08/hr=0
-POSTHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08/hr=1
-POSTHOOK: Lineage: srcbucket_mapjoin PARTITION(ds=2008-04-08,hr=0).key SIMPLE [(srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: srcbucket_mapjoin PARTITION(ds=2008-04-08,hr=0).value SIMPLE [(srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: srcbucket_mapjoin PARTITION(ds=2008-04-08,hr=1).key SIMPLE [(srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: srcbucket_mapjoin PARTITION(ds=2008-04-08,hr=1).value SIMPLE [(srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: select * from srcbucket_mapjoin
+POSTHOOK: Input: default@srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__
+POSTHOOK: Output: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=0
+POSTHOOK: Output: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=1
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=0).key SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=0).value SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=1).key SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=1).value SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select * from srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin
-PREHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08/hr=0
-PREHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08/hr=1
+PREHOOK: Input: default@srcbucket_mapjoin_n8
+PREHOOK: Input: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=0
+PREHOOK: Input: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from srcbucket_mapjoin
+POSTHOOK: query: select * from srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin
-POSTHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08/hr=0
-POSTHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08/hr=1
+POSTHOOK: Input: default@srcbucket_mapjoin_n8
+POSTHOOK: Input: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=0
+POSTHOOK: Input: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=1
 #### A masked pattern was here ####
 484	val_484	2008-04-08	0
 224	val_224	2008-04-08	0
@@ -590,25 +590,25 @@ POSTHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08/hr=1
 37	val_37	2008-04-08	1
 194	val_194	2008-04-08	1
 169	val_169	2008-04-08	1
-PREHOOK: query: drop table srcbucket_mapjoin
+PREHOOK: query: drop table srcbucket_mapjoin_n8
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@srcbucket_mapjoin
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: drop table srcbucket_mapjoin
+PREHOOK: Input: default@srcbucket_mapjoin_n8
+PREHOOK: Output: default@srcbucket_mapjoin_n8
+POSTHOOK: query: drop table srcbucket_mapjoin_n8
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@srcbucket_mapjoin
-POSTHOOK: Output: default@srcbucket_mapjoin
-PREHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string) partitioned by (ds string, hr int) STORED AS TEXTFILE
+POSTHOOK: Input: default@srcbucket_mapjoin_n8
+POSTHOOK: Output: default@srcbucket_mapjoin_n8
+PREHOOK: query: CREATE TABLE srcbucket_mapjoin_n8(key int, value string) partitioned by (ds string, hr int) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string) partitioned by (ds string, hr int) STORED AS TEXTFILE
+PREHOOK: Output: default@srcbucket_mapjoin_n8
+POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_n8(key int, value string) partitioned by (ds string, hr int) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcbucket_mapjoin
-PREHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions/subdir' INTO TABLE srcbucket_mapjoin
+POSTHOOK: Output: default@srcbucket_mapjoin_n8
+PREHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions/subdir' INTO TABLE srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
-POSTHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions/subdir' INTO TABLE srcbucket_mapjoin
+POSTHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions/subdir' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -624,7 +624,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcbucket_mapjoin__temp_table_for_load_data__
+                  alias: srcbucket_mapjoin_n8__temp_table_for_load_data__
                   Statistics: Num rows: 147 Data size: 53016 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: string), ds (type: string), hr (type: int)
@@ -637,7 +637,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.srcbucket_mapjoin
+                          name: default.srcbucket_mapjoin_n8
             Execution mode: vectorized, llap
             LLAP IO: no inputs
 
@@ -655,36 +655,36 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.srcbucket_mapjoin
+              name: default.srcbucket_mapjoin_n8
 
   Stage: Stage-3
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: load data local inpath '../../data/files/load_data_job/partitions/subdir' INTO TABLE srcbucket_mapjoin
+PREHOOK: query: load data local inpath '../../data/files/load_data_job/partitions/subdir' INTO TABLE srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: load data local inpath '../../data/files/load_data_job/partitions/subdir' INTO TABLE srcbucket_mapjoin
+PREHOOK: Input: default@srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__
+PREHOOK: Output: default@srcbucket_mapjoin_n8
+POSTHOOK: query: load data local inpath '../../data/files/load_data_job/partitions/subdir' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__
-POSTHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08/hr=0
-POSTHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08/hr=1
-POSTHOOK: Lineage: srcbucket_mapjoin PARTITION(ds=2008-04-08,hr=0).key SIMPLE [(srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: srcbucket_mapjoin PARTITION(ds=2008-04-08,hr=0).value SIMPLE [(srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: srcbucket_mapjoin PARTITION(ds=2008-04-08,hr=1).key SIMPLE [(srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: srcbucket_mapjoin PARTITION(ds=2008-04-08,hr=1).value SIMPLE [(srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: select * from srcbucket_mapjoin
+POSTHOOK: Input: default@srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__
+POSTHOOK: Output: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=0
+POSTHOOK: Output: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=1
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=0).key SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=0).value SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=1).key SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=1).value SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select * from srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin
-PREHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08/hr=0
-PREHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08/hr=1
+PREHOOK: Input: default@srcbucket_mapjoin_n8
+PREHOOK: Input: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=0
+PREHOOK: Input: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from srcbucket_mapjoin
+POSTHOOK: query: select * from srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin
-POSTHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08/hr=0
-POSTHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08/hr=1
+POSTHOOK: Input: default@srcbucket_mapjoin_n8
+POSTHOOK: Input: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=0
+POSTHOOK: Input: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=1
 #### A masked pattern was here ####
 484	val_484	2008-04-08	0
 224	val_224	2008-04-08	0
@@ -922,25 +922,25 @@ POSTHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08/hr=1
 37	val_37	2008-04-08	1
 194	val_194	2008-04-08	1
 169	val_169	2008-04-08	1
-PREHOOK: query: drop table srcbucket_mapjoin
+PREHOOK: query: drop table srcbucket_mapjoin_n8
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@srcbucket_mapjoin
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: drop table srcbucket_mapjoin
+PREHOOK: Input: default@srcbucket_mapjoin_n8
+PREHOOK: Output: default@srcbucket_mapjoin_n8
+POSTHOOK: query: drop table srcbucket_mapjoin_n8
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@srcbucket_mapjoin
-POSTHOOK: Output: default@srcbucket_mapjoin
-PREHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string) clustered by (key) sorted by (key) into 5 buckets STORED AS TEXTFILE
+POSTHOOK: Input: default@srcbucket_mapjoin_n8
+POSTHOOK: Output: default@srcbucket_mapjoin_n8
+PREHOOK: query: CREATE TABLE srcbucket_mapjoin_n8(key int, value string) clustered by (key) sorted by (key) into 5 buckets STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string) clustered by (key) sorted by (key) into 5 buckets STORED AS TEXTFILE
+PREHOOK: Output: default@srcbucket_mapjoin_n8
+POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_n8(key int, value string) clustered by (key) sorted by (key) into 5 buckets STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcbucket_mapjoin
-PREHOOK: query: explain load data local inpath '../../data/files/load_data_job/bucketing.txt' INTO TABLE srcbucket_mapjoin
+POSTHOOK: Output: default@srcbucket_mapjoin_n8
+PREHOOK: query: explain load data local inpath '../../data/files/load_data_job/bucketing.txt' INTO TABLE srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
-POSTHOOK: query: explain load data local inpath '../../data/files/load_data_job/bucketing.txt' INTO TABLE srcbucket_mapjoin
+POSTHOOK: query: explain load data local inpath '../../data/files/load_data_job/bucketing.txt' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -959,7 +959,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcbucket_mapjoin__temp_table_for_load_data__
+                  alias: srcbucket_mapjoin_n8__temp_table_for_load_data__
                   Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: string)
@@ -987,7 +987,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.srcbucket_mapjoin
+                      name: default.srcbucket_mapjoin_n8
 
   Stage: Stage-2
     Dependency Collection
@@ -1000,29 +1000,29 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.srcbucket_mapjoin
+              name: default.srcbucket_mapjoin_n8
 
   Stage: Stage-3
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: load data local inpath '../../data/files/load_data_job/bucketing.txt' INTO TABLE srcbucket_mapjoin
+PREHOOK: query: load data local inpath '../../data/files/load_data_job/bucketing.txt' INTO TABLE srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: load data local inpath '../../data/files/load_data_job/bucketing.txt' INTO TABLE srcbucket_mapjoin
+PREHOOK: Input: default@srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__
+PREHOOK: Output: default@srcbucket_mapjoin_n8
+POSTHOOK: query: load data local inpath '../../data/files/load_data_job/bucketing.txt' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__
-POSTHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: Lineage: srcbucket_mapjoin.key SIMPLE [(srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: srcbucket_mapjoin.value SIMPLE [(srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: select * from srcbucket_mapjoin
+POSTHOOK: Input: default@srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__
+POSTHOOK: Output: default@srcbucket_mapjoin_n8
+POSTHOOK: Lineage: srcbucket_mapjoin_n8.key SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8.value SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select * from srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin
+PREHOOK: Input: default@srcbucket_mapjoin_n8
 #### A masked pattern was here ####
-POSTHOOK: query: select * from srcbucket_mapjoin
+POSTHOOK: query: select * from srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin
+POSTHOOK: Input: default@srcbucket_mapjoin_n8
 #### A masked pattern was here ####
 8	val_8
 33	val_33
@@ -1142,25 +1142,25 @@ POSTHOOK: Input: default@srcbucket_mapjoin
 480	val_480
 491	val_491
 495	val_495
-PREHOOK: query: drop table srcbucket_mapjoin
+PREHOOK: query: drop table srcbucket_mapjoin_n8
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@srcbucket_mapjoin
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: drop table srcbucket_mapjoin
+PREHOOK: Input: default@srcbucket_mapjoin_n8
+PREHOOK: Output: default@srcbucket_mapjoin_n8
+POSTHOOK: query: drop table srcbucket_mapjoin_n8
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@srcbucket_mapjoin
-POSTHOOK: Output: default@srcbucket_mapjoin
-PREHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string) partitioned by (ds string) clustered by (key) sorted by (key) into 5 buckets STORED AS TEXTFILE
+POSTHOOK: Input: default@srcbucket_mapjoin_n8
+POSTHOOK: Output: default@srcbucket_mapjoin_n8
+PREHOOK: query: CREATE TABLE srcbucket_mapjoin_n8(key int, value string) partitioned by (ds string) clustered by (key) sorted by (key) into 5 buckets STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string) partitioned by (ds string) clustered by (key) sorted by (key) into 5 buckets STORED AS TEXTFILE
+PREHOOK: Output: default@srcbucket_mapjoin_n8
+POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_n8(key int, value string) partitioned by (ds string) clustered by (key) sorted by (key) into 5 buckets STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcbucket_mapjoin
-PREHOOK: query: explain load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin
+POSTHOOK: Output: default@srcbucket_mapjoin_n8
+PREHOOK: query: explain load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
-POSTHOOK: query: explain load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin
+POSTHOOK: query: explain load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1179,7 +1179,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcbucket_mapjoin__temp_table_for_load_data__
+                  alias: srcbucket_mapjoin_n8__temp_table_for_load_data__
                   Statistics: Num rows: 68 Data size: 24552 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: string), ds (type: string)
@@ -1207,7 +1207,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.srcbucket_mapjoin
+                      name: default.srcbucket_mapjoin_n8
 
   Stage: Stage-2
     Dependency Collection
@@ -1222,31 +1222,31 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.srcbucket_mapjoin
+              name: default.srcbucket_mapjoin_n8
 
   Stage: Stage-3
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin
+PREHOOK: query: load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin
+PREHOOK: Input: default@srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__
+PREHOOK: Output: default@srcbucket_mapjoin_n8
+POSTHOOK: query: load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__
-POSTHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08
-POSTHOOK: Lineage: srcbucket_mapjoin PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: srcbucket_mapjoin PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: select * from srcbucket_mapjoin
+POSTHOOK: Input: default@srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__
+POSTHOOK: Output: default@srcbucket_mapjoin_n8@ds=2008-04-08
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select * from srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin
-PREHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
+PREHOOK: Input: default@srcbucket_mapjoin_n8
+PREHOOK: Input: default@srcbucket_mapjoin_n8@ds=2008-04-08
 #### A masked pattern was here ####
-POSTHOOK: query: select * from srcbucket_mapjoin
+POSTHOOK: query: select * from srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin
-POSTHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
+POSTHOOK: Input: default@srcbucket_mapjoin_n8
+POSTHOOK: Input: default@srcbucket_mapjoin_n8@ds=2008-04-08
 #### A masked pattern was here ####
 8	val_8	2008-04-08
 33	val_33	2008-04-08
@@ -1366,25 +1366,25 @@ POSTHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
 480	val_480	2008-04-08
 491	val_491	2008-04-08
 495	val_495	2008-04-08
-PREHOOK: query: drop table srcbucket_mapjoin
+PREHOOK: query: drop table srcbucket_mapjoin_n8
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@srcbucket_mapjoin
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: drop table srcbucket_mapjoin
+PREHOOK: Input: default@srcbucket_mapjoin_n8
+PREHOOK: Output: default@srcbucket_mapjoin_n8
+POSTHOOK: query: drop table srcbucket_mapjoin_n8
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@srcbucket_mapjoin
-POSTHOOK: Output: default@srcbucket_mapjoin
-PREHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string) partitioned by (ds string, hr int) clustered by (key) sorted by (key) into 5 buckets STORED AS TEXTFILE
+POSTHOOK: Input: default@srcbucket_mapjoin_n8
+POSTHOOK: Output: default@srcbucket_mapjoin_n8
+PREHOOK: query: CREATE TABLE srcbucket_mapjoin_n8(key int, value string) partitioned by (ds string, hr int) clustered by (key) sorted by (key) into 5 buckets STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string) partitioned by (ds string, hr int) clustered by (key) sorted by (key) into 5 buckets STORED AS TEXTFILE
+PREHOOK: Output: default@srcbucket_mapjoin_n8
+POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_n8(key int, value string) partitioned by (ds string, hr int) clustered by (key) sorted by (key) into 5 buckets STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcbucket_mapjoin
-PREHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin
+POSTHOOK: Output: default@srcbucket_mapjoin_n8
+PREHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
-POSTHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin
+POSTHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1403,7 +1403,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcbucket_mapjoin__temp_table_for_load_data__
+                  alias: srcbucket_mapjoin_n8__temp_table_for_load_data__
                   Statistics: Num rows: 73 Data size: 26696 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: string), ds (type: string), hr (type: int)
@@ -1431,7 +1431,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.srcbucket_mapjoin
+                      name: default.srcbucket_mapjoin_n8
 
   Stage: Stage-2
     Dependency Collection
@@ -1447,36 +1447,36 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.srcbucket_mapjoin
+              name: default.srcbucket_mapjoin_n8
 
   Stage: Stage-3
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin
+PREHOOK: query: load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin
+PREHOOK: Input: default@srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__
+PREHOOK: Output: default@srcbucket_mapjoin_n8
+POSTHOOK: query: load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__
-POSTHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08/hr=0
-POSTHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08/hr=1
-POSTHOOK: Lineage: srcbucket_mapjoin PARTITION(ds=2008-04-08,hr=0).key SIMPLE [(srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: srcbucket_mapjoin PARTITION(ds=2008-04-08,hr=0).value SIMPLE [(srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: srcbucket_mapjoin PARTITION(ds=2008-04-08,hr=1).key SIMPLE [(srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: srcbucket_mapjoin PARTITION(ds=2008-04-08,hr=1).value SIMPLE [(srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: select * from srcbucket_mapjoin
+POSTHOOK: Input: default@srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__
+POSTHOOK: Output: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=0
+POSTHOOK: Output: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=1
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=0).key SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=0).value SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=1).key SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=1).value SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select * from srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin
-PREHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08/hr=0
-PREHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08/hr=1
+PREHOOK: Input: default@srcbucket_mapjoin_n8
+PREHOOK: Input: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=0
+PREHOOK: Input: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from srcbucket_mapjoin
+POSTHOOK: query: select * from srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin
-POSTHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08/hr=0
-POSTHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08/hr=1
+POSTHOOK: Input: default@srcbucket_mapjoin_n8
+POSTHOOK: Input: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=0
+POSTHOOK: Input: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=1
 #### A masked pattern was here ####
 8	val_8	2008-04-08	0
 33	val_33	2008-04-08	0
@@ -1596,25 +1596,25 @@ POSTHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08/hr=1
 396	val_396	2008-04-08	1
 396	val_396	2008-04-08	1
 491	val_491	2008-04-08	1
-PREHOOK: query: drop table srcbucket_mapjoin
+PREHOOK: query: drop table srcbucket_mapjoin_n8
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@srcbucket_mapjoin
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: drop table srcbucket_mapjoin
+PREHOOK: Input: default@srcbucket_mapjoin_n8
+PREHOOK: Output: default@srcbucket_mapjoin_n8
+POSTHOOK: query: drop table srcbucket_mapjoin_n8
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@srcbucket_mapjoin
-POSTHOOK: Output: default@srcbucket_mapjoin
-PREHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string) partitioned by (ds string, hr int) clustered by (key) sorted by (key) into 5 buckets STORED AS TEXTFILE
+POSTHOOK: Input: default@srcbucket_mapjoin_n8
+POSTHOOK: Output: default@srcbucket_mapjoin_n8
+PREHOOK: query: CREATE TABLE srcbucket_mapjoin_n8(key int, value string) partitioned by (ds string, hr int) clustered by (key) sorted by (key) into 5 buckets STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string) partitioned by (ds string, hr int) clustered by (key) sorted by (key) into 5 buckets STORED AS TEXTFILE
+PREHOOK: Output: default@srcbucket_mapjoin_n8
+POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_n8(key int, value string) partitioned by (ds string, hr int) clustered by (key) sorted by (key) into 5 buckets STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcbucket_mapjoin
-PREHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions/subdir' INTO TABLE srcbucket_mapjoin
+POSTHOOK: Output: default@srcbucket_mapjoin_n8
+PREHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions/subdir' INTO TABLE srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
-POSTHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions/subdir' INTO TABLE srcbucket_mapjoin
+POSTHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions/subdir' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1633,7 +1633,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcbucket_mapjoin__temp_table_for_load_data__
+                  alias: srcbucket_mapjoin_n8__temp_table_for_load_data__
                   Statistics: Num rows: 147 Data size: 53016 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: string), ds (type: string), hr (type: int)
@@ -1661,7 +1661,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.srcbucket_mapjoin
+                      name: default.srcbucket_mapjoin_n8
 
   Stage: Stage-2
     Dependency Collection
@@ -1677,36 +1677,36 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.srcbucket_mapjoin
+              name: default.srcbucket_mapjoin_n8
 
   Stage: Stage-3
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: load data local inpath '../../data/files/load_data_job/partitions/subdir' INTO TABLE srcbucket_mapjoin
+PREHOOK: query: load data local inpath '../../data/files/load_data_job/partitions/subdir' INTO TABLE srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: load data local inpath '../../data/files/load_data_job/partitions/subdir' INTO TABLE srcbucket_mapjoin
+PREHOOK: Input: default@srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__
+PREHOOK: Output: default@srcbucket_mapjoin_n8
+POSTHOOK: query: load data local inpath '../../data/files/load_data_job/partitions/subdir' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__
-POSTHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08/hr=0
-POSTHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08/hr=1
-POSTHOOK: Lineage: srcbucket_mapjoin PARTITION(ds=2008-04-08,hr=0).key SIMPLE [(srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: srcbucket_mapjoin PARTITION(ds=2008-04-08,hr=0).value SIMPLE [(srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: srcbucket_mapjoin PARTITION(ds=2008-04-08,hr=1).key SIMPLE [(srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: srcbucket_mapjoin PARTITION(ds=2008-04-08,hr=1).value SIMPLE [(srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: select * from srcbucket_mapjoin
+POSTHOOK: Input: default@srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__
+POSTHOOK: Output: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=0
+POSTHOOK: Output: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=1
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=0).key SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=0).value SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=1).key SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=1).value SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select * from srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin
-PREHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08/hr=0
-PREHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08/hr=1
+PREHOOK: Input: default@srcbucket_mapjoin_n8
+PREHOOK: Input: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=0
+PREHOOK: Input: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from srcbucket_mapjoin
+POSTHOOK: query: select * from srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin
-POSTHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08/hr=0
-POSTHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08/hr=1
+POSTHOOK: Input: default@srcbucket_mapjoin_n8
+POSTHOOK: Input: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=0
+POSTHOOK: Input: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=1
 #### A masked pattern was here ####
 8	val_8	2008-04-08	0
 8	val_8	2008-04-08	0
@@ -1944,25 +1944,25 @@ POSTHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08/hr=1
 396	val_396	2008-04-08	1
 491	val_491	2008-04-08	1
 491	val_491	2008-04-08	1
-PREHOOK: query: drop table srcbucket_mapjoin
+PREHOOK: query: drop table srcbucket_mapjoin_n8
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@srcbucket_mapjoin
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: drop table srcbucket_mapjoin
+PREHOOK: Input: default@srcbucket_mapjoin_n8
+PREHOOK: Output: default@srcbucket_mapjoin_n8
+POSTHOOK: query: drop table srcbucket_mapjoin_n8
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@srcbucket_mapjoin
-POSTHOOK: Output: default@srcbucket_mapjoin
-PREHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string) partitioned by (ds string, hr int) clustered by (key) sorted by (key) into 5 buckets STORED AS TEXTFILE
+POSTHOOK: Input: default@srcbucket_mapjoin_n8
+POSTHOOK: Output: default@srcbucket_mapjoin_n8
+PREHOOK: query: CREATE TABLE srcbucket_mapjoin_n8(key int, value string) partitioned by (ds string, hr int) clustered by (key) sorted by (key) into 5 buckets STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string) partitioned by (ds string, hr int) clustered by (key) sorted by (key) into 5 buckets STORED AS TEXTFILE
+PREHOOK: Output: default@srcbucket_mapjoin_n8
+POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_n8(key int, value string) partitioned by (ds string, hr int) clustered by (key) sorted by (key) into 5 buckets STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcbucket_mapjoin
-PREHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions' INTO TABLE srcbucket_mapjoin
+POSTHOOK: Output: default@srcbucket_mapjoin_n8
+PREHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions' INTO TABLE srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
-POSTHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions' INTO TABLE srcbucket_mapjoin
+POSTHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1981,7 +1981,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcbucket_mapjoin__temp_table_for_load_data__
+                  alias: srcbucket_mapjoin_n8__temp_table_for_load_data__
                   Statistics: Num rows: 295 Data size: 106032 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: string), ds (type: string), hr (type: int)
@@ -2009,7 +2009,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.srcbucket_mapjoin
+                      name: default.srcbucket_mapjoin_n8
 
   Stage: Stage-2
     Dependency Collection
@@ -2025,36 +2025,36 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.srcbucket_mapjoin
+              name: default.srcbucket_mapjoin_n8
 
   Stage: Stage-3
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: load data local inpath '../../data/files/load_data_job/partitions' INTO TABLE srcbucket_mapjoin
+PREHOOK: query: load data local inpath '../../data/files/load_data_job/partitions' INTO TABLE srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: load data local inpath '../../data/files/load_data_job/partitions' INTO TABLE srcbucket_mapjoin
+PREHOOK: Input: default@srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__
+PREHOOK: Output: default@srcbucket_mapjoin_n8
+POSTHOOK: query: load data local inpath '../../data/files/load_data_job/partitions' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__
-POSTHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08/hr=0
-POSTHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08/hr=1
-POSTHOOK: Lineage: srcbucket_mapjoin PARTITION(ds=2008-04-08,hr=0).key SIMPLE [(srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: srcbucket_mapjoin PARTITION(ds=2008-04-08,hr=0).value SIMPLE [(srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: srcbucket_mapjoin PARTITION(ds=2008-04-08,hr=1).key SIMPLE [(srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: srcbucket_mapjoin PARTITION(ds=2008-04-08,hr=1).value SIMPLE [(srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: select * from srcbucket_mapjoin
+POSTHOOK: Input: default@srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__
+POSTHOOK: Output: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=0
+POSTHOOK: Output: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=1
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=0).key SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=0).value SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=1).key SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=1).value SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select * from srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin
-PREHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08/hr=0
-PREHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08/hr=1
+PREHOOK: Input: default@srcbucket_mapjoin_n8
+PREHOOK: Input: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=0
+PREHOOK: Input: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from srcbucket_mapjoin
+POSTHOOK: query: select * from srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin
-POSTHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08/hr=0
-POSTHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08/hr=1
+POSTHOOK: Input: default@srcbucket_mapjoin_n8
+POSTHOOK: Input: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=0
+POSTHOOK: Input: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=1
 #### A masked pattern was here ####
 8	val_8	2008-04-08	0
 8	val_8	2008-04-08	0
@@ -2528,25 +2528,25 @@ POSTHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08/hr=1
 491	val_491	2008-04-08	1
 491	val_491	2008-04-08	1
 491	val_491	2008-04-08	1
-PREHOOK: query: drop table srcbucket_mapjoin
+PREHOOK: query: drop table srcbucket_mapjoin_n8
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@srcbucket_mapjoin
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: drop table srcbucket_mapjoin
+PREHOOK: Input: default@srcbucket_mapjoin_n8
+PREHOOK: Output: default@srcbucket_mapjoin_n8
+POSTHOOK: query: drop table srcbucket_mapjoin_n8
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@srcbucket_mapjoin
-POSTHOOK: Output: default@srcbucket_mapjoin
-PREHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string, ds string) partitioned by (hr int) clustered by (key, value) sorted by (key, value) into 5 buckets STORED AS TEXTFILE
+POSTHOOK: Input: default@srcbucket_mapjoin_n8
+POSTHOOK: Output: default@srcbucket_mapjoin_n8
+PREHOOK: query: CREATE TABLE srcbucket_mapjoin_n8(key int, value string, ds string) partitioned by (hr int) clustered by (key, value) sorted by (key, value) into 5 buckets STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string, ds string) partitioned by (hr int) clustered by (key, value) sorted by (key, value) into 5 buckets STORED AS TEXTFILE
+PREHOOK: Output: default@srcbucket_mapjoin_n8
+POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_n8(key int, value string, ds string) partitioned by (hr int) clustered by (key, value) sorted by (key, value) into 5 buckets STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcbucket_mapjoin
-PREHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin
+POSTHOOK: Output: default@srcbucket_mapjoin_n8
+PREHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
-POSTHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin
+POSTHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2565,7 +2565,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcbucket_mapjoin__temp_table_for_load_data__
+                  alias: srcbucket_mapjoin_n8__temp_table_for_load_data__
                   Statistics: Num rows: 73 Data size: 26696 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: string), ds (type: string), hr (type: int)
@@ -2593,7 +2593,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.srcbucket_mapjoin
+                      name: default.srcbucket_mapjoin_n8
 
   Stage: Stage-2
     Dependency Collection
@@ -2608,38 +2608,38 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.srcbucket_mapjoin
+              name: default.srcbucket_mapjoin_n8
 
   Stage: Stage-3
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin
+PREHOOK: query: load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin
+PREHOOK: Input: default@srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__
+PREHOOK: Output: default@srcbucket_mapjoin_n8
+POSTHOOK: query: load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__
-POSTHOOK: Output: default@srcbucket_mapjoin@hr=0
-POSTHOOK: Output: default@srcbucket_mapjoin@hr=1
-POSTHOOK: Lineage: srcbucket_mapjoin PARTITION(hr=0).ds SIMPLE [(srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin__temp_table_for_load_data__.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcbucket_mapjoin PARTITION(hr=0).key SIMPLE [(srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: srcbucket_mapjoin PARTITION(hr=0).value SIMPLE [(srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: srcbucket_mapjoin PARTITION(hr=1).ds SIMPLE [(srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin__temp_table_for_load_data__.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcbucket_mapjoin PARTITION(hr=1).key SIMPLE [(srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: srcbucket_mapjoin PARTITION(hr=1).value SIMPLE [(srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: select * from srcbucket_mapjoin
+POSTHOOK: Input: default@srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__
+POSTHOOK: Output: default@srcbucket_mapjoin_n8@hr=0
+POSTHOOK: Output: default@srcbucket_mapjoin_n8@hr=1
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(hr=0).ds SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(hr=0).key SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(hr=0).value SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(hr=1).ds SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(hr=1).key SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(hr=1).value SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select * from srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin
-PREHOOK: Input: default@srcbucket_mapjoin@hr=0
-PREHOOK: Input: default@srcbucket_mapjoin@hr=1
+PREHOOK: Input: default@srcbucket_mapjoin_n8
+PREHOOK: Input: default@srcbucket_mapjoin_n8@hr=0
+PREHOOK: Input: default@srcbucket_mapjoin_n8@hr=1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from srcbucket_mapjoin
+POSTHOOK: query: select * from srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin
-POSTHOOK: Input: default@srcbucket_mapjoin@hr=0
-POSTHOOK: Input: default@srcbucket_mapjoin@hr=1
+POSTHOOK: Input: default@srcbucket_mapjoin_n8
+POSTHOOK: Input: default@srcbucket_mapjoin_n8@hr=0
+POSTHOOK: Input: default@srcbucket_mapjoin_n8@hr=1
 #### A masked pattern was here ####
 0	val_0	2008-04-08	0
 26	val_26	2008-04-08	0
@@ -2759,27 +2759,27 @@ POSTHOOK: Input: default@srcbucket_mapjoin@hr=1
 378	val_378	2008-04-08	1
 411	val_411	2008-04-08	1
 444	val_444	2008-04-08	1
-PREHOOK: query: drop table srcbucket_mapjoin
+PREHOOK: query: drop table srcbucket_mapjoin_n8
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@srcbucket_mapjoin
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: drop table srcbucket_mapjoin
+PREHOOK: Input: default@srcbucket_mapjoin_n8
+PREHOOK: Output: default@srcbucket_mapjoin_n8
+POSTHOOK: query: drop table srcbucket_mapjoin_n8
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@srcbucket_mapjoin
-POSTHOOK: Output: default@srcbucket_mapjoin
-PREHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string) partitioned by (ds string) STORED AS ORC
+POSTHOOK: Input: default@srcbucket_mapjoin_n8
+POSTHOOK: Output: default@srcbucket_mapjoin_n8
+PREHOOK: query: CREATE TABLE srcbucket_mapjoin_n8(key int, value string) partitioned by (ds string) STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string) partitioned by (ds string) STORED AS ORC
+PREHOOK: Output: default@srcbucket_mapjoin_n8
+POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_n8(key int, value string) partitioned by (ds string) STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcbucket_mapjoin
-PREHOOK: query: explain load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin
+POSTHOOK: Output: default@srcbucket_mapjoin_n8
+PREHOOK: query: explain load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin_n8
 INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat'
 SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
 PREHOOK: type: QUERY
-POSTHOOK: query: explain load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin
+POSTHOOK: query: explain load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin_n8
 INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat'
 SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
 POSTHOOK: type: QUERY
@@ -2797,7 +2797,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcbucket_mapjoin__temp_table_for_load_data__
+                  alias: srcbucket_mapjoin_n8__temp_table_for_load_data__
                   Statistics: Num rows: 68 Data size: 24552 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: string), ds (type: string)
@@ -2810,7 +2810,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                           output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                           serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                          name: default.srcbucket_mapjoin
+                          name: default.srcbucket_mapjoin_n8
             Execution mode: vectorized, llap
             LLAP IO: no inputs
 
@@ -2827,35 +2827,35 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.srcbucket_mapjoin
+              name: default.srcbucket_mapjoin_n8
 
   Stage: Stage-3
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin
+PREHOOK: query: load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin_n8
 INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat'
 SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin
+PREHOOK: Input: default@srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__
+PREHOOK: Output: default@srcbucket_mapjoin_n8
+POSTHOOK: query: load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin_n8
 INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat'
 SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__
-POSTHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08
-POSTHOOK: Lineage: srcbucket_mapjoin PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: srcbucket_mapjoin PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: select * from srcbucket_mapjoin
+POSTHOOK: Input: default@srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__
+POSTHOOK: Output: default@srcbucket_mapjoin_n8@ds=2008-04-08
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_n8__TEMP_TABLE_FOR_LOAD_DATA__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select * from srcbucket_mapjoin_n8
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin
-PREHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
+PREHOOK: Input: default@srcbucket_mapjoin_n8
+PREHOOK: Input: default@srcbucket_mapjoin_n8@ds=2008-04-08
 #### A masked pattern was here ####
-POSTHOOK: query: select * from srcbucket_mapjoin
+POSTHOOK: query: select * from srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin
-POSTHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
+POSTHOOK: Input: default@srcbucket_mapjoin_n8
+POSTHOOK: Input: default@srcbucket_mapjoin_n8@ds=2008-04-08
 #### A masked pattern was here ####
 165	val_165	2008-04-08
 484	val_484	2008-04-08
@@ -2975,11 +2975,11 @@ POSTHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
 477	val_477	2008-04-08
 169	val_169	2008-04-08
 400	val_400	2008-04-08
-PREHOOK: query: drop table srcbucket_mapjoin
+PREHOOK: query: drop table srcbucket_mapjoin_n8
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@srcbucket_mapjoin
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: drop table srcbucket_mapjoin
+PREHOOK: Input: default@srcbucket_mapjoin_n8
+PREHOOK: Output: default@srcbucket_mapjoin_n8
+POSTHOOK: query: drop table srcbucket_mapjoin_n8
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@srcbucket_mapjoin
-POSTHOOK: Output: default@srcbucket_mapjoin
+POSTHOOK: Input: default@srcbucket_mapjoin_n8
+POSTHOOK: Output: default@srcbucket_mapjoin_n8

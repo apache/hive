@@ -1,62 +1,62 @@
-PREHOOK: query: CREATE TABLE tbl1(id INT) STORED AS PARQUET
+PREHOOK: query: CREATE TABLE tbl1_n6(id INT) STORED AS PARQUET
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tbl1
-POSTHOOK: query: CREATE TABLE tbl1(id INT) STORED AS PARQUET
+PREHOOK: Output: default@tbl1_n6
+POSTHOOK: query: CREATE TABLE tbl1_n6(id INT) STORED AS PARQUET
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tbl1
-PREHOOK: query: INSERT INTO tbl1 VALUES(1), (2)
+POSTHOOK: Output: default@tbl1_n6
+PREHOOK: query: INSERT INTO tbl1_n6 VALUES(1), (2)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@tbl1
-POSTHOOK: query: INSERT INTO tbl1 VALUES(1), (2)
+PREHOOK: Output: default@tbl1_n6
+POSTHOOK: query: INSERT INTO tbl1_n6 VALUES(1), (2)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@tbl1
-POSTHOOK: Lineage: tbl1.id SCRIPT []
-PREHOOK: query: CREATE TABLE tbl2(id INT, value STRING) STORED AS PARQUET
+POSTHOOK: Output: default@tbl1_n6
+POSTHOOK: Lineage: tbl1_n6.id SCRIPT []
+PREHOOK: query: CREATE TABLE tbl2_n5(id INT, value STRING) STORED AS PARQUET
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tbl2
-POSTHOOK: query: CREATE TABLE tbl2(id INT, value STRING) STORED AS PARQUET
+PREHOOK: Output: default@tbl2_n5
+POSTHOOK: query: CREATE TABLE tbl2_n5(id INT, value STRING) STORED AS PARQUET
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tbl2
-PREHOOK: query: INSERT INTO tbl2 VALUES(1, 'value1')
+POSTHOOK: Output: default@tbl2_n5
+PREHOOK: query: INSERT INTO tbl2_n5 VALUES(1, 'value1')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@tbl2
-POSTHOOK: query: INSERT INTO tbl2 VALUES(1, 'value1')
+PREHOOK: Output: default@tbl2_n5
+POSTHOOK: query: INSERT INTO tbl2_n5 VALUES(1, 'value1')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@tbl2
-POSTHOOK: Lineage: tbl2.id SCRIPT []
-POSTHOOK: Lineage: tbl2.value SCRIPT []
-PREHOOK: query: INSERT INTO tbl2 VALUES(1, 'value2')
+POSTHOOK: Output: default@tbl2_n5
+POSTHOOK: Lineage: tbl2_n5.id SCRIPT []
+POSTHOOK: Lineage: tbl2_n5.value SCRIPT []
+PREHOOK: query: INSERT INTO tbl2_n5 VALUES(1, 'value2')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@tbl2
-POSTHOOK: query: INSERT INTO tbl2 VALUES(1, 'value2')
+PREHOOK: Output: default@tbl2_n5
+POSTHOOK: query: INSERT INTO tbl2_n5 VALUES(1, 'value2')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@tbl2
-POSTHOOK: Lineage: tbl2.id SCRIPT []
-POSTHOOK: Lineage: tbl2.value SCRIPT []
-PREHOOK: query: select tbl1.id, t1.value, t2.value
-FROM tbl1
-JOIN (SELECT * FROM tbl2 WHERE value='value1') t1 ON tbl1.id=t1.id
-JOIN (SELECT * FROM tbl2 WHERE value='value2') t2 ON tbl1.id=t2.id
+POSTHOOK: Output: default@tbl2_n5
+POSTHOOK: Lineage: tbl2_n5.id SCRIPT []
+POSTHOOK: Lineage: tbl2_n5.value SCRIPT []
+PREHOOK: query: select tbl1_n6.id, t1.value, t2.value
+FROM tbl1_n6
+JOIN (SELECT * FROM tbl2_n5 WHERE value='value1') t1 ON tbl1_n6.id=t1.id
+JOIN (SELECT * FROM tbl2_n5 WHERE value='value2') t2 ON tbl1_n6.id=t2.id
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tbl1
-PREHOOK: Input: default@tbl2
+PREHOOK: Input: default@tbl1_n6
+PREHOOK: Input: default@tbl2_n5
 #### A masked pattern was here ####
-POSTHOOK: query: select tbl1.id, t1.value, t2.value
-FROM tbl1
-JOIN (SELECT * FROM tbl2 WHERE value='value1') t1 ON tbl1.id=t1.id
-JOIN (SELECT * FROM tbl2 WHERE value='value2') t2 ON tbl1.id=t2.id
+POSTHOOK: query: select tbl1_n6.id, t1.value, t2.value
+FROM tbl1_n6
+JOIN (SELECT * FROM tbl2_n5 WHERE value='value1') t1 ON tbl1_n6.id=t1.id
+JOIN (SELECT * FROM tbl2_n5 WHERE value='value2') t2 ON tbl1_n6.id=t2.id
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tbl1
-POSTHOOK: Input: default@tbl2
+POSTHOOK: Input: default@tbl1_n6
+POSTHOOK: Input: default@tbl2_n5
 #### A masked pattern was here ####
 1	value1	value2

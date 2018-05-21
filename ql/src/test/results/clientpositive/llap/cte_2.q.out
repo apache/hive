@@ -1,11 +1,11 @@
 PREHOOK: query: with q1 as (select * from src where key= '5'),
-q2 as (select * from src s2 where key = '4')
+q2 as (select * from src s2_n0 where key = '4')
 select * from q1 union all select * from q2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: with q1 as (select * from src where key= '5'),
-q2 as (select * from src s2 where key = '4')
+q2 as (select * from src s2_n0 where key = '4')
 select * from q1 union all select * from q2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -14,49 +14,49 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 5	val_5
 5	val_5
 4	val_4
-PREHOOK: query: create table s1 like src
+PREHOOK: query: create table s1_n1 like src
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@s1
-POSTHOOK: query: create table s1 like src
+PREHOOK: Output: default@s1_n1
+POSTHOOK: query: create table s1_n1 like src
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@s1
+POSTHOOK: Output: default@s1_n1
 PREHOOK: query: with q1 as ( select key, value from src where key = '5')
 from q1
-insert overwrite table s1
+insert overwrite table s1_n1
 select *
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@s1
+PREHOOK: Output: default@s1_n1
 POSTHOOK: query: with q1 as ( select key, value from src where key = '5')
 from q1
-insert overwrite table s1
+insert overwrite table s1_n1
 select *
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@s1
-POSTHOOK: Lineage: s1.key SIMPLE []
-POSTHOOK: Lineage: s1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from s1
+POSTHOOK: Output: default@s1_n1
+POSTHOOK: Lineage: s1_n1.key SIMPLE []
+POSTHOOK: Lineage: s1_n1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from s1_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@s1
+PREHOOK: Input: default@s1_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from s1
+POSTHOOK: query: select * from s1_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@s1
+POSTHOOK: Input: default@s1_n1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 5	val_5
 5	val_5
 5	val_5
-PREHOOK: query: drop table s1
+PREHOOK: query: drop table s1_n1
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@s1
-PREHOOK: Output: default@s1
-POSTHOOK: query: drop table s1
+PREHOOK: Input: default@s1_n1
+PREHOOK: Output: default@s1_n1
+POSTHOOK: query: drop table s1_n1
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@s1
-POSTHOOK: Output: default@s1
+POSTHOOK: Input: default@s1_n1
+POSTHOOK: Output: default@s1_n1
 PREHOOK: query: with q1 as (select * from src where key= '5')
 from q1
 select *
@@ -72,112 +72,112 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 5	val_5
 5	val_5
 5	val_5
-PREHOOK: query: create table s2 as
+PREHOOK: query: create table s2_n0 as
 with q1 as ( select key from src where key = '4')
 select * from q1
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@s2
-POSTHOOK: query: create table s2 as
+PREHOOK: Output: default@s2_n0
+POSTHOOK: query: create table s2_n0 as
 with q1 as ( select key from src where key = '4')
 select * from q1
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@s2
-POSTHOOK: Lineage: s2.key SIMPLE []
-PREHOOK: query: select * from s2
+POSTHOOK: Output: default@s2_n0
+POSTHOOK: Lineage: s2_n0.key SIMPLE []
+PREHOOK: query: select * from s2_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@s2
+PREHOOK: Input: default@s2_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from s2
+POSTHOOK: query: select * from s2_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@s2
+POSTHOOK: Input: default@s2_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 4
-PREHOOK: query: drop table s2
+PREHOOK: query: drop table s2_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@s2
-PREHOOK: Output: default@s2
-POSTHOOK: query: drop table s2
+PREHOOK: Input: default@s2_n0
+PREHOOK: Output: default@s2_n0
+POSTHOOK: query: drop table s2_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@s2
-POSTHOOK: Output: default@s2
-PREHOOK: query: create view v1 as
+POSTHOOK: Input: default@s2_n0
+POSTHOOK: Output: default@s2_n0
+PREHOOK: query: create view v1_n15 as
 with q1 as ( select key from src where key = '5')
 select * from q1
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@v1
-POSTHOOK: query: create view v1 as
+PREHOOK: Output: default@v1_n15
+POSTHOOK: query: create view v1_n15 as
 with q1 as ( select key from src where key = '5')
 select * from q1
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@v1
-POSTHOOK: Lineage: v1.key SIMPLE []
-PREHOOK: query: select * from v1
+POSTHOOK: Output: default@v1_n15
+POSTHOOK: Lineage: v1_n15.key SIMPLE []
+PREHOOK: query: select * from v1_n15
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Input: default@v1
+PREHOOK: Input: default@v1_n15
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from v1
+POSTHOOK: query: select * from v1_n15
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Input: default@v1
+POSTHOOK: Input: default@v1_n15
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 5
 5
 5
-PREHOOK: query: drop view v1
+PREHOOK: query: drop view v1_n15
 PREHOOK: type: DROPVIEW
-PREHOOK: Input: default@v1
-PREHOOK: Output: default@v1
-POSTHOOK: query: drop view v1
+PREHOOK: Input: default@v1_n15
+PREHOOK: Output: default@v1_n15
+POSTHOOK: query: drop view v1_n15
 POSTHOOK: type: DROPVIEW
-POSTHOOK: Input: default@v1
-POSTHOOK: Output: default@v1
-PREHOOK: query: create view v1 as
+POSTHOOK: Input: default@v1_n15
+POSTHOOK: Output: default@v1_n15
+PREHOOK: query: create view v1_n15 as
 with q1 as ( select key from src where key = '5')
 select * from q1
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@v1
-POSTHOOK: query: create view v1 as
+PREHOOK: Output: default@v1_n15
+POSTHOOK: query: create view v1_n15 as
 with q1 as ( select key from src where key = '5')
 select * from q1
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@v1
-POSTHOOK: Lineage: v1.key SIMPLE []
+POSTHOOK: Output: default@v1_n15
+POSTHOOK: Lineage: v1_n15.key SIMPLE []
 PREHOOK: query: with q1 as ( select key from src where key = '4')
-select * from v1
+select * from v1_n15
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Input: default@v1
+PREHOOK: Input: default@v1_n15
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: with q1 as ( select key from src where key = '4')
-select * from v1
+select * from v1_n15
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Input: default@v1
+POSTHOOK: Input: default@v1_n15
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 5
 5
 5
-PREHOOK: query: drop view v1
+PREHOOK: query: drop view v1_n15
 PREHOOK: type: DROPVIEW
-PREHOOK: Input: default@v1
-PREHOOK: Output: default@v1
-POSTHOOK: query: drop view v1
+PREHOOK: Input: default@v1_n15
+PREHOOK: Output: default@v1_n15
+POSTHOOK: query: drop view v1_n15
 POSTHOOK: type: DROPVIEW
-POSTHOOK: Input: default@v1
-POSTHOOK: Output: default@v1
+POSTHOOK: Input: default@v1_n15
+POSTHOOK: Output: default@v1_n15
 PREHOOK: query: drop view if exists view_3
 PREHOOK: type: DROPVIEW
 POSTHOOK: query: drop view if exists view_3

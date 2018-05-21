@@ -1,27 +1,27 @@
-PREHOOK: query: create table masking_test as select cast(key as int) as key, value from src
+PREHOOK: query: create table masking_test_n3 as select cast(key as int) as key, value from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@masking_test
-POSTHOOK: query: create table masking_test as select cast(key as int) as key, value from src
+PREHOOK: Output: default@masking_test_n3
+POSTHOOK: query: create table masking_test_n3 as select cast(key as int) as key, value from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@masking_test
-POSTHOOK: Lineage: masking_test.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: masking_test.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: create table masking_test_subq as select cast(key as int) as key, value from src
+POSTHOOK: Output: default@masking_test_n3
+POSTHOOK: Lineage: masking_test_n3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: masking_test_n3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create table masking_test_subq_n0 as select cast(key as int) as key, value from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@masking_test_subq
-POSTHOOK: query: create table masking_test_subq as select cast(key as int) as key, value from src
+PREHOOK: Output: default@masking_test_subq_n0
+POSTHOOK: query: create table masking_test_subq_n0 as select cast(key as int) as key, value from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@masking_test_subq
-POSTHOOK: Lineage: masking_test_subq.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: masking_test_subq.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@masking_test_subq_n0
+POSTHOOK: Lineage: masking_test_subq_n0.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: masking_test_subq_n0.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain
 with q1 as ( select key from q2 where key = '5'),
 q2 as ( select key from src where key = '5')
@@ -66,11 +66,11 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain
-with q1 as ( select * from masking_test where key = '5')
+with q1 as ( select * from masking_test_n3 where key = '5')
 select * from q1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-with q1 as ( select * from masking_test where key = '5')
+with q1 as ( select * from masking_test_n3 where key = '5')
 select * from q1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -82,18 +82,18 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: masking_test
+            alias: masking_test_n3
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((key % 2) = 0) and (key < 10) and (key = 5)) (type: boolean)
-              Statistics: Num rows: 41 Data size: 435 Basic stats: COMPLETE Column stats: NONE
+              predicate: (key = 5) (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: 5 (type: int), reverse(value) (type: string)
+                expressions: 5 (type: int), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 41 Data size: 435 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 41 Data size: 435 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -107,12 +107,12 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain
-with masking_test_subq as ( select * from masking_test where key = '5')
-select * from masking_test_subq
+with masking_test_subq_n0 as ( select * from masking_test_n3 where key = '5')
+select * from masking_test_subq_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-with masking_test_subq as ( select * from masking_test where key = '5')
-select * from masking_test_subq
+with masking_test_subq_n0 as ( select * from masking_test_n3 where key = '5')
+select * from masking_test_subq_n0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -123,18 +123,18 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: masking_test
+            alias: masking_test_n3
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((key % 2) = 0) and (key < 10) and (key = 5)) (type: boolean)
-              Statistics: Num rows: 41 Data size: 435 Basic stats: COMPLETE Column stats: NONE
+              predicate: (key = 5) (type: boolean)
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: 5 (type: int), reverse(value) (type: string)
+                expressions: 5 (type: int), value (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 41 Data size: 435 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 41 Data size: 435 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -148,73 +148,27 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain
-with q1 as ( select * from masking_test where key = '5')
-select * from masking_test_subq
+with q1 as ( select * from masking_test_n3 where key = '5')
+select * from masking_test_subq_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-with q1 as ( select * from masking_test where key = '5')
-select * from masking_test_subq
+with q1 as ( select * from masking_test_n3 where key = '5')
+select * from masking_test_subq_n0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            alias: masking_test_subq
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: UDFToDouble(key) is not null (type: boolean)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                key expressions: UDFToDouble(key) (type: double), UDFToDouble(key) (type: double)
-                sort order: ++
-                Map-reduce partition columns: UDFToDouble(key) (type: double), UDFToDouble(key) (type: double)
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                value expressions: key (type: int), value (type: string)
-          TableScan
-            alias: src
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: UDFToDouble(key) is not null (type: boolean)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: key (type: string), key (type: string)
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                Group By Operator
-                  keys: _col0 (type: string), _col1 (type: string)
-                  mode: hash
-                  outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: UDFToDouble(_col0) (type: double), UDFToDouble(_col1) (type: double)
-                    sort order: ++
-                    Map-reduce partition columns: UDFToDouble(_col0) (type: double), UDFToDouble(_col1) (type: double)
-                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-      Reduce Operator Tree:
-        Join Operator
-          condition map:
-               Left Semi Join 0 to 1
-          keys:
-            0 UDFToDouble(key) (type: double), UDFToDouble(key) (type: double)
-            1 UDFToDouble(_col0) (type: double), UDFToDouble(_col1) (type: double)
-          outputColumnNames: _col0, _col1
-          Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
       Processor Tree:
-        ListSink
+        TableScan
+          alias: masking_test_subq_n0
+          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: key (type: int), value (type: string)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            ListSink
 

@@ -1,27 +1,27 @@
-PREHOOK: query: CREATE TABLE src_union_1 (key int, value string) PARTITIONED BY (ds string)
+PREHOOK: query: CREATE TABLE src_union_1_n0 (key int, value string) PARTITIONED BY (ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src_union_1
-POSTHOOK: query: CREATE TABLE src_union_1 (key int, value string) PARTITIONED BY (ds string)
+PREHOOK: Output: default@src_union_1_n0
+POSTHOOK: query: CREATE TABLE src_union_1_n0 (key int, value string) PARTITIONED BY (ds string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src_union_1
-PREHOOK: query: CREATE TABLE src_union_2 (key int, value string) PARTITIONED BY (ds string, part_1 string)
+POSTHOOK: Output: default@src_union_1_n0
+PREHOOK: query: CREATE TABLE src_union_2_n0 (key int, value string) PARTITIONED BY (ds string, part_1 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src_union_2
-POSTHOOK: query: CREATE TABLE src_union_2 (key int, value string) PARTITIONED BY (ds string, part_1 string)
+PREHOOK: Output: default@src_union_2_n0
+POSTHOOK: query: CREATE TABLE src_union_2_n0 (key int, value string) PARTITIONED BY (ds string, part_1 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src_union_2
-PREHOOK: query: CREATE TABLE src_union_3(key int, value string) PARTITIONED BY (ds string, part_1 string, part_2 string)
+POSTHOOK: Output: default@src_union_2_n0
+PREHOOK: query: CREATE TABLE src_union_3_n0(key int, value string) PARTITIONED BY (ds string, part_1 string, part_2 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src_union_3
-POSTHOOK: query: CREATE TABLE src_union_3(key int, value string) PARTITIONED BY (ds string, part_1 string, part_2 string)
+PREHOOK: Output: default@src_union_3_n0
+POSTHOOK: query: CREATE TABLE src_union_3_n0(key int, value string) PARTITIONED BY (ds string, part_1 string, part_2 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src_union_3
+POSTHOOK: Output: default@src_union_3_n0
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -31,7 +31,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: src_union_1
+          alias: src_union_1_n0
           filterExpr: ((key = 86) and (ds = '1')) (type: boolean)
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
@@ -52,7 +52,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: src_union_2
+          alias: src_union_2_n0
           filterExpr: ((key = 86) and (ds = '2')) (type: boolean)
           Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
@@ -73,7 +73,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: src_union_3
+          alias: src_union_3_n0
           filterExpr: ((key = 86) and (ds = '3')) (type: boolean)
           Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
@@ -132,7 +132,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: src_union_1
+            alias: src_union_1_n0
             filterExpr: ((key = 86) and (ds = '1')) (type: boolean)
             properties:
               insideView TRUE
@@ -158,7 +158,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
-            alias: src_union_2
+            alias: src_union_2_n0
             filterExpr: ((key = 86) and (ds = '1')) (type: boolean)
             properties:
               insideView TRUE
@@ -184,7 +184,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
-            alias: src_union_3
+            alias: src_union_3_n0
             filterExpr: ((key = 86) and (ds = '1')) (type: boolean)
             properties:
               insideView TRUE
@@ -225,7 +225,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: src_union_1
+            alias: src_union_1_n0
             filterExpr: ((key = 86) and (ds = '2')) (type: boolean)
             properties:
               insideView TRUE
@@ -251,7 +251,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
-            alias: src_union_2
+            alias: src_union_2_n0
             filterExpr: ((key = 86) and (ds = '2')) (type: boolean)
             properties:
               insideView TRUE
@@ -277,7 +277,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
-            alias: src_union_3
+            alias: src_union_3_n0
             filterExpr: ((key = 86) and (ds = '2')) (type: boolean)
             properties:
               insideView TRUE
@@ -318,7 +318,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: src_union_1
+            alias: src_union_1_n0
             filterExpr: ((key = 86) and (ds = '3')) (type: boolean)
             properties:
               insideView TRUE
@@ -344,7 +344,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
-            alias: src_union_2
+            alias: src_union_2_n0
             filterExpr: ((key = 86) and (ds = '3')) (type: boolean)
             properties:
               insideView TRUE
@@ -370,7 +370,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
-            alias: src_union_3
+            alias: src_union_3_n0
             filterExpr: ((key = 86) and (ds = '3')) (type: boolean)
             properties:
               insideView TRUE
@@ -411,7 +411,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: src_union_1
+            alias: src_union_1_n0
             filterExpr: ((key = 86) and ds is not null) (type: boolean)
             properties:
               insideView TRUE
@@ -437,7 +437,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
-            alias: src_union_2
+            alias: src_union_2_n0
             filterExpr: ((key = 86) and ds is not null) (type: boolean)
             properties:
               insideView TRUE
@@ -463,7 +463,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
-            alias: src_union_3
+            alias: src_union_3_n0
             filterExpr: ((key = 86) and ds is not null) (type: boolean)
             properties:
               insideView TRUE
@@ -514,7 +514,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: src_union_1
+            alias: src_union_1_n0
             filterExpr: (ds = '1') (type: boolean)
             properties:
               insideView TRUE
@@ -535,7 +535,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                       value expressions: _col0 (type: bigint)
           TableScan
-            alias: src_union_2
+            alias: src_union_2_n0
             filterExpr: (ds = '1') (type: boolean)
             properties:
               insideView TRUE
@@ -559,7 +559,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                         value expressions: _col0 (type: bigint)
           TableScan
-            alias: src_union_3
+            alias: src_union_3_n0
             filterExpr: (ds = '1') (type: boolean)
             properties:
               insideView TRUE
@@ -611,7 +611,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: src_union_1
+            alias: src_union_1_n0
             filterExpr: (ds = '2') (type: boolean)
             properties:
               insideView TRUE
@@ -635,7 +635,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                         value expressions: _col0 (type: bigint)
           TableScan
-            alias: src_union_2
+            alias: src_union_2_n0
             filterExpr: (ds = '2') (type: boolean)
             properties:
               insideView TRUE
@@ -656,7 +656,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                       value expressions: _col0 (type: bigint)
           TableScan
-            alias: src_union_3
+            alias: src_union_3_n0
             filterExpr: (ds = '2') (type: boolean)
             properties:
               insideView TRUE
@@ -708,7 +708,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: src_union_1
+            alias: src_union_1_n0
             filterExpr: (ds = '3') (type: boolean)
             properties:
               insideView TRUE
@@ -732,7 +732,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                         value expressions: _col0 (type: bigint)
           TableScan
-            alias: src_union_2
+            alias: src_union_2_n0
             filterExpr: (ds = '3') (type: boolean)
             properties:
               insideView TRUE
@@ -756,7 +756,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                         value expressions: _col0 (type: bigint)
           TableScan
-            alias: src_union_3
+            alias: src_union_3_n0
             filterExpr: (ds = '3') (type: boolean)
             properties:
               insideView TRUE
@@ -808,7 +808,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: src_union_1
+            alias: src_union_1_n0
             filterExpr: ((key = 86) and (ds = '4')) (type: boolean)
             properties:
               insideView TRUE
@@ -834,7 +834,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
-            alias: src_union_2
+            alias: src_union_2_n0
             filterExpr: ((key = 86) and (ds = '4')) (type: boolean)
             properties:
               insideView TRUE
@@ -860,7 +860,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
-            alias: src_union_3
+            alias: src_union_3_n0
             filterExpr: ((key = 86) and (ds = '4')) (type: boolean)
             properties:
               insideView TRUE
@@ -902,7 +902,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: src_union_1
+            alias: src_union_1_n0
             filterExpr: (ds = '4') (type: boolean)
             properties:
               insideView TRUE
@@ -926,7 +926,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                         value expressions: _col0 (type: bigint)
           TableScan
-            alias: src_union_2
+            alias: src_union_2_n0
             filterExpr: (ds = '4') (type: boolean)
             properties:
               insideView TRUE
@@ -950,7 +950,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                         value expressions: _col0 (type: bigint)
           TableScan
-            alias: src_union_3
+            alias: src_union_3_n0
             filterExpr: (ds = '4') (type: boolean)
             properties:
               insideView TRUE

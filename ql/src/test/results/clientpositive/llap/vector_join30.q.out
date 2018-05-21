@@ -1,28 +1,28 @@
-PREHOOK: query: CREATE TABLE orcsrc STORED AS ORC AS SELECT * FROM src
+PREHOOK: query: CREATE TABLE orcsrc_n0 STORED AS ORC AS SELECT * FROM src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@orcsrc
-POSTHOOK: query: CREATE TABLE orcsrc STORED AS ORC AS SELECT * FROM src
+PREHOOK: Output: default@orcsrc_n0
+POSTHOOK: query: CREATE TABLE orcsrc_n0 STORED AS ORC AS SELECT * FROM src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@orcsrc
-POSTHOOK: Lineage: orcsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: orcsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@orcsrc_n0
+POSTHOOK: Lineage: orcsrc_n0.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: orcsrc_n0.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain vectorization expression
 FROM 
-(SELECT orcsrc.* FROM orcsrc sort by key) x
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
 JOIN
-(SELECT orcsrc.* FROM orcsrc sort by value) Y
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
 ON (x.key = Y.key)
 select sum(hash(Y.key,Y.value))
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
 FROM 
-(SELECT orcsrc.* FROM orcsrc sort by key) x
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
 JOIN
-(SELECT orcsrc.* FROM orcsrc sort by value) Y
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
 ON (x.key = Y.key)
 select sum(hash(Y.key,Y.value))
 POSTHOOK: type: QUERY
@@ -46,7 +46,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: orcsrc
+                  alias: orcsrc_n0
                   Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -88,7 +88,7 @@ STAGE PLANS:
         Map 2 
             Map Operator Tree:
                 TableScan
-                  alias: orcsrc
+                  alias: orcsrc_n0
                   Statistics: Num rows: 500 Data size: 175168 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -191,37 +191,37 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: FROM 
-(SELECT orcsrc.* FROM orcsrc sort by key) x
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
 JOIN 
-(SELECT orcsrc.* FROM orcsrc sort by value) Y
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
 ON (x.key = Y.key)
 select sum(hash(Y.key,Y.value))
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orcsrc
+PREHOOK: Input: default@orcsrc_n0
 #### A masked pattern was here ####
 POSTHOOK: query: FROM 
-(SELECT orcsrc.* FROM orcsrc sort by key) x
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
 JOIN 
-(SELECT orcsrc.* FROM orcsrc sort by value) Y
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
 ON (x.key = Y.key)
 select sum(hash(Y.key,Y.value))
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orcsrc
+POSTHOOK: Input: default@orcsrc_n0
 #### A masked pattern was here ####
 103231310608
 PREHOOK: query: explain vectorization expression
 FROM 
-(SELECT orcsrc.* FROM orcsrc sort by key) x
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
 LEFT OUTER JOIN
-(SELECT orcsrc.* FROM orcsrc sort by value) Y
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
 ON (x.key = Y.key)
 select sum(hash(Y.key,Y.value))
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
 FROM 
-(SELECT orcsrc.* FROM orcsrc sort by key) x
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
 LEFT OUTER JOIN
-(SELECT orcsrc.* FROM orcsrc sort by value) Y
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
 ON (x.key = Y.key)
 select sum(hash(Y.key,Y.value))
 POSTHOOK: type: QUERY
@@ -245,7 +245,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: orcsrc
+                  alias: orcsrc_n0
                   Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -305,7 +305,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: orcsrc
+                  alias: orcsrc_n0
                   Statistics: Num rows: 500 Data size: 175168 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -377,37 +377,37 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: FROM 
-(SELECT orcsrc.* FROM orcsrc sort by key) x
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
 LEFT OUTER JOIN 
-(SELECT orcsrc.* FROM orcsrc sort by value) Y
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
 ON (x.key = Y.key)
 select sum(hash(Y.key,Y.value))
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orcsrc
+PREHOOK: Input: default@orcsrc_n0
 #### A masked pattern was here ####
 POSTHOOK: query: FROM 
-(SELECT orcsrc.* FROM orcsrc sort by key) x
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
 LEFT OUTER JOIN 
-(SELECT orcsrc.* FROM orcsrc sort by value) Y
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
 ON (x.key = Y.key)
 select sum(hash(Y.key,Y.value))
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orcsrc
+POSTHOOK: Input: default@orcsrc_n0
 #### A masked pattern was here ####
 103231310608
 PREHOOK: query: explain vectorization expression
 FROM 
-(SELECT orcsrc.* FROM orcsrc sort by key) x
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
 RIGHT OUTER JOIN
-(SELECT orcsrc.* FROM orcsrc sort by value) Y
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
 ON (x.key = Y.key)
 select sum(hash(Y.key,Y.value))
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
 FROM 
-(SELECT orcsrc.* FROM orcsrc sort by key) x
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
 RIGHT OUTER JOIN
-(SELECT orcsrc.* FROM orcsrc sort by value) Y
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
 ON (x.key = Y.key)
 select sum(hash(Y.key,Y.value))
 POSTHOOK: type: QUERY
@@ -431,7 +431,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: orcsrc
+                  alias: orcsrc_n0
                   Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -466,7 +466,7 @@ STAGE PLANS:
         Map 2 
             Map Operator Tree:
                 TableScan
-                  alias: orcsrc
+                  alias: orcsrc_n0
                   Statistics: Num rows: 500 Data size: 175168 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -562,43 +562,43 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: FROM 
-(SELECT orcsrc.* FROM orcsrc sort by key) x
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
 RIGHT OUTER JOIN 
-(SELECT orcsrc.* FROM orcsrc sort by value) Y
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
 ON (x.key = Y.key)
 select sum(hash(Y.key,Y.value))
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orcsrc
+PREHOOK: Input: default@orcsrc_n0
 #### A masked pattern was here ####
 POSTHOOK: query: FROM 
-(SELECT orcsrc.* FROM orcsrc sort by key) x
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
 RIGHT OUTER JOIN 
-(SELECT orcsrc.* FROM orcsrc sort by value) Y
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
 ON (x.key = Y.key)
 select sum(hash(Y.key,Y.value))
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orcsrc
+POSTHOOK: Input: default@orcsrc_n0
 #### A masked pattern was here ####
 103231310608
 PREHOOK: query: explain vectorization expression
 FROM 
-(SELECT orcsrc.* FROM orcsrc sort by key) x
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
 JOIN
-(SELECT orcsrc.* FROM orcsrc sort by value) Y
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
 ON (x.key = Y.key)
 JOIN
-(SELECT orcsrc.* FROM orcsrc sort by value) Z
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Z
 ON (x.key = Z.key)
 select sum(hash(Y.key,Y.value))
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
 FROM 
-(SELECT orcsrc.* FROM orcsrc sort by key) x
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
 JOIN
-(SELECT orcsrc.* FROM orcsrc sort by value) Y
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
 ON (x.key = Y.key)
 JOIN
-(SELECT orcsrc.* FROM orcsrc sort by value) Z
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Z
 ON (x.key = Z.key)
 select sum(hash(Y.key,Y.value))
 POSTHOOK: type: QUERY
@@ -622,7 +622,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: orcsrc
+                  alias: orcsrc_n0
                   Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -664,7 +664,7 @@ STAGE PLANS:
         Map 2 
             Map Operator Tree:
                 TableScan
-                  alias: orcsrc
+                  alias: orcsrc_n0
                   Statistics: Num rows: 500 Data size: 175168 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -737,7 +737,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: orcsrc
+                  alias: orcsrc_n0
                   Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -815,49 +815,49 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: FROM
-(SELECT orcsrc.* FROM orcsrc sort by key) x
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
 JOIN
-(SELECT orcsrc.* FROM orcsrc sort by value) Y
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
 ON (x.key = Y.key)
 JOIN
-(SELECT orcsrc.* FROM orcsrc sort by value) Z
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Z
 ON (x.key = Z.key)
 select sum(hash(Y.key,Y.value))
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orcsrc
+PREHOOK: Input: default@orcsrc_n0
 #### A masked pattern was here ####
 POSTHOOK: query: FROM
-(SELECT orcsrc.* FROM orcsrc sort by key) x
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
 JOIN
-(SELECT orcsrc.* FROM orcsrc sort by value) Y
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
 ON (x.key = Y.key)
 JOIN
-(SELECT orcsrc.* FROM orcsrc sort by value) Z
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Z
 ON (x.key = Z.key)
 select sum(hash(Y.key,Y.value))
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orcsrc
+POSTHOOK: Input: default@orcsrc_n0
 #### A masked pattern was here ####
 348019368476
 PREHOOK: query: explain vectorization expression
 FROM 
-(SELECT orcsrc.* FROM orcsrc sort by key) x
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
 JOIN
-(SELECT orcsrc.* FROM orcsrc sort by value) Y
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
 ON (x.key = Y.key)
 LEFT OUTER JOIN
-(SELECT orcsrc.* FROM orcsrc sort by value) Z
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Z
 ON (x.key = Z.key)
 select sum(hash(Y.key,Y.value))
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
 FROM 
-(SELECT orcsrc.* FROM orcsrc sort by key) x
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
 JOIN
-(SELECT orcsrc.* FROM orcsrc sort by value) Y
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
 ON (x.key = Y.key)
 LEFT OUTER JOIN
-(SELECT orcsrc.* FROM orcsrc sort by value) Z
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Z
 ON (x.key = Z.key)
 select sum(hash(Y.key,Y.value))
 POSTHOOK: type: QUERY
@@ -881,7 +881,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: orcsrc
+                  alias: orcsrc_n0
                   Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -916,7 +916,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: orcsrc
+                  alias: orcsrc_n0
                   Statistics: Num rows: 500 Data size: 175168 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -952,7 +952,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: orcsrc
+                  alias: orcsrc_n0
                   Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1045,49 +1045,49 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: FROM
-(SELECT orcsrc.* FROM orcsrc sort by key) x
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
 JOIN
-(SELECT orcsrc.* FROM orcsrc sort by value) Y
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
 ON (x.key = Y.key)
 LEFT OUTER JOIN
-(SELECT orcsrc.* FROM orcsrc sort by value) Z
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Z
 ON (x.key = Z.key)
 select sum(hash(Y.key,Y.value))
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orcsrc
+PREHOOK: Input: default@orcsrc_n0
 #### A masked pattern was here ####
 POSTHOOK: query: FROM
-(SELECT orcsrc.* FROM orcsrc sort by key) x
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
 JOIN
-(SELECT orcsrc.* FROM orcsrc sort by value) Y
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
 ON (x.key = Y.key)
 LEFT OUTER JOIN
-(SELECT orcsrc.* FROM orcsrc sort by value) Z
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Z
 ON (x.key = Z.key)
 select sum(hash(Y.key,Y.value))
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orcsrc
+POSTHOOK: Input: default@orcsrc_n0
 #### A masked pattern was here ####
 348019368476
 PREHOOK: query: explain vectorization expression
 FROM 
-(SELECT orcsrc.* FROM orcsrc sort by key) x
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
 LEFT OUTER JOIN
-(SELECT orcsrc.* FROM orcsrc sort by value) Y
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
 ON (x.key = Y.key)
 LEFT OUTER JOIN
-(SELECT orcsrc.* FROM orcsrc sort by value) Z
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Z
 ON (x.key = Z.key)
 select sum(hash(Y.key,Y.value))
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
 FROM 
-(SELECT orcsrc.* FROM orcsrc sort by key) x
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
 LEFT OUTER JOIN
-(SELECT orcsrc.* FROM orcsrc sort by value) Y
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
 ON (x.key = Y.key)
 LEFT OUTER JOIN
-(SELECT orcsrc.* FROM orcsrc sort by value) Z
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Z
 ON (x.key = Z.key)
 select sum(hash(Y.key,Y.value))
 POSTHOOK: type: QUERY
@@ -1111,7 +1111,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: orcsrc
+                  alias: orcsrc_n0
                   Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1146,7 +1146,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: orcsrc
+                  alias: orcsrc_n0
                   Statistics: Num rows: 500 Data size: 175168 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1182,7 +1182,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: orcsrc
+                  alias: orcsrc_n0
                   Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1275,49 +1275,49 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: FROM
-(SELECT orcsrc.* FROM orcsrc sort by key) x
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
 LEFT OUTER JOIN
-(SELECT orcsrc.* FROM orcsrc sort by value) Y
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
 ON (x.key = Y.key)
 LEFT OUTER JOIN
-(SELECT orcsrc.* FROM orcsrc sort by value) Z
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Z
 ON (x.key = Z.key)
 select sum(hash(Y.key,Y.value))
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orcsrc
+PREHOOK: Input: default@orcsrc_n0
 #### A masked pattern was here ####
 POSTHOOK: query: FROM
-(SELECT orcsrc.* FROM orcsrc sort by key) x
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
 LEFT OUTER JOIN
-(SELECT orcsrc.* FROM orcsrc sort by value) Y
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
 ON (x.key = Y.key)
 LEFT OUTER JOIN
-(SELECT orcsrc.* FROM orcsrc sort by value) Z
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Z
 ON (x.key = Z.key)
 select sum(hash(Y.key,Y.value))
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orcsrc
+POSTHOOK: Input: default@orcsrc_n0
 #### A masked pattern was here ####
 348019368476
 PREHOOK: query: explain vectorization expression
 FROM 
-(SELECT orcsrc.* FROM orcsrc sort by key) x
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
 LEFT OUTER JOIN
-(SELECT orcsrc.* FROM orcsrc sort by value) Y
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
 ON (x.key = Y.key)
 RIGHT OUTER JOIN
-(SELECT orcsrc.* FROM orcsrc sort by value) Z
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Z
 ON (x.key = Z.key)
 select sum(hash(Y.key,Y.value))
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
 FROM 
-(SELECT orcsrc.* FROM orcsrc sort by key) x
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
 LEFT OUTER JOIN
-(SELECT orcsrc.* FROM orcsrc sort by value) Y
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
 ON (x.key = Y.key)
 RIGHT OUTER JOIN
-(SELECT orcsrc.* FROM orcsrc sort by value) Z
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Z
 ON (x.key = Z.key)
 select sum(hash(Y.key,Y.value))
 POSTHOOK: type: QUERY
@@ -1341,7 +1341,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: orcsrc
+                  alias: orcsrc_n0
                   Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1376,7 +1376,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: orcsrc
+                  alias: orcsrc_n0
                   Statistics: Num rows: 500 Data size: 175168 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1412,7 +1412,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: orcsrc
+                  alias: orcsrc_n0
                   Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1505,49 +1505,49 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: FROM
-(SELECT orcsrc.* FROM orcsrc sort by key) x
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
 LEFT OUTER JOIN
-(SELECT orcsrc.* FROM orcsrc sort by value) Y
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
 ON (x.key = Y.key)
 RIGHT OUTER JOIN
-(SELECT orcsrc.* FROM orcsrc sort by value) Z
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Z
 ON (x.key = Z.key)
 select sum(hash(Y.key,Y.value))
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orcsrc
+PREHOOK: Input: default@orcsrc_n0
 #### A masked pattern was here ####
 POSTHOOK: query: FROM
-(SELECT orcsrc.* FROM orcsrc sort by key) x
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
 LEFT OUTER JOIN
-(SELECT orcsrc.* FROM orcsrc sort by value) Y
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
 ON (x.key = Y.key)
 RIGHT OUTER JOIN
-(SELECT orcsrc.* FROM orcsrc sort by value) Z
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Z
 ON (x.key = Z.key)
 select sum(hash(Y.key,Y.value))
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orcsrc
+POSTHOOK: Input: default@orcsrc_n0
 #### A masked pattern was here ####
 348019368476
 PREHOOK: query: explain vectorization expression
 FROM 
-(SELECT orcsrc.* FROM orcsrc sort by key) x
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
 RIGHT OUTER JOIN
-(SELECT orcsrc.* FROM orcsrc sort by value) Y
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
 ON (x.key = Y.key)
 RIGHT OUTER JOIN
-(SELECT orcsrc.* FROM orcsrc sort by value) Z
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Z
 ON (x.key = Z.key)
 select sum(hash(Y.key,Y.value))
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
 FROM 
-(SELECT orcsrc.* FROM orcsrc sort by key) x
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
 RIGHT OUTER JOIN
-(SELECT orcsrc.* FROM orcsrc sort by value) Y
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
 ON (x.key = Y.key)
 RIGHT OUTER JOIN
-(SELECT orcsrc.* FROM orcsrc sort by value) Z
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Z
 ON (x.key = Z.key)
 select sum(hash(Y.key,Y.value))
 POSTHOOK: type: QUERY
@@ -1571,7 +1571,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: orcsrc
+                  alias: orcsrc_n0
                   Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1606,7 +1606,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: orcsrc
+                  alias: orcsrc_n0
                   Statistics: Num rows: 500 Data size: 175168 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1642,7 +1642,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: orcsrc
+                  alias: orcsrc_n0
                   Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1735,27 +1735,27 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: FROM
-(SELECT orcsrc.* FROM orcsrc sort by key) x
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
 RIGHT OUTER JOIN
-(SELECT orcsrc.* FROM orcsrc sort by value) Y
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
 ON (x.key = Y.key)
 RIGHT OUTER JOIN
-(SELECT orcsrc.* FROM orcsrc sort by value) Z
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Z
 ON (x.key = Z.key)
 select sum(hash(Y.key,Y.value))
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orcsrc
+PREHOOK: Input: default@orcsrc_n0
 #### A masked pattern was here ####
 POSTHOOK: query: FROM
-(SELECT orcsrc.* FROM orcsrc sort by key) x
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by key) x
 RIGHT OUTER JOIN
-(SELECT orcsrc.* FROM orcsrc sort by value) Y
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Y
 ON (x.key = Y.key)
 RIGHT OUTER JOIN
-(SELECT orcsrc.* FROM orcsrc sort by value) Z
+(SELECT orcsrc_n0.* FROM orcsrc_n0 sort by value) Z
 ON (x.key = Z.key)
 select sum(hash(Y.key,Y.value))
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orcsrc
+POSTHOOK: Input: default@orcsrc_n0
 #### A masked pattern was here ####
 348019368476

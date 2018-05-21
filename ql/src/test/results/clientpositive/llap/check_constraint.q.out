@@ -1,4 +1,4 @@
-PREHOOK: query: CREATE TABLE table1(i int CHECK -i > -10,
+PREHOOK: query: CREATE TABLE table1_n0(i int CHECK -i > -10,
     j int CHECK +j > 10,
     ij boolean CHECK ij IS NOT NULL,
     a int CHECK a BETWEEN i AND j,
@@ -7,8 +7,8 @@ PREHOOK: query: CREATE TABLE table1(i int CHECK -i > -10,
     clustered by (i) into 2 buckets stored as orc TBLPROPERTIES('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@table1
-POSTHOOK: query: CREATE TABLE table1(i int CHECK -i > -10,
+PREHOOK: Output: default@table1_n0
+POSTHOOK: query: CREATE TABLE table1_n0(i int CHECK -i > -10,
     j int CHECK +j > 10,
     ij boolean CHECK ij IS NOT NULL,
     a int CHECK a BETWEEN i AND j,
@@ -17,13 +17,13 @@ POSTHOOK: query: CREATE TABLE table1(i int CHECK -i > -10,
     clustered by (i) into 2 buckets stored as orc TBLPROPERTIES('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@table1
-PREHOOK: query: DESC FORMATTED table1
+POSTHOOK: Output: default@table1_n0
+PREHOOK: query: DESC FORMATTED table1_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table1
-POSTHOOK: query: DESC FORMATTED table1
+PREHOOK: Input: default@table1_n0
+POSTHOOK: query: DESC FORMATTED table1_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1_n0
 # col_name            	data_type           	comment             
 i                   	int                 	                    
 j                   	int                 	                    
@@ -58,7 +58,7 @@ Storage Desc Params:
 # Constraints	 	 
 	 	 
 # Check Constraints	 	 
-Table:              	default.table1      	 
+Table:              	default.table1_n0   	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:a       	Check Value:a BETWEEN i AND j	 
 	 	 
@@ -77,9 +77,9 @@ Column Name:ij      	Check Value:ij IS NOT NULL
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:bb      	Check Value:bb IN (23.4,56,4)	 
 	 	 
-PREHOOK: query: EXPLAIN INSERT INTO table1 values(1,100,true, 5, 23.4, 700.5)
+PREHOOK: query: EXPLAIN INSERT INTO table1_n0 values(1,100,true, 5, 23.4, 700.5)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN INSERT INTO table1 values(1,100,true, 5, 23.4, 700.5)
+POSTHOOK: query: EXPLAIN INSERT INTO table1_n0 values(1,100,true, 5, 23.4, 700.5)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -135,7 +135,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      name: default.table1
+                      name: default.table1_n0
                   Write Type: INSERT
 
   Stage: Stage-2
@@ -149,54 +149,54 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.table1
+              name: default.table1_n0
           Write Type: INSERT
 
-PREHOOK: query: INSERT INTO table1 values(1,100,true, 5, 23.4, 700.5)
+PREHOOK: query: INSERT INTO table1_n0 values(1,100,true, 5, 23.4, 700.5)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@table1
-POSTHOOK: query: INSERT INTO table1 values(1,100,true, 5, 23.4, 700.5)
+PREHOOK: Output: default@table1_n0
+POSTHOOK: query: INSERT INTO table1_n0 values(1,100,true, 5, 23.4, 700.5)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@table1
-POSTHOOK: Lineage: table1.a SCRIPT []
-POSTHOOK: Lineage: table1.bb SCRIPT []
-POSTHOOK: Lineage: table1.d SCRIPT []
-POSTHOOK: Lineage: table1.i SCRIPT []
-POSTHOOK: Lineage: table1.ij SCRIPT []
-POSTHOOK: Lineage: table1.j SCRIPT []
-PREHOOK: query: SELECT * from table1
+POSTHOOK: Output: default@table1_n0
+POSTHOOK: Lineage: table1_n0.a SCRIPT []
+POSTHOOK: Lineage: table1_n0.bb SCRIPT []
+POSTHOOK: Lineage: table1_n0.d SCRIPT []
+POSTHOOK: Lineage: table1_n0.i SCRIPT []
+POSTHOOK: Lineage: table1_n0.ij SCRIPT []
+POSTHOOK: Lineage: table1_n0.j SCRIPT []
+PREHOOK: query: SELECT * from table1_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table1
+PREHOOK: Input: default@table1_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * from table1
+POSTHOOK: query: SELECT * from table1_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1_n0
 #### A masked pattern was here ####
 1	100	true	5	23.4	700
-PREHOOK: query: DROP TABLE table1
+PREHOOK: query: DROP TABLE table1_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@table1
-PREHOOK: Output: default@table1
-POSTHOOK: query: DROP TABLE table1
+PREHOOK: Input: default@table1_n0
+PREHOOK: Output: default@table1_n0
+POSTHOOK: query: DROP TABLE table1_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@table1
-POSTHOOK: Output: default@table1
-PREHOOK: query: CREATE TABLE table2(i int CHECK i + NULL > 0)
+POSTHOOK: Input: default@table1_n0
+POSTHOOK: Output: default@table1_n0
+PREHOOK: query: CREATE TABLE table2_n0(i int CHECK i + NULL > 0)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@table2
-POSTHOOK: query: CREATE TABLE table2(i int CHECK i + NULL > 0)
+PREHOOK: Output: default@table2_n0
+POSTHOOK: query: CREATE TABLE table2_n0(i int CHECK i + NULL > 0)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@table2
-PREHOOK: query: DESC FORMATTED table2
+POSTHOOK: Output: default@table2_n0
+PREHOOK: query: DESC FORMATTED table2_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table2
-POSTHOOK: query: DESC FORMATTED table2
+PREHOOK: Input: default@table2_n0
+POSTHOOK: query: DESC FORMATTED table2_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table2
+POSTHOOK: Input: default@table2_n0
 # col_name            	data_type           	comment             
 i                   	int                 	                    
 	 	 
@@ -224,13 +224,13 @@ Storage Desc Params:
 # Constraints	 	 
 	 	 
 # Check Constraints	 	 
-Table:              	default.table2      	 
+Table:              	default.table2_n0   	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:i       	Check Value:i + NULL > 0	 
 	 	 
-PREHOOK: query: EXPLAIN INSERT INTO table2 values(8)
+PREHOOK: query: EXPLAIN INSERT INTO table2_n0 values(8)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN INSERT INTO table2 values(8)
+POSTHOOK: query: EXPLAIN INSERT INTO table2_n0 values(8)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -269,7 +269,7 @@ STAGE PLANS:
                                 input format: org.apache.hadoop.mapred.TextInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                                name: default.table2
+                                name: default.table2_n0
             Execution mode: llap
             LLAP IO: no inputs
 
@@ -284,34 +284,34 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.table2
+              name: default.table2_n0
 
-PREHOOK: query: INSERT INTO table2 values(8)
+PREHOOK: query: INSERT INTO table2_n0 values(8)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@table2
-POSTHOOK: query: INSERT INTO table2 values(8)
+PREHOOK: Output: default@table2_n0
+POSTHOOK: query: INSERT INTO table2_n0 values(8)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@table2
-POSTHOOK: Lineage: table2.i SCRIPT []
-PREHOOK: query: select * from table2
+POSTHOOK: Output: default@table2_n0
+POSTHOOK: Lineage: table2_n0.i SCRIPT []
+PREHOOK: query: select * from table2_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table2
+PREHOOK: Input: default@table2_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from table2
+POSTHOOK: query: select * from table2_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table2
+POSTHOOK: Input: default@table2_n0
 #### A masked pattern was here ####
 8
-PREHOOK: query: Drop table table2
+PREHOOK: query: Drop table table2_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@table2
-PREHOOK: Output: default@table2
-POSTHOOK: query: Drop table table2
+PREHOOK: Input: default@table2_n0
+PREHOOK: Output: default@table2_n0
+POSTHOOK: query: Drop table table2_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@table2
-POSTHOOK: Output: default@table2
+POSTHOOK: Input: default@table2_n0
+POSTHOOK: Output: default@table2_n0
 PREHOOK: query: CREATE FUNCTION test_udf2 AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFTestGetJavaString'
 PREHOOK: type: CREATEFUNCTION
 PREHOOK: Output: database:default
@@ -1231,26 +1231,26 @@ POSTHOOK: query: DROP TABLE texpr
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@texpr
 POSTHOOK: Output: default@texpr
-PREHOOK: query: create table acid_uami(i int,
+PREHOOK: query: create table acid_uami_n0(i int,
                  de decimal(5,2) constraint nn1 not null enforced,
                  vc varchar(128) constraint ch2 CHECK de >= cast(i as decimal(5,2)) enforced)
                  clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@acid_uami
-POSTHOOK: query: create table acid_uami(i int,
+PREHOOK: Output: default@acid_uami_n0
+POSTHOOK: query: create table acid_uami_n0(i int,
                  de decimal(5,2) constraint nn1 not null enforced,
                  vc varchar(128) constraint ch2 CHECK de >= cast(i as decimal(5,2)) enforced)
                  clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@acid_uami
-PREHOOK: query: DESC FORMATTED acid_uami
+POSTHOOK: Output: default@acid_uami_n0
+PREHOOK: query: DESC FORMATTED acid_uami_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@acid_uami
-POSTHOOK: query: DESC FORMATTED acid_uami
+PREHOOK: Input: default@acid_uami_n0
+POSTHOOK: query: DESC FORMATTED acid_uami_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@acid_uami
+POSTHOOK: Input: default@acid_uami_n0
 # col_name            	data_type           	comment             
 i                   	int                 	                    
 de                  	decimal(5,2)        	                    
@@ -1282,19 +1282,19 @@ Storage Desc Params:
 # Constraints	 	 
 	 	 
 # Not Null Constraints	 	 
-Table:              	default.acid_uami   	 
+Table:              	default.acid_uami_n0	 
 Constraint Name:    	nn1                 	 
 Column Name:        	de                  	 
 	 	 
 	 	 
 # Check Constraints	 	 
-Table:              	default.acid_uami   	 
+Table:              	default.acid_uami_n0	 
 Constraint Name:    	ch2                 	 
 Column Name:vc      	Check Value:de >= cast(i as decimal(5,2))	 
 	 	 
-PREHOOK: query: explain insert into table acid_uami select cast(key as int), cast (key as decimal(5,2)), value from src
+PREHOOK: query: explain insert into table acid_uami_n0 select cast(key as int), cast (key as decimal(5,2)), value from src
 PREHOOK: type: QUERY
-POSTHOOK: query: explain insert into table acid_uami select cast(key as int), cast (key as decimal(5,2)), value from src
+POSTHOOK: query: explain insert into table acid_uami_n0 select cast(key as int), cast (key as decimal(5,2)), value from src
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1342,7 +1342,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      name: default.acid_uami
+                      name: default.acid_uami_n0
                   Write Type: INSERT
 
   Stage: Stage-2
@@ -1356,24 +1356,24 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.acid_uami
+              name: default.acid_uami_n0
           Write Type: INSERT
 
-PREHOOK: query: insert into table acid_uami select cast(key as int), cast (key as decimal(5,2)), value from src
+PREHOOK: query: insert into table acid_uami_n0 select cast(key as int), cast (key as decimal(5,2)), value from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@acid_uami
-POSTHOOK: query: insert into table acid_uami select cast(key as int), cast (key as decimal(5,2)), value from src
+PREHOOK: Output: default@acid_uami_n0
+POSTHOOK: query: insert into table acid_uami_n0 select cast(key as int), cast (key as decimal(5,2)), value from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@acid_uami
-POSTHOOK: Lineage: acid_uami.de EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: acid_uami.i EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: acid_uami.vc EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: explain insert overwrite table acid_uami select cast(key as int), cast (key as decimal(5,2)), value
+POSTHOOK: Output: default@acid_uami_n0
+POSTHOOK: Lineage: acid_uami_n0.de EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: acid_uami_n0.i EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: acid_uami_n0.vc EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: explain insert overwrite table acid_uami_n0 select cast(key as int), cast (key as decimal(5,2)), value
     from src order by cast(key as int) limit 10
 PREHOOK: type: QUERY
-POSTHOOK: query: explain insert overwrite table acid_uami select cast(key as int), cast (key as decimal(5,2)), value
+POSTHOOK: query: explain insert overwrite table acid_uami_n0 select cast(key as int), cast (key as decimal(5,2)), value
     from src order by cast(key as int) limit 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -1439,7 +1439,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      name: default.acid_uami
+                      name: default.acid_uami_n0
                   Write Type: INSERT
 
   Stage: Stage-2
@@ -1453,26 +1453,26 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.acid_uami
+              name: default.acid_uami_n0
           Write Type: INSERT
 
-PREHOOK: query: insert overwrite table acid_uami select cast(key as int), cast (key as decimal(5,2)), value
+PREHOOK: query: insert overwrite table acid_uami_n0 select cast(key as int), cast (key as decimal(5,2)), value
     from src order by cast(key as int) limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@acid_uami
-POSTHOOK: query: insert overwrite table acid_uami select cast(key as int), cast (key as decimal(5,2)), value
+PREHOOK: Output: default@acid_uami_n0
+POSTHOOK: query: insert overwrite table acid_uami_n0 select cast(key as int), cast (key as decimal(5,2)), value
     from src order by cast(key as int) limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@acid_uami
-POSTHOOK: Lineage: acid_uami.de EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: acid_uami.i EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: acid_uami.vc EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: explain insert into table acid_uami select cast(s1.key as int) as c1, cast (s2.key as decimal(5,2)) as c2, s1.value from src s1
+POSTHOOK: Output: default@acid_uami_n0
+POSTHOOK: Lineage: acid_uami_n0.de EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: acid_uami_n0.i EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: acid_uami_n0.vc EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: explain insert into table acid_uami_n0 select cast(s1.key as int) as c1, cast (s2.key as decimal(5,2)) as c2, s1.value from src s1
     left outer join src s2 on s1.key=s2.key where s1.value > 'val' limit 10
 PREHOOK: type: QUERY
-POSTHOOK: query: explain insert into table acid_uami select cast(s1.key as int) as c1, cast (s2.key as decimal(5,2)) as c2, s1.value from src s1
+POSTHOOK: query: explain insert into table acid_uami_n0 select cast(s1.key as int) as c1, cast (s2.key as decimal(5,2)) as c2, s1.value from src s1
     left outer join src s2 on s1.key=s2.key where s1.value > 'val' limit 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -1581,7 +1581,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      name: default.acid_uami
+                      name: default.acid_uami_n0
                   Write Type: INSERT
 
   Stage: Stage-2
@@ -1595,29 +1595,29 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.acid_uami
+              name: default.acid_uami_n0
           Write Type: INSERT
 
-PREHOOK: query: insert into table acid_uami select cast(s1.key as int) as c1, cast (s2.key as decimal(5,2)) as c2, s1.value from src s1
+PREHOOK: query: insert into table acid_uami_n0 select cast(s1.key as int) as c1, cast (s2.key as decimal(5,2)) as c2, s1.value from src s1
     left outer join src s2 on s1.key=s2.key where s1.value > 'val' limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@acid_uami
-POSTHOOK: query: insert into table acid_uami select cast(s1.key as int) as c1, cast (s2.key as decimal(5,2)) as c2, s1.value from src s1
+PREHOOK: Output: default@acid_uami_n0
+POSTHOOK: query: insert into table acid_uami_n0 select cast(s1.key as int) as c1, cast (s2.key as decimal(5,2)) as c2, s1.value from src s1
     left outer join src s2 on s1.key=s2.key where s1.value > 'val' limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@acid_uami
-POSTHOOK: Lineage: acid_uami.de EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: acid_uami.i EXPRESSION [(src)s1.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: acid_uami.vc EXPRESSION [(src)s1.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from acid_uami
+POSTHOOK: Output: default@acid_uami_n0
+POSTHOOK: Lineage: acid_uami_n0.de EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: acid_uami_n0.i EXPRESSION [(src)s1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: acid_uami_n0.vc EXPRESSION [(src)s1.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from acid_uami_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@acid_uami
+PREHOOK: Input: default@acid_uami_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from acid_uami
+POSTHOOK: query: select * from acid_uami_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@acid_uami
+POSTHOOK: Input: default@acid_uami_n0
 #### A masked pattern was here ####
 2	2.00	val_2
 9	9.00	val_9
@@ -1639,16 +1639,16 @@ POSTHOOK: Input: default@acid_uami
 0	0.00	val_0
 0	0.00	val_0
 0	0.00	val_0
-PREHOOK: query: truncate table acid_uami
+PREHOOK: query: truncate table acid_uami_n0
 PREHOOK: type: TRUNCATETABLE
-PREHOOK: Output: default@acid_uami
-POSTHOOK: query: truncate table acid_uami
+PREHOOK: Output: default@acid_uami_n0
+POSTHOOK: query: truncate table acid_uami_n0
 POSTHOOK: type: TRUNCATETABLE
-POSTHOOK: Output: default@acid_uami
-PREHOOK: query: explain insert into table acid_uami select min(cast(key as int)) as c1, max(cast (key as decimal(5,2))) as c2, value
+POSTHOOK: Output: default@acid_uami_n0
+PREHOOK: query: explain insert into table acid_uami_n0 select min(cast(key as int)) as c1, max(cast (key as decimal(5,2))) as c2, value
     from src group by key, value order by key, value limit 10
 PREHOOK: type: QUERY
-POSTHOOK: query: explain insert into table acid_uami select min(cast(key as int)) as c1, max(cast (key as decimal(5,2))) as c2, value
+POSTHOOK: query: explain insert into table acid_uami_n0 select min(cast(key as int)) as c1, max(cast (key as decimal(5,2))) as c2, value
     from src group by key, value order by key, value limit 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -1727,7 +1727,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      name: default.acid_uami
+                      name: default.acid_uami_n0
                   Write Type: INSERT
 
   Stage: Stage-2
@@ -1741,29 +1741,29 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.acid_uami
+              name: default.acid_uami_n0
           Write Type: INSERT
 
-PREHOOK: query: insert into table acid_uami select min(cast(key as int)) as c1, max(cast (key as decimal(5,2))) as c2, value
+PREHOOK: query: insert into table acid_uami_n0 select min(cast(key as int)) as c1, max(cast (key as decimal(5,2))) as c2, value
     from src group by key, value order by key, value limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@acid_uami
-POSTHOOK: query: insert into table acid_uami select min(cast(key as int)) as c1, max(cast (key as decimal(5,2))) as c2, value
+PREHOOK: Output: default@acid_uami_n0
+POSTHOOK: query: insert into table acid_uami_n0 select min(cast(key as int)) as c1, max(cast (key as decimal(5,2))) as c2, value
     from src group by key, value order by key, value limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@acid_uami
-POSTHOOK: Lineage: acid_uami.de EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: acid_uami.i EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: acid_uami.vc EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from acid_uami
+POSTHOOK: Output: default@acid_uami_n0
+POSTHOOK: Lineage: acid_uami_n0.de EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: acid_uami_n0.i EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: acid_uami_n0.vc EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from acid_uami_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@acid_uami
+PREHOOK: Input: default@acid_uami_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from acid_uami
+POSTHOOK: query: select * from acid_uami_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@acid_uami
+POSTHOOK: Input: default@acid_uami_n0
 #### A masked pattern was here ####
 113	113.00	val_113
 105	105.00	val_105
@@ -1775,29 +1775,29 @@ POSTHOOK: Input: default@acid_uami
 103	103.00	val_103
 100	100.00	val_100
 0	0.00	val_0
-PREHOOK: query: truncate table acid_uami
+PREHOOK: query: truncate table acid_uami_n0
 PREHOOK: type: TRUNCATETABLE
-PREHOOK: Output: default@acid_uami
-POSTHOOK: query: truncate table acid_uami
+PREHOOK: Output: default@acid_uami_n0
+POSTHOOK: query: truncate table acid_uami_n0
 POSTHOOK: type: TRUNCATETABLE
-POSTHOOK: Output: default@acid_uami
-PREHOOK: query: create table src_multi2 (i STRING, j STRING NOT NULL ENABLE)
+POSTHOOK: Output: default@acid_uami_n0
+PREHOOK: query: create table src_multi2_n0 (i STRING, j STRING NOT NULL ENABLE)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src_multi2
-POSTHOOK: query: create table src_multi2 (i STRING, j STRING NOT NULL ENABLE)
+PREHOOK: Output: default@src_multi2_n0
+POSTHOOK: query: create table src_multi2_n0 (i STRING, j STRING NOT NULL ENABLE)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src_multi2
+POSTHOOK: Output: default@src_multi2_n0
 PREHOOK: query: explain
 from src
-insert into table acid_uami select cast(key as int), cast(key as decimal(5,2)), value where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
+insert into table acid_uami_n0 select cast(key as int), cast(key as decimal(5,2)), value where key < 10
+insert overwrite table src_multi2_n0 select * where key > 10 and key < 20
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 from src
-insert into table acid_uami select cast(key as int), cast(key as decimal(5,2)), value where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
+insert into table acid_uami_n0 select cast(key as int), cast(key as decimal(5,2)), value where key < 10
+insert overwrite table src_multi2_n0 select * where key > 10 and key < 20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -1847,7 +1847,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.src_multi2
+                            name: default.src_multi2_n0
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
@@ -1864,7 +1864,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      name: default.acid_uami
+                      name: default.acid_uami_n0
                   Write Type: INSERT
 
   Stage: Stage-3
@@ -1878,7 +1878,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.acid_uami
+              name: default.acid_uami_n0
           Write Type: INSERT
 
   Stage: Stage-1
@@ -1889,27 +1889,27 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.src_multi2
+              name: default.src_multi2_n0
 
-PREHOOK: query: drop table src_multi2
+PREHOOK: query: drop table src_multi2_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@src_multi2
-PREHOOK: Output: default@src_multi2
-POSTHOOK: query: drop table src_multi2
+PREHOOK: Input: default@src_multi2_n0
+PREHOOK: Output: default@src_multi2_n0
+POSTHOOK: query: drop table src_multi2_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@src_multi2
-POSTHOOK: Output: default@src_multi2
-PREHOOK: query: select * from acid_uami order by de desc limit 15
+POSTHOOK: Input: default@src_multi2_n0
+POSTHOOK: Output: default@src_multi2_n0
+PREHOOK: query: select * from acid_uami_n0 order by de desc limit 15
 PREHOOK: type: QUERY
-PREHOOK: Input: default@acid_uami
+PREHOOK: Input: default@acid_uami_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from acid_uami order by de desc limit 15
+POSTHOOK: query: select * from acid_uami_n0 order by de desc limit 15
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@acid_uami
+POSTHOOK: Input: default@acid_uami_n0
 #### A masked pattern was here ####
-PREHOOK: query: explain update acid_uami set de = 893.14 where de = 103.00 or de = 119.00
+PREHOOK: query: explain update acid_uami_n0 set de = 893.14 where de = 103.00 or de = 119.00
 PREHOOK: type: QUERY
-POSTHOOK: query: explain update acid_uami set de = 893.14 where de = 103.00 or de = 119.00
+POSTHOOK: query: explain update acid_uami_n0 set de = 893.14 where de = 103.00 or de = 119.00
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1927,7 +1927,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: acid_uami
+                  alias: acid_uami_n0
                   Statistics: Num rows: 1 Data size: 328 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (((de = 103) or (de = 119)) and enforce_constraint((893.14 >= CAST( i AS decimal(5,2))) is not false)) (type: boolean)
@@ -1958,7 +1958,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      name: default.acid_uami
+                      name: default.acid_uami_n0
                   Write Type: UPDATE
 
   Stage: Stage-2
@@ -1972,32 +1972,32 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.acid_uami
+              name: default.acid_uami_n0
           Write Type: UPDATE
 
-PREHOOK: query: update acid_uami set de = 893.14 where de = 103.00 or de = 119.00
+PREHOOK: query: update acid_uami_n0 set de = 893.14 where de = 103.00 or de = 119.00
 PREHOOK: type: QUERY
-PREHOOK: Input: default@acid_uami
-PREHOOK: Output: default@acid_uami
-POSTHOOK: query: update acid_uami set de = 893.14 where de = 103.00 or de = 119.00
+PREHOOK: Input: default@acid_uami_n0
+PREHOOK: Output: default@acid_uami_n0
+POSTHOOK: query: update acid_uami_n0 set de = 893.14 where de = 103.00 or de = 119.00
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@acid_uami
-POSTHOOK: Output: default@acid_uami
-PREHOOK: query: select * from acid_uami order by de desc limit 15
+POSTHOOK: Input: default@acid_uami_n0
+POSTHOOK: Output: default@acid_uami_n0
+PREHOOK: query: select * from acid_uami_n0 order by de desc limit 15
 PREHOOK: type: QUERY
-PREHOOK: Input: default@acid_uami
+PREHOOK: Input: default@acid_uami_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from acid_uami order by de desc limit 15
+POSTHOOK: query: select * from acid_uami_n0 order by de desc limit 15
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@acid_uami
+POSTHOOK: Input: default@acid_uami_n0
 #### A masked pattern was here ####
-PREHOOK: query: ALTER table acid_uami drop constraint ch2
+PREHOOK: query: ALTER table acid_uami_n0 drop constraint ch2
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
-POSTHOOK: query: ALTER table acid_uami drop constraint ch2
+POSTHOOK: query: ALTER table acid_uami_n0 drop constraint ch2
 POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
-PREHOOK: query: explain update acid_uami set vc = 'apache_hive' where de = 893.14
+PREHOOK: query: explain update acid_uami_n0 set vc = 'apache_hive' where de = 893.14
 PREHOOK: type: QUERY
-POSTHOOK: query: explain update acid_uami set vc = 'apache_hive' where de = 893.14
+POSTHOOK: query: explain update acid_uami_n0 set vc = 'apache_hive' where de = 893.14
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2015,7 +2015,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: acid_uami
+                  alias: acid_uami_n0
                   Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (de = 893.14) (type: boolean)
@@ -2046,7 +2046,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      name: default.acid_uami
+                      name: default.acid_uami_n0
                   Write Type: UPDATE
 
   Stage: Stage-2
@@ -2060,33 +2060,33 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.acid_uami
+              name: default.acid_uami_n0
           Write Type: UPDATE
 
-PREHOOK: query: update acid_uami set vc = 'apache_hive' where de = 893.14
+PREHOOK: query: update acid_uami_n0 set vc = 'apache_hive' where de = 893.14
 PREHOOK: type: QUERY
-PREHOOK: Input: default@acid_uami
-PREHOOK: Output: default@acid_uami
-POSTHOOK: query: update acid_uami set vc = 'apache_hive' where de = 893.14
+PREHOOK: Input: default@acid_uami_n0
+PREHOOK: Output: default@acid_uami_n0
+POSTHOOK: query: update acid_uami_n0 set vc = 'apache_hive' where de = 893.14
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@acid_uami
-POSTHOOK: Output: default@acid_uami
-PREHOOK: query: select * from acid_uami order by vc limit 15
+POSTHOOK: Input: default@acid_uami_n0
+POSTHOOK: Output: default@acid_uami_n0
+PREHOOK: query: select * from acid_uami_n0 order by vc limit 15
 PREHOOK: type: QUERY
-PREHOOK: Input: default@acid_uami
+PREHOOK: Input: default@acid_uami_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from acid_uami order by vc limit 15
+POSTHOOK: query: select * from acid_uami_n0 order by vc limit 15
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@acid_uami
+POSTHOOK: Input: default@acid_uami_n0
 #### A masked pattern was here ####
-PREHOOK: query: DROP TABLE acid_uami
+PREHOOK: query: DROP TABLE acid_uami_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@acid_uami
-PREHOOK: Output: default@acid_uami
-POSTHOOK: query: DROP TABLE acid_uami
+PREHOOK: Input: default@acid_uami_n0
+PREHOOK: Output: default@acid_uami_n0
+POSTHOOK: query: DROP TABLE acid_uami_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@acid_uami
-POSTHOOK: Output: default@acid_uami
+POSTHOOK: Input: default@acid_uami_n0
+POSTHOOK: Output: default@acid_uami_n0
 PREHOOK: query: create table tmerge(key int CHECK key > 0 AND (key < 100 OR key = 5) enable, a1 string NOT NULL, value string)
 clustered by (value) into 2 buckets stored as orc
 tblproperties ("transactional"="true")
@@ -3417,20 +3417,20 @@ POSTHOOK: query: DROP TABLE trely
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@trely
 POSTHOOK: Output: default@trely
-PREHOOK: query: create table tbl1(a string, b int, CONSTRAINT check1 CHECK a != '' AND b > 4)
+PREHOOK: query: create table tbl1_n1(a string, b int, CONSTRAINT check1 CHECK a != '' AND b > 4)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tbl1
-POSTHOOK: query: create table tbl1(a string, b int, CONSTRAINT check1 CHECK a != '' AND b > 4)
+PREHOOK: Output: default@tbl1_n1
+POSTHOOK: query: create table tbl1_n1(a string, b int, CONSTRAINT check1 CHECK a != '' AND b > 4)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tbl1
-PREHOOK: query: desc formatted tbl1
+POSTHOOK: Output: default@tbl1_n1
+PREHOOK: query: desc formatted tbl1_n1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@tbl1
-POSTHOOK: query: desc formatted tbl1
+PREHOOK: Input: default@tbl1_n1
+POSTHOOK: query: desc formatted tbl1_n1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@tbl1
+POSTHOOK: Input: default@tbl1_n1
 # col_name            	data_type           	comment             
 a                   	string              	                    
 b                   	int                 	                    
@@ -3461,13 +3461,13 @@ Storage Desc Params:
 # Constraints	 	 
 	 	 
 # Check Constraints	 	 
-Table:              	default.tbl1        	 
+Table:              	default.tbl1_n1     	 
 Constraint Name:    	check1              	 
 Column Name:null    	Check Value:a != '' AND b > 4	 
 	 	 
-PREHOOK: query: explain insert into tbl1 values('a', 69)
+PREHOOK: query: explain insert into tbl1_n1 values('a', 69)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain insert into tbl1 values('a', 69)
+POSTHOOK: query: explain insert into tbl1_n1 values('a', 69)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -3506,7 +3506,7 @@ STAGE PLANS:
                                 input format: org.apache.hadoop.mapred.TextInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                                name: default.tbl1
+                                name: default.tbl1_n1
                             Write Type: INSERT
             Execution mode: llap
             LLAP IO: no inputs
@@ -3522,38 +3522,38 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.tbl1
+              name: default.tbl1_n1
           micromanaged table: true
 
-PREHOOK: query: insert into tbl1 values('a', 69)
+PREHOOK: query: insert into tbl1_n1 values('a', 69)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@tbl1
-POSTHOOK: query: insert into tbl1 values('a', 69)
+PREHOOK: Output: default@tbl1_n1
+POSTHOOK: query: insert into tbl1_n1 values('a', 69)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@tbl1
-POSTHOOK: Lineage: tbl1.a SCRIPT []
-POSTHOOK: Lineage: tbl1.b SCRIPT []
-PREHOOK: query: select * from tbl1
+POSTHOOK: Output: default@tbl1_n1
+POSTHOOK: Lineage: tbl1_n1.a SCRIPT []
+POSTHOOK: Lineage: tbl1_n1.b SCRIPT []
+PREHOOK: query: select * from tbl1_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tbl1
+PREHOOK: Input: default@tbl1_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from tbl1
+POSTHOOK: query: select * from tbl1_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tbl1
+POSTHOOK: Input: default@tbl1_n1
 #### A masked pattern was here ####
 a	69
-PREHOOK: query: ALTER TABLE tbl1 add constraint chk2 CHECK (b < 100)
+PREHOOK: query: ALTER TABLE tbl1_n1 add constraint chk2 CHECK (b < 100)
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
-POSTHOOK: query: ALTER TABLE tbl1 add constraint chk2 CHECK (b < 100)
+POSTHOOK: query: ALTER TABLE tbl1_n1 add constraint chk2 CHECK (b < 100)
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
-PREHOOK: query: desc formatted tbl1
+PREHOOK: query: desc formatted tbl1_n1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@tbl1
-POSTHOOK: query: desc formatted tbl1
+PREHOOK: Input: default@tbl1_n1
+POSTHOOK: query: desc formatted tbl1_n1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@tbl1
+POSTHOOK: Input: default@tbl1_n1
 # col_name            	data_type           	comment             
 a                   	string              	                    
 b                   	int                 	                    
@@ -3586,16 +3586,16 @@ Storage Desc Params:
 # Constraints	 	 
 	 	 
 # Check Constraints	 	 
-Table:              	default.tbl1        	 
+Table:              	default.tbl1_n1     	 
 Constraint Name:    	check1              	 
 Column Name:null    	Check Value:a != '' AND b > 4	 
 	 	 
 Constraint Name:    	chk2                	 
 Column Name:null    	Check Value:(b < 100)	 
 	 	 
-PREHOOK: query: explain insert into tbl1 values('a', 69)
+PREHOOK: query: explain insert into tbl1_n1 values('a', 69)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain insert into tbl1 values('a', 69)
+POSTHOOK: query: explain insert into tbl1_n1 values('a', 69)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -3634,7 +3634,7 @@ STAGE PLANS:
                                 input format: org.apache.hadoop.mapred.TextInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                                name: default.tbl1
+                                name: default.tbl1_n1
                             Write Type: INSERT
             Execution mode: llap
             LLAP IO: no inputs
@@ -3650,14 +3650,14 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.tbl1
+              name: default.tbl1_n1
           micromanaged table: true
 
-PREHOOK: query: drop table tbl1
+PREHOOK: query: drop table tbl1_n1
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@tbl1
-PREHOOK: Output: default@tbl1
-POSTHOOK: query: drop table tbl1
+PREHOOK: Input: default@tbl1_n1
+PREHOOK: Output: default@tbl1_n1
+POSTHOOK: query: drop table tbl1_n1
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@tbl1
-POSTHOOK: Output: default@tbl1
+POSTHOOK: Input: default@tbl1_n1
+POSTHOOK: Output: default@tbl1_n1

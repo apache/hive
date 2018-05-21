@@ -1,35 +1,35 @@
-PREHOOK: query: CREATE TABLE test_table1 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: query: CREATE TABLE test_table1_n15 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_table1
-POSTHOOK: query: CREATE TABLE test_table1 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: Output: default@test_table1_n15
+POSTHOOK: query: CREATE TABLE test_table1_n15 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_table1
-PREHOOK: query: CREATE TABLE test_table2 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+POSTHOOK: Output: default@test_table1_n15
+PREHOOK: query: CREATE TABLE test_table2_n14 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_table2
-POSTHOOK: query: CREATE TABLE test_table2 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: Output: default@test_table2_n14
+POSTHOOK: query: CREATE TABLE test_table2_n14 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_table2
-PREHOOK: query: CREATE TABLE test_table3 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+POSTHOOK: Output: default@test_table2_n14
+PREHOOK: query: CREATE TABLE test_table3_n7 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_table3
-POSTHOOK: query: CREATE TABLE test_table3 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: Output: default@test_table3_n7
+POSTHOOK: query: CREATE TABLE test_table3_n7 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_table3
-PREHOOK: query: CREATE TABLE test_table4 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+POSTHOOK: Output: default@test_table3_n7
+PREHOOK: query: CREATE TABLE test_table4_n1 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_table4
-POSTHOOK: query: CREATE TABLE test_table4 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: Output: default@test_table4_n1
+POSTHOOK: query: CREATE TABLE test_table4_n1 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_table4
+POSTHOOK: Output: default@test_table4_n1
 PREHOOK: query: CREATE TABLE test_table5 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -62,54 +62,54 @@ POSTHOOK: query: CREATE TABLE test_table8 (key INT, value STRING) CLUSTERED BY (
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table8
-PREHOOK: query: INSERT OVERWRITE TABLE test_table1
+PREHOOK: query: INSERT OVERWRITE TABLE test_table1_n15
 SELECT * FROM src WHERE key < 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@test_table1
-POSTHOOK: query: INSERT OVERWRITE TABLE test_table1
+PREHOOK: Output: default@test_table1_n15
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table1_n15
 SELECT * FROM src WHERE key < 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@test_table1
-POSTHOOK: Lineage: test_table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: INSERT OVERWRITE TABLE test_table2
+POSTHOOK: Output: default@test_table1_n15
+POSTHOOK: Lineage: test_table1_n15.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table1_n15.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: INSERT OVERWRITE TABLE test_table2_n14
 SELECT * FROM src  WHERE key < 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@test_table2
-POSTHOOK: query: INSERT OVERWRITE TABLE test_table2
+PREHOOK: Output: default@test_table2_n14
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table2_n14
 SELECT * FROM src  WHERE key < 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@test_table2
-POSTHOOK: Lineage: test_table2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: INSERT OVERWRITE TABLE test_table3
+POSTHOOK: Output: default@test_table2_n14
+POSTHOOK: Lineage: test_table2_n14.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2_n14.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: INSERT OVERWRITE TABLE test_table3_n7
 SELECT * FROM src WHERE key < 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@test_table3
-POSTHOOK: query: INSERT OVERWRITE TABLE test_table3
+PREHOOK: Output: default@test_table3_n7
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table3_n7
 SELECT * FROM src WHERE key < 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@test_table3
-POSTHOOK: Lineage: test_table3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: INSERT OVERWRITE TABLE test_table4
+POSTHOOK: Output: default@test_table3_n7
+POSTHOOK: Lineage: test_table3_n7.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table3_n7.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: INSERT OVERWRITE TABLE test_table4_n1
 SELECT * FROM src  WHERE key < 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@test_table4
-POSTHOOK: query: INSERT OVERWRITE TABLE test_table4
+PREHOOK: Output: default@test_table4_n1
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table4_n1
 SELECT * FROM src  WHERE key < 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@test_table4
-POSTHOOK: Lineage: test_table4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@test_table4_n1
+POSTHOOK: Lineage: test_table4_n1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table4_n1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: INSERT OVERWRITE TABLE test_table5
 SELECT * FROM src WHERE key < 10
 PREHOOK: type: QUERY
@@ -160,18 +160,18 @@ POSTHOOK: Lineage: test_table8.key EXPRESSION [(src)src.FieldSchema(name:key, ty
 POSTHOOK: Lineage: test_table8.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: EXPLAIN
 SELECT /*+ mapjoin(b, c, d, e, f, g) */ count(*)
-FROM test_table1 a JOIN test_table2 b ON a.key = b.key
-JOIN test_table3 c ON a.key = c.key
-JOIN test_table4 d ON a.key = d.key
+FROM test_table1_n15 a JOIN test_table2_n14 b ON a.key = b.key
+JOIN test_table3_n7 c ON a.key = c.key
+JOIN test_table4_n1 d ON a.key = d.key
 JOIN test_table5 e ON a.key = e.key
 JOIN test_table6 f ON a.key = f.key
 JOIN test_table7 g ON a.key = g.key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT /*+ mapjoin(b, c, d, e, f, g) */ count(*)
-FROM test_table1 a JOIN test_table2 b ON a.key = b.key
-JOIN test_table3 c ON a.key = c.key
-JOIN test_table4 d ON a.key = d.key
+FROM test_table1_n15 a JOIN test_table2_n14 b ON a.key = b.key
+JOIN test_table3_n7 c ON a.key = c.key
+JOIN test_table4_n1 d ON a.key = d.key
 JOIN test_table5 e ON a.key = e.key
 JOIN test_table6 f ON a.key = f.key
 JOIN test_table7 g ON a.key = g.key
@@ -365,33 +365,33 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT /*+ mapjoin(b, c, d, e, f, g) */ count(*)
-FROM test_table1 a JOIN test_table2 b ON a.key = b.key
-JOIN test_table3 c ON a.key = c.key
-JOIN test_table4 d ON a.key = d.key
+FROM test_table1_n15 a JOIN test_table2_n14 b ON a.key = b.key
+JOIN test_table3_n7 c ON a.key = c.key
+JOIN test_table4_n1 d ON a.key = d.key
 JOIN test_table5 e ON a.key = e.key
 JOIN test_table6 f ON a.key = f.key
 JOIN test_table7 g ON a.key = g.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table1
-PREHOOK: Input: default@test_table2
-PREHOOK: Input: default@test_table3
-PREHOOK: Input: default@test_table4
+PREHOOK: Input: default@test_table1_n15
+PREHOOK: Input: default@test_table2_n14
+PREHOOK: Input: default@test_table3_n7
+PREHOOK: Input: default@test_table4_n1
 PREHOOK: Input: default@test_table5
 PREHOOK: Input: default@test_table6
 PREHOOK: Input: default@test_table7
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT /*+ mapjoin(b, c, d, e, f, g) */ count(*)
-FROM test_table1 a JOIN test_table2 b ON a.key = b.key
-JOIN test_table3 c ON a.key = c.key
-JOIN test_table4 d ON a.key = d.key
+FROM test_table1_n15 a JOIN test_table2_n14 b ON a.key = b.key
+JOIN test_table3_n7 c ON a.key = c.key
+JOIN test_table4_n1 d ON a.key = d.key
 JOIN test_table5 e ON a.key = e.key
 JOIN test_table6 f ON a.key = f.key
 JOIN test_table7 g ON a.key = g.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table1
-POSTHOOK: Input: default@test_table2
-POSTHOOK: Input: default@test_table3
-POSTHOOK: Input: default@test_table4
+POSTHOOK: Input: default@test_table1_n15
+POSTHOOK: Input: default@test_table2_n14
+POSTHOOK: Input: default@test_table3_n7
+POSTHOOK: Input: default@test_table4_n1
 POSTHOOK: Input: default@test_table5
 POSTHOOK: Input: default@test_table6
 POSTHOOK: Input: default@test_table7
@@ -399,18 +399,18 @@ POSTHOOK: Input: default@test_table7
 4378
 PREHOOK: query: EXPLAIN
 SELECT count(*)
-FROM test_table1 a LEFT OUTER JOIN test_table2 b ON a.key = b.key
-LEFT OUTER JOIN test_table3 c ON a.key = c.key
-LEFT OUTER JOIN test_table4 d ON a.key = d.key
+FROM test_table1_n15 a LEFT OUTER JOIN test_table2_n14 b ON a.key = b.key
+LEFT OUTER JOIN test_table3_n7 c ON a.key = c.key
+LEFT OUTER JOIN test_table4_n1 d ON a.key = d.key
 LEFT OUTER JOIN test_table5 e ON a.key = e.key
 LEFT OUTER JOIN test_table6 f ON a.key = f.key
 LEFT OUTER JOIN test_table7 g ON a.key = g.key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT count(*)
-FROM test_table1 a LEFT OUTER JOIN test_table2 b ON a.key = b.key
-LEFT OUTER JOIN test_table3 c ON a.key = c.key
-LEFT OUTER JOIN test_table4 d ON a.key = d.key
+FROM test_table1_n15 a LEFT OUTER JOIN test_table2_n14 b ON a.key = b.key
+LEFT OUTER JOIN test_table3_n7 c ON a.key = c.key
+LEFT OUTER JOIN test_table4_n1 d ON a.key = d.key
 LEFT OUTER JOIN test_table5 e ON a.key = e.key
 LEFT OUTER JOIN test_table6 f ON a.key = f.key
 LEFT OUTER JOIN test_table7 g ON a.key = g.key
@@ -484,33 +484,33 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT count(*)
-FROM test_table1 a LEFT OUTER JOIN test_table2 b ON a.key = b.key
-LEFT OUTER JOIN test_table3 c ON a.key = c.key
-LEFT OUTER JOIN test_table4 d ON a.key = d.key
+FROM test_table1_n15 a LEFT OUTER JOIN test_table2_n14 b ON a.key = b.key
+LEFT OUTER JOIN test_table3_n7 c ON a.key = c.key
+LEFT OUTER JOIN test_table4_n1 d ON a.key = d.key
 LEFT OUTER JOIN test_table5 e ON a.key = e.key
 LEFT OUTER JOIN test_table6 f ON a.key = f.key
 LEFT OUTER JOIN test_table7 g ON a.key = g.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table1
-PREHOOK: Input: default@test_table2
-PREHOOK: Input: default@test_table3
-PREHOOK: Input: default@test_table4
+PREHOOK: Input: default@test_table1_n15
+PREHOOK: Input: default@test_table2_n14
+PREHOOK: Input: default@test_table3_n7
+PREHOOK: Input: default@test_table4_n1
 PREHOOK: Input: default@test_table5
 PREHOOK: Input: default@test_table6
 PREHOOK: Input: default@test_table7
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT count(*)
-FROM test_table1 a LEFT OUTER JOIN test_table2 b ON a.key = b.key
-LEFT OUTER JOIN test_table3 c ON a.key = c.key
-LEFT OUTER JOIN test_table4 d ON a.key = d.key
+FROM test_table1_n15 a LEFT OUTER JOIN test_table2_n14 b ON a.key = b.key
+LEFT OUTER JOIN test_table3_n7 c ON a.key = c.key
+LEFT OUTER JOIN test_table4_n1 d ON a.key = d.key
 LEFT OUTER JOIN test_table5 e ON a.key = e.key
 LEFT OUTER JOIN test_table6 f ON a.key = f.key
 LEFT OUTER JOIN test_table7 g ON a.key = g.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table1
-POSTHOOK: Input: default@test_table2
-POSTHOOK: Input: default@test_table3
-POSTHOOK: Input: default@test_table4
+POSTHOOK: Input: default@test_table1_n15
+POSTHOOK: Input: default@test_table2_n14
+POSTHOOK: Input: default@test_table3_n7
+POSTHOOK: Input: default@test_table4_n1
 POSTHOOK: Input: default@test_table5
 POSTHOOK: Input: default@test_table6
 POSTHOOK: Input: default@test_table7
@@ -518,9 +518,9 @@ POSTHOOK: Input: default@test_table7
 4378
 PREHOOK: query: EXPLAIN
 SELECT count(*)
-FROM test_table1 a LEFT OUTER JOIN test_table2 b ON a.key = b.key
-LEFT OUTER JOIN test_table3 c ON a.key = c.key
-LEFT OUTER JOIN test_table4 d ON a.key = d.key
+FROM test_table1_n15 a LEFT OUTER JOIN test_table2_n14 b ON a.key = b.key
+LEFT OUTER JOIN test_table3_n7 c ON a.key = c.key
+LEFT OUTER JOIN test_table4_n1 d ON a.key = d.key
 LEFT OUTER JOIN test_table5 e ON a.key = e.key
 LEFT OUTER JOIN test_table6 f ON a.key = f.key
 LEFT OUTER JOIN test_table7 g ON a.key = g.key
@@ -528,9 +528,9 @@ LEFT OUTER JOIN test_table8 h ON a.key = h.key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT count(*)
-FROM test_table1 a LEFT OUTER JOIN test_table2 b ON a.key = b.key
-LEFT OUTER JOIN test_table3 c ON a.key = c.key
-LEFT OUTER JOIN test_table4 d ON a.key = d.key
+FROM test_table1_n15 a LEFT OUTER JOIN test_table2_n14 b ON a.key = b.key
+LEFT OUTER JOIN test_table3_n7 c ON a.key = c.key
+LEFT OUTER JOIN test_table4_n1 d ON a.key = d.key
 LEFT OUTER JOIN test_table5 e ON a.key = e.key
 LEFT OUTER JOIN test_table6 f ON a.key = f.key
 LEFT OUTER JOIN test_table7 g ON a.key = g.key
@@ -607,36 +607,36 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT count(*)
-FROM test_table1 a LEFT OUTER JOIN test_table2 b ON a.key = b.key
-LEFT OUTER JOIN test_table3 c ON a.key = c.key
-LEFT OUTER JOIN test_table4 d ON a.key = d.key
+FROM test_table1_n15 a LEFT OUTER JOIN test_table2_n14 b ON a.key = b.key
+LEFT OUTER JOIN test_table3_n7 c ON a.key = c.key
+LEFT OUTER JOIN test_table4_n1 d ON a.key = d.key
 LEFT OUTER JOIN test_table5 e ON a.key = e.key
 LEFT OUTER JOIN test_table6 f ON a.key = f.key
 LEFT OUTER JOIN test_table7 g ON a.key = g.key
 LEFT OUTER JOIN test_table8 h ON a.key = h.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table1
-PREHOOK: Input: default@test_table2
-PREHOOK: Input: default@test_table3
-PREHOOK: Input: default@test_table4
+PREHOOK: Input: default@test_table1_n15
+PREHOOK: Input: default@test_table2_n14
+PREHOOK: Input: default@test_table3_n7
+PREHOOK: Input: default@test_table4_n1
 PREHOOK: Input: default@test_table5
 PREHOOK: Input: default@test_table6
 PREHOOK: Input: default@test_table7
 PREHOOK: Input: default@test_table8
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT count(*)
-FROM test_table1 a LEFT OUTER JOIN test_table2 b ON a.key = b.key
-LEFT OUTER JOIN test_table3 c ON a.key = c.key
-LEFT OUTER JOIN test_table4 d ON a.key = d.key
+FROM test_table1_n15 a LEFT OUTER JOIN test_table2_n14 b ON a.key = b.key
+LEFT OUTER JOIN test_table3_n7 c ON a.key = c.key
+LEFT OUTER JOIN test_table4_n1 d ON a.key = d.key
 LEFT OUTER JOIN test_table5 e ON a.key = e.key
 LEFT OUTER JOIN test_table6 f ON a.key = f.key
 LEFT OUTER JOIN test_table7 g ON a.key = g.key
 LEFT OUTER JOIN test_table8 h ON a.key = h.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table1
-POSTHOOK: Input: default@test_table2
-POSTHOOK: Input: default@test_table3
-POSTHOOK: Input: default@test_table4
+POSTHOOK: Input: default@test_table1_n15
+POSTHOOK: Input: default@test_table2_n14
+POSTHOOK: Input: default@test_table3_n7
+POSTHOOK: Input: default@test_table4_n1
 POSTHOOK: Input: default@test_table5
 POSTHOOK: Input: default@test_table6
 POSTHOOK: Input: default@test_table7
@@ -645,22 +645,22 @@ POSTHOOK: Input: default@test_table8
 13126
 PREHOOK: query: EXPLAIN
 SELECT a.*
-FROM test_table1 a
-LEFT OUTER JOIN test_table2 b ON a.key = b.key
-LEFT OUTER JOIN test_table3 c ON a.key = c.key
-LEFT OUTER JOIN test_table4 d ON a.key = d.key
+FROM test_table1_n15 a
+LEFT OUTER JOIN test_table2_n14 b ON a.key = b.key
+LEFT OUTER JOIN test_table3_n7 c ON a.key = c.key
+LEFT OUTER JOIN test_table4_n1 d ON a.key = d.key
 LEFT OUTER JOIN test_table5 e ON a.key = e.key
 LEFT OUTER JOIN test_table6 f ON a.key = f.key
 LEFT OUTER JOIN test_table7 g ON a.key = g.key
 LEFT OUTER JOIN test_table8 h ON a.key = h.key
-LEFT OUTER JOIN test_table4 i ON a.key = i.key
+LEFT OUTER JOIN test_table4_n1 i ON a.key = i.key
 LEFT OUTER JOIN test_table5 j ON a.key = j.key
 LEFT OUTER JOIN test_table6 k ON a.key = k.key
 LEFT OUTER JOIN test_table7 l ON a.key = l.key
 LEFT OUTER JOIN test_table8 m ON a.key = m.key
 LEFT OUTER JOIN test_table7 n ON a.key = n.key
 LEFT OUTER JOIN test_table8 o ON a.key = o.key
-LEFT OUTER JOIN test_table4 p ON a.key = p.key
+LEFT OUTER JOIN test_table4_n1 p ON a.key = p.key
 LEFT OUTER JOIN test_table5 q ON a.key = q.key
 LEFT OUTER JOIN test_table6 r ON a.key = r.key
 LEFT OUTER JOIN test_table7 s ON a.key = s.key
@@ -668,22 +668,22 @@ LEFT OUTER JOIN test_table8 t ON a.key = t.key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT a.*
-FROM test_table1 a
-LEFT OUTER JOIN test_table2 b ON a.key = b.key
-LEFT OUTER JOIN test_table3 c ON a.key = c.key
-LEFT OUTER JOIN test_table4 d ON a.key = d.key
+FROM test_table1_n15 a
+LEFT OUTER JOIN test_table2_n14 b ON a.key = b.key
+LEFT OUTER JOIN test_table3_n7 c ON a.key = c.key
+LEFT OUTER JOIN test_table4_n1 d ON a.key = d.key
 LEFT OUTER JOIN test_table5 e ON a.key = e.key
 LEFT OUTER JOIN test_table6 f ON a.key = f.key
 LEFT OUTER JOIN test_table7 g ON a.key = g.key
 LEFT OUTER JOIN test_table8 h ON a.key = h.key
-LEFT OUTER JOIN test_table4 i ON a.key = i.key
+LEFT OUTER JOIN test_table4_n1 i ON a.key = i.key
 LEFT OUTER JOIN test_table5 j ON a.key = j.key
 LEFT OUTER JOIN test_table6 k ON a.key = k.key
 LEFT OUTER JOIN test_table7 l ON a.key = l.key
 LEFT OUTER JOIN test_table8 m ON a.key = m.key
 LEFT OUTER JOIN test_table7 n ON a.key = n.key
 LEFT OUTER JOIN test_table8 o ON a.key = o.key
-LEFT OUTER JOIN test_table4 p ON a.key = p.key
+LEFT OUTER JOIN test_table4_n1 p ON a.key = p.key
 LEFT OUTER JOIN test_table5 q ON a.key = q.key
 LEFT OUTER JOIN test_table6 r ON a.key = r.key
 LEFT OUTER JOIN test_table7 s ON a.key = s.key

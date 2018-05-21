@@ -1,18 +1,18 @@
-PREHOOK: query: CREATE TABLE dest1(d date, t timestamp)
+PREHOOK: query: CREATE TABLE dest1_n26(d date, t timestamp)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest1
-POSTHOOK: query: CREATE TABLE dest1(d date, t timestamp)
+PREHOOK: Output: default@dest1_n26
+POSTHOOK: query: CREATE TABLE dest1_n26(d date, t timestamp)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest1
+POSTHOOK: Output: default@dest1_n26
 PREHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE dest1
+INSERT OVERWRITE TABLE dest1_n26
 SELECT cast('2013-11-17' as date), cast(cast('1.3041352164485E9' as double) as timestamp)
        FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE dest1
+INSERT OVERWRITE TABLE dest1_n26
 SELECT cast('2013-11-17' as date), cast(cast('1.3041352164485E9' as double) as timestamp)
        FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
@@ -45,7 +45,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.dest1
+                    name: default.dest1_n26
       Execution mode: vectorized
 
   Stage: Stage-7
@@ -65,7 +65,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n26
 
   Stage: Stage-2
     Stats Work
@@ -81,7 +81,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.dest1
+                  name: default.dest1_n26
 
   Stage: Stage-5
     Map Reduce
@@ -93,7 +93,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.dest1
+                  name: default.dest1_n26
 
   Stage: Stage-6
     Move Operator
@@ -101,27 +101,27 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-PREHOOK: query: INSERT OVERWRITE TABLE dest1
+PREHOOK: query: INSERT OVERWRITE TABLE dest1_n26
 SELECT cast('2013-11-17' as date), cast(cast('1.3041352164485E9' as double) as timestamp)
        FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@dest1
-POSTHOOK: query: INSERT OVERWRITE TABLE dest1
+PREHOOK: Output: default@dest1_n26
+POSTHOOK: query: INSERT OVERWRITE TABLE dest1_n26
 SELECT cast('2013-11-17' as date), cast(cast('1.3041352164485E9' as double) as timestamp)
        FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@dest1
-POSTHOOK: Lineage: dest1.d EXPRESSION []
-POSTHOOK: Lineage: dest1.t EXPRESSION []
-PREHOOK: query: SELECT * FROM dest1
+POSTHOOK: Output: default@dest1_n26
+POSTHOOK: Lineage: dest1_n26.d EXPRESSION []
+POSTHOOK: Lineage: dest1_n26.t EXPRESSION []
+PREHOOK: query: SELECT * FROM dest1_n26
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n26
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM dest1
+POSTHOOK: query: SELECT * FROM dest1_n26
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n26
 #### A masked pattern was here ####
 2013-11-17	2011-04-29 20:46:56.4485
 PREHOOK: query: SELECT key, value FROM src WHERE key = cast(86 as double)

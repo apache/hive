@@ -1,12 +1,12 @@
-PREHOOK: query: DROP TABLE over1k
+PREHOOK: query: DROP TABLE over1k_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE over1k
+POSTHOOK: query: DROP TABLE over1k_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: DROP TABLE over1korc
+PREHOOK: query: DROP TABLE over1korc_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE over1korc
+POSTHOOK: query: DROP TABLE over1korc_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE over1k(t tinyint,
+PREHOOK: query: CREATE TABLE over1k_n0(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -21,8 +21,8 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@over1k
-POSTHOOK: query: CREATE TABLE over1k(t tinyint,
+PREHOOK: Output: default@over1k_n0
+POSTHOOK: query: CREATE TABLE over1k_n0(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -37,16 +37,16 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@over1k
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE over1k
+POSTHOOK: Output: default@over1k_n0
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE over1k_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@over1k
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE over1k
+PREHOOK: Output: default@over1k_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE over1k_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@over1k
-PREHOOK: query: CREATE TABLE over1korc(t tinyint,
+POSTHOOK: Output: default@over1k_n0
+PREHOOK: query: CREATE TABLE over1korc_n0(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -60,8 +60,8 @@ PREHOOK: query: CREATE TABLE over1korc(t tinyint,
 STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@over1korc
-POSTHOOK: query: CREATE TABLE over1korc(t tinyint,
+PREHOOK: Output: default@over1korc_n0
+POSTHOOK: query: CREATE TABLE over1korc_n0(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -75,39 +75,39 @@ POSTHOOK: query: CREATE TABLE over1korc(t tinyint,
 STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@over1korc
-PREHOOK: query: INSERT INTO TABLE over1korc SELECT * FROM over1k
+POSTHOOK: Output: default@over1korc_n0
+PREHOOK: query: INSERT INTO TABLE over1korc_n0 SELECT * FROM over1k_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over1k
-PREHOOK: Output: default@over1korc
-POSTHOOK: query: INSERT INTO TABLE over1korc SELECT * FROM over1k
+PREHOOK: Input: default@over1k_n0
+PREHOOK: Output: default@over1korc_n0
+POSTHOOK: query: INSERT INTO TABLE over1korc_n0 SELECT * FROM over1k_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over1k
-POSTHOOK: Output: default@over1korc
-POSTHOOK: Lineage: over1korc.b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1korc.bin SIMPLE [(over1k)over1k.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: over1korc.bo SIMPLE [(over1k)over1k.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: over1korc.d SIMPLE [(over1k)over1k.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: over1korc.dec SIMPLE [(over1k)over1k.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
-POSTHOOK: Lineage: over1korc.f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1korc.i SIMPLE [(over1k)over1k.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: over1korc.s SIMPLE [(over1k)over1k.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: over1korc.si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: over1korc.t SIMPLE [(over1k)over1k.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: over1korc.ts SIMPLE [(over1k)over1k.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Input: default@over1k_n0
+POSTHOOK: Output: default@over1korc_n0
+POSTHOOK: Lineage: over1korc_n0.b SIMPLE [(over1k_n0)over1k_n0.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1korc_n0.bin SIMPLE [(over1k_n0)over1k_n0.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: over1korc_n0.bo SIMPLE [(over1k_n0)over1k_n0.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: over1korc_n0.d SIMPLE [(over1k_n0)over1k_n0.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: over1korc_n0.dec SIMPLE [(over1k_n0)over1k_n0.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
+POSTHOOK: Lineage: over1korc_n0.f SIMPLE [(over1k_n0)over1k_n0.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1korc_n0.i SIMPLE [(over1k_n0)over1k_n0.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1korc_n0.s SIMPLE [(over1k_n0)over1k_n0.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: over1korc_n0.si SIMPLE [(over1k_n0)over1k_n0.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1korc_n0.t SIMPLE [(over1k_n0)over1k_n0.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: over1korc_n0.ts SIMPLE [(over1k_n0)over1k_n0.FieldSchema(name:ts, type:timestamp, comment:null), ]
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT 
   i,
   AVG(CAST(50 AS INT)) AS `avg_int_ok`,
   AVG(CAST(50 AS DOUBLE)) AS `avg_double_ok`,
   AVG(CAST(50 AS DECIMAL)) AS `avg_decimal_ok`
-  FROM over1korc GROUP BY i ORDER BY i LIMIT 10
+  FROM over1korc_n0 GROUP BY i ORDER BY i LIMIT 10
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT 
   i,
   AVG(CAST(50 AS INT)) AS `avg_int_ok`,
   AVG(CAST(50 AS DOUBLE)) AS `avg_double_ok`,
   AVG(CAST(50 AS DECIMAL)) AS `avg_decimal_ok`
-  FROM over1korc GROUP BY i ORDER BY i LIMIT 10
+  FROM over1korc_n0 GROUP BY i ORDER BY i LIMIT 10
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -123,7 +123,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: over1korc
+            alias: over1korc_n0
             Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -251,18 +251,18 @@ PREHOOK: query: SELECT
   AVG(CAST(50 AS INT)) AS `avg_int_ok`,
   AVG(CAST(50 AS DOUBLE)) AS `avg_double_ok`,
   AVG(CAST(50 AS DECIMAL)) AS `avg_decimal_ok`
-  FROM over1korc GROUP BY i ORDER BY i LIMIT 10
+  FROM over1korc_n0 GROUP BY i ORDER BY i LIMIT 10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over1korc
+PREHOOK: Input: default@over1korc_n0
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT 
   i,
   AVG(CAST(50 AS INT)) AS `avg_int_ok`,
   AVG(CAST(50 AS DOUBLE)) AS `avg_double_ok`,
   AVG(CAST(50 AS DECIMAL)) AS `avg_decimal_ok`
-  FROM over1korc GROUP BY i ORDER BY i LIMIT 10
+  FROM over1korc_n0 GROUP BY i ORDER BY i LIMIT 10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over1korc
+POSTHOOK: Input: default@over1korc_n0
 #### A masked pattern was here ####
 65536	50.0	50.0	50.0000
 65537	50.0	50.0	50.0000

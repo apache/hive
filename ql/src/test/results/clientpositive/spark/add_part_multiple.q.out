@@ -1,20 +1,20 @@
-PREHOOK: query: CREATE TABLE add_part_test (key STRING, value STRING) PARTITIONED BY (ds STRING)
+PREHOOK: query: CREATE TABLE add_part_test_n1 (key STRING, value STRING) PARTITIONED BY (ds STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@add_part_test
-POSTHOOK: query: CREATE TABLE add_part_test (key STRING, value STRING) PARTITIONED BY (ds STRING)
+PREHOOK: Output: default@add_part_test_n1
+POSTHOOK: query: CREATE TABLE add_part_test_n1 (key STRING, value STRING) PARTITIONED BY (ds STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@add_part_test
+POSTHOOK: Output: default@add_part_test_n1
 PREHOOK: query: explain
-ALTER TABLE add_part_test ADD IF NOT EXISTS
+ALTER TABLE add_part_test_n1 ADD IF NOT EXISTS
 PARTITION (ds='2010-01-01') location 'A'
 PARTITION (ds='2010-02-01') location 'B'
 PARTITION (ds='2010-03-01')
 PARTITION (ds='2010-04-01') location 'C'
 PREHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: query: explain
-ALTER TABLE add_part_test ADD IF NOT EXISTS
+ALTER TABLE add_part_test_n1 ADD IF NOT EXISTS
 PARTITION (ds='2010-01-01') location 'A'
 PARTITION (ds='2010-02-01') location 'B'
 PARTITION (ds='2010-03-01')
@@ -29,71 +29,71 @@ STAGE PLANS:
 #### A masked pattern was here ####
           Spec: {ds=2010-01-01}, {ds=2010-02-01}, {ds=2010-03-01}, {ds=2010-04-01}
 
-PREHOOK: query: ALTER TABLE add_part_test ADD IF NOT EXISTS
+PREHOOK: query: ALTER TABLE add_part_test_n1 ADD IF NOT EXISTS
 PARTITION (ds='2010-01-01') location 'A'
 PARTITION (ds='2010-02-01') location 'B'
 PARTITION (ds='2010-03-01')
 PARTITION (ds='2010-04-01') location 'C'
 PREHOOK: type: ALTERTABLE_ADDPARTS
 #### A masked pattern was here ####
-PREHOOK: Output: default@add_part_test
-POSTHOOK: query: ALTER TABLE add_part_test ADD IF NOT EXISTS
+PREHOOK: Output: default@add_part_test_n1
+POSTHOOK: query: ALTER TABLE add_part_test_n1 ADD IF NOT EXISTS
 PARTITION (ds='2010-01-01') location 'A'
 PARTITION (ds='2010-02-01') location 'B'
 PARTITION (ds='2010-03-01')
 PARTITION (ds='2010-04-01') location 'C'
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 #### A masked pattern was here ####
-POSTHOOK: Output: default@add_part_test
-POSTHOOK: Output: default@add_part_test@ds=2010-01-01
-POSTHOOK: Output: default@add_part_test@ds=2010-02-01
-POSTHOOK: Output: default@add_part_test@ds=2010-03-01
-POSTHOOK: Output: default@add_part_test@ds=2010-04-01
+POSTHOOK: Output: default@add_part_test_n1
+POSTHOOK: Output: default@add_part_test_n1@ds=2010-01-01
+POSTHOOK: Output: default@add_part_test_n1@ds=2010-02-01
+POSTHOOK: Output: default@add_part_test_n1@ds=2010-03-01
+POSTHOOK: Output: default@add_part_test_n1@ds=2010-04-01
 PREHOOK: query: from src TABLESAMPLE (1 ROWS)
-insert into table add_part_test PARTITION (ds='2010-01-01') select 100,100
-insert into table add_part_test PARTITION (ds='2010-02-01') select 200,200
-insert into table add_part_test PARTITION (ds='2010-03-01') select 400,300
-insert into table add_part_test PARTITION (ds='2010-04-01') select 500,400
+insert into table add_part_test_n1 PARTITION (ds='2010-01-01') select 100,100
+insert into table add_part_test_n1 PARTITION (ds='2010-02-01') select 200,200
+insert into table add_part_test_n1 PARTITION (ds='2010-03-01') select 400,300
+insert into table add_part_test_n1 PARTITION (ds='2010-04-01') select 500,400
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@add_part_test@ds=2010-01-01
-PREHOOK: Output: default@add_part_test@ds=2010-02-01
-PREHOOK: Output: default@add_part_test@ds=2010-03-01
-PREHOOK: Output: default@add_part_test@ds=2010-04-01
+PREHOOK: Output: default@add_part_test_n1@ds=2010-01-01
+PREHOOK: Output: default@add_part_test_n1@ds=2010-02-01
+PREHOOK: Output: default@add_part_test_n1@ds=2010-03-01
+PREHOOK: Output: default@add_part_test_n1@ds=2010-04-01
 POSTHOOK: query: from src TABLESAMPLE (1 ROWS)
-insert into table add_part_test PARTITION (ds='2010-01-01') select 100,100
-insert into table add_part_test PARTITION (ds='2010-02-01') select 200,200
-insert into table add_part_test PARTITION (ds='2010-03-01') select 400,300
-insert into table add_part_test PARTITION (ds='2010-04-01') select 500,400
+insert into table add_part_test_n1 PARTITION (ds='2010-01-01') select 100,100
+insert into table add_part_test_n1 PARTITION (ds='2010-02-01') select 200,200
+insert into table add_part_test_n1 PARTITION (ds='2010-03-01') select 400,300
+insert into table add_part_test_n1 PARTITION (ds='2010-04-01') select 500,400
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@add_part_test@ds=2010-01-01
-POSTHOOK: Output: default@add_part_test@ds=2010-02-01
-POSTHOOK: Output: default@add_part_test@ds=2010-03-01
-POSTHOOK: Output: default@add_part_test@ds=2010-04-01
-POSTHOOK: Lineage: add_part_test PARTITION(ds=2010-01-01).key EXPRESSION []
-POSTHOOK: Lineage: add_part_test PARTITION(ds=2010-01-01).value EXPRESSION []
-POSTHOOK: Lineage: add_part_test PARTITION(ds=2010-02-01).key EXPRESSION []
-POSTHOOK: Lineage: add_part_test PARTITION(ds=2010-02-01).value EXPRESSION []
-POSTHOOK: Lineage: add_part_test PARTITION(ds=2010-03-01).key EXPRESSION []
-POSTHOOK: Lineage: add_part_test PARTITION(ds=2010-03-01).value EXPRESSION []
-POSTHOOK: Lineage: add_part_test PARTITION(ds=2010-04-01).key EXPRESSION []
-POSTHOOK: Lineage: add_part_test PARTITION(ds=2010-04-01).value EXPRESSION []
-PREHOOK: query: select * from add_part_test
+POSTHOOK: Output: default@add_part_test_n1@ds=2010-01-01
+POSTHOOK: Output: default@add_part_test_n1@ds=2010-02-01
+POSTHOOK: Output: default@add_part_test_n1@ds=2010-03-01
+POSTHOOK: Output: default@add_part_test_n1@ds=2010-04-01
+POSTHOOK: Lineage: add_part_test_n1 PARTITION(ds=2010-01-01).key EXPRESSION []
+POSTHOOK: Lineage: add_part_test_n1 PARTITION(ds=2010-01-01).value EXPRESSION []
+POSTHOOK: Lineage: add_part_test_n1 PARTITION(ds=2010-02-01).key EXPRESSION []
+POSTHOOK: Lineage: add_part_test_n1 PARTITION(ds=2010-02-01).value EXPRESSION []
+POSTHOOK: Lineage: add_part_test_n1 PARTITION(ds=2010-03-01).key EXPRESSION []
+POSTHOOK: Lineage: add_part_test_n1 PARTITION(ds=2010-03-01).value EXPRESSION []
+POSTHOOK: Lineage: add_part_test_n1 PARTITION(ds=2010-04-01).key EXPRESSION []
+POSTHOOK: Lineage: add_part_test_n1 PARTITION(ds=2010-04-01).value EXPRESSION []
+PREHOOK: query: select * from add_part_test_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@add_part_test
-PREHOOK: Input: default@add_part_test@ds=2010-01-01
-PREHOOK: Input: default@add_part_test@ds=2010-02-01
-PREHOOK: Input: default@add_part_test@ds=2010-03-01
-PREHOOK: Input: default@add_part_test@ds=2010-04-01
+PREHOOK: Input: default@add_part_test_n1
+PREHOOK: Input: default@add_part_test_n1@ds=2010-01-01
+PREHOOK: Input: default@add_part_test_n1@ds=2010-02-01
+PREHOOK: Input: default@add_part_test_n1@ds=2010-03-01
+PREHOOK: Input: default@add_part_test_n1@ds=2010-04-01
 #### A masked pattern was here ####
-POSTHOOK: query: select * from add_part_test
+POSTHOOK: query: select * from add_part_test_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@add_part_test
-POSTHOOK: Input: default@add_part_test@ds=2010-01-01
-POSTHOOK: Input: default@add_part_test@ds=2010-02-01
-POSTHOOK: Input: default@add_part_test@ds=2010-03-01
-POSTHOOK: Input: default@add_part_test@ds=2010-04-01
+POSTHOOK: Input: default@add_part_test_n1
+POSTHOOK: Input: default@add_part_test_n1@ds=2010-01-01
+POSTHOOK: Input: default@add_part_test_n1@ds=2010-02-01
+POSTHOOK: Input: default@add_part_test_n1@ds=2010-03-01
+POSTHOOK: Input: default@add_part_test_n1@ds=2010-04-01
 #### A masked pattern was here ####
 100	100	2010-01-01
 200	200	2010-02-01

@@ -1,40 +1,40 @@
-PREHOOK: query: CREATE TABLE T1_text(key INT, value INT) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE T1_text_n2(key INT, value INT) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1_text
-POSTHOOK: query: CREATE TABLE T1_text(key INT, value INT) STORED AS TEXTFILE
+PREHOOK: Output: default@T1_text_n2
+POSTHOOK: query: CREATE TABLE T1_text_n2(key INT, value INT) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1_text
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/groupby_groupingid.txt' INTO TABLE T1_text
+POSTHOOK: Output: default@T1_text_n2
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/groupby_groupingid.txt' INTO TABLE T1_text_n2
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t1_text
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/groupby_groupingid.txt' INTO TABLE T1_text
+PREHOOK: Output: default@t1_text_n2
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/groupby_groupingid.txt' INTO TABLE T1_text_n2
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t1_text
-PREHOOK: query: CREATE TABLE T1 STORED AS ORC AS SELECT * FROM T1_text
+POSTHOOK: Output: default@t1_text_n2
+PREHOOK: query: CREATE TABLE T1_n47 STORED AS ORC AS SELECT * FROM T1_text_n2
 PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: default@t1_text
+PREHOOK: Input: default@t1_text_n2
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1
-POSTHOOK: query: CREATE TABLE T1 STORED AS ORC AS SELECT * FROM T1_text
+PREHOOK: Output: default@T1_n47
+POSTHOOK: query: CREATE TABLE T1_n47 STORED AS ORC AS SELECT * FROM T1_text_n2
 POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: default@t1_text
+POSTHOOK: Input: default@t1_text_n2
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1
-POSTHOOK: Lineage: t1.key SIMPLE [(t1_text)t1_text.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: t1.value SIMPLE [(t1_text)t1_text.FieldSchema(name:value, type:int, comment:null), ]
-t1_text.key	t1_text.value
+POSTHOOK: Output: default@T1_n47
+POSTHOOK: Lineage: t1_n47.key SIMPLE [(t1_text_n2)t1_text_n2.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: t1_n47.value SIMPLE [(t1_text_n2)t1_text_n2.FieldSchema(name:value, type:int, comment:null), ]
+t1_text_n2.key	t1_text_n2.value
 PREHOOK: query: explain vectorization detail
 select key, value, `grouping__id`, grouping(key), grouping(value)
-from T1
+from T1_n47
 group by rollup(key, value)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select key, value, `grouping__id`, grouping(key), grouping(value)
-from T1
+from T1_n47
 group by rollup(key, value)
 POSTHOOK: type: QUERY
 Explain
@@ -57,7 +57,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n47
                   Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -165,16 +165,16 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select key, value, `grouping__id`, grouping(key), grouping(value)
-from T1
+from T1_n47
 group by rollup(key, value)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n47
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value, `grouping__id`, grouping(key), grouping(value)
-from T1
+from T1_n47
 group by rollup(key, value)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n47
 #### A masked pattern was here ####
 key	value	grouping__id	_c3	_c4
 1	1	0	0	0
@@ -190,12 +190,12 @@ key	value	grouping__id	_c3	_c4
 NULL	NULL	3	1	1
 PREHOOK: query: explain vectorization detail
 select key, value, `grouping__id`, grouping(key), grouping(value)
-from T1
+from T1_n47
 group by cube(key, value)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select key, value, `grouping__id`, grouping(key), grouping(value)
-from T1
+from T1_n47
 group by cube(key, value)
 POSTHOOK: type: QUERY
 Explain
@@ -218,7 +218,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n47
                   Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -326,16 +326,16 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select key, value, `grouping__id`, grouping(key), grouping(value)
-from T1
+from T1_n47
 group by cube(key, value)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n47
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value, `grouping__id`, grouping(key), grouping(value)
-from T1
+from T1_n47
 group by cube(key, value)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n47
 #### A masked pattern was here ####
 key	value	grouping__id	_c3	_c4
 1	1	0	0	0
@@ -356,13 +356,13 @@ NULL	NULL	2	1	0
 NULL	NULL	3	1	1
 PREHOOK: query: explain vectorization detail
 select key, value
-from T1
+from T1_n47
 group by cube(key, value)
 having grouping(key) = 1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select key, value
-from T1
+from T1_n47
 group by cube(key, value)
 having grouping(key) = 1
 POSTHOOK: type: QUERY
@@ -386,7 +386,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n47
                   Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -500,18 +500,18 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select key, value
-from T1
+from T1_n47
 group by cube(key, value)
 having grouping(key) = 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n47
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value
-from T1
+from T1_n47
 group by cube(key, value)
 having grouping(key) = 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n47
 #### A masked pattern was here ####
 key	value
 NULL	1
@@ -522,14 +522,14 @@ NULL	NULL
 NULL	NULL
 PREHOOK: query: explain vectorization detail
 select key, value, grouping(key)+grouping(value) as x
-from T1
+from T1_n47
 group by cube(key, value)
 having grouping(key) = 1 OR grouping(value) = 1
 order by x desc, case when x = 1 then key end
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select key, value, grouping(key)+grouping(value) as x
-from T1
+from T1_n47
 group by cube(key, value)
 having grouping(key) = 1 OR grouping(value) = 1
 order by x desc, case when x = 1 then key end
@@ -555,7 +555,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n47
                   Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -705,20 +705,20 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select key, value, grouping(key)+grouping(value) as x
-from T1
+from T1_n47
 group by cube(key, value)
 having grouping(key) = 1 OR grouping(value) = 1
 order by x desc, case when x = 1 then key end
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n47
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value, grouping(key)+grouping(value) as x
-from T1
+from T1_n47
 group by cube(key, value)
 having grouping(key) = 1 OR grouping(value) = 1
 order by x desc, case when x = 1 then key end
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n47
 #### A masked pattern was here ####
 key	value	x
 1	NULL	1
@@ -733,12 +733,12 @@ NULL	NULL	1
 NULL	NULL	2
 PREHOOK: query: explain vectorization detail
 select key, value, `grouping__id`, grouping(key), grouping(value)
-from T1
+from T1_n47
 group by rollup(key, value)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select key, value, `grouping__id`, grouping(key), grouping(value)
-from T1
+from T1_n47
 group by rollup(key, value)
 POSTHOOK: type: QUERY
 Explain
@@ -761,7 +761,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n47
                   Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -869,16 +869,16 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select key, value, `grouping__id`, grouping(key), grouping(value)
-from T1
+from T1_n47
 group by rollup(key, value)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n47
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value, `grouping__id`, grouping(key), grouping(value)
-from T1
+from T1_n47
 group by rollup(key, value)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n47
 #### A masked pattern was here ####
 key	value	grouping__id	_c3	_c4
 1	1	0	0	0
@@ -894,12 +894,12 @@ key	value	grouping__id	_c3	_c4
 NULL	NULL	3	1	1
 PREHOOK: query: explain vectorization detail
 select key, value, `grouping__id`, grouping(key), grouping(value)
-from T1
+from T1_n47
 group by cube(key, value)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select key, value, `grouping__id`, grouping(key), grouping(value)
-from T1
+from T1_n47
 group by cube(key, value)
 POSTHOOK: type: QUERY
 Explain
@@ -922,7 +922,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n47
                   Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1030,16 +1030,16 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select key, value, `grouping__id`, grouping(key), grouping(value)
-from T1
+from T1_n47
 group by cube(key, value)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n47
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value, `grouping__id`, grouping(key), grouping(value)
-from T1
+from T1_n47
 group by cube(key, value)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n47
 #### A masked pattern was here ####
 key	value	grouping__id	_c3	_c4
 1	1	0	0	0
@@ -1060,13 +1060,13 @@ NULL	NULL	2	1	0
 NULL	NULL	3	1	1
 PREHOOK: query: explain vectorization detail
 select key, value
-from T1
+from T1_n47
 group by cube(key, value)
 having grouping(key) = 1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select key, value
-from T1
+from T1_n47
 group by cube(key, value)
 having grouping(key) = 1
 POSTHOOK: type: QUERY
@@ -1090,7 +1090,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n47
                   Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1197,18 +1197,18 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select key, value
-from T1
+from T1_n47
 group by cube(key, value)
 having grouping(key) = 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n47
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value
-from T1
+from T1_n47
 group by cube(key, value)
 having grouping(key) = 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n47
 #### A masked pattern was here ####
 key	value
 NULL	1
@@ -1219,14 +1219,14 @@ NULL	NULL
 NULL	NULL
 PREHOOK: query: explain vectorization detail
 select key, value, grouping(key)+grouping(value) as x
-from T1
+from T1_n47
 group by cube(key, value)
 having grouping(key) = 1 OR grouping(value) = 1
 order by x desc, case when x = 1 then key end
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select key, value, grouping(key)+grouping(value) as x
-from T1
+from T1_n47
 group by cube(key, value)
 having grouping(key) = 1 OR grouping(value) = 1
 order by x desc, case when x = 1 then key end
@@ -1252,7 +1252,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n47
                   Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1403,20 +1403,20 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select key, value, grouping(key)+grouping(value) as x
-from T1
+from T1_n47
 group by cube(key, value)
 having grouping(key) = 1 OR grouping(value) = 1
 order by x desc, case when x = 1 then key end
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n47
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value, grouping(key)+grouping(value) as x
-from T1
+from T1_n47
 group by cube(key, value)
 having grouping(key) = 1 OR grouping(value) = 1
 order by x desc, case when x = 1 then key end
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n47
 #### A masked pattern was here ####
 key	value	x
 1	NULL	1
@@ -1431,12 +1431,12 @@ NULL	NULL	1
 NULL	NULL	2
 PREHOOK: query: explain vectorization detail
 select key, value, grouping(key), grouping(value)
-from T1
+from T1_n47
 group by key, value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select key, value, grouping(key), grouping(value)
-from T1
+from T1_n47
 group by key, value
 POSTHOOK: type: QUERY
 Explain
@@ -1459,7 +1459,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n47
                   Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1567,16 +1567,16 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select key, value, grouping(key), grouping(value)
-from T1
+from T1_n47
 group by key, value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n47
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value, grouping(key), grouping(value)
-from T1
+from T1_n47
 group by key, value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n47
 #### A masked pattern was here ####
 key	value	_c2	_c3
 1	1	0	0
@@ -1587,12 +1587,12 @@ key	value	_c2	_c3
 4	5	0	0
 PREHOOK: query: explain vectorization detail
 select key, value, grouping(value)
-from T1
+from T1_n47
 group by key, value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select key, value, grouping(value)
-from T1
+from T1_n47
 group by key, value
 POSTHOOK: type: QUERY
 Explain
@@ -1615,7 +1615,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n47
                   Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1723,16 +1723,16 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select key, value, grouping(value)
-from T1
+from T1_n47
 group by key, value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n47
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value, grouping(value)
-from T1
+from T1_n47
 group by key, value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n47
 #### A masked pattern was here ####
 key	value	_c2
 1	1	0
@@ -1743,13 +1743,13 @@ key	value	_c2
 4	5	0
 PREHOOK: query: explain vectorization detail
 select key, value
-from T1
+from T1_n47
 group by key, value
 having grouping(key) = 0
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select key, value
-from T1
+from T1_n47
 group by key, value
 having grouping(key) = 0
 POSTHOOK: type: QUERY
@@ -1773,7 +1773,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n47
                   Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1872,18 +1872,18 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select key, value
-from T1
+from T1_n47
 group by key, value
 having grouping(key) = 0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n47
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value
-from T1
+from T1_n47
 group by key, value
 having grouping(key) = 0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n47
 #### A masked pattern was here ####
 key	value
 1	1
@@ -1894,12 +1894,12 @@ key	value
 4	5
 PREHOOK: query: explain vectorization detail
 select key, value, `grouping__id`, grouping(key, value)
-from T1
+from T1_n47
 group by cube(key, value)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select key, value, `grouping__id`, grouping(key, value)
-from T1
+from T1_n47
 group by cube(key, value)
 POSTHOOK: type: QUERY
 Explain
@@ -1922,7 +1922,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n47
                   Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -2030,16 +2030,16 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select key, value, `grouping__id`, grouping(key, value)
-from T1
+from T1_n47
 group by cube(key, value)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n47
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value, `grouping__id`, grouping(key, value)
-from T1
+from T1_n47
 group by cube(key, value)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n47
 #### A masked pattern was here ####
 key	value	grouping__id	_c3
 1	1	0	0
@@ -2060,12 +2060,12 @@ NULL	NULL	2	2
 NULL	NULL	3	3
 PREHOOK: query: explain vectorization detail
 select key, value, `grouping__id`, grouping(value, key)
-from T1
+from T1_n47
 group by cube(key, value)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select key, value, `grouping__id`, grouping(value, key)
-from T1
+from T1_n47
 group by cube(key, value)
 POSTHOOK: type: QUERY
 Explain
@@ -2088,7 +2088,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n47
                   Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -2196,16 +2196,16 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select key, value, `grouping__id`, grouping(value, key)
-from T1
+from T1_n47
 group by cube(key, value)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n47
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value, `grouping__id`, grouping(value, key)
-from T1
+from T1_n47
 group by cube(key, value)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n47
 #### A masked pattern was here ####
 key	value	grouping__id	_c3
 1	1	0	0
@@ -2226,12 +2226,12 @@ NULL	NULL	2	1
 NULL	NULL	3	3
 PREHOOK: query: explain vectorization detail
 select key, value, `grouping__id`, grouping(key, value)
-from T1
+from T1_n47
 group by rollup(key, value)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select key, value, `grouping__id`, grouping(key, value)
-from T1
+from T1_n47
 group by rollup(key, value)
 POSTHOOK: type: QUERY
 Explain
@@ -2254,7 +2254,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n47
                   Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -2362,16 +2362,16 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select key, value, `grouping__id`, grouping(key, value)
-from T1
+from T1_n47
 group by rollup(key, value)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n47
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value, `grouping__id`, grouping(key, value)
-from T1
+from T1_n47
 group by rollup(key, value)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n47
 #### A masked pattern was here ####
 key	value	grouping__id	_c3
 1	1	0	0
@@ -2387,12 +2387,12 @@ key	value	grouping__id	_c3
 NULL	NULL	3	3
 PREHOOK: query: explain vectorization detail
 select key, value, `grouping__id`, grouping(value, key)
-from T1
+from T1_n47
 group by rollup(key, value)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select key, value, `grouping__id`, grouping(value, key)
-from T1
+from T1_n47
 group by rollup(key, value)
 POSTHOOK: type: QUERY
 Explain
@@ -2415,7 +2415,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n47
                   Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -2523,16 +2523,16 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select key, value, `grouping__id`, grouping(value, key)
-from T1
+from T1_n47
 group by rollup(key, value)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n47
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value, `grouping__id`, grouping(value, key)
-from T1
+from T1_n47
 group by rollup(key, value)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n47
 #### A masked pattern was here ####
 key	value	grouping__id	_c3
 1	1	0	0

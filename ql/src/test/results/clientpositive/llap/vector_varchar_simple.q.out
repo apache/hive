@@ -1,31 +1,31 @@
-PREHOOK: query: drop table varchar_2
+PREHOOK: query: drop table varchar_2_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table varchar_2
+POSTHOOK: query: drop table varchar_2_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table varchar_2 (
+PREHOOK: query: create table varchar_2_n0 (
   key varchar(10),
   value varchar(20)
 ) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@varchar_2
-POSTHOOK: query: create table varchar_2 (
+PREHOOK: Output: default@varchar_2_n0
+POSTHOOK: query: create table varchar_2_n0 (
   key varchar(10),
   value varchar(20)
 ) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@varchar_2
-PREHOOK: query: insert overwrite table varchar_2 select * from src
+POSTHOOK: Output: default@varchar_2_n0
+PREHOOK: query: insert overwrite table varchar_2_n0 select * from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@varchar_2
-POSTHOOK: query: insert overwrite table varchar_2 select * from src
+PREHOOK: Output: default@varchar_2_n0
+POSTHOOK: query: insert overwrite table varchar_2_n0 select * from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@varchar_2
-POSTHOOK: Lineage: varchar_2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: varchar_2.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@varchar_2_n0
+POSTHOOK: Lineage: varchar_2_n0.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: varchar_2_n0.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select key, value
 from src
 order by key asc
@@ -46,12 +46,12 @@ POSTHOOK: Input: default@src
 10	val_10
 100	val_100
 PREHOOK: query: explain vectorization select key, value
-from varchar_2
+from varchar_2_n0
 order by key asc
 limit 5
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization select key, value
-from varchar_2
+from varchar_2_n0
 order by key asc
 limit 5
 POSTHOOK: type: QUERY
@@ -74,7 +74,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: varchar_2
+                  alias: varchar_2_n0
                   Statistics: Num rows: 500 Data size: 94248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: varchar(10)), value (type: varchar(20))
@@ -128,18 +128,18 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select key, value
-from varchar_2
+from varchar_2_n0
 order by key asc
 limit 5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@varchar_2
+PREHOOK: Input: default@varchar_2_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value
-from varchar_2
+from varchar_2_n0
 order by key asc
 limit 5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@varchar_2
+POSTHOOK: Input: default@varchar_2_n0
 #### A masked pattern was here ####
 0	val_0
 0	val_0
@@ -166,12 +166,12 @@ POSTHOOK: Input: default@src
 97	val_97
 96	val_96
 PREHOOK: query: explain vectorization select key, value
-from varchar_2
+from varchar_2_n0
 order by key desc
 limit 5
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization select key, value
-from varchar_2
+from varchar_2_n0
 order by key desc
 limit 5
 POSTHOOK: type: QUERY
@@ -194,7 +194,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: varchar_2
+                  alias: varchar_2_n0
                   Statistics: Num rows: 500 Data size: 94248 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: varchar(10)), value (type: varchar(20))
@@ -248,32 +248,32 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select key, value
-from varchar_2
+from varchar_2_n0
 order by key desc
 limit 5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@varchar_2
+PREHOOK: Input: default@varchar_2_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value
-from varchar_2
+from varchar_2_n0
 order by key desc
 limit 5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@varchar_2
+POSTHOOK: Input: default@varchar_2_n0
 #### A masked pattern was here ####
 98	val_98
 98	val_98
 97	val_97
 97	val_97
 96	val_96
-PREHOOK: query: drop table varchar_2
+PREHOOK: query: drop table varchar_2_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@varchar_2
-PREHOOK: Output: default@varchar_2
-POSTHOOK: query: drop table varchar_2
+PREHOOK: Input: default@varchar_2_n0
+PREHOOK: Output: default@varchar_2_n0
+POSTHOOK: query: drop table varchar_2_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@varchar_2
-POSTHOOK: Output: default@varchar_2
+POSTHOOK: Input: default@varchar_2_n0
+POSTHOOK: Output: default@varchar_2_n0
 PREHOOK: query: create table varchar_3 (
   field varchar(25)
 ) stored as orc

@@ -21,7 +21,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@mydual
 POSTHOOK: Lineage: mydual.a SCRIPT []
-PREHOOK: query: CREATE TABLE over10k(t tinyint,
+PREHOOK: query: CREATE TABLE over10k_n2(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -36,8 +36,8 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@over10k
-POSTHOOK: query: CREATE TABLE over10k(t tinyint,
+PREHOOK: Output: default@over10k_n2
+POSTHOOK: query: CREATE TABLE over10k_n2(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -52,15 +52,15 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@over10k
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE over10k
+POSTHOOK: Output: default@over10k_n2
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE over10k_n2
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@over10k
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE over10k
+PREHOOK: Output: default@over10k_n2
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE over10k_n2
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@over10k
+POSTHOOK: Output: default@over10k_n2
 PREHOOK: query: CREATE TABLE over10k_orc_bucketed(t tinyint,
            si smallint,
            i int,
@@ -89,13 +89,13 @@ POSTHOOK: query: CREATE TABLE over10k_orc_bucketed(t tinyint,
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@over10k_orc_bucketed
-PREHOOK: query: select distinct si, si%4 from over10k order by si
+PREHOOK: query: select distinct si, si%4 from over10k_n2 order by si
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select distinct si, si%4 from over10k order by si
+POSTHOOK: query: select distinct si, si%4 from over10k_n2 order by si
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n2
 #### A masked pattern was here ####
 NULL	NULL
 256	0
@@ -350,46 +350,46 @@ NULL	NULL
 509	1
 510	2
 511	3
-PREHOOK: query: insert into over10k_orc_bucketed select * from over10k
+PREHOOK: query: insert into over10k_orc_bucketed select * from over10k_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n2
 PREHOOK: Output: default@over10k_orc_bucketed
-POSTHOOK: query: insert into over10k_orc_bucketed select * from over10k
+POSTHOOK: query: insert into over10k_orc_bucketed select * from over10k_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n2
 POSTHOOK: Output: default@over10k_orc_bucketed
-POSTHOOK: Lineage: over10k_orc_bucketed.b SIMPLE [(over10k)over10k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over10k_orc_bucketed.bin SIMPLE [(over10k)over10k.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: over10k_orc_bucketed.bo SIMPLE [(over10k)over10k.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: over10k_orc_bucketed.d SIMPLE [(over10k)over10k.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: over10k_orc_bucketed.dec SIMPLE [(over10k)over10k.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
-POSTHOOK: Lineage: over10k_orc_bucketed.f SIMPLE [(over10k)over10k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over10k_orc_bucketed.i SIMPLE [(over10k)over10k.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: over10k_orc_bucketed.s SIMPLE [(over10k)over10k.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: over10k_orc_bucketed.si SIMPLE [(over10k)over10k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: over10k_orc_bucketed.t SIMPLE [(over10k)over10k.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: over10k_orc_bucketed.ts SIMPLE [(over10k)over10k.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: over10k_orc_bucketed.b SIMPLE [(over10k_n2)over10k_n2.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over10k_orc_bucketed.bin SIMPLE [(over10k_n2)over10k_n2.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: over10k_orc_bucketed.bo SIMPLE [(over10k_n2)over10k_n2.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: over10k_orc_bucketed.d SIMPLE [(over10k_n2)over10k_n2.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: over10k_orc_bucketed.dec SIMPLE [(over10k_n2)over10k_n2.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
+POSTHOOK: Lineage: over10k_orc_bucketed.f SIMPLE [(over10k_n2)over10k_n2.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over10k_orc_bucketed.i SIMPLE [(over10k_n2)over10k_n2.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over10k_orc_bucketed.s SIMPLE [(over10k_n2)over10k_n2.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: over10k_orc_bucketed.si SIMPLE [(over10k_n2)over10k_n2.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over10k_orc_bucketed.t SIMPLE [(over10k_n2)over10k_n2.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: over10k_orc_bucketed.ts SIMPLE [(over10k_n2)over10k_n2.FieldSchema(name:ts, type:timestamp, comment:null), ]
 Found 4 items
 #### A masked pattern was here ####
-PREHOOK: query: insert into over10k_orc_bucketed select * from over10k
+PREHOOK: query: insert into over10k_orc_bucketed select * from over10k_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n2
 PREHOOK: Output: default@over10k_orc_bucketed
-POSTHOOK: query: insert into over10k_orc_bucketed select * from over10k
+POSTHOOK: query: insert into over10k_orc_bucketed select * from over10k_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n2
 POSTHOOK: Output: default@over10k_orc_bucketed
-POSTHOOK: Lineage: over10k_orc_bucketed.b SIMPLE [(over10k)over10k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over10k_orc_bucketed.bin SIMPLE [(over10k)over10k.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: over10k_orc_bucketed.bo SIMPLE [(over10k)over10k.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: over10k_orc_bucketed.d SIMPLE [(over10k)over10k.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: over10k_orc_bucketed.dec SIMPLE [(over10k)over10k.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
-POSTHOOK: Lineage: over10k_orc_bucketed.f SIMPLE [(over10k)over10k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over10k_orc_bucketed.i SIMPLE [(over10k)over10k.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: over10k_orc_bucketed.s SIMPLE [(over10k)over10k.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: over10k_orc_bucketed.si SIMPLE [(over10k)over10k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: over10k_orc_bucketed.t SIMPLE [(over10k)over10k.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: over10k_orc_bucketed.ts SIMPLE [(over10k)over10k.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: over10k_orc_bucketed.b SIMPLE [(over10k_n2)over10k_n2.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over10k_orc_bucketed.bin SIMPLE [(over10k_n2)over10k_n2.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: over10k_orc_bucketed.bo SIMPLE [(over10k_n2)over10k_n2.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: over10k_orc_bucketed.d SIMPLE [(over10k_n2)over10k_n2.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: over10k_orc_bucketed.dec SIMPLE [(over10k_n2)over10k_n2.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
+POSTHOOK: Lineage: over10k_orc_bucketed.f SIMPLE [(over10k_n2)over10k_n2.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over10k_orc_bucketed.i SIMPLE [(over10k_n2)over10k_n2.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over10k_orc_bucketed.s SIMPLE [(over10k_n2)over10k_n2.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: over10k_orc_bucketed.si SIMPLE [(over10k_n2)over10k_n2.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over10k_orc_bucketed.t SIMPLE [(over10k_n2)over10k_n2.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: over10k_orc_bucketed.ts SIMPLE [(over10k_n2)over10k_n2.FieldSchema(name:ts, type:timestamp, comment:null), ]
 Found 8 items
 #### A masked pattern was here ####
 PREHOOK: query: select distinct 7 as seven, INPUT__FILE__NAME from over10k_orc_bucketed

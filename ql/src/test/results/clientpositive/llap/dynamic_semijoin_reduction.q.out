@@ -1,156 +1,156 @@
-PREHOOK: query: create table alltypesorc_int ( cint int, cstring string ) stored as ORC
+PREHOOK: query: create table alltypesorc_int_n1 ( cint int, cstring string ) stored as ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@alltypesorc_int
-POSTHOOK: query: create table alltypesorc_int ( cint int, cstring string ) stored as ORC
+PREHOOK: Output: default@alltypesorc_int_n1
+POSTHOOK: query: create table alltypesorc_int_n1 ( cint int, cstring string ) stored as ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@alltypesorc_int
-PREHOOK: query: create table srcpart_date (key string, value string) partitioned by (ds string ) stored as ORC
+POSTHOOK: Output: default@alltypesorc_int_n1
+PREHOOK: query: create table srcpart_date_n7 (key string, value string) partitioned by (ds string ) stored as ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@srcpart_date
-POSTHOOK: query: create table srcpart_date (key string, value string) partitioned by (ds string ) stored as ORC
+PREHOOK: Output: default@srcpart_date_n7
+POSTHOOK: query: create table srcpart_date_n7 (key string, value string) partitioned by (ds string ) stored as ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcpart_date
-PREHOOK: query: CREATE TABLE srcpart_small(key1 STRING, value1 STRING) partitioned by (ds string) STORED as ORC
+POSTHOOK: Output: default@srcpart_date_n7
+PREHOOK: query: CREATE TABLE srcpart_small_n3(key1 STRING, value1 STRING) partitioned by (ds string) STORED as ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@srcpart_small
-POSTHOOK: query: CREATE TABLE srcpart_small(key1 STRING, value1 STRING) partitioned by (ds string) STORED as ORC
+PREHOOK: Output: default@srcpart_small_n3
+POSTHOOK: query: CREATE TABLE srcpart_small_n3(key1 STRING, value1 STRING) partitioned by (ds string) STORED as ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcpart_small
-PREHOOK: query: alter table srcpart_date add partition (ds = "2008-04-08")
+POSTHOOK: Output: default@srcpart_small_n3
+PREHOOK: query: alter table srcpart_date_n7 add partition (ds = "2008-04-08")
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Output: default@srcpart_date
-POSTHOOK: query: alter table srcpart_date add partition (ds = "2008-04-08")
+PREHOOK: Output: default@srcpart_date_n7
+POSTHOOK: query: alter table srcpart_date_n7 add partition (ds = "2008-04-08")
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Output: default@srcpart_date
-POSTHOOK: Output: default@srcpart_date@ds=2008-04-08
-PREHOOK: query: alter table srcpart_date add partition (ds = "2008-04-09")
+POSTHOOK: Output: default@srcpart_date_n7
+POSTHOOK: Output: default@srcpart_date_n7@ds=2008-04-08
+PREHOOK: query: alter table srcpart_date_n7 add partition (ds = "2008-04-09")
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Output: default@srcpart_date
-POSTHOOK: query: alter table srcpart_date add partition (ds = "2008-04-09")
+PREHOOK: Output: default@srcpart_date_n7
+POSTHOOK: query: alter table srcpart_date_n7 add partition (ds = "2008-04-09")
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Output: default@srcpart_date
-POSTHOOK: Output: default@srcpart_date@ds=2008-04-09
-PREHOOK: query: alter table srcpart_small add partition (ds = "2008-04-08")
+POSTHOOK: Output: default@srcpart_date_n7
+POSTHOOK: Output: default@srcpart_date_n7@ds=2008-04-09
+PREHOOK: query: alter table srcpart_small_n3 add partition (ds = "2008-04-08")
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Output: default@srcpart_small
-POSTHOOK: query: alter table srcpart_small add partition (ds = "2008-04-08")
+PREHOOK: Output: default@srcpart_small_n3
+POSTHOOK: query: alter table srcpart_small_n3 add partition (ds = "2008-04-08")
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Output: default@srcpart_small
-POSTHOOK: Output: default@srcpart_small@ds=2008-04-08
-PREHOOK: query: alter table srcpart_small add partition (ds = "2008-04-09")
+POSTHOOK: Output: default@srcpart_small_n3
+POSTHOOK: Output: default@srcpart_small_n3@ds=2008-04-08
+PREHOOK: query: alter table srcpart_small_n3 add partition (ds = "2008-04-09")
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Output: default@srcpart_small
-POSTHOOK: query: alter table srcpart_small add partition (ds = "2008-04-09")
+PREHOOK: Output: default@srcpart_small_n3
+POSTHOOK: query: alter table srcpart_small_n3 add partition (ds = "2008-04-09")
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Output: default@srcpart_small
-POSTHOOK: Output: default@srcpart_small@ds=2008-04-09
-PREHOOK: query: insert overwrite table alltypesorc_int select cint, cstring1 from alltypesorc
+POSTHOOK: Output: default@srcpart_small_n3
+POSTHOOK: Output: default@srcpart_small_n3@ds=2008-04-09
+PREHOOK: query: insert overwrite table alltypesorc_int_n1 select cint, cstring1 from alltypesorc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
-PREHOOK: Output: default@alltypesorc_int
-POSTHOOK: query: insert overwrite table alltypesorc_int select cint, cstring1 from alltypesorc
+PREHOOK: Output: default@alltypesorc_int_n1
+POSTHOOK: query: insert overwrite table alltypesorc_int_n1 select cint, cstring1 from alltypesorc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
-POSTHOOK: Output: default@alltypesorc_int
-POSTHOOK: Lineage: alltypesorc_int.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypesorc_int.cstring SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
-PREHOOK: query: insert overwrite table srcpart_date partition (ds = "2008-04-08" ) select key, value from srcpart where ds = "2008-04-08"
+POSTHOOK: Output: default@alltypesorc_int_n1
+POSTHOOK: Lineage: alltypesorc_int_n1.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: alltypesorc_int_n1.cstring SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+PREHOOK: query: insert overwrite table srcpart_date_n7 partition (ds = "2008-04-08" ) select key, value from srcpart where ds = "2008-04-08"
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-PREHOOK: Output: default@srcpart_date@ds=2008-04-08
-POSTHOOK: query: insert overwrite table srcpart_date partition (ds = "2008-04-08" ) select key, value from srcpart where ds = "2008-04-08"
+PREHOOK: Output: default@srcpart_date_n7@ds=2008-04-08
+POSTHOOK: query: insert overwrite table srcpart_date_n7 partition (ds = "2008-04-08" ) select key, value from srcpart where ds = "2008-04-08"
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-POSTHOOK: Output: default@srcpart_date@ds=2008-04-08
-POSTHOOK: Lineage: srcpart_date PARTITION(ds=2008-04-08).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: srcpart_date PARTITION(ds=2008-04-08).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: insert overwrite table srcpart_date partition (ds = "2008-04-09") select key, value from srcpart where ds = "2008-04-09"
+POSTHOOK: Output: default@srcpart_date_n7@ds=2008-04-08
+POSTHOOK: Lineage: srcpart_date_n7 PARTITION(ds=2008-04-08).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_date_n7 PARTITION(ds=2008-04-08).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table srcpart_date_n7 partition (ds = "2008-04-09") select key, value from srcpart where ds = "2008-04-09"
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Output: default@srcpart_date@ds=2008-04-09
-POSTHOOK: query: insert overwrite table srcpart_date partition (ds = "2008-04-09") select key, value from srcpart where ds = "2008-04-09"
+PREHOOK: Output: default@srcpart_date_n7@ds=2008-04-09
+POSTHOOK: query: insert overwrite table srcpart_date_n7 partition (ds = "2008-04-09") select key, value from srcpart where ds = "2008-04-09"
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Output: default@srcpart_date@ds=2008-04-09
-POSTHOOK: Lineage: srcpart_date PARTITION(ds=2008-04-09).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: srcpart_date PARTITION(ds=2008-04-09).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: insert overwrite table srcpart_small partition (ds = "2008-04-09") select key, value from srcpart where ds = "2008-04-09" limit 20
+POSTHOOK: Output: default@srcpart_date_n7@ds=2008-04-09
+POSTHOOK: Lineage: srcpart_date_n7 PARTITION(ds=2008-04-09).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_date_n7 PARTITION(ds=2008-04-09).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table srcpart_small_n3 partition (ds = "2008-04-09") select key, value from srcpart where ds = "2008-04-09" limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Output: default@srcpart_small@ds=2008-04-09
-POSTHOOK: query: insert overwrite table srcpart_small partition (ds = "2008-04-09") select key, value from srcpart where ds = "2008-04-09" limit 20
+PREHOOK: Output: default@srcpart_small_n3@ds=2008-04-09
+POSTHOOK: query: insert overwrite table srcpart_small_n3 partition (ds = "2008-04-09") select key, value from srcpart where ds = "2008-04-09" limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Output: default@srcpart_small@ds=2008-04-09
-POSTHOOK: Lineage: srcpart_small PARTITION(ds=2008-04-09).key1 SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: srcpart_small PARTITION(ds=2008-04-09).value1 SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: analyze table alltypesorc_int compute statistics for columns
+POSTHOOK: Output: default@srcpart_small_n3@ds=2008-04-09
+POSTHOOK: Lineage: srcpart_small_n3 PARTITION(ds=2008-04-09).key1 SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_small_n3 PARTITION(ds=2008-04-09).value1 SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: analyze table alltypesorc_int_n1 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@alltypesorc_int
-PREHOOK: Output: default@alltypesorc_int
+PREHOOK: Input: default@alltypesorc_int_n1
+PREHOOK: Output: default@alltypesorc_int_n1
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table alltypesorc_int compute statistics for columns
+POSTHOOK: query: analyze table alltypesorc_int_n1 compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@alltypesorc_int
-POSTHOOK: Output: default@alltypesorc_int
+POSTHOOK: Input: default@alltypesorc_int_n1
+POSTHOOK: Output: default@alltypesorc_int_n1
 #### A masked pattern was here ####
-PREHOOK: query: analyze table srcpart_date compute statistics for columns
+PREHOOK: query: analyze table srcpart_date_n7 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@srcpart_date
-PREHOOK: Input: default@srcpart_date@ds=2008-04-08
-PREHOOK: Input: default@srcpart_date@ds=2008-04-09
-PREHOOK: Output: default@srcpart_date
-PREHOOK: Output: default@srcpart_date@ds=2008-04-08
-PREHOOK: Output: default@srcpart_date@ds=2008-04-09
+PREHOOK: Input: default@srcpart_date_n7
+PREHOOK: Input: default@srcpart_date_n7@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n7@ds=2008-04-09
+PREHOOK: Output: default@srcpart_date_n7
+PREHOOK: Output: default@srcpart_date_n7@ds=2008-04-08
+PREHOOK: Output: default@srcpart_date_n7@ds=2008-04-09
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table srcpart_date compute statistics for columns
+POSTHOOK: query: analyze table srcpart_date_n7 compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@srcpart_date
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
-POSTHOOK: Output: default@srcpart_date
-POSTHOOK: Output: default@srcpart_date@ds=2008-04-08
-POSTHOOK: Output: default@srcpart_date@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_date_n7
+POSTHOOK: Input: default@srcpart_date_n7@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n7@ds=2008-04-09
+POSTHOOK: Output: default@srcpart_date_n7
+POSTHOOK: Output: default@srcpart_date_n7@ds=2008-04-08
+POSTHOOK: Output: default@srcpart_date_n7@ds=2008-04-09
 #### A masked pattern was here ####
-PREHOOK: query: analyze table srcpart_small compute statistics for columns
+PREHOOK: query: analyze table srcpart_small_n3 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@srcpart_small
-PREHOOK: Input: default@srcpart_small@ds=2008-04-08
-PREHOOK: Input: default@srcpart_small@ds=2008-04-09
-PREHOOK: Output: default@srcpart_small
-PREHOOK: Output: default@srcpart_small@ds=2008-04-08
-PREHOOK: Output: default@srcpart_small@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n3
+PREHOOK: Input: default@srcpart_small_n3@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n3@ds=2008-04-09
+PREHOOK: Output: default@srcpart_small_n3
+PREHOOK: Output: default@srcpart_small_n3@ds=2008-04-08
+PREHOOK: Output: default@srcpart_small_n3@ds=2008-04-09
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table srcpart_small compute statistics for columns
+POSTHOOK: query: analyze table srcpart_small_n3 compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@srcpart_small
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
-POSTHOOK: Output: default@srcpart_small
-POSTHOOK: Output: default@srcpart_small@ds=2008-04-08
-POSTHOOK: Output: default@srcpart_small@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n3
+POSTHOOK: Input: default@srcpart_small_n3@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n3@ds=2008-04-09
+POSTHOOK: Output: default@srcpart_small_n3
+POSTHOOK: Output: default@srcpart_small_n3@ds=2008-04-08
+POSTHOOK: Output: default@srcpart_small_n3@ds=2008-04-09
 #### A masked pattern was here ####
-PREHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
+PREHOOK: query: EXPLAIN select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
+POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -168,7 +168,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n7
                   filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -188,7 +188,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_small
+                  alias: srcpart_small_n3
                   filterExpr: key1 is not null (type: boolean)
                   Statistics: Num rows: 20 Data size: 1740 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
@@ -246,28 +246,28 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
+PREHOOK: query: select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcpart_date
-PREHOOK: Input: default@srcpart_date@ds=2008-04-08
-PREHOOK: Input: default@srcpart_date@ds=2008-04-09
-PREHOOK: Input: default@srcpart_small
-PREHOOK: Input: default@srcpart_small@ds=2008-04-08
-PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+PREHOOK: Input: default@srcpart_date_n7
+PREHOOK: Input: default@srcpart_date_n7@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n7@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n3
+PREHOOK: Input: default@srcpart_small_n3@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n3@ds=2008-04-09
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
+POSTHOOK: query: select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcpart_date
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
-POSTHOOK: Input: default@srcpart_small
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_date_n7
+POSTHOOK: Input: default@srcpart_date_n7@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n7@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n3
+POSTHOOK: Input: default@srcpart_small_n3@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n3@ds=2008-04-09
 #### A masked pattern was here ####
 176
-PREHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
+PREHOOK: query: EXPLAIN select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
+POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -287,11 +287,11 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
-                  filterExpr: (key is not null and (key BETWEEN DynamicValue(RS_7_srcpart_small_key1_min) AND DynamicValue(RS_7_srcpart_small_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_key1_bloom_filter)))) (type: boolean)
+                  alias: srcpart_date_n7
+                  filterExpr: (key is not null and (key BETWEEN DynamicValue(RS_7_srcpart_small_n3_key1_min) AND DynamicValue(RS_7_srcpart_small_n3_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n3_key1_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((key BETWEEN DynamicValue(RS_7_srcpart_small_key1_min) AND DynamicValue(RS_7_srcpart_small_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_key1_bloom_filter))) and key is not null) (type: boolean)
+                    predicate: ((key BETWEEN DynamicValue(RS_7_srcpart_small_n3_key1_min) AND DynamicValue(RS_7_srcpart_small_n3_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n3_key1_bloom_filter))) and key is not null) (type: boolean)
                     Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
@@ -307,7 +307,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_small
+                  alias: srcpart_small_n3
                   filterExpr: key1 is not null (type: boolean)
                   Statistics: Num rows: 20 Data size: 1740 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
@@ -390,28 +390,28 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
+PREHOOK: query: select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcpart_date
-PREHOOK: Input: default@srcpart_date@ds=2008-04-08
-PREHOOK: Input: default@srcpart_date@ds=2008-04-09
-PREHOOK: Input: default@srcpart_small
-PREHOOK: Input: default@srcpart_small@ds=2008-04-08
-PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+PREHOOK: Input: default@srcpart_date_n7
+PREHOOK: Input: default@srcpart_date_n7@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n7@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n3
+PREHOOK: Input: default@srcpart_small_n3@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n3@ds=2008-04-09
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
+POSTHOOK: query: select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcpart_date
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
-POSTHOOK: Input: default@srcpart_small
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_date_n7
+POSTHOOK: Input: default@srcpart_date_n7@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n7@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n3
+POSTHOOK: Input: default@srcpart_small_n3@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n3@ds=2008-04-09
 #### A masked pattern was here ####
 176
-PREHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.ds)
+PREHOOK: query: EXPLAIN select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.ds)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.ds)
+POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.ds)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -429,7 +429,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n7
                   filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -455,7 +455,7 @@ STAGE PLANS:
                           Statistics: Num rows: 309 Data size: 26883 Basic stats: COMPLETE Column stats: COMPLETE
                           Dynamic Partitioning Event Operator
                             Target column: ds (string)
-                            Target Input: srcpart_small
+                            Target Input: srcpart_small_n3
                             Partition key expr: ds
                             Statistics: Num rows: 309 Data size: 26883 Basic stats: COMPLETE Column stats: COMPLETE
                             Target Vertex: Map 4
@@ -464,7 +464,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_small
+                  alias: srcpart_small_n3
                   filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 20 Data size: 7200 Basic stats: PARTIAL Column stats: COMPLETE
                   Select Operator
@@ -519,28 +519,28 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.ds)
+PREHOOK: query: select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.ds)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcpart_date
-PREHOOK: Input: default@srcpart_date@ds=2008-04-08
-PREHOOK: Input: default@srcpart_date@ds=2008-04-09
-PREHOOK: Input: default@srcpart_small
-PREHOOK: Input: default@srcpart_small@ds=2008-04-08
-PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+PREHOOK: Input: default@srcpart_date_n7
+PREHOOK: Input: default@srcpart_date_n7@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n7@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n3
+PREHOOK: Input: default@srcpart_small_n3@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n3@ds=2008-04-09
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.ds)
+POSTHOOK: query: select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.ds)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcpart_date
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
-POSTHOOK: Input: default@srcpart_small
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_date_n7
+POSTHOOK: Input: default@srcpart_date_n7@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n7@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n3
+POSTHOOK: Input: default@srcpart_small_n3@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n3@ds=2008-04-09
 #### A masked pattern was here ####
 0
-PREHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_small.key1 = alltypesorc_int.cstring)
+PREHOOK: query: EXPLAIN select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1) join alltypesorc_int_n1 on (srcpart_small_n3.key1 = alltypesorc_int_n1.cstring)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_small.key1 = alltypesorc_int.cstring)
+POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1) join alltypesorc_int_n1 on (srcpart_small_n3.key1 = alltypesorc_int_n1.cstring)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -558,7 +558,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n7
                   filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -578,7 +578,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_small
+                  alias: srcpart_small_n3
                   filterExpr: key1 is not null (type: boolean)
                   Statistics: Num rows: 20 Data size: 1740 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
@@ -598,7 +598,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: alltypesorc_int
+                  alias: alltypesorc_int_n1
                   filterExpr: cstring is not null (type: boolean)
                   Statistics: Num rows: 12288 Data size: 862450 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -658,30 +658,30 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_small.key1 = alltypesorc_int.cstring)
+PREHOOK: query: select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1) join alltypesorc_int_n1 on (srcpart_small_n3.key1 = alltypesorc_int_n1.cstring)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@alltypesorc_int
-PREHOOK: Input: default@srcpart_date
-PREHOOK: Input: default@srcpart_date@ds=2008-04-08
-PREHOOK: Input: default@srcpart_date@ds=2008-04-09
-PREHOOK: Input: default@srcpart_small
-PREHOOK: Input: default@srcpart_small@ds=2008-04-08
-PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+PREHOOK: Input: default@alltypesorc_int_n1
+PREHOOK: Input: default@srcpart_date_n7
+PREHOOK: Input: default@srcpart_date_n7@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n7@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n3
+PREHOOK: Input: default@srcpart_small_n3@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n3@ds=2008-04-09
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_small.key1 = alltypesorc_int.cstring)
+POSTHOOK: query: select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1) join alltypesorc_int_n1 on (srcpart_small_n3.key1 = alltypesorc_int_n1.cstring)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@alltypesorc_int
-POSTHOOK: Input: default@srcpart_date
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
-POSTHOOK: Input: default@srcpart_small
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+POSTHOOK: Input: default@alltypesorc_int_n1
+POSTHOOK: Input: default@srcpart_date_n7
+POSTHOOK: Input: default@srcpart_date_n7@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n7@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n3
+POSTHOOK: Input: default@srcpart_small_n3@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n3@ds=2008-04-09
 #### A masked pattern was here ####
 0
-PREHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_small.key1 = alltypesorc_int.cstring)
+PREHOOK: query: EXPLAIN select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1) join alltypesorc_int_n1 on (srcpart_small_n3.key1 = alltypesorc_int_n1.cstring)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_small.key1 = alltypesorc_int.cstring)
+POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1) join alltypesorc_int_n1 on (srcpart_small_n3.key1 = alltypesorc_int_n1.cstring)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -703,11 +703,11 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
-                  filterExpr: (key is not null and (key BETWEEN DynamicValue(RS_10_srcpart_small_key1_min) AND DynamicValue(RS_10_srcpart_small_key1_max) and in_bloom_filter(key, DynamicValue(RS_10_srcpart_small_key1_bloom_filter)))) (type: boolean)
+                  alias: srcpart_date_n7
+                  filterExpr: (key is not null and (key BETWEEN DynamicValue(RS_10_srcpart_small_n3_key1_min) AND DynamicValue(RS_10_srcpart_small_n3_key1_max) and in_bloom_filter(key, DynamicValue(RS_10_srcpart_small_n3_key1_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((key BETWEEN DynamicValue(RS_10_srcpart_small_key1_min) AND DynamicValue(RS_10_srcpart_small_key1_max) and in_bloom_filter(key, DynamicValue(RS_10_srcpart_small_key1_bloom_filter))) and key is not null) (type: boolean)
+                    predicate: ((key BETWEEN DynamicValue(RS_10_srcpart_small_n3_key1_min) AND DynamicValue(RS_10_srcpart_small_n3_key1_max) and in_bloom_filter(key, DynamicValue(RS_10_srcpart_small_n3_key1_bloom_filter))) and key is not null) (type: boolean)
                     Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
@@ -736,7 +736,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_small
+                  alias: srcpart_small_n3
                   filterExpr: key1 is not null (type: boolean)
                   Statistics: Num rows: 20 Data size: 1740 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
@@ -769,11 +769,11 @@ STAGE PLANS:
         Map 7 
             Map Operator Tree:
                 TableScan
-                  alias: alltypesorc_int
-                  filterExpr: (cstring is not null and (cstring BETWEEN DynamicValue(RS_9_srcpart_date_key_min) AND DynamicValue(RS_9_srcpart_date_key_max) and in_bloom_filter(cstring, DynamicValue(RS_9_srcpart_date_key_bloom_filter))) and (cstring BETWEEN DynamicValue(RS_10_srcpart_small_key1_min) AND DynamicValue(RS_10_srcpart_small_key1_max) and in_bloom_filter(cstring, DynamicValue(RS_10_srcpart_small_key1_bloom_filter)))) (type: boolean)
+                  alias: alltypesorc_int_n1
+                  filterExpr: (cstring is not null and (cstring BETWEEN DynamicValue(RS_9_srcpart_date_n7_key_min) AND DynamicValue(RS_9_srcpart_date_n7_key_max) and in_bloom_filter(cstring, DynamicValue(RS_9_srcpart_date_n7_key_bloom_filter))) and (cstring BETWEEN DynamicValue(RS_10_srcpart_small_n3_key1_min) AND DynamicValue(RS_10_srcpart_small_n3_key1_max) and in_bloom_filter(cstring, DynamicValue(RS_10_srcpart_small_n3_key1_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 862450 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((cstring BETWEEN DynamicValue(RS_10_srcpart_small_key1_min) AND DynamicValue(RS_10_srcpart_small_key1_max) and in_bloom_filter(cstring, DynamicValue(RS_10_srcpart_small_key1_bloom_filter))) and (cstring BETWEEN DynamicValue(RS_9_srcpart_date_key_min) AND DynamicValue(RS_9_srcpart_date_key_max) and in_bloom_filter(cstring, DynamicValue(RS_9_srcpart_date_key_bloom_filter))) and cstring is not null) (type: boolean)
+                    predicate: ((cstring BETWEEN DynamicValue(RS_10_srcpart_small_n3_key1_min) AND DynamicValue(RS_10_srcpart_small_n3_key1_max) and in_bloom_filter(cstring, DynamicValue(RS_10_srcpart_small_n3_key1_bloom_filter))) and (cstring BETWEEN DynamicValue(RS_9_srcpart_date_n7_key_min) AND DynamicValue(RS_9_srcpart_date_n7_key_max) and in_bloom_filter(cstring, DynamicValue(RS_9_srcpart_date_n7_key_bloom_filter))) and cstring is not null) (type: boolean)
                     Statistics: Num rows: 9174 Data size: 643900 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: cstring (type: string)
@@ -857,30 +857,30 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_small.key1 = alltypesorc_int.cstring)
+PREHOOK: query: select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1) join alltypesorc_int_n1 on (srcpart_small_n3.key1 = alltypesorc_int_n1.cstring)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@alltypesorc_int
-PREHOOK: Input: default@srcpart_date
-PREHOOK: Input: default@srcpart_date@ds=2008-04-08
-PREHOOK: Input: default@srcpart_date@ds=2008-04-09
-PREHOOK: Input: default@srcpart_small
-PREHOOK: Input: default@srcpart_small@ds=2008-04-08
-PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+PREHOOK: Input: default@alltypesorc_int_n1
+PREHOOK: Input: default@srcpart_date_n7
+PREHOOK: Input: default@srcpart_date_n7@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n7@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n3
+PREHOOK: Input: default@srcpart_small_n3@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n3@ds=2008-04-09
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_small.key1 = alltypesorc_int.cstring)
+POSTHOOK: query: select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1) join alltypesorc_int_n1 on (srcpart_small_n3.key1 = alltypesorc_int_n1.cstring)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@alltypesorc_int
-POSTHOOK: Input: default@srcpart_date
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
-POSTHOOK: Input: default@srcpart_small
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+POSTHOOK: Input: default@alltypesorc_int_n1
+POSTHOOK: Input: default@srcpart_date_n7
+POSTHOOK: Input: default@srcpart_date_n7@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n7@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n3
+POSTHOOK: Input: default@srcpart_small_n3@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n3@ds=2008-04-09
 #### A masked pattern was here ####
 0
-PREHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1 and srcpart_date.value = srcpart_small.value1)
+PREHOOK: query: EXPLAIN select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1 and srcpart_date_n7.value = srcpart_small_n3.value1)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1 and srcpart_date.value = srcpart_small.value1)
+POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1 and srcpart_date_n7.value = srcpart_small_n3.value1)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -898,7 +898,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n7
                   filterExpr: (key is not null and value is not null) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 356000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -918,7 +918,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_small
+                  alias: srcpart_small_n3
                   filterExpr: (key1 is not null and value1 is not null) (type: boolean)
                   Statistics: Num rows: 20 Data size: 3560 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
@@ -976,28 +976,28 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1 and srcpart_date.value = srcpart_small.value1)
+PREHOOK: query: select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1 and srcpart_date_n7.value = srcpart_small_n3.value1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcpart_date
-PREHOOK: Input: default@srcpart_date@ds=2008-04-08
-PREHOOK: Input: default@srcpart_date@ds=2008-04-09
-PREHOOK: Input: default@srcpart_small
-PREHOOK: Input: default@srcpart_small@ds=2008-04-08
-PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+PREHOOK: Input: default@srcpart_date_n7
+PREHOOK: Input: default@srcpart_date_n7@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n7@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n3
+PREHOOK: Input: default@srcpart_small_n3@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n3@ds=2008-04-09
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1 and srcpart_date.value = srcpart_small.value1)
+POSTHOOK: query: select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1 and srcpart_date_n7.value = srcpart_small_n3.value1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcpart_date
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
-POSTHOOK: Input: default@srcpart_small
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_date_n7
+POSTHOOK: Input: default@srcpart_date_n7@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n7@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n3
+POSTHOOK: Input: default@srcpart_small_n3@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n3@ds=2008-04-09
 #### A masked pattern was here ####
 176
-PREHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1 and srcpart_date.value = srcpart_small.value1)
+PREHOOK: query: EXPLAIN select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1 and srcpart_date_n7.value = srcpart_small_n3.value1)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1 and srcpart_date.value = srcpart_small.value1)
+POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1 and srcpart_date_n7.value = srcpart_small_n3.value1)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1018,11 +1018,11 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
-                  filterExpr: (key is not null and value is not null and (key BETWEEN DynamicValue(RS_7_srcpart_small_key1_min) AND DynamicValue(RS_7_srcpart_small_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_key1_bloom_filter))) and (value BETWEEN DynamicValue(RS_7_srcpart_small_value1_min) AND DynamicValue(RS_7_srcpart_small_value1_max) and in_bloom_filter(value, DynamicValue(RS_7_srcpart_small_value1_bloom_filter)))) (type: boolean)
+                  alias: srcpart_date_n7
+                  filterExpr: (key is not null and value is not null and (key BETWEEN DynamicValue(RS_7_srcpart_small_n3_key1_min) AND DynamicValue(RS_7_srcpart_small_n3_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n3_key1_bloom_filter))) and (value BETWEEN DynamicValue(RS_7_srcpart_small_n3_value1_min) AND DynamicValue(RS_7_srcpart_small_n3_value1_max) and in_bloom_filter(value, DynamicValue(RS_7_srcpart_small_n3_value1_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 356000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((key BETWEEN DynamicValue(RS_7_srcpart_small_key1_min) AND DynamicValue(RS_7_srcpart_small_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_key1_bloom_filter))) and (value BETWEEN DynamicValue(RS_7_srcpart_small_value1_min) AND DynamicValue(RS_7_srcpart_small_value1_max) and in_bloom_filter(value, DynamicValue(RS_7_srcpart_small_value1_bloom_filter))) and key is not null and value is not null) (type: boolean)
+                    predicate: ((key BETWEEN DynamicValue(RS_7_srcpart_small_n3_key1_min) AND DynamicValue(RS_7_srcpart_small_n3_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n3_key1_bloom_filter))) and (value BETWEEN DynamicValue(RS_7_srcpart_small_n3_value1_min) AND DynamicValue(RS_7_srcpart_small_n3_value1_max) and in_bloom_filter(value, DynamicValue(RS_7_srcpart_small_n3_value1_bloom_filter))) and key is not null and value is not null) (type: boolean)
                     Statistics: Num rows: 2000 Data size: 356000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -1038,7 +1038,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_small
+                  alias: srcpart_small_n3
                   filterExpr: (key1 is not null and value1 is not null) (type: boolean)
                   Statistics: Num rows: 20 Data size: 3560 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
@@ -1146,28 +1146,28 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1 and srcpart_date.value = srcpart_small.value1)
+PREHOOK: query: select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1 and srcpart_date_n7.value = srcpart_small_n3.value1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcpart_date
-PREHOOK: Input: default@srcpart_date@ds=2008-04-08
-PREHOOK: Input: default@srcpart_date@ds=2008-04-09
-PREHOOK: Input: default@srcpart_small
-PREHOOK: Input: default@srcpart_small@ds=2008-04-08
-PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+PREHOOK: Input: default@srcpart_date_n7
+PREHOOK: Input: default@srcpart_date_n7@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n7@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n3
+PREHOOK: Input: default@srcpart_small_n3@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n3@ds=2008-04-09
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1 and srcpart_date.value = srcpart_small.value1)
+POSTHOOK: query: select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1 and srcpart_date_n7.value = srcpart_small_n3.value1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcpart_date
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
-POSTHOOK: Input: default@srcpart_small
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_date_n7
+POSTHOOK: Input: default@srcpart_date_n7@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n7@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n3
+POSTHOOK: Input: default@srcpart_small_n3@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n3@ds=2008-04-09
 #### A masked pattern was here ####
 176
-PREHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring)
+PREHOOK: query: EXPLAIN select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1) join alltypesorc_int_n1 on (srcpart_date_n7.value = alltypesorc_int_n1.cstring)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring)
+POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1) join alltypesorc_int_n1 on (srcpart_date_n7.value = alltypesorc_int_n1.cstring)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1186,7 +1186,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n7
                   filterExpr: (key is not null and value is not null) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 356000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -1207,7 +1207,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_small
+                  alias: srcpart_small_n3
                   filterExpr: key1 is not null (type: boolean)
                   Statistics: Num rows: 20 Data size: 1740 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
@@ -1227,7 +1227,7 @@ STAGE PLANS:
         Map 6 
             Map Operator Tree:
                 TableScan
-                  alias: alltypesorc_int
+                  alias: alltypesorc_int_n1
                   filterExpr: cstring is not null (type: boolean)
                   Statistics: Num rows: 12288 Data size: 862450 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -1301,30 +1301,30 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring)
+PREHOOK: query: select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1) join alltypesorc_int_n1 on (srcpart_date_n7.value = alltypesorc_int_n1.cstring)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@alltypesorc_int
-PREHOOK: Input: default@srcpart_date
-PREHOOK: Input: default@srcpart_date@ds=2008-04-08
-PREHOOK: Input: default@srcpart_date@ds=2008-04-09
-PREHOOK: Input: default@srcpart_small
-PREHOOK: Input: default@srcpart_small@ds=2008-04-08
-PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+PREHOOK: Input: default@alltypesorc_int_n1
+PREHOOK: Input: default@srcpart_date_n7
+PREHOOK: Input: default@srcpart_date_n7@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n7@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n3
+PREHOOK: Input: default@srcpart_small_n3@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n3@ds=2008-04-09
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring)
+POSTHOOK: query: select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1) join alltypesorc_int_n1 on (srcpart_date_n7.value = alltypesorc_int_n1.cstring)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@alltypesorc_int
-POSTHOOK: Input: default@srcpart_date
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
-POSTHOOK: Input: default@srcpart_small
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+POSTHOOK: Input: default@alltypesorc_int_n1
+POSTHOOK: Input: default@srcpart_date_n7
+POSTHOOK: Input: default@srcpart_date_n7@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n7@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n3
+POSTHOOK: Input: default@srcpart_small_n3@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n3@ds=2008-04-09
 #### A masked pattern was here ####
 0
-PREHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring)
+PREHOOK: query: EXPLAIN select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1) join alltypesorc_int_n1 on (srcpart_date_n7.value = alltypesorc_int_n1.cstring)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring)
+POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1) join alltypesorc_int_n1 on (srcpart_date_n7.value = alltypesorc_int_n1.cstring)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1347,11 +1347,11 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
-                  filterExpr: (key is not null and value is not null and (key BETWEEN DynamicValue(RS_10_srcpart_small_key1_min) AND DynamicValue(RS_10_srcpart_small_key1_max) and in_bloom_filter(key, DynamicValue(RS_10_srcpart_small_key1_bloom_filter)))) (type: boolean)
+                  alias: srcpart_date_n7
+                  filterExpr: (key is not null and value is not null and (key BETWEEN DynamicValue(RS_10_srcpart_small_n3_key1_min) AND DynamicValue(RS_10_srcpart_small_n3_key1_max) and in_bloom_filter(key, DynamicValue(RS_10_srcpart_small_n3_key1_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 356000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((key BETWEEN DynamicValue(RS_10_srcpart_small_key1_min) AND DynamicValue(RS_10_srcpart_small_key1_max) and in_bloom_filter(key, DynamicValue(RS_10_srcpart_small_key1_bloom_filter))) and key is not null and value is not null) (type: boolean)
+                    predicate: ((key BETWEEN DynamicValue(RS_10_srcpart_small_n3_key1_min) AND DynamicValue(RS_10_srcpart_small_n3_key1_max) and in_bloom_filter(key, DynamicValue(RS_10_srcpart_small_n3_key1_bloom_filter))) and key is not null and value is not null) (type: boolean)
                     Statistics: Num rows: 2000 Data size: 356000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -1368,7 +1368,7 @@ STAGE PLANS:
         Map 6 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_small
+                  alias: srcpart_small_n3
                   filterExpr: key1 is not null (type: boolean)
                   Statistics: Num rows: 20 Data size: 1740 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
@@ -1401,11 +1401,11 @@ STAGE PLANS:
         Map 8 
             Map Operator Tree:
                 TableScan
-                  alias: alltypesorc_int
-                  filterExpr: (cstring is not null and (cstring BETWEEN DynamicValue(RS_12_srcpart_date_value_min) AND DynamicValue(RS_12_srcpart_date_value_max) and in_bloom_filter(cstring, DynamicValue(RS_12_srcpart_date_value_bloom_filter)))) (type: boolean)
+                  alias: alltypesorc_int_n1
+                  filterExpr: (cstring is not null and (cstring BETWEEN DynamicValue(RS_12_srcpart_date_n7_value_min) AND DynamicValue(RS_12_srcpart_date_n7_value_max) and in_bloom_filter(cstring, DynamicValue(RS_12_srcpart_date_n7_value_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 862450 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((cstring BETWEEN DynamicValue(RS_12_srcpart_date_value_min) AND DynamicValue(RS_12_srcpart_date_value_max) and in_bloom_filter(cstring, DynamicValue(RS_12_srcpart_date_value_bloom_filter))) and cstring is not null) (type: boolean)
+                    predicate: ((cstring BETWEEN DynamicValue(RS_12_srcpart_date_n7_value_min) AND DynamicValue(RS_12_srcpart_date_n7_value_max) and in_bloom_filter(cstring, DynamicValue(RS_12_srcpart_date_n7_value_bloom_filter))) and cstring is not null) (type: boolean)
                     Statistics: Num rows: 9174 Data size: 643900 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: cstring (type: string)
@@ -1512,30 +1512,30 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring)
+PREHOOK: query: select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1) join alltypesorc_int_n1 on (srcpart_date_n7.value = alltypesorc_int_n1.cstring)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@alltypesorc_int
-PREHOOK: Input: default@srcpart_date
-PREHOOK: Input: default@srcpart_date@ds=2008-04-08
-PREHOOK: Input: default@srcpart_date@ds=2008-04-09
-PREHOOK: Input: default@srcpart_small
-PREHOOK: Input: default@srcpart_small@ds=2008-04-08
-PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+PREHOOK: Input: default@alltypesorc_int_n1
+PREHOOK: Input: default@srcpart_date_n7
+PREHOOK: Input: default@srcpart_date_n7@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n7@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n3
+PREHOOK: Input: default@srcpart_small_n3@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n3@ds=2008-04-09
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring)
+POSTHOOK: query: select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1) join alltypesorc_int_n1 on (srcpart_date_n7.value = alltypesorc_int_n1.cstring)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@alltypesorc_int
-POSTHOOK: Input: default@srcpart_date
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
-POSTHOOK: Input: default@srcpart_small
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+POSTHOOK: Input: default@alltypesorc_int_n1
+POSTHOOK: Input: default@srcpart_date_n7
+POSTHOOK: Input: default@srcpart_date_n7@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n7@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n3
+POSTHOOK: Input: default@srcpart_small_n3@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n3@ds=2008-04-09
 #### A masked pattern was here ####
 0
-PREHOOK: query: EXPLAIN extended select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
+PREHOOK: query: EXPLAIN extended select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN extended select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
+POSTHOOK: query: EXPLAIN extended select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1555,13 +1555,13 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
-                  filterExpr: (key is not null and (key BETWEEN DynamicValue(RS_7_srcpart_small_key1_min) AND DynamicValue(RS_7_srcpart_small_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_key1_bloom_filter)))) (type: boolean)
+                  alias: srcpart_date_n7
+                  filterExpr: (key is not null and (key BETWEEN DynamicValue(RS_7_srcpart_small_n3_key1_min) AND DynamicValue(RS_7_srcpart_small_n3_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n3_key1_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: ((key BETWEEN DynamicValue(RS_7_srcpart_small_key1_min) AND DynamicValue(RS_7_srcpart_small_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_key1_bloom_filter))) and key is not null) (type: boolean)
+                    predicate: ((key BETWEEN DynamicValue(RS_7_srcpart_small_n3_key1_min) AND DynamicValue(RS_7_srcpart_small_n3_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n3_key1_bloom_filter))) and key is not null) (type: boolean)
                     Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
@@ -1591,13 +1591,13 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
 #### A masked pattern was here ####
-                    name default.srcpart_date
+                    name default.srcpart_date_n7
                     numFiles 1
                     numRows 1000
                     partition_columns ds
                     partition_columns.types string
                     rawDataSize 176000
-                    serialization.ddl struct srcpart_date { string key, string value}
+                    serialization.ddl struct srcpart_date_n7 { string key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     totalSize 3038
@@ -1614,16 +1614,16 @@ STAGE PLANS:
                       columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
-                      name default.srcpart_date
+                      name default.srcpart_date_n7
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct srcpart_date { string key, string value}
+                      serialization.ddl struct srcpart_date_n7 { string key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    name: default.srcpart_date
-                  name: default.srcpart_date
+                    name: default.srcpart_date_n7
+                  name: default.srcpart_date_n7
 #### A masked pattern was here ####
                 Partition
                   base file name: ds=2008-04-09
@@ -1635,13 +1635,13 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
 #### A masked pattern was here ####
-                    name default.srcpart_date
+                    name default.srcpart_date_n7
                     numFiles 1
                     numRows 1000
                     partition_columns ds
                     partition_columns.types string
                     rawDataSize 176000
-                    serialization.ddl struct srcpart_date { string key, string value}
+                    serialization.ddl struct srcpart_date_n7 { string key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     totalSize 3038
@@ -1658,23 +1658,23 @@ STAGE PLANS:
                       columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
-                      name default.srcpart_date
+                      name default.srcpart_date_n7
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct srcpart_date { string key, string value}
+                      serialization.ddl struct srcpart_date_n7 { string key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    name: default.srcpart_date
-                  name: default.srcpart_date
+                    name: default.srcpart_date_n7
+                  name: default.srcpart_date_n7
             Truncated Path -> Alias:
-              /srcpart_date/ds=2008-04-08 [srcpart_date]
-              /srcpart_date/ds=2008-04-09 [srcpart_date]
+              /srcpart_date_n7/ds=2008-04-08 [srcpart_date_n7]
+              /srcpart_date_n7/ds=2008-04-09 [srcpart_date_n7]
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_small
+                  alias: srcpart_small_n3
                   filterExpr: key1 is not null (type: boolean)
                   Statistics: Num rows: 20 Data size: 1740 Basic stats: PARTIAL Column stats: PARTIAL
                   GatherStats: false
@@ -1727,13 +1727,13 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key1":"true","value1":"true"}}
                     bucket_count -1
 #### A masked pattern was here ####
-                    name default.srcpart_small
+                    name default.srcpart_small_n3
                     numFiles 0
                     numRows 0
                     partition_columns ds
                     partition_columns.types string
                     rawDataSize 0
-                    serialization.ddl struct srcpart_small { string key1, string value1}
+                    serialization.ddl struct srcpart_small_n3 { string key1, string value1}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     totalSize 0
@@ -1750,16 +1750,16 @@ STAGE PLANS:
                       columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
-                      name default.srcpart_small
+                      name default.srcpart_small_n3
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct srcpart_small { string key1, string value1}
+                      serialization.ddl struct srcpart_small_n3 { string key1, string value1}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    name: default.srcpart_small
-                  name: default.srcpart_small
+                    name: default.srcpart_small_n3
+                  name: default.srcpart_small_n3
 #### A masked pattern was here ####
                 Partition
                   base file name: ds=2008-04-09
@@ -1771,13 +1771,13 @@ STAGE PLANS:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key1":"true","value1":"true"}}
                     bucket_count -1
 #### A masked pattern was here ####
-                    name default.srcpart_small
+                    name default.srcpart_small_n3
                     numFiles 1
                     numRows 20
                     partition_columns ds
                     partition_columns.types string
                     rawDataSize 3520
-                    serialization.ddl struct srcpart_small { string key1, string value1}
+                    serialization.ddl struct srcpart_small_n3 { string key1, string value1}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     totalSize 459
@@ -1794,19 +1794,19 @@ STAGE PLANS:
                       columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
-                      name default.srcpart_small
+                      name default.srcpart_small_n3
                       partition_columns ds
                       partition_columns.types string
-                      serialization.ddl struct srcpart_small { string key1, string value1}
+                      serialization.ddl struct srcpart_small_n3 { string key1, string value1}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    name: default.srcpart_small
-                  name: default.srcpart_small
+                    name: default.srcpart_small_n3
+                  name: default.srcpart_small_n3
             Truncated Path -> Alias:
-              /srcpart_small/ds=2008-04-08 [srcpart_small]
-              /srcpart_small/ds=2008-04-09 [srcpart_small]
+              /srcpart_small_n3/ds=2008-04-08 [srcpart_small_n3]
+              /srcpart_small_n3/ds=2008-04-09 [srcpart_small_n3]
         Reducer 2 
             Execution mode: llap
             Needs Tagging: false
@@ -1885,9 +1885,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
+PREHOOK: query: EXPLAIN select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
+POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1905,7 +1905,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n7
                   filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -1938,7 +1938,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_small
+                  alias: srcpart_small_n3
                   filterExpr: key1 is not null (type: boolean)
                   Statistics: Num rows: 20 Data size: 1740 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
@@ -1977,28 +1977,28 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
+PREHOOK: query: select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcpart_date
-PREHOOK: Input: default@srcpart_date@ds=2008-04-08
-PREHOOK: Input: default@srcpart_date@ds=2008-04-09
-PREHOOK: Input: default@srcpart_small
-PREHOOK: Input: default@srcpart_small@ds=2008-04-08
-PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+PREHOOK: Input: default@srcpart_date_n7
+PREHOOK: Input: default@srcpart_date_n7@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n7@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n3
+PREHOOK: Input: default@srcpart_small_n3@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n3@ds=2008-04-09
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
+POSTHOOK: query: select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcpart_date
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
-POSTHOOK: Input: default@srcpart_small
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_date_n7
+POSTHOOK: Input: default@srcpart_date_n7@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n7@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n3
+POSTHOOK: Input: default@srcpart_small_n3@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n3@ds=2008-04-09
 #### A masked pattern was here ####
 176
-PREHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
+PREHOOK: query: EXPLAIN select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
+POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2016,7 +2016,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n7
                   filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -2049,7 +2049,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_small
+                  alias: srcpart_small_n3
                   filterExpr: key1 is not null (type: boolean)
                   Statistics: Num rows: 20 Data size: 1740 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
@@ -2088,28 +2088,28 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
+PREHOOK: query: select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcpart_date
-PREHOOK: Input: default@srcpart_date@ds=2008-04-08
-PREHOOK: Input: default@srcpart_date@ds=2008-04-09
-PREHOOK: Input: default@srcpart_small
-PREHOOK: Input: default@srcpart_small@ds=2008-04-08
-PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+PREHOOK: Input: default@srcpart_date_n7
+PREHOOK: Input: default@srcpart_date_n7@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n7@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n3
+PREHOOK: Input: default@srcpart_small_n3@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n3@ds=2008-04-09
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
+POSTHOOK: query: select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcpart_date
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
-POSTHOOK: Input: default@srcpart_small
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_date_n7
+POSTHOOK: Input: default@srcpart_date_n7@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n7@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n3
+POSTHOOK: Input: default@srcpart_small_n3@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n3@ds=2008-04-09
 #### A masked pattern was here ####
 176
-PREHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
+PREHOOK: query: EXPLAIN select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
+POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2128,11 +2128,11 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
-                  filterExpr: (key is not null and (key BETWEEN DynamicValue(RS_7_srcpart_small_key1_min) AND DynamicValue(RS_7_srcpart_small_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_key1_bloom_filter)))) (type: boolean)
+                  alias: srcpart_date_n7
+                  filterExpr: (key is not null and (key BETWEEN DynamicValue(RS_7_srcpart_small_n3_key1_min) AND DynamicValue(RS_7_srcpart_small_n3_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n3_key1_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((key BETWEEN DynamicValue(RS_7_srcpart_small_key1_min) AND DynamicValue(RS_7_srcpart_small_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_key1_bloom_filter))) and key is not null) (type: boolean)
+                    predicate: ((key BETWEEN DynamicValue(RS_7_srcpart_small_n3_key1_min) AND DynamicValue(RS_7_srcpart_small_n3_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n3_key1_bloom_filter))) and key is not null) (type: boolean)
                     Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
@@ -2161,7 +2161,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_small
+                  alias: srcpart_small_n3
                   filterExpr: key1 is not null (type: boolean)
                   Statistics: Num rows: 20 Data size: 1740 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
@@ -2225,28 +2225,28 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
+PREHOOK: query: select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcpart_date
-PREHOOK: Input: default@srcpart_date@ds=2008-04-08
-PREHOOK: Input: default@srcpart_date@ds=2008-04-09
-PREHOOK: Input: default@srcpart_small
-PREHOOK: Input: default@srcpart_small@ds=2008-04-08
-PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+PREHOOK: Input: default@srcpart_date_n7
+PREHOOK: Input: default@srcpart_date_n7@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n7@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n3
+PREHOOK: Input: default@srcpart_small_n3@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n3@ds=2008-04-09
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
+POSTHOOK: query: select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcpart_date
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
-POSTHOOK: Input: default@srcpart_small
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_date_n7
+POSTHOOK: Input: default@srcpart_date_n7@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n7@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n3
+POSTHOOK: Input: default@srcpart_small_n3@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n3@ds=2008-04-09
 #### A masked pattern was here ####
 176
-PREHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring)
+PREHOOK: query: EXPLAIN select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1) join alltypesorc_int_n1 on (srcpart_date_n7.value = alltypesorc_int_n1.cstring)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring)
+POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1) join alltypesorc_int_n1 on (srcpart_date_n7.value = alltypesorc_int_n1.cstring)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2265,7 +2265,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n7
                   filterExpr: (key is not null and value is not null) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 356000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -2295,7 +2295,7 @@ STAGE PLANS:
         Map 2 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_small
+                  alias: srcpart_small_n3
                   filterExpr: key1 is not null (type: boolean)
                   Statistics: Num rows: 20 Data size: 1740 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
@@ -2315,7 +2315,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: alltypesorc_int
+                  alias: alltypesorc_int_n1
                   filterExpr: cstring is not null (type: boolean)
                   Statistics: Num rows: 12288 Data size: 862450 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -2367,30 +2367,30 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring)
+PREHOOK: query: select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1) join alltypesorc_int_n1 on (srcpart_date_n7.value = alltypesorc_int_n1.cstring)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@alltypesorc_int
-PREHOOK: Input: default@srcpart_date
-PREHOOK: Input: default@srcpart_date@ds=2008-04-08
-PREHOOK: Input: default@srcpart_date@ds=2008-04-09
-PREHOOK: Input: default@srcpart_small
-PREHOOK: Input: default@srcpart_small@ds=2008-04-08
-PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+PREHOOK: Input: default@alltypesorc_int_n1
+PREHOOK: Input: default@srcpart_date_n7
+PREHOOK: Input: default@srcpart_date_n7@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n7@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n3
+PREHOOK: Input: default@srcpart_small_n3@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n3@ds=2008-04-09
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring)
+POSTHOOK: query: select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1) join alltypesorc_int_n1 on (srcpart_date_n7.value = alltypesorc_int_n1.cstring)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@alltypesorc_int
-POSTHOOK: Input: default@srcpart_date
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
-POSTHOOK: Input: default@srcpart_small
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+POSTHOOK: Input: default@alltypesorc_int_n1
+POSTHOOK: Input: default@srcpart_date_n7
+POSTHOOK: Input: default@srcpart_date_n7@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n7@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n3
+POSTHOOK: Input: default@srcpart_small_n3@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n3@ds=2008-04-09
 #### A masked pattern was here ####
 0
-PREHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring)
+PREHOOK: query: EXPLAIN select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1) join alltypesorc_int_n1 on (srcpart_date_n7.value = alltypesorc_int_n1.cstring)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring)
+POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1) join alltypesorc_int_n1 on (srcpart_date_n7.value = alltypesorc_int_n1.cstring)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2409,7 +2409,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n7
                   filterExpr: (key is not null and value is not null) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 356000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -2439,7 +2439,7 @@ STAGE PLANS:
         Map 2 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_small
+                  alias: srcpart_small_n3
                   filterExpr: key1 is not null (type: boolean)
                   Statistics: Num rows: 20 Data size: 1740 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
@@ -2459,7 +2459,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: alltypesorc_int
+                  alias: alltypesorc_int_n1
                   filterExpr: cstring is not null (type: boolean)
                   Statistics: Num rows: 12288 Data size: 862450 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -2511,30 +2511,30 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring)
+PREHOOK: query: select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1) join alltypesorc_int_n1 on (srcpart_date_n7.value = alltypesorc_int_n1.cstring)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@alltypesorc_int
-PREHOOK: Input: default@srcpart_date
-PREHOOK: Input: default@srcpart_date@ds=2008-04-08
-PREHOOK: Input: default@srcpart_date@ds=2008-04-09
-PREHOOK: Input: default@srcpart_small
-PREHOOK: Input: default@srcpart_small@ds=2008-04-08
-PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+PREHOOK: Input: default@alltypesorc_int_n1
+PREHOOK: Input: default@srcpart_date_n7
+PREHOOK: Input: default@srcpart_date_n7@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n7@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n3
+PREHOOK: Input: default@srcpart_small_n3@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n3@ds=2008-04-09
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring)
+POSTHOOK: query: select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1) join alltypesorc_int_n1 on (srcpart_date_n7.value = alltypesorc_int_n1.cstring)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@alltypesorc_int
-POSTHOOK: Input: default@srcpart_date
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
-POSTHOOK: Input: default@srcpart_small
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+POSTHOOK: Input: default@alltypesorc_int_n1
+POSTHOOK: Input: default@srcpart_date_n7
+POSTHOOK: Input: default@srcpart_date_n7@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n7@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n3
+POSTHOOK: Input: default@srcpart_small_n3@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n3@ds=2008-04-09
 #### A masked pattern was here ####
 0
-PREHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring)
+PREHOOK: query: EXPLAIN select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1) join alltypesorc_int_n1 on (srcpart_date_n7.value = alltypesorc_int_n1.cstring)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring)
+POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1) join alltypesorc_int_n1 on (srcpart_date_n7.value = alltypesorc_int_n1.cstring)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2555,11 +2555,11 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
-                  filterExpr: (key is not null and value is not null and (key BETWEEN DynamicValue(RS_10_srcpart_small_key1_min) AND DynamicValue(RS_10_srcpart_small_key1_max) and in_bloom_filter(key, DynamicValue(RS_10_srcpart_small_key1_bloom_filter)))) (type: boolean)
+                  alias: srcpart_date_n7
+                  filterExpr: (key is not null and value is not null and (key BETWEEN DynamicValue(RS_10_srcpart_small_n3_key1_min) AND DynamicValue(RS_10_srcpart_small_n3_key1_max) and in_bloom_filter(key, DynamicValue(RS_10_srcpart_small_n3_key1_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 356000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((key BETWEEN DynamicValue(RS_10_srcpart_small_key1_min) AND DynamicValue(RS_10_srcpart_small_key1_max) and in_bloom_filter(key, DynamicValue(RS_10_srcpart_small_key1_bloom_filter))) and key is not null and value is not null) (type: boolean)
+                    predicate: ((key BETWEEN DynamicValue(RS_10_srcpart_small_n3_key1_min) AND DynamicValue(RS_10_srcpart_small_n3_key1_max) and in_bloom_filter(key, DynamicValue(RS_10_srcpart_small_n3_key1_bloom_filter))) and key is not null and value is not null) (type: boolean)
                     Statistics: Num rows: 2000 Data size: 356000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -2598,7 +2598,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_small
+                  alias: srcpart_small_n3
                   filterExpr: key1 is not null (type: boolean)
                   Statistics: Num rows: 20 Data size: 1740 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
@@ -2631,11 +2631,11 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: alltypesorc_int
-                  filterExpr: (cstring is not null and (cstring BETWEEN DynamicValue(RS_12_srcpart_date_value_min) AND DynamicValue(RS_12_srcpart_date_value_max) and in_bloom_filter(cstring, DynamicValue(RS_12_srcpart_date_value_bloom_filter)))) (type: boolean)
+                  alias: alltypesorc_int_n1
+                  filterExpr: (cstring is not null and (cstring BETWEEN DynamicValue(RS_12_srcpart_date_n7_value_min) AND DynamicValue(RS_12_srcpart_date_n7_value_max) and in_bloom_filter(cstring, DynamicValue(RS_12_srcpart_date_n7_value_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 862450 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((cstring BETWEEN DynamicValue(RS_12_srcpart_date_value_min) AND DynamicValue(RS_12_srcpart_date_value_max) and in_bloom_filter(cstring, DynamicValue(RS_12_srcpart_date_value_bloom_filter))) and cstring is not null) (type: boolean)
+                    predicate: ((cstring BETWEEN DynamicValue(RS_12_srcpart_date_n7_value_min) AND DynamicValue(RS_12_srcpart_date_n7_value_max) and in_bloom_filter(cstring, DynamicValue(RS_12_srcpart_date_n7_value_bloom_filter))) and cstring is not null) (type: boolean)
                     Statistics: Num rows: 9174 Data size: 643900 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: cstring (type: string)
@@ -2707,42 +2707,42 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring)
+PREHOOK: query: select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1) join alltypesorc_int_n1 on (srcpart_date_n7.value = alltypesorc_int_n1.cstring)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@alltypesorc_int
-PREHOOK: Input: default@srcpart_date
-PREHOOK: Input: default@srcpart_date@ds=2008-04-08
-PREHOOK: Input: default@srcpart_date@ds=2008-04-09
-PREHOOK: Input: default@srcpart_small
-PREHOOK: Input: default@srcpart_small@ds=2008-04-08
-PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+PREHOOK: Input: default@alltypesorc_int_n1
+PREHOOK: Input: default@srcpart_date_n7
+PREHOOK: Input: default@srcpart_date_n7@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n7@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n3
+PREHOOK: Input: default@srcpart_small_n3@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n3@ds=2008-04-09
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring)
+POSTHOOK: query: select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1) join alltypesorc_int_n1 on (srcpart_date_n7.value = alltypesorc_int_n1.cstring)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@alltypesorc_int
-POSTHOOK: Input: default@srcpart_date
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
-POSTHOOK: Input: default@srcpart_small
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+POSTHOOK: Input: default@alltypesorc_int_n1
+POSTHOOK: Input: default@srcpart_date_n7
+POSTHOOK: Input: default@srcpart_date_n7@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n7@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n3
+POSTHOOK: Input: default@srcpart_small_n3@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n3@ds=2008-04-09
 #### A masked pattern was here ####
 0
-PREHOOK: query: create table alltypesorc_int40 as select * from alltypesorc_int limit 40
+PREHOOK: query: create table alltypesorc_int40 as select * from alltypesorc_int_n1 limit 40
 PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: default@alltypesorc_int
+PREHOOK: Input: default@alltypesorc_int_n1
 PREHOOK: Output: database:default
 PREHOOK: Output: default@alltypesorc_int40
-POSTHOOK: query: create table alltypesorc_int40 as select * from alltypesorc_int limit 40
+POSTHOOK: query: create table alltypesorc_int40 as select * from alltypesorc_int_n1 limit 40
 POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: default@alltypesorc_int
+POSTHOOK: Input: default@alltypesorc_int_n1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alltypesorc_int40
-POSTHOOK: Lineage: alltypesorc_int40.cint SIMPLE [(alltypesorc_int)alltypesorc_int.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypesorc_int40.cstring SIMPLE [(alltypesorc_int)alltypesorc_int.FieldSchema(name:cstring, type:string, comment:null), ]
-PREHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.ds = srcpart_small.ds) join alltypesorc_int40 on (srcpart_date.value = alltypesorc_int40.cstring)
+POSTHOOK: Lineage: alltypesorc_int40.cint SIMPLE [(alltypesorc_int_n1)alltypesorc_int_n1.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: alltypesorc_int40.cstring SIMPLE [(alltypesorc_int_n1)alltypesorc_int_n1.FieldSchema(name:cstring, type:string, comment:null), ]
+PREHOOK: query: EXPLAIN select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.ds = srcpart_small_n3.ds) join alltypesorc_int40 on (srcpart_date_n7.value = alltypesorc_int40.cstring)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.ds = srcpart_small.ds) join alltypesorc_int40 on (srcpart_date.value = alltypesorc_int40.cstring)
+POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.ds = srcpart_small_n3.ds) join alltypesorc_int40 on (srcpart_date_n7.value = alltypesorc_int40.cstring)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2760,7 +2760,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n7
                   filterExpr: value is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 550000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -2823,7 +2823,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_small
+                  alias: srcpart_small_n3
                   filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 20 Data size: 7200 Basic stats: PARTIAL Column stats: COMPLETE
                   Select Operator
@@ -2846,7 +2846,7 @@ STAGE PLANS:
                         Statistics: Num rows: 20 Data size: 7200 Basic stats: PARTIAL Column stats: COMPLETE
                         Dynamic Partitioning Event Operator
                           Target column: ds (string)
-                          Target Input: srcpart_date
+                          Target Input: srcpart_date_n7
                           Partition key expr: ds
                           Statistics: Num rows: 20 Data size: 7200 Basic stats: PARTIAL Column stats: COMPLETE
                           Target Vertex: Map 1
@@ -2874,30 +2874,30 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.ds = srcpart_small.ds) join alltypesorc_int40 on (srcpart_date.value = alltypesorc_int40.cstring)
+PREHOOK: query: select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.ds = srcpart_small_n3.ds) join alltypesorc_int40 on (srcpart_date_n7.value = alltypesorc_int40.cstring)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc_int40
-PREHOOK: Input: default@srcpart_date
-PREHOOK: Input: default@srcpart_date@ds=2008-04-08
-PREHOOK: Input: default@srcpart_date@ds=2008-04-09
-PREHOOK: Input: default@srcpart_small
-PREHOOK: Input: default@srcpart_small@ds=2008-04-08
-PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+PREHOOK: Input: default@srcpart_date_n7
+PREHOOK: Input: default@srcpart_date_n7@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n7@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n3
+PREHOOK: Input: default@srcpart_small_n3@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n3@ds=2008-04-09
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.ds = srcpart_small.ds) join alltypesorc_int40 on (srcpart_date.value = alltypesorc_int40.cstring)
+POSTHOOK: query: select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.ds = srcpart_small_n3.ds) join alltypesorc_int40 on (srcpart_date_n7.value = alltypesorc_int40.cstring)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc_int40
-POSTHOOK: Input: default@srcpart_date
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
-POSTHOOK: Input: default@srcpart_small
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_date_n7
+POSTHOOK: Input: default@srcpart_date_n7@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n7@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n3
+POSTHOOK: Input: default@srcpart_small_n3@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n3@ds=2008-04-09
 #### A masked pattern was here ####
 0
-PREHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.ds = srcpart_small.ds) join alltypesorc_int40 on (srcpart_date.value = alltypesorc_int40.cstring)
+PREHOOK: query: EXPLAIN select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.ds = srcpart_small_n3.ds) join alltypesorc_int40 on (srcpart_date_n7.value = alltypesorc_int40.cstring)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.ds = srcpart_small.ds) join alltypesorc_int40 on (srcpart_date.value = alltypesorc_int40.cstring)
+POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.ds = srcpart_small_n3.ds) join alltypesorc_int40 on (srcpart_date_n7.value = alltypesorc_int40.cstring)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2915,7 +2915,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n7
                   filterExpr: value is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 550000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -2978,7 +2978,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_small
+                  alias: srcpart_small_n3
                   filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 20 Data size: 7200 Basic stats: PARTIAL Column stats: COMPLETE
                   Select Operator
@@ -3001,7 +3001,7 @@ STAGE PLANS:
                         Statistics: Num rows: 20 Data size: 7200 Basic stats: PARTIAL Column stats: COMPLETE
                         Dynamic Partitioning Event Operator
                           Target column: ds (string)
-                          Target Input: srcpart_date
+                          Target Input: srcpart_date_n7
                           Partition key expr: ds
                           Statistics: Num rows: 20 Data size: 7200 Basic stats: PARTIAL Column stats: COMPLETE
                           Target Vertex: Map 1
@@ -3029,44 +3029,44 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.ds = srcpart_small.ds) join alltypesorc_int40 on (srcpart_date.value = alltypesorc_int40.cstring)
+PREHOOK: query: select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.ds = srcpart_small_n3.ds) join alltypesorc_int40 on (srcpart_date_n7.value = alltypesorc_int40.cstring)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc_int40
-PREHOOK: Input: default@srcpart_date
-PREHOOK: Input: default@srcpart_date@ds=2008-04-08
-PREHOOK: Input: default@srcpart_date@ds=2008-04-09
-PREHOOK: Input: default@srcpart_small
-PREHOOK: Input: default@srcpart_small@ds=2008-04-08
-PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+PREHOOK: Input: default@srcpart_date_n7
+PREHOOK: Input: default@srcpart_date_n7@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n7@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n3
+PREHOOK: Input: default@srcpart_small_n3@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n3@ds=2008-04-09
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart_date join srcpart_small on (srcpart_date.ds = srcpart_small.ds) join alltypesorc_int40 on (srcpart_date.value = alltypesorc_int40.cstring)
+POSTHOOK: query: select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.ds = srcpart_small_n3.ds) join alltypesorc_int40 on (srcpart_date_n7.value = alltypesorc_int40.cstring)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc_int40
-POSTHOOK: Input: default@srcpart_date
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
-POSTHOOK: Input: default@srcpart_small
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_date_n7
+POSTHOOK: Input: default@srcpart_date_n7@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n7@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n3
+POSTHOOK: Input: default@srcpart_small_n3@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n3@ds=2008-04-09
 #### A masked pattern was here ####
 0
-PREHOOK: query: create table srcpart_small10 as select * from srcpart_small limit 10
+PREHOOK: query: create table srcpart_small10 as select * from srcpart_small_n3 limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: default@srcpart_small
-PREHOOK: Input: default@srcpart_small@ds=2008-04-08
-PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n3
+PREHOOK: Input: default@srcpart_small_n3@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n3@ds=2008-04-09
 PREHOOK: Output: database:default
 PREHOOK: Output: default@srcpart_small10
-POSTHOOK: query: create table srcpart_small10 as select * from srcpart_small limit 10
+POSTHOOK: query: create table srcpart_small10 as select * from srcpart_small_n3 limit 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: default@srcpart_small
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n3
+POSTHOOK: Input: default@srcpart_small_n3@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n3@ds=2008-04-09
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcpart_small10
-POSTHOOK: Lineage: srcpart_small10.ds SIMPLE [(srcpart_small)srcpart_small.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_small10.key1 SIMPLE [(srcpart_small)srcpart_small.FieldSchema(name:key1, type:string, comment:null), ]
-POSTHOOK: Lineage: srcpart_small10.value1 SIMPLE [(srcpart_small)srcpart_small.FieldSchema(name:value1, type:string, comment:null), ]
+POSTHOOK: Lineage: srcpart_small10.ds SIMPLE [(srcpart_small_n3)srcpart_small_n3.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: srcpart_small10.key1 SIMPLE [(srcpart_small_n3)srcpart_small_n3.FieldSchema(name:key1, type:string, comment:null), ]
+POSTHOOK: Lineage: srcpart_small10.value1 SIMPLE [(srcpart_small_n3)srcpart_small_n3.FieldSchema(name:value1, type:string, comment:null), ]
 PREHOOK: query: analyze table srcpart_small10 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@srcpart_small10
@@ -3077,9 +3077,9 @@ POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@srcpart_small10
 POSTHOOK: Output: default@srcpart_small10
 #### A masked pattern was here ####
-PREHOOK: query: EXPLAIN select count(*) from srcpart_small10, srcpart_small, srcpart_date where srcpart_small.key1 = srcpart_small10.key1 and srcpart_date.ds = srcpart_small.ds
+PREHOOK: query: EXPLAIN select count(*) from srcpart_small10, srcpart_small_n3, srcpart_date_n7 where srcpart_small_n3.key1 = srcpart_small10.key1 and srcpart_date_n7.ds = srcpart_small_n3.ds
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select count(*) from srcpart_small10, srcpart_small, srcpart_date where srcpart_small.key1 = srcpart_small10.key1 and srcpart_date.ds = srcpart_small.ds
+POSTHOOK: query: EXPLAIN select count(*) from srcpart_small10, srcpart_small_n3, srcpart_date_n7 where srcpart_small_n3.key1 = srcpart_small10.key1 and srcpart_date_n7.ds = srcpart_small_n3.ds
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -3098,7 +3098,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_small
+                  alias: srcpart_small_n3
                   filterExpr: key1 is not null (type: boolean)
                   Statistics: Num rows: 20 Data size: 5420 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
@@ -3134,7 +3134,7 @@ STAGE PLANS:
                             Statistics: Num rows: 22 Data size: 5962 Basic stats: PARTIAL Column stats: NONE
                             Dynamic Partitioning Event Operator
                               Target column: ds (string)
-                              Target Input: srcpart_date
+                              Target Input: srcpart_date_n7
                               Partition key expr: ds
                               Statistics: Num rows: 22 Data size: 5962 Basic stats: PARTIAL Column stats: NONE
                               Target Vertex: Map 3
@@ -3163,7 +3163,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n7
                   filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 720000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
@@ -3212,30 +3212,30 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart_small10, srcpart_small, srcpart_date where srcpart_small.key1 = srcpart_small10.key1 and srcpart_date.ds = srcpart_small.ds
+PREHOOK: query: select count(*) from srcpart_small10, srcpart_small_n3, srcpart_date_n7 where srcpart_small_n3.key1 = srcpart_small10.key1 and srcpart_date_n7.ds = srcpart_small_n3.ds
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcpart_date
-PREHOOK: Input: default@srcpart_date@ds=2008-04-08
-PREHOOK: Input: default@srcpart_date@ds=2008-04-09
-PREHOOK: Input: default@srcpart_small
+PREHOOK: Input: default@srcpart_date_n7
+PREHOOK: Input: default@srcpart_date_n7@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n7@ds=2008-04-09
 PREHOOK: Input: default@srcpart_small10
-PREHOOK: Input: default@srcpart_small@ds=2008-04-08
-PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n3
+PREHOOK: Input: default@srcpart_small_n3@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n3@ds=2008-04-09
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart_small10, srcpart_small, srcpart_date where srcpart_small.key1 = srcpart_small10.key1 and srcpart_date.ds = srcpart_small.ds
+POSTHOOK: query: select count(*) from srcpart_small10, srcpart_small_n3, srcpart_date_n7 where srcpart_small_n3.key1 = srcpart_small10.key1 and srcpart_date_n7.ds = srcpart_small_n3.ds
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcpart_date
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
-POSTHOOK: Input: default@srcpart_small
+POSTHOOK: Input: default@srcpart_date_n7
+POSTHOOK: Input: default@srcpart_date_n7@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n7@ds=2008-04-09
 POSTHOOK: Input: default@srcpart_small10
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n3
+POSTHOOK: Input: default@srcpart_small_n3@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n3@ds=2008-04-09
 #### A masked pattern was here ####
 10000
-PREHOOK: query: EXPLAIN select count(*) from srcpart_small10, srcpart_small, srcpart_date where srcpart_small.key1 = srcpart_small10.key1 and srcpart_date.ds = srcpart_small.ds
+PREHOOK: query: EXPLAIN select count(*) from srcpart_small10, srcpart_small_n3, srcpart_date_n7 where srcpart_small_n3.key1 = srcpart_small10.key1 and srcpart_date_n7.ds = srcpart_small_n3.ds
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select count(*) from srcpart_small10, srcpart_small, srcpart_date where srcpart_small.key1 = srcpart_small10.key1 and srcpart_date.ds = srcpart_small.ds
+POSTHOOK: query: EXPLAIN select count(*) from srcpart_small10, srcpart_small_n3, srcpart_date_n7 where srcpart_small_n3.key1 = srcpart_small10.key1 and srcpart_date_n7.ds = srcpart_small_n3.ds
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -3255,7 +3255,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_small
+                  alias: srcpart_small_n3
                   filterExpr: (key1 is not null and (key1 BETWEEN DynamicValue(RS_10_srcpart_small10_key1_min) AND DynamicValue(RS_10_srcpart_small10_key1_max) and in_bloom_filter(key1, DynamicValue(RS_10_srcpart_small10_key1_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 20 Data size: 5420 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
@@ -3291,7 +3291,7 @@ STAGE PLANS:
                             Statistics: Num rows: 22 Data size: 5962 Basic stats: PARTIAL Column stats: NONE
                             Dynamic Partitioning Event Operator
                               Target column: ds (string)
-                              Target Input: srcpart_date
+                              Target Input: srcpart_date_n7
                               Partition key expr: ds
                               Statistics: Num rows: 22 Data size: 5962 Basic stats: PARTIAL Column stats: NONE
                               Target Vertex: Map 4
@@ -3333,7 +3333,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n7
                   filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 720000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
@@ -3394,30 +3394,30 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart_small10, srcpart_small, srcpart_date where srcpart_small.key1 = srcpart_small10.key1 and srcpart_date.ds = srcpart_small.ds
+PREHOOK: query: select count(*) from srcpart_small10, srcpart_small_n3, srcpart_date_n7 where srcpart_small_n3.key1 = srcpart_small10.key1 and srcpart_date_n7.ds = srcpart_small_n3.ds
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcpart_date
-PREHOOK: Input: default@srcpart_date@ds=2008-04-08
-PREHOOK: Input: default@srcpart_date@ds=2008-04-09
-PREHOOK: Input: default@srcpart_small
+PREHOOK: Input: default@srcpart_date_n7
+PREHOOK: Input: default@srcpart_date_n7@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n7@ds=2008-04-09
 PREHOOK: Input: default@srcpart_small10
-PREHOOK: Input: default@srcpart_small@ds=2008-04-08
-PREHOOK: Input: default@srcpart_small@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n3
+PREHOOK: Input: default@srcpart_small_n3@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n3@ds=2008-04-09
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart_small10, srcpart_small, srcpart_date where srcpart_small.key1 = srcpart_small10.key1 and srcpart_date.ds = srcpart_small.ds
+POSTHOOK: query: select count(*) from srcpart_small10, srcpart_small_n3, srcpart_date_n7 where srcpart_small_n3.key1 = srcpart_small10.key1 and srcpart_date_n7.ds = srcpart_small_n3.ds
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcpart_date
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
-POSTHOOK: Input: default@srcpart_small
+POSTHOOK: Input: default@srcpart_date_n7
+POSTHOOK: Input: default@srcpart_date_n7@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n7@ds=2008-04-09
 POSTHOOK: Input: default@srcpart_small10
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n3
+POSTHOOK: Input: default@srcpart_small_n3@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n3@ds=2008-04-09
 #### A masked pattern was here ####
 10000
-PREHOOK: query: EXPLAIN select count(*) from srcpart_small10, srcpart_small, srcpart_date where srcpart_small.key1 = srcpart_small10.key1 and srcpart_date.ds = srcpart_small.ds
+PREHOOK: query: EXPLAIN select count(*) from srcpart_small10, srcpart_small_n3, srcpart_date_n7 where srcpart_small_n3.key1 = srcpart_small10.key1 and srcpart_date_n7.ds = srcpart_small_n3.ds
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select count(*) from srcpart_small10, srcpart_small, srcpart_date where srcpart_small.key1 = srcpart_small10.key1 and srcpart_date.ds = srcpart_small.ds
+POSTHOOK: query: EXPLAIN select count(*) from srcpart_small10, srcpart_small_n3, srcpart_date_n7 where srcpart_small_n3.key1 = srcpart_small10.key1 and srcpart_date_n7.ds = srcpart_small_n3.ds
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -3437,7 +3437,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_small
+                  alias: srcpart_small_n3
                   filterExpr: (key1 is not null and (key1 BETWEEN DynamicValue(RS_10_srcpart_small10_key1_min) AND DynamicValue(RS_10_srcpart_small10_key1_max) and in_bloom_filter(key1, DynamicValue(RS_10_srcpart_small10_key1_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 20 Data size: 5420 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
@@ -3473,7 +3473,7 @@ STAGE PLANS:
                             Statistics: Num rows: 22 Data size: 5962 Basic stats: PARTIAL Column stats: NONE
                             Dynamic Partitioning Event Operator
                               Target column: ds (string)
-                              Target Input: srcpart_date
+                              Target Input: srcpart_date_n7
                               Partition key expr: ds
                               Statistics: Num rows: 22 Data size: 5962 Basic stats: PARTIAL Column stats: NONE
                               Target Vertex: Map 4
@@ -3515,7 +3515,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n7
                   filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 720000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
@@ -3576,9 +3576,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: EXPLAIN select count(*) from srcpart_small10, srcpart_small, srcpart_date where srcpart_small.key1 = srcpart_small10.key1 and srcpart_date.ds = srcpart_small.ds
+PREHOOK: query: EXPLAIN select count(*) from srcpart_small10, srcpart_small_n3, srcpart_date_n7 where srcpart_small_n3.key1 = srcpart_small10.key1 and srcpart_date_n7.ds = srcpart_small_n3.ds
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select count(*) from srcpart_small10, srcpart_small, srcpart_date where srcpart_small.key1 = srcpart_small10.key1 and srcpart_date.ds = srcpart_small.ds
+POSTHOOK: query: EXPLAIN select count(*) from srcpart_small10, srcpart_small_n3, srcpart_date_n7 where srcpart_small_n3.key1 = srcpart_small10.key1 and srcpart_date_n7.ds = srcpart_small_n3.ds
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -3597,7 +3597,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_small
+                  alias: srcpart_small_n3
                   filterExpr: key1 is not null (type: boolean)
                   Statistics: Num rows: 20 Data size: 5420 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
@@ -3633,7 +3633,7 @@ STAGE PLANS:
                             Statistics: Num rows: 22 Data size: 5962 Basic stats: PARTIAL Column stats: NONE
                             Dynamic Partitioning Event Operator
                               Target column: ds (string)
-                              Target Input: srcpart_date
+                              Target Input: srcpart_date_n7
                               Partition key expr: ds
                               Statistics: Num rows: 22 Data size: 5962 Basic stats: PARTIAL Column stats: NONE
                               Target Vertex: Map 3
@@ -3662,7 +3662,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n7
                   filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 720000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
@@ -3711,15 +3711,15 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select * from alltypesorc_int join
-                                      (select srcpart_date.key as key from srcpart_date
+PREHOOK: query: explain select * from alltypesorc_int_n1 join
+                                      (select srcpart_date_n7.key as key from srcpart_date_n7
                                        union all
-                                       select srcpart_small.key1 as key from srcpart_small) unionsrc on (alltypesorc_int.cstring = unionsrc.key)
+                                       select srcpart_small_n3.key1 as key from srcpart_small_n3) unionsrc on (alltypesorc_int_n1.cstring = unionsrc.key)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from alltypesorc_int join
-                                      (select srcpart_date.key as key from srcpart_date
+POSTHOOK: query: explain select * from alltypesorc_int_n1 join
+                                      (select srcpart_date_n7.key as key from srcpart_date_n7
                                        union all
-                                       select srcpart_small.key1 as key from srcpart_small) unionsrc on (alltypesorc_int.cstring = unionsrc.key)
+                                       select srcpart_small_n3.key1 as key from srcpart_small_n3) unionsrc on (alltypesorc_int_n1.cstring = unionsrc.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -3738,7 +3738,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: alltypesorc_int
+                  alias: alltypesorc_int_n1
                   filterExpr: cstring is not null (type: boolean)
                   Statistics: Num rows: 12288 Data size: 899146 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -3770,7 +3770,7 @@ STAGE PLANS:
         Map 2 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n7
                   filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -3790,7 +3790,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_small
+                  alias: srcpart_small_n3
                   filterExpr: key1 is not null (type: boolean)
                   Statistics: Num rows: 20 Data size: 1740 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
@@ -3816,27 +3816,27 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: drop table srcpart_date
+PREHOOK: query: drop table srcpart_date_n7
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@srcpart_date
-PREHOOK: Output: default@srcpart_date
-POSTHOOK: query: drop table srcpart_date
+PREHOOK: Input: default@srcpart_date_n7
+PREHOOK: Output: default@srcpart_date_n7
+POSTHOOK: query: drop table srcpart_date_n7
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@srcpart_date
-POSTHOOK: Output: default@srcpart_date
-PREHOOK: query: drop table srcpart_small
+POSTHOOK: Input: default@srcpart_date_n7
+POSTHOOK: Output: default@srcpart_date_n7
+PREHOOK: query: drop table srcpart_small_n3
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@srcpart_small
-PREHOOK: Output: default@srcpart_small
-POSTHOOK: query: drop table srcpart_small
+PREHOOK: Input: default@srcpart_small_n3
+PREHOOK: Output: default@srcpart_small_n3
+POSTHOOK: query: drop table srcpart_small_n3
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@srcpart_small
-POSTHOOK: Output: default@srcpart_small
-PREHOOK: query: drop table alltypesorc_int
+POSTHOOK: Input: default@srcpart_small_n3
+POSTHOOK: Output: default@srcpart_small_n3
+PREHOOK: query: drop table alltypesorc_int_n1
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@alltypesorc_int
-PREHOOK: Output: default@alltypesorc_int
-POSTHOOK: query: drop table alltypesorc_int
+PREHOOK: Input: default@alltypesorc_int_n1
+PREHOOK: Output: default@alltypesorc_int_n1
+POSTHOOK: query: drop table alltypesorc_int_n1
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@alltypesorc_int
-POSTHOOK: Output: default@alltypesorc_int
+POSTHOOK: Input: default@alltypesorc_int_n1
+POSTHOOK: Output: default@alltypesorc_int_n1

@@ -1,35 +1,35 @@
-PREHOOK: query: CREATE TABLE TBL(C1 INT, C2 INT, C3 INT, C4 INT)
+PREHOOK: query: CREATE TABLE TBL_n0(C1 INT, C2 INT, C3 INT, C4 INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@TBL
-POSTHOOK: query: CREATE TABLE TBL(C1 INT, C2 INT, C3 INT, C4 INT)
+PREHOOK: Output: default@TBL_n0
+POSTHOOK: query: CREATE TABLE TBL_n0(C1 INT, C2 INT, C3 INT, C4 INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@TBL
-PREHOOK: query: CREATE TABLE DEST1(d1 INT, d2 INT) STORED AS TEXTFILE
+POSTHOOK: Output: default@TBL_n0
+PREHOOK: query: CREATE TABLE DEST1_n116(d1 INT, d2 INT) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEST1
-POSTHOOK: query: CREATE TABLE DEST1(d1 INT, d2 INT) STORED AS TEXTFILE
+PREHOOK: Output: default@DEST1_n116
+POSTHOOK: query: CREATE TABLE DEST1_n116(d1 INT, d2 INT) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEST1
-PREHOOK: query: CREATE TABLE DEST2(d1 INT, d2 INT, d3 INT) STORED AS TEXTFILE
+POSTHOOK: Output: default@DEST1_n116
+PREHOOK: query: CREATE TABLE DEST2_n30(d1 INT, d2 INT, d3 INT) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEST2
-POSTHOOK: query: CREATE TABLE DEST2(d1 INT, d2 INT, d3 INT) STORED AS TEXTFILE
+PREHOOK: Output: default@DEST2_n30
+POSTHOOK: query: CREATE TABLE DEST2_n30(d1 INT, d2 INT, d3 INT) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEST2
-PREHOOK: query: CREATE TABLE DEST3(d1 INT, d2 INT, d3 INT, d4 INT) STORED AS TEXTFILE
+POSTHOOK: Output: default@DEST2_n30
+PREHOOK: query: CREATE TABLE DEST3_n4(d1 INT, d2 INT, d3 INT, d4 INT) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEST3
-POSTHOOK: query: CREATE TABLE DEST3(d1 INT, d2 INT, d3 INT, d4 INT) STORED AS TEXTFILE
+PREHOOK: Output: default@DEST3_n4
+POSTHOOK: query: CREATE TABLE DEST3_n4(d1 INT, d2 INT, d3 INT, d4 INT) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEST3
+POSTHOOK: Output: default@DEST3_n4
 PREHOOK: query: CREATE TABLE DEST4(d1 INT, d2 INT, d3 INT, d4 INT) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -39,14 +39,14 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@DEST4
 PREHOOK: query: EXPLAIN
-FROM TBL
-INSERT OVERWRITE TABLE DEST1 SELECT TBL.C1, COUNT(TBL.C2) GROUP BY TBL.C1
-INSERT OVERWRITE TABLE DEST2 SELECT TBL.C1, TBL.C2, COUNT(TBL.C3) GROUP BY TBL.C1, TBL.C2
+FROM TBL_n0
+INSERT OVERWRITE TABLE DEST1_n116 SELECT TBL_n0.C1, COUNT(TBL_n0.C2) GROUP BY TBL_n0.C1
+INSERT OVERWRITE TABLE DEST2_n30 SELECT TBL_n0.C1, TBL_n0.C2, COUNT(TBL_n0.C3) GROUP BY TBL_n0.C1, TBL_n0.C2
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-FROM TBL
-INSERT OVERWRITE TABLE DEST1 SELECT TBL.C1, COUNT(TBL.C2) GROUP BY TBL.C1
-INSERT OVERWRITE TABLE DEST2 SELECT TBL.C1, TBL.C2, COUNT(TBL.C3) GROUP BY TBL.C1, TBL.C2
+FROM TBL_n0
+INSERT OVERWRITE TABLE DEST1_n116 SELECT TBL_n0.C1, COUNT(TBL_n0.C2) GROUP BY TBL_n0.C1
+INSERT OVERWRITE TABLE DEST2_n30 SELECT TBL_n0.C1, TBL_n0.C2, COUNT(TBL_n0.C3) GROUP BY TBL_n0.C1, TBL_n0.C2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -63,7 +63,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: tbl
+            alias: tbl_n0
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
               expressions: c1 (type: int), c2 (type: int)
@@ -116,7 +116,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.dest1
+                  name: default.dest1_n116
             Select Operator
               expressions: _col0 (type: int), _col1 (type: int)
               outputColumnNames: d1, d2
@@ -141,7 +141,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n116
 
   Stage: Stage-3
     Stats Work
@@ -149,7 +149,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: d1, d2
           Column Types: int, int
-          Table: default.dest1
+          Table: default.dest1_n116
 
   Stage: Stage-4
     Map Reduce
@@ -180,7 +180,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: d1, d2, d3
           Column Types: int, int, int
-          Table: default.dest2
+          Table: default.dest2_n30
 
   Stage: Stage-5
     Map Reduce
@@ -211,7 +211,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.dest2
+                  name: default.dest2_n30
             Select Operator
               expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int)
               outputColumnNames: d1, d2, d3
@@ -236,7 +236,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest2
+              name: default.dest2_n30
 
   Stage: Stage-7
     Map Reduce
@@ -262,14 +262,14 @@ STAGE PLANS:
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
 PREHOOK: query: EXPLAIN
-FROM TBL
-INSERT OVERWRITE TABLE DEST1 SELECT TBL.C1, COUNT(TBL.C2) GROUP BY TBL.C1
-INSERT OVERWRITE TABLE DEST2 SELECT TBL.C1, TBL.C2, COUNT(TBL.C3) GROUP BY TBL.C2, TBL.C1
+FROM TBL_n0
+INSERT OVERWRITE TABLE DEST1_n116 SELECT TBL_n0.C1, COUNT(TBL_n0.C2) GROUP BY TBL_n0.C1
+INSERT OVERWRITE TABLE DEST2_n30 SELECT TBL_n0.C1, TBL_n0.C2, COUNT(TBL_n0.C3) GROUP BY TBL_n0.C2, TBL_n0.C1
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-FROM TBL
-INSERT OVERWRITE TABLE DEST1 SELECT TBL.C1, COUNT(TBL.C2) GROUP BY TBL.C1
-INSERT OVERWRITE TABLE DEST2 SELECT TBL.C1, TBL.C2, COUNT(TBL.C3) GROUP BY TBL.C2, TBL.C1
+FROM TBL_n0
+INSERT OVERWRITE TABLE DEST1_n116 SELECT TBL_n0.C1, COUNT(TBL_n0.C2) GROUP BY TBL_n0.C1
+INSERT OVERWRITE TABLE DEST2_n30 SELECT TBL_n0.C1, TBL_n0.C2, COUNT(TBL_n0.C3) GROUP BY TBL_n0.C2, TBL_n0.C1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -286,7 +286,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: tbl
+            alias: tbl_n0
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
               expressions: c1 (type: int), c2 (type: int)
@@ -339,7 +339,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.dest1
+                  name: default.dest1_n116
             Select Operator
               expressions: _col0 (type: int), _col1 (type: int)
               outputColumnNames: d1, d2
@@ -364,7 +364,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n116
 
   Stage: Stage-3
     Stats Work
@@ -372,7 +372,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: d1, d2
           Column Types: int, int
-          Table: default.dest1
+          Table: default.dest1_n116
 
   Stage: Stage-4
     Map Reduce
@@ -403,7 +403,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: d1, d2, d3
           Column Types: int, int, int
-          Table: default.dest2
+          Table: default.dest2_n30
 
   Stage: Stage-5
     Map Reduce
@@ -434,7 +434,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.dest2
+                  name: default.dest2_n30
             Select Operator
               expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int)
               outputColumnNames: d1, d2, d3
@@ -459,7 +459,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest2
+              name: default.dest2_n30
 
   Stage: Stage-7
     Map Reduce
@@ -485,14 +485,14 @@ STAGE PLANS:
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
 PREHOOK: query: EXPLAIN
-FROM TBL
-INSERT OVERWRITE TABLE DEST3 SELECT TBL.C1, TBL.C2, TBL.C3, COUNT(TBL.C4) GROUP BY TBL.C1, TBL.C2, TBL.C3
-INSERT OVERWRITE TABLE DEST2 SELECT TBL.C1, TBL.C2, COUNT(TBL.C3) GROUP BY TBL.C1, TBL.C2
+FROM TBL_n0
+INSERT OVERWRITE TABLE DEST3_n4 SELECT TBL_n0.C1, TBL_n0.C2, TBL_n0.C3, COUNT(TBL_n0.C4) GROUP BY TBL_n0.C1, TBL_n0.C2, TBL_n0.C3
+INSERT OVERWRITE TABLE DEST2_n30 SELECT TBL_n0.C1, TBL_n0.C2, COUNT(TBL_n0.C3) GROUP BY TBL_n0.C1, TBL_n0.C2
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-FROM TBL
-INSERT OVERWRITE TABLE DEST3 SELECT TBL.C1, TBL.C2, TBL.C3, COUNT(TBL.C4) GROUP BY TBL.C1, TBL.C2, TBL.C3
-INSERT OVERWRITE TABLE DEST2 SELECT TBL.C1, TBL.C2, COUNT(TBL.C3) GROUP BY TBL.C1, TBL.C2
+FROM TBL_n0
+INSERT OVERWRITE TABLE DEST3_n4 SELECT TBL_n0.C1, TBL_n0.C2, TBL_n0.C3, COUNT(TBL_n0.C4) GROUP BY TBL_n0.C1, TBL_n0.C2, TBL_n0.C3
+INSERT OVERWRITE TABLE DEST2_n30 SELECT TBL_n0.C1, TBL_n0.C2, COUNT(TBL_n0.C3) GROUP BY TBL_n0.C1, TBL_n0.C2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -509,7 +509,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: tbl
+            alias: tbl_n0
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
               expressions: c1 (type: int), c2 (type: int), c3 (type: int), c4 (type: int)
@@ -562,7 +562,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.dest3
+                  name: default.dest3_n4
             Select Operator
               expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int)
               outputColumnNames: d1, d2, d3, d4
@@ -587,7 +587,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest3
+              name: default.dest3_n4
 
   Stage: Stage-3
     Stats Work
@@ -595,7 +595,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: d1, d2, d3, d4
           Column Types: int, int, int, int
-          Table: default.dest3
+          Table: default.dest3_n4
 
   Stage: Stage-4
     Map Reduce
@@ -626,7 +626,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: d1, d2, d3
           Column Types: int, int, int
-          Table: default.dest2
+          Table: default.dest2_n30
 
   Stage: Stage-5
     Map Reduce
@@ -657,7 +657,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.dest2
+                  name: default.dest2_n30
             Select Operator
               expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int)
               outputColumnNames: d1, d2, d3
@@ -682,7 +682,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest2
+              name: default.dest2_n30
 
   Stage: Stage-7
     Map Reduce
@@ -708,14 +708,14 @@ STAGE PLANS:
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
 PREHOOK: query: EXPLAIN
-FROM TBL
-INSERT OVERWRITE TABLE DEST3 SELECT TBL.C1, TBL.C2, TBL.C3, COUNT(TBL.C4) GROUP BY TBL.C1, TBL.C2, TBL.C3
-INSERT OVERWRITE TABLE DEST4 SELECT TBL.C1, TBL.C2, TBL.C3, COUNT(TBL.C4) GROUP BY TBL.C1, TBL.C3, TBL.C2
+FROM TBL_n0
+INSERT OVERWRITE TABLE DEST3_n4 SELECT TBL_n0.C1, TBL_n0.C2, TBL_n0.C3, COUNT(TBL_n0.C4) GROUP BY TBL_n0.C1, TBL_n0.C2, TBL_n0.C3
+INSERT OVERWRITE TABLE DEST4 SELECT TBL_n0.C1, TBL_n0.C2, TBL_n0.C3, COUNT(TBL_n0.C4) GROUP BY TBL_n0.C1, TBL_n0.C3, TBL_n0.C2
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-FROM TBL
-INSERT OVERWRITE TABLE DEST3 SELECT TBL.C1, TBL.C2, TBL.C3, COUNT(TBL.C4) GROUP BY TBL.C1, TBL.C2, TBL.C3
-INSERT OVERWRITE TABLE DEST4 SELECT TBL.C1, TBL.C2, TBL.C3, COUNT(TBL.C4) GROUP BY TBL.C1, TBL.C3, TBL.C2
+FROM TBL_n0
+INSERT OVERWRITE TABLE DEST3_n4 SELECT TBL_n0.C1, TBL_n0.C2, TBL_n0.C3, COUNT(TBL_n0.C4) GROUP BY TBL_n0.C1, TBL_n0.C2, TBL_n0.C3
+INSERT OVERWRITE TABLE DEST4 SELECT TBL_n0.C1, TBL_n0.C2, TBL_n0.C3, COUNT(TBL_n0.C4) GROUP BY TBL_n0.C1, TBL_n0.C3, TBL_n0.C2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -731,7 +731,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: tbl
+            alias: tbl_n0
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
               expressions: c1 (type: int), c2 (type: int), c3 (type: int), c4 (type: int)
@@ -764,7 +764,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.dest3
+                    name: default.dest3_n4
               Select Operator
                 expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int)
                 outputColumnNames: d1, d2, d3, d4
@@ -822,7 +822,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest3
+              name: default.dest3_n4
 
   Stage: Stage-3
     Stats Work
@@ -830,7 +830,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: d1, d2, d3, d4
           Column Types: int, int, int, int
-          Table: default.dest3
+          Table: default.dest3_n4
 
   Stage: Stage-4
     Map Reduce
@@ -897,16 +897,16 @@ STAGE PLANS:
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
 PREHOOK: query: EXPLAIN
-FROM TBL
-INSERT OVERWRITE TABLE DEST3 SELECT TBL.C1, TBL.C2, TBL.C3, COUNT(TBL.C4) GROUP BY TBL.C1, TBL.C2, TBL.C3
-INSERT OVERWRITE TABLE DEST2 SELECT TBL.C1, TBL.C2, COUNT(TBL.C3) GROUP BY TBL.C1, TBL.C2
-INSERT OVERWRITE TABLE DEST1 SELECT TBL.C1, COUNT(TBL.C2) GROUP BY TBL.C1
+FROM TBL_n0
+INSERT OVERWRITE TABLE DEST3_n4 SELECT TBL_n0.C1, TBL_n0.C2, TBL_n0.C3, COUNT(TBL_n0.C4) GROUP BY TBL_n0.C1, TBL_n0.C2, TBL_n0.C3
+INSERT OVERWRITE TABLE DEST2_n30 SELECT TBL_n0.C1, TBL_n0.C2, COUNT(TBL_n0.C3) GROUP BY TBL_n0.C1, TBL_n0.C2
+INSERT OVERWRITE TABLE DEST1_n116 SELECT TBL_n0.C1, COUNT(TBL_n0.C2) GROUP BY TBL_n0.C1
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-FROM TBL
-INSERT OVERWRITE TABLE DEST3 SELECT TBL.C1, TBL.C2, TBL.C3, COUNT(TBL.C4) GROUP BY TBL.C1, TBL.C2, TBL.C3
-INSERT OVERWRITE TABLE DEST2 SELECT TBL.C1, TBL.C2, COUNT(TBL.C3) GROUP BY TBL.C1, TBL.C2
-INSERT OVERWRITE TABLE DEST1 SELECT TBL.C1, COUNT(TBL.C2) GROUP BY TBL.C1
+FROM TBL_n0
+INSERT OVERWRITE TABLE DEST3_n4 SELECT TBL_n0.C1, TBL_n0.C2, TBL_n0.C3, COUNT(TBL_n0.C4) GROUP BY TBL_n0.C1, TBL_n0.C2, TBL_n0.C3
+INSERT OVERWRITE TABLE DEST2_n30 SELECT TBL_n0.C1, TBL_n0.C2, COUNT(TBL_n0.C3) GROUP BY TBL_n0.C1, TBL_n0.C2
+INSERT OVERWRITE TABLE DEST1_n116 SELECT TBL_n0.C1, COUNT(TBL_n0.C2) GROUP BY TBL_n0.C1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
@@ -927,7 +927,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: tbl
+            alias: tbl_n0
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
               expressions: c1 (type: int), c2 (type: int), c3 (type: int), c4 (type: int)
@@ -996,7 +996,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.dest3
+                  name: default.dest3_n4
             Select Operator
               expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int)
               outputColumnNames: d1, d2, d3, d4
@@ -1021,7 +1021,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest3
+              name: default.dest3_n4
 
   Stage: Stage-4
     Stats Work
@@ -1029,7 +1029,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: d1, d2, d3, d4
           Column Types: int, int, int, int
-          Table: default.dest3
+          Table: default.dest3_n4
 
   Stage: Stage-5
     Map Reduce
@@ -1060,7 +1060,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: d1, d2, d3
           Column Types: int, int, int
-          Table: default.dest2
+          Table: default.dest2_n30
 
   Stage: Stage-10
     Stats Work
@@ -1068,7 +1068,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: d1, d2
           Column Types: int, int
-          Table: default.dest1
+          Table: default.dest1_n116
 
   Stage: Stage-6
     Map Reduce
@@ -1099,7 +1099,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.dest2
+                  name: default.dest2_n30
             Select Operator
               expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int)
               outputColumnNames: d1, d2, d3
@@ -1124,7 +1124,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest2
+              name: default.dest2_n30
 
   Stage: Stage-8
     Map Reduce
@@ -1178,7 +1178,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.dest1
+                  name: default.dest1_n116
             Select Operator
               expressions: _col0 (type: int), _col1 (type: int)
               outputColumnNames: d1, d2
@@ -1203,7 +1203,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n116
 
   Stage: Stage-11
     Map Reduce

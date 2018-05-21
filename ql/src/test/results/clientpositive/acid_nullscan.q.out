@@ -1,36 +1,36 @@
-PREHOOK: query: CREATE TABLE acid_vectorized(a INT, b STRING) CLUSTERED BY(a) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')
+PREHOOK: query: CREATE TABLE acid_vectorized_n1(a INT, b STRING) CLUSTERED BY(a) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@acid_vectorized
-POSTHOOK: query: CREATE TABLE acid_vectorized(a INT, b STRING) CLUSTERED BY(a) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')
+PREHOOK: Output: default@acid_vectorized_n1
+POSTHOOK: query: CREATE TABLE acid_vectorized_n1(a INT, b STRING) CLUSTERED BY(a) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@acid_vectorized
-PREHOOK: query: insert into table acid_vectorized select cint, cstring1 from alltypesorc where cint is not null order by cint limit 10
+POSTHOOK: Output: default@acid_vectorized_n1
+PREHOOK: query: insert into table acid_vectorized_n1 select cint, cstring1 from alltypesorc where cint is not null order by cint limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
-PREHOOK: Output: default@acid_vectorized
-POSTHOOK: query: insert into table acid_vectorized select cint, cstring1 from alltypesorc where cint is not null order by cint limit 10
+PREHOOK: Output: default@acid_vectorized_n1
+POSTHOOK: query: insert into table acid_vectorized_n1 select cint, cstring1 from alltypesorc where cint is not null order by cint limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
-POSTHOOK: Output: default@acid_vectorized
-POSTHOOK: Lineage: acid_vectorized.a SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: acid_vectorized.b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
-PREHOOK: query: insert into table acid_vectorized values (1, 'bar')
+POSTHOOK: Output: default@acid_vectorized_n1
+POSTHOOK: Lineage: acid_vectorized_n1.a SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: acid_vectorized_n1.b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+PREHOOK: query: insert into table acid_vectorized_n1 values (1, 'bar')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@acid_vectorized
-POSTHOOK: query: insert into table acid_vectorized values (1, 'bar')
+PREHOOK: Output: default@acid_vectorized_n1
+POSTHOOK: query: insert into table acid_vectorized_n1 values (1, 'bar')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@acid_vectorized
-POSTHOOK: Lineage: acid_vectorized.a SCRIPT []
-POSTHOOK: Lineage: acid_vectorized.b SCRIPT []
+POSTHOOK: Output: default@acid_vectorized_n1
+POSTHOOK: Lineage: acid_vectorized_n1.a SCRIPT []
+POSTHOOK: Lineage: acid_vectorized_n1.b SCRIPT []
 PREHOOK: query: explain extended
-select sum(a) from acid_vectorized where false
+select sum(a) from acid_vectorized_n1 where false
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
-select sum(a) from acid_vectorized where false
+select sum(a) from acid_vectorized_n1 where false
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -41,7 +41,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: acid_vectorized
+            alias: acid_vectorized_n1
             Statistics: Num rows: 88 Data size: 25400 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -62,9 +62,9 @@ STAGE PLANS:
                   auto parallelism: false
       Execution mode: vectorized
       Path -> Alias:
-        nullscan://null/default.acid_vectorized/part_ [acid_vectorized]
+        nullscan://null/default.acid_vectorized_n1/part_ [acid_vectorized_n1]
       Path -> Partition:
-        nullscan://null/default.acid_vectorized/part_ 
+        nullscan://null/default.acid_vectorized_n1/part_ 
           Partition
             input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -77,9 +77,9 @@ STAGE PLANS:
               columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
-              name default.acid_vectorized
+              name default.acid_vectorized_n1
               numFiles 3
-              serialization.ddl struct acid_vectorized { i32 a, string b}
+              serialization.ddl struct acid_vectorized_n1 { i32 a, string b}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
               totalSize 2540
@@ -99,9 +99,9 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
-                name default.acid_vectorized
+                name default.acid_vectorized_n1
                 numFiles 3
-                serialization.ddl struct acid_vectorized { i32 a, string b}
+                serialization.ddl struct acid_vectorized_n1 { i32 a, string b}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 totalSize 2540
@@ -109,10 +109,10 @@ STAGE PLANS:
                 transactional_properties default
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.acid_vectorized
-            name: default.acid_vectorized
+              name: default.acid_vectorized_n1
+            name: default.acid_vectorized_n1
       Truncated Path -> Alias:
-        nullscan://null/default.acid_vectorized/part_ [acid_vectorized]
+        nullscan://null/default.acid_vectorized_n1/part_ [acid_vectorized_n1]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -149,12 +149,12 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select sum(a) from acid_vectorized where false
+PREHOOK: query: select sum(a) from acid_vectorized_n1 where false
 PREHOOK: type: QUERY
-PREHOOK: Input: default@acid_vectorized
+PREHOOK: Input: default@acid_vectorized_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(a) from acid_vectorized where false
+POSTHOOK: query: select sum(a) from acid_vectorized_n1 where false
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@acid_vectorized
+POSTHOOK: Input: default@acid_vectorized_n1
 #### A masked pattern was here ####
 NULL

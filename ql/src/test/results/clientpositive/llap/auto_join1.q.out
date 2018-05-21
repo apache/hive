@@ -1,18 +1,18 @@
-PREHOOK: query: CREATE TABLE dest_j1(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE dest_j1_n3(key INT, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest_j1
-POSTHOOK: query: CREATE TABLE dest_j1(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@dest_j1_n3
+POSTHOOK: query: CREATE TABLE dest_j1_n3(key INT, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest_j1
+POSTHOOK: Output: default@dest_j1_n3
 PREHOOK: query: explain
 FROM src src1 JOIN src src2 ON (src1.key = src2.key)
-INSERT OVERWRITE TABLE dest_j1 SELECT src1.key, src2.value
+INSERT OVERWRITE TABLE dest_j1_n3 SELECT src1.key, src2.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 FROM src src1 JOIN src src2 ON (src1.key = src2.key)
-INSERT OVERWRITE TABLE dest_j1 SELECT src1.key, src2.value
+INSERT OVERWRITE TABLE dest_j1_n3 SELECT src1.key, src2.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -81,7 +81,7 @@ STAGE PLANS:
                                 input format: org.apache.hadoop.mapred.TextInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                                name: default.dest_j1
+                                name: default.dest_j1_n3
                           Select Operator
                             expressions: _col0 (type: int), _col1 (type: string)
                             outputColumnNames: key, value
@@ -124,7 +124,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest_j1
+              name: default.dest_j1_n3
 
   Stage: Stage-3
     Stats Work
@@ -132,26 +132,26 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: int, string
-          Table: default.dest_j1
+          Table: default.dest_j1_n3
 
 PREHOOK: query: FROM src src1 JOIN src src2 ON (src1.key = src2.key)
-INSERT OVERWRITE TABLE dest_j1 SELECT src1.key, src2.value
+INSERT OVERWRITE TABLE dest_j1_n3 SELECT src1.key, src2.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@dest_j1
+PREHOOK: Output: default@dest_j1_n3
 POSTHOOK: query: FROM src src1 JOIN src src2 ON (src1.key = src2.key)
-INSERT OVERWRITE TABLE dest_j1 SELECT src1.key, src2.value
+INSERT OVERWRITE TABLE dest_j1_n3 SELECT src1.key, src2.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@dest_j1
-POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: SELECT sum(hash(dest_j1.key,dest_j1.value)) FROM dest_j1
+POSTHOOK: Output: default@dest_j1_n3
+POSTHOOK: Lineage: dest_j1_n3.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest_j1_n3.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT sum(hash(dest_j1_n3.key,dest_j1_n3.value)) FROM dest_j1_n3
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest_j1
+PREHOOK: Input: default@dest_j1_n3
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT sum(hash(dest_j1.key,dest_j1.value)) FROM dest_j1
+POSTHOOK: query: SELECT sum(hash(dest_j1_n3.key,dest_j1_n3.value)) FROM dest_j1_n3
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest_j1
+POSTHOOK: Input: default@dest_j1_n3
 #### A masked pattern was here ####
 101861029915

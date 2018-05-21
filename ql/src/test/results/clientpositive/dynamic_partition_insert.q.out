@@ -1,100 +1,100 @@
-PREHOOK: query: CREATE TABLE t1 (c1 BIGINT, c2 STRING)
+PREHOOK: query: CREATE TABLE t1_n131 (c1 BIGINT, c2 STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t1
-POSTHOOK: query: CREATE TABLE t1 (c1 BIGINT, c2 STRING)
+PREHOOK: Output: default@t1_n131
+POSTHOOK: query: CREATE TABLE t1_n131 (c1 BIGINT, c2 STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t1
-PREHOOK: query: CREATE TABLE t2 (c1 INT, c2 STRING)
+POSTHOOK: Output: default@t1_n131
+PREHOOK: query: CREATE TABLE t2_n78 (c1 INT, c2 STRING)
 PARTITIONED BY (p1 STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t2
-POSTHOOK: query: CREATE TABLE t2 (c1 INT, c2 STRING)
+PREHOOK: Output: default@t2_n78
+POSTHOOK: query: CREATE TABLE t2_n78 (c1 INT, c2 STRING)
 PARTITIONED BY (p1 STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t2
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dynamic_partition_insert.txt' INTO TABLE t1
+POSTHOOK: Output: default@t2_n78
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dynamic_partition_insert.txt' INTO TABLE t1_n131
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dynamic_partition_insert.txt' INTO TABLE t1
+PREHOOK: Output: default@t1_n131
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dynamic_partition_insert.txt' INTO TABLE t1_n131
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dynamic_partition_insert.txt' INTO TABLE t1
+POSTHOOK: Output: default@t1_n131
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dynamic_partition_insert.txt' INTO TABLE t1_n131
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dynamic_partition_insert.txt' INTO TABLE t1
+PREHOOK: Output: default@t1_n131
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dynamic_partition_insert.txt' INTO TABLE t1_n131
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dynamic_partition_insert.txt' INTO TABLE t1
+POSTHOOK: Output: default@t1_n131
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dynamic_partition_insert.txt' INTO TABLE t1_n131
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dynamic_partition_insert.txt' INTO TABLE t1
+PREHOOK: Output: default@t1_n131
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dynamic_partition_insert.txt' INTO TABLE t1_n131
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dynamic_partition_insert.txt' INTO TABLE t1
+POSTHOOK: Output: default@t1_n131
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dynamic_partition_insert.txt' INTO TABLE t1_n131
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dynamic_partition_insert.txt' INTO TABLE t1
+PREHOOK: Output: default@t1_n131
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dynamic_partition_insert.txt' INTO TABLE t1_n131
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dynamic_partition_insert.txt' INTO TABLE t1
+POSTHOOK: Output: default@t1_n131
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dynamic_partition_insert.txt' INTO TABLE t1_n131
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dynamic_partition_insert.txt' INTO TABLE t1
+PREHOOK: Output: default@t1_n131
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dynamic_partition_insert.txt' INTO TABLE t1_n131
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t1
-PREHOOK: query: INSERT OVERWRITE TABLE t2 partition(p1) SELECT *,c1 AS p1 FROM t1 DISTRIBUTE BY p1
+POSTHOOK: Output: default@t1_n131
+PREHOOK: query: INSERT OVERWRITE TABLE t2_n78 partition(p1) SELECT *,c1 AS p1 FROM t1_n131 DISTRIBUTE BY p1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@t2
-POSTHOOK: query: INSERT OVERWRITE TABLE t2 partition(p1) SELECT *,c1 AS p1 FROM t1 DISTRIBUTE BY p1
+PREHOOK: Input: default@t1_n131
+PREHOOK: Output: default@t2_n78
+POSTHOOK: query: INSERT OVERWRITE TABLE t2_n78 partition(p1) SELECT *,c1 AS p1 FROM t1_n131 DISTRIBUTE BY p1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@t2@p1=1
-POSTHOOK: Output: default@t2@p1=2
-POSTHOOK: Output: default@t2@p1=3
-POSTHOOK: Output: default@t2@p1=4
-POSTHOOK: Output: default@t2@p1=5
-POSTHOOK: Lineage: t2 PARTITION(p1=1).c1 EXPRESSION [(t1)t1.FieldSchema(name:c1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: t2 PARTITION(p1=1).c2 SIMPLE [(t1)t1.FieldSchema(name:c2, type:string, comment:null), ]
-POSTHOOK: Lineage: t2 PARTITION(p1=2).c1 EXPRESSION [(t1)t1.FieldSchema(name:c1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: t2 PARTITION(p1=2).c2 SIMPLE [(t1)t1.FieldSchema(name:c2, type:string, comment:null), ]
-POSTHOOK: Lineage: t2 PARTITION(p1=3).c1 EXPRESSION [(t1)t1.FieldSchema(name:c1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: t2 PARTITION(p1=3).c2 SIMPLE [(t1)t1.FieldSchema(name:c2, type:string, comment:null), ]
-POSTHOOK: Lineage: t2 PARTITION(p1=4).c1 EXPRESSION [(t1)t1.FieldSchema(name:c1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: t2 PARTITION(p1=4).c2 SIMPLE [(t1)t1.FieldSchema(name:c2, type:string, comment:null), ]
-POSTHOOK: Lineage: t2 PARTITION(p1=5).c1 EXPRESSION [(t1)t1.FieldSchema(name:c1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: t2 PARTITION(p1=5).c2 SIMPLE [(t1)t1.FieldSchema(name:c2, type:string, comment:null), ]
-PREHOOK: query: SELECT * FROM t2
+POSTHOOK: Input: default@t1_n131
+POSTHOOK: Output: default@t2_n78@p1=1
+POSTHOOK: Output: default@t2_n78@p1=2
+POSTHOOK: Output: default@t2_n78@p1=3
+POSTHOOK: Output: default@t2_n78@p1=4
+POSTHOOK: Output: default@t2_n78@p1=5
+POSTHOOK: Lineage: t2_n78 PARTITION(p1=1).c1 EXPRESSION [(t1_n131)t1_n131.FieldSchema(name:c1, type:bigint, comment:null), ]
+POSTHOOK: Lineage: t2_n78 PARTITION(p1=1).c2 SIMPLE [(t1_n131)t1_n131.FieldSchema(name:c2, type:string, comment:null), ]
+POSTHOOK: Lineage: t2_n78 PARTITION(p1=2).c1 EXPRESSION [(t1_n131)t1_n131.FieldSchema(name:c1, type:bigint, comment:null), ]
+POSTHOOK: Lineage: t2_n78 PARTITION(p1=2).c2 SIMPLE [(t1_n131)t1_n131.FieldSchema(name:c2, type:string, comment:null), ]
+POSTHOOK: Lineage: t2_n78 PARTITION(p1=3).c1 EXPRESSION [(t1_n131)t1_n131.FieldSchema(name:c1, type:bigint, comment:null), ]
+POSTHOOK: Lineage: t2_n78 PARTITION(p1=3).c2 SIMPLE [(t1_n131)t1_n131.FieldSchema(name:c2, type:string, comment:null), ]
+POSTHOOK: Lineage: t2_n78 PARTITION(p1=4).c1 EXPRESSION [(t1_n131)t1_n131.FieldSchema(name:c1, type:bigint, comment:null), ]
+POSTHOOK: Lineage: t2_n78 PARTITION(p1=4).c2 SIMPLE [(t1_n131)t1_n131.FieldSchema(name:c2, type:string, comment:null), ]
+POSTHOOK: Lineage: t2_n78 PARTITION(p1=5).c1 EXPRESSION [(t1_n131)t1_n131.FieldSchema(name:c1, type:bigint, comment:null), ]
+POSTHOOK: Lineage: t2_n78 PARTITION(p1=5).c2 SIMPLE [(t1_n131)t1_n131.FieldSchema(name:c2, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM t2_n78
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t2
-PREHOOK: Input: default@t2@p1=1
-PREHOOK: Input: default@t2@p1=2
-PREHOOK: Input: default@t2@p1=3
-PREHOOK: Input: default@t2@p1=4
-PREHOOK: Input: default@t2@p1=5
+PREHOOK: Input: default@t2_n78
+PREHOOK: Input: default@t2_n78@p1=1
+PREHOOK: Input: default@t2_n78@p1=2
+PREHOOK: Input: default@t2_n78@p1=3
+PREHOOK: Input: default@t2_n78@p1=4
+PREHOOK: Input: default@t2_n78@p1=5
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM t2
+POSTHOOK: query: SELECT * FROM t2_n78
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t2
-POSTHOOK: Input: default@t2@p1=1
-POSTHOOK: Input: default@t2@p1=2
-POSTHOOK: Input: default@t2@p1=3
-POSTHOOK: Input: default@t2@p1=4
-POSTHOOK: Input: default@t2@p1=5
+POSTHOOK: Input: default@t2_n78
+POSTHOOK: Input: default@t2_n78@p1=1
+POSTHOOK: Input: default@t2_n78@p1=2
+POSTHOOK: Input: default@t2_n78@p1=3
+POSTHOOK: Input: default@t2_n78@p1=4
+POSTHOOK: Input: default@t2_n78@p1=5
 #### A masked pattern was here ####
 1	one	1
 1	one	1
@@ -121,70 +121,70 @@ POSTHOOK: Input: default@t2@p1=5
 5	five	5
 5	five	5
 5	five	5
-PREHOOK: query: TRUNCATE TABLE t2
+PREHOOK: query: TRUNCATE TABLE t2_n78
 PREHOOK: type: TRUNCATETABLE
-PREHOOK: Output: default@t2@p1=1
-PREHOOK: Output: default@t2@p1=2
-PREHOOK: Output: default@t2@p1=3
-PREHOOK: Output: default@t2@p1=4
-PREHOOK: Output: default@t2@p1=5
-POSTHOOK: query: TRUNCATE TABLE t2
+PREHOOK: Output: default@t2_n78@p1=1
+PREHOOK: Output: default@t2_n78@p1=2
+PREHOOK: Output: default@t2_n78@p1=3
+PREHOOK: Output: default@t2_n78@p1=4
+PREHOOK: Output: default@t2_n78@p1=5
+POSTHOOK: query: TRUNCATE TABLE t2_n78
 POSTHOOK: type: TRUNCATETABLE
-POSTHOOK: Output: default@t2@p1=1
-POSTHOOK: Output: default@t2@p1=2
-POSTHOOK: Output: default@t2@p1=3
-POSTHOOK: Output: default@t2@p1=4
-POSTHOOK: Output: default@t2@p1=5
-PREHOOK: query: INSERT OVERWRITE TABLE t2 SELECT *,c1 AS p1 FROM t1 DISTRIBUTE BY p1
+POSTHOOK: Output: default@t2_n78@p1=1
+POSTHOOK: Output: default@t2_n78@p1=2
+POSTHOOK: Output: default@t2_n78@p1=3
+POSTHOOK: Output: default@t2_n78@p1=4
+POSTHOOK: Output: default@t2_n78@p1=5
+PREHOOK: query: INSERT OVERWRITE TABLE t2_n78 SELECT *,c1 AS p1 FROM t1_n131 DISTRIBUTE BY p1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@t2
-POSTHOOK: query: INSERT OVERWRITE TABLE t2 SELECT *,c1 AS p1 FROM t1 DISTRIBUTE BY p1
+PREHOOK: Input: default@t1_n131
+PREHOOK: Output: default@t2_n78
+POSTHOOK: query: INSERT OVERWRITE TABLE t2_n78 SELECT *,c1 AS p1 FROM t1_n131 DISTRIBUTE BY p1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@t2@p1=1
-POSTHOOK: Output: default@t2@p1=2
-POSTHOOK: Output: default@t2@p1=3
-POSTHOOK: Output: default@t2@p1=4
-POSTHOOK: Output: default@t2@p1=5
-POSTHOOK: Lineage: t2 PARTITION(p1=1).c1 EXPRESSION [(t1)t1.FieldSchema(name:c1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: t2 PARTITION(p1=1).c2 SIMPLE [(t1)t1.FieldSchema(name:c2, type:string, comment:null), ]
-POSTHOOK: Lineage: t2 PARTITION(p1=2).c1 EXPRESSION [(t1)t1.FieldSchema(name:c1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: t2 PARTITION(p1=2).c2 SIMPLE [(t1)t1.FieldSchema(name:c2, type:string, comment:null), ]
-POSTHOOK: Lineage: t2 PARTITION(p1=3).c1 EXPRESSION [(t1)t1.FieldSchema(name:c1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: t2 PARTITION(p1=3).c2 SIMPLE [(t1)t1.FieldSchema(name:c2, type:string, comment:null), ]
-POSTHOOK: Lineage: t2 PARTITION(p1=4).c1 EXPRESSION [(t1)t1.FieldSchema(name:c1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: t2 PARTITION(p1=4).c2 SIMPLE [(t1)t1.FieldSchema(name:c2, type:string, comment:null), ]
-POSTHOOK: Lineage: t2 PARTITION(p1=5).c1 EXPRESSION [(t1)t1.FieldSchema(name:c1, type:bigint, comment:null), ]
-POSTHOOK: Lineage: t2 PARTITION(p1=5).c2 SIMPLE [(t1)t1.FieldSchema(name:c2, type:string, comment:null), ]
-PREHOOK: query: SHOW PARTITIONS t2
+POSTHOOK: Input: default@t1_n131
+POSTHOOK: Output: default@t2_n78@p1=1
+POSTHOOK: Output: default@t2_n78@p1=2
+POSTHOOK: Output: default@t2_n78@p1=3
+POSTHOOK: Output: default@t2_n78@p1=4
+POSTHOOK: Output: default@t2_n78@p1=5
+POSTHOOK: Lineage: t2_n78 PARTITION(p1=1).c1 EXPRESSION [(t1_n131)t1_n131.FieldSchema(name:c1, type:bigint, comment:null), ]
+POSTHOOK: Lineage: t2_n78 PARTITION(p1=1).c2 SIMPLE [(t1_n131)t1_n131.FieldSchema(name:c2, type:string, comment:null), ]
+POSTHOOK: Lineage: t2_n78 PARTITION(p1=2).c1 EXPRESSION [(t1_n131)t1_n131.FieldSchema(name:c1, type:bigint, comment:null), ]
+POSTHOOK: Lineage: t2_n78 PARTITION(p1=2).c2 SIMPLE [(t1_n131)t1_n131.FieldSchema(name:c2, type:string, comment:null), ]
+POSTHOOK: Lineage: t2_n78 PARTITION(p1=3).c1 EXPRESSION [(t1_n131)t1_n131.FieldSchema(name:c1, type:bigint, comment:null), ]
+POSTHOOK: Lineage: t2_n78 PARTITION(p1=3).c2 SIMPLE [(t1_n131)t1_n131.FieldSchema(name:c2, type:string, comment:null), ]
+POSTHOOK: Lineage: t2_n78 PARTITION(p1=4).c1 EXPRESSION [(t1_n131)t1_n131.FieldSchema(name:c1, type:bigint, comment:null), ]
+POSTHOOK: Lineage: t2_n78 PARTITION(p1=4).c2 SIMPLE [(t1_n131)t1_n131.FieldSchema(name:c2, type:string, comment:null), ]
+POSTHOOK: Lineage: t2_n78 PARTITION(p1=5).c1 EXPRESSION [(t1_n131)t1_n131.FieldSchema(name:c1, type:bigint, comment:null), ]
+POSTHOOK: Lineage: t2_n78 PARTITION(p1=5).c2 SIMPLE [(t1_n131)t1_n131.FieldSchema(name:c2, type:string, comment:null), ]
+PREHOOK: query: SHOW PARTITIONS t2_n78
 PREHOOK: type: SHOWPARTITIONS
-PREHOOK: Input: default@t2
-POSTHOOK: query: SHOW PARTITIONS t2
+PREHOOK: Input: default@t2_n78
+POSTHOOK: query: SHOW PARTITIONS t2_n78
 POSTHOOK: type: SHOWPARTITIONS
-POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t2_n78
 p1=1
 p1=2
 p1=3
 p1=4
 p1=5
-PREHOOK: query: SELECT * FROM t2
+PREHOOK: query: SELECT * FROM t2_n78
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t2
-PREHOOK: Input: default@t2@p1=1
-PREHOOK: Input: default@t2@p1=2
-PREHOOK: Input: default@t2@p1=3
-PREHOOK: Input: default@t2@p1=4
-PREHOOK: Input: default@t2@p1=5
+PREHOOK: Input: default@t2_n78
+PREHOOK: Input: default@t2_n78@p1=1
+PREHOOK: Input: default@t2_n78@p1=2
+PREHOOK: Input: default@t2_n78@p1=3
+PREHOOK: Input: default@t2_n78@p1=4
+PREHOOK: Input: default@t2_n78@p1=5
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM t2
+POSTHOOK: query: SELECT * FROM t2_n78
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t2
-POSTHOOK: Input: default@t2@p1=1
-POSTHOOK: Input: default@t2@p1=2
-POSTHOOK: Input: default@t2@p1=3
-POSTHOOK: Input: default@t2@p1=4
-POSTHOOK: Input: default@t2@p1=5
+POSTHOOK: Input: default@t2_n78
+POSTHOOK: Input: default@t2_n78@p1=1
+POSTHOOK: Input: default@t2_n78@p1=2
+POSTHOOK: Input: default@t2_n78@p1=3
+POSTHOOK: Input: default@t2_n78@p1=4
+POSTHOOK: Input: default@t2_n78@p1=5
 #### A masked pattern was here ####
 1	one	1
 1	one	1
@@ -211,451 +211,451 @@ POSTHOOK: Input: default@t2@p1=5
 5	five	5
 5	five	5
 5	five	5
-PREHOOK: query: DROP TABLE t1
+PREHOOK: query: DROP TABLE t1_n131
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@t1
-POSTHOOK: query: DROP TABLE t1
+PREHOOK: Input: default@t1_n131
+PREHOOK: Output: default@t1_n131
+POSTHOOK: query: DROP TABLE t1_n131
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@t1
-PREHOOK: query: DROP TABLE t2
+POSTHOOK: Input: default@t1_n131
+POSTHOOK: Output: default@t1_n131
+PREHOOK: query: DROP TABLE t2_n78
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@t2
-PREHOOK: Output: default@t2
-POSTHOOK: query: DROP TABLE t2
+PREHOOK: Input: default@t2_n78
+PREHOOK: Output: default@t2_n78
+POSTHOOK: query: DROP TABLE t2_n78
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@t2
-POSTHOOK: Output: default@t2
-PREHOOK: query: CREATE TABLE table1 (id int) partitioned by (key string) clustered by (id) into 2 buckets
+POSTHOOK: Input: default@t2_n78
+POSTHOOK: Output: default@t2_n78
+PREHOOK: query: CREATE TABLE table1_n15 (id int) partitioned by (key string) clustered by (id) into 2 buckets
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@table1
-POSTHOOK: query: CREATE TABLE table1 (id int) partitioned by (key string) clustered by (id) into 2 buckets
+PREHOOK: Output: default@table1_n15
+POSTHOOK: query: CREATE TABLE table1_n15 (id int) partitioned by (key string) clustered by (id) into 2 buckets
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@table1
-PREHOOK: query: INSERT INTO TABLE table1 VALUES (1, '101'), (2, '202'), (3, '303'), (4, '404'), (5, '505')
+POSTHOOK: Output: default@table1_n15
+PREHOOK: query: INSERT INTO TABLE table1_n15 VALUES (1, '101'), (2, '202'), (3, '303'), (4, '404'), (5, '505')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@table1
-POSTHOOK: query: INSERT INTO TABLE table1 VALUES (1, '101'), (2, '202'), (3, '303'), (4, '404'), (5, '505')
+PREHOOK: Output: default@table1_n15
+POSTHOOK: query: INSERT INTO TABLE table1_n15 VALUES (1, '101'), (2, '202'), (3, '303'), (4, '404'), (5, '505')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@table1@key=101
-POSTHOOK: Output: default@table1@key=202
-POSTHOOK: Output: default@table1@key=303
-POSTHOOK: Output: default@table1@key=404
-POSTHOOK: Output: default@table1@key=505
-POSTHOOK: Lineage: table1 PARTITION(key=101).id SCRIPT []
-POSTHOOK: Lineage: table1 PARTITION(key=202).id SCRIPT []
-POSTHOOK: Lineage: table1 PARTITION(key=303).id SCRIPT []
-POSTHOOK: Lineage: table1 PARTITION(key=404).id SCRIPT []
-POSTHOOK: Lineage: table1 PARTITION(key=505).id SCRIPT []
-PREHOOK: query: SHOW PARTITIONS table1
+POSTHOOK: Output: default@table1_n15@key=101
+POSTHOOK: Output: default@table1_n15@key=202
+POSTHOOK: Output: default@table1_n15@key=303
+POSTHOOK: Output: default@table1_n15@key=404
+POSTHOOK: Output: default@table1_n15@key=505
+POSTHOOK: Lineage: table1_n15 PARTITION(key=101).id SCRIPT []
+POSTHOOK: Lineage: table1_n15 PARTITION(key=202).id SCRIPT []
+POSTHOOK: Lineage: table1_n15 PARTITION(key=303).id SCRIPT []
+POSTHOOK: Lineage: table1_n15 PARTITION(key=404).id SCRIPT []
+POSTHOOK: Lineage: table1_n15 PARTITION(key=505).id SCRIPT []
+PREHOOK: query: SHOW PARTITIONS table1_n15
 PREHOOK: type: SHOWPARTITIONS
-PREHOOK: Input: default@table1
-POSTHOOK: query: SHOW PARTITIONS table1
+PREHOOK: Input: default@table1_n15
+POSTHOOK: query: SHOW PARTITIONS table1_n15
 POSTHOOK: type: SHOWPARTITIONS
-POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1_n15
 key=101
 key=202
 key=303
 key=404
 key=505
-PREHOOK: query: SELECT * FROM table1
+PREHOOK: query: SELECT * FROM table1_n15
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table1
-PREHOOK: Input: default@table1@key=101
-PREHOOK: Input: default@table1@key=202
-PREHOOK: Input: default@table1@key=303
-PREHOOK: Input: default@table1@key=404
-PREHOOK: Input: default@table1@key=505
+PREHOOK: Input: default@table1_n15
+PREHOOK: Input: default@table1_n15@key=101
+PREHOOK: Input: default@table1_n15@key=202
+PREHOOK: Input: default@table1_n15@key=303
+PREHOOK: Input: default@table1_n15@key=404
+PREHOOK: Input: default@table1_n15@key=505
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM table1
+POSTHOOK: query: SELECT * FROM table1_n15
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table1
-POSTHOOK: Input: default@table1@key=101
-POSTHOOK: Input: default@table1@key=202
-POSTHOOK: Input: default@table1@key=303
-POSTHOOK: Input: default@table1@key=404
-POSTHOOK: Input: default@table1@key=505
+POSTHOOK: Input: default@table1_n15
+POSTHOOK: Input: default@table1_n15@key=101
+POSTHOOK: Input: default@table1_n15@key=202
+POSTHOOK: Input: default@table1_n15@key=303
+POSTHOOK: Input: default@table1_n15@key=404
+POSTHOOK: Input: default@table1_n15@key=505
 #### A masked pattern was here ####
 1	101
 2	202
 3	303
 4	404
 5	505
-PREHOOK: query: DROP TABLE table1
+PREHOOK: query: DROP TABLE table1_n15
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@table1
-PREHOOK: Output: default@table1
-POSTHOOK: query: DROP TABLE table1
+PREHOOK: Input: default@table1_n15
+PREHOOK: Output: default@table1_n15
+POSTHOOK: query: DROP TABLE table1_n15
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@table1
-POSTHOOK: Output: default@table1
-PREHOOK: query: CREATE TABLE table1 (name string, age int) PARTITIONED BY (country string, state string)
+POSTHOOK: Input: default@table1_n15
+POSTHOOK: Output: default@table1_n15
+PREHOOK: query: CREATE TABLE table1_n15 (name string, age int) PARTITIONED BY (country string, state string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@table1
-POSTHOOK: query: CREATE TABLE table1 (name string, age int) PARTITIONED BY (country string, state string)
+PREHOOK: Output: default@table1_n15
+POSTHOOK: query: CREATE TABLE table1_n15 (name string, age int) PARTITIONED BY (country string, state string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@table1
-PREHOOK: query: INSERT INTO table1 values ('John Doe', 23, 'USA', 'CA'), ('Jane Doe', 22, 'USA', 'TX')
+POSTHOOK: Output: default@table1_n15
+PREHOOK: query: INSERT INTO table1_n15 values ('John Doe', 23, 'USA', 'CA'), ('Jane Doe', 22, 'USA', 'TX')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@table1
-POSTHOOK: query: INSERT INTO table1 values ('John Doe', 23, 'USA', 'CA'), ('Jane Doe', 22, 'USA', 'TX')
+PREHOOK: Output: default@table1_n15
+POSTHOOK: query: INSERT INTO table1_n15 values ('John Doe', 23, 'USA', 'CA'), ('Jane Doe', 22, 'USA', 'TX')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@table1@country=USA/state=CA
-POSTHOOK: Output: default@table1@country=USA/state=TX
-POSTHOOK: Lineage: table1 PARTITION(country=USA,state=CA).age SCRIPT []
-POSTHOOK: Lineage: table1 PARTITION(country=USA,state=CA).name SCRIPT []
-POSTHOOK: Lineage: table1 PARTITION(country=USA,state=TX).age SCRIPT []
-POSTHOOK: Lineage: table1 PARTITION(country=USA,state=TX).name SCRIPT []
-PREHOOK: query: SHOW PARTITIONS table1
+POSTHOOK: Output: default@table1_n15@country=USA/state=CA
+POSTHOOK: Output: default@table1_n15@country=USA/state=TX
+POSTHOOK: Lineage: table1_n15 PARTITION(country=USA,state=CA).age SCRIPT []
+POSTHOOK: Lineage: table1_n15 PARTITION(country=USA,state=CA).name SCRIPT []
+POSTHOOK: Lineage: table1_n15 PARTITION(country=USA,state=TX).age SCRIPT []
+POSTHOOK: Lineage: table1_n15 PARTITION(country=USA,state=TX).name SCRIPT []
+PREHOOK: query: SHOW PARTITIONS table1_n15
 PREHOOK: type: SHOWPARTITIONS
-PREHOOK: Input: default@table1
-POSTHOOK: query: SHOW PARTITIONS table1
+PREHOOK: Input: default@table1_n15
+POSTHOOK: query: SHOW PARTITIONS table1_n15
 POSTHOOK: type: SHOWPARTITIONS
-POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1_n15
 country=USA/state=CA
 country=USA/state=TX
-PREHOOK: query: CREATE TABLE table2 (name string, age int) PARTITIONED BY (country string, state string)
+PREHOOK: query: CREATE TABLE table2_n10 (name string, age int) PARTITIONED BY (country string, state string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@table2
-POSTHOOK: query: CREATE TABLE table2 (name string, age int) PARTITIONED BY (country string, state string)
+PREHOOK: Output: default@table2_n10
+POSTHOOK: query: CREATE TABLE table2_n10 (name string, age int) PARTITIONED BY (country string, state string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@table2
-PREHOOK: query: INSERT INTO TABLE table2 SELECT * FROM table1
+POSTHOOK: Output: default@table2_n10
+PREHOOK: query: INSERT INTO TABLE table2_n10 SELECT * FROM table1_n15
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table1
-PREHOOK: Input: default@table1@country=USA/state=CA
-PREHOOK: Input: default@table1@country=USA/state=TX
-PREHOOK: Output: default@table2
-POSTHOOK: query: INSERT INTO TABLE table2 SELECT * FROM table1
+PREHOOK: Input: default@table1_n15
+PREHOOK: Input: default@table1_n15@country=USA/state=CA
+PREHOOK: Input: default@table1_n15@country=USA/state=TX
+PREHOOK: Output: default@table2_n10
+POSTHOOK: query: INSERT INTO TABLE table2_n10 SELECT * FROM table1_n15
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table1
-POSTHOOK: Input: default@table1@country=USA/state=CA
-POSTHOOK: Input: default@table1@country=USA/state=TX
-POSTHOOK: Output: default@table2@country=USA/state=CA
-POSTHOOK: Output: default@table2@country=USA/state=TX
-POSTHOOK: Lineage: table2 PARTITION(country=USA,state=CA).age SIMPLE [(table1)table1.FieldSchema(name:age, type:int, comment:null), ]
-POSTHOOK: Lineage: table2 PARTITION(country=USA,state=CA).name SIMPLE [(table1)table1.FieldSchema(name:name, type:string, comment:null), ]
-POSTHOOK: Lineage: table2 PARTITION(country=USA,state=TX).age SIMPLE [(table1)table1.FieldSchema(name:age, type:int, comment:null), ]
-POSTHOOK: Lineage: table2 PARTITION(country=USA,state=TX).name SIMPLE [(table1)table1.FieldSchema(name:name, type:string, comment:null), ]
-PREHOOK: query: SHOW PARTITIONS table2
+POSTHOOK: Input: default@table1_n15
+POSTHOOK: Input: default@table1_n15@country=USA/state=CA
+POSTHOOK: Input: default@table1_n15@country=USA/state=TX
+POSTHOOK: Output: default@table2_n10@country=USA/state=CA
+POSTHOOK: Output: default@table2_n10@country=USA/state=TX
+POSTHOOK: Lineage: table2_n10 PARTITION(country=USA,state=CA).age SIMPLE [(table1_n15)table1_n15.FieldSchema(name:age, type:int, comment:null), ]
+POSTHOOK: Lineage: table2_n10 PARTITION(country=USA,state=CA).name SIMPLE [(table1_n15)table1_n15.FieldSchema(name:name, type:string, comment:null), ]
+POSTHOOK: Lineage: table2_n10 PARTITION(country=USA,state=TX).age SIMPLE [(table1_n15)table1_n15.FieldSchema(name:age, type:int, comment:null), ]
+POSTHOOK: Lineage: table2_n10 PARTITION(country=USA,state=TX).name SIMPLE [(table1_n15)table1_n15.FieldSchema(name:name, type:string, comment:null), ]
+PREHOOK: query: SHOW PARTITIONS table2_n10
 PREHOOK: type: SHOWPARTITIONS
-PREHOOK: Input: default@table2
-POSTHOOK: query: SHOW PARTITIONS table2
+PREHOOK: Input: default@table2_n10
+POSTHOOK: query: SHOW PARTITIONS table2_n10
 POSTHOOK: type: SHOWPARTITIONS
-POSTHOOK: Input: default@table2
+POSTHOOK: Input: default@table2_n10
 country=USA/state=CA
 country=USA/state=TX
-PREHOOK: query: SELECT * FROM table2
+PREHOOK: query: SELECT * FROM table2_n10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table2
-PREHOOK: Input: default@table2@country=USA/state=CA
-PREHOOK: Input: default@table2@country=USA/state=TX
+PREHOOK: Input: default@table2_n10
+PREHOOK: Input: default@table2_n10@country=USA/state=CA
+PREHOOK: Input: default@table2_n10@country=USA/state=TX
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM table2
+POSTHOOK: query: SELECT * FROM table2_n10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table2
-POSTHOOK: Input: default@table2@country=USA/state=CA
-POSTHOOK: Input: default@table2@country=USA/state=TX
+POSTHOOK: Input: default@table2_n10
+POSTHOOK: Input: default@table2_n10@country=USA/state=CA
+POSTHOOK: Input: default@table2_n10@country=USA/state=TX
 #### A masked pattern was here ####
 John Doe	23	USA	CA
 Jane Doe	22	USA	TX
-PREHOOK: query: DROP TABLE table2
+PREHOOK: query: DROP TABLE table2_n10
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@table2
-PREHOOK: Output: default@table2
-POSTHOOK: query: DROP TABLE table2
+PREHOOK: Input: default@table2_n10
+PREHOOK: Output: default@table2_n10
+POSTHOOK: query: DROP TABLE table2_n10
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@table2
-POSTHOOK: Output: default@table2
-PREHOOK: query: DROP TABLE table1
+POSTHOOK: Input: default@table2_n10
+POSTHOOK: Output: default@table2_n10
+PREHOOK: query: DROP TABLE table1_n15
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@table1
-PREHOOK: Output: default@table1
-POSTHOOK: query: DROP TABLE table1
+PREHOOK: Input: default@table1_n15
+PREHOOK: Output: default@table1_n15
+POSTHOOK: query: DROP TABLE table1_n15
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@table1
-POSTHOOK: Output: default@table1
-PREHOOK: query: CREATE TABLE dest1(key string) partitioned by (value string)
+POSTHOOK: Input: default@table1_n15
+POSTHOOK: Output: default@table1_n15
+PREHOOK: query: CREATE TABLE dest1_n143(key string) partitioned by (value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest1
-POSTHOOK: query: CREATE TABLE dest1(key string) partitioned by (value string)
+PREHOOK: Output: default@dest1_n143
+POSTHOOK: query: CREATE TABLE dest1_n143(key string) partitioned by (value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest1
-PREHOOK: query: CREATE TABLE dest2(key string) partitioned by (value string)
+POSTHOOK: Output: default@dest1_n143
+PREHOOK: query: CREATE TABLE dest2_n37(key string) partitioned by (value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest2
-POSTHOOK: query: CREATE TABLE dest2(key string) partitioned by (value string)
+PREHOOK: Output: default@dest2_n37
+POSTHOOK: query: CREATE TABLE dest2_n37(key string) partitioned by (value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest2
+POSTHOOK: Output: default@dest2_n37
 PREHOOK: query: FROM src
-INSERT OVERWRITE TABLE dest1 SELECT src.* WHERE src.key < 100
-INSERT OVERWRITE TABLE dest2 SELECT src.key, src.value WHERE src.key >= 100 and src.key < 200
+INSERT OVERWRITE TABLE dest1_n143 SELECT src.* WHERE src.key < 100
+INSERT OVERWRITE TABLE dest2_n37 SELECT src.key, src.value WHERE src.key >= 100 and src.key < 200
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@dest1
-PREHOOK: Output: default@dest2
+PREHOOK: Output: default@dest1_n143
+PREHOOK: Output: default@dest2_n37
 POSTHOOK: query: FROM src
-INSERT OVERWRITE TABLE dest1 SELECT src.* WHERE src.key < 100
-INSERT OVERWRITE TABLE dest2 SELECT src.key, src.value WHERE src.key >= 100 and src.key < 200
+INSERT OVERWRITE TABLE dest1_n143 SELECT src.* WHERE src.key < 100
+INSERT OVERWRITE TABLE dest2_n37 SELECT src.key, src.value WHERE src.key >= 100 and src.key < 200
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@dest1@value=val_0
-POSTHOOK: Output: default@dest1@value=val_10
-POSTHOOK: Output: default@dest1@value=val_11
-POSTHOOK: Output: default@dest1@value=val_12
-POSTHOOK: Output: default@dest1@value=val_15
-POSTHOOK: Output: default@dest1@value=val_17
-POSTHOOK: Output: default@dest1@value=val_18
-POSTHOOK: Output: default@dest1@value=val_19
-POSTHOOK: Output: default@dest1@value=val_2
-POSTHOOK: Output: default@dest1@value=val_20
-POSTHOOK: Output: default@dest1@value=val_24
-POSTHOOK: Output: default@dest1@value=val_26
-POSTHOOK: Output: default@dest1@value=val_27
-POSTHOOK: Output: default@dest1@value=val_28
-POSTHOOK: Output: default@dest1@value=val_30
-POSTHOOK: Output: default@dest1@value=val_33
-POSTHOOK: Output: default@dest1@value=val_34
-POSTHOOK: Output: default@dest1@value=val_35
-POSTHOOK: Output: default@dest1@value=val_37
-POSTHOOK: Output: default@dest1@value=val_4
-POSTHOOK: Output: default@dest1@value=val_41
-POSTHOOK: Output: default@dest1@value=val_42
-POSTHOOK: Output: default@dest1@value=val_43
-POSTHOOK: Output: default@dest1@value=val_44
-POSTHOOK: Output: default@dest1@value=val_47
-POSTHOOK: Output: default@dest1@value=val_5
-POSTHOOK: Output: default@dest1@value=val_51
-POSTHOOK: Output: default@dest1@value=val_53
-POSTHOOK: Output: default@dest1@value=val_54
-POSTHOOK: Output: default@dest1@value=val_57
-POSTHOOK: Output: default@dest1@value=val_58
-POSTHOOK: Output: default@dest1@value=val_64
-POSTHOOK: Output: default@dest1@value=val_65
-POSTHOOK: Output: default@dest1@value=val_66
-POSTHOOK: Output: default@dest1@value=val_67
-POSTHOOK: Output: default@dest1@value=val_69
-POSTHOOK: Output: default@dest1@value=val_70
-POSTHOOK: Output: default@dest1@value=val_72
-POSTHOOK: Output: default@dest1@value=val_74
-POSTHOOK: Output: default@dest1@value=val_76
-POSTHOOK: Output: default@dest1@value=val_77
-POSTHOOK: Output: default@dest1@value=val_78
-POSTHOOK: Output: default@dest1@value=val_8
-POSTHOOK: Output: default@dest1@value=val_80
-POSTHOOK: Output: default@dest1@value=val_82
-POSTHOOK: Output: default@dest1@value=val_83
-POSTHOOK: Output: default@dest1@value=val_84
-POSTHOOK: Output: default@dest1@value=val_85
-POSTHOOK: Output: default@dest1@value=val_86
-POSTHOOK: Output: default@dest1@value=val_87
-POSTHOOK: Output: default@dest1@value=val_9
-POSTHOOK: Output: default@dest1@value=val_90
-POSTHOOK: Output: default@dest1@value=val_92
-POSTHOOK: Output: default@dest1@value=val_95
-POSTHOOK: Output: default@dest1@value=val_96
-POSTHOOK: Output: default@dest1@value=val_97
-POSTHOOK: Output: default@dest1@value=val_98
-POSTHOOK: Output: default@dest2@value=val_100
-POSTHOOK: Output: default@dest2@value=val_103
-POSTHOOK: Output: default@dest2@value=val_104
-POSTHOOK: Output: default@dest2@value=val_105
-POSTHOOK: Output: default@dest2@value=val_111
-POSTHOOK: Output: default@dest2@value=val_113
-POSTHOOK: Output: default@dest2@value=val_114
-POSTHOOK: Output: default@dest2@value=val_116
-POSTHOOK: Output: default@dest2@value=val_118
-POSTHOOK: Output: default@dest2@value=val_119
-POSTHOOK: Output: default@dest2@value=val_120
-POSTHOOK: Output: default@dest2@value=val_125
-POSTHOOK: Output: default@dest2@value=val_126
-POSTHOOK: Output: default@dest2@value=val_128
-POSTHOOK: Output: default@dest2@value=val_129
-POSTHOOK: Output: default@dest2@value=val_131
-POSTHOOK: Output: default@dest2@value=val_133
-POSTHOOK: Output: default@dest2@value=val_134
-POSTHOOK: Output: default@dest2@value=val_136
-POSTHOOK: Output: default@dest2@value=val_137
-POSTHOOK: Output: default@dest2@value=val_138
-POSTHOOK: Output: default@dest2@value=val_143
-POSTHOOK: Output: default@dest2@value=val_145
-POSTHOOK: Output: default@dest2@value=val_146
-POSTHOOK: Output: default@dest2@value=val_149
-POSTHOOK: Output: default@dest2@value=val_150
-POSTHOOK: Output: default@dest2@value=val_152
-POSTHOOK: Output: default@dest2@value=val_153
-POSTHOOK: Output: default@dest2@value=val_155
-POSTHOOK: Output: default@dest2@value=val_156
-POSTHOOK: Output: default@dest2@value=val_157
-POSTHOOK: Output: default@dest2@value=val_158
-POSTHOOK: Output: default@dest2@value=val_160
-POSTHOOK: Output: default@dest2@value=val_162
-POSTHOOK: Output: default@dest2@value=val_163
-POSTHOOK: Output: default@dest2@value=val_164
-POSTHOOK: Output: default@dest2@value=val_165
-POSTHOOK: Output: default@dest2@value=val_166
-POSTHOOK: Output: default@dest2@value=val_167
-POSTHOOK: Output: default@dest2@value=val_168
-POSTHOOK: Output: default@dest2@value=val_169
-POSTHOOK: Output: default@dest2@value=val_170
-POSTHOOK: Output: default@dest2@value=val_172
-POSTHOOK: Output: default@dest2@value=val_174
-POSTHOOK: Output: default@dest2@value=val_175
-POSTHOOK: Output: default@dest2@value=val_176
-POSTHOOK: Output: default@dest2@value=val_177
-POSTHOOK: Output: default@dest2@value=val_178
-POSTHOOK: Output: default@dest2@value=val_179
-POSTHOOK: Output: default@dest2@value=val_180
-POSTHOOK: Output: default@dest2@value=val_181
-POSTHOOK: Output: default@dest2@value=val_183
-POSTHOOK: Output: default@dest2@value=val_186
-POSTHOOK: Output: default@dest2@value=val_187
-POSTHOOK: Output: default@dest2@value=val_189
-POSTHOOK: Output: default@dest2@value=val_190
-POSTHOOK: Output: default@dest2@value=val_191
-POSTHOOK: Output: default@dest2@value=val_192
-POSTHOOK: Output: default@dest2@value=val_193
-POSTHOOK: Output: default@dest2@value=val_194
-POSTHOOK: Output: default@dest2@value=val_195
-POSTHOOK: Output: default@dest2@value=val_196
-POSTHOOK: Output: default@dest2@value=val_197
-POSTHOOK: Output: default@dest2@value=val_199
-POSTHOOK: Lineage: dest1 PARTITION(value=val_0).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_10).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_12).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_15).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_17).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_18).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_19).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_20).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_24).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_26).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_27).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_28).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_30).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_33).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_34).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_35).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_37).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_41).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_42).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_43).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_44).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_47).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_4).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_51).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_53).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_54).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_57).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_58).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_5).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_64).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_65).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_66).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_67).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_69).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_70).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_72).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_74).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_76).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_77).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_78).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_80).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_82).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_83).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_84).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_85).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_86).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_87).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_8).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_90).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_92).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_95).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_96).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_97).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_98).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(value=val_9).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_103).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_104).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_105).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_111).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_113).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_114).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_116).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_118).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_119).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_120).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_125).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_126).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_128).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_129).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_131).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_133).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_134).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_136).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_137).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_138).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_143).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_145).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_146).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_149).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_150).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_152).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_153).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_155).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_156).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_157).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_158).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_160).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_162).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_163).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_164).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_165).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_166).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_167).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_168).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_169).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_170).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_172).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_174).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_175).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_176).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_177).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_178).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_179).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_180).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_181).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_183).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_186).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_187).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_189).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_190).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_191).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_192).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_193).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_194).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_195).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_196).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_197).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(value=val_199).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Output: default@dest1_n143@value=val_0
+POSTHOOK: Output: default@dest1_n143@value=val_10
+POSTHOOK: Output: default@dest1_n143@value=val_11
+POSTHOOK: Output: default@dest1_n143@value=val_12
+POSTHOOK: Output: default@dest1_n143@value=val_15
+POSTHOOK: Output: default@dest1_n143@value=val_17
+POSTHOOK: Output: default@dest1_n143@value=val_18
+POSTHOOK: Output: default@dest1_n143@value=val_19
+POSTHOOK: Output: default@dest1_n143@value=val_2
+POSTHOOK: Output: default@dest1_n143@value=val_20
+POSTHOOK: Output: default@dest1_n143@value=val_24
+POSTHOOK: Output: default@dest1_n143@value=val_26
+POSTHOOK: Output: default@dest1_n143@value=val_27
+POSTHOOK: Output: default@dest1_n143@value=val_28
+POSTHOOK: Output: default@dest1_n143@value=val_30
+POSTHOOK: Output: default@dest1_n143@value=val_33
+POSTHOOK: Output: default@dest1_n143@value=val_34
+POSTHOOK: Output: default@dest1_n143@value=val_35
+POSTHOOK: Output: default@dest1_n143@value=val_37
+POSTHOOK: Output: default@dest1_n143@value=val_4
+POSTHOOK: Output: default@dest1_n143@value=val_41
+POSTHOOK: Output: default@dest1_n143@value=val_42
+POSTHOOK: Output: default@dest1_n143@value=val_43
+POSTHOOK: Output: default@dest1_n143@value=val_44
+POSTHOOK: Output: default@dest1_n143@value=val_47
+POSTHOOK: Output: default@dest1_n143@value=val_5
+POSTHOOK: Output: default@dest1_n143@value=val_51
+POSTHOOK: Output: default@dest1_n143@value=val_53
+POSTHOOK: Output: default@dest1_n143@value=val_54
+POSTHOOK: Output: default@dest1_n143@value=val_57
+POSTHOOK: Output: default@dest1_n143@value=val_58
+POSTHOOK: Output: default@dest1_n143@value=val_64
+POSTHOOK: Output: default@dest1_n143@value=val_65
+POSTHOOK: Output: default@dest1_n143@value=val_66
+POSTHOOK: Output: default@dest1_n143@value=val_67
+POSTHOOK: Output: default@dest1_n143@value=val_69
+POSTHOOK: Output: default@dest1_n143@value=val_70
+POSTHOOK: Output: default@dest1_n143@value=val_72
+POSTHOOK: Output: default@dest1_n143@value=val_74
+POSTHOOK: Output: default@dest1_n143@value=val_76
+POSTHOOK: Output: default@dest1_n143@value=val_77
+POSTHOOK: Output: default@dest1_n143@value=val_78
+POSTHOOK: Output: default@dest1_n143@value=val_8
+POSTHOOK: Output: default@dest1_n143@value=val_80
+POSTHOOK: Output: default@dest1_n143@value=val_82
+POSTHOOK: Output: default@dest1_n143@value=val_83
+POSTHOOK: Output: default@dest1_n143@value=val_84
+POSTHOOK: Output: default@dest1_n143@value=val_85
+POSTHOOK: Output: default@dest1_n143@value=val_86
+POSTHOOK: Output: default@dest1_n143@value=val_87
+POSTHOOK: Output: default@dest1_n143@value=val_9
+POSTHOOK: Output: default@dest1_n143@value=val_90
+POSTHOOK: Output: default@dest1_n143@value=val_92
+POSTHOOK: Output: default@dest1_n143@value=val_95
+POSTHOOK: Output: default@dest1_n143@value=val_96
+POSTHOOK: Output: default@dest1_n143@value=val_97
+POSTHOOK: Output: default@dest1_n143@value=val_98
+POSTHOOK: Output: default@dest2_n37@value=val_100
+POSTHOOK: Output: default@dest2_n37@value=val_103
+POSTHOOK: Output: default@dest2_n37@value=val_104
+POSTHOOK: Output: default@dest2_n37@value=val_105
+POSTHOOK: Output: default@dest2_n37@value=val_111
+POSTHOOK: Output: default@dest2_n37@value=val_113
+POSTHOOK: Output: default@dest2_n37@value=val_114
+POSTHOOK: Output: default@dest2_n37@value=val_116
+POSTHOOK: Output: default@dest2_n37@value=val_118
+POSTHOOK: Output: default@dest2_n37@value=val_119
+POSTHOOK: Output: default@dest2_n37@value=val_120
+POSTHOOK: Output: default@dest2_n37@value=val_125
+POSTHOOK: Output: default@dest2_n37@value=val_126
+POSTHOOK: Output: default@dest2_n37@value=val_128
+POSTHOOK: Output: default@dest2_n37@value=val_129
+POSTHOOK: Output: default@dest2_n37@value=val_131
+POSTHOOK: Output: default@dest2_n37@value=val_133
+POSTHOOK: Output: default@dest2_n37@value=val_134
+POSTHOOK: Output: default@dest2_n37@value=val_136
+POSTHOOK: Output: default@dest2_n37@value=val_137
+POSTHOOK: Output: default@dest2_n37@value=val_138
+POSTHOOK: Output: default@dest2_n37@value=val_143
+POSTHOOK: Output: default@dest2_n37@value=val_145
+POSTHOOK: Output: default@dest2_n37@value=val_146
+POSTHOOK: Output: default@dest2_n37@value=val_149
+POSTHOOK: Output: default@dest2_n37@value=val_150
+POSTHOOK: Output: default@dest2_n37@value=val_152
+POSTHOOK: Output: default@dest2_n37@value=val_153
+POSTHOOK: Output: default@dest2_n37@value=val_155
+POSTHOOK: Output: default@dest2_n37@value=val_156
+POSTHOOK: Output: default@dest2_n37@value=val_157
+POSTHOOK: Output: default@dest2_n37@value=val_158
+POSTHOOK: Output: default@dest2_n37@value=val_160
+POSTHOOK: Output: default@dest2_n37@value=val_162
+POSTHOOK: Output: default@dest2_n37@value=val_163
+POSTHOOK: Output: default@dest2_n37@value=val_164
+POSTHOOK: Output: default@dest2_n37@value=val_165
+POSTHOOK: Output: default@dest2_n37@value=val_166
+POSTHOOK: Output: default@dest2_n37@value=val_167
+POSTHOOK: Output: default@dest2_n37@value=val_168
+POSTHOOK: Output: default@dest2_n37@value=val_169
+POSTHOOK: Output: default@dest2_n37@value=val_170
+POSTHOOK: Output: default@dest2_n37@value=val_172
+POSTHOOK: Output: default@dest2_n37@value=val_174
+POSTHOOK: Output: default@dest2_n37@value=val_175
+POSTHOOK: Output: default@dest2_n37@value=val_176
+POSTHOOK: Output: default@dest2_n37@value=val_177
+POSTHOOK: Output: default@dest2_n37@value=val_178
+POSTHOOK: Output: default@dest2_n37@value=val_179
+POSTHOOK: Output: default@dest2_n37@value=val_180
+POSTHOOK: Output: default@dest2_n37@value=val_181
+POSTHOOK: Output: default@dest2_n37@value=val_183
+POSTHOOK: Output: default@dest2_n37@value=val_186
+POSTHOOK: Output: default@dest2_n37@value=val_187
+POSTHOOK: Output: default@dest2_n37@value=val_189
+POSTHOOK: Output: default@dest2_n37@value=val_190
+POSTHOOK: Output: default@dest2_n37@value=val_191
+POSTHOOK: Output: default@dest2_n37@value=val_192
+POSTHOOK: Output: default@dest2_n37@value=val_193
+POSTHOOK: Output: default@dest2_n37@value=val_194
+POSTHOOK: Output: default@dest2_n37@value=val_195
+POSTHOOK: Output: default@dest2_n37@value=val_196
+POSTHOOK: Output: default@dest2_n37@value=val_197
+POSTHOOK: Output: default@dest2_n37@value=val_199
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_0).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_10).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_12).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_15).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_17).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_18).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_19).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_20).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_24).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_26).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_27).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_28).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_30).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_33).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_34).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_35).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_37).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_41).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_42).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_43).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_44).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_47).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_4).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_51).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_53).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_54).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_57).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_58).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_5).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_64).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_65).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_66).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_67).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_69).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_70).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_72).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_74).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_76).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_77).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_78).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_80).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_82).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_83).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_84).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_85).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_86).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_87).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_8).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_90).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_92).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_95).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_96).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_97).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_98).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n143 PARTITION(value=val_9).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_103).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_104).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_105).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_111).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_113).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_114).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_116).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_118).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_119).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_120).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_125).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_126).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_128).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_129).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_131).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_133).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_134).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_136).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_137).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_138).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_143).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_145).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_146).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_149).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_150).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_152).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_153).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_155).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_156).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_157).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_158).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_160).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_162).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_163).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_164).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_165).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_166).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_167).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_168).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_169).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_170).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_172).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_174).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_175).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_176).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_177).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_178).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_179).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_180).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_181).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_183).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_186).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_187).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_189).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_190).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_191).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_192).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_193).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_194).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_195).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_196).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_197).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n37 PARTITION(value=val_199).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: SELECT distinct value FROM SRC WHERE src.key < 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -721,12 +721,12 @@ val_95
 val_96
 val_97
 val_98
-PREHOOK: query: SHOW PARTITIONS dest1
+PREHOOK: query: SHOW PARTITIONS dest1_n143
 PREHOOK: type: SHOWPARTITIONS
-PREHOOK: Input: default@dest1
-POSTHOOK: query: SHOW PARTITIONS dest1
+PREHOOK: Input: default@dest1_n143
+POSTHOOK: query: SHOW PARTITIONS dest1_n143
 POSTHOOK: type: SHOWPARTITIONS
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n143
 value=val_0
 value=val_10
 value=val_11
@@ -856,12 +856,12 @@ val_195
 val_196
 val_197
 val_199
-PREHOOK: query: SHOW PARTITIONS dest2
+PREHOOK: query: SHOW PARTITIONS dest2_n37
 PREHOOK: type: SHOWPARTITIONS
-PREHOOK: Input: default@dest2
-POSTHOOK: query: SHOW PARTITIONS dest2
+PREHOOK: Input: default@dest2_n37
+POSTHOOK: query: SHOW PARTITIONS dest2_n37
 POSTHOOK: type: SHOWPARTITIONS
-POSTHOOK: Input: default@dest2
+POSTHOOK: Input: default@dest2_n37
 value=val_100
 value=val_103
 value=val_104
@@ -926,19 +926,19 @@ value=val_195
 value=val_196
 value=val_197
 value=val_199
-PREHOOK: query: DROP TABLE dest1
+PREHOOK: query: DROP TABLE dest1_n143
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@dest1
-PREHOOK: Output: default@dest1
-POSTHOOK: query: DROP TABLE dest1
+PREHOOK: Input: default@dest1_n143
+PREHOOK: Output: default@dest1_n143
+POSTHOOK: query: DROP TABLE dest1_n143
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@dest1
-POSTHOOK: Output: default@dest1
-PREHOOK: query: DROP TABLE dest2
+POSTHOOK: Input: default@dest1_n143
+POSTHOOK: Output: default@dest1_n143
+PREHOOK: query: DROP TABLE dest2_n37
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@dest2
-PREHOOK: Output: default@dest2
-POSTHOOK: query: DROP TABLE dest2
+PREHOOK: Input: default@dest2_n37
+PREHOOK: Output: default@dest2_n37
+POSTHOOK: query: DROP TABLE dest2_n37
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@dest2
-POSTHOOK: Output: default@dest2
+POSTHOOK: Input: default@dest2_n37
+POSTHOOK: Output: default@dest2_n37

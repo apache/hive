@@ -20,31 +20,31 @@ POSTHOOK: query: ALTER TABLE test_orc SET SERDEPROPERTIES ('orc.row.index.stride
 POSTHOOK: type: ALTERTABLE_SERDEPROPERTIES
 POSTHOOK: Input: default@test_orc
 POSTHOOK: Output: default@test_orc
-PREHOOK: query: CREATE TABLE src_null(a STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE src_null_n0(a STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src_null
-POSTHOOK: query: CREATE TABLE src_null(a STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@src_null_n0
+POSTHOOK: query: CREATE TABLE src_null_n0(a STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src_null
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/nulls.txt' INTO TABLE src_null
+POSTHOOK: Output: default@src_null_n0
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/nulls.txt' INTO TABLE src_null_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@src_null
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/nulls.txt' INTO TABLE src_null
+PREHOOK: Output: default@src_null_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/nulls.txt' INTO TABLE src_null_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@src_null
-PREHOOK: query: INSERT OVERWRITE TABLE test_orc SELECT a FROM src_null
+POSTHOOK: Output: default@src_null_n0
+PREHOOK: query: INSERT OVERWRITE TABLE test_orc SELECT a FROM src_null_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_null
+PREHOOK: Input: default@src_null_n0
 PREHOOK: Output: default@test_orc
-POSTHOOK: query: INSERT OVERWRITE TABLE test_orc SELECT a FROM src_null
+POSTHOOK: query: INSERT OVERWRITE TABLE test_orc SELECT a FROM src_null_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_null
+POSTHOOK: Input: default@src_null_n0
 POSTHOOK: Output: default@test_orc
-POSTHOOK: Lineage: test_orc.key SIMPLE [(src_null)src_null.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: test_orc.key SIMPLE [(src_null_n0)src_null_n0.FieldSchema(name:a, type:string, comment:null), ]
 PREHOOK: query: SELECT * FROM test_orc LIMIT 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_orc

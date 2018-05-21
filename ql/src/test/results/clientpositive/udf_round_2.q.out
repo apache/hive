@@ -1,47 +1,47 @@
-PREHOOK: query: create table tstTbl1(n double)
+PREHOOK: query: create table tstTbl1_n0(n double)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tstTbl1
-POSTHOOK: query: create table tstTbl1(n double)
+PREHOOK: Output: default@tstTbl1_n0
+POSTHOOK: query: create table tstTbl1_n0(n double)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tstTbl1
-PREHOOK: query: insert overwrite table tstTbl1
+POSTHOOK: Output: default@tstTbl1_n0
+PREHOOK: query: insert overwrite table tstTbl1_n0
 select 'NaN' from src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@tsttbl1
-POSTHOOK: query: insert overwrite table tstTbl1
+PREHOOK: Output: default@tsttbl1_n0
+POSTHOOK: query: insert overwrite table tstTbl1_n0
 select 'NaN' from src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@tsttbl1
-POSTHOOK: Lineage: tsttbl1.n EXPRESSION []
-PREHOOK: query: select * from tstTbl1
+POSTHOOK: Output: default@tsttbl1_n0
+POSTHOOK: Lineage: tsttbl1_n0.n EXPRESSION []
+PREHOOK: query: select * from tstTbl1_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tsttbl1
+PREHOOK: Input: default@tsttbl1_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from tstTbl1
+POSTHOOK: query: select * from tstTbl1_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tsttbl1
+POSTHOOK: Input: default@tsttbl1_n0
 #### A masked pattern was here ####
 NaN
-PREHOOK: query: select round(n, 1) from tstTbl1
+PREHOOK: query: select round(n, 1) from tstTbl1_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tsttbl1
+PREHOOK: Input: default@tsttbl1_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select round(n, 1) from tstTbl1
+POSTHOOK: query: select round(n, 1) from tstTbl1_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tsttbl1
+POSTHOOK: Input: default@tsttbl1_n0
 #### A masked pattern was here ####
 NaN
-PREHOOK: query: select round(n) from tstTbl1
+PREHOOK: query: select round(n) from tstTbl1_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tsttbl1
+PREHOOK: Input: default@tsttbl1_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select round(n) from tstTbl1
+POSTHOOK: query: select round(n) from tstTbl1_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tsttbl1
+POSTHOOK: Input: default@tsttbl1_n0
 #### A masked pattern was here ####
 NaN
 PREHOOK: query: select round(1/0), round(1/0, 2), round(1.0/0.0), round(1.0/0.0, 2) from src tablesample (1 rows)

@@ -1,30 +1,30 @@
-PREHOOK: query: create table orc_merge5 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc
+PREHOOK: query: create table orc_merge5_n2 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@orc_merge5
-POSTHOOK: query: create table orc_merge5 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc
+PREHOOK: Output: default@orc_merge5_n2
+POSTHOOK: query: create table orc_merge5_n2 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@orc_merge5
-PREHOOK: query: create table orc_merge5a (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) partitioned by (st double) stored as orc
+POSTHOOK: Output: default@orc_merge5_n2
+PREHOOK: query: create table orc_merge5a_n0 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) partitioned by (st double) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@orc_merge5a
-POSTHOOK: query: create table orc_merge5a (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) partitioned by (st double) stored as orc
+PREHOOK: Output: default@orc_merge5a_n0
+POSTHOOK: query: create table orc_merge5a_n0 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) partitioned by (st double) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@orc_merge5a
-PREHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' into table orc_merge5
+POSTHOOK: Output: default@orc_merge5a_n0
+PREHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' into table orc_merge5_n2
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@orc_merge5
-POSTHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' into table orc_merge5
+PREHOOK: Output: default@orc_merge5_n2
+POSTHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' into table orc_merge5_n2
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@orc_merge5
-PREHOOK: query: explain insert overwrite table orc_merge5a partition (st) select userid,string1,subtype,decimal1,ts,subtype from orc_merge5
+POSTHOOK: Output: default@orc_merge5_n2
+PREHOOK: query: explain insert overwrite table orc_merge5a_n0 partition (st) select userid,string1,subtype,decimal1,ts,subtype from orc_merge5_n2
 PREHOOK: type: QUERY
-POSTHOOK: query: explain insert overwrite table orc_merge5a partition (st) select userid,string1,subtype,decimal1,ts,subtype from orc_merge5
+POSTHOOK: query: explain insert overwrite table orc_merge5a_n0 partition (st) select userid,string1,subtype,decimal1,ts,subtype from orc_merge5_n2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -43,7 +43,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: orc_merge5
+                  alias: orc_merge5_n2
                   Statistics: Num rows: 1 Data size: 352 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: userid (type: bigint), string1 (type: string), subtype (type: double), decimal1 (type: decimal(10,0)), ts (type: timestamp), subtype (type: double)
@@ -56,7 +56,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                           output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                           serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                          name: default.orc_merge5a
+                          name: default.orc_merge5a_n0
                     Select Operator
                       expressions: _col0 (type: bigint), _col1 (type: string), _col2 (type: double), _col3 (type: decimal(10,0)), _col4 (type: timestamp), _col5 (type: double)
                       outputColumnNames: userid, string1, subtype, decimal1, ts, st
@@ -109,7 +109,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.orc_merge5a
+              name: default.orc_merge5a_n0
 
   Stage: Stage-3
     Stats Work
@@ -117,126 +117,126 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: userid, string1, subtype, decimal1, ts
           Column Types: bigint, string, double, decimal(10,0), timestamp
-          Table: default.orc_merge5a
+          Table: default.orc_merge5a_n0
 
-PREHOOK: query: insert overwrite table orc_merge5a partition (st) select userid,string1,subtype,decimal1,ts,subtype from orc_merge5
+PREHOOK: query: insert overwrite table orc_merge5a_n0 partition (st) select userid,string1,subtype,decimal1,ts,subtype from orc_merge5_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5
-PREHOOK: Output: default@orc_merge5a
-POSTHOOK: query: insert overwrite table orc_merge5a partition (st) select userid,string1,subtype,decimal1,ts,subtype from orc_merge5
+PREHOOK: Input: default@orc_merge5_n2
+PREHOOK: Output: default@orc_merge5a_n0
+POSTHOOK: query: insert overwrite table orc_merge5a_n0 partition (st) select userid,string1,subtype,decimal1,ts,subtype from orc_merge5_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5
-POSTHOOK: Output: default@orc_merge5a@st=0.8
-POSTHOOK: Output: default@orc_merge5a@st=1.8
-POSTHOOK: Output: default@orc_merge5a@st=8.0
-POSTHOOK: Output: default@orc_merge5a@st=80.0
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=0.8).decimal1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=0.8).string1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=0.8).subtype SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:subtype, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=0.8).ts SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:ts, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=0.8).userid SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:userid, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=1.8).decimal1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=1.8).string1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=1.8).subtype SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:subtype, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=1.8).ts SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:ts, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=1.8).userid SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:userid, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=8.0).decimal1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=8.0).string1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=8.0).subtype SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:subtype, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=8.0).ts SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:ts, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=8.0).userid SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:userid, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=80.0).decimal1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=80.0).string1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=80.0).subtype SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:subtype, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=80.0).ts SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:ts, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=80.0).userid SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:userid, type:bigint, comment:null), ]
-PREHOOK: query: insert overwrite table orc_merge5a partition (st) select userid,string1,subtype,decimal1,ts,subtype from orc_merge5
+POSTHOOK: Input: default@orc_merge5_n2
+POSTHOOK: Output: default@orc_merge5a_n0@st=0.8
+POSTHOOK: Output: default@orc_merge5a_n0@st=1.8
+POSTHOOK: Output: default@orc_merge5a_n0@st=8.0
+POSTHOOK: Output: default@orc_merge5a_n0@st=80.0
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=0.8).decimal1 SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=0.8).string1 SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=0.8).subtype SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:subtype, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=0.8).ts SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=0.8).userid SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:userid, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=1.8).decimal1 SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=1.8).string1 SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=1.8).subtype SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:subtype, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=1.8).ts SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=1.8).userid SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:userid, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=8.0).decimal1 SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=8.0).string1 SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=8.0).subtype SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:subtype, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=8.0).ts SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=8.0).userid SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:userid, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=80.0).decimal1 SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=80.0).string1 SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=80.0).subtype SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:subtype, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=80.0).ts SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=80.0).userid SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:userid, type:bigint, comment:null), ]
+PREHOOK: query: insert overwrite table orc_merge5a_n0 partition (st) select userid,string1,subtype,decimal1,ts,subtype from orc_merge5_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5
-PREHOOK: Output: default@orc_merge5a
-POSTHOOK: query: insert overwrite table orc_merge5a partition (st) select userid,string1,subtype,decimal1,ts,subtype from orc_merge5
+PREHOOK: Input: default@orc_merge5_n2
+PREHOOK: Output: default@orc_merge5a_n0
+POSTHOOK: query: insert overwrite table orc_merge5a_n0 partition (st) select userid,string1,subtype,decimal1,ts,subtype from orc_merge5_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5
-POSTHOOK: Output: default@orc_merge5a@st=0.8
-POSTHOOK: Output: default@orc_merge5a@st=1.8
-POSTHOOK: Output: default@orc_merge5a@st=8.0
-POSTHOOK: Output: default@orc_merge5a@st=80.0
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=0.8).decimal1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=0.8).string1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=0.8).subtype SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:subtype, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=0.8).ts SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:ts, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=0.8).userid SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:userid, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=1.8).decimal1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=1.8).string1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=1.8).subtype SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:subtype, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=1.8).ts SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:ts, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=1.8).userid SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:userid, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=8.0).decimal1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=8.0).string1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=8.0).subtype SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:subtype, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=8.0).ts SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:ts, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=8.0).userid SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:userid, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=80.0).decimal1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=80.0).string1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=80.0).subtype SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:subtype, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=80.0).ts SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:ts, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=80.0).userid SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:userid, type:bigint, comment:null), ]
-PREHOOK: query: analyze table orc_merge5a partition(st=80.0) compute statistics noscan
+POSTHOOK: Input: default@orc_merge5_n2
+POSTHOOK: Output: default@orc_merge5a_n0@st=0.8
+POSTHOOK: Output: default@orc_merge5a_n0@st=1.8
+POSTHOOK: Output: default@orc_merge5a_n0@st=8.0
+POSTHOOK: Output: default@orc_merge5a_n0@st=80.0
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=0.8).decimal1 SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=0.8).string1 SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=0.8).subtype SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:subtype, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=0.8).ts SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=0.8).userid SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:userid, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=1.8).decimal1 SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=1.8).string1 SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=1.8).subtype SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:subtype, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=1.8).ts SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=1.8).userid SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:userid, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=8.0).decimal1 SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=8.0).string1 SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=8.0).subtype SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:subtype, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=8.0).ts SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=8.0).userid SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:userid, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=80.0).decimal1 SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=80.0).string1 SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=80.0).subtype SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:subtype, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=80.0).ts SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=80.0).userid SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:userid, type:bigint, comment:null), ]
+PREHOOK: query: analyze table orc_merge5a_n0 partition(st=80.0) compute statistics noscan
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5a
-PREHOOK: Output: default@orc_merge5a
-PREHOOK: Output: default@orc_merge5a@st=80.0
-POSTHOOK: query: analyze table orc_merge5a partition(st=80.0) compute statistics noscan
+PREHOOK: Input: default@orc_merge5a_n0
+PREHOOK: Output: default@orc_merge5a_n0
+PREHOOK: Output: default@orc_merge5a_n0@st=80.0
+POSTHOOK: query: analyze table orc_merge5a_n0 partition(st=80.0) compute statistics noscan
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5a
-POSTHOOK: Output: default@orc_merge5a
-POSTHOOK: Output: default@orc_merge5a@st=80.0
-PREHOOK: query: analyze table orc_merge5a partition(st=0.8) compute statistics noscan
+POSTHOOK: Input: default@orc_merge5a_n0
+POSTHOOK: Output: default@orc_merge5a_n0
+POSTHOOK: Output: default@orc_merge5a_n0@st=80.0
+PREHOOK: query: analyze table orc_merge5a_n0 partition(st=0.8) compute statistics noscan
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5a
-PREHOOK: Output: default@orc_merge5a
-PREHOOK: Output: default@orc_merge5a@st=0.8
-POSTHOOK: query: analyze table orc_merge5a partition(st=0.8) compute statistics noscan
+PREHOOK: Input: default@orc_merge5a_n0
+PREHOOK: Output: default@orc_merge5a_n0
+PREHOOK: Output: default@orc_merge5a_n0@st=0.8
+POSTHOOK: query: analyze table orc_merge5a_n0 partition(st=0.8) compute statistics noscan
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5a
-POSTHOOK: Output: default@orc_merge5a
-POSTHOOK: Output: default@orc_merge5a@st=0.8
+POSTHOOK: Input: default@orc_merge5a_n0
+POSTHOOK: Output: default@orc_merge5a_n0
+POSTHOOK: Output: default@orc_merge5a_n0@st=0.8
 Found 1 items
 #### A masked pattern was here ####
 Found 2 items
 #### A masked pattern was here ####
-PREHOOK: query: show partitions orc_merge5a
+PREHOOK: query: show partitions orc_merge5a_n0
 PREHOOK: type: SHOWPARTITIONS
-PREHOOK: Input: default@orc_merge5a
-POSTHOOK: query: show partitions orc_merge5a
+PREHOOK: Input: default@orc_merge5a_n0
+POSTHOOK: query: show partitions orc_merge5a_n0
 POSTHOOK: type: SHOWPARTITIONS
-POSTHOOK: Input: default@orc_merge5a
+POSTHOOK: Input: default@orc_merge5a_n0
 st=0.8
 st=1.8
 st=8.0
 st=80.0
-PREHOOK: query: select * from orc_merge5a where userid<=13
+PREHOOK: query: select * from orc_merge5a_n0 where userid<=13
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5a
-PREHOOK: Input: default@orc_merge5a@st=0.8
-PREHOOK: Input: default@orc_merge5a@st=1.8
-PREHOOK: Input: default@orc_merge5a@st=8.0
-PREHOOK: Input: default@orc_merge5a@st=80.0
+PREHOOK: Input: default@orc_merge5a_n0
+PREHOOK: Input: default@orc_merge5a_n0@st=0.8
+PREHOOK: Input: default@orc_merge5a_n0@st=1.8
+PREHOOK: Input: default@orc_merge5a_n0@st=8.0
+PREHOOK: Input: default@orc_merge5a_n0@st=80.0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from orc_merge5a where userid<=13
+POSTHOOK: query: select * from orc_merge5a_n0 where userid<=13
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5a
-POSTHOOK: Input: default@orc_merge5a@st=0.8
-POSTHOOK: Input: default@orc_merge5a@st=1.8
-POSTHOOK: Input: default@orc_merge5a@st=8.0
-POSTHOOK: Input: default@orc_merge5a@st=80.0
+POSTHOOK: Input: default@orc_merge5a_n0
+POSTHOOK: Input: default@orc_merge5a_n0@st=0.8
+POSTHOOK: Input: default@orc_merge5a_n0@st=1.8
+POSTHOOK: Input: default@orc_merge5a_n0@st=8.0
+POSTHOOK: Input: default@orc_merge5a_n0@st=80.0
 #### A masked pattern was here ####
 13	bar	80.0	2	1969-12-31 16:00:05	80.0
 2	foo	0.8	1	1969-12-31 16:00:00	0.8
 5	eat	0.8	6	1969-12-31 16:00:20	0.8
-PREHOOK: query: explain insert overwrite table orc_merge5a partition (st) select userid,string1,subtype,decimal1,ts,subtype from orc_merge5
+PREHOOK: query: explain insert overwrite table orc_merge5a_n0 partition (st) select userid,string1,subtype,decimal1,ts,subtype from orc_merge5_n2
 PREHOOK: type: QUERY
-POSTHOOK: query: explain insert overwrite table orc_merge5a partition (st) select userid,string1,subtype,decimal1,ts,subtype from orc_merge5
+POSTHOOK: query: explain insert overwrite table orc_merge5a_n0 partition (st) select userid,string1,subtype,decimal1,ts,subtype from orc_merge5_n2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -260,7 +260,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: orc_merge5
+                  alias: orc_merge5_n2
                   Statistics: Num rows: 1 Data size: 352 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: userid (type: bigint), string1 (type: string), subtype (type: double), decimal1 (type: decimal(10,0)), ts (type: timestamp), subtype (type: double)
@@ -273,7 +273,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                           output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                           serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                          name: default.orc_merge5a
+                          name: default.orc_merge5a_n0
                     Select Operator
                       expressions: _col0 (type: bigint), _col1 (type: string), _col2 (type: double), _col3 (type: decimal(10,0)), _col4 (type: timestamp), _col5 (type: double)
                       outputColumnNames: userid, string1, subtype, decimal1, ts, st
@@ -335,7 +335,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.orc_merge5a
+              name: default.orc_merge5a_n0
 
   Stage: Stage-3
     Stats Work
@@ -343,7 +343,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: userid, string1, subtype, decimal1, ts
           Column Types: bigint, string, double, decimal(10,0), timestamp
-          Table: default.orc_merge5a
+          Table: default.orc_merge5a_n0
 
   Stage: Stage-4
     Tez
@@ -373,239 +373,239 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-PREHOOK: query: insert overwrite table orc_merge5a partition (st) select userid,string1,subtype,decimal1,ts,subtype from orc_merge5
+PREHOOK: query: insert overwrite table orc_merge5a_n0 partition (st) select userid,string1,subtype,decimal1,ts,subtype from orc_merge5_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5
-PREHOOK: Output: default@orc_merge5a
-POSTHOOK: query: insert overwrite table orc_merge5a partition (st) select userid,string1,subtype,decimal1,ts,subtype from orc_merge5
+PREHOOK: Input: default@orc_merge5_n2
+PREHOOK: Output: default@orc_merge5a_n0
+POSTHOOK: query: insert overwrite table orc_merge5a_n0 partition (st) select userid,string1,subtype,decimal1,ts,subtype from orc_merge5_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5
-POSTHOOK: Output: default@orc_merge5a@st=0.8
-POSTHOOK: Output: default@orc_merge5a@st=1.8
-POSTHOOK: Output: default@orc_merge5a@st=8.0
-POSTHOOK: Output: default@orc_merge5a@st=80.0
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=0.8).decimal1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=0.8).string1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=0.8).subtype SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:subtype, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=0.8).ts SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:ts, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=0.8).userid SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:userid, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=1.8).decimal1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=1.8).string1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=1.8).subtype SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:subtype, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=1.8).ts SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:ts, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=1.8).userid SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:userid, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=8.0).decimal1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=8.0).string1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=8.0).subtype SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:subtype, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=8.0).ts SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:ts, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=8.0).userid SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:userid, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=80.0).decimal1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=80.0).string1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=80.0).subtype SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:subtype, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=80.0).ts SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:ts, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=80.0).userid SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:userid, type:bigint, comment:null), ]
-PREHOOK: query: insert overwrite table orc_merge5a partition (st) select userid,string1,subtype,decimal1,ts,subtype from orc_merge5
+POSTHOOK: Input: default@orc_merge5_n2
+POSTHOOK: Output: default@orc_merge5a_n0@st=0.8
+POSTHOOK: Output: default@orc_merge5a_n0@st=1.8
+POSTHOOK: Output: default@orc_merge5a_n0@st=8.0
+POSTHOOK: Output: default@orc_merge5a_n0@st=80.0
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=0.8).decimal1 SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=0.8).string1 SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=0.8).subtype SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:subtype, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=0.8).ts SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=0.8).userid SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:userid, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=1.8).decimal1 SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=1.8).string1 SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=1.8).subtype SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:subtype, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=1.8).ts SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=1.8).userid SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:userid, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=8.0).decimal1 SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=8.0).string1 SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=8.0).subtype SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:subtype, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=8.0).ts SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=8.0).userid SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:userid, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=80.0).decimal1 SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=80.0).string1 SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=80.0).subtype SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:subtype, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=80.0).ts SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=80.0).userid SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:userid, type:bigint, comment:null), ]
+PREHOOK: query: insert overwrite table orc_merge5a_n0 partition (st) select userid,string1,subtype,decimal1,ts,subtype from orc_merge5_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5
-PREHOOK: Output: default@orc_merge5a
-POSTHOOK: query: insert overwrite table orc_merge5a partition (st) select userid,string1,subtype,decimal1,ts,subtype from orc_merge5
+PREHOOK: Input: default@orc_merge5_n2
+PREHOOK: Output: default@orc_merge5a_n0
+POSTHOOK: query: insert overwrite table orc_merge5a_n0 partition (st) select userid,string1,subtype,decimal1,ts,subtype from orc_merge5_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5
-POSTHOOK: Output: default@orc_merge5a@st=0.8
-POSTHOOK: Output: default@orc_merge5a@st=1.8
-POSTHOOK: Output: default@orc_merge5a@st=8.0
-POSTHOOK: Output: default@orc_merge5a@st=80.0
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=0.8).decimal1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=0.8).string1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=0.8).subtype SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:subtype, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=0.8).ts SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:ts, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=0.8).userid SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:userid, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=1.8).decimal1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=1.8).string1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=1.8).subtype SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:subtype, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=1.8).ts SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:ts, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=1.8).userid SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:userid, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=8.0).decimal1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=8.0).string1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=8.0).subtype SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:subtype, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=8.0).ts SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:ts, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=8.0).userid SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:userid, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=80.0).decimal1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=80.0).string1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=80.0).subtype SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:subtype, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=80.0).ts SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:ts, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=80.0).userid SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:userid, type:bigint, comment:null), ]
-PREHOOK: query: analyze table orc_merge5a partition(st=80.0) compute statistics noscan
+POSTHOOK: Input: default@orc_merge5_n2
+POSTHOOK: Output: default@orc_merge5a_n0@st=0.8
+POSTHOOK: Output: default@orc_merge5a_n0@st=1.8
+POSTHOOK: Output: default@orc_merge5a_n0@st=8.0
+POSTHOOK: Output: default@orc_merge5a_n0@st=80.0
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=0.8).decimal1 SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=0.8).string1 SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=0.8).subtype SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:subtype, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=0.8).ts SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=0.8).userid SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:userid, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=1.8).decimal1 SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=1.8).string1 SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=1.8).subtype SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:subtype, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=1.8).ts SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=1.8).userid SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:userid, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=8.0).decimal1 SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=8.0).string1 SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=8.0).subtype SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:subtype, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=8.0).ts SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=8.0).userid SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:userid, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=80.0).decimal1 SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=80.0).string1 SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=80.0).subtype SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:subtype, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=80.0).ts SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=80.0).userid SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:userid, type:bigint, comment:null), ]
+PREHOOK: query: analyze table orc_merge5a_n0 partition(st=80.0) compute statistics noscan
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5a
-PREHOOK: Output: default@orc_merge5a
-PREHOOK: Output: default@orc_merge5a@st=80.0
-POSTHOOK: query: analyze table orc_merge5a partition(st=80.0) compute statistics noscan
+PREHOOK: Input: default@orc_merge5a_n0
+PREHOOK: Output: default@orc_merge5a_n0
+PREHOOK: Output: default@orc_merge5a_n0@st=80.0
+POSTHOOK: query: analyze table orc_merge5a_n0 partition(st=80.0) compute statistics noscan
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5a
-POSTHOOK: Output: default@orc_merge5a
-POSTHOOK: Output: default@orc_merge5a@st=80.0
-PREHOOK: query: analyze table orc_merge5a partition(st=0.8) compute statistics noscan
+POSTHOOK: Input: default@orc_merge5a_n0
+POSTHOOK: Output: default@orc_merge5a_n0
+POSTHOOK: Output: default@orc_merge5a_n0@st=80.0
+PREHOOK: query: analyze table orc_merge5a_n0 partition(st=0.8) compute statistics noscan
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5a
-PREHOOK: Output: default@orc_merge5a
-PREHOOK: Output: default@orc_merge5a@st=0.8
-POSTHOOK: query: analyze table orc_merge5a partition(st=0.8) compute statistics noscan
+PREHOOK: Input: default@orc_merge5a_n0
+PREHOOK: Output: default@orc_merge5a_n0
+PREHOOK: Output: default@orc_merge5a_n0@st=0.8
+POSTHOOK: query: analyze table orc_merge5a_n0 partition(st=0.8) compute statistics noscan
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5a
-POSTHOOK: Output: default@orc_merge5a
-POSTHOOK: Output: default@orc_merge5a@st=0.8
+POSTHOOK: Input: default@orc_merge5a_n0
+POSTHOOK: Output: default@orc_merge5a_n0
+POSTHOOK: Output: default@orc_merge5a_n0@st=0.8
 Found 1 items
 #### A masked pattern was here ####
 Found 1 items
 #### A masked pattern was here ####
-PREHOOK: query: show partitions orc_merge5a
+PREHOOK: query: show partitions orc_merge5a_n0
 PREHOOK: type: SHOWPARTITIONS
-PREHOOK: Input: default@orc_merge5a
-POSTHOOK: query: show partitions orc_merge5a
+PREHOOK: Input: default@orc_merge5a_n0
+POSTHOOK: query: show partitions orc_merge5a_n0
 POSTHOOK: type: SHOWPARTITIONS
-POSTHOOK: Input: default@orc_merge5a
+POSTHOOK: Input: default@orc_merge5a_n0
 st=0.8
 st=1.8
 st=8.0
 st=80.0
-PREHOOK: query: select * from orc_merge5a where userid<=13
+PREHOOK: query: select * from orc_merge5a_n0 where userid<=13
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5a
-PREHOOK: Input: default@orc_merge5a@st=0.8
-PREHOOK: Input: default@orc_merge5a@st=1.8
-PREHOOK: Input: default@orc_merge5a@st=8.0
-PREHOOK: Input: default@orc_merge5a@st=80.0
+PREHOOK: Input: default@orc_merge5a_n0
+PREHOOK: Input: default@orc_merge5a_n0@st=0.8
+PREHOOK: Input: default@orc_merge5a_n0@st=1.8
+PREHOOK: Input: default@orc_merge5a_n0@st=8.0
+PREHOOK: Input: default@orc_merge5a_n0@st=80.0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from orc_merge5a where userid<=13
+POSTHOOK: query: select * from orc_merge5a_n0 where userid<=13
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5a
-POSTHOOK: Input: default@orc_merge5a@st=0.8
-POSTHOOK: Input: default@orc_merge5a@st=1.8
-POSTHOOK: Input: default@orc_merge5a@st=8.0
-POSTHOOK: Input: default@orc_merge5a@st=80.0
+POSTHOOK: Input: default@orc_merge5a_n0
+POSTHOOK: Input: default@orc_merge5a_n0@st=0.8
+POSTHOOK: Input: default@orc_merge5a_n0@st=1.8
+POSTHOOK: Input: default@orc_merge5a_n0@st=8.0
+POSTHOOK: Input: default@orc_merge5a_n0@st=80.0
 #### A masked pattern was here ####
 13	bar	80.0	2	1969-12-31 16:00:05	80.0
 2	foo	0.8	1	1969-12-31 16:00:00	0.8
 5	eat	0.8	6	1969-12-31 16:00:20	0.8
-PREHOOK: query: insert overwrite table orc_merge5a partition (st) select userid,string1,subtype,decimal1,ts,subtype from orc_merge5
+PREHOOK: query: insert overwrite table orc_merge5a_n0 partition (st) select userid,string1,subtype,decimal1,ts,subtype from orc_merge5_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5
-PREHOOK: Output: default@orc_merge5a
-POSTHOOK: query: insert overwrite table orc_merge5a partition (st) select userid,string1,subtype,decimal1,ts,subtype from orc_merge5
+PREHOOK: Input: default@orc_merge5_n2
+PREHOOK: Output: default@orc_merge5a_n0
+POSTHOOK: query: insert overwrite table orc_merge5a_n0 partition (st) select userid,string1,subtype,decimal1,ts,subtype from orc_merge5_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5
-POSTHOOK: Output: default@orc_merge5a@st=0.8
-POSTHOOK: Output: default@orc_merge5a@st=1.8
-POSTHOOK: Output: default@orc_merge5a@st=8.0
-POSTHOOK: Output: default@orc_merge5a@st=80.0
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=0.8).decimal1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=0.8).string1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=0.8).subtype SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:subtype, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=0.8).ts SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:ts, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=0.8).userid SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:userid, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=1.8).decimal1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=1.8).string1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=1.8).subtype SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:subtype, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=1.8).ts SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:ts, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=1.8).userid SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:userid, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=8.0).decimal1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=8.0).string1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=8.0).subtype SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:subtype, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=8.0).ts SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:ts, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=8.0).userid SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:userid, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=80.0).decimal1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=80.0).string1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=80.0).subtype SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:subtype, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=80.0).ts SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:ts, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=80.0).userid SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:userid, type:bigint, comment:null), ]
-PREHOOK: query: insert overwrite table orc_merge5a partition (st) select userid,string1,subtype,decimal1,ts,subtype from orc_merge5
+POSTHOOK: Input: default@orc_merge5_n2
+POSTHOOK: Output: default@orc_merge5a_n0@st=0.8
+POSTHOOK: Output: default@orc_merge5a_n0@st=1.8
+POSTHOOK: Output: default@orc_merge5a_n0@st=8.0
+POSTHOOK: Output: default@orc_merge5a_n0@st=80.0
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=0.8).decimal1 SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=0.8).string1 SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=0.8).subtype SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:subtype, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=0.8).ts SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=0.8).userid SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:userid, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=1.8).decimal1 SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=1.8).string1 SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=1.8).subtype SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:subtype, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=1.8).ts SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=1.8).userid SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:userid, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=8.0).decimal1 SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=8.0).string1 SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=8.0).subtype SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:subtype, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=8.0).ts SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=8.0).userid SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:userid, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=80.0).decimal1 SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=80.0).string1 SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=80.0).subtype SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:subtype, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=80.0).ts SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=80.0).userid SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:userid, type:bigint, comment:null), ]
+PREHOOK: query: insert overwrite table orc_merge5a_n0 partition (st) select userid,string1,subtype,decimal1,ts,subtype from orc_merge5_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5
-PREHOOK: Output: default@orc_merge5a
-POSTHOOK: query: insert overwrite table orc_merge5a partition (st) select userid,string1,subtype,decimal1,ts,subtype from orc_merge5
+PREHOOK: Input: default@orc_merge5_n2
+PREHOOK: Output: default@orc_merge5a_n0
+POSTHOOK: query: insert overwrite table orc_merge5a_n0 partition (st) select userid,string1,subtype,decimal1,ts,subtype from orc_merge5_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5
-POSTHOOK: Output: default@orc_merge5a@st=0.8
-POSTHOOK: Output: default@orc_merge5a@st=1.8
-POSTHOOK: Output: default@orc_merge5a@st=8.0
-POSTHOOK: Output: default@orc_merge5a@st=80.0
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=0.8).decimal1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=0.8).string1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=0.8).subtype SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:subtype, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=0.8).ts SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:ts, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=0.8).userid SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:userid, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=1.8).decimal1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=1.8).string1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=1.8).subtype SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:subtype, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=1.8).ts SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:ts, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=1.8).userid SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:userid, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=8.0).decimal1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=8.0).string1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=8.0).subtype SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:subtype, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=8.0).ts SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:ts, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=8.0).userid SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:userid, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=80.0).decimal1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=80.0).string1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=80.0).subtype SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:subtype, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=80.0).ts SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:ts, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(st=80.0).userid SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:userid, type:bigint, comment:null), ]
-PREHOOK: query: analyze table orc_merge5a partition(st=80.0) compute statistics noscan
+POSTHOOK: Input: default@orc_merge5_n2
+POSTHOOK: Output: default@orc_merge5a_n0@st=0.8
+POSTHOOK: Output: default@orc_merge5a_n0@st=1.8
+POSTHOOK: Output: default@orc_merge5a_n0@st=8.0
+POSTHOOK: Output: default@orc_merge5a_n0@st=80.0
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=0.8).decimal1 SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=0.8).string1 SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=0.8).subtype SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:subtype, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=0.8).ts SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=0.8).userid SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:userid, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=1.8).decimal1 SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=1.8).string1 SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=1.8).subtype SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:subtype, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=1.8).ts SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=1.8).userid SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:userid, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=8.0).decimal1 SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=8.0).string1 SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=8.0).subtype SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:subtype, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=8.0).ts SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=8.0).userid SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:userid, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=80.0).decimal1 SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=80.0).string1 SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=80.0).subtype SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:subtype, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=80.0).ts SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n0 PARTITION(st=80.0).userid SIMPLE [(orc_merge5_n2)orc_merge5_n2.FieldSchema(name:userid, type:bigint, comment:null), ]
+PREHOOK: query: analyze table orc_merge5a_n0 partition(st=80.0) compute statistics noscan
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5a
-PREHOOK: Output: default@orc_merge5a
-PREHOOK: Output: default@orc_merge5a@st=80.0
-POSTHOOK: query: analyze table orc_merge5a partition(st=80.0) compute statistics noscan
+PREHOOK: Input: default@orc_merge5a_n0
+PREHOOK: Output: default@orc_merge5a_n0
+PREHOOK: Output: default@orc_merge5a_n0@st=80.0
+POSTHOOK: query: analyze table orc_merge5a_n0 partition(st=80.0) compute statistics noscan
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5a
-POSTHOOK: Output: default@orc_merge5a
-POSTHOOK: Output: default@orc_merge5a@st=80.0
-PREHOOK: query: analyze table orc_merge5a partition(st=0.8) compute statistics noscan
+POSTHOOK: Input: default@orc_merge5a_n0
+POSTHOOK: Output: default@orc_merge5a_n0
+POSTHOOK: Output: default@orc_merge5a_n0@st=80.0
+PREHOOK: query: analyze table orc_merge5a_n0 partition(st=0.8) compute statistics noscan
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5a
-PREHOOK: Output: default@orc_merge5a
-PREHOOK: Output: default@orc_merge5a@st=0.8
-POSTHOOK: query: analyze table orc_merge5a partition(st=0.8) compute statistics noscan
+PREHOOK: Input: default@orc_merge5a_n0
+PREHOOK: Output: default@orc_merge5a_n0
+PREHOOK: Output: default@orc_merge5a_n0@st=0.8
+POSTHOOK: query: analyze table orc_merge5a_n0 partition(st=0.8) compute statistics noscan
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5a
-POSTHOOK: Output: default@orc_merge5a
-POSTHOOK: Output: default@orc_merge5a@st=0.8
+POSTHOOK: Input: default@orc_merge5a_n0
+POSTHOOK: Output: default@orc_merge5a_n0
+POSTHOOK: Output: default@orc_merge5a_n0@st=0.8
 Found 1 items
 #### A masked pattern was here ####
 Found 2 items
 #### A masked pattern was here ####
-PREHOOK: query: show partitions orc_merge5a
+PREHOOK: query: show partitions orc_merge5a_n0
 PREHOOK: type: SHOWPARTITIONS
-PREHOOK: Input: default@orc_merge5a
-POSTHOOK: query: show partitions orc_merge5a
+PREHOOK: Input: default@orc_merge5a_n0
+POSTHOOK: query: show partitions orc_merge5a_n0
 POSTHOOK: type: SHOWPARTITIONS
-POSTHOOK: Input: default@orc_merge5a
+POSTHOOK: Input: default@orc_merge5a_n0
 st=0.8
 st=1.8
 st=8.0
 st=80.0
-PREHOOK: query: select * from orc_merge5a where userid<=13
+PREHOOK: query: select * from orc_merge5a_n0 where userid<=13
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5a
-PREHOOK: Input: default@orc_merge5a@st=0.8
-PREHOOK: Input: default@orc_merge5a@st=1.8
-PREHOOK: Input: default@orc_merge5a@st=8.0
-PREHOOK: Input: default@orc_merge5a@st=80.0
+PREHOOK: Input: default@orc_merge5a_n0
+PREHOOK: Input: default@orc_merge5a_n0@st=0.8
+PREHOOK: Input: default@orc_merge5a_n0@st=1.8
+PREHOOK: Input: default@orc_merge5a_n0@st=8.0
+PREHOOK: Input: default@orc_merge5a_n0@st=80.0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from orc_merge5a where userid<=13
+POSTHOOK: query: select * from orc_merge5a_n0 where userid<=13
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5a
-POSTHOOK: Input: default@orc_merge5a@st=0.8
-POSTHOOK: Input: default@orc_merge5a@st=1.8
-POSTHOOK: Input: default@orc_merge5a@st=8.0
-POSTHOOK: Input: default@orc_merge5a@st=80.0
+POSTHOOK: Input: default@orc_merge5a_n0
+POSTHOOK: Input: default@orc_merge5a_n0@st=0.8
+POSTHOOK: Input: default@orc_merge5a_n0@st=1.8
+POSTHOOK: Input: default@orc_merge5a_n0@st=8.0
+POSTHOOK: Input: default@orc_merge5a_n0@st=80.0
 #### A masked pattern was here ####
 13	bar	80.0	2	1969-12-31 16:00:05	80.0
 2	foo	0.8	1	1969-12-31 16:00:00	0.8
 5	eat	0.8	6	1969-12-31 16:00:20	0.8
-PREHOOK: query: explain alter table orc_merge5a partition(st=80.0) concatenate
+PREHOOK: query: explain alter table orc_merge5a_n0 partition(st=80.0) concatenate
 PREHOOK: type: ALTER_PARTITION_MERGE
-POSTHOOK: query: explain alter table orc_merge5a partition(st=80.0) concatenate
+POSTHOOK: query: explain alter table orc_merge5a_n0 partition(st=80.0) concatenate
 POSTHOOK: type: ALTER_PARTITION_MERGE
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -625,77 +625,77 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.orc_merge5a
+              name: default.orc_merge5a_n0
 
   Stage: Stage-2
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: alter table orc_merge5a partition(st=80.0) concatenate
+PREHOOK: query: alter table orc_merge5a_n0 partition(st=80.0) concatenate
 PREHOOK: type: ALTER_PARTITION_MERGE
-PREHOOK: Input: default@orc_merge5a
-PREHOOK: Output: default@orc_merge5a@st=80.0
-POSTHOOK: query: alter table orc_merge5a partition(st=80.0) concatenate
+PREHOOK: Input: default@orc_merge5a_n0
+PREHOOK: Output: default@orc_merge5a_n0@st=80.0
+POSTHOOK: query: alter table orc_merge5a_n0 partition(st=80.0) concatenate
 POSTHOOK: type: ALTER_PARTITION_MERGE
-POSTHOOK: Input: default@orc_merge5a
-POSTHOOK: Output: default@orc_merge5a@st=80.0
-PREHOOK: query: alter table orc_merge5a partition(st=0.8) concatenate
+POSTHOOK: Input: default@orc_merge5a_n0
+POSTHOOK: Output: default@orc_merge5a_n0@st=80.0
+PREHOOK: query: alter table orc_merge5a_n0 partition(st=0.8) concatenate
 PREHOOK: type: ALTER_PARTITION_MERGE
-PREHOOK: Input: default@orc_merge5a
-PREHOOK: Output: default@orc_merge5a@st=0.8
-POSTHOOK: query: alter table orc_merge5a partition(st=0.8) concatenate
+PREHOOK: Input: default@orc_merge5a_n0
+PREHOOK: Output: default@orc_merge5a_n0@st=0.8
+POSTHOOK: query: alter table orc_merge5a_n0 partition(st=0.8) concatenate
 POSTHOOK: type: ALTER_PARTITION_MERGE
-POSTHOOK: Input: default@orc_merge5a
-POSTHOOK: Output: default@orc_merge5a@st=0.8
-PREHOOK: query: analyze table orc_merge5a partition(st=80.0) compute statistics noscan
+POSTHOOK: Input: default@orc_merge5a_n0
+POSTHOOK: Output: default@orc_merge5a_n0@st=0.8
+PREHOOK: query: analyze table orc_merge5a_n0 partition(st=80.0) compute statistics noscan
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5a
-PREHOOK: Output: default@orc_merge5a
-PREHOOK: Output: default@orc_merge5a@st=80.0
-POSTHOOK: query: analyze table orc_merge5a partition(st=80.0) compute statistics noscan
+PREHOOK: Input: default@orc_merge5a_n0
+PREHOOK: Output: default@orc_merge5a_n0
+PREHOOK: Output: default@orc_merge5a_n0@st=80.0
+POSTHOOK: query: analyze table orc_merge5a_n0 partition(st=80.0) compute statistics noscan
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5a
-POSTHOOK: Output: default@orc_merge5a
-POSTHOOK: Output: default@orc_merge5a@st=80.0
-PREHOOK: query: analyze table orc_merge5a partition(st=0.8) compute statistics noscan
+POSTHOOK: Input: default@orc_merge5a_n0
+POSTHOOK: Output: default@orc_merge5a_n0
+POSTHOOK: Output: default@orc_merge5a_n0@st=80.0
+PREHOOK: query: analyze table orc_merge5a_n0 partition(st=0.8) compute statistics noscan
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5a
-PREHOOK: Output: default@orc_merge5a
-PREHOOK: Output: default@orc_merge5a@st=0.8
-POSTHOOK: query: analyze table orc_merge5a partition(st=0.8) compute statistics noscan
+PREHOOK: Input: default@orc_merge5a_n0
+PREHOOK: Output: default@orc_merge5a_n0
+PREHOOK: Output: default@orc_merge5a_n0@st=0.8
+POSTHOOK: query: analyze table orc_merge5a_n0 partition(st=0.8) compute statistics noscan
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5a
-POSTHOOK: Output: default@orc_merge5a
-POSTHOOK: Output: default@orc_merge5a@st=0.8
+POSTHOOK: Input: default@orc_merge5a_n0
+POSTHOOK: Output: default@orc_merge5a_n0
+POSTHOOK: Output: default@orc_merge5a_n0@st=0.8
 Found 1 items
 #### A masked pattern was here ####
 Found 1 items
 #### A masked pattern was here ####
-PREHOOK: query: show partitions orc_merge5a
+PREHOOK: query: show partitions orc_merge5a_n0
 PREHOOK: type: SHOWPARTITIONS
-PREHOOK: Input: default@orc_merge5a
-POSTHOOK: query: show partitions orc_merge5a
+PREHOOK: Input: default@orc_merge5a_n0
+POSTHOOK: query: show partitions orc_merge5a_n0
 POSTHOOK: type: SHOWPARTITIONS
-POSTHOOK: Input: default@orc_merge5a
+POSTHOOK: Input: default@orc_merge5a_n0
 st=0.8
 st=1.8
 st=8.0
 st=80.0
-PREHOOK: query: select * from orc_merge5a where userid<=13
+PREHOOK: query: select * from orc_merge5a_n0 where userid<=13
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5a
-PREHOOK: Input: default@orc_merge5a@st=0.8
-PREHOOK: Input: default@orc_merge5a@st=1.8
-PREHOOK: Input: default@orc_merge5a@st=8.0
-PREHOOK: Input: default@orc_merge5a@st=80.0
+PREHOOK: Input: default@orc_merge5a_n0
+PREHOOK: Input: default@orc_merge5a_n0@st=0.8
+PREHOOK: Input: default@orc_merge5a_n0@st=1.8
+PREHOOK: Input: default@orc_merge5a_n0@st=8.0
+PREHOOK: Input: default@orc_merge5a_n0@st=80.0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from orc_merge5a where userid<=13
+POSTHOOK: query: select * from orc_merge5a_n0 where userid<=13
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5a
-POSTHOOK: Input: default@orc_merge5a@st=0.8
-POSTHOOK: Input: default@orc_merge5a@st=1.8
-POSTHOOK: Input: default@orc_merge5a@st=8.0
-POSTHOOK: Input: default@orc_merge5a@st=80.0
+POSTHOOK: Input: default@orc_merge5a_n0
+POSTHOOK: Input: default@orc_merge5a_n0@st=0.8
+POSTHOOK: Input: default@orc_merge5a_n0@st=1.8
+POSTHOOK: Input: default@orc_merge5a_n0@st=8.0
+POSTHOOK: Input: default@orc_merge5a_n0@st=80.0
 #### A masked pattern was here ####
 13	bar	80.0	2	1969-12-31 16:00:05	80.0
 2	foo	0.8	1	1969-12-31 16:00:00	0.8

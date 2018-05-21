@@ -1,28 +1,28 @@
-PREHOOK: query: drop table if exists src_orc
+PREHOOK: query: drop table if exists src_orc_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table if exists src_orc
+POSTHOOK: query: drop table if exists src_orc_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table src_orc stored as orc as select * from src
+PREHOOK: query: create table src_orc_n0 stored as orc as select * from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src_orc
-POSTHOOK: query: create table src_orc stored as orc as select * from src
+PREHOOK: Output: default@src_orc_n0
+POSTHOOK: query: create table src_orc_n0 stored as orc as select * from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src_orc
-POSTHOOK: Lineage: src_orc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_orc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@src_orc_n0
+POSTHOOK: Lineage: src_orc_n0.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_orc_n0.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: CREATE TEMPORARY FUNCTION test_udf0 AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFEvaluateNPE'
 PREHOOK: type: CREATEFUNCTION
 PREHOOK: Output: test_udf0
 POSTHOOK: query: CREATE TEMPORARY FUNCTION test_udf0 AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFEvaluateNPE'
 POSTHOOK: type: CREATEFUNCTION
 POSTHOOK: Output: test_udf0
-PREHOOK: query: EXPLAIN SELECT test_udf0(cast(key as string)) from src_orc
+PREHOOK: query: EXPLAIN SELECT test_udf0(cast(key as string)) from src_orc_n0
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT test_udf0(cast(key as string)) from src_orc
+POSTHOOK: query: EXPLAIN SELECT test_udf0(cast(key as string)) from src_orc_n0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -36,7 +36,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: src_orc
+                  alias: src_orc_n0
                   Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: evaluate_npe(key) (type: string)
@@ -82,10 +82,10 @@ POSTHOOK: type: CREATEFUNCTION
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default.test_udf4
 PREHOOK: query: EXPLAIN
-SELECT test_udf2(cast(key as string)), test_udf3(cast(key as string)), test_udf4(cast(key as string)) from src_orc
+SELECT test_udf2(cast(key as string)), test_udf3(cast(key as string)), test_udf4(cast(key as string)) from src_orc_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-SELECT test_udf2(cast(key as string)), test_udf3(cast(key as string)), test_udf4(cast(key as string)) from src_orc
+SELECT test_udf2(cast(key as string)), test_udf3(cast(key as string)), test_udf4(cast(key as string)) from src_orc_n0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -99,7 +99,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: src_orc
+                  alias: src_orc_n0
                   Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: GenericUDFTestGetJavaString(key) (type: string), GenericUDFTestGetJavaString(key) (type: string), evaluate_npe(key) (type: string)
@@ -122,10 +122,10 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: EXPLAIN
-SELECT test_udf0(cast(key as string)) from src_orc
+SELECT test_udf0(cast(key as string)) from src_orc_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-SELECT test_udf0(cast(key as string)) from src_orc
+SELECT test_udf0(cast(key as string)) from src_orc_n0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -139,7 +139,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: src_orc
+                  alias: src_orc_n0
                   Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: evaluate_npe(key) (type: string)
@@ -169,10 +169,10 @@ POSTHOOK: type: DROPFUNCTION
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default.test_udf2
 PREHOOK: query: EXPLAIN
-SELECT test_udf3(cast(key as string)), test_udf4(cast(key as string)) from src_orc
+SELECT test_udf3(cast(key as string)), test_udf4(cast(key as string)) from src_orc_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-SELECT test_udf3(cast(key as string)), test_udf4(cast(key as string)) from src_orc
+SELECT test_udf3(cast(key as string)), test_udf4(cast(key as string)) from src_orc_n0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -186,7 +186,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: src_orc
+                  alias: src_orc_n0
                   Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: GenericUDFTestGetJavaString(key) (type: string), evaluate_npe(key) (type: string)
@@ -217,10 +217,10 @@ POSTHOOK: type: DROPFUNCTION
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default.test_udf4
 PREHOOK: query: EXPLAIN
-SELECT test_udf0(cast(key as string)) from src_orc
+SELECT test_udf0(cast(key as string)) from src_orc_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-SELECT test_udf0(cast(key as string)) from src_orc
+SELECT test_udf0(cast(key as string)) from src_orc_n0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -234,7 +234,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: src_orc
+                  alias: src_orc_n0
                   Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: evaluate_npe(key) (type: string)
@@ -256,10 +256,10 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: EXPLAIN
-SELECT test_udf3(cast(key as string)) from src_orc
+SELECT test_udf3(cast(key as string)) from src_orc_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-SELECT test_udf3(cast(key as string)) from src_orc
+SELECT test_udf3(cast(key as string)) from src_orc_n0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -273,7 +273,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: src_orc
+                  alias: src_orc_n0
                   Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: GenericUDFTestGetJavaString(key) (type: string)
@@ -294,11 +294,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: drop table if exists src_orc
+PREHOOK: query: drop table if exists src_orc_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@src_orc
-PREHOOK: Output: default@src_orc
-POSTHOOK: query: drop table if exists src_orc
+PREHOOK: Input: default@src_orc_n0
+PREHOOK: Output: default@src_orc_n0
+POSTHOOK: query: drop table if exists src_orc_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@src_orc
-POSTHOOK: Output: default@src_orc
+POSTHOOK: Input: default@src_orc_n0
+POSTHOOK: Output: default@src_orc_n0

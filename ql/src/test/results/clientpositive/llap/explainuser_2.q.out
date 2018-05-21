@@ -1,19 +1,19 @@
-PREHOOK: query: CREATE TABLE dest_j1(key STRING, value STRING, val2 STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE dest_j1_n25(key STRING, value STRING, val2 STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest_j1
-POSTHOOK: query: CREATE TABLE dest_j1(key STRING, value STRING, val2 STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@dest_j1_n25
+POSTHOOK: query: CREATE TABLE dest_j1_n25(key STRING, value STRING, val2 STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest_j1
-PREHOOK: query: CREATE TABLE ss(k1 STRING,v1 STRING,k2 STRING,v2 STRING,k3 STRING,v3 STRING) STORED AS TEXTFILE
+POSTHOOK: Output: default@dest_j1_n25
+PREHOOK: query: CREATE TABLE ss_n1(k1 STRING,v1 STRING,k2 STRING,v2 STRING,k3 STRING,v3 STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@ss
-POSTHOOK: query: CREATE TABLE ss(k1 STRING,v1 STRING,k2 STRING,v2 STRING,k3 STRING,v3 STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@ss_n1
+POSTHOOK: query: CREATE TABLE ss_n1(k1 STRING,v1 STRING,k2 STRING,v2 STRING,k3 STRING,v3 STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@ss
+POSTHOOK: Output: default@ss_n1
 PREHOOK: query: CREATE TABLE sr(k1 STRING,v1 STRING,k2 STRING,v2 STRING,k3 STRING,v3 STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -30,7 +30,7 @@ POSTHOOK: query: CREATE TABLE cs(k1 STRING,v1 STRING,k2 STRING,v2 STRING,k3 STRI
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cs
-PREHOOK: query: INSERT OVERWRITE TABLE ss
+PREHOOK: query: INSERT OVERWRITE TABLE ss_n1
 SELECT x.key,x.value,y.key,y.value,z.key,z.value
 FROM src1 x 
 JOIN src y ON (x.key = y.key) 
@@ -40,8 +40,8 @@ PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
-PREHOOK: Output: default@ss
-POSTHOOK: query: INSERT OVERWRITE TABLE ss
+PREHOOK: Output: default@ss_n1
+POSTHOOK: query: INSERT OVERWRITE TABLE ss_n1
 SELECT x.key,x.value,y.key,y.value,z.key,z.value
 FROM src1 x 
 JOIN src y ON (x.key = y.key) 
@@ -51,13 +51,13 @@ POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
-POSTHOOK: Output: default@ss
-POSTHOOK: Lineage: ss.k1 SIMPLE [(src1)x.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: ss.k2 SIMPLE [(src)y.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: ss.k3 SIMPLE [(srcpart)z.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: ss.v1 SIMPLE [(src1)x.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: ss.v2 SIMPLE [(src)y.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: ss.v3 SIMPLE [(srcpart)z.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@ss_n1
+POSTHOOK: Lineage: ss_n1.k1 SIMPLE [(src1)x.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_n1.k2 SIMPLE [(src)y.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_n1.k3 SIMPLE [(srcpart)z.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_n1.v1 SIMPLE [(src1)x.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_n1.v2 SIMPLE [(src)y.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: ss_n1.v3 SIMPLE [(srcpart)z.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: INSERT OVERWRITE TABLE sr
 SELECT x.key,x.value,y.key,y.value,z.key,z.value
 FROM src1 x 
@@ -116,23 +116,23 @@ POSTHOOK: Lineage: cs.k3 SIMPLE [(srcpart)z.FieldSchema(name:key, type:string, c
 POSTHOOK: Lineage: cs.v1 SIMPLE [(src1)x.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: cs.v2 SIMPLE [(src)y.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: cs.v3 SIMPLE [(srcpart)z.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: ANALYZE TABLE ss COMPUTE STATISTICS
+PREHOOK: query: ANALYZE TABLE ss_n1 COMPUTE STATISTICS
 PREHOOK: type: QUERY
-PREHOOK: Input: default@ss
-PREHOOK: Output: default@ss
-POSTHOOK: query: ANALYZE TABLE ss COMPUTE STATISTICS
+PREHOOK: Input: default@ss_n1
+PREHOOK: Output: default@ss_n1
+POSTHOOK: query: ANALYZE TABLE ss_n1 COMPUTE STATISTICS
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ss
-POSTHOOK: Output: default@ss
-PREHOOK: query: ANALYZE TABLE ss COMPUTE STATISTICS FOR COLUMNS k1,v1,k2,v2,k3,v3
+POSTHOOK: Input: default@ss_n1
+POSTHOOK: Output: default@ss_n1
+PREHOOK: query: ANALYZE TABLE ss_n1 COMPUTE STATISTICS FOR COLUMNS k1,v1,k2,v2,k3,v3
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@ss
-PREHOOK: Output: default@ss
+PREHOOK: Input: default@ss_n1
+PREHOOK: Output: default@ss_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: ANALYZE TABLE ss COMPUTE STATISTICS FOR COLUMNS k1,v1,k2,v2,k3,v3
+POSTHOOK: query: ANALYZE TABLE ss_n1 COMPUTE STATISTICS FOR COLUMNS k1,v1,k2,v2,k3,v3
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@ss
-POSTHOOK: Output: default@ss
+POSTHOOK: Input: default@ss_n1
+POSTHOOK: Output: default@ss_n1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: ANALYZE TABLE sr COMPUTE STATISTICS
 PREHOOK: type: QUERY
@@ -231,20 +231,20 @@ Stage-0
 
 PREHOOK: query: EXPLAIN
 select 
-ss.k1,sr.k2,cs.k3,count(ss.v1),count(sr.v2),count(cs.v3)
+ss_n1.k1,sr.k2,cs.k3,count(ss_n1.v1),count(sr.v2),count(cs.v3)
 FROM 
-ss,sr,cs,src d1,src d2,src d3,src1,srcpart
+ss_n1,sr,cs,src d1,src d2,src d3,src1,srcpart
 where
-    ss.k1 = d1.key 
+    ss_n1.k1 = d1.key 
 and sr.k1 = d2.key 
 and cs.k1 = d3.key 
-and ss.k2 = sr.k2
-and ss.k3 = sr.k3
-and ss.v1 = src1.value
-and ss.v2 = srcpart.value
+and ss_n1.k2 = sr.k2
+and ss_n1.k3 = sr.k3
+and ss_n1.v1 = src1.value
+and ss_n1.v2 = srcpart.value
 and sr.v2 = cs.v2
 and sr.v3 = cs.v3
-and ss.v3='ssv3'
+and ss_n1.v3='ssv3'
 and sr.v1='srv1'
 and src1.key = 'src1key'
 and srcpart.key = 'srcpartkey'
@@ -252,27 +252,27 @@ and d1.value = 'd1value'
 and d2.value in ('2000Q1','2000Q2','2000Q3')
 and d3.value in ('2000Q1','2000Q2','2000Q3')
 group by 
-ss.k1,sr.k2,cs.k3
+ss_n1.k1,sr.k2,cs.k3
 order by 
-ss.k1,sr.k2,cs.k3
+ss_n1.k1,sr.k2,cs.k3
 limit 100
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 select 
-ss.k1,sr.k2,cs.k3,count(ss.v1),count(sr.v2),count(cs.v3)
+ss_n1.k1,sr.k2,cs.k3,count(ss_n1.v1),count(sr.v2),count(cs.v3)
 FROM 
-ss,sr,cs,src d1,src d2,src d3,src1,srcpart
+ss_n1,sr,cs,src d1,src d2,src d3,src1,srcpart
 where
-    ss.k1 = d1.key 
+    ss_n1.k1 = d1.key 
 and sr.k1 = d2.key 
 and cs.k1 = d3.key 
-and ss.k2 = sr.k2
-and ss.k3 = sr.k3
-and ss.v1 = src1.value
-and ss.v2 = srcpart.value
+and ss_n1.k2 = sr.k2
+and ss_n1.k3 = sr.k3
+and ss_n1.v1 = src1.value
+and ss_n1.v2 = srcpart.value
 and sr.v2 = cs.v2
 and sr.v3 = cs.v3
-and ss.v3='ssv3'
+and ss_n1.v3='ssv3'
 and sr.v1='srv1'
 and src1.key = 'src1key'
 and srcpart.key = 'srcpartkey'
@@ -280,9 +280,9 @@ and d1.value = 'd1value'
 and d2.value in ('2000Q1','2000Q2','2000Q3')
 and d3.value in ('2000Q1','2000Q2','2000Q3')
 group by 
-ss.k1,sr.k2,cs.k3
+ss_n1.k1,sr.k2,cs.k3
 order by 
-ss.k1,sr.k2,cs.k3
+ss_n1.k1,sr.k2,cs.k3
 limit 100
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
@@ -398,7 +398,7 @@ Stage-0
                                             Filter Operator [FIL_110] (rows=7 width=534)
                                               predicate:((v3 = 'ssv3') and k1 is not null and k2 is not null and k3 is not null and v1 is not null and v2 is not null)
                                               TableScan [TS_6] (rows=85 width=534)
-                                                default@ss,ss,Tbl:COMPLETE,Col:COMPLETE,Output:["k1","v1","k2","v2","k3","v3"]
+                                                default@ss_n1,ss_n1,Tbl:COMPLETE,Col:COMPLETE,Output:["k1","v1","k2","v2","k3","v3"]
                     <-Reducer 2 [SIMPLE_EDGE] llap
                       SHUFFLE [RS_44]
                         PartitionCols:_col1, _col3
@@ -943,20 +943,20 @@ Stage-0
 
 PREHOOK: query: EXPLAIN
 select 
-ss.k1,sr.k2,cs.k3,count(ss.v1),count(sr.v2),count(cs.v3)
+ss_n1.k1,sr.k2,cs.k3,count(ss_n1.v1),count(sr.v2),count(cs.v3)
 FROM 
-ss,sr,cs,src d1,src d2,src d3,src1,srcpart
+ss_n1,sr,cs,src d1,src d2,src d3,src1,srcpart
 where
-    ss.k1 = d1.key 
+    ss_n1.k1 = d1.key 
 and sr.k1 = d2.key 
 and cs.k1 = d3.key 
-and ss.k2 = sr.k2
-and ss.k3 = sr.k3
-and ss.v1 = src1.value
-and ss.v2 = srcpart.value
+and ss_n1.k2 = sr.k2
+and ss_n1.k3 = sr.k3
+and ss_n1.v1 = src1.value
+and ss_n1.v2 = srcpart.value
 and sr.v2 = cs.v2
 and sr.v3 = cs.v3
-and ss.v3='ssv3'
+and ss_n1.v3='ssv3'
 and sr.v1='srv1'
 and src1.key = 'src1key'
 and srcpart.key = 'srcpartkey'
@@ -964,27 +964,27 @@ and d1.value = 'd1value'
 and d2.value in ('2000Q1','2000Q2','2000Q3')
 and d3.value in ('2000Q1','2000Q2','2000Q3')
 group by 
-ss.k1,sr.k2,cs.k3
+ss_n1.k1,sr.k2,cs.k3
 order by 
-ss.k1,sr.k2,cs.k3
+ss_n1.k1,sr.k2,cs.k3
 limit 100
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 select 
-ss.k1,sr.k2,cs.k3,count(ss.v1),count(sr.v2),count(cs.v3)
+ss_n1.k1,sr.k2,cs.k3,count(ss_n1.v1),count(sr.v2),count(cs.v3)
 FROM 
-ss,sr,cs,src d1,src d2,src d3,src1,srcpart
+ss_n1,sr,cs,src d1,src d2,src d3,src1,srcpart
 where
-    ss.k1 = d1.key 
+    ss_n1.k1 = d1.key 
 and sr.k1 = d2.key 
 and cs.k1 = d3.key 
-and ss.k2 = sr.k2
-and ss.k3 = sr.k3
-and ss.v1 = src1.value
-and ss.v2 = srcpart.value
+and ss_n1.k2 = sr.k2
+and ss_n1.k3 = sr.k3
+and ss_n1.v1 = src1.value
+and ss_n1.v2 = srcpart.value
 and sr.v2 = cs.v2
 and sr.v3 = cs.v3
-and ss.v3='ssv3'
+and ss_n1.v3='ssv3'
 and sr.v1='srv1'
 and src1.key = 'src1key'
 and srcpart.key = 'srcpartkey'
@@ -992,9 +992,9 @@ and d1.value = 'd1value'
 and d2.value in ('2000Q1','2000Q2','2000Q3')
 and d3.value in ('2000Q1','2000Q2','2000Q3')
 group by 
-ss.k1,sr.k2,cs.k3
+ss_n1.k1,sr.k2,cs.k3
 order by 
-ss.k1,sr.k2,cs.k3
+ss_n1.k1,sr.k2,cs.k3
 limit 100
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
@@ -1098,7 +1098,7 @@ Stage-0
                                       Filter Operator [FIL_105] (rows=42 width=34)
                                         predicate:((v3 = 'ssv3') and k1 is not null and k2 is not null and k3 is not null and v1 is not null and v2 is not null)
                                         TableScan [TS_6] (rows=85 width=34)
-                                          default@ss,ss,Tbl:COMPLETE,Col:NONE,Output:["k1","v1","k2","v2","k3","v3"]
+                                          default@ss_n1,ss_n1,Tbl:COMPLETE,Col:NONE,Output:["k1","v1","k2","v2","k3","v3"]
                                 <-Select Operator [SEL_109] (rows=250 width=10)
                                     Output:["_col0"]
                                     Filter Operator [FIL_108] (rows=250 width=10)
@@ -1549,143 +1549,143 @@ Stage-0
                                             TableScan [TS_3] (rows=500 width=10)
                                               Output:["key","value"]
 
-PREHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE srcbucket_mapjoin_n22(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+PREHOOK: Output: default@srcbucket_mapjoin_n22
+POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_n22(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcbucket_mapjoin
-PREHOOK: query: CREATE TABLE tab_part (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+POSTHOOK: Output: default@srcbucket_mapjoin_n22
+PREHOOK: query: CREATE TABLE tab_part_n14 (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tab_part
-POSTHOOK: query: CREATE TABLE tab_part (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+PREHOOK: Output: default@tab_part_n14
+POSTHOOK: query: CREATE TABLE tab_part_n14 (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tab_part
-PREHOOK: query: CREATE TABLE srcbucket_mapjoin_part (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+POSTHOOK: Output: default@tab_part_n14
+PREHOOK: query: CREATE TABLE srcbucket_mapjoin_part_n23 (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@srcbucket_mapjoin_part
-POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_part (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+PREHOOK: Output: default@srcbucket_mapjoin_part_n23
+POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_part_n23 (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcbucket_mapjoin_part
-PREHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n23
+PREHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_n22 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_n22
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_n22 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/bmj1/000001_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_n22
+POSTHOOK: Output: default@srcbucket_mapjoin_n22@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj1/000001_0' INTO TABLE srcbucket_mapjoin_n22 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/bmj1/000001_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_n22@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/bmj1/000001_0' INTO TABLE srcbucket_mapjoin_n22 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_n22@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part_n23 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin_part
-POSTHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_part_n23
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part_n23 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin_part
-POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n23
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n23@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part_n23 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_part_n23@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part_n23 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n23@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part_n23 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_part_n23@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part_n23 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n23@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part_n23 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_part_n23@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part_n23 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: query: insert overwrite table tab_part partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin_part
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n23@ds=2008-04-08
+PREHOOK: query: insert overwrite table tab_part_n14 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_part_n23
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin_part
-PREHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: Output: default@tab_part@ds=2008-04-08
-POSTHOOK: query: insert overwrite table tab_part partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin_part
+PREHOOK: Input: default@srcbucket_mapjoin_part_n23
+PREHOOK: Input: default@srcbucket_mapjoin_part_n23@ds=2008-04-08
+PREHOOK: Output: default@tab_part_n14@ds=2008-04-08
+POSTHOOK: query: insert overwrite table tab_part_n14 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_part_n23
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin_part
-POSTHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
-POSTHOOK: Output: default@tab_part@ds=2008-04-08
-POSTHOOK: Lineage: tab_part PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_part)srcbucket_mapjoin_part.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: tab_part PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_part)srcbucket_mapjoin_part.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: CREATE TABLE tab(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+POSTHOOK: Input: default@srcbucket_mapjoin_part_n23
+POSTHOOK: Input: default@srcbucket_mapjoin_part_n23@ds=2008-04-08
+POSTHOOK: Output: default@tab_part_n14@ds=2008-04-08
+POSTHOOK: Lineage: tab_part_n14 PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_part_n23)srcbucket_mapjoin_part_n23.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tab_part_n14 PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_part_n23)srcbucket_mapjoin_part_n23.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: CREATE TABLE tab_n15(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tab
-POSTHOOK: query: CREATE TABLE tab(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+PREHOOK: Output: default@tab_n15
+POSTHOOK: query: CREATE TABLE tab_n15(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tab
-PREHOOK: query: insert overwrite table tab partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin
+POSTHOOK: Output: default@tab_n15
+PREHOOK: query: insert overwrite table tab_n15 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_n22
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin
-PREHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
-PREHOOK: Output: default@tab@ds=2008-04-08
-POSTHOOK: query: insert overwrite table tab partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin
+PREHOOK: Input: default@srcbucket_mapjoin_n22
+PREHOOK: Input: default@srcbucket_mapjoin_n22@ds=2008-04-08
+PREHOOK: Output: default@tab_n15@ds=2008-04-08
+POSTHOOK: query: insert overwrite table tab_n15 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_n22
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin
-POSTHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
-POSTHOOK: Output: default@tab@ds=2008-04-08
-POSTHOOK: Lineage: tab PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin)srcbucket_mapjoin.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: tab PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin)srcbucket_mapjoin.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: CREATE TABLE tab2(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+POSTHOOK: Input: default@srcbucket_mapjoin_n22
+POSTHOOK: Input: default@srcbucket_mapjoin_n22@ds=2008-04-08
+POSTHOOK: Output: default@tab_n15@ds=2008-04-08
+POSTHOOK: Lineage: tab_n15 PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_n22)srcbucket_mapjoin_n22.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tab_n15 PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_n22)srcbucket_mapjoin_n22.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: CREATE TABLE tab2_n7(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tab2
-POSTHOOK: query: CREATE TABLE tab2(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+PREHOOK: Output: default@tab2_n7
+POSTHOOK: query: CREATE TABLE tab2_n7(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tab2
-PREHOOK: query: insert overwrite table tab2 partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin
+POSTHOOK: Output: default@tab2_n7
+PREHOOK: query: insert overwrite table tab2_n7 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_n22
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin
-PREHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
-PREHOOK: Output: default@tab2@ds=2008-04-08
-POSTHOOK: query: insert overwrite table tab2 partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin
+PREHOOK: Input: default@srcbucket_mapjoin_n22
+PREHOOK: Input: default@srcbucket_mapjoin_n22@ds=2008-04-08
+PREHOOK: Output: default@tab2_n7@ds=2008-04-08
+POSTHOOK: query: insert overwrite table tab2_n7 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_n22
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin
-POSTHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
-POSTHOOK: Output: default@tab2@ds=2008-04-08
-POSTHOOK: Lineage: tab2 PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin)srcbucket_mapjoin.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: tab2 PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin)srcbucket_mapjoin.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Input: default@srcbucket_mapjoin_n22
+POSTHOOK: Input: default@srcbucket_mapjoin_n22@ds=2008-04-08
+POSTHOOK: Output: default@tab2_n7@ds=2008-04-08
+POSTHOOK: Lineage: tab2_n7 PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_n22)srcbucket_mapjoin_n22.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tab2_n7 PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_n22)srcbucket_mapjoin_n22.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: explain 
-select s1.key as key, s1.value as value from tab s1 join tab s3 on s1.key=s3.key
+select s1.key as key, s1.value as value from tab_n15 s1 join tab_n15 s3 on s1.key=s3.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain 
-select s1.key as key, s1.value as value from tab s1 join tab s3 on s1.key=s3.key
+select s1.key as key, s1.value as value from tab_n15 s1 join tab_n15 s3 on s1.key=s3.key
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -1702,19 +1702,19 @@ Stage-0
             Filter Operator [FIL_14] (rows=242 width=10)
               predicate:key is not null
               TableScan [TS_3] (rows=242 width=10)
-                default@tab,s3,Tbl:COMPLETE,Col:NONE,Output:["key"]
+                default@tab_n15,s3,Tbl:COMPLETE,Col:NONE,Output:["key"]
         <-Select Operator [SEL_2] (rows=242 width=10)
             Output:["_col0","_col1"]
             Filter Operator [FIL_13] (rows=242 width=10)
               predicate:key is not null
               TableScan [TS_0] (rows=242 width=10)
-                default@tab,s1,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+                default@tab_n15,s1,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
 
 PREHOOK: query: explain 
-select s1.key as key, s1.value as value from tab s1 join tab s3 on s1.key=s3.key join tab s2 on s1.value=s2.value
+select s1.key as key, s1.value as value from tab_n15 s1 join tab_n15 s3 on s1.key=s3.key join tab_n15 s2 on s1.value=s2.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain 
-select s1.key as key, s1.value as value from tab s1 join tab s3 on s1.key=s3.key join tab s2 on s1.value=s2.value
+select s1.key as key, s1.value as value from tab_n15 s1 join tab_n15 s3 on s1.key=s3.key join tab_n15 s2 on s1.value=s2.value
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -1739,13 +1739,13 @@ Stage-0
                 Filter Operator [FIL_23] (rows=242 width=10)
                   predicate:key is not null
                   TableScan [TS_3] (rows=242 width=10)
-                    default@tab,s3,Tbl:COMPLETE,Col:NONE,Output:["key"]
+                    default@tab_n15,s3,Tbl:COMPLETE,Col:NONE,Output:["key"]
             <-Select Operator [SEL_2] (rows=242 width=10)
                 Output:["_col0","_col1"]
                 Filter Operator [FIL_22] (rows=242 width=10)
                   predicate:(key is not null and value is not null)
                   TableScan [TS_0] (rows=242 width=10)
-                    default@tab,s1,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+                    default@tab_n15,s1,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
         <-Map 4 [SIMPLE_EDGE] vectorized, llap
           SHUFFLE [RS_30]
             PartitionCols:_col0
@@ -1754,13 +1754,13 @@ Stage-0
               Filter Operator [FIL_28] (rows=242 width=10)
                 predicate:value is not null
                 TableScan [TS_6] (rows=242 width=10)
-                  default@tab,s2,Tbl:COMPLETE,Col:NONE,Output:["value"]
+                  default@tab_n15,s2,Tbl:COMPLETE,Col:NONE,Output:["value"]
 
 PREHOOK: query: explain 
-select s1.key as key, s1.value as value from tab s1 join tab2 s3 on s1.key=s3.key
+select s1.key as key, s1.value as value from tab_n15 s1 join tab2_n7 s3 on s1.key=s3.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain 
-select s1.key as key, s1.value as value from tab s1 join tab2 s3 on s1.key=s3.key
+select s1.key as key, s1.value as value from tab_n15 s1 join tab2_n7 s3 on s1.key=s3.key
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -1777,19 +1777,19 @@ Stage-0
             Filter Operator [FIL_14] (rows=242 width=10)
               predicate:key is not null
               TableScan [TS_3] (rows=242 width=10)
-                default@tab2,s3,Tbl:COMPLETE,Col:NONE,Output:["key"]
+                default@tab2_n7,s3,Tbl:COMPLETE,Col:NONE,Output:["key"]
         <-Select Operator [SEL_2] (rows=242 width=10)
             Output:["_col0","_col1"]
             Filter Operator [FIL_13] (rows=242 width=10)
               predicate:key is not null
               TableScan [TS_0] (rows=242 width=10)
-                default@tab,s1,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+                default@tab_n15,s1,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
 
 PREHOOK: query: explain 
-select s1.key as key, s1.value as value from tab s1 join tab2 s3 on s1.key=s3.key join tab2 s2 on s1.value=s2.value
+select s1.key as key, s1.value as value from tab_n15 s1 join tab2_n7 s3 on s1.key=s3.key join tab2_n7 s2 on s1.value=s2.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain 
-select s1.key as key, s1.value as value from tab s1 join tab2 s3 on s1.key=s3.key join tab2 s2 on s1.value=s2.value
+select s1.key as key, s1.value as value from tab_n15 s1 join tab2_n7 s3 on s1.key=s3.key join tab2_n7 s2 on s1.value=s2.value
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -1814,13 +1814,13 @@ Stage-0
                 Filter Operator [FIL_23] (rows=242 width=10)
                   predicate:key is not null
                   TableScan [TS_3] (rows=242 width=10)
-                    default@tab2,s3,Tbl:COMPLETE,Col:NONE,Output:["key"]
+                    default@tab2_n7,s3,Tbl:COMPLETE,Col:NONE,Output:["key"]
             <-Select Operator [SEL_2] (rows=242 width=10)
                 Output:["_col0","_col1"]
                 Filter Operator [FIL_22] (rows=242 width=10)
                   predicate:(key is not null and value is not null)
                   TableScan [TS_0] (rows=242 width=10)
-                    default@tab,s1,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+                    default@tab_n15,s1,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
         <-Map 4 [SIMPLE_EDGE] vectorized, llap
           SHUFFLE [RS_30]
             PartitionCols:_col0
@@ -1829,19 +1829,19 @@ Stage-0
               Filter Operator [FIL_28] (rows=242 width=10)
                 predicate:value is not null
                 TableScan [TS_6] (rows=242 width=10)
-                  default@tab2,s2,Tbl:COMPLETE,Col:NONE,Output:["value"]
+                  default@tab2_n7,s2,Tbl:COMPLETE,Col:NONE,Output:["value"]
 
 PREHOOK: query: explain
-select count(*) from (select s1.key as key, s1.value as value from tab s1 join tab s3 on s1.key=s3.key
+select count(*) from (select s1.key as key, s1.value as value from tab_n15 s1 join tab_n15 s3 on s1.key=s3.key
 UNION  ALL
-select s2.key as key, s2.value as value from tab s2
-) a join tab_part b on (a.key = b.key)
+select s2.key as key, s2.value as value from tab_n15 s2
+) a_n19 join tab_part_n14 b_n15 on (a_n19.key = b_n15.key)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select count(*) from (select s1.key as key, s1.value as value from tab s1 join tab s3 on s1.key=s3.key
+select count(*) from (select s1.key as key, s1.value as value from tab_n15 s1 join tab_n15 s3 on s1.key=s3.key
 UNION  ALL
-select s2.key as key, s2.value as value from tab s2
-) a join tab_part b on (a.key = b.key)
+select s2.key as key, s2.value as value from tab_n15 s2
+) a_n19 join tab_part_n14 b_n15 on (a_n19.key = b_n15.key)
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -1873,7 +1873,7 @@ Stage-0
                     Filter Operator [FIL_40] (rows=500 width=10)
                       predicate:key is not null
                       TableScan [TS_15] (rows=500 width=10)
-                        default@tab_part,b,Tbl:COMPLETE,Col:NONE,Output:["key"]
+                        default@tab_part_n14,b_n15,Tbl:COMPLETE,Col:NONE,Output:["key"]
               <-Union 2 [SIMPLE_EDGE]
                 <-Map 1 [CONTAINS] llap
                   Reduce Output Operator [RS_18]
@@ -1885,7 +1885,7 @@ Stage-0
                         Filter Operator [FIL_34] (rows=242 width=10)
                           predicate:key is not null
                           TableScan [TS_3] (rows=242 width=10)
-                            default@tab,s3,Tbl:COMPLETE,Col:NONE,Output:["key"]
+                            default@tab_n15,s3,Tbl:COMPLETE,Col:NONE,Output:["key"]
                     <-Select Operator [SEL_2] (rows=242 width=10)
                         Output:["_col0"]
                         Filter Operator [FIL_33] (rows=242 width=10)
@@ -1903,16 +1903,16 @@ Stage-0
                           Output:["key"]
 
 PREHOOK: query: explain
-select count(*) from (select s1.key as key, s1.value as value from tab s1 join tab s3 on s1.key=s3.key join tab s2 on s1.value=s2.value
+select count(*) from (select s1.key as key, s1.value as value from tab_n15 s1 join tab_n15 s3 on s1.key=s3.key join tab_n15 s2 on s1.value=s2.value
 UNION  ALL
-select s2.key as key, s2.value as value from tab s2
-) a join tab_part b on (a.key = b.key)
+select s2.key as key, s2.value as value from tab_n15 s2
+) a_n19 join tab_part_n14 b_n15 on (a_n19.key = b_n15.key)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select count(*) from (select s1.key as key, s1.value as value from tab s1 join tab s3 on s1.key=s3.key join tab s2 on s1.value=s2.value
+select count(*) from (select s1.key as key, s1.value as value from tab_n15 s1 join tab_n15 s3 on s1.key=s3.key join tab_n15 s2 on s1.value=s2.value
 UNION  ALL
-select s2.key as key, s2.value as value from tab s2
-) a join tab_part b on (a.key = b.key)
+select s2.key as key, s2.value as value from tab_n15 s2
+) a_n19 join tab_part_n14 b_n15 on (a_n19.key = b_n15.key)
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -1944,7 +1944,7 @@ Stage-0
                     Filter Operator [FIL_55] (rows=500 width=10)
                       predicate:key is not null
                       TableScan [TS_21] (rows=500 width=10)
-                        default@tab_part,b,Tbl:COMPLETE,Col:NONE,Output:["key"]
+                        default@tab_part_n14,b_n15,Tbl:COMPLETE,Col:NONE,Output:["key"]
               <-Union 3 [SIMPLE_EDGE]
                 <-Map 8 [CONTAINS] vectorized, llap
                   Reduce Output Operator [RS_62]
@@ -1970,13 +1970,13 @@ Stage-0
                             Filter Operator [FIL_44] (rows=242 width=10)
                               predicate:key is not null
                               TableScan [TS_3] (rows=242 width=10)
-                                default@tab,s3,Tbl:COMPLETE,Col:NONE,Output:["key"]
+                                default@tab_n15,s3,Tbl:COMPLETE,Col:NONE,Output:["key"]
                         <-Select Operator [SEL_2] (rows=242 width=10)
                             Output:["_col0","_col1"]
                             Filter Operator [FIL_43] (rows=242 width=10)
                               predicate:(key is not null and value is not null)
                               TableScan [TS_0] (rows=242 width=10)
-                                default@tab,s1,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+                                default@tab_n15,s1,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
                     <-Map 7 [SIMPLE_EDGE] vectorized, llap
                       SHUFFLE [RS_54]
                         PartitionCols:_col0
@@ -1985,7 +1985,7 @@ Stage-0
                           Filter Operator [FIL_52] (rows=242 width=10)
                             predicate:value is not null
                             TableScan [TS_6] (rows=242 width=10)
-                              default@tab,s2,Tbl:COMPLETE,Col:NONE,Output:["value"]
+                              default@tab_n15,s2,Tbl:COMPLETE,Col:NONE,Output:["value"]
 
 PREHOOK: query: explain
 SELECT x.key, y.value
@@ -2521,30 +2521,30 @@ Stage-0
                                               TableScan [TS_3] (rows=500 width=10)
                                                 Output:["key","value"]
 
-PREHOOK: query: CREATE TABLE a(key STRING, value STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE a_n19(key STRING, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@a
-POSTHOOK: query: CREATE TABLE a(key STRING, value STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@a_n19
+POSTHOOK: query: CREATE TABLE a_n19(key STRING, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@a
-PREHOOK: query: CREATE TABLE b(key STRING, value STRING) STORED AS TEXTFILE
+POSTHOOK: Output: default@a_n19
+PREHOOK: query: CREATE TABLE b_n15(key STRING, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@b
-POSTHOOK: query: CREATE TABLE b(key STRING, value STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@b_n15
+POSTHOOK: query: CREATE TABLE b_n15(key STRING, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@b
-PREHOOK: query: CREATE TABLE c(key STRING, value STRING) STORED AS TEXTFILE
+POSTHOOK: Output: default@b_n15
+PREHOOK: query: CREATE TABLE c_n4(key STRING, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@c
-POSTHOOK: query: CREATE TABLE c(key STRING, value STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@c_n4
+POSTHOOK: query: CREATE TABLE c_n4(key STRING, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@c
+POSTHOOK: Output: default@c_n4
 PREHOOK: query: explain
 from
 (
@@ -2560,9 +2560,9 @@ SELECT x.key, y.value
 FROM src1 x JOIN src1 y ON (x.key = y.key) 
 JOIN (select key, value from src1 union all select key, value from src union all select key, value from src union all select key, value from src)z ON (x.value = z.value)
 ) tmp
-INSERT OVERWRITE TABLE a SELECT tmp.key, tmp.value
-INSERT OVERWRITE TABLE b SELECT tmp.key, tmp.value
-INSERT OVERWRITE TABLE c SELECT tmp.key, tmp.value
+INSERT OVERWRITE TABLE a_n19 SELECT tmp.key, tmp.value
+INSERT OVERWRITE TABLE b_n15 SELECT tmp.key, tmp.value
+INSERT OVERWRITE TABLE c_n4 SELECT tmp.key, tmp.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 from
@@ -2579,9 +2579,9 @@ SELECT x.key, y.value
 FROM src1 x JOIN src1 y ON (x.key = y.key) 
 JOIN (select key, value from src1 union all select key, value from src union all select key, value from src union all select key, value from src)z ON (x.value = z.value)
 ) tmp
-INSERT OVERWRITE TABLE a SELECT tmp.key, tmp.value
-INSERT OVERWRITE TABLE b SELECT tmp.key, tmp.value
-INSERT OVERWRITE TABLE c SELECT tmp.key, tmp.value
+INSERT OVERWRITE TABLE a_n19 SELECT tmp.key, tmp.value
+INSERT OVERWRITE TABLE b_n15 SELECT tmp.key, tmp.value
+INSERT OVERWRITE TABLE c_n4 SELECT tmp.key, tmp.value
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -2607,7 +2607,7 @@ Stage-5
   Stats Work{}
     Stage-0
       Move Operator
-        table:{"name:":"default.a"}
+        table:{"name:":"default.a_n19"}
         Stage-4
           Dependency Collection{}
             Stage-3
@@ -2618,7 +2618,7 @@ Stage-5
                 <-Union 4 [CUSTOM_SIMPLE_EDGE]
                   <-Map 19 [CONTAINS] llap
                     File Output Operator [FS_75]
-                      table:{"name:":"default.a"}
+                      table:{"name:":"default.a_n19"}
                       Select Operator [SEL_72] (rows=1677 width=10)
                         Output:["_col0","_col1"]
                         Map Join Operator [MAPJOIN_124] (rows=1677 width=10)
@@ -2656,7 +2656,7 @@ Stage-5
                           Output:["key","value"]
                            Please refer to the previous Select Operator [SEL_72]
                     File Output Operator [FS_77]
-                      table:{"name:":"default.b"}
+                      table:{"name:":"default.b_n15"}
                        Please refer to the previous Select Operator [SEL_72]
                     Reduce Output Operator [RS_3]
                       Group By Operator [GBY_2] (rows=1 width=880)
@@ -2665,7 +2665,7 @@ Stage-5
                           Output:["key","value"]
                            Please refer to the previous Select Operator [SEL_72]
                     File Output Operator [FS_79]
-                      table:{"name:":"default.c"}
+                      table:{"name:":"default.c_n4"}
                        Please refer to the previous Select Operator [SEL_72]
                     Reduce Output Operator [RS_3]
                       Group By Operator [GBY_2] (rows=1 width=880)
@@ -2675,7 +2675,7 @@ Stage-5
                            Please refer to the previous Select Operator [SEL_72]
                   <-Map 20 [CONTAINS] llap
                     File Output Operator [FS_75]
-                      table:{"name:":"default.a"}
+                      table:{"name:":"default.a_n19"}
                       Select Operator [SEL_72] (rows=1677 width=10)
                         Output:["_col0","_col1"]
                         Map Join Operator [MAPJOIN_124] (rows=1677 width=10)
@@ -2697,7 +2697,7 @@ Stage-5
                           Output:["key","value"]
                            Please refer to the previous Select Operator [SEL_72]
                     File Output Operator [FS_77]
-                      table:{"name:":"default.b"}
+                      table:{"name:":"default.b_n15"}
                        Please refer to the previous Select Operator [SEL_72]
                     Reduce Output Operator [RS_3]
                       Group By Operator [GBY_2] (rows=1 width=880)
@@ -2706,7 +2706,7 @@ Stage-5
                           Output:["key","value"]
                            Please refer to the previous Select Operator [SEL_72]
                     File Output Operator [FS_79]
-                      table:{"name:":"default.c"}
+                      table:{"name:":"default.c_n4"}
                        Please refer to the previous Select Operator [SEL_72]
                     Reduce Output Operator [RS_3]
                       Group By Operator [GBY_2] (rows=1 width=880)
@@ -2716,7 +2716,7 @@ Stage-5
                            Please refer to the previous Select Operator [SEL_72]
                   <-Map 21 [CONTAINS] llap
                     File Output Operator [FS_75]
-                      table:{"name:":"default.a"}
+                      table:{"name:":"default.a_n19"}
                       Select Operator [SEL_72] (rows=1677 width=10)
                         Output:["_col0","_col1"]
                         Map Join Operator [MAPJOIN_124] (rows=1677 width=10)
@@ -2738,7 +2738,7 @@ Stage-5
                           Output:["key","value"]
                            Please refer to the previous Select Operator [SEL_72]
                     File Output Operator [FS_77]
-                      table:{"name:":"default.b"}
+                      table:{"name:":"default.b_n15"}
                        Please refer to the previous Select Operator [SEL_72]
                     Reduce Output Operator [RS_3]
                       Group By Operator [GBY_2] (rows=1 width=880)
@@ -2747,7 +2747,7 @@ Stage-5
                           Output:["key","value"]
                            Please refer to the previous Select Operator [SEL_72]
                     File Output Operator [FS_79]
-                      table:{"name:":"default.c"}
+                      table:{"name:":"default.c_n4"}
                        Please refer to the previous Select Operator [SEL_72]
                     Reduce Output Operator [RS_3]
                       Group By Operator [GBY_2] (rows=1 width=880)
@@ -2757,7 +2757,7 @@ Stage-5
                            Please refer to the previous Select Operator [SEL_72]
                   <-Map 22 [CONTAINS] llap
                     File Output Operator [FS_75]
-                      table:{"name:":"default.a"}
+                      table:{"name:":"default.a_n19"}
                       Select Operator [SEL_72] (rows=1677 width=10)
                         Output:["_col0","_col1"]
                         Map Join Operator [MAPJOIN_124] (rows=1677 width=10)
@@ -2779,7 +2779,7 @@ Stage-5
                           Output:["key","value"]
                            Please refer to the previous Select Operator [SEL_72]
                     File Output Operator [FS_77]
-                      table:{"name:":"default.b"}
+                      table:{"name:":"default.b_n15"}
                        Please refer to the previous Select Operator [SEL_72]
                     Reduce Output Operator [RS_3]
                       Group By Operator [GBY_2] (rows=1 width=880)
@@ -2788,7 +2788,7 @@ Stage-5
                           Output:["key","value"]
                            Please refer to the previous Select Operator [SEL_72]
                     File Output Operator [FS_79]
-                      table:{"name:":"default.c"}
+                      table:{"name:":"default.c_n4"}
                        Please refer to the previous Select Operator [SEL_72]
                     Reduce Output Operator [RS_3]
                       Group By Operator [GBY_2] (rows=1 width=880)
@@ -2798,7 +2798,7 @@ Stage-5
                            Please refer to the previous Select Operator [SEL_72]
                   <-Reducer 12 [CONTAINS] llap
                     File Output Operator [FS_75]
-                      table:{"name:":"default.a"}
+                      table:{"name:":"default.a_n19"}
                       Select Operator [SEL_44] (rows=1239 width=10)
                         Output:["_col0","_col1"]
                         Merge Join Operator [MERGEJOIN_122] (rows=1239 width=10)
@@ -2861,7 +2861,7 @@ Stage-5
                           Output:["key","value"]
                            Please refer to the previous Select Operator [SEL_44]
                     File Output Operator [FS_77]
-                      table:{"name:":"default.b"}
+                      table:{"name:":"default.b_n15"}
                        Please refer to the previous Select Operator [SEL_44]
                     Reduce Output Operator [RS_3]
                       Group By Operator [GBY_2] (rows=1 width=880)
@@ -2870,7 +2870,7 @@ Stage-5
                           Output:["key","value"]
                            Please refer to the previous Select Operator [SEL_44]
                     File Output Operator [FS_79]
-                      table:{"name:":"default.c"}
+                      table:{"name:":"default.c_n4"}
                        Please refer to the previous Select Operator [SEL_44]
                     Reduce Output Operator [RS_3]
                       Group By Operator [GBY_2] (rows=1 width=880)
@@ -2880,7 +2880,7 @@ Stage-5
                            Please refer to the previous Select Operator [SEL_44]
                   <-Reducer 3 [CONTAINS] llap
                     File Output Operator [FS_75]
-                      table:{"name:":"default.a"}
+                      table:{"name:":"default.a_n19"}
                       Select Operator [SEL_20] (rows=634 width=10)
                         Output:["_col0","_col1"]
                         Merge Join Operator [MERGEJOIN_120] (rows=634 width=10)
@@ -2931,7 +2931,7 @@ Stage-5
                           Output:["key","value"]
                            Please refer to the previous Select Operator [SEL_20]
                     File Output Operator [FS_77]
-                      table:{"name:":"default.b"}
+                      table:{"name:":"default.b_n15"}
                        Please refer to the previous Select Operator [SEL_20]
                     Reduce Output Operator [RS_3]
                       Group By Operator [GBY_2] (rows=1 width=880)
@@ -2940,7 +2940,7 @@ Stage-5
                           Output:["key","value"]
                            Please refer to the previous Select Operator [SEL_20]
                     File Output Operator [FS_79]
-                      table:{"name:":"default.c"}
+                      table:{"name:":"default.c_n4"}
                        Please refer to the previous Select Operator [SEL_20]
                     Reduce Output Operator [RS_3]
                       Group By Operator [GBY_2] (rows=1 width=880)
@@ -2962,13 +2962,13 @@ Stage-6
   Stats Work{}
     Stage-1
       Move Operator
-        table:{"name:":"default.b"}
+        table:{"name:":"default.b_n15"}
          Please refer to the previous Stage-4
 Stage-7
   Stats Work{}
     Stage-2
       Move Operator
-        table:{"name:":"default.c"}
+        table:{"name:":"default.c_n4"}
          Please refer to the previous Stage-4
 
 PREHOOK: query: explain
@@ -2983,9 +2983,9 @@ union
 SELECT x.key as key, y.value as value from src1 x JOIN src1 y ON (x.key = y.key) 
 JOIN (select key, value from src1 union select key, value from src union select key, value from src union select key, value from src)z ON (x.value = z.value)
 ) tmp
-INSERT OVERWRITE TABLE a SELECT tmp.key, tmp.value
-INSERT OVERWRITE TABLE b SELECT tmp.key, tmp.value
-INSERT OVERWRITE TABLE c SELECT tmp.key, tmp.value
+INSERT OVERWRITE TABLE a_n19 SELECT tmp.key, tmp.value
+INSERT OVERWRITE TABLE b_n15 SELECT tmp.key, tmp.value
+INSERT OVERWRITE TABLE c_n4 SELECT tmp.key, tmp.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 FROM
@@ -2999,9 +2999,9 @@ union
 SELECT x.key as key, y.value as value from src1 x JOIN src1 y ON (x.key = y.key) 
 JOIN (select key, value from src1 union select key, value from src union select key, value from src union select key, value from src)z ON (x.value = z.value)
 ) tmp
-INSERT OVERWRITE TABLE a SELECT tmp.key, tmp.value
-INSERT OVERWRITE TABLE b SELECT tmp.key, tmp.value
-INSERT OVERWRITE TABLE c SELECT tmp.key, tmp.value
+INSERT OVERWRITE TABLE a_n19 SELECT tmp.key, tmp.value
+INSERT OVERWRITE TABLE b_n15 SELECT tmp.key, tmp.value
+INSERT OVERWRITE TABLE c_n4 SELECT tmp.key, tmp.value
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -3035,7 +3035,7 @@ Stage-5
   Stats Work{}
     Stage-0
       Move Operator
-        table:{"name:":"default.a"}
+        table:{"name:":"default.a_n19"}
         Stage-4
           Dependency Collection{}
             Stage-3
@@ -3320,44 +3320,44 @@ Stage-6
   Stats Work{}
     Stage-1
       Move Operator
-        table:{"name:":"default.b"}
+        table:{"name:":"default.b_n15"}
          Please refer to the previous Stage-4
 Stage-7
   Stats Work{}
     Stage-2
       Move Operator
-        table:{"name:":"default.c"}
+        table:{"name:":"default.c_n4"}
          Please refer to the previous Stage-4
 
-PREHOOK: query: CREATE TABLE DEST1(key STRING, value STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE DEST1_n172(key STRING, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEST1
-POSTHOOK: query: CREATE TABLE DEST1(key STRING, value STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@DEST1_n172
+POSTHOOK: query: CREATE TABLE DEST1_n172(key STRING, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEST1
-PREHOOK: query: CREATE TABLE DEST2(key STRING, val1 STRING, val2 STRING) STORED AS TEXTFILE
+POSTHOOK: Output: default@DEST1_n172
+PREHOOK: query: CREATE TABLE DEST2_n43(key STRING, val1 STRING, val2 STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEST2
-POSTHOOK: query: CREATE TABLE DEST2(key STRING, val1 STRING, val2 STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@DEST2_n43
+POSTHOOK: query: CREATE TABLE DEST2_n43(key STRING, val1 STRING, val2 STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEST2
+POSTHOOK: Output: default@DEST2_n43
 PREHOOK: query: explain 
 FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
                          UNION DISTINCT  
-      select s2.key as key, s2.value as value from src s2) unionsrc
-INSERT OVERWRITE TABLE DEST1 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
-INSERT OVERWRITE TABLE DEST2 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key, unionsrc.value
+      select s2.key as key, s2.value as value from src s2) unionsrc_n4
+INSERT OVERWRITE TABLE DEST1_n172 SELECT unionsrc_n4.key, COUNT(DISTINCT SUBSTR(unionsrc_n4.value,5)) GROUP BY unionsrc_n4.key
+INSERT OVERWRITE TABLE DEST2_n43 SELECT unionsrc_n4.key, unionsrc_n4.value, COUNT(DISTINCT SUBSTR(unionsrc_n4.value,5)) GROUP BY unionsrc_n4.key, unionsrc_n4.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain 
 FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
                          UNION DISTINCT  
-      select s2.key as key, s2.value as value from src s2) unionsrc
-INSERT OVERWRITE TABLE DEST1 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
-INSERT OVERWRITE TABLE DEST2 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key, unionsrc.value
+      select s2.key as key, s2.value as value from src s2) unionsrc_n4
+INSERT OVERWRITE TABLE DEST1_n172 SELECT unionsrc_n4.key, COUNT(DISTINCT SUBSTR(unionsrc_n4.value,5)) GROUP BY unionsrc_n4.key
+INSERT OVERWRITE TABLE DEST2_n43 SELECT unionsrc_n4.key, unionsrc_n4.value, COUNT(DISTINCT SUBSTR(unionsrc_n4.value,5)) GROUP BY unionsrc_n4.key, unionsrc_n4.value
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -3373,7 +3373,7 @@ Stage-4
   Stats Work{}
     Stage-0
       Move Operator
-        table:{"name:":"default.dest1"}
+        table:{"name:":"default.dest1_n172"}
         Stage-3
           Dependency Collection{}
             Stage-2
@@ -3383,7 +3383,7 @@ Stage-4
                   Output:["_col0","_col1"],aggregations:["compute_stats(VALUE._col0)","compute_stats(VALUE._col1)"]
                 <-Reducer 5 [CUSTOM_SIMPLE_EDGE] llap
                   File Output Operator [FS_21]
-                    table:{"name:":"default.dest1"}
+                    table:{"name:":"default.dest1_n172"}
                     Select Operator [SEL_19] (rows=1 width=272)
                       Output:["_col0","_col1"]
                       Group By Operator [GBY_18] (rows=1 width=96)
@@ -3446,12 +3446,12 @@ Stage-5
   Stats Work{}
     Stage-1
       Move Operator
-        table:{"name:":"default.dest2"}
+        table:{"name:":"default.dest2_n43"}
          Please refer to the previous Stage-3
 
-PREHOOK: query: EXPLAIN FROM UNIQUEJOIN PRESERVE src a (a.key), PRESERVE src1 b (b.key), PRESERVE srcpart c (c.key) SELECT a.key, b.key, c.key
+PREHOOK: query: EXPLAIN FROM UNIQUEJOIN PRESERVE src a_n19 (a_n19.key), PRESERVE src1 b_n15 (b_n15.key), PRESERVE srcpart c_n4 (c_n4.key) SELECT a_n19.key, b_n15.key, c_n4.key
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN FROM UNIQUEJOIN PRESERVE src a (a.key), PRESERVE src1 b (b.key), PRESERVE srcpart c (c.key) SELECT a.key, b.key, c.key
+POSTHOOK: query: EXPLAIN FROM UNIQUEJOIN PRESERVE src a_n19 (a_n19.key), PRESERVE src1 b_n15 (b_n15.key), PRESERVE srcpart c_n4 (c_n4.key) SELECT a_n19.key, b_n15.key, c_n4.key
 POSTHOOK: type: QUERY
 Plan not optimized by CBO due to missing feature [Unique_join].
 
@@ -3472,29 +3472,29 @@ Stage-0
             SHUFFLE [RS_10]
               PartitionCols:key
               TableScan [TS_0] (rows=500 width=10)
-                default@src,a,Tbl:COMPLETE,Col:NONE,Output:["key"]
+                default@src,a_n19,Tbl:COMPLETE,Col:NONE,Output:["key"]
           <-Map 3 [SIMPLE_EDGE] vectorized, llap
             SHUFFLE [RS_11]
               PartitionCols:key
               TableScan [TS_1] (rows=25 width=7)
-                default@src1,b,Tbl:COMPLETE,Col:NONE,Output:["key"]
+                default@src1,b_n15,Tbl:COMPLETE,Col:NONE,Output:["key"]
           <-Map 4 [SIMPLE_EDGE] vectorized, llap
             SHUFFLE [RS_12]
               PartitionCols:key
               TableScan [TS_2] (rows=2000 width=10)
-                default@srcpart,c,Tbl:COMPLETE,Col:NONE,Output:["key"]
+                default@srcpart,c_n4,Tbl:COMPLETE,Col:NONE,Output:["key"]
 
 PREHOOK: query: EXPLAIN
 SELECT 
-TRANSFORM(a.key, a.value) USING 'cat' AS (tkey, tvalue)
-FROM src a join src b
-on a.key = b.key
+TRANSFORM(a_n19.key, a_n19.value) USING 'cat' AS (tkey, tvalue)
+FROM src a_n19 join src b_n15
+on a_n19.key = b_n15.key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT 
-TRANSFORM(a.key, a.value) USING 'cat' AS (tkey, tvalue)
-FROM src a join src b
-on a.key = b.key
+TRANSFORM(a_n19.key, a_n19.value) USING 'cat' AS (tkey, tvalue)
+FROM src a_n19 join src b_n15
+on a_n19.key = b_n15.key
 POSTHOOK: type: QUERY
 Plan not optimized by CBO.
 
@@ -3517,40 +3517,40 @@ Stage-0
               Filter Operator [FIL_15] (rows=500 width=10)
                 predicate:key is not null
                 TableScan [TS_0] (rows=500 width=10)
-                  default@src,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+                  default@src,a_n19,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
           <-Map 3 [SIMPLE_EDGE] vectorized, llap
             SHUFFLE [RS_18]
               PartitionCols:key
               Filter Operator [FIL_17] (rows=500 width=10)
                 predicate:key is not null
                 TableScan [TS_1] (rows=500 width=10)
-                  default@src,b,Tbl:COMPLETE,Col:NONE,Output:["key"]
+                  default@src,b_n15,Tbl:COMPLETE,Col:NONE,Output:["key"]
 
 PREHOOK: query: explain
 FROM (
       select key, value from (
       select 'tst1' as key, cast(count(1) as string) as value, 'tst1' as value2 from src s1
                          UNION all 
-      select s2.key as key, s2.value as value, 'tst1' as value2 from src s2) unionsub
+      select s2.key as key, s2.value as value, 'tst1' as value2 from src s2) unionsub_n15
                          UNION all
       select key, value from src s0
-                             ) unionsrc
-INSERT OVERWRITE TABLE DEST1 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
-INSERT OVERWRITE TABLE DEST2 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
-GROUP BY unionsrc.key, unionsrc.value
+                             ) unionsrc_n4
+INSERT OVERWRITE TABLE DEST1_n172 SELECT unionsrc_n4.key, COUNT(DISTINCT SUBSTR(unionsrc_n4.value,5)) GROUP BY unionsrc_n4.key
+INSERT OVERWRITE TABLE DEST2_n43 SELECT unionsrc_n4.key, unionsrc_n4.value, COUNT(DISTINCT SUBSTR(unionsrc_n4.value,5)) 
+GROUP BY unionsrc_n4.key, unionsrc_n4.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 FROM (
       select key, value from (
       select 'tst1' as key, cast(count(1) as string) as value, 'tst1' as value2 from src s1
                          UNION all 
-      select s2.key as key, s2.value as value, 'tst1' as value2 from src s2) unionsub
+      select s2.key as key, s2.value as value, 'tst1' as value2 from src s2) unionsub_n15
                          UNION all
       select key, value from src s0
-                             ) unionsrc
-INSERT OVERWRITE TABLE DEST1 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
-INSERT OVERWRITE TABLE DEST2 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
-GROUP BY unionsrc.key, unionsrc.value
+                             ) unionsrc_n4
+INSERT OVERWRITE TABLE DEST1_n172 SELECT unionsrc_n4.key, COUNT(DISTINCT SUBSTR(unionsrc_n4.value,5)) GROUP BY unionsrc_n4.key
+INSERT OVERWRITE TABLE DEST2_n43 SELECT unionsrc_n4.key, unionsrc_n4.value, COUNT(DISTINCT SUBSTR(unionsrc_n4.value,5)) 
+GROUP BY unionsrc_n4.key, unionsrc_n4.value
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -3567,7 +3567,7 @@ Stage-4
   Stats Work{}
     Stage-0
       Move Operator
-        table:{"name:":"default.dest1"}
+        table:{"name:":"default.dest1_n172"}
         Stage-3
           Dependency Collection{}
             Stage-2
@@ -3577,7 +3577,7 @@ Stage-4
                   Output:["_col0","_col1"],aggregations:["compute_stats(VALUE._col0)","compute_stats(VALUE._col1)"]
                 <-Reducer 4 [CUSTOM_SIMPLE_EDGE] llap
                   File Output Operator [FS_18]
-                    table:{"name:":"default.dest1"}
+                    table:{"name:":"default.dest1_n172"}
                     Select Operator [SEL_16] (rows=1 width=272)
                       Output:["_col0","_col1"]
                       Group By Operator [GBY_15] (rows=1 width=96)
@@ -3644,7 +3644,7 @@ Stage-4
                   Output:["_col0","_col1","_col2"],aggregations:["compute_stats(VALUE._col0)","compute_stats(VALUE._col1)","compute_stats(VALUE._col2)"]
                 <-Reducer 6 [CUSTOM_SIMPLE_EDGE] llap
                   File Output Operator [FS_25]
-                    table:{"name:":"default.dest2"}
+                    table:{"name:":"default.dest2_n43"}
                     Select Operator [SEL_23] (rows=1 width=456)
                       Output:["_col0","_col1","_col2"]
                       Group By Operator [GBY_22] (rows=1 width=280)
@@ -3660,7 +3660,7 @@ Stage-5
   Stats Work{}
     Stage-1
       Move Operator
-        table:{"name:":"default.dest2"}
+        table:{"name:":"default.dest2_n43"}
          Please refer to the previous Stage-3
 
 PREHOOK: query: explain
@@ -3668,20 +3668,20 @@ FROM (
       select 'tst1' as key, cast(count(1) as string) as value, 'tst1' as value2 from src s1
                          UNION all 
       select s2.key as key, s2.value as value, 'tst1' as value2 from src s2
-                             ) unionsrc
-INSERT OVERWRITE TABLE DEST1 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
-INSERT OVERWRITE TABLE DEST2 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
-GROUP BY unionsrc.key, unionsrc.value
+                             ) unionsrc_n4
+INSERT OVERWRITE TABLE DEST1_n172 SELECT unionsrc_n4.key, COUNT(DISTINCT SUBSTR(unionsrc_n4.value,5)) GROUP BY unionsrc_n4.key
+INSERT OVERWRITE TABLE DEST2_n43 SELECT unionsrc_n4.key, unionsrc_n4.value, COUNT(DISTINCT SUBSTR(unionsrc_n4.value,5)) 
+GROUP BY unionsrc_n4.key, unionsrc_n4.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 FROM (
       select 'tst1' as key, cast(count(1) as string) as value, 'tst1' as value2 from src s1
                          UNION all 
       select s2.key as key, s2.value as value, 'tst1' as value2 from src s2
-                             ) unionsrc
-INSERT OVERWRITE TABLE DEST1 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
-INSERT OVERWRITE TABLE DEST2 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) 
-GROUP BY unionsrc.key, unionsrc.value
+                             ) unionsrc_n4
+INSERT OVERWRITE TABLE DEST1_n172 SELECT unionsrc_n4.key, COUNT(DISTINCT SUBSTR(unionsrc_n4.value,5)) GROUP BY unionsrc_n4.key
+INSERT OVERWRITE TABLE DEST2_n43 SELECT unionsrc_n4.key, unionsrc_n4.value, COUNT(DISTINCT SUBSTR(unionsrc_n4.value,5)) 
+GROUP BY unionsrc_n4.key, unionsrc_n4.value
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -3697,7 +3697,7 @@ Stage-4
   Stats Work{}
     Stage-0
       Move Operator
-        table:{"name:":"default.dest1"}
+        table:{"name:":"default.dest1_n172"}
         Stage-3
           Dependency Collection{}
             Stage-2
@@ -3707,7 +3707,7 @@ Stage-4
                   Output:["_col0","_col1"],aggregations:["compute_stats(VALUE._col0)","compute_stats(VALUE._col1)"]
                 <-Reducer 4 [CUSTOM_SIMPLE_EDGE] llap
                   File Output Operator [FS_16]
-                    table:{"name:":"default.dest1"}
+                    table:{"name:":"default.dest1_n172"}
                     Select Operator [SEL_14] (rows=1 width=272)
                       Output:["_col0","_col1"]
                       Group By Operator [GBY_13] (rows=1 width=96)
@@ -3760,7 +3760,7 @@ Stage-4
                   Output:["_col0","_col1","_col2"],aggregations:["compute_stats(VALUE._col0)","compute_stats(VALUE._col1)","compute_stats(VALUE._col2)"]
                 <-Reducer 6 [CUSTOM_SIMPLE_EDGE] llap
                   File Output Operator [FS_23]
-                    table:{"name:":"default.dest2"}
+                    table:{"name:":"default.dest2_n43"}
                     Select Operator [SEL_21] (rows=1 width=456)
                       Output:["_col0","_col1","_col2"]
                       Group By Operator [GBY_20] (rows=1 width=280)
@@ -3776,6 +3776,6 @@ Stage-5
   Stats Work{}
     Stage-1
       Move Operator
-        table:{"name:":"default.dest2"}
+        table:{"name:":"default.dest2_n43"}
          Please refer to the previous Stage-3
 

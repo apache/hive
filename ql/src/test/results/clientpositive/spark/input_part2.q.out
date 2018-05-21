@@ -1,28 +1,28 @@
-PREHOOK: query: CREATE TABLE dest1(key INT, value STRING, hr STRING, ds STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE dest1_n84(key INT, value STRING, hr STRING, ds STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest1
-POSTHOOK: query: CREATE TABLE dest1(key INT, value STRING, hr STRING, ds STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@dest1_n84
+POSTHOOK: query: CREATE TABLE dest1_n84(key INT, value STRING, hr STRING, ds STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest1
-PREHOOK: query: CREATE TABLE dest2(key INT, value STRING, hr STRING, ds STRING) STORED AS TEXTFILE
+POSTHOOK: Output: default@dest1_n84
+PREHOOK: query: CREATE TABLE dest2_n20(key INT, value STRING, hr STRING, ds STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest2
-POSTHOOK: query: CREATE TABLE dest2(key INT, value STRING, hr STRING, ds STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@dest2_n20
+POSTHOOK: query: CREATE TABLE dest2_n20(key INT, value STRING, hr STRING, ds STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest2
+POSTHOOK: Output: default@dest2_n20
 PREHOOK: query: EXPLAIN EXTENDED
 FROM srcpart
-INSERT OVERWRITE TABLE dest1 SELECT srcpart.key, srcpart.value, srcpart.hr, srcpart.ds WHERE srcpart.key < 100 and srcpart.ds = '2008-04-08' and srcpart.hr = '12'
-INSERT OVERWRITE TABLE dest2 SELECT srcpart.key, srcpart.value, srcpart.hr, srcpart.ds WHERE srcpart.key < 100 and srcpart.ds = '2008-04-09' and srcpart.hr = '12'
+INSERT OVERWRITE TABLE dest1_n84 SELECT srcpart.key, srcpart.value, srcpart.hr, srcpart.ds WHERE srcpart.key < 100 and srcpart.ds = '2008-04-08' and srcpart.hr = '12'
+INSERT OVERWRITE TABLE dest2_n20 SELECT srcpart.key, srcpart.value, srcpart.hr, srcpart.ds WHERE srcpart.key < 100 and srcpart.ds = '2008-04-09' and srcpart.hr = '12'
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED
 FROM srcpart
-INSERT OVERWRITE TABLE dest1 SELECT srcpart.key, srcpart.value, srcpart.hr, srcpart.ds WHERE srcpart.key < 100 and srcpart.ds = '2008-04-08' and srcpart.hr = '12'
-INSERT OVERWRITE TABLE dest2 SELECT srcpart.key, srcpart.value, srcpart.hr, srcpart.ds WHERE srcpart.key < 100 and srcpart.ds = '2008-04-09' and srcpart.hr = '12'
+INSERT OVERWRITE TABLE dest1_n84 SELECT srcpart.key, srcpart.value, srcpart.hr, srcpart.ds WHERE srcpart.key < 100 and srcpart.ds = '2008-04-08' and srcpart.hr = '12'
+INSERT OVERWRITE TABLE dest2_n20 SELECT srcpart.key, srcpart.value, srcpart.hr, srcpart.ds WHERE srcpart.key < 100 and srcpart.ds = '2008-04-09' and srcpart.hr = '12'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -69,17 +69,17 @@ STAGE PLANS:
                               columns.comments 
                               columns.types int:string:string:string
 #### A masked pattern was here ####
-                              name default.dest1
+                              name default.dest1_n84
                               numFiles 0
                               numRows 0
                               rawDataSize 0
-                              serialization.ddl struct dest1 { i32 key, string value, string hr, string ds}
+                              serialization.ddl struct dest1_n84 { i32 key, string value, string hr, string ds}
                               serialization.format 1
                               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                               totalSize 0
 #### A masked pattern was here ####
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.dest1
+                            name: default.dest1_n84
                         TotalFiles: 1
                         GatherStats: true
                         MultiFileSpray: false
@@ -110,17 +110,17 @@ STAGE PLANS:
                               columns.comments 
                               columns.types int:string:string:string
 #### A masked pattern was here ####
-                              name default.dest2
+                              name default.dest2_n20
                               numFiles 0
                               numRows 0
                               rawDataSize 0
-                              serialization.ddl struct dest2 { i32 key, string value, string hr, string ds}
+                              serialization.ddl struct dest2_n20 { i32 key, string value, string hr, string ds}
                               serialization.format 1
                               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                               totalSize 0
 #### A masked pattern was here ####
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.dest2
+                            name: default.dest2_n20
                         TotalFiles: 1
                         GatherStats: true
                         MultiFileSpray: false
@@ -247,17 +247,17 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:string:string:string
 #### A masked pattern was here ####
-                name default.dest1
+                name default.dest1_n84
                 numFiles 0
                 numRows 0
                 rawDataSize 0
-                serialization.ddl struct dest1 { i32 key, string value, string hr, string ds}
+                serialization.ddl struct dest1_n84 { i32 key, string value, string hr, string ds}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n84
 
   Stage: Stage-3
     Stats Work
@@ -281,17 +281,17 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:string:string:string
 #### A masked pattern was here ####
-                name default.dest2
+                name default.dest2_n20
                 numFiles 0
                 numRows 0
                 rawDataSize 0
-                serialization.ddl struct dest2 { i32 key, string value, string hr, string ds}
+                serialization.ddl struct dest2_n20 { i32 key, string value, string hr, string ds}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest2
+              name: default.dest2_n20
 
   Stage: Stage-4
     Stats Work
@@ -299,38 +299,38 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
 PREHOOK: query: FROM srcpart
-INSERT OVERWRITE TABLE dest1 SELECT srcpart.key, srcpart.value, srcpart.hr, srcpart.ds WHERE srcpart.key < 100 and srcpart.ds = '2008-04-08' and srcpart.hr = '12'
-INSERT OVERWRITE TABLE dest2 SELECT srcpart.key, srcpart.value, srcpart.hr, srcpart.ds WHERE srcpart.key < 100 and srcpart.ds = '2008-04-09' and srcpart.hr = '12'
+INSERT OVERWRITE TABLE dest1_n84 SELECT srcpart.key, srcpart.value, srcpart.hr, srcpart.ds WHERE srcpart.key < 100 and srcpart.ds = '2008-04-08' and srcpart.hr = '12'
+INSERT OVERWRITE TABLE dest2_n20 SELECT srcpart.key, srcpart.value, srcpart.hr, srcpart.ds WHERE srcpart.key < 100 and srcpart.ds = '2008-04-09' and srcpart.hr = '12'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Output: default@dest1
-PREHOOK: Output: default@dest2
+PREHOOK: Output: default@dest1_n84
+PREHOOK: Output: default@dest2_n20
 POSTHOOK: query: FROM srcpart
-INSERT OVERWRITE TABLE dest1 SELECT srcpart.key, srcpart.value, srcpart.hr, srcpart.ds WHERE srcpart.key < 100 and srcpart.ds = '2008-04-08' and srcpart.hr = '12'
-INSERT OVERWRITE TABLE dest2 SELECT srcpart.key, srcpart.value, srcpart.hr, srcpart.ds WHERE srcpart.key < 100 and srcpart.ds = '2008-04-09' and srcpart.hr = '12'
+INSERT OVERWRITE TABLE dest1_n84 SELECT srcpart.key, srcpart.value, srcpart.hr, srcpart.ds WHERE srcpart.key < 100 and srcpart.ds = '2008-04-08' and srcpart.hr = '12'
+INSERT OVERWRITE TABLE dest2_n20 SELECT srcpart.key, srcpart.value, srcpart.hr, srcpart.ds WHERE srcpart.key < 100 and srcpart.ds = '2008-04-09' and srcpart.hr = '12'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Output: default@dest1
-POSTHOOK: Output: default@dest2
-POSTHOOK: Lineage: dest1.ds SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.hr SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.ds SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.hr SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: SELECT dest1.* FROM dest1 sort by key,value,ds,hr
+POSTHOOK: Output: default@dest1_n84
+POSTHOOK: Output: default@dest2_n20
+POSTHOOK: Lineage: dest1_n84.ds SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: dest1_n84.hr SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: dest1_n84.key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n84.value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n20.ds SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: dest2_n20.hr SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: dest2_n20.key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n20.value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT dest1_n84.* FROM dest1_n84 sort by key,value,ds,hr
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n84
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT dest1.* FROM dest1 sort by key,value,ds,hr
+POSTHOOK: query: SELECT dest1_n84.* FROM dest1_n84 sort by key,value,ds,hr
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n84
 #### A masked pattern was here ####
 0	val_0	12	2008-04-08
 0	val_0	12	2008-04-08
@@ -416,13 +416,13 @@ POSTHOOK: Input: default@dest1
 97	val_97	12	2008-04-08
 98	val_98	12	2008-04-08
 98	val_98	12	2008-04-08
-PREHOOK: query: SELECT dest2.* FROM dest2 sort by key,value,ds,hr
+PREHOOK: query: SELECT dest2_n20.* FROM dest2_n20 sort by key,value,ds,hr
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest2
+PREHOOK: Input: default@dest2_n20
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT dest2.* FROM dest2 sort by key,value,ds,hr
+POSTHOOK: query: SELECT dest2_n20.* FROM dest2_n20 sort by key,value,ds,hr
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest2
+POSTHOOK: Input: default@dest2_n20
 #### A masked pattern was here ####
 0	val_0	12	2008-04-09
 0	val_0	12	2008-04-09

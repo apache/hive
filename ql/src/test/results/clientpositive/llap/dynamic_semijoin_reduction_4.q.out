@@ -1,19 +1,19 @@
-PREHOOK: query: create table srcpart_date (key string, value string) partitioned by (ds string ) stored as ORC
+PREHOOK: query: create table srcpart_date_n1 (key string, value string) partitioned by (ds string ) stored as ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@srcpart_date
-POSTHOOK: query: create table srcpart_date (key string, value string) partitioned by (ds string ) stored as ORC
+PREHOOK: Output: default@srcpart_date_n1
+POSTHOOK: query: create table srcpart_date_n1 (key string, value string) partitioned by (ds string ) stored as ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcpart_date
-PREHOOK: query: CREATE TABLE srcpart_small(key1 STRING, value1 STRING) partitioned by (ds string) STORED as ORC
+POSTHOOK: Output: default@srcpart_date_n1
+PREHOOK: query: CREATE TABLE srcpart_small_n0(key1 STRING, value1 STRING) partitioned by (ds string) STORED as ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@srcpart_small
-POSTHOOK: query: CREATE TABLE srcpart_small(key1 STRING, value1 STRING) partitioned by (ds string) STORED as ORC
+PREHOOK: Output: default@srcpart_small_n0
+POSTHOOK: query: CREATE TABLE srcpart_small_n0(key1 STRING, value1 STRING) partitioned by (ds string) STORED as ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcpart_small
+POSTHOOK: Output: default@srcpart_small_n0
 PREHOOK: query: create external table srcpart_date_ext (key string, value string) partitioned by (ds string ) stored as ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -30,34 +30,34 @@ POSTHOOK: query: CREATE external TABLE srcpart_small_ext(key1 STRING, value1 STR
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcpart_small_ext
-PREHOOK: query: alter table srcpart_date add partition (ds = "2008-04-08")
+PREHOOK: query: alter table srcpart_date_n1 add partition (ds = "2008-04-08")
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Output: default@srcpart_date
-POSTHOOK: query: alter table srcpart_date add partition (ds = "2008-04-08")
+PREHOOK: Output: default@srcpart_date_n1
+POSTHOOK: query: alter table srcpart_date_n1 add partition (ds = "2008-04-08")
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Output: default@srcpart_date
-POSTHOOK: Output: default@srcpart_date@ds=2008-04-08
-PREHOOK: query: alter table srcpart_date add partition (ds = "2008-04-09")
+POSTHOOK: Output: default@srcpart_date_n1
+POSTHOOK: Output: default@srcpart_date_n1@ds=2008-04-08
+PREHOOK: query: alter table srcpart_date_n1 add partition (ds = "2008-04-09")
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Output: default@srcpart_date
-POSTHOOK: query: alter table srcpart_date add partition (ds = "2008-04-09")
+PREHOOK: Output: default@srcpart_date_n1
+POSTHOOK: query: alter table srcpart_date_n1 add partition (ds = "2008-04-09")
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Output: default@srcpart_date
-POSTHOOK: Output: default@srcpart_date@ds=2008-04-09
-PREHOOK: query: alter table srcpart_small add partition (ds = "2008-04-08")
+POSTHOOK: Output: default@srcpart_date_n1
+POSTHOOK: Output: default@srcpart_date_n1@ds=2008-04-09
+PREHOOK: query: alter table srcpart_small_n0 add partition (ds = "2008-04-08")
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Output: default@srcpart_small
-POSTHOOK: query: alter table srcpart_small add partition (ds = "2008-04-08")
+PREHOOK: Output: default@srcpart_small_n0
+POSTHOOK: query: alter table srcpart_small_n0 add partition (ds = "2008-04-08")
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Output: default@srcpart_small
-POSTHOOK: Output: default@srcpart_small@ds=2008-04-08
-PREHOOK: query: alter table srcpart_small add partition (ds = "2008-04-09")
+POSTHOOK: Output: default@srcpart_small_n0
+POSTHOOK: Output: default@srcpart_small_n0@ds=2008-04-08
+PREHOOK: query: alter table srcpart_small_n0 add partition (ds = "2008-04-09")
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Output: default@srcpart_small
-POSTHOOK: query: alter table srcpart_small add partition (ds = "2008-04-09")
+PREHOOK: Output: default@srcpart_small_n0
+POSTHOOK: query: alter table srcpart_small_n0 add partition (ds = "2008-04-09")
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Output: default@srcpart_small
-POSTHOOK: Output: default@srcpart_small@ds=2008-04-09
+POSTHOOK: Output: default@srcpart_small_n0
+POSTHOOK: Output: default@srcpart_small_n0@ds=2008-04-09
 PREHOOK: query: alter table srcpart_date_ext add partition (ds = "2008-04-08")
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Output: default@srcpart_date_ext
@@ -86,48 +86,48 @@ POSTHOOK: query: alter table srcpart_small_ext add partition (ds = "2008-04-09")
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Output: default@srcpart_small_ext
 POSTHOOK: Output: default@srcpart_small_ext@ds=2008-04-09
-PREHOOK: query: insert overwrite table srcpart_date partition (ds = "2008-04-08" ) select key, value from srcpart where ds = "2008-04-08"
+PREHOOK: query: insert overwrite table srcpart_date_n1 partition (ds = "2008-04-08" ) select key, value from srcpart where ds = "2008-04-08"
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-PREHOOK: Output: default@srcpart_date@ds=2008-04-08
-POSTHOOK: query: insert overwrite table srcpart_date partition (ds = "2008-04-08" ) select key, value from srcpart where ds = "2008-04-08"
+PREHOOK: Output: default@srcpart_date_n1@ds=2008-04-08
+POSTHOOK: query: insert overwrite table srcpart_date_n1 partition (ds = "2008-04-08" ) select key, value from srcpart where ds = "2008-04-08"
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-POSTHOOK: Output: default@srcpart_date@ds=2008-04-08
-POSTHOOK: Lineage: srcpart_date PARTITION(ds=2008-04-08).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: srcpart_date PARTITION(ds=2008-04-08).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: insert overwrite table srcpart_date partition (ds = "2008-04-09") select key, value from srcpart where ds = "2008-04-09"
+POSTHOOK: Output: default@srcpart_date_n1@ds=2008-04-08
+POSTHOOK: Lineage: srcpart_date_n1 PARTITION(ds=2008-04-08).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_date_n1 PARTITION(ds=2008-04-08).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table srcpart_date_n1 partition (ds = "2008-04-09") select key, value from srcpart where ds = "2008-04-09"
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Output: default@srcpart_date@ds=2008-04-09
-POSTHOOK: query: insert overwrite table srcpart_date partition (ds = "2008-04-09") select key, value from srcpart where ds = "2008-04-09"
+PREHOOK: Output: default@srcpart_date_n1@ds=2008-04-09
+POSTHOOK: query: insert overwrite table srcpart_date_n1 partition (ds = "2008-04-09") select key, value from srcpart where ds = "2008-04-09"
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Output: default@srcpart_date@ds=2008-04-09
-POSTHOOK: Lineage: srcpart_date PARTITION(ds=2008-04-09).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: srcpart_date PARTITION(ds=2008-04-09).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: insert overwrite table srcpart_small partition (ds = "2008-04-09") select key, value from srcpart where ds = "2008-04-09" limit 20
+POSTHOOK: Output: default@srcpart_date_n1@ds=2008-04-09
+POSTHOOK: Lineage: srcpart_date_n1 PARTITION(ds=2008-04-09).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_date_n1 PARTITION(ds=2008-04-09).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table srcpart_small_n0 partition (ds = "2008-04-09") select key, value from srcpart where ds = "2008-04-09" limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Output: default@srcpart_small@ds=2008-04-09
-POSTHOOK: query: insert overwrite table srcpart_small partition (ds = "2008-04-09") select key, value from srcpart where ds = "2008-04-09" limit 20
+PREHOOK: Output: default@srcpart_small_n0@ds=2008-04-09
+POSTHOOK: query: insert overwrite table srcpart_small_n0 partition (ds = "2008-04-09") select key, value from srcpart where ds = "2008-04-09" limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Output: default@srcpart_small@ds=2008-04-09
-POSTHOOK: Lineage: srcpart_small PARTITION(ds=2008-04-09).key1 SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: srcpart_small PARTITION(ds=2008-04-09).value1 SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@srcpart_small_n0@ds=2008-04-09
+POSTHOOK: Lineage: srcpart_small_n0 PARTITION(ds=2008-04-09).key1 SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_small_n0 PARTITION(ds=2008-04-09).value1 SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: insert overwrite table srcpart_date_ext partition (ds = "2008-04-08" ) select key, value from srcpart where ds = "2008-04-08"
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
@@ -170,41 +170,41 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 POSTHOOK: Output: default@srcpart_small_ext@ds=2008-04-09
 POSTHOOK: Lineage: srcpart_small_ext PARTITION(ds=2008-04-09).key1 SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: srcpart_small_ext PARTITION(ds=2008-04-09).value1 SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: analyze table srcpart_date compute statistics for columns
+PREHOOK: query: analyze table srcpart_date_n1 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@srcpart_date
-PREHOOK: Input: default@srcpart_date@ds=2008-04-08
-PREHOOK: Input: default@srcpart_date@ds=2008-04-09
-PREHOOK: Output: default@srcpart_date
-PREHOOK: Output: default@srcpart_date@ds=2008-04-08
-PREHOOK: Output: default@srcpart_date@ds=2008-04-09
+PREHOOK: Input: default@srcpart_date_n1
+PREHOOK: Input: default@srcpart_date_n1@ds=2008-04-08
+PREHOOK: Input: default@srcpart_date_n1@ds=2008-04-09
+PREHOOK: Output: default@srcpart_date_n1
+PREHOOK: Output: default@srcpart_date_n1@ds=2008-04-08
+PREHOOK: Output: default@srcpart_date_n1@ds=2008-04-09
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table srcpart_date compute statistics for columns
+POSTHOOK: query: analyze table srcpart_date_n1 compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@srcpart_date
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_date@ds=2008-04-09
-POSTHOOK: Output: default@srcpart_date
-POSTHOOK: Output: default@srcpart_date@ds=2008-04-08
-POSTHOOK: Output: default@srcpart_date@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_date_n1
+POSTHOOK: Input: default@srcpart_date_n1@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_date_n1@ds=2008-04-09
+POSTHOOK: Output: default@srcpart_date_n1
+POSTHOOK: Output: default@srcpart_date_n1@ds=2008-04-08
+POSTHOOK: Output: default@srcpart_date_n1@ds=2008-04-09
 #### A masked pattern was here ####
-PREHOOK: query: analyze table srcpart_small compute statistics for columns
+PREHOOK: query: analyze table srcpart_small_n0 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@srcpart_small
-PREHOOK: Input: default@srcpart_small@ds=2008-04-08
-PREHOOK: Input: default@srcpart_small@ds=2008-04-09
-PREHOOK: Output: default@srcpart_small
-PREHOOK: Output: default@srcpart_small@ds=2008-04-08
-PREHOOK: Output: default@srcpart_small@ds=2008-04-09
+PREHOOK: Input: default@srcpart_small_n0
+PREHOOK: Input: default@srcpart_small_n0@ds=2008-04-08
+PREHOOK: Input: default@srcpart_small_n0@ds=2008-04-09
+PREHOOK: Output: default@srcpart_small_n0
+PREHOOK: Output: default@srcpart_small_n0@ds=2008-04-08
+PREHOOK: Output: default@srcpart_small_n0@ds=2008-04-09
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table srcpart_small compute statistics for columns
+POSTHOOK: query: analyze table srcpart_small_n0 compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@srcpart_small
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
-POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
-POSTHOOK: Output: default@srcpart_small
-POSTHOOK: Output: default@srcpart_small@ds=2008-04-08
-POSTHOOK: Output: default@srcpart_small@ds=2008-04-09
+POSTHOOK: Input: default@srcpart_small_n0
+POSTHOOK: Input: default@srcpart_small_n0@ds=2008-04-08
+POSTHOOK: Input: default@srcpart_small_n0@ds=2008-04-09
+POSTHOOK: Output: default@srcpart_small_n0
+POSTHOOK: Output: default@srcpart_small_n0@ds=2008-04-08
+POSTHOOK: Output: default@srcpart_small_n0@ds=2008-04-09
 #### A masked pattern was here ####
 PREHOOK: query: analyze table srcpart_date_ext compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
@@ -243,9 +243,9 @@ POSTHOOK: Output: default@srcpart_small_ext@ds=2008-04-08
 POSTHOOK: Output: default@srcpart_small_ext@ds=2008-04-09
 #### A masked pattern was here ####
 test.comment=This query should use semijoin reduction optimization
-PREHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
+PREHOOK: query: EXPLAIN select count(*) from srcpart_date_n1 join srcpart_small_n0 on (srcpart_date_n1.key = srcpart_small_n0.key1)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
+POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_n1 join srcpart_small_n0 on (srcpart_date_n1.key = srcpart_small_n0.key1)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -265,11 +265,11 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
-                  filterExpr: (key is not null and (key BETWEEN DynamicValue(RS_7_srcpart_small_key1_min) AND DynamicValue(RS_7_srcpart_small_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_key1_bloom_filter)))) (type: boolean)
+                  alias: srcpart_date_n1
+                  filterExpr: (key is not null and (key BETWEEN DynamicValue(RS_7_srcpart_small_n0_key1_min) AND DynamicValue(RS_7_srcpart_small_n0_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n0_key1_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((key BETWEEN DynamicValue(RS_7_srcpart_small_key1_min) AND DynamicValue(RS_7_srcpart_small_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_key1_bloom_filter))) and key is not null) (type: boolean)
+                    predicate: ((key BETWEEN DynamicValue(RS_7_srcpart_small_n0_key1_min) AND DynamicValue(RS_7_srcpart_small_n0_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n0_key1_bloom_filter))) and key is not null) (type: boolean)
                     Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
@@ -285,7 +285,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_small
+                  alias: srcpart_small_n0
                   filterExpr: key1 is not null (type: boolean)
                   Statistics: Num rows: 20 Data size: 1740 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
@@ -369,9 +369,9 @@ STAGE PLANS:
         ListSink
 
 test.comment=Big table is external table - no semijoin reduction opt
-PREHOOK: query: EXPLAIN select count(*) from srcpart_date_ext join srcpart_small on (srcpart_date_ext.key = srcpart_small.key1)
+PREHOOK: query: EXPLAIN select count(*) from srcpart_date_ext join srcpart_small_n0 on (srcpart_date_ext.key = srcpart_small_n0.key1)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_ext join srcpart_small on (srcpart_date_ext.key = srcpart_small.key1)
+POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_ext join srcpart_small_n0 on (srcpart_date_ext.key = srcpart_small_n0.key1)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -409,7 +409,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_small
+                  alias: srcpart_small_n0
                   filterExpr: key1 is not null (type: boolean)
                   Statistics: Num rows: 20 Data size: 1740 Basic stats: PARTIAL Column stats: PARTIAL
                   Filter Operator
@@ -468,9 +468,9 @@ STAGE PLANS:
         ListSink
 
 test.comment=Small table is external table - no semijoin reduction opt
-PREHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small_ext on (srcpart_date.key = srcpart_small_ext.key1)
+PREHOOK: query: EXPLAIN select count(*) from srcpart_date_n1 join srcpart_small_ext on (srcpart_date_n1.key = srcpart_small_ext.key1)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small_ext on (srcpart_date.key = srcpart_small_ext.key1)
+POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_n1 join srcpart_small_ext on (srcpart_date_n1.key = srcpart_small_ext.key1)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -488,7 +488,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcpart_date
+                  alias: srcpart_date_n1
                   filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator

@@ -1,5 +1,5 @@
 set hive.vectorized.execution.enabled=false;
-CREATE TABLE test_orc (key STRING, cnt INT)
+CREATE TABLE test_orc_n2 (key STRING, cnt INT)
 CLUSTERED BY (key) INTO 3 BUCKETS
 ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.io.orc.OrcSerde' 
 STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat' 
@@ -14,6 +14,6 @@ set hive.input.format=org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 -- containing data and a file containing data followed by an empty file.
 -- This can produce unexpected results with CombineHiveInputFormat
 
-INSERT OVERWRITE TABLE test_orc SELECT one, COUNT(*) FROM (SELECT 1 AS one FROM src) a GROUP BY one;
+INSERT OVERWRITE TABLE test_orc_n2 SELECT one, COUNT(*) FROM (SELECT 1 AS one FROM src) a GROUP BY one;
 
-SELECT count(*) FROM test_orc; 
+SELECT count(*) FROM test_orc_n2; 

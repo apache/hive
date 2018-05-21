@@ -1,27 +1,27 @@
-PREHOOK: query: CREATE TABLE src_null(a bigint) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE src_null_n2(a bigint) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src_null
-POSTHOOK: query: CREATE TABLE src_null(a bigint) STORED AS TEXTFILE
+PREHOOK: Output: default@src_null_n2
+POSTHOOK: query: CREATE TABLE src_null_n2(a bigint) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src_null
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/nulls.txt' INTO TABLE src_null
+POSTHOOK: Output: default@src_null_n2
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/nulls.txt' INTO TABLE src_null_n2
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@src_null
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/nulls.txt' INTO TABLE src_null
+PREHOOK: Output: default@src_null_n2
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/nulls.txt' INTO TABLE src_null_n2
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@src_null
-PREHOOK: query: create table all_nulls as SELECT a, cast(a as double) as b, cast(a as decimal) as c  FROM src_null where a is null limit 5
+POSTHOOK: Output: default@src_null_n2
+PREHOOK: query: create table all_nulls as SELECT a, cast(a as double) as b, cast(a as decimal) as c  FROM src_null_n2 where a is null limit 5
 PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: default@src_null
+PREHOOK: Input: default@src_null_n2
 PREHOOK: Output: database:default
 PREHOOK: Output: default@all_nulls
-POSTHOOK: query: create table all_nulls as SELECT a, cast(a as double) as b, cast(a as decimal) as c  FROM src_null where a is null limit 5
+POSTHOOK: query: create table all_nulls as SELECT a, cast(a as double) as b, cast(a as decimal) as c  FROM src_null_n2 where a is null limit 5
 POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: default@src_null
+POSTHOOK: Input: default@src_null_n2
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@all_nulls
 POSTHOOK: Lineage: all_nulls.a SIMPLE []
@@ -83,11 +83,11 @@ POSTHOOK: query: drop table all_nulls
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@all_nulls
 POSTHOOK: Output: default@all_nulls
-PREHOOK: query: drop table src_null
+PREHOOK: query: drop table src_null_n2
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@src_null
-PREHOOK: Output: default@src_null
-POSTHOOK: query: drop table src_null
+PREHOOK: Input: default@src_null_n2
+PREHOOK: Output: default@src_null_n2
+POSTHOOK: query: drop table src_null_n2
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@src_null
-POSTHOOK: Output: default@src_null
+POSTHOOK: Input: default@src_null_n2
+POSTHOOK: Output: default@src_null_n2

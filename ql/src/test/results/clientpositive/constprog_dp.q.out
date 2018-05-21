@@ -1,18 +1,18 @@
-PREHOOK: query: create table dest(key string, value string) partitioned by (ds string)
+PREHOOK: query: create table dest_n1(key string, value string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest
-POSTHOOK: query: create table dest(key string, value string) partitioned by (ds string)
+PREHOOK: Output: default@dest_n1
+POSTHOOK: query: create table dest_n1(key string, value string) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest
+POSTHOOK: Output: default@dest_n1
 PREHOOK: query: EXPLAIN
 from srcpart
-insert overwrite table dest partition (ds) select key, value, ds where ds='2008-04-08'
+insert overwrite table dest_n1 partition (ds) select key, value, ds where ds='2008-04-08'
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 from srcpart
-insert overwrite table dest partition (ds) select key, value, ds where ds='2008-04-08'
+insert overwrite table dest_n1 partition (ds) select key, value, ds where ds='2008-04-08'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -42,7 +42,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.dest
+                    name: default.dest_n1
               Select Operator
                 expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
                 outputColumnNames: key, value, ds
@@ -97,7 +97,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest
+              name: default.dest_n1
 
   Stage: Stage-2
     Stats Work
@@ -105,7 +105,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: string, string
-          Table: default.dest
+          Table: default.dest_n1
 
   Stage: Stage-3
     Map Reduce
@@ -117,7 +117,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.dest
+                  name: default.dest_n1
 
   Stage: Stage-5
     Map Reduce
@@ -129,7 +129,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.dest
+                  name: default.dest_n1
 
   Stage: Stage-6
     Move Operator
@@ -138,18 +138,18 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
 PREHOOK: query: from srcpart
-insert overwrite table dest partition (ds) select key, value, ds where ds='2008-04-08'
+insert overwrite table dest_n1 partition (ds) select key, value, ds where ds='2008-04-08'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-PREHOOK: Output: default@dest
+PREHOOK: Output: default@dest_n1
 POSTHOOK: query: from srcpart
-insert overwrite table dest partition (ds) select key, value, ds where ds='2008-04-08'
+insert overwrite table dest_n1 partition (ds) select key, value, ds where ds='2008-04-08'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-POSTHOOK: Output: default@dest@ds=2008-04-08
-POSTHOOK: Lineage: dest PARTITION(ds=2008-04-08).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest PARTITION(ds=2008-04-08).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@dest_n1@ds=2008-04-08
+POSTHOOK: Lineage: dest_n1 PARTITION(ds=2008-04-08).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest_n1 PARTITION(ds=2008-04-08).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]

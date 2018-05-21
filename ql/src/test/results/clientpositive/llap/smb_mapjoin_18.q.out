@@ -1,42 +1,42 @@
-PREHOOK: query: CREATE TABLE test_table1 (key INT, value STRING) PARTITIONED BY (ds STRING)
+PREHOOK: query: CREATE TABLE test_table1_n7 (key INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_table1
-POSTHOOK: query: CREATE TABLE test_table1 (key INT, value STRING) PARTITIONED BY (ds STRING)
+PREHOOK: Output: default@test_table1_n7
+POSTHOOK: query: CREATE TABLE test_table1_n7 (key INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_table1
-PREHOOK: query: CREATE TABLE test_table2 (key INT, value STRING) PARTITIONED BY (ds STRING)
+POSTHOOK: Output: default@test_table1_n7
+PREHOOK: query: CREATE TABLE test_table2_n7 (key INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_table2
-POSTHOOK: query: CREATE TABLE test_table2 (key INT, value STRING) PARTITIONED BY (ds STRING)
+PREHOOK: Output: default@test_table2_n7
+POSTHOOK: query: CREATE TABLE test_table2_n7 (key INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_table2
+POSTHOOK: Output: default@test_table2_n7
 PREHOOK: query: FROM src
-INSERT OVERWRITE TABLE test_table1 PARTITION (ds = '1') SELECT *
+INSERT OVERWRITE TABLE test_table1_n7 PARTITION (ds = '1') SELECT *
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@test_table1@ds=1
+PREHOOK: Output: default@test_table1_n7@ds=1
 POSTHOOK: query: FROM src
-INSERT OVERWRITE TABLE test_table1 PARTITION (ds = '1') SELECT *
+INSERT OVERWRITE TABLE test_table1_n7 PARTITION (ds = '1') SELECT *
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@test_table1@ds=1
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@test_table1_n7@ds=1
+POSTHOOK: Lineage: test_table1_n7 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table1_n7 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1')
-SELECT a.key, a.value FROM test_table1 a WHERE a.ds = '1'
+INSERT OVERWRITE TABLE test_table2_n7 PARTITION (ds = '1')
+SELECT a.key, a.value FROM test_table1_n7 a WHERE a.ds = '1'
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1')
-SELECT a.key, a.value FROM test_table1 a WHERE a.ds = '1'
+INSERT OVERWRITE TABLE test_table2_n7 PARTITION (ds = '1')
+SELECT a.key, a.value FROM test_table1_n7 a WHERE a.ds = '1'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -65,7 +65,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.test_table2
+                          name: default.test_table2_n7
             Execution mode: vectorized, llap
             LLAP IO: no inputs
 
@@ -82,7 +82,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.test_table2
+              name: default.test_table2_n7
 
   Stage: Stage-3
     Stats Work
@@ -90,135 +90,135 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: int, string
-          Table: default.test_table2
+          Table: default.test_table2_n7
 
-PREHOOK: query: INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1')
-SELECT a.key, a.value FROM test_table1 a WHERE a.ds = '1'
+PREHOOK: query: INSERT OVERWRITE TABLE test_table2_n7 PARTITION (ds = '1')
+SELECT a.key, a.value FROM test_table1_n7 a WHERE a.ds = '1'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table1
-PREHOOK: Input: default@test_table1@ds=1
-PREHOOK: Output: default@test_table2@ds=1
-POSTHOOK: query: INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1')
-SELECT a.key, a.value FROM test_table1 a WHERE a.ds = '1'
+PREHOOK: Input: default@test_table1_n7
+PREHOOK: Input: default@test_table1_n7@ds=1
+PREHOOK: Output: default@test_table2_n7@ds=1
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table2_n7 PARTITION (ds = '1')
+SELECT a.key, a.value FROM test_table1_n7 a WHERE a.ds = '1'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table1
-POSTHOOK: Input: default@test_table1@ds=1
-POSTHOOK: Output: default@test_table2@ds=1
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: select count(*) from test_table1 where ds = '1'
+POSTHOOK: Input: default@test_table1_n7
+POSTHOOK: Input: default@test_table1_n7@ds=1
+POSTHOOK: Output: default@test_table2_n7@ds=1
+POSTHOOK: Lineage: test_table2_n7 PARTITION(ds=1).key SIMPLE [(test_table1_n7)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: test_table2_n7 PARTITION(ds=1).value SIMPLE [(test_table1_n7)a.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select count(*) from test_table1_n7 where ds = '1'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table1
+PREHOOK: Input: default@test_table1_n7
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from test_table1 where ds = '1'
+POSTHOOK: query: select count(*) from test_table1_n7 where ds = '1'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table1
+POSTHOOK: Input: default@test_table1_n7
 #### A masked pattern was here ####
 500
-PREHOOK: query: select count(*) from test_table1 where ds = '1' and hash(key) % 2 = 0
+PREHOOK: query: select count(*) from test_table1_n7 where ds = '1' and hash(key) % 2 = 0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table1
-PREHOOK: Input: default@test_table1@ds=1
+PREHOOK: Input: default@test_table1_n7
+PREHOOK: Input: default@test_table1_n7@ds=1
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from test_table1 where ds = '1' and hash(key) % 2 = 0
+POSTHOOK: query: select count(*) from test_table1_n7 where ds = '1' and hash(key) % 2 = 0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table1
-POSTHOOK: Input: default@test_table1@ds=1
+POSTHOOK: Input: default@test_table1_n7
+POSTHOOK: Input: default@test_table1_n7@ds=1
 #### A masked pattern was here ####
 247
-PREHOOK: query: select count(*) from test_table1 where ds = '1' and hash(key) % 2 = 1
+PREHOOK: query: select count(*) from test_table1_n7 where ds = '1' and hash(key) % 2 = 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table1
-PREHOOK: Input: default@test_table1@ds=1
+PREHOOK: Input: default@test_table1_n7
+PREHOOK: Input: default@test_table1_n7@ds=1
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from test_table1 where ds = '1' and hash(key) % 2 = 1
+POSTHOOK: query: select count(*) from test_table1_n7 where ds = '1' and hash(key) % 2 = 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table1
-POSTHOOK: Input: default@test_table1@ds=1
+POSTHOOK: Input: default@test_table1_n7
+POSTHOOK: Input: default@test_table1_n7@ds=1
 #### A masked pattern was here ####
 253
-PREHOOK: query: select count(*) from test_table1 tablesample (bucket 1 out of 2) s where ds = '1'
+PREHOOK: query: select count(*) from test_table1_n7 tablesample (bucket 1 out of 2) s where ds = '1'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table1
-PREHOOK: Input: default@test_table1@ds=1
+PREHOOK: Input: default@test_table1_n7
+PREHOOK: Input: default@test_table1_n7@ds=1
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from test_table1 tablesample (bucket 1 out of 2) s where ds = '1'
+POSTHOOK: query: select count(*) from test_table1_n7 tablesample (bucket 1 out of 2) s where ds = '1'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table1
-POSTHOOK: Input: default@test_table1@ds=1
+POSTHOOK: Input: default@test_table1_n7
+POSTHOOK: Input: default@test_table1_n7@ds=1
 #### A masked pattern was here ####
 243
-PREHOOK: query: select count(*) from test_table1 tablesample (bucket 2 out of 2) s where ds = '1'
+PREHOOK: query: select count(*) from test_table1_n7 tablesample (bucket 2 out of 2) s where ds = '1'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table1
-PREHOOK: Input: default@test_table1@ds=1
+PREHOOK: Input: default@test_table1_n7
+PREHOOK: Input: default@test_table1_n7@ds=1
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from test_table1 tablesample (bucket 2 out of 2) s where ds = '1'
+POSTHOOK: query: select count(*) from test_table1_n7 tablesample (bucket 2 out of 2) s where ds = '1'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table1
-POSTHOOK: Input: default@test_table1@ds=1
+POSTHOOK: Input: default@test_table1_n7
+POSTHOOK: Input: default@test_table1_n7@ds=1
 #### A masked pattern was here ####
 257
-PREHOOK: query: select count(*) from test_table2 where ds = '1'
+PREHOOK: query: select count(*) from test_table2_n7 where ds = '1'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table2
+PREHOOK: Input: default@test_table2_n7
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from test_table2 where ds = '1'
+POSTHOOK: query: select count(*) from test_table2_n7 where ds = '1'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table2
+POSTHOOK: Input: default@test_table2_n7
 #### A masked pattern was here ####
 500
-PREHOOK: query: select count(*) from test_table2 where ds = '1' and hash(key) % 2 = 0
+PREHOOK: query: select count(*) from test_table2_n7 where ds = '1' and hash(key) % 2 = 0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table2
-PREHOOK: Input: default@test_table2@ds=1
+PREHOOK: Input: default@test_table2_n7
+PREHOOK: Input: default@test_table2_n7@ds=1
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from test_table2 where ds = '1' and hash(key) % 2 = 0
+POSTHOOK: query: select count(*) from test_table2_n7 where ds = '1' and hash(key) % 2 = 0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table2
-POSTHOOK: Input: default@test_table2@ds=1
+POSTHOOK: Input: default@test_table2_n7
+POSTHOOK: Input: default@test_table2_n7@ds=1
 #### A masked pattern was here ####
 247
-PREHOOK: query: select count(*) from test_table2 where ds = '1' and hash(key) % 2 = 1
+PREHOOK: query: select count(*) from test_table2_n7 where ds = '1' and hash(key) % 2 = 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table2
-PREHOOK: Input: default@test_table2@ds=1
+PREHOOK: Input: default@test_table2_n7
+PREHOOK: Input: default@test_table2_n7@ds=1
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from test_table2 where ds = '1' and hash(key) % 2 = 1
+POSTHOOK: query: select count(*) from test_table2_n7 where ds = '1' and hash(key) % 2 = 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table2
-POSTHOOK: Input: default@test_table2@ds=1
+POSTHOOK: Input: default@test_table2_n7
+POSTHOOK: Input: default@test_table2_n7@ds=1
 #### A masked pattern was here ####
 253
-PREHOOK: query: select count(*) from test_table2 tablesample (bucket 1 out of 2) s where ds = '1'
+PREHOOK: query: select count(*) from test_table2_n7 tablesample (bucket 1 out of 2) s where ds = '1'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table2
-PREHOOK: Input: default@test_table2@ds=1
+PREHOOK: Input: default@test_table2_n7
+PREHOOK: Input: default@test_table2_n7@ds=1
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from test_table2 tablesample (bucket 1 out of 2) s where ds = '1'
+POSTHOOK: query: select count(*) from test_table2_n7 tablesample (bucket 1 out of 2) s where ds = '1'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table2
-POSTHOOK: Input: default@test_table2@ds=1
+POSTHOOK: Input: default@test_table2_n7
+POSTHOOK: Input: default@test_table2_n7@ds=1
 #### A masked pattern was here ####
 243
-PREHOOK: query: select count(*) from test_table2 tablesample (bucket 2 out of 2) s where ds = '1'
+PREHOOK: query: select count(*) from test_table2_n7 tablesample (bucket 2 out of 2) s where ds = '1'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table2
-PREHOOK: Input: default@test_table2@ds=1
+PREHOOK: Input: default@test_table2_n7
+PREHOOK: Input: default@test_table2_n7@ds=1
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from test_table2 tablesample (bucket 2 out of 2) s where ds = '1'
+POSTHOOK: query: select count(*) from test_table2_n7 tablesample (bucket 2 out of 2) s where ds = '1'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table2
-POSTHOOK: Input: default@test_table2@ds=1
+POSTHOOK: Input: default@test_table2_n7
+POSTHOOK: Input: default@test_table2_n7@ds=1
 #### A masked pattern was here ####
 257
 PREHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '2')
-SELECT a.key, a.value FROM test_table1 a WHERE a.ds = '1' and a.key = 238
+INSERT OVERWRITE TABLE test_table2_n7 PARTITION (ds = '2')
+SELECT a.key, a.value FROM test_table1_n7 a WHERE a.ds = '1' and a.key = 238
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '2')
-SELECT a.key, a.value FROM test_table1 a WHERE a.ds = '1' and a.key = 238
+INSERT OVERWRITE TABLE test_table2_n7 PARTITION (ds = '2')
+SELECT a.key, a.value FROM test_table1_n7 a WHERE a.ds = '1' and a.key = 238
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -269,7 +269,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.test_table2
+                      name: default.test_table2_n7
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: string), '2' (type: string)
                   outputColumnNames: key, value, ds
@@ -320,7 +320,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.test_table2
+              name: default.test_table2_n7
 
   Stage: Stage-3
     Stats Work
@@ -328,82 +328,82 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: int, string
-          Table: default.test_table2
+          Table: default.test_table2_n7
 
-PREHOOK: query: INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '2')
-SELECT a.key, a.value FROM test_table1 a WHERE a.ds = '1' and a.key = 238
+PREHOOK: query: INSERT OVERWRITE TABLE test_table2_n7 PARTITION (ds = '2')
+SELECT a.key, a.value FROM test_table1_n7 a WHERE a.ds = '1' and a.key = 238
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table1
-PREHOOK: Input: default@test_table1@ds=1
-PREHOOK: Output: default@test_table2@ds=2
-POSTHOOK: query: INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '2')
-SELECT a.key, a.value FROM test_table1 a WHERE a.ds = '1' and a.key = 238
+PREHOOK: Input: default@test_table1_n7
+PREHOOK: Input: default@test_table1_n7@ds=1
+PREHOOK: Output: default@test_table2_n7@ds=2
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table2_n7 PARTITION (ds = '2')
+SELECT a.key, a.value FROM test_table1_n7 a WHERE a.ds = '1' and a.key = 238
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table1
-POSTHOOK: Input: default@test_table1@ds=1
-POSTHOOK: Output: default@test_table2@ds=2
-POSTHOOK: Lineage: test_table2 PARTITION(ds=2).key SIMPLE []
-POSTHOOK: Lineage: test_table2 PARTITION(ds=2).value SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: select count(*) from test_table2 where ds = '2'
+POSTHOOK: Input: default@test_table1_n7
+POSTHOOK: Input: default@test_table1_n7@ds=1
+POSTHOOK: Output: default@test_table2_n7@ds=2
+POSTHOOK: Lineage: test_table2_n7 PARTITION(ds=2).key SIMPLE []
+POSTHOOK: Lineage: test_table2_n7 PARTITION(ds=2).value SIMPLE [(test_table1_n7)a.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select count(*) from test_table2_n7 where ds = '2'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table2
+PREHOOK: Input: default@test_table2_n7
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from test_table2 where ds = '2'
+POSTHOOK: query: select count(*) from test_table2_n7 where ds = '2'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table2
+POSTHOOK: Input: default@test_table2_n7
 #### A masked pattern was here ####
 2
-PREHOOK: query: select count(*) from test_table2 where ds = '2' and hash(key) % 2 = 0
+PREHOOK: query: select count(*) from test_table2_n7 where ds = '2' and hash(key) % 2 = 0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table2
-PREHOOK: Input: default@test_table2@ds=2
+PREHOOK: Input: default@test_table2_n7
+PREHOOK: Input: default@test_table2_n7@ds=2
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from test_table2 where ds = '2' and hash(key) % 2 = 0
+POSTHOOK: query: select count(*) from test_table2_n7 where ds = '2' and hash(key) % 2 = 0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table2
-POSTHOOK: Input: default@test_table2@ds=2
+POSTHOOK: Input: default@test_table2_n7
+POSTHOOK: Input: default@test_table2_n7@ds=2
 #### A masked pattern was here ####
 2
-PREHOOK: query: select count(*) from test_table2 where ds = '2' and hash(key) % 2 = 1
+PREHOOK: query: select count(*) from test_table2_n7 where ds = '2' and hash(key) % 2 = 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table2
-PREHOOK: Input: default@test_table2@ds=2
+PREHOOK: Input: default@test_table2_n7
+PREHOOK: Input: default@test_table2_n7@ds=2
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from test_table2 where ds = '2' and hash(key) % 2 = 1
+POSTHOOK: query: select count(*) from test_table2_n7 where ds = '2' and hash(key) % 2 = 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table2
-POSTHOOK: Input: default@test_table2@ds=2
+POSTHOOK: Input: default@test_table2_n7
+POSTHOOK: Input: default@test_table2_n7@ds=2
 #### A masked pattern was here ####
 0
-PREHOOK: query: select count(*) from test_table2 tablesample (bucket 1 out of 2) s where ds = '2'
+PREHOOK: query: select count(*) from test_table2_n7 tablesample (bucket 1 out of 2) s where ds = '2'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table2
-PREHOOK: Input: default@test_table2@ds=2
+PREHOOK: Input: default@test_table2_n7
+PREHOOK: Input: default@test_table2_n7@ds=2
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from test_table2 tablesample (bucket 1 out of 2) s where ds = '2'
+POSTHOOK: query: select count(*) from test_table2_n7 tablesample (bucket 1 out of 2) s where ds = '2'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table2
-POSTHOOK: Input: default@test_table2@ds=2
+POSTHOOK: Input: default@test_table2_n7
+POSTHOOK: Input: default@test_table2_n7@ds=2
 #### A masked pattern was here ####
 2
-PREHOOK: query: select count(*) from test_table2 tablesample (bucket 2 out of 2) s where ds = '2'
+PREHOOK: query: select count(*) from test_table2_n7 tablesample (bucket 2 out of 2) s where ds = '2'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table2
-PREHOOK: Input: default@test_table2@ds=2
+PREHOOK: Input: default@test_table2_n7
+PREHOOK: Input: default@test_table2_n7@ds=2
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from test_table2 tablesample (bucket 2 out of 2) s where ds = '2'
+POSTHOOK: query: select count(*) from test_table2_n7 tablesample (bucket 2 out of 2) s where ds = '2'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table2
-POSTHOOK: Input: default@test_table2@ds=2
+POSTHOOK: Input: default@test_table2_n7
+POSTHOOK: Input: default@test_table2_n7@ds=2
 #### A masked pattern was here ####
 0
 PREHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '3')
-SELECT a.key, a.value FROM test_table2 a WHERE a.ds = '2'
+INSERT OVERWRITE TABLE test_table2_n7 PARTITION (ds = '3')
+SELECT a.key, a.value FROM test_table2_n7 a WHERE a.ds = '2'
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '3')
-SELECT a.key, a.value FROM test_table2 a WHERE a.ds = '2'
+INSERT OVERWRITE TABLE test_table2_n7 PARTITION (ds = '3')
+SELECT a.key, a.value FROM test_table2_n7 a WHERE a.ds = '2'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -432,7 +432,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.test_table2
+                          name: default.test_table2_n7
             Execution mode: vectorized, llap
             LLAP IO: no inputs
 
@@ -449,7 +449,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.test_table2
+              name: default.test_table2_n7
 
   Stage: Stage-3
     Stats Work
@@ -457,64 +457,64 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: int, string
-          Table: default.test_table2
+          Table: default.test_table2_n7
 
-PREHOOK: query: INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '2')
-SELECT a.key, a.value FROM test_table2 a WHERE a.ds = '2'
+PREHOOK: query: INSERT OVERWRITE TABLE test_table2_n7 PARTITION (ds = '2')
+SELECT a.key, a.value FROM test_table2_n7 a WHERE a.ds = '2'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table2
-PREHOOK: Input: default@test_table2@ds=2
-PREHOOK: Output: default@test_table2@ds=2
-POSTHOOK: query: INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '2')
-SELECT a.key, a.value FROM test_table2 a WHERE a.ds = '2'
+PREHOOK: Input: default@test_table2_n7
+PREHOOK: Input: default@test_table2_n7@ds=2
+PREHOOK: Output: default@test_table2_n7@ds=2
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table2_n7 PARTITION (ds = '2')
+SELECT a.key, a.value FROM test_table2_n7 a WHERE a.ds = '2'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table2
-POSTHOOK: Input: default@test_table2@ds=2
-POSTHOOK: Output: default@test_table2@ds=2
-POSTHOOK: Lineage: test_table2 PARTITION(ds=2).key SIMPLE [(test_table2)a.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=2).value SIMPLE [(test_table2)a.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: select count(*) from test_table2 where ds = '3'
+POSTHOOK: Input: default@test_table2_n7
+POSTHOOK: Input: default@test_table2_n7@ds=2
+POSTHOOK: Output: default@test_table2_n7@ds=2
+POSTHOOK: Lineage: test_table2_n7 PARTITION(ds=2).key SIMPLE [(test_table2_n7)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: test_table2_n7 PARTITION(ds=2).value SIMPLE [(test_table2_n7)a.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select count(*) from test_table2_n7 where ds = '3'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table2
+PREHOOK: Input: default@test_table2_n7
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from test_table2 where ds = '3'
+POSTHOOK: query: select count(*) from test_table2_n7 where ds = '3'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table2
+POSTHOOK: Input: default@test_table2_n7
 #### A masked pattern was here ####
 0
-PREHOOK: query: select count(*) from test_table2 where ds = '3' and hash(key) % 2 = 0
+PREHOOK: query: select count(*) from test_table2_n7 where ds = '3' and hash(key) % 2 = 0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table2
+PREHOOK: Input: default@test_table2_n7
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from test_table2 where ds = '3' and hash(key) % 2 = 0
+POSTHOOK: query: select count(*) from test_table2_n7 where ds = '3' and hash(key) % 2 = 0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table2
+POSTHOOK: Input: default@test_table2_n7
 #### A masked pattern was here ####
 0
-PREHOOK: query: select count(*) from test_table2 where ds = '3' and hash(key) % 2 = 1
+PREHOOK: query: select count(*) from test_table2_n7 where ds = '3' and hash(key) % 2 = 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table2
+PREHOOK: Input: default@test_table2_n7
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from test_table2 where ds = '3' and hash(key) % 2 = 1
+POSTHOOK: query: select count(*) from test_table2_n7 where ds = '3' and hash(key) % 2 = 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table2
+POSTHOOK: Input: default@test_table2_n7
 #### A masked pattern was here ####
 0
-PREHOOK: query: select count(*) from test_table2 tablesample (bucket 1 out of 2) s where ds = '3'
+PREHOOK: query: select count(*) from test_table2_n7 tablesample (bucket 1 out of 2) s where ds = '3'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table2
+PREHOOK: Input: default@test_table2_n7
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from test_table2 tablesample (bucket 1 out of 2) s where ds = '3'
+POSTHOOK: query: select count(*) from test_table2_n7 tablesample (bucket 1 out of 2) s where ds = '3'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table2
+POSTHOOK: Input: default@test_table2_n7
 #### A masked pattern was here ####
 0
-PREHOOK: query: select count(*) from test_table2 tablesample (bucket 2 out of 2) s where ds = '3'
+PREHOOK: query: select count(*) from test_table2_n7 tablesample (bucket 2 out of 2) s where ds = '3'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_table2
+PREHOOK: Input: default@test_table2_n7
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from test_table2 tablesample (bucket 2 out of 2) s where ds = '3'
+POSTHOOK: query: select count(*) from test_table2_n7 tablesample (bucket 2 out of 2) s where ds = '3'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_table2
+POSTHOOK: Input: default@test_table2_n7
 #### A masked pattern was here ####
 0

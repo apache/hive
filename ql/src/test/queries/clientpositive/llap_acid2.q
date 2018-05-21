@@ -12,9 +12,9 @@ set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 
-DROP TABLE orc_llap;
+DROP TABLE orc_llap_n2;
 
-CREATE TABLE orc_llap (
+CREATE TABLE orc_llap_n2 (
     cint INT,
     cbigint BIGINT,
     cfloat FLOAT,
@@ -32,7 +32,7 @@ CREATE TABLE orc_llap (
 )  stored as orc TBLPROPERTIES ('transactional'='true');
 
 
-insert into table orc_llap
+insert into table orc_llap_n2
 select cint, cbigint, cfloat, cdouble,
  cint as c1, cbigint as c2, cfloat as c3, cdouble as c4,
  cint as c8, cbigint as c7, cfloat as c6, cdouble as c5,
@@ -72,13 +72,13 @@ update orc_llap2 set cstring1 = 'testvalue' where cstring1 = 'N016jPED08o';
 
 SET hive.llap.io.enabled=true;
 
-select cstring1 from orc_llap;
-select cfloat2, cint from orc_llap;
-select * from orc_llap;
+select cstring1 from orc_llap_n2;
+select cfloat2, cint from orc_llap_n2;
+select * from orc_llap_n2;
 
 select cstring1 from orc_llap2;
 select cfloat2, cint from orc_llap2;
 select * from orc_llap2;
 
 
-DROP TABLE orc_llap;
+DROP TABLE orc_llap_n2;

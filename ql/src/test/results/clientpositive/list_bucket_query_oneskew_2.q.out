@@ -1,91 +1,91 @@
-PREHOOK: query: CREATE TABLE fact_daily(x int, y STRING) PARTITIONED BY (ds STRING)
+PREHOOK: query: CREATE TABLE fact_daily_n5(x int, y STRING) PARTITIONED BY (ds STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@fact_daily
-POSTHOOK: query: CREATE TABLE fact_daily(x int, y STRING) PARTITIONED BY (ds STRING)
+PREHOOK: Output: default@fact_daily_n5
+POSTHOOK: query: CREATE TABLE fact_daily_n5(x int, y STRING) PARTITIONED BY (ds STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@fact_daily
-PREHOOK: query: CREATE TABLE fact_tz(x int, y STRING) PARTITIONED BY (ds STRING, hr STRING)	
+POSTHOOK: Output: default@fact_daily_n5
+PREHOOK: query: CREATE TABLE fact_tz_n2(x int, y STRING) PARTITIONED BY (ds STRING, hr STRING)	
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 PREHOOK: Output: database:default
-PREHOOK: Output: default@fact_tz
-POSTHOOK: query: CREATE TABLE fact_tz(x int, y STRING) PARTITIONED BY (ds STRING, hr STRING)	
+PREHOOK: Output: default@fact_tz_n2
+POSTHOOK: query: CREATE TABLE fact_tz_n2(x int, y STRING) PARTITIONED BY (ds STRING, hr STRING)	
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@fact_tz
-PREHOOK: query: INSERT OVERWRITE TABLE fact_tz PARTITION (ds='1', hr='1')	
+POSTHOOK: Output: default@fact_tz_n2
+PREHOOK: query: INSERT OVERWRITE TABLE fact_tz_n2 PARTITION (ds='1', hr='1')	
 SELECT key, value FROM src WHERE key=484
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@fact_tz@ds=1/hr=1
-POSTHOOK: query: INSERT OVERWRITE TABLE fact_tz PARTITION (ds='1', hr='1')	
+PREHOOK: Output: default@fact_tz_n2@ds=1/hr=1
+POSTHOOK: query: INSERT OVERWRITE TABLE fact_tz_n2 PARTITION (ds='1', hr='1')	
 SELECT key, value FROM src WHERE key=484
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@fact_tz@ds=1/hr=1
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=1).y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: INSERT OVERWRITE TABLE fact_tz PARTITION (ds='1', hr='2')	
+POSTHOOK: Output: default@fact_tz_n2@ds=1/hr=1
+POSTHOOK: Lineage: fact_tz_n2 PARTITION(ds=1,hr=1).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: fact_tz_n2 PARTITION(ds=1,hr=1).y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: INSERT OVERWRITE TABLE fact_tz_n2 PARTITION (ds='1', hr='2')	
 SELECT key+11, value FROM src WHERE key=484
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@fact_tz@ds=1/hr=2
-POSTHOOK: query: INSERT OVERWRITE TABLE fact_tz PARTITION (ds='1', hr='2')	
+PREHOOK: Output: default@fact_tz_n2@ds=1/hr=2
+POSTHOOK: query: INSERT OVERWRITE TABLE fact_tz_n2 PARTITION (ds='1', hr='2')	
 SELECT key+11, value FROM src WHERE key=484
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@fact_tz@ds=1/hr=2
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=2).x EXPRESSION []
-POSTHOOK: Lineage: fact_tz PARTITION(ds=1,hr=2).y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@fact_tz_n2@ds=1/hr=2
+POSTHOOK: Lineage: fact_tz_n2 PARTITION(ds=1,hr=2).x EXPRESSION []
+POSTHOOK: Lineage: fact_tz_n2 PARTITION(ds=1,hr=2).y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 #### A masked pattern was here ####
-PREHOOK: query: alter table fact_daily skewed by (x) on (484)
+PREHOOK: query: alter table fact_daily_n5 skewed by (x) on (484)
 PREHOOK: type: ALTERTABLE_SKEWED
-PREHOOK: Input: default@fact_daily
-PREHOOK: Output: default@fact_daily
-POSTHOOK: query: alter table fact_daily skewed by (x) on (484)
+PREHOOK: Input: default@fact_daily_n5
+PREHOOK: Output: default@fact_daily_n5
+POSTHOOK: query: alter table fact_daily_n5 skewed by (x) on (484)
 POSTHOOK: type: ALTERTABLE_SKEWED
-POSTHOOK: Input: default@fact_daily
-POSTHOOK: Output: default@fact_daily
-PREHOOK: query: ALTER TABLE fact_daily SET TBLPROPERTIES('EXTERNAL'='TRUE')
+POSTHOOK: Input: default@fact_daily_n5
+POSTHOOK: Output: default@fact_daily_n5
+PREHOOK: query: ALTER TABLE fact_daily_n5 SET TBLPROPERTIES('EXTERNAL'='TRUE')
 PREHOOK: type: ALTERTABLE_PROPERTIES
-PREHOOK: Input: default@fact_daily
-PREHOOK: Output: default@fact_daily
-POSTHOOK: query: ALTER TABLE fact_daily SET TBLPROPERTIES('EXTERNAL'='TRUE')
+PREHOOK: Input: default@fact_daily_n5
+PREHOOK: Output: default@fact_daily_n5
+POSTHOOK: query: ALTER TABLE fact_daily_n5 SET TBLPROPERTIES('EXTERNAL'='TRUE')
 POSTHOOK: type: ALTERTABLE_PROPERTIES
-POSTHOOK: Input: default@fact_daily
-POSTHOOK: Output: default@fact_daily
-PREHOOK: query: ALTER TABLE fact_daily ADD PARTITION (ds='1')	
+POSTHOOK: Input: default@fact_daily_n5
+POSTHOOK: Output: default@fact_daily_n5
+PREHOOK: query: ALTER TABLE fact_daily_n5 ADD PARTITION (ds='1')	
 #### A masked pattern was here ####
 PREHOOK: type: ALTERTABLE_ADDPARTS
 #### A masked pattern was here ####
-PREHOOK: Output: default@fact_daily
-POSTHOOK: query: ALTER TABLE fact_daily ADD PARTITION (ds='1')	
+PREHOOK: Output: default@fact_daily_n5
+POSTHOOK: query: ALTER TABLE fact_daily_n5 ADD PARTITION (ds='1')	
 #### A masked pattern was here ####
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 #### A masked pattern was here ####
-POSTHOOK: Output: default@fact_daily
-POSTHOOK: Output: default@fact_daily@ds=1
+POSTHOOK: Output: default@fact_daily_n5
+POSTHOOK: Output: default@fact_daily_n5@ds=1
 #### A masked pattern was here ####
 PREHOOK: type: ALTERTBLPART_SKEWED_LOCATION
-PREHOOK: Input: default@fact_daily
-PREHOOK: Output: default@fact_daily@ds=1
+PREHOOK: Input: default@fact_daily_n5
+PREHOOK: Output: default@fact_daily_n5@ds=1
 #### A masked pattern was here ####
 POSTHOOK: type: ALTERTBLPART_SKEWED_LOCATION
-POSTHOOK: Input: default@fact_daily
-POSTHOOK: Input: default@fact_daily@ds=1
-POSTHOOK: Output: default@fact_daily@ds=1
+POSTHOOK: Input: default@fact_daily_n5
+POSTHOOK: Input: default@fact_daily_n5@ds=1
+POSTHOOK: Output: default@fact_daily_n5@ds=1
 #### A masked pattern was here ####
-PREHOOK: query: describe formatted fact_daily PARTITION (ds = '1')
+PREHOOK: query: describe formatted fact_daily_n5 PARTITION (ds = '1')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@fact_daily
-POSTHOOK: query: describe formatted fact_daily PARTITION (ds = '1')
+PREHOOK: Input: default@fact_daily_n5
+POSTHOOK: query: describe formatted fact_daily_n5 PARTITION (ds = '1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@fact_daily
+POSTHOOK: Input: default@fact_daily_n5
 # col_name            	data_type           	comment             
 x                   	int                 	                    
 y                   	string              	                    
@@ -97,7 +97,7 @@ ds                  	string
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
 Database:           	default             	 
-Table:              	fact_daily          	 
+Table:              	fact_daily_n5       	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 #### A masked pattern was here ####
@@ -118,21 +118,21 @@ Skewed Values:      	[[484]]
 #### A masked pattern was here ####
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: SELECT * FROM fact_daily WHERE ds='1'
+PREHOOK: query: SELECT * FROM fact_daily_n5 WHERE ds='1'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@fact_daily
-PREHOOK: Input: default@fact_daily@ds=1
+PREHOOK: Input: default@fact_daily_n5
+PREHOOK: Input: default@fact_daily_n5@ds=1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM fact_daily WHERE ds='1'
+POSTHOOK: query: SELECT * FROM fact_daily_n5 WHERE ds='1'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@fact_daily
-POSTHOOK: Input: default@fact_daily@ds=1
+POSTHOOK: Input: default@fact_daily_n5
+POSTHOOK: Input: default@fact_daily_n5@ds=1
 #### A masked pattern was here ####
 484	val_484	1
 495	val_484	1
-PREHOOK: query: explain extended select x from (select x from fact_daily where ds = '1') subq where x = 484
+PREHOOK: query: explain extended select x from (select x from fact_daily_n5 where ds = '1') subq where x = 484
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended select x from (select x from fact_daily where ds = '1') subq where x = 484
+POSTHOOK: query: explain extended select x from (select x from fact_daily_n5 where ds = '1') subq where x = 484
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -154,11 +154,11 @@ STAGE PLANS:
               columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
-              name default.fact_daily
+              name default.fact_daily_n5
               numFiles 2
               partition_columns ds
               partition_columns.types string
-              serialization.ddl struct fact_daily { i32 x, string y}
+              serialization.ddl struct fact_daily_n5 { i32 x, string y}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 24
@@ -176,19 +176,19 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
-                name default.fact_daily
+                name default.fact_daily_n5
                 partition_columns ds
                 partition_columns.types string
-                serialization.ddl struct fact_daily { i32 x, string y}
+                serialization.ddl struct fact_daily_n5 { i32 x, string y}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.fact_daily
-            name: default.fact_daily
+              name: default.fact_daily_n5
+            name: default.fact_daily_n5
       Processor Tree:
         TableScan
-          alias: fact_daily
+          alias: fact_daily_n5
           Statistics: Num rows: 1 Data size: 240 Basic stats: PARTIAL Column stats: NONE
           GatherStats: false
           Filter Operator
@@ -201,20 +201,20 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 240 Basic stats: PARTIAL Column stats: NONE
               ListSink
 
-PREHOOK: query: select x from (select * from fact_daily where ds = '1') subq where x = 484
+PREHOOK: query: select x from (select * from fact_daily_n5 where ds = '1') subq where x = 484
 PREHOOK: type: QUERY
-PREHOOK: Input: default@fact_daily
-PREHOOK: Input: default@fact_daily@ds=1
+PREHOOK: Input: default@fact_daily_n5
+PREHOOK: Input: default@fact_daily_n5@ds=1
 #### A masked pattern was here ####
-POSTHOOK: query: select x from (select * from fact_daily where ds = '1') subq where x = 484
+POSTHOOK: query: select x from (select * from fact_daily_n5 where ds = '1') subq where x = 484
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@fact_daily
-POSTHOOK: Input: default@fact_daily@ds=1
+POSTHOOK: Input: default@fact_daily_n5
+POSTHOOK: Input: default@fact_daily_n5@ds=1
 #### A masked pattern was here ####
 484
-PREHOOK: query: explain extended select x1, y1 from(select x as x1, y as y1 from fact_daily where ds ='1') subq where x1 = 484
+PREHOOK: query: explain extended select x1, y1 from(select x as x1, y as y1 from fact_daily_n5 where ds ='1') subq where x1 = 484
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended select x1, y1 from(select x as x1, y as y1 from fact_daily where ds ='1') subq where x1 = 484
+POSTHOOK: query: explain extended select x1, y1 from(select x as x1, y as y1 from fact_daily_n5 where ds ='1') subq where x1 = 484
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -236,11 +236,11 @@ STAGE PLANS:
               columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
-              name default.fact_daily
+              name default.fact_daily_n5
               numFiles 2
               partition_columns ds
               partition_columns.types string
-              serialization.ddl struct fact_daily { i32 x, string y}
+              serialization.ddl struct fact_daily_n5 { i32 x, string y}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 24
@@ -258,19 +258,19 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
-                name default.fact_daily
+                name default.fact_daily_n5
                 partition_columns ds
                 partition_columns.types string
-                serialization.ddl struct fact_daily { i32 x, string y}
+                serialization.ddl struct fact_daily_n5 { i32 x, string y}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.fact_daily
-            name: default.fact_daily
+              name: default.fact_daily_n5
+            name: default.fact_daily_n5
       Processor Tree:
         TableScan
-          alias: fact_daily
+          alias: fact_daily_n5
           Statistics: Num rows: 1 Data size: 240 Basic stats: PARTIAL Column stats: NONE
           GatherStats: false
           Filter Operator
@@ -283,20 +283,20 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 240 Basic stats: PARTIAL Column stats: NONE
               ListSink
 
-PREHOOK: query: select x1, y1 from(select x as x1, y as y1 from fact_daily where ds ='1') subq where x1 = 484
+PREHOOK: query: select x1, y1 from(select x as x1, y as y1 from fact_daily_n5 where ds ='1') subq where x1 = 484
 PREHOOK: type: QUERY
-PREHOOK: Input: default@fact_daily
-PREHOOK: Input: default@fact_daily@ds=1
+PREHOOK: Input: default@fact_daily_n5
+PREHOOK: Input: default@fact_daily_n5@ds=1
 #### A masked pattern was here ####
-POSTHOOK: query: select x1, y1 from(select x as x1, y as y1 from fact_daily where ds ='1') subq where x1 = 484
+POSTHOOK: query: select x1, y1 from(select x as x1, y as y1 from fact_daily_n5 where ds ='1') subq where x1 = 484
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@fact_daily
-POSTHOOK: Input: default@fact_daily@ds=1
+POSTHOOK: Input: default@fact_daily_n5
+POSTHOOK: Input: default@fact_daily_n5@ds=1
 #### A masked pattern was here ####
 484	val_484
-PREHOOK: query: explain extended  select y, count(1) from fact_daily where ds ='1' and x = 484 group by y
+PREHOOK: query: explain extended  select y, count(1) from fact_daily_n5 where ds ='1' and x = 484 group by y
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended  select y, count(1) from fact_daily where ds ='1' and x = 484 group by y
+POSTHOOK: query: explain extended  select y, count(1) from fact_daily_n5 where ds ='1' and x = 484 group by y
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -307,7 +307,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: fact_daily
+            alias: fact_daily_n5
             Statistics: Num rows: 1 Data size: 240 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -351,11 +351,11 @@ STAGE PLANS:
               columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
-              name default.fact_daily
+              name default.fact_daily_n5
               numFiles 2
               partition_columns ds
               partition_columns.types string
-              serialization.ddl struct fact_daily { i32 x, string y}
+              serialization.ddl struct fact_daily_n5 { i32 x, string y}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 24
@@ -373,18 +373,18 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
-                name default.fact_daily
+                name default.fact_daily_n5
                 partition_columns ds
                 partition_columns.types string
-                serialization.ddl struct fact_daily { i32 x, string y}
+                serialization.ddl struct fact_daily_n5 { i32 x, string y}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.fact_daily
-            name: default.fact_daily
+              name: default.fact_daily_n5
+            name: default.fact_daily_n5
       Truncated Path -> Alias:
-        /fact_tz/ds=1/x=484 [fact_daily]
+        /fact_tz/ds=1/x=484 [fact_daily_n5]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -422,20 +422,20 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select y, count(1) from fact_daily where ds ='1' and x = 484 group by y
+PREHOOK: query: select y, count(1) from fact_daily_n5 where ds ='1' and x = 484 group by y
 PREHOOK: type: QUERY
-PREHOOK: Input: default@fact_daily
-PREHOOK: Input: default@fact_daily@ds=1
+PREHOOK: Input: default@fact_daily_n5
+PREHOOK: Input: default@fact_daily_n5@ds=1
 #### A masked pattern was here ####
-POSTHOOK: query: select y, count(1) from fact_daily where ds ='1' and x = 484 group by y
+POSTHOOK: query: select y, count(1) from fact_daily_n5 where ds ='1' and x = 484 group by y
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@fact_daily
-POSTHOOK: Input: default@fact_daily@ds=1
+POSTHOOK: Input: default@fact_daily_n5
+POSTHOOK: Input: default@fact_daily_n5@ds=1
 #### A masked pattern was here ####
 val_484	1
-PREHOOK: query: explain extended  select x, c from (select x, count(1) as c from fact_daily where ds = '1' group by x) subq where x = 484
+PREHOOK: query: explain extended  select x, c from (select x, count(1) as c from fact_daily_n5 where ds = '1' group by x) subq where x = 484
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended  select x, c from (select x, count(1) as c from fact_daily where ds = '1' group by x) subq where x = 484
+POSTHOOK: query: explain extended  select x, c from (select x, count(1) as c from fact_daily_n5 where ds = '1' group by x) subq where x = 484
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -446,7 +446,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: fact_daily
+            alias: fact_daily_n5
             Statistics: Num rows: 1 Data size: 240 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -488,11 +488,11 @@ STAGE PLANS:
               columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
-              name default.fact_daily
+              name default.fact_daily_n5
               numFiles 2
               partition_columns ds
               partition_columns.types string
-              serialization.ddl struct fact_daily { i32 x, string y}
+              serialization.ddl struct fact_daily_n5 { i32 x, string y}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 24
@@ -510,18 +510,18 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
-                name default.fact_daily
+                name default.fact_daily_n5
                 partition_columns ds
                 partition_columns.types string
-                serialization.ddl struct fact_daily { i32 x, string y}
+                serialization.ddl struct fact_daily_n5 { i32 x, string y}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.fact_daily
-            name: default.fact_daily
+              name: default.fact_daily_n5
+            name: default.fact_daily_n5
       Truncated Path -> Alias:
-        /fact_tz/ds=1/x=484 [$hdt$_0:fact_daily]
+        /fact_tz/ds=1/x=484 [$hdt$_0:fact_daily_n5]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -563,14 +563,14 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select x, c from (select x, count(1) as c from fact_daily where ds = '1' group by x) subq where x = 484
+PREHOOK: query: select x, c from (select x, count(1) as c from fact_daily_n5 where ds = '1' group by x) subq where x = 484
 PREHOOK: type: QUERY
-PREHOOK: Input: default@fact_daily
-PREHOOK: Input: default@fact_daily@ds=1
+PREHOOK: Input: default@fact_daily_n5
+PREHOOK: Input: default@fact_daily_n5@ds=1
 #### A masked pattern was here ####
-POSTHOOK: query: select x, c from (select x, count(1) as c from fact_daily where ds = '1' group by x) subq where x = 484
+POSTHOOK: query: select x, c from (select x, count(1) as c from fact_daily_n5 where ds = '1' group by x) subq where x = 484
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@fact_daily
-POSTHOOK: Input: default@fact_daily@ds=1
+POSTHOOK: Input: default@fact_daily_n5
+POSTHOOK: Input: default@fact_daily_n5@ds=1
 #### A masked pattern was here ####
 484	1

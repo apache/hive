@@ -8,12 +8,12 @@ set hive.fetch.task.conversion=none;
 -- SORT_QUERY_RESULTS
 
 -- 2 Strings
-create table test_1 (`id` string, `lineid` string) stored as orc;
+create table test_1_n1 (`id` string, `lineid` string) stored as orc;
 
-insert into table test_1 values ('one','1'), ('seven','1');
+insert into table test_1_n1 values ('one','1'), ('seven','1');
 
 explain vectorization expression
-select * from test_1 where struct(`id`, `lineid`)
+select * from test_1_n1 where struct(`id`, `lineid`)
 IN (
 struct('two','3'),
 struct('three','1'),
@@ -26,7 +26,7 @@ struct('nine','1'),
 struct('ten','1')
 );
 
-select * from test_1 where struct(`id`, `lineid`)
+select * from test_1_n1 where struct(`id`, `lineid`)
 IN (
 struct('two','3'),
 struct('three','1'),
@@ -51,7 +51,7 @@ struct('eight','1'),
 struct('seven','1'),
 struct('nine','1'),
 struct('ten','1')
-) as b from test_1 ;
+) as b from test_1_n1 ;
 
 select `id`, `lineid`, struct(`id`, `lineid`)
 IN (
@@ -64,16 +64,16 @@ struct('eight','1'),
 struct('seven','1'),
 struct('nine','1'),
 struct('ten','1')
-) as b from test_1 ;
+) as b from test_1_n1 ;
 
 
 -- 2 Integers
-create table test_2 (`id` int, `lineid` int) stored as orc;
+create table test_2_n1 (`id` int, `lineid` int) stored as orc;
 
-insert into table test_2 values (1,1), (7,1);
+insert into table test_2_n1 values (1,1), (7,1);
 
 explain vectorization expression
-select * from test_2 where struct(`id`, `lineid`)
+select * from test_2_n1 where struct(`id`, `lineid`)
 IN (
 struct(2,3),
 struct(3,1),
@@ -86,7 +86,7 @@ struct(9,1),
 struct(10,1)
 );
 
-select * from test_2 where struct(`id`, `lineid`)
+select * from test_2_n1 where struct(`id`, `lineid`)
 IN (
 struct(2,3),
 struct(3,1),
@@ -111,7 +111,7 @@ struct(8,1),
 struct(7,1),
 struct(9,1),
 struct(10,1)
-) as b from test_2;
+) as b from test_2_n1;
 
 select `id`, `lineid`, struct(`id`, `lineid`)
 IN (
@@ -124,7 +124,7 @@ struct(8,1),
 struct(7,1),
 struct(9,1),
 struct(10,1)
-) as b from test_2;
+) as b from test_2_n1;
 
 -- 1 String and 1 Integer
 create table test_3 (`id` string, `lineid` int) stored as orc;

@@ -1,8 +1,8 @@
-PREHOOK: query: drop table if exists emp
+PREHOOK: query: drop table if exists emp_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table if exists emp
+POSTHOOK: query: drop table if exists emp_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table emp(empno smallint,
+PREHOOK: query: create table emp_n0(empno smallint,
            ename varchar(10),
            job varchar(10),
            manager smallint,
@@ -16,8 +16,8 @@ PREHOOK: query: create table emp(empno smallint,
        fields terminated by '|'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@emp
-POSTHOOK: query: create table emp(empno smallint,
+PREHOOK: Output: default@emp_n0
+POSTHOOK: query: create table emp_n0(empno smallint,
            ename varchar(10),
            job varchar(10),
            manager smallint,
@@ -31,22 +31,22 @@ POSTHOOK: query: create table emp(empno smallint,
        fields terminated by '|'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@emp
-PREHOOK: query: load data local inpath '../../data/files/emp2.txt' into table emp
+POSTHOOK: Output: default@emp_n0
+PREHOOK: query: load data local inpath '../../data/files/emp2.txt' into table emp_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@emp
-POSTHOOK: query: load data local inpath '../../data/files/emp2.txt' into table emp
+PREHOOK: Output: default@emp_n0
+POSTHOOK: query: load data local inpath '../../data/files/emp2.txt' into table emp_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@emp
-PREHOOK: query: select hirets, salary, sum(salary) over (partition by hirets range between current row and unbounded following) from emp
+POSTHOOK: Output: default@emp_n0
+PREHOOK: query: select hirets, salary, sum(salary) over (partition by hirets range between current row and unbounded following) from emp_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@emp
+PREHOOK: Input: default@emp_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select hirets, salary, sum(salary) over (partition by hirets range between current row and unbounded following) from emp
+POSTHOOK: query: select hirets, salary, sum(salary) over (partition by hirets range between current row and unbounded following) from emp_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@emp
+POSTHOOK: Input: default@emp_n0
 #### A masked pattern was here ####
 NULL	1500.0	3000.0
 NULL	1500.0	3000.0
@@ -71,9 +71,9 @@ PREHOOK: query: select deptno, empno, hiredate, salary,
     sum(salary) over (partition by deptno order by hiredate range between 10 following and 90 following),
     sum(salary) over (partition by deptno order by hiredate range between 10 following and unbounded following),
     sum(salary) over (partition by deptno order by hiredate range between unbounded preceding and 10 following)
-from emp
+from emp_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@emp
+PREHOOK: Input: default@emp_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select deptno, empno, hiredate, salary,
     sum(salary) over (partition by deptno order by hiredate range 90 preceding),
@@ -82,9 +82,9 @@ POSTHOOK: query: select deptno, empno, hiredate, salary,
     sum(salary) over (partition by deptno order by hiredate range between 10 following and 90 following),
     sum(salary) over (partition by deptno order by hiredate range between 10 following and unbounded following),
     sum(salary) over (partition by deptno order by hiredate range between unbounded preceding and 10 following)
-from emp
+from emp_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@emp
+POSTHOOK: Input: default@emp_n0
 #### A masked pattern was here ####
 10	7988	NULL	1500.0	3000.0	3000.0	NULL	NULL	8750.0	3000.0
 10	7987	NULL	1500.0	3000.0	3000.0	NULL	NULL	8750.0	3000.0
@@ -109,9 +109,9 @@ PREHOOK: query: select deptno, empno, hirets, salary,
     sum(salary) over (partition by deptno order by hirets range between 864000 following and 7776000 following),
     sum(salary) over (partition by deptno order by hirets range between 864000 following and unbounded following),
     sum(salary) over (partition by deptno order by hirets range between unbounded preceding and 864000 following)
-from emp
+from emp_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@emp
+PREHOOK: Input: default@emp_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select deptno, empno, hirets, salary,
     sum(salary) over (partition by deptno order by hirets range 7776000 preceding),
@@ -120,9 +120,9 @@ POSTHOOK: query: select deptno, empno, hirets, salary,
     sum(salary) over (partition by deptno order by hirets range between 864000 following and 7776000 following),
     sum(salary) over (partition by deptno order by hirets range between 864000 following and unbounded following),
     sum(salary) over (partition by deptno order by hirets range between unbounded preceding and 864000 following)
-from emp
+from emp_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@emp
+POSTHOOK: Input: default@emp_n0
 #### A masked pattern was here ####
 10	7988	NULL	1500.0	3000.0	3000.0	NULL	NULL	8750.0	3000.0
 10	7987	NULL	1500.0	3000.0	3000.0	NULL	NULL	8750.0	3000.0
@@ -147,9 +147,9 @@ PREHOOK: query: select deptno, empno, bonus,
     avg(bonus) over (partition by deptno order by bonus range between 100 following and 200 following),
     avg(bonus) over (partition by deptno order by bonus range between 200 following and unbounded following),
     avg(bonus) over (partition by deptno order by bonus range between unbounded preceding and 200 following)
-from emp
+from emp_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@emp
+PREHOOK: Input: default@emp_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select deptno, empno, bonus,
     avg(bonus) over (partition by deptno order by bonus range 200 preceding),
@@ -158,9 +158,9 @@ POSTHOOK: query: select deptno, empno, bonus,
     avg(bonus) over (partition by deptno order by bonus range between 100 following and 200 following),
     avg(bonus) over (partition by deptno order by bonus range between 200 following and unbounded following),
     avg(bonus) over (partition by deptno order by bonus range between unbounded preceding and 200 following)
-from emp
+from emp_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@emp
+POSTHOOK: Input: default@emp_n0
 #### A masked pattern was here ####
 10	7934	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 10	7987	NULL	NULL	NULL	NULL	NULL	NULL	NULL
@@ -185,9 +185,9 @@ PREHOOK: query: select deptno, empno, stock, salary,
     avg(salary) over (partition by deptno order by stock range between 100 following and 200 following),
     avg(salary) over (partition by deptno order by stock range between 200 following and unbounded following),
     avg(salary) over (partition by deptno order by stock range between unbounded preceding and 200 following)
-from emp
+from emp_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@emp
+PREHOOK: Input: default@emp_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select deptno, empno, stock, salary,
     avg(salary) over (partition by deptno order by stock range 200 preceding),
@@ -196,9 +196,9 @@ POSTHOOK: query: select deptno, empno, stock, salary,
     avg(salary) over (partition by deptno order by stock range between 100 following and 200 following),
     avg(salary) over (partition by deptno order by stock range between 200 following and unbounded following),
     avg(salary) over (partition by deptno order by stock range between unbounded preceding and 200 following)
-from emp
+from emp_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@emp
+POSTHOOK: Input: default@emp_n0
 #### A masked pattern was here ####
 10	7839	NULL	5000.0	5000.0	5000.0	NULL	NULL	1687.5	5000.0
 10	7782	50.00	2450.0	2450.0	1687.5	NULL	1500.0	NULL	2350.0

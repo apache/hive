@@ -1,32 +1,32 @@
-PREHOOK: query: CREATE TABLE DEST1(key STRING, value STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE DEST1_n86(key STRING, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEST1
-POSTHOOK: query: CREATE TABLE DEST1(key STRING, value STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@DEST1_n86
+POSTHOOK: query: CREATE TABLE DEST1_n86(key STRING, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEST1
-PREHOOK: query: CREATE TABLE DEST2(key STRING, val1 STRING, val2 STRING) STORED AS TEXTFILE
+POSTHOOK: Output: default@DEST1_n86
+PREHOOK: query: CREATE TABLE DEST2_n21(key STRING, val1 STRING, val2 STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEST2
-POSTHOOK: query: CREATE TABLE DEST2(key STRING, val1 STRING, val2 STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@DEST2_n21
+POSTHOOK: query: CREATE TABLE DEST2_n21(key STRING, val1 STRING, val2 STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEST2
+POSTHOOK: Output: default@DEST2_n21
 PREHOOK: query: explain 
 FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
                          UNION  ALL  
       select s2.key as key, s2.value as value from src s2) unionsrc
-INSERT OVERWRITE TABLE DEST1 SELECT unionsrc.key, count(unionsrc.value) group by unionsrc.key
-INSERT OVERWRITE TABLE DEST2 SELECT unionsrc.key, unionsrc.value, unionsrc.value
+INSERT OVERWRITE TABLE DEST1_n86 SELECT unionsrc.key, count(unionsrc.value) group by unionsrc.key
+INSERT OVERWRITE TABLE DEST2_n21 SELECT unionsrc.key, unionsrc.value, unionsrc.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain 
 FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
                          UNION  ALL  
       select s2.key as key, s2.value as value from src s2) unionsrc
-INSERT OVERWRITE TABLE DEST1 SELECT unionsrc.key, count(unionsrc.value) group by unionsrc.key
-INSERT OVERWRITE TABLE DEST2 SELECT unionsrc.key, unionsrc.value, unionsrc.value
+INSERT OVERWRITE TABLE DEST1_n86 SELECT unionsrc.key, count(unionsrc.value) group by unionsrc.key
+INSERT OVERWRITE TABLE DEST2_n21 SELECT unionsrc.key, unionsrc.value, unionsrc.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -92,7 +92,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.dest2
+                            name: default.dest2_n21
             Execution mode: vectorized
         Reducer 2 
             Execution mode: vectorized
@@ -129,7 +129,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.dest2
+                          name: default.dest2_n21
         Reducer 3 
             Execution mode: vectorized
             Reduce Operator Tree:
@@ -150,7 +150,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.dest1
+                        name: default.dest1_n86
 
   Stage: Stage-0
     Move Operator
@@ -160,7 +160,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n86
 
   Stage: Stage-3
     Stats Work
@@ -174,7 +174,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest2
+              name: default.dest2_n21
 
   Stage: Stage-4
     Stats Work
@@ -183,33 +183,33 @@ STAGE PLANS:
 PREHOOK: query: FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
                          UNION  ALL  
       select s2.key as key, s2.value as value from src s2) unionsrc
-INSERT OVERWRITE TABLE DEST1 SELECT unionsrc.key, count(unionsrc.value) group by unionsrc.key
-INSERT OVERWRITE TABLE DEST2 SELECT unionsrc.key, unionsrc.value, unionsrc.value
+INSERT OVERWRITE TABLE DEST1_n86 SELECT unionsrc.key, count(unionsrc.value) group by unionsrc.key
+INSERT OVERWRITE TABLE DEST2_n21 SELECT unionsrc.key, unionsrc.value, unionsrc.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@dest1
-PREHOOK: Output: default@dest2
+PREHOOK: Output: default@dest1_n86
+PREHOOK: Output: default@dest2_n21
 POSTHOOK: query: FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
                          UNION  ALL  
       select s2.key as key, s2.value as value from src s2) unionsrc
-INSERT OVERWRITE TABLE DEST1 SELECT unionsrc.key, count(unionsrc.value) group by unionsrc.key
-INSERT OVERWRITE TABLE DEST2 SELECT unionsrc.key, unionsrc.value, unionsrc.value
+INSERT OVERWRITE TABLE DEST1_n86 SELECT unionsrc.key, count(unionsrc.value) group by unionsrc.key
+INSERT OVERWRITE TABLE DEST2_n21 SELECT unionsrc.key, unionsrc.value, unionsrc.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@dest1
-POSTHOOK: Output: default@dest2
-POSTHOOK: Lineage: dest1.key EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.value EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.key EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.val1 EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2.val2 EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: SELECT DEST1.* FROM DEST1 SORT BY DEST1.key, DEST1.value
+POSTHOOK: Output: default@dest1_n86
+POSTHOOK: Output: default@dest2_n21
+POSTHOOK: Lineage: dest1_n86.key EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n86.value EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n21.key EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n21.val1 EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n21.val2 EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT DEST1_n86.* FROM DEST1_n86 SORT BY DEST1_n86.key, DEST1_n86.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n86
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT DEST1.* FROM DEST1 SORT BY DEST1.key, DEST1.value
+POSTHOOK: query: SELECT DEST1_n86.* FROM DEST1_n86 SORT BY DEST1_n86.key, DEST1_n86.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n86
 #### A masked pattern was here ####
 0	3
 10	1
@@ -521,13 +521,13 @@ POSTHOOK: Input: default@dest1
 97	2
 98	2
 tst1	1
-PREHOOK: query: SELECT DEST2.* FROM DEST2 SORT BY DEST2.key, DEST2.val1, DEST2.val2
+PREHOOK: query: SELECT DEST2_n21.* FROM DEST2_n21 SORT BY DEST2_n21.key, DEST2_n21.val1, DEST2_n21.val2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest2
+PREHOOK: Input: default@dest2_n21
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT DEST2.* FROM DEST2 SORT BY DEST2.key, DEST2.val1, DEST2.val2
+POSTHOOK: query: SELECT DEST2_n21.* FROM DEST2_n21 SORT BY DEST2_n21.key, DEST2_n21.val1, DEST2_n21.val2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest2
+POSTHOOK: Input: default@dest2_n21
 #### A masked pattern was here ####
 0	val_0	val_0
 0	val_0	val_0

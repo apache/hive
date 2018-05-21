@@ -1,4 +1,4 @@
-PREHOOK: query: create table part2( 
+PREHOOK: query: create table part2_n4( 
     p2_partkey INT,
     p2_name STRING,
     p2_mfgr STRING,
@@ -11,8 +11,8 @@ PREHOOK: query: create table part2(
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@part2
-POSTHOOK: query: create table part2( 
+PREHOOK: Output: default@part2_n4
+POSTHOOK: query: create table part2_n4( 
     p2_partkey INT,
     p2_name STRING,
     p2_mfgr STRING,
@@ -25,8 +25,8 @@ POSTHOOK: query: create table part2(
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@part2
-PREHOOK: query: create table part3( 
+POSTHOOK: Output: default@part2_n4
+PREHOOK: query: create table part3_n1( 
     p3_partkey INT,
     p3_name STRING,
     p3_mfgr STRING,
@@ -39,8 +39,8 @@ PREHOOK: query: create table part3(
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@part3
-POSTHOOK: query: create table part3( 
+PREHOOK: Output: default@part3_n1
+POSTHOOK: query: create table part3_n1( 
     p3_partkey INT,
     p3_name STRING,
     p3_mfgr STRING,
@@ -53,13 +53,13 @@ POSTHOOK: query: create table part3(
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@part3
+POSTHOOK: Output: default@part3_n1
 PREHOOK: query: explain select *
-from part p1 join part2 p2 join part3 p3 on p1.p_name = p2_name join part p4 
+from part p1 join part2_n4 p2 join part3_n1 p3 on p1.p_name = p2_name join part p4 
 where p2_name = p3_name and p1.p_name = p4.p_name
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select *
-from part p1 join part2 p2 join part3 p3 on p1.p_name = p2_name join part p4 
+from part p1 join part2_n4 p2 join part3_n1 p3 on p1.p_name = p2_name join part p4 
 where p2_name = p3_name and p1.p_name = p4.p_name
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -182,12 +182,12 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select *
-from part p1 join part2 p2 join part3 p3 on p2_name = p1.p_name join part p4 
+from part p1 join part2_n4 p2 join part3_n1 p3 on p2_name = p1.p_name join part p4 
 where p2_name = p3_name and p1.p_partkey = p4.p_partkey 
             and p1.p_partkey = p2_partkey
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select *
-from part p1 join part2 p2 join part3 p3 on p2_name = p1.p_name join part p4 
+from part p1 join part2_n4 p2 join part3_n1 p3 on p2_name = p1.p_name join part p4 
 where p2_name = p3_name and p1.p_partkey = p4.p_partkey 
             and p1.p_partkey = p2_partkey
 POSTHOOK: type: QUERY

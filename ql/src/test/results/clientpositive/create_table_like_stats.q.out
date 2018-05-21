@@ -1,21 +1,21 @@
-PREHOOK: query: drop table a
+PREHOOK: query: drop table a_n13
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table a
+POSTHOOK: query: drop table a_n13
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table a like src
+PREHOOK: query: create table a_n13 like src
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@a
-POSTHOOK: query: create table a like src
+PREHOOK: Output: default@a_n13
+POSTHOOK: query: create table a_n13 like src
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@a
-PREHOOK: query: desc formatted a
+POSTHOOK: Output: default@a_n13
+PREHOOK: query: desc formatted a_n13
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@a
-POSTHOOK: query: desc formatted a
+PREHOOK: Input: default@a_n13
+POSTHOOK: query: desc formatted a_n13
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@a
+POSTHOOK: Input: default@a_n13
 # col_name            	data_type           	comment             
 key                 	string              	default             
 value               	string              	default             
@@ -44,30 +44,30 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: drop table a
+PREHOOK: query: drop table a_n13
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@a
-PREHOOK: Output: default@a
-POSTHOOK: query: drop table a
+PREHOOK: Input: default@a_n13
+PREHOOK: Output: default@a_n13
+POSTHOOK: query: drop table a_n13
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@a
-POSTHOOK: Output: default@a
+POSTHOOK: Input: default@a_n13
+POSTHOOK: Output: default@a_n13
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 PREHOOK: Output: database:default
-PREHOOK: Output: default@a
+PREHOOK: Output: default@a_n13
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@a
-PREHOOK: query: desc formatted a
+POSTHOOK: Output: default@a_n13
+PREHOOK: query: desc formatted a_n13
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@a
-POSTHOOK: query: desc formatted a
+PREHOOK: Input: default@a_n13
+POSTHOOK: query: desc formatted a_n13
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@a
+POSTHOOK: Input: default@a_n13
 # col_name            	data_type           	comment             
 key                 	string              	default             
 value               	string              	default             
@@ -93,32 +93,32 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: drop table a
+PREHOOK: query: drop table a_n13
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@a
-PREHOOK: Output: default@a
-POSTHOOK: query: drop table a
+PREHOOK: Input: default@a_n13
+PREHOOK: Output: default@a_n13
+POSTHOOK: query: drop table a_n13
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@a
-POSTHOOK: Output: default@a
-PREHOOK: query: create table a (key STRING COMMENT 'default', value STRING COMMENT 'default')
+POSTHOOK: Input: default@a_n13
+POSTHOOK: Output: default@a_n13
+PREHOOK: query: create table a_n13 (key STRING COMMENT 'default', value STRING COMMENT 'default')
 PARTITIONED BY (ds STRING, hr STRING)
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@a
-POSTHOOK: query: create table a (key STRING COMMENT 'default', value STRING COMMENT 'default')
+PREHOOK: Output: default@a_n13
+POSTHOOK: query: create table a_n13 (key STRING COMMENT 'default', value STRING COMMENT 'default')
 PARTITIONED BY (ds STRING, hr STRING)
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@a
-PREHOOK: query: desc formatted a
+POSTHOOK: Output: default@a_n13
+PREHOOK: query: desc formatted a_n13
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@a
-POSTHOOK: query: desc formatted a
+PREHOOK: Input: default@a_n13
+POSTHOOK: query: desc formatted a_n13
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@a
+POSTHOOK: Input: default@a_n13
 # col_name            	data_type           	comment             
 key                 	string              	default             
 value               	string              	default             
@@ -154,28 +154,28 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: drop table a
+PREHOOK: query: drop table a_n13
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@a
-PREHOOK: Output: default@a
-POSTHOOK: query: drop table a
+PREHOOK: Input: default@a_n13
+PREHOOK: Output: default@a_n13
+POSTHOOK: query: drop table a_n13
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@a
-POSTHOOK: Output: default@a
-PREHOOK: query: create table a like srcpart
+POSTHOOK: Input: default@a_n13
+POSTHOOK: Output: default@a_n13
+PREHOOK: query: create table a_n13 like srcpart
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@a
-POSTHOOK: query: create table a like srcpart
+PREHOOK: Output: default@a_n13
+POSTHOOK: query: create table a_n13 like srcpart
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@a
-PREHOOK: query: desc formatted a
+POSTHOOK: Output: default@a_n13
+PREHOOK: query: desc formatted a_n13
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@a
-POSTHOOK: query: desc formatted a
+PREHOOK: Input: default@a_n13
+POSTHOOK: query: desc formatted a_n13
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@a
+POSTHOOK: Input: default@a_n13
 # col_name            	data_type           	comment             
 key                 	string              	default             
 value               	string              	default             

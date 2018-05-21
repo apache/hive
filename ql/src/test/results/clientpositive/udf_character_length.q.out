@@ -30,17 +30,17 @@ Example:
   5
 Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFCharacterLength
 Function type:BUILTIN
-PREHOOK: query: CREATE TABLE dest1(len INT)
+PREHOOK: query: CREATE TABLE dest1_n97(len INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest1
-POSTHOOK: query: CREATE TABLE dest1(len INT)
+PREHOOK: Output: default@dest1_n97
+POSTHOOK: query: CREATE TABLE dest1_n97(len INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest1
-PREHOOK: query: EXPLAIN FROM src1 INSERT OVERWRITE TABLE dest1 SELECT character_length(src1.value)
+POSTHOOK: Output: default@dest1_n97
+PREHOOK: query: EXPLAIN FROM src1 INSERT OVERWRITE TABLE dest1_n97 SELECT character_length(src1.value)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN FROM src1 INSERT OVERWRITE TABLE dest1 SELECT character_length(src1.value)
+POSTHOOK: query: EXPLAIN FROM src1 INSERT OVERWRITE TABLE dest1_n97 SELECT character_length(src1.value)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -70,7 +70,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.dest1
+                    name: default.dest1_n97
               Select Operator
                 expressions: _col0 (type: int)
                 outputColumnNames: len
@@ -115,7 +115,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n97
 
   Stage: Stage-2
     Stats Work
@@ -123,7 +123,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: len
           Column Types: int
-          Table: default.dest1
+          Table: default.dest1_n97
 
   Stage: Stage-3
     Map Reduce
@@ -135,7 +135,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.dest1
+                  name: default.dest1_n97
 
   Stage: Stage-5
     Map Reduce
@@ -147,7 +147,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.dest1
+                  name: default.dest1_n97
 
   Stage: Stage-6
     Move Operator
@@ -155,22 +155,22 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-PREHOOK: query: FROM src1 INSERT OVERWRITE TABLE dest1 SELECT character_length(src1.value)
+PREHOOK: query: FROM src1 INSERT OVERWRITE TABLE dest1_n97 SELECT character_length(src1.value)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1
-PREHOOK: Output: default@dest1
-POSTHOOK: query: FROM src1 INSERT OVERWRITE TABLE dest1 SELECT character_length(src1.value)
+PREHOOK: Output: default@dest1_n97
+POSTHOOK: query: FROM src1 INSERT OVERWRITE TABLE dest1_n97 SELECT character_length(src1.value)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1
-POSTHOOK: Output: default@dest1
-POSTHOOK: Lineage: dest1.len EXPRESSION [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: Output: default@dest1_n97
+POSTHOOK: Lineage: dest1_n97.len EXPRESSION [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT dest1_n97.* FROM dest1_n97
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n97
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: query: SELECT dest1_n97.* FROM dest1_n97
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n97
 #### A masked pattern was here ####
 7
 0
@@ -197,42 +197,42 @@ POSTHOOK: Input: default@dest1
 0
 0
 0
-PREHOOK: query: DROP TABLE dest1
+PREHOOK: query: DROP TABLE dest1_n97
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@dest1
-PREHOOK: Output: default@dest1
-POSTHOOK: query: DROP TABLE dest1
+PREHOOK: Input: default@dest1_n97
+PREHOOK: Output: default@dest1_n97
+POSTHOOK: query: DROP TABLE dest1_n97
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@dest1
-POSTHOOK: Output: default@dest1
-PREHOOK: query: CREATE TABLE dest1(name STRING) STORED AS TEXTFILE
+POSTHOOK: Input: default@dest1_n97
+POSTHOOK: Output: default@dest1_n97
+PREHOOK: query: CREATE TABLE dest1_n97(name STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest1
-POSTHOOK: query: CREATE TABLE dest1(name STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@dest1_n97
+POSTHOOK: query: CREATE TABLE dest1_n97(name STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv4.txt' INTO TABLE dest1
+POSTHOOK: Output: default@dest1_n97
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv4.txt' INTO TABLE dest1_n97
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@dest1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv4.txt' INTO TABLE dest1
+PREHOOK: Output: default@dest1_n97
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv4.txt' INTO TABLE dest1_n97
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@dest1
-PREHOOK: query: INSERT INTO dest1 VALUES(NULL)
+POSTHOOK: Output: default@dest1_n97
+PREHOOK: query: INSERT INTO dest1_n97 VALUES(NULL)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@dest1
-POSTHOOK: query: INSERT INTO dest1 VALUES(NULL)
+PREHOOK: Output: default@dest1_n97
+POSTHOOK: query: INSERT INTO dest1_n97 VALUES(NULL)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@dest1
-POSTHOOK: Lineage: dest1.name EXPRESSION []
-PREHOOK: query: EXPLAIN SELECT character_length(dest1.name) FROM dest1
+POSTHOOK: Output: default@dest1_n97
+POSTHOOK: Lineage: dest1_n97.name EXPRESSION []
+PREHOOK: query: EXPLAIN SELECT character_length(dest1_n97.name) FROM dest1_n97
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT character_length(dest1.name) FROM dest1
+POSTHOOK: query: EXPLAIN SELECT character_length(dest1_n97.name) FROM dest1_n97
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -243,7 +243,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: dest1
+          alias: dest1_n97
           Statistics: Num rows: 1 Data size: 90 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: character_length(name) (type: int)
@@ -251,19 +251,19 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 90 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
-PREHOOK: query: SELECT character_length(dest1.name) FROM dest1
+PREHOOK: query: SELECT character_length(dest1_n97.name) FROM dest1_n97
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n97
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT character_length(dest1.name) FROM dest1
+POSTHOOK: query: SELECT character_length(dest1_n97.name) FROM dest1_n97
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n97
 #### A masked pattern was here ####
 NULL
 2
-PREHOOK: query: EXPLAIN SELECT char_length(dest1.name) FROM dest1
+PREHOOK: query: EXPLAIN SELECT char_length(dest1_n97.name) FROM dest1_n97
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT char_length(dest1.name) FROM dest1
+POSTHOOK: query: EXPLAIN SELECT char_length(dest1_n97.name) FROM dest1_n97
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -274,7 +274,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: dest1
+          alias: dest1_n97
           Statistics: Num rows: 1 Data size: 90 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: character_length(name) (type: int)
@@ -282,21 +282,21 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 90 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
-PREHOOK: query: SELECT char_length(dest1.name) FROM dest1
+PREHOOK: query: SELECT char_length(dest1_n97.name) FROM dest1_n97
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n97
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT char_length(dest1.name) FROM dest1
+POSTHOOK: query: SELECT char_length(dest1_n97.name) FROM dest1_n97
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n97
 #### A masked pattern was here ####
 NULL
 2
-PREHOOK: query: DROP TABLE dest1
+PREHOOK: query: DROP TABLE dest1_n97
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@dest1
-PREHOOK: Output: default@dest1
-POSTHOOK: query: DROP TABLE dest1
+PREHOOK: Input: default@dest1_n97
+PREHOOK: Output: default@dest1_n97
+POSTHOOK: query: DROP TABLE dest1_n97
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@dest1
-POSTHOOK: Output: default@dest1
+POSTHOOK: Input: default@dest1_n97
+POSTHOOK: Output: default@dest1_n97

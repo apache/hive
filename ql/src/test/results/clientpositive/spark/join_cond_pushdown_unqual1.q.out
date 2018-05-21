@@ -1,4 +1,4 @@
-PREHOOK: query: create table part2( 
+PREHOOK: query: create table part2_n0( 
     p2_partkey INT,
     p2_name STRING,
     p2_mfgr STRING,
@@ -11,8 +11,8 @@ PREHOOK: query: create table part2(
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@part2
-POSTHOOK: query: create table part2( 
+PREHOOK: Output: default@part2_n0
+POSTHOOK: query: create table part2_n0( 
     p2_partkey INT,
     p2_name STRING,
     p2_mfgr STRING,
@@ -25,8 +25,8 @@ POSTHOOK: query: create table part2(
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@part2
-PREHOOK: query: create table part3( 
+POSTHOOK: Output: default@part2_n0
+PREHOOK: query: create table part3_n0( 
     p3_partkey INT,
     p3_name STRING,
     p3_mfgr STRING,
@@ -39,8 +39,8 @@ PREHOOK: query: create table part3(
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@part3
-POSTHOOK: query: create table part3( 
+PREHOOK: Output: default@part3_n0
+POSTHOOK: query: create table part3_n0( 
     p3_partkey INT,
     p3_name STRING,
     p3_mfgr STRING,
@@ -53,12 +53,12 @@ POSTHOOK: query: create table part3(
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@part3
+POSTHOOK: Output: default@part3_n0
 PREHOOK: query: explain select *
-from part p1 join part2 p2 join part3 p3 on p1.p_name = p2_name and p2_name = p3_name
+from part p1 join part2_n0 p2 join part3_n0 p3 on p1.p_name = p2_name and p2_name = p3_name
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select *
-from part p1 join part2 p2 join part3 p3 on p1.p_name = p2_name and p2_name = p3_name
+from part p1 join part2_n0 p2 join part3_n0 p3 on p1.p_name = p2_name and p2_name = p3_name
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -159,10 +159,10 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain select *
-from part p1 join part2 p2 join part3 p3 on p2_name = p1.p_name and p3_name = p2_name
+from part p1 join part2_n0 p2 join part3_n0 p3 on p2_name = p1.p_name and p3_name = p2_name
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select *
-from part p1 join part2 p2 join part3 p3 on p2_name = p1.p_name and p3_name = p2_name
+from part p1 join part2_n0 p2 join part3_n0 p3 on p2_name = p1.p_name and p3_name = p2_name
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -264,10 +264,10 @@ STAGE PLANS:
 
 Warning: Shuffle Join JOIN[13][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Work 'Reducer 3' is a cross product
 PREHOOK: query: explain select *
-from part p1 join part2 p2 join part3 p3 on p2_partkey + p_partkey = p1.p_partkey and p3_name = p2_name
+from part p1 join part2_n0 p2 join part3_n0 p3 on p2_partkey + p_partkey = p1.p_partkey and p3_name = p2_name
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select *
-from part p1 join part2 p2 join part3 p3 on p2_partkey + p_partkey = p1.p_partkey and p3_name = p2_name
+from part p1 join part2_n0 p2 join part3_n0 p3 on p2_partkey + p_partkey = p1.p_partkey and p3_name = p2_name
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -380,10 +380,10 @@ STAGE PLANS:
 
 Warning: Shuffle Join JOIN[13][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Work 'Reducer 3' is a cross product
 PREHOOK: query: explain select *
-from part p1 join part2 p2 join part3 p3 on p2_partkey = 1 and p3_name = p2_name
+from part p1 join part2_n0 p2 join part3_n0 p3 on p2_partkey = 1 and p3_name = p2_name
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select *
-from part p1 join part2 p2 join part3 p3 on p2_partkey = 1 and p3_name = p2_name
+from part p1 join part2_n0 p2 join part3_n0 p3 on p2_partkey = 1 and p3_name = p2_name
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage

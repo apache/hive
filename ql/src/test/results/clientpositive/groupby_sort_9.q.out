@@ -1,51 +1,51 @@
-PREHOOK: query: CREATE TABLE T1(key STRING, val STRING) PARTITIONED BY (ds string)
+PREHOOK: query: CREATE TABLE T1_n96(key STRING, val STRING) PARTITIONED BY (ds string)
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1
-POSTHOOK: query: CREATE TABLE T1(key STRING, val STRING) PARTITIONED BY (ds string)
+PREHOOK: Output: default@T1_n96
+POSTHOOK: query: CREATE TABLE T1_n96(key STRING, val STRING) PARTITIONED BY (ds string)
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bucket_files/000000_0' INTO TABLE T1  PARTITION (ds='1')
+POSTHOOK: Output: default@T1_n96
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bucket_files/000000_0' INTO TABLE T1_n96  PARTITION (ds='1')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bucket_files/000000_0' INTO TABLE T1  PARTITION (ds='1')
+PREHOOK: Output: default@t1_n96
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bucket_files/000000_0' INTO TABLE T1_n96  PARTITION (ds='1')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t1
-POSTHOOK: Output: default@t1@ds=1
-PREHOOK: query: INSERT OVERWRITE TABLE T1 PARTITION (ds='1') select key, val from T1 where ds = '1'
+POSTHOOK: Output: default@t1_n96
+POSTHOOK: Output: default@t1_n96@ds=1
+PREHOOK: query: INSERT OVERWRITE TABLE T1_n96 PARTITION (ds='1') select key, val from T1_n96 where ds = '1'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t1@ds=1
-PREHOOK: Output: default@t1@ds=1
-POSTHOOK: query: INSERT OVERWRITE TABLE T1 PARTITION (ds='1') select key, val from T1 where ds = '1'
+PREHOOK: Input: default@t1_n96
+PREHOOK: Input: default@t1_n96@ds=1
+PREHOOK: Output: default@t1_n96@ds=1
+POSTHOOK: query: INSERT OVERWRITE TABLE T1_n96 PARTITION (ds='1') select key, val from T1_n96 where ds = '1'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t1@ds=1
-POSTHOOK: Output: default@t1@ds=1
-POSTHOOK: Lineage: t1 PARTITION(ds=1).key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1 PARTITION(ds=1).val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-PREHOOK: query: INSERT OVERWRITE TABLE T1 PARTITION (ds='2') select key, val from T1 where ds = '1'
+POSTHOOK: Input: default@t1_n96
+POSTHOOK: Input: default@t1_n96@ds=1
+POSTHOOK: Output: default@t1_n96@ds=1
+POSTHOOK: Lineage: t1_n96 PARTITION(ds=1).key SIMPLE [(t1_n96)t1_n96.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t1_n96 PARTITION(ds=1).val SIMPLE [(t1_n96)t1_n96.FieldSchema(name:val, type:string, comment:null), ]
+PREHOOK: query: INSERT OVERWRITE TABLE T1_n96 PARTITION (ds='2') select key, val from T1_n96 where ds = '1'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t1@ds=1
-PREHOOK: Output: default@t1@ds=2
-POSTHOOK: query: INSERT OVERWRITE TABLE T1 PARTITION (ds='2') select key, val from T1 where ds = '1'
+PREHOOK: Input: default@t1_n96
+PREHOOK: Input: default@t1_n96@ds=1
+PREHOOK: Output: default@t1_n96@ds=2
+POSTHOOK: query: INSERT OVERWRITE TABLE T1_n96 PARTITION (ds='2') select key, val from T1_n96 where ds = '1'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t1@ds=1
-POSTHOOK: Output: default@t1@ds=2
-POSTHOOK: Lineage: t1 PARTITION(ds=2).key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1 PARTITION(ds=2).val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Input: default@t1_n96
+POSTHOOK: Input: default@t1_n96@ds=1
+POSTHOOK: Output: default@t1_n96@ds=2
+POSTHOOK: Lineage: t1_n96 PARTITION(ds=2).key SIMPLE [(t1_n96)t1_n96.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t1_n96 PARTITION(ds=2).val SIMPLE [(t1_n96)t1_n96.FieldSchema(name:val, type:string, comment:null), ]
 PREHOOK: query: EXPLAIN
-select key, count(1) from T1 group by key
+select key, count(1) from T1_n96 group by key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-select key, count(1) from T1 group by key
+select key, count(1) from T1_n96 group by key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -56,7 +56,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
+            alias: t1_n96
             Statistics: Num rows: 12 Data size: 48 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string)
@@ -97,28 +97,28 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select key, count(1) from T1 group by key
+PREHOOK: query: select key, count(1) from T1_n96 group by key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t1@ds=1
-PREHOOK: Input: default@t1@ds=2
+PREHOOK: Input: default@t1_n96
+PREHOOK: Input: default@t1_n96@ds=1
+PREHOOK: Input: default@t1_n96@ds=2
 #### A masked pattern was here ####
-POSTHOOK: query: select key, count(1) from T1 group by key
+POSTHOOK: query: select key, count(1) from T1_n96 group by key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t1@ds=1
-POSTHOOK: Input: default@t1@ds=2
+POSTHOOK: Input: default@t1_n96
+POSTHOOK: Input: default@t1_n96@ds=1
+POSTHOOK: Input: default@t1_n96@ds=2
 #### A masked pattern was here ####
 1	2
 2	2
 3	2
 7	2
 8	4
-PREHOOK: query: DROP TABLE T1
+PREHOOK: query: DROP TABLE T1_n96
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@t1
-POSTHOOK: query: DROP TABLE T1
+PREHOOK: Input: default@t1_n96
+PREHOOK: Output: default@t1_n96
+POSTHOOK: query: DROP TABLE T1_n96
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@t1
+POSTHOOK: Input: default@t1_n96
+POSTHOOK: Output: default@t1_n96

@@ -1,27 +1,27 @@
-PREHOOK: query: create table dummy(i int)
+PREHOOK: query: create table dummy_n2(i int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dummy
-POSTHOOK: query: create table dummy(i int)
+PREHOOK: Output: default@dummy_n2
+POSTHOOK: query: create table dummy_n2(i int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dummy
-PREHOOK: query: insert into table dummy values (1)
+POSTHOOK: Output: default@dummy_n2
+PREHOOK: query: insert into table dummy_n2 values (1)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@dummy
-POSTHOOK: query: insert into table dummy values (1)
+PREHOOK: Output: default@dummy_n2
+POSTHOOK: query: insert into table dummy_n2 values (1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@dummy
-POSTHOOK: Lineage: dummy.i SCRIPT []
-PREHOOK: query: select * from dummy
+POSTHOOK: Output: default@dummy_n2
+POSTHOOK: Lineage: dummy_n2.i SCRIPT []
+PREHOOK: query: select * from dummy_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dummy
+PREHOOK: Input: default@dummy_n2
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from dummy
+POSTHOOK: query: select * from dummy_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dummy
+POSTHOOK: Input: default@dummy_n2
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1
 PREHOOK: query: create table partunion1(id1 int) partitioned by (part1 string)
@@ -34,15 +34,15 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partunion1
 PREHOOK: query: explain insert into table partunion1 partition(part1)
 select temps.* from (
-select 1 as id1, '2014' as part1 from dummy 
+select 1 as id1, '2014' as part1 from dummy_n2 
 union all 
-select 2 as id1, '2014' as part1 from dummy ) temps
+select 2 as id1, '2014' as part1 from dummy_n2 ) temps
 PREHOOK: type: QUERY
 POSTHOOK: query: explain insert into table partunion1 partition(part1)
 select temps.* from (
-select 1 as id1, '2014' as part1 from dummy 
+select 1 as id1, '2014' as part1 from dummy_n2 
 union all 
-select 2 as id1, '2014' as part1 from dummy ) temps
+select 2 as id1, '2014' as part1 from dummy_n2 ) temps
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -63,7 +63,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: dummy
+                  alias: dummy_n2
                   Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: 1 (type: int)
@@ -102,7 +102,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: dummy
+                  alias: dummy_n2
                   Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: 2 (type: int)
@@ -186,19 +186,19 @@ STAGE PLANS:
 
 PREHOOK: query: insert into table partunion1 partition(part1)
 select temps.* from (
-select 1 as id1, '2014' as part1 from dummy 
+select 1 as id1, '2014' as part1 from dummy_n2 
 union all 
-select 2 as id1, '2014' as part1 from dummy ) temps
+select 2 as id1, '2014' as part1 from dummy_n2 ) temps
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dummy
+PREHOOK: Input: default@dummy_n2
 PREHOOK: Output: default@partunion1
 POSTHOOK: query: insert into table partunion1 partition(part1)
 select temps.* from (
-select 1 as id1, '2014' as part1 from dummy 
+select 1 as id1, '2014' as part1 from dummy_n2 
 union all 
-select 2 as id1, '2014' as part1 from dummy ) temps
+select 2 as id1, '2014' as part1 from dummy_n2 ) temps
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dummy
+POSTHOOK: Input: default@dummy_n2
 POSTHOOK: Output: default@partunion1@part1=2014
 POSTHOOK: Lineage: partunion1 PARTITION(part1=2014).id1 EXPRESSION []
 PREHOOK: query: select * from partunion1

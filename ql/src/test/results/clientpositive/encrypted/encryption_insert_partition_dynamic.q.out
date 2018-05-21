@@ -1,162 +1,162 @@
-PREHOOK: query: drop table IF EXISTS encryptedTable PURGE
+PREHOOK: query: drop table IF EXISTS encryptedTable_n0 PURGE
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table IF EXISTS encryptedTable PURGE
+POSTHOOK: query: drop table IF EXISTS encryptedTable_n0 PURGE
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: drop table IF EXISTS unencryptedTable PURGE
+PREHOOK: query: drop table IF EXISTS unencryptedTable_n0 PURGE
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table IF EXISTS unencryptedTable PURGE
+POSTHOOK: query: drop table IF EXISTS unencryptedTable_n0 PURGE
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table encryptedTable(value string)
+PREHOOK: query: create table encryptedTable_n0(value string)
     partitioned by (key string) clustered by (value) into 2 buckets stored as orc
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
 PREHOOK: Input: hdfs://### HDFS PATH ###
 PREHOOK: Output: database:default
-PREHOOK: Output: default@encryptedTable
-POSTHOOK: query: create table encryptedTable(value string)
+PREHOOK: Output: default@encryptedTable_n0
+POSTHOOK: query: create table encryptedTable_n0(value string)
     partitioned by (key string) clustered by (value) into 2 buckets stored as orc
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Input: hdfs://### HDFS PATH ###
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@encryptedTable
+POSTHOOK: Output: default@encryptedTable_n0
 Encryption key created: 'key_1'
 Encryption zone created: '/build/ql/test/data/warehouse/encryptedTable' using key: 'key_1'
-PREHOOK: query: create table unencryptedTable(value string)
+PREHOOK: query: create table unencryptedTable_n0(value string)
     partitioned by (key string) clustered by (value) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@unencryptedTable
-POSTHOOK: query: create table unencryptedTable(value string)
+PREHOOK: Output: default@unencryptedTable_n0
+POSTHOOK: query: create table unencryptedTable_n0(value string)
     partitioned by (key string) clustered by (value) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@unencryptedTable
-PREHOOK: query: insert into table encryptedTable partition (key) values
+POSTHOOK: Output: default@unencryptedTable_n0
+PREHOOK: query: insert into table encryptedTable_n0 partition (key) values
     ('val_501', '501'),
     ('val_502', '502')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@encryptedtable
-POSTHOOK: query: insert into table encryptedTable partition (key) values
+PREHOOK: Output: default@encryptedtable_n0
+POSTHOOK: query: insert into table encryptedTable_n0 partition (key) values
     ('val_501', '501'),
     ('val_502', '502')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@encryptedtable@key=501
-POSTHOOK: Output: default@encryptedtable@key=502
-POSTHOOK: Lineage: encryptedtable PARTITION(key=501).value SCRIPT []
-POSTHOOK: Lineage: encryptedtable PARTITION(key=502).value SCRIPT []
-PREHOOK: query: select * from encryptedTable order by key
+POSTHOOK: Output: default@encryptedtable_n0@key=501
+POSTHOOK: Output: default@encryptedtable_n0@key=502
+POSTHOOK: Lineage: encryptedtable_n0 PARTITION(key=501).value SCRIPT []
+POSTHOOK: Lineage: encryptedtable_n0 PARTITION(key=502).value SCRIPT []
+PREHOOK: query: select * from encryptedTable_n0 order by key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@encryptedtable
-PREHOOK: Input: default@encryptedtable@key=501
-PREHOOK: Input: default@encryptedtable@key=502
+PREHOOK: Input: default@encryptedtable_n0
+PREHOOK: Input: default@encryptedtable_n0@key=501
+PREHOOK: Input: default@encryptedtable_n0@key=502
 #### A PARTIAL masked pattern was here #### data/warehouse/encryptedTable/.hive-staging
-POSTHOOK: query: select * from encryptedTable order by key
+POSTHOOK: query: select * from encryptedTable_n0 order by key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@encryptedtable
-POSTHOOK: Input: default@encryptedtable@key=501
-POSTHOOK: Input: default@encryptedtable@key=502
+POSTHOOK: Input: default@encryptedtable_n0
+POSTHOOK: Input: default@encryptedtable_n0@key=501
+POSTHOOK: Input: default@encryptedtable_n0@key=502
 #### A PARTIAL masked pattern was here #### data/warehouse/encryptedTable/.hive-staging
 val_501	501
 val_502	502
 PREHOOK: query: from src
-insert into table encryptedTable partition (key)
+insert into table encryptedTable_n0 partition (key)
     select value, key limit 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@encryptedtable
+PREHOOK: Output: default@encryptedtable_n0
 POSTHOOK: query: from src
-insert into table encryptedTable partition (key)
+insert into table encryptedTable_n0 partition (key)
     select value, key limit 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@encryptedtable@key=238
-POSTHOOK: Output: default@encryptedtable@key=86
-POSTHOOK: Lineage: encryptedtable PARTITION(key=238).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: encryptedtable PARTITION(key=86).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from encryptedTable order by key
+POSTHOOK: Output: default@encryptedtable_n0@key=238
+POSTHOOK: Output: default@encryptedtable_n0@key=86
+POSTHOOK: Lineage: encryptedtable_n0 PARTITION(key=238).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: encryptedtable_n0 PARTITION(key=86).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from encryptedTable_n0 order by key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@encryptedtable
-PREHOOK: Input: default@encryptedtable@key=238
-PREHOOK: Input: default@encryptedtable@key=501
-PREHOOK: Input: default@encryptedtable@key=502
-PREHOOK: Input: default@encryptedtable@key=86
+PREHOOK: Input: default@encryptedtable_n0
+PREHOOK: Input: default@encryptedtable_n0@key=238
+PREHOOK: Input: default@encryptedtable_n0@key=501
+PREHOOK: Input: default@encryptedtable_n0@key=502
+PREHOOK: Input: default@encryptedtable_n0@key=86
 #### A PARTIAL masked pattern was here #### data/warehouse/encryptedTable/.hive-staging
-POSTHOOK: query: select * from encryptedTable order by key
+POSTHOOK: query: select * from encryptedTable_n0 order by key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@encryptedtable
-POSTHOOK: Input: default@encryptedtable@key=238
-POSTHOOK: Input: default@encryptedtable@key=501
-POSTHOOK: Input: default@encryptedtable@key=502
-POSTHOOK: Input: default@encryptedtable@key=86
+POSTHOOK: Input: default@encryptedtable_n0
+POSTHOOK: Input: default@encryptedtable_n0@key=238
+POSTHOOK: Input: default@encryptedtable_n0@key=501
+POSTHOOK: Input: default@encryptedtable_n0@key=502
+POSTHOOK: Input: default@encryptedtable_n0@key=86
 #### A PARTIAL masked pattern was here #### data/warehouse/encryptedTable/.hive-staging
 val_238	238
 val_501	501
 val_502	502
 val_86	86
-PREHOOK: query: from encryptedTable
-insert into table unencryptedTable partition (key)
+PREHOOK: query: from encryptedTable_n0
+insert into table unencryptedTable_n0 partition (key)
     select value, key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@encryptedtable
-PREHOOK: Input: default@encryptedtable@key=238
-PREHOOK: Input: default@encryptedtable@key=501
-PREHOOK: Input: default@encryptedtable@key=502
-PREHOOK: Input: default@encryptedtable@key=86
-PREHOOK: Output: default@unencryptedtable
-POSTHOOK: query: from encryptedTable
-insert into table unencryptedTable partition (key)
+PREHOOK: Input: default@encryptedtable_n0
+PREHOOK: Input: default@encryptedtable_n0@key=238
+PREHOOK: Input: default@encryptedtable_n0@key=501
+PREHOOK: Input: default@encryptedtable_n0@key=502
+PREHOOK: Input: default@encryptedtable_n0@key=86
+PREHOOK: Output: default@unencryptedtable_n0
+POSTHOOK: query: from encryptedTable_n0
+insert into table unencryptedTable_n0 partition (key)
     select value, key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@encryptedtable
-POSTHOOK: Input: default@encryptedtable@key=238
-POSTHOOK: Input: default@encryptedtable@key=501
-POSTHOOK: Input: default@encryptedtable@key=502
-POSTHOOK: Input: default@encryptedtable@key=86
-POSTHOOK: Output: default@unencryptedtable@key=238
-POSTHOOK: Output: default@unencryptedtable@key=501
-POSTHOOK: Output: default@unencryptedtable@key=502
-POSTHOOK: Output: default@unencryptedtable@key=86
-POSTHOOK: Lineage: unencryptedtable PARTITION(key=238).value SIMPLE [(encryptedtable)encryptedtable.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: unencryptedtable PARTITION(key=501).value SIMPLE [(encryptedtable)encryptedtable.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: unencryptedtable PARTITION(key=502).value SIMPLE [(encryptedtable)encryptedtable.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: unencryptedtable PARTITION(key=86).value SIMPLE [(encryptedtable)encryptedtable.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: select * from unencryptedTable order by key
+POSTHOOK: Input: default@encryptedtable_n0
+POSTHOOK: Input: default@encryptedtable_n0@key=238
+POSTHOOK: Input: default@encryptedtable_n0@key=501
+POSTHOOK: Input: default@encryptedtable_n0@key=502
+POSTHOOK: Input: default@encryptedtable_n0@key=86
+POSTHOOK: Output: default@unencryptedtable_n0@key=238
+POSTHOOK: Output: default@unencryptedtable_n0@key=501
+POSTHOOK: Output: default@unencryptedtable_n0@key=502
+POSTHOOK: Output: default@unencryptedtable_n0@key=86
+POSTHOOK: Lineage: unencryptedtable_n0 PARTITION(key=238).value SIMPLE [(encryptedtable_n0)encryptedtable_n0.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: unencryptedtable_n0 PARTITION(key=501).value SIMPLE [(encryptedtable_n0)encryptedtable_n0.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: unencryptedtable_n0 PARTITION(key=502).value SIMPLE [(encryptedtable_n0)encryptedtable_n0.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: unencryptedtable_n0 PARTITION(key=86).value SIMPLE [(encryptedtable_n0)encryptedtable_n0.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select * from unencryptedTable_n0 order by key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@unencryptedtable
-PREHOOK: Input: default@unencryptedtable@key=238
-PREHOOK: Input: default@unencryptedtable@key=501
-PREHOOK: Input: default@unencryptedtable@key=502
-PREHOOK: Input: default@unencryptedtable@key=86
+PREHOOK: Input: default@unencryptedtable_n0
+PREHOOK: Input: default@unencryptedtable_n0@key=238
+PREHOOK: Input: default@unencryptedtable_n0@key=501
+PREHOOK: Input: default@unencryptedtable_n0@key=502
+PREHOOK: Input: default@unencryptedtable_n0@key=86
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from unencryptedTable order by key
+POSTHOOK: query: select * from unencryptedTable_n0 order by key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@unencryptedtable
-POSTHOOK: Input: default@unencryptedtable@key=238
-POSTHOOK: Input: default@unencryptedtable@key=501
-POSTHOOK: Input: default@unencryptedtable@key=502
-POSTHOOK: Input: default@unencryptedtable@key=86
+POSTHOOK: Input: default@unencryptedtable_n0
+POSTHOOK: Input: default@unencryptedtable_n0@key=238
+POSTHOOK: Input: default@unencryptedtable_n0@key=501
+POSTHOOK: Input: default@unencryptedtable_n0@key=502
+POSTHOOK: Input: default@unencryptedtable_n0@key=86
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 val_238	238
 val_501	501
 val_502	502
 val_86	86
-PREHOOK: query: drop table encryptedTable PURGE
+PREHOOK: query: drop table encryptedTable_n0 PURGE
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@encryptedtable
-PREHOOK: Output: default@encryptedtable
-POSTHOOK: query: drop table encryptedTable PURGE
+PREHOOK: Input: default@encryptedtable_n0
+PREHOOK: Output: default@encryptedtable_n0
+POSTHOOK: query: drop table encryptedTable_n0 PURGE
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@encryptedtable
-POSTHOOK: Output: default@encryptedtable
+POSTHOOK: Input: default@encryptedtable_n0
+POSTHOOK: Output: default@encryptedtable_n0
 Encryption key deleted: 'key_1'
-PREHOOK: query: drop table unencryptedTable PURGE
+PREHOOK: query: drop table unencryptedTable_n0 PURGE
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@unencryptedtable
-PREHOOK: Output: default@unencryptedtable
-POSTHOOK: query: drop table unencryptedTable PURGE
+PREHOOK: Input: default@unencryptedtable_n0
+PREHOOK: Output: default@unencryptedtable_n0
+POSTHOOK: query: drop table unencryptedTable_n0 PURGE
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@unencryptedtable
-POSTHOOK: Output: default@unencryptedtable
+POSTHOOK: Input: default@unencryptedtable_n0
+POSTHOOK: Output: default@unencryptedtable_n0

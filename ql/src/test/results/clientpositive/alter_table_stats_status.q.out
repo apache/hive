@@ -289,50 +289,50 @@ POSTHOOK: query: drop table statstable
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: statsdb@statstable
 POSTHOOK: Output: statsdb@statstable
-PREHOOK: query: create table srcpart like default.srcpart
+PREHOOK: query: create table srcpart_n0 like default.srcpart
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:statsdb
-PREHOOK: Output: statsdb@srcpart
-POSTHOOK: query: create table srcpart like default.srcpart
+PREHOOK: Output: statsdb@srcpart_n0
+POSTHOOK: query: create table srcpart_n0 like default.srcpart
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:statsdb
-POSTHOOK: Output: statsdb@srcpart
-PREHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table srcpart partition (ds='2008-04-08', hr='11')
+POSTHOOK: Output: statsdb@srcpart_n0
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table srcpart_n0 partition (ds='2008-04-08', hr='11')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: statsdb@srcpart
-POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table srcpart partition (ds='2008-04-08', hr='11')
+PREHOOK: Output: statsdb@srcpart_n0
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table srcpart_n0 partition (ds='2008-04-08', hr='11')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: statsdb@srcpart
-POSTHOOK: Output: statsdb@srcpart@ds=2008-04-08/hr=11
-PREHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table srcpart partition (ds='2008-04-08', hr='12')
+POSTHOOK: Output: statsdb@srcpart_n0
+POSTHOOK: Output: statsdb@srcpart_n0@ds=2008-04-08/hr=11
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table srcpart_n0 partition (ds='2008-04-08', hr='12')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: statsdb@srcpart
-POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table srcpart partition (ds='2008-04-08', hr='12')
+PREHOOK: Output: statsdb@srcpart_n0
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table srcpart_n0 partition (ds='2008-04-08', hr='12')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: statsdb@srcpart
-POSTHOOK: Output: statsdb@srcpart@ds=2008-04-08/hr=12
-PREHOOK: query: analyze table srcpart partition (ds='2008-04-08', hr='11') compute statistics
+POSTHOOK: Output: statsdb@srcpart_n0
+POSTHOOK: Output: statsdb@srcpart_n0@ds=2008-04-08/hr=12
+PREHOOK: query: analyze table srcpart_n0 partition (ds='2008-04-08', hr='11') compute statistics
 PREHOOK: type: QUERY
-PREHOOK: Input: statsdb@srcpart
-PREHOOK: Input: statsdb@srcpart@ds=2008-04-08/hr=11
-PREHOOK: Output: statsdb@srcpart
-PREHOOK: Output: statsdb@srcpart@ds=2008-04-08/hr=11
-POSTHOOK: query: analyze table srcpart partition (ds='2008-04-08', hr='11') compute statistics
+PREHOOK: Input: statsdb@srcpart_n0
+PREHOOK: Input: statsdb@srcpart_n0@ds=2008-04-08/hr=11
+PREHOOK: Output: statsdb@srcpart_n0
+PREHOOK: Output: statsdb@srcpart_n0@ds=2008-04-08/hr=11
+POSTHOOK: query: analyze table srcpart_n0 partition (ds='2008-04-08', hr='11') compute statistics
 POSTHOOK: type: QUERY
-POSTHOOK: Input: statsdb@srcpart
-POSTHOOK: Input: statsdb@srcpart@ds=2008-04-08/hr=11
-POSTHOOK: Output: statsdb@srcpart
-POSTHOOK: Output: statsdb@srcpart@ds=2008-04-08/hr=11
-PREHOOK: query: describe formatted srcpart partition (ds='2008-04-08', hr='11')
+POSTHOOK: Input: statsdb@srcpart_n0
+POSTHOOK: Input: statsdb@srcpart_n0@ds=2008-04-08/hr=11
+POSTHOOK: Output: statsdb@srcpart_n0
+POSTHOOK: Output: statsdb@srcpart_n0@ds=2008-04-08/hr=11
+PREHOOK: query: describe formatted srcpart_n0 partition (ds='2008-04-08', hr='11')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: statsdb@srcpart
-POSTHOOK: query: describe formatted srcpart partition (ds='2008-04-08', hr='11')
+PREHOOK: Input: statsdb@srcpart_n0
+POSTHOOK: query: describe formatted srcpart_n0 partition (ds='2008-04-08', hr='11')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: statsdb@srcpart
+POSTHOOK: Input: statsdb@srcpart_n0
 # col_name            	data_type           	comment             
 key                 	string              	default             
 value               	string              	default             
@@ -345,7 +345,7 @@ hr                  	string
 # Detailed Partition Information	 	 
 Partition Value:    	[2008-04-08, 11]    	 
 Database:           	statsdb             	 
-Table:              	srcpart             	 
+Table:              	srcpart_n0          	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
@@ -365,56 +365,56 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: alter table srcpart touch
+PREHOOK: query: alter table srcpart_n0 touch
 PREHOOK: type: ALTERTABLE_TOUCH
-PREHOOK: Input: statsdb@srcpart
-PREHOOK: Output: statsdb@srcpart
-POSTHOOK: query: alter table srcpart touch
+PREHOOK: Input: statsdb@srcpart_n0
+PREHOOK: Output: statsdb@srcpart_n0
+POSTHOOK: query: alter table srcpart_n0 touch
 POSTHOOK: type: ALTERTABLE_TOUCH
-POSTHOOK: Input: statsdb@srcpart
-POSTHOOK: Output: statsdb@srcpart
-PREHOOK: query: alter table srcpart partition (ds='2008-04-08', hr='11') rename to partition (ds='2017-01-19', hr='11')
+POSTHOOK: Input: statsdb@srcpart_n0
+POSTHOOK: Output: statsdb@srcpart_n0
+PREHOOK: query: alter table srcpart_n0 partition (ds='2008-04-08', hr='11') rename to partition (ds='2017-01-19', hr='11')
 PREHOOK: type: ALTERTABLE_RENAMEPART
-PREHOOK: Input: statsdb@srcpart
-PREHOOK: Output: statsdb@srcpart@ds=2008-04-08/hr=11
-POSTHOOK: query: alter table srcpart partition (ds='2008-04-08', hr='11') rename to partition (ds='2017-01-19', hr='11')
+PREHOOK: Input: statsdb@srcpart_n0
+PREHOOK: Output: statsdb@srcpart_n0@ds=2008-04-08/hr=11
+POSTHOOK: query: alter table srcpart_n0 partition (ds='2008-04-08', hr='11') rename to partition (ds='2017-01-19', hr='11')
 POSTHOOK: type: ALTERTABLE_RENAMEPART
-POSTHOOK: Input: statsdb@srcpart
-POSTHOOK: Input: statsdb@srcpart@ds=2008-04-08/hr=11
-POSTHOOK: Output: statsdb@srcpart@ds=2008-04-08/hr=11
-POSTHOOK: Output: statsdb@srcpart@ds=2017-01-19/hr=11
-PREHOOK: query: alter table srcpart partition (ds='2017-01-19', hr='11') add columns (newcol string)
+POSTHOOK: Input: statsdb@srcpart_n0
+POSTHOOK: Input: statsdb@srcpart_n0@ds=2008-04-08/hr=11
+POSTHOOK: Output: statsdb@srcpart_n0@ds=2008-04-08/hr=11
+POSTHOOK: Output: statsdb@srcpart_n0@ds=2017-01-19/hr=11
+PREHOOK: query: alter table srcpart_n0 partition (ds='2017-01-19', hr='11') add columns (newcol string)
 PREHOOK: type: ALTERTABLE_ADDCOLS
-PREHOOK: Input: statsdb@srcpart
-PREHOOK: Output: statsdb@srcpart@ds=2017-01-19/hr=11
-POSTHOOK: query: alter table srcpart partition (ds='2017-01-19', hr='11') add columns (newcol string)
+PREHOOK: Input: statsdb@srcpart_n0
+PREHOOK: Output: statsdb@srcpart_n0@ds=2017-01-19/hr=11
+POSTHOOK: query: alter table srcpart_n0 partition (ds='2017-01-19', hr='11') add columns (newcol string)
 POSTHOOK: type: ALTERTABLE_ADDCOLS
-POSTHOOK: Input: statsdb@srcpart
-POSTHOOK: Input: statsdb@srcpart@ds=2017-01-19/hr=11
-POSTHOOK: Output: statsdb@srcpart@ds=2017-01-19/hr=11
-PREHOOK: query: alter table srcpart partition (ds='2017-01-19', hr='11') change key key string
+POSTHOOK: Input: statsdb@srcpart_n0
+POSTHOOK: Input: statsdb@srcpart_n0@ds=2017-01-19/hr=11
+POSTHOOK: Output: statsdb@srcpart_n0@ds=2017-01-19/hr=11
+PREHOOK: query: alter table srcpart_n0 partition (ds='2017-01-19', hr='11') change key key string
 PREHOOK: type: ALTERTABLE_RENAMECOL
-PREHOOK: Input: statsdb@srcpart
-PREHOOK: Output: statsdb@srcpart@ds=2017-01-19/hr=11
-POSTHOOK: query: alter table srcpart partition (ds='2017-01-19', hr='11') change key key string
+PREHOOK: Input: statsdb@srcpart_n0
+PREHOOK: Output: statsdb@srcpart_n0@ds=2017-01-19/hr=11
+POSTHOOK: query: alter table srcpart_n0 partition (ds='2017-01-19', hr='11') change key key string
 POSTHOOK: type: ALTERTABLE_RENAMECOL
-POSTHOOK: Input: statsdb@srcpart
-POSTHOOK: Input: statsdb@srcpart@ds=2017-01-19/hr=11
-POSTHOOK: Output: statsdb@srcpart@ds=2017-01-19/hr=11
-PREHOOK: query: alter table srcpart set tblproperties('testpartstats'='unchange')
+POSTHOOK: Input: statsdb@srcpart_n0
+POSTHOOK: Input: statsdb@srcpart_n0@ds=2017-01-19/hr=11
+POSTHOOK: Output: statsdb@srcpart_n0@ds=2017-01-19/hr=11
+PREHOOK: query: alter table srcpart_n0 set tblproperties('testpartstats'='unchange')
 PREHOOK: type: ALTERTABLE_PROPERTIES
-PREHOOK: Input: statsdb@srcpart
-PREHOOK: Output: statsdb@srcpart
-POSTHOOK: query: alter table srcpart set tblproperties('testpartstats'='unchange')
+PREHOOK: Input: statsdb@srcpart_n0
+PREHOOK: Output: statsdb@srcpart_n0
+POSTHOOK: query: alter table srcpart_n0 set tblproperties('testpartstats'='unchange')
 POSTHOOK: type: ALTERTABLE_PROPERTIES
-POSTHOOK: Input: statsdb@srcpart
-POSTHOOK: Output: statsdb@srcpart
-PREHOOK: query: describe formatted srcpart partition (ds='2017-01-19', hr='11')
+POSTHOOK: Input: statsdb@srcpart_n0
+POSTHOOK: Output: statsdb@srcpart_n0
+PREHOOK: query: describe formatted srcpart_n0 partition (ds='2017-01-19', hr='11')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: statsdb@srcpart
-POSTHOOK: query: describe formatted srcpart partition (ds='2017-01-19', hr='11')
+PREHOOK: Input: statsdb@srcpart_n0
+POSTHOOK: query: describe formatted srcpart_n0 partition (ds='2017-01-19', hr='11')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: statsdb@srcpart
+POSTHOOK: Input: statsdb@srcpart_n0
 # col_name            	data_type           	comment             
 key                 	string              	default             
 value               	string              	default             
@@ -428,7 +428,7 @@ hr                  	string
 # Detailed Partition Information	 	 
 Partition Value:    	[2017-01-19, 11]    	 
 Database:           	statsdb             	 
-Table:              	srcpart             	 
+Table:              	srcpart_n0          	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
@@ -449,21 +449,21 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: alter table srcpart partition (ds='2017-01-19', hr='11') update statistics set ('numRows' = '1000')
+PREHOOK: query: alter table srcpart_n0 partition (ds='2017-01-19', hr='11') update statistics set ('numRows' = '1000')
 PREHOOK: type: ALTERTABLE_UPDATEPARTSTATS
-PREHOOK: Input: statsdb@srcpart
-PREHOOK: Output: statsdb@srcpart@ds=2017-01-19/hr=11
-POSTHOOK: query: alter table srcpart partition (ds='2017-01-19', hr='11') update statistics set ('numRows' = '1000')
+PREHOOK: Input: statsdb@srcpart_n0
+PREHOOK: Output: statsdb@srcpart_n0@ds=2017-01-19/hr=11
+POSTHOOK: query: alter table srcpart_n0 partition (ds='2017-01-19', hr='11') update statistics set ('numRows' = '1000')
 POSTHOOK: type: ALTERTABLE_UPDATEPARTSTATS
-POSTHOOK: Input: statsdb@srcpart
-POSTHOOK: Input: statsdb@srcpart@ds=2017-01-19/hr=11
-POSTHOOK: Output: statsdb@srcpart@ds=2017-01-19/hr=11
-PREHOOK: query: describe formatted srcpart partition (ds='2017-01-19', hr='11')
+POSTHOOK: Input: statsdb@srcpart_n0
+POSTHOOK: Input: statsdb@srcpart_n0@ds=2017-01-19/hr=11
+POSTHOOK: Output: statsdb@srcpart_n0@ds=2017-01-19/hr=11
+PREHOOK: query: describe formatted srcpart_n0 partition (ds='2017-01-19', hr='11')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: statsdb@srcpart
-POSTHOOK: query: describe formatted srcpart partition (ds='2017-01-19', hr='11')
+PREHOOK: Input: statsdb@srcpart_n0
+POSTHOOK: query: describe formatted srcpart_n0 partition (ds='2017-01-19', hr='11')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: statsdb@srcpart
+POSTHOOK: Input: statsdb@srcpart_n0
 # col_name            	data_type           	comment             
 key                 	string              	default             
 value               	string              	default             
@@ -477,7 +477,7 @@ hr                  	string
 # Detailed Partition Information	 	 
 Partition Value:    	[2017-01-19, 11]    	 
 Database:           	statsdb             	 
-Table:              	srcpart             	 
+Table:              	srcpart_n0          	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 #### A masked pattern was here ####
@@ -497,24 +497,24 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: analyze table srcpart partition (ds='2017-01-19', hr='11') compute statistics
+PREHOOK: query: analyze table srcpart_n0 partition (ds='2017-01-19', hr='11') compute statistics
 PREHOOK: type: QUERY
-PREHOOK: Input: statsdb@srcpart
-PREHOOK: Input: statsdb@srcpart@ds=2017-01-19/hr=11
-PREHOOK: Output: statsdb@srcpart
-PREHOOK: Output: statsdb@srcpart@ds=2017-01-19/hr=11
-POSTHOOK: query: analyze table srcpart partition (ds='2017-01-19', hr='11') compute statistics
+PREHOOK: Input: statsdb@srcpart_n0
+PREHOOK: Input: statsdb@srcpart_n0@ds=2017-01-19/hr=11
+PREHOOK: Output: statsdb@srcpart_n0
+PREHOOK: Output: statsdb@srcpart_n0@ds=2017-01-19/hr=11
+POSTHOOK: query: analyze table srcpart_n0 partition (ds='2017-01-19', hr='11') compute statistics
 POSTHOOK: type: QUERY
-POSTHOOK: Input: statsdb@srcpart
-POSTHOOK: Input: statsdb@srcpart@ds=2017-01-19/hr=11
-POSTHOOK: Output: statsdb@srcpart
-POSTHOOK: Output: statsdb@srcpart@ds=2017-01-19/hr=11
-PREHOOK: query: describe formatted srcpart partition (ds='2017-01-19', hr='11')
+POSTHOOK: Input: statsdb@srcpart_n0
+POSTHOOK: Input: statsdb@srcpart_n0@ds=2017-01-19/hr=11
+POSTHOOK: Output: statsdb@srcpart_n0
+POSTHOOK: Output: statsdb@srcpart_n0@ds=2017-01-19/hr=11
+PREHOOK: query: describe formatted srcpart_n0 partition (ds='2017-01-19', hr='11')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: statsdb@srcpart
-POSTHOOK: query: describe formatted srcpart partition (ds='2017-01-19', hr='11')
+PREHOOK: Input: statsdb@srcpart_n0
+POSTHOOK: query: describe formatted srcpart_n0 partition (ds='2017-01-19', hr='11')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: statsdb@srcpart
+POSTHOOK: Input: statsdb@srcpart_n0
 # col_name            	data_type           	comment             
 key                 	string              	default             
 value               	string              	default             
@@ -528,7 +528,7 @@ hr                  	string
 # Detailed Partition Information	 	 
 Partition Value:    	[2017-01-19, 11]    	 
 Database:           	statsdb             	 
-Table:              	srcpart             	 
+Table:              	srcpart_n0          	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
@@ -549,11 +549,11 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: drop table srcpart
+PREHOOK: query: drop table srcpart_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: statsdb@srcpart
-PREHOOK: Output: statsdb@srcpart
-POSTHOOK: query: drop table srcpart
+PREHOOK: Input: statsdb@srcpart_n0
+PREHOOK: Output: statsdb@srcpart_n0
+POSTHOOK: query: drop table srcpart_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: statsdb@srcpart
-POSTHOOK: Output: statsdb@srcpart
+POSTHOOK: Input: statsdb@srcpart_n0
+POSTHOOK: Output: statsdb@srcpart_n0

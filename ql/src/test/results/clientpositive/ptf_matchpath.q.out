@@ -1,8 +1,8 @@
-PREHOOK: query: DROP TABLE flights_tiny
+PREHOOK: query: DROP TABLE flights_tiny_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE flights_tiny
+POSTHOOK: query: DROP TABLE flights_tiny_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table flights_tiny ( 
+PREHOOK: query: create table flights_tiny_n0 ( 
 ORIGIN_CITY_NAME string, 
 DEST_CITY_NAME string, 
 YEAR int, 
@@ -13,8 +13,8 @@ FL_NUM string
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@flights_tiny
-POSTHOOK: query: create table flights_tiny ( 
+PREHOOK: Output: default@flights_tiny_n0
+POSTHOOK: query: create table flights_tiny_n0 ( 
 ORIGIN_CITY_NAME string, 
 DEST_CITY_NAME string, 
 YEAR int, 
@@ -25,19 +25,19 @@ FL_NUM string
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@flights_tiny
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/flights_tiny.txt' OVERWRITE INTO TABLE flights_tiny
+POSTHOOK: Output: default@flights_tiny_n0
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/flights_tiny.txt' OVERWRITE INTO TABLE flights_tiny_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@flights_tiny
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/flights_tiny.txt' OVERWRITE INTO TABLE flights_tiny
+PREHOOK: Output: default@flights_tiny_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/flights_tiny.txt' OVERWRITE INTO TABLE flights_tiny_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@flights_tiny
+POSTHOOK: Output: default@flights_tiny_n0
 PREHOOK: query: explain
 select origin_city_name, fl_num, year, month, day_of_month, sz, tpath 
 from matchpath(on 
-        flights_tiny 
+        flights_tiny_n0 
         distribute by fl_num 
         sort by year, month, day_of_month  
       arg1('LATE.LATE+'), 
@@ -48,7 +48,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select origin_city_name, fl_num, year, month, day_of_month, sz, tpath 
 from matchpath(on 
-        flights_tiny 
+        flights_tiny_n0 
         distribute by fl_num 
         sort by year, month, day_of_month  
       arg1('LATE.LATE+'), 
@@ -65,7 +65,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: flights_tiny
+            alias: flights_tiny_n0
             Statistics: Num rows: 1 Data size: 53790 Basic stats: COMPLETE Column stats: NONE
             Reduce Output Operator
               key expressions: fl_num (type: string), year (type: int), month (type: int), day_of_month (type: int)
@@ -81,7 +81,7 @@ STAGE PLANS:
           PTF Operator
             Function definitions:
                 Input definition
-                  input alias: flights_tiny
+                  input alias: flights_tiny_n0
                   output shape: 
                   type: TABLE
                 Partition table definition
@@ -114,7 +114,7 @@ STAGE PLANS:
 
 PREHOOK: query: select origin_city_name, fl_num, year, month, day_of_month, sz, tpath 
 from matchpath(on 
-        flights_tiny 
+        flights_tiny_n0 
         distribute by fl_num 
         sort by year, month, day_of_month  
       arg1('LATE.LATE+'), 
@@ -122,11 +122,11 @@ from matchpath(on
     arg4('origin_city_name, fl_num, year, month, day_of_month, size(tpath) as sz, tpath[0].day_of_month as tpath') 
    )
 PREHOOK: type: QUERY
-PREHOOK: Input: default@flights_tiny
+PREHOOK: Input: default@flights_tiny_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select origin_city_name, fl_num, year, month, day_of_month, sz, tpath 
 from matchpath(on 
-        flights_tiny 
+        flights_tiny_n0 
         distribute by fl_num 
         sort by year, month, day_of_month  
       arg1('LATE.LATE+'), 
@@ -134,7 +134,7 @@ from matchpath(on
     arg4('origin_city_name, fl_num, year, month, day_of_month, size(tpath) as sz, tpath[0].day_of_month as tpath') 
    )
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@flights_tiny
+POSTHOOK: Input: default@flights_tiny_n0
 #### A masked pattern was here ####
 Baltimore	1142	2010	10	20	6	20
 Baltimore	1142	2010	10	21	5	21
@@ -155,7 +155,7 @@ Washington	7291	2010	10	27	2	27
 PREHOOK: query: explain
 select origin_city_name, fl_num, year, month, day_of_month, sz, tpath 
 from matchpath(on 
-        flights_tiny 
+        flights_tiny_n0 
         sort by fl_num, year, month, day_of_month  
       arg1('LATE.LATE+'), 
       arg2('LATE'), arg3(arr_delay > 15), 
@@ -166,7 +166,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select origin_city_name, fl_num, year, month, day_of_month, sz, tpath 
 from matchpath(on 
-        flights_tiny 
+        flights_tiny_n0 
         sort by fl_num, year, month, day_of_month  
       arg1('LATE.LATE+'), 
       arg2('LATE'), arg3(arr_delay > 15), 
@@ -183,7 +183,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: flights_tiny
+            alias: flights_tiny_n0
             Statistics: Num rows: 1 Data size: 53790 Basic stats: COMPLETE Column stats: NONE
             Reduce Output Operator
               key expressions: 0 (type: int), fl_num (type: string), year (type: int), month (type: int), day_of_month (type: int)
@@ -199,7 +199,7 @@ STAGE PLANS:
           PTF Operator
             Function definitions:
                 Input definition
-                  input alias: flights_tiny
+                  input alias: flights_tiny_n0
                   output shape: 
                   type: TABLE
                 Partition table definition
@@ -235,7 +235,7 @@ STAGE PLANS:
 
 PREHOOK: query: select origin_city_name, fl_num, year, month, day_of_month, sz, tpath 
 from matchpath(on 
-        flights_tiny 
+        flights_tiny_n0 
         sort by fl_num, year, month, day_of_month  
       arg1('LATE.LATE+'), 
       arg2('LATE'), arg3(arr_delay > 15), 
@@ -243,11 +243,11 @@ from matchpath(on
    )
 where fl_num = 1142
 PREHOOK: type: QUERY
-PREHOOK: Input: default@flights_tiny
+PREHOOK: Input: default@flights_tiny_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select origin_city_name, fl_num, year, month, day_of_month, sz, tpath 
 from matchpath(on 
-        flights_tiny 
+        flights_tiny_n0 
         sort by fl_num, year, month, day_of_month  
       arg1('LATE.LATE+'), 
       arg2('LATE'), arg3(arr_delay > 15), 
@@ -255,7 +255,7 @@ from matchpath(on
    )
 where fl_num = 1142
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@flights_tiny
+POSTHOOK: Input: default@flights_tiny_n0
 #### A masked pattern was here ####
 Baltimore	1142	2010	10	20	6	20
 Baltimore	1142	2010	10	21	5	21
@@ -265,7 +265,7 @@ Baltimore	1142	2010	10	26	2	26
 PREHOOK: query: explain
 select origin_city_name, fl_num, year, month, day_of_month, sz, tpath
 from matchpath(on
-        (select * from flights_tiny where fl_num = -1142) flights_tiny
+        (select * from flights_tiny_n0 where fl_num = -1142) flights_tiny_n0
         sort by fl_num, year, month, day_of_month
       arg1('LATE.LATE+'),
       arg2('LATE'), arg3(arr_delay > 15),
@@ -275,7 +275,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select origin_city_name, fl_num, year, month, day_of_month, sz, tpath
 from matchpath(on
-        (select * from flights_tiny where fl_num = -1142) flights_tiny
+        (select * from flights_tiny_n0 where fl_num = -1142) flights_tiny_n0
         sort by fl_num, year, month, day_of_month
       arg1('LATE.LATE+'),
       arg2('LATE'), arg3(arr_delay > 15),
@@ -291,7 +291,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: flights_tiny
+            alias: flights_tiny_n0
             Statistics: Num rows: 1 Data size: 53790 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (fl_num = -1142) (type: boolean)
@@ -314,7 +314,7 @@ STAGE PLANS:
           PTF Operator
             Function definitions:
                 Input definition
-                  input alias: flights_tiny
+                  input alias: flights_tiny_n0
                   output shape: 
                   type: SUBQUERY
                 Partition table definition
@@ -347,23 +347,23 @@ STAGE PLANS:
 
 PREHOOK: query: select origin_city_name, fl_num, year, month, day_of_month, sz, tpath
 from matchpath(on
-        (select * from flights_tiny where fl_num = -1142) flights_tiny
+        (select * from flights_tiny_n0 where fl_num = -1142) flights_tiny_n0
         sort by fl_num, year, month, day_of_month
       arg1('LATE.LATE+'),
       arg2('LATE'), arg3(arr_delay > 15),
     arg4('origin_city_name, fl_num, year, month, day_of_month, size(tpath) as sz, tpath[0].day_of_month as tpath')
    )
 PREHOOK: type: QUERY
-PREHOOK: Input: default@flights_tiny
+PREHOOK: Input: default@flights_tiny_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select origin_city_name, fl_num, year, month, day_of_month, sz, tpath
 from matchpath(on
-        (select * from flights_tiny where fl_num = -1142) flights_tiny
+        (select * from flights_tiny_n0 where fl_num = -1142) flights_tiny_n0
         sort by fl_num, year, month, day_of_month
       arg1('LATE.LATE+'),
       arg2('LATE'), arg3(arr_delay > 15),
     arg4('origin_city_name, fl_num, year, month, day_of_month, size(tpath) as sz, tpath[0].day_of_month as tpath')
    )
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@flights_tiny
+POSTHOOK: Input: default@flights_tiny_n0
 #### A masked pattern was here ####

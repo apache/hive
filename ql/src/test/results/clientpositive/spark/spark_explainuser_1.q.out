@@ -1,32 +1,32 @@
-PREHOOK: query: explain create table src_orc_merge_test_part(key int, value string) partitioned by (ds string, ts string) stored as orc
+PREHOOK: query: explain create table src_orc_merge_test_part_n0(key int, value string) partitioned by (ds string, ts string) stored as orc
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: explain create table src_orc_merge_test_part(key int, value string) partitioned by (ds string, ts string) stored as orc
+POSTHOOK: query: explain create table src_orc_merge_test_part_n0(key int, value string) partitioned by (ds string, ts string) stored as orc
 POSTHOOK: type: CREATETABLE
 Stage-0
   Create Table Operator:
-    name:default.src_orc_merge_test_part
+    name:default.src_orc_merge_test_part_n0
 
-PREHOOK: query: create table src_orc_merge_test_part(key int, value string) partitioned by (ds string, ts string) stored as orc
+PREHOOK: query: create table src_orc_merge_test_part_n0(key int, value string) partitioned by (ds string, ts string) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src_orc_merge_test_part
-POSTHOOK: query: create table src_orc_merge_test_part(key int, value string) partitioned by (ds string, ts string) stored as orc
+PREHOOK: Output: default@src_orc_merge_test_part_n0
+POSTHOOK: query: create table src_orc_merge_test_part_n0(key int, value string) partitioned by (ds string, ts string) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src_orc_merge_test_part
-PREHOOK: query: alter table src_orc_merge_test_part add partition (ds='2012-01-03', ts='2012-01-03+14:46:31')
+POSTHOOK: Output: default@src_orc_merge_test_part_n0
+PREHOOK: query: alter table src_orc_merge_test_part_n0 add partition (ds='2012-01-03', ts='2012-01-03+14:46:31')
 PREHOOK: type: ALTERTABLE_ADDPARTS
-PREHOOK: Output: default@src_orc_merge_test_part
-POSTHOOK: query: alter table src_orc_merge_test_part add partition (ds='2012-01-03', ts='2012-01-03+14:46:31')
+PREHOOK: Output: default@src_orc_merge_test_part_n0
+POSTHOOK: query: alter table src_orc_merge_test_part_n0 add partition (ds='2012-01-03', ts='2012-01-03+14:46:31')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-POSTHOOK: Output: default@src_orc_merge_test_part
-POSTHOOK: Output: default@src_orc_merge_test_part@ds=2012-01-03/ts=2012-01-03+14%3A46%3A31
-PREHOOK: query: desc extended src_orc_merge_test_part partition (ds='2012-01-03', ts='2012-01-03+14:46:31')
+POSTHOOK: Output: default@src_orc_merge_test_part_n0
+POSTHOOK: Output: default@src_orc_merge_test_part_n0@ds=2012-01-03/ts=2012-01-03+14%3A46%3A31
+PREHOOK: query: desc extended src_orc_merge_test_part_n0 partition (ds='2012-01-03', ts='2012-01-03+14:46:31')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@src_orc_merge_test_part
-POSTHOOK: query: desc extended src_orc_merge_test_part partition (ds='2012-01-03', ts='2012-01-03+14:46:31')
+PREHOOK: Input: default@src_orc_merge_test_part_n0
+POSTHOOK: query: desc extended src_orc_merge_test_part_n0 partition (ds='2012-01-03', ts='2012-01-03+14:46:31')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@src_orc_merge_test_part
+POSTHOOK: Input: default@src_orc_merge_test_part_n0
 key                 	int                 	                    
 value               	string              	                    
 ds                  	string              	                    
@@ -38,9 +38,9 @@ ds                  	string
 ts                  	string              	                    
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: explain insert overwrite table src_orc_merge_test_part partition(ds='2012-01-03', ts='2012-01-03+14:46:31') select * from src
+PREHOOK: query: explain insert overwrite table src_orc_merge_test_part_n0 partition(ds='2012-01-03', ts='2012-01-03+14:46:31') select * from src
 PREHOOK: type: QUERY
-POSTHOOK: query: explain insert overwrite table src_orc_merge_test_part partition(ds='2012-01-03', ts='2012-01-03+14:46:31') select * from src
+POSTHOOK: query: explain insert overwrite table src_orc_merge_test_part_n0 partition(ds='2012-01-03', ts='2012-01-03+14:46:31') select * from src
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -48,29 +48,29 @@ Stage-2
   Stats Work{}
     Stage-0
       Move Operator
-        table:{"name:":"default.src_orc_merge_test_part"}
+        table:{"name:":"default.src_orc_merge_test_part_n0"}
         Stage-1
           Map 1
           File Output Operator [FS_3]
-            table:{"name:":"default.src_orc_merge_test_part"}
+            table:{"name:":"default.src_orc_merge_test_part_n0"}
             Select Operator [SEL_1] (rows=500 width=10)
               Output:["_col0","_col1"]
               TableScan [TS_0] (rows=500 width=10)
                 default@src,src,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
 
-PREHOOK: query: insert overwrite table src_orc_merge_test_part partition(ds='2012-01-03', ts='2012-01-03+14:46:31') select * from src
+PREHOOK: query: insert overwrite table src_orc_merge_test_part_n0 partition(ds='2012-01-03', ts='2012-01-03+14:46:31') select * from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@src_orc_merge_test_part@ds=2012-01-03/ts=2012-01-03+14%3A46%3A31
-POSTHOOK: query: insert overwrite table src_orc_merge_test_part partition(ds='2012-01-03', ts='2012-01-03+14:46:31') select * from src
+PREHOOK: Output: default@src_orc_merge_test_part_n0@ds=2012-01-03/ts=2012-01-03+14%3A46%3A31
+POSTHOOK: query: insert overwrite table src_orc_merge_test_part_n0 partition(ds='2012-01-03', ts='2012-01-03+14:46:31') select * from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@src_orc_merge_test_part@ds=2012-01-03/ts=2012-01-03+14%3A46%3A31
-POSTHOOK: Lineage: src_orc_merge_test_part PARTITION(ds=2012-01-03,ts=2012-01-03+14:46:31).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_orc_merge_test_part PARTITION(ds=2012-01-03,ts=2012-01-03+14:46:31).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: explain insert into table src_orc_merge_test_part partition(ds='2012-01-03', ts='2012-01-03+14:46:31') select * from src limit 100
+POSTHOOK: Output: default@src_orc_merge_test_part_n0@ds=2012-01-03/ts=2012-01-03+14%3A46%3A31
+POSTHOOK: Lineage: src_orc_merge_test_part_n0 PARTITION(ds=2012-01-03,ts=2012-01-03+14:46:31).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_orc_merge_test_part_n0 PARTITION(ds=2012-01-03,ts=2012-01-03+14:46:31).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: explain insert into table src_orc_merge_test_part_n0 partition(ds='2012-01-03', ts='2012-01-03+14:46:31') select * from src limit 100
 PREHOOK: type: QUERY
-POSTHOOK: query: explain insert into table src_orc_merge_test_part partition(ds='2012-01-03', ts='2012-01-03+14:46:31') select * from src limit 100
+POSTHOOK: query: explain insert into table src_orc_merge_test_part_n0 partition(ds='2012-01-03', ts='2012-01-03+14:46:31') select * from src limit 100
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -81,11 +81,11 @@ Stage-2
   Stats Work{}
     Stage-0
       Move Operator
-        table:{"name:":"default.src_orc_merge_test_part"}
+        table:{"name:":"default.src_orc_merge_test_part_n0"}
         Stage-1
           Reducer 2
           File Output Operator [FS_7]
-            table:{"name:":"default.src_orc_merge_test_part"}
+            table:{"name:":"default.src_orc_merge_test_part_n0"}
             Select Operator [SEL_6] (rows=100 width=10)
               Output:["_col0","_col1"]
               Limit [LIM_5] (rows=100 width=10)
@@ -101,9 +101,9 @@ Stage-2
                         TableScan [TS_0] (rows=500 width=10)
                           default@src,src,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
 
-PREHOOK: query: explain select count(1) from src_orc_merge_test_part where ds='2012-01-03' and ts='2012-01-03+14:46:31'
+PREHOOK: query: explain select count(1) from src_orc_merge_test_part_n0 where ds='2012-01-03' and ts='2012-01-03+14:46:31'
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select count(1) from src_orc_merge_test_part where ds='2012-01-03' and ts='2012-01-03+14:46:31'
+POSTHOOK: query: explain select count(1) from src_orc_merge_test_part_n0 where ds='2012-01-03' and ts='2012-01-03+14:46:31'
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -111,9 +111,9 @@ Stage-0
   Fetch Operator
     limit:1
 
-PREHOOK: query: explain select sum(hash(key)), sum(hash(value)) from src_orc_merge_test_part where ds='2012-01-03' and ts='2012-01-03+14:46:31'
+PREHOOK: query: explain select sum(hash(key)), sum(hash(value)) from src_orc_merge_test_part_n0 where ds='2012-01-03' and ts='2012-01-03+14:46:31'
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select sum(hash(key)), sum(hash(value)) from src_orc_merge_test_part where ds='2012-01-03' and ts='2012-01-03+14:46:31'
+POSTHOOK: query: explain select sum(hash(key)), sum(hash(value)) from src_orc_merge_test_part_n0 where ds='2012-01-03' and ts='2012-01-03+14:46:31'
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -135,19 +135,19 @@ Stage-0
               Select Operator [SEL_2] (rows=500 width=94)
                 Output:["_col0","_col1"]
                 TableScan [TS_0] (rows=500 width=94)
-                  default@src_orc_merge_test_part,src_orc_merge_test_part,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+                  default@src_orc_merge_test_part_n0,src_orc_merge_test_part_n0,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
 
-PREHOOK: query: alter table src_orc_merge_test_part partition (ds='2012-01-03', ts='2012-01-03+14:46:31') concatenate
+PREHOOK: query: alter table src_orc_merge_test_part_n0 partition (ds='2012-01-03', ts='2012-01-03+14:46:31') concatenate
 PREHOOK: type: ALTER_PARTITION_MERGE
-PREHOOK: Input: default@src_orc_merge_test_part
-PREHOOK: Output: default@src_orc_merge_test_part@ds=2012-01-03/ts=2012-01-03+14%3A46%3A31
-POSTHOOK: query: alter table src_orc_merge_test_part partition (ds='2012-01-03', ts='2012-01-03+14:46:31') concatenate
+PREHOOK: Input: default@src_orc_merge_test_part_n0
+PREHOOK: Output: default@src_orc_merge_test_part_n0@ds=2012-01-03/ts=2012-01-03+14%3A46%3A31
+POSTHOOK: query: alter table src_orc_merge_test_part_n0 partition (ds='2012-01-03', ts='2012-01-03+14:46:31') concatenate
 POSTHOOK: type: ALTER_PARTITION_MERGE
-POSTHOOK: Input: default@src_orc_merge_test_part
-POSTHOOK: Output: default@src_orc_merge_test_part@ds=2012-01-03/ts=2012-01-03+14%3A46%3A31
-PREHOOK: query: explain select count(1) from src_orc_merge_test_part where ds='2012-01-03' and ts='2012-01-03+14:46:31'
+POSTHOOK: Input: default@src_orc_merge_test_part_n0
+POSTHOOK: Output: default@src_orc_merge_test_part_n0@ds=2012-01-03/ts=2012-01-03+14%3A46%3A31
+PREHOOK: query: explain select count(1) from src_orc_merge_test_part_n0 where ds='2012-01-03' and ts='2012-01-03+14:46:31'
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select count(1) from src_orc_merge_test_part where ds='2012-01-03' and ts='2012-01-03+14:46:31'
+POSTHOOK: query: explain select count(1) from src_orc_merge_test_part_n0 where ds='2012-01-03' and ts='2012-01-03+14:46:31'
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -168,11 +168,11 @@ Stage-0
               Output:["_col0"],aggregations:["count()"]
               Select Operator [SEL_2] (rows=500 width=94)
                 TableScan [TS_0] (rows=500 width=94)
-                  default@src_orc_merge_test_part,src_orc_merge_test_part,Tbl:COMPLETE,Col:NONE
+                  default@src_orc_merge_test_part_n0,src_orc_merge_test_part_n0,Tbl:COMPLETE,Col:NONE
 
-PREHOOK: query: explain select sum(hash(key)), sum(hash(value)) from src_orc_merge_test_part where ds='2012-01-03' and ts='2012-01-03+14:46:31'
+PREHOOK: query: explain select sum(hash(key)), sum(hash(value)) from src_orc_merge_test_part_n0 where ds='2012-01-03' and ts='2012-01-03+14:46:31'
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select sum(hash(key)), sum(hash(value)) from src_orc_merge_test_part where ds='2012-01-03' and ts='2012-01-03+14:46:31'
+POSTHOOK: query: explain select sum(hash(key)), sum(hash(value)) from src_orc_merge_test_part_n0 where ds='2012-01-03' and ts='2012-01-03+14:46:31'
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -194,16 +194,16 @@ Stage-0
               Select Operator [SEL_2] (rows=500 width=94)
                 Output:["_col0","_col1"]
                 TableScan [TS_0] (rows=500 width=94)
-                  default@src_orc_merge_test_part,src_orc_merge_test_part,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+                  default@src_orc_merge_test_part_n0,src_orc_merge_test_part_n0,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
 
-PREHOOK: query: drop table src_orc_merge_test_part
+PREHOOK: query: drop table src_orc_merge_test_part_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@src_orc_merge_test_part
-PREHOOK: Output: default@src_orc_merge_test_part
-POSTHOOK: query: drop table src_orc_merge_test_part
+PREHOOK: Input: default@src_orc_merge_test_part_n0
+PREHOOK: Output: default@src_orc_merge_test_part_n0
+POSTHOOK: query: drop table src_orc_merge_test_part_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@src_orc_merge_test_part
-POSTHOOK: Output: default@src_orc_merge_test_part
+POSTHOOK: Input: default@src_orc_merge_test_part_n0
+POSTHOOK: Output: default@src_orc_merge_test_part_n0
 Warning: Map Join MAPJOIN[18][bigTable=?] in task 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: explain select sum(hash(a.k1,a.v1,a.k2, a.v2))
 from (
@@ -1795,7 +1795,7 @@ Stage-0
                           TableScan [TS_6] (rows=500 width=178)
                             default@src_cbo,a,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
 
-PREHOOK: query: create view cv1 as
+PREHOOK: query: create view cv1_n3 as
 select *
 from src_cbo b
 where exists
@@ -1805,8 +1805,8 @@ where exists
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src_cbo
 PREHOOK: Output: database:default
-PREHOOK: Output: default@cv1
-POSTHOOK: query: create view cv1 as
+PREHOOK: Output: default@cv1_n3
+POSTHOOK: query: create view cv1_n3 as
 select *
 from src_cbo b
 where exists
@@ -1816,12 +1816,12 @@ where exists
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src_cbo
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@cv1
-POSTHOOK: Lineage: cv1.key SIMPLE [(src_cbo)b.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: cv1.value SIMPLE [(src_cbo)b.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: explain select * from cv1
+POSTHOOK: Output: default@cv1_n3
+POSTHOOK: Lineage: cv1_n3.key SIMPLE [(src_cbo)b.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cv1_n3.value SIMPLE [(src_cbo)b.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: explain select * from cv1_n3
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from cv1
+POSTHOOK: query: explain select * from cv1_n3
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -2865,33 +2865,33 @@ Stage-0
                                 TableScan [TS_3] (rows=500 width=87)
                                   default@src,y,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
 
-PREHOOK: query: explain create table abcd (a int, b int, c int, d int)
+PREHOOK: query: explain create table abcd_n0 (a int, b int, c int, d int)
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: explain create table abcd (a int, b int, c int, d int)
+POSTHOOK: query: explain create table abcd_n0 (a int, b int, c int, d int)
 POSTHOOK: type: CREATETABLE
 Stage-0
   Create Table Operator:
-    name:default.abcd
+    name:default.abcd_n0
 
-PREHOOK: query: create table abcd (a int, b int, c int, d int)
+PREHOOK: query: create table abcd_n0 (a int, b int, c int, d int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@abcd
-POSTHOOK: query: create table abcd (a int, b int, c int, d int)
+PREHOOK: Output: default@abcd_n0
+POSTHOOK: query: create table abcd_n0 (a int, b int, c int, d int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@abcd
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in4.txt' INTO TABLE abcd
+POSTHOOK: Output: default@abcd_n0
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in4.txt' INTO TABLE abcd_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@abcd
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in4.txt' INTO TABLE abcd
+PREHOOK: Output: default@abcd_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in4.txt' INTO TABLE abcd_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@abcd
-PREHOOK: query: explain select a, count(distinct b), count(distinct c), sum(d) from abcd group by a
+POSTHOOK: Output: default@abcd_n0
+PREHOOK: query: explain select a, count(distinct b), count(distinct c), sum(d) from abcd_n0 group by a
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select a, count(distinct b), count(distinct c), sum(d) from abcd group by a
+POSTHOOK: query: explain select a, count(distinct b), count(distinct c), sum(d) from abcd_n0 group by a
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -2914,11 +2914,11 @@ Stage-0
               Select Operator [SEL_1] (rows=1 width=16)
                 Output:["a","b","c","d"]
                 TableScan [TS_0] (rows=1 width=16)
-                  default@abcd,abcd,Tbl:COMPLETE,Col:NONE,Output:["a","b","c","d"]
+                  default@abcd_n0,abcd_n0,Tbl:COMPLETE,Col:NONE,Output:["a","b","c","d"]
 
-PREHOOK: query: explain select a, count(distinct b), count(distinct c), sum(d) from abcd group by a
+PREHOOK: query: explain select a, count(distinct b), count(distinct c), sum(d) from abcd_n0 group by a
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select a, count(distinct b), count(distinct c), sum(d) from abcd group by a
+POSTHOOK: query: explain select a, count(distinct b), count(distinct c), sum(d) from abcd_n0 group by a
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -2939,7 +2939,7 @@ Stage-0
             Select Operator [SEL_1] (rows=1 width=16)
               Output:["a","b","c","d"]
               TableScan [TS_0] (rows=1 width=16)
-                default@abcd,abcd,Tbl:COMPLETE,Col:NONE,Output:["a","b","c","d"]
+                default@abcd_n0,abcd_n0,Tbl:COMPLETE,Col:NONE,Output:["a","b","c","d"]
 
 PREHOOK: query: explain create table src_rc_merge_test(key int, value string) stored as rcfile
 PREHOOK: type: CREATETABLE
@@ -3174,25 +3174,25 @@ Stage-0
               TableScan [TS_2] (rows=500 width=10)
                 default@src,src2,Tbl:COMPLETE,Col:COMPLETE
 
-PREHOOK: query: explain create table nzhang_Tmp(a int, b string)
+PREHOOK: query: explain create table nzhang_Tmp_n0(a int, b string)
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: explain create table nzhang_Tmp(a int, b string)
+POSTHOOK: query: explain create table nzhang_Tmp_n0(a int, b string)
 POSTHOOK: type: CREATETABLE
 Stage-0
   Create Table Operator:
-    name:default.nzhang_Tmp
+    name:default.nzhang_Tmp_n0
 
-PREHOOK: query: create table nzhang_Tmp(a int, b string)
+PREHOOK: query: create table nzhang_Tmp_n0(a int, b string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@nzhang_Tmp
-POSTHOOK: query: create table nzhang_Tmp(a int, b string)
+PREHOOK: Output: default@nzhang_Tmp_n0
+POSTHOOK: query: create table nzhang_Tmp_n0(a int, b string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@nzhang_Tmp
-PREHOOK: query: explain create table nzhang_CTAS1 as select key k, value from src sort by k, value limit 10
+POSTHOOK: Output: default@nzhang_Tmp_n0
+PREHOOK: query: explain create table nzhang_CTAS1_n0 as select key k, value from src sort by k, value limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: query: explain create table nzhang_CTAS1 as select key k, value from src sort by k, value limit 10
+POSTHOOK: query: explain create table nzhang_CTAS1_n0 as select key k, value from src sort by k, value limit 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 Plan not optimized by CBO.
 
@@ -3204,13 +3204,13 @@ Stage-2
   Stats Work{}
     Stage-3
       Create Table Operator:
-        name:default.nzhang_CTAS1
+        name:default.nzhang_CTAS1_n0
         Stage-0
           Move Operator
             Stage-1
               Reducer 3
               File Output Operator [FS_8]
-                table:{"name:":"default.nzhang_CTAS1"}
+                table:{"name:":"default.nzhang_CTAS1_n0"}
                 Limit [LIM_7] (rows=10 width=178)
                   Number of rows:10
                   Select Operator [SEL_6] (rows=10 width=178)
@@ -3228,21 +3228,21 @@ Stage-2
                               TableScan [TS_0] (rows=500 width=178)
                                 default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
 
-PREHOOK: query: create table nzhang_CTAS1 as select key k, value from src sort by k, value limit 10
+PREHOOK: query: create table nzhang_CTAS1_n0 as select key k, value from src sort by k, value limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@nzhang_CTAS1
-POSTHOOK: query: create table nzhang_CTAS1 as select key k, value from src sort by k, value limit 10
+PREHOOK: Output: default@nzhang_CTAS1_n0
+POSTHOOK: query: create table nzhang_CTAS1_n0 as select key k, value from src sort by k, value limit 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@nzhang_CTAS1
-POSTHOOK: Lineage: nzhang_ctas1.k SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_ctas1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: explain create table nzhang_ctas3 row format serde "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe" stored as RCFile as select key/2 half_key, concat(value, "_con") conb  from src sort by half_key, conb limit 10
+POSTHOOK: Output: default@nzhang_CTAS1_n0
+POSTHOOK: Lineage: nzhang_ctas1_n0.k SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_ctas1_n0.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: explain create table nzhang_ctas3_n0 row format serde "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe" stored as RCFile as select key/2 half_key, concat(value, "_con") conb  from src sort by half_key, conb limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: query: explain create table nzhang_ctas3 row format serde "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe" stored as RCFile as select key/2 half_key, concat(value, "_con") conb  from src sort by half_key, conb limit 10
+POSTHOOK: query: explain create table nzhang_ctas3_n0 row format serde "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe" stored as RCFile as select key/2 half_key, concat(value, "_con") conb  from src sort by half_key, conb limit 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 Plan not optimized by CBO.
 
@@ -3254,13 +3254,13 @@ Stage-2
   Stats Work{}
     Stage-3
       Create Table Operator:
-        name:default.nzhang_ctas3
+        name:default.nzhang_ctas3_n0
         Stage-0
           Move Operator
             Stage-1
               Reducer 3
               File Output Operator [FS_8]
-                table:{"name:":"default.nzhang_ctas3"}
+                table:{"name:":"default.nzhang_ctas3_n0"}
                 Limit [LIM_7] (rows=10 width=192)
                   Number of rows:10
                   Select Operator [SEL_6] (rows=10 width=192)
@@ -3278,26 +3278,26 @@ Stage-2
                               TableScan [TS_0] (rows=500 width=178)
                                 default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
 
-PREHOOK: query: create table nzhang_ctas3 row format serde "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe" stored as RCFile as select key/2 half_key, concat(value, "_con") conb  from src sort by half_key, conb limit 10
+PREHOOK: query: create table nzhang_ctas3_n0 row format serde "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe" stored as RCFile as select key/2 half_key, concat(value, "_con") conb  from src sort by half_key, conb limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@nzhang_ctas3
-POSTHOOK: query: create table nzhang_ctas3 row format serde "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe" stored as RCFile as select key/2 half_key, concat(value, "_con") conb  from src sort by half_key, conb limit 10
+PREHOOK: Output: default@nzhang_ctas3_n0
+POSTHOOK: query: create table nzhang_ctas3_n0 row format serde "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe" stored as RCFile as select key/2 half_key, concat(value, "_con") conb  from src sort by half_key, conb limit 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@nzhang_ctas3
-POSTHOOK: Lineage: nzhang_ctas3.conb EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: nzhang_ctas3.half_key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: explain create table if not exists nzhang_ctas3 as select key, value from src sort by key, value limit 2
+POSTHOOK: Output: default@nzhang_ctas3_n0
+POSTHOOK: Lineage: nzhang_ctas3_n0.conb EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_ctas3_n0.half_key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: explain create table if not exists nzhang_ctas3_n0 as select key, value from src sort by key, value limit 2
 PREHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: query: explain create table if not exists nzhang_ctas3 as select key, value from src sort by key, value limit 2
+POSTHOOK: query: explain create table if not exists nzhang_ctas3_n0 as select key, value from src sort by key, value limit 2
 POSTHOOK: type: CREATETABLE_AS_SELECT
 
-PREHOOK: query: create table if not exists nzhang_ctas3 as select key, value from src sort by key, value limit 2
+PREHOOK: query: create table if not exists nzhang_ctas3_n0 as select key, value from src sort by key, value limit 2
 PREHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: query: create table if not exists nzhang_ctas3 as select key, value from src sort by key, value limit 2
+POSTHOOK: query: create table if not exists nzhang_ctas3_n0 as select key, value from src sort by key, value limit 2
 POSTHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: query: explain create temporary table acid_dtt(a int, b varchar(128)) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
@@ -3366,25 +3366,25 @@ Stage-0
                     TableScan [TS_3] (rows=500 width=178)
                       default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
 
-PREHOOK: query: CREATE TABLE myinput1(key int, value int)
+PREHOOK: query: CREATE TABLE myinput1_n6(key int, value int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@myinput1
-POSTHOOK: query: CREATE TABLE myinput1(key int, value int)
+PREHOOK: Output: default@myinput1_n6
+POSTHOOK: query: CREATE TABLE myinput1_n6(key int, value int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@myinput1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in8.txt' INTO TABLE myinput1
+POSTHOOK: Output: default@myinput1_n6
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in8.txt' INTO TABLE myinput1_n6
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@myinput1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in8.txt' INTO TABLE myinput1
+PREHOOK: Output: default@myinput1_n6
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in8.txt' INTO TABLE myinput1_n6
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@myinput1
-PREHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value
+POSTHOOK: Output: default@myinput1_n6
+PREHOOK: query: explain select * from myinput1_n6 a join myinput1_n6 b on a.key<=>b.value
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value
+POSTHOOK: query: explain select * from myinput1_n6 a join myinput1_n6 b on a.key<=>b.value
 POSTHOOK: type: QUERY
 Plan not optimized by CBO due to missing feature [Less_than_equal_greater_than].
 
@@ -3405,16 +3405,16 @@ Stage-0
             PARTITION-LEVEL SORT [RS_2]
               PartitionCols:key
               TableScan [TS_0] (rows=1 width=8)
-                default@myinput1,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+                default@myinput1_n6,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
           <-Map 3 [PARTITION-LEVEL SORT]
             PARTITION-LEVEL SORT [RS_3]
               PartitionCols:value
               TableScan [TS_1] (rows=1 width=8)
-                default@myinput1,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+                default@myinput1_n6,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
 
-PREHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key=c.key
+PREHOOK: query: explain select * from myinput1_n6 a join myinput1_n6 b on a.key<=>b.value join myinput1_n6 c on a.key=c.key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key=c.key
+POSTHOOK: query: explain select * from myinput1_n6 a join myinput1_n6 b on a.key<=>b.value join myinput1_n6 c on a.key=c.key
 POSTHOOK: type: QUERY
 Plan not optimized by CBO due to missing feature [Less_than_equal_greater_than].
 
@@ -3437,25 +3437,25 @@ Stage-0
               Filter Operator [FIL_12] (rows=1 width=8)
                 predicate:key is not null
                 TableScan [TS_0] (rows=1 width=8)
-                  default@myinput1,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+                  default@myinput1_n6,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
           <-Map 3 [PARTITION-LEVEL SORT]
             PARTITION-LEVEL SORT [RS_6]
               PartitionCols:value
               Filter Operator [FIL_13] (rows=1 width=8)
                 predicate:value is not null
                 TableScan [TS_1] (rows=1 width=8)
-                  default@myinput1,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+                  default@myinput1_n6,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
           <-Map 4 [PARTITION-LEVEL SORT]
             PARTITION-LEVEL SORT [RS_8]
               PartitionCols:key
               Filter Operator [FIL_14] (rows=1 width=8)
                 predicate:key is not null
                 TableScan [TS_2] (rows=1 width=8)
-                  default@myinput1,c,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+                  default@myinput1_n6,c,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
 
-PREHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key<=>c.key
+PREHOOK: query: explain select * from myinput1_n6 a join myinput1_n6 b on a.key<=>b.value join myinput1_n6 c on a.key<=>c.key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key<=>c.key
+POSTHOOK: query: explain select * from myinput1_n6 a join myinput1_n6 b on a.key<=>b.value join myinput1_n6 c on a.key<=>c.key
 POSTHOOK: type: QUERY
 Plan not optimized by CBO due to missing feature [Less_than_equal_greater_than].
 
@@ -3476,21 +3476,21 @@ Stage-0
             PARTITION-LEVEL SORT [RS_3]
               PartitionCols:key
               TableScan [TS_0] (rows=1 width=8)
-                default@myinput1,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+                default@myinput1_n6,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
           <-Map 3 [PARTITION-LEVEL SORT]
             PARTITION-LEVEL SORT [RS_4]
               PartitionCols:value
               TableScan [TS_1] (rows=1 width=8)
-                default@myinput1,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+                default@myinput1_n6,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
           <-Map 4 [PARTITION-LEVEL SORT]
             PARTITION-LEVEL SORT [RS_5]
               PartitionCols:key
               TableScan [TS_2] (rows=1 width=8)
-                default@myinput1,c,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+                default@myinput1_n6,c,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
 
-PREHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value=b.key join myinput1 c on a.key<=>c.key AND a.value=c.value
+PREHOOK: query: explain select * from myinput1_n6 a join myinput1_n6 b on a.key<=>b.value AND a.value=b.key join myinput1_n6 c on a.key<=>c.key AND a.value=c.value
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value=b.key join myinput1 c on a.key<=>c.key AND a.value=c.value
+POSTHOOK: query: explain select * from myinput1_n6 a join myinput1_n6 b on a.key<=>b.value AND a.value=b.key join myinput1_n6 c on a.key<=>c.key AND a.value=c.value
 POSTHOOK: type: QUERY
 Plan not optimized by CBO due to missing feature [Less_than_equal_greater_than].
 
@@ -3513,25 +3513,25 @@ Stage-0
               Filter Operator [FIL_12] (rows=1 width=8)
                 predicate:value is not null
                 TableScan [TS_0] (rows=1 width=8)
-                  default@myinput1,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+                  default@myinput1_n6,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
           <-Map 3 [PARTITION-LEVEL SORT]
             PARTITION-LEVEL SORT [RS_6]
               PartitionCols:value, key
               Filter Operator [FIL_13] (rows=1 width=8)
                 predicate:key is not null
                 TableScan [TS_1] (rows=1 width=8)
-                  default@myinput1,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+                  default@myinput1_n6,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
           <-Map 4 [PARTITION-LEVEL SORT]
             PARTITION-LEVEL SORT [RS_8]
               PartitionCols:key, value
               Filter Operator [FIL_14] (rows=1 width=8)
                 predicate:value is not null
                 TableScan [TS_2] (rows=1 width=8)
-                  default@myinput1,c,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+                  default@myinput1_n6,c,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
 
-PREHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value<=>b.key join myinput1 c on a.key<=>c.key AND a.value<=>c.value
+PREHOOK: query: explain select * from myinput1_n6 a join myinput1_n6 b on a.key<=>b.value AND a.value<=>b.key join myinput1_n6 c on a.key<=>c.key AND a.value<=>c.value
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value<=>b.key join myinput1 c on a.key<=>c.key AND a.value<=>c.value
+POSTHOOK: query: explain select * from myinput1_n6 a join myinput1_n6 b on a.key<=>b.value AND a.value<=>b.key join myinput1_n6 c on a.key<=>c.key AND a.value<=>c.value
 POSTHOOK: type: QUERY
 Plan not optimized by CBO due to missing feature [Less_than_equal_greater_than].
 
@@ -3552,21 +3552,21 @@ Stage-0
             PARTITION-LEVEL SORT [RS_3]
               PartitionCols:key, value
               TableScan [TS_0] (rows=1 width=8)
-                default@myinput1,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+                default@myinput1_n6,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
           <-Map 3 [PARTITION-LEVEL SORT]
             PARTITION-LEVEL SORT [RS_4]
               PartitionCols:value, key
               TableScan [TS_1] (rows=1 width=8)
-                default@myinput1,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+                default@myinput1_n6,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
           <-Map 4 [PARTITION-LEVEL SORT]
             PARTITION-LEVEL SORT [RS_5]
               PartitionCols:key, value
               TableScan [TS_2] (rows=1 width=8)
-                default@myinput1,c,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+                default@myinput1_n6,c,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
 
-PREHOOK: query: explain select * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key<=>b.value
+PREHOOK: query: explain select * FROM myinput1_n6 a LEFT OUTER JOIN myinput1_n6 b ON a.key<=>b.value
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key<=>b.value
+POSTHOOK: query: explain select * FROM myinput1_n6 a LEFT OUTER JOIN myinput1_n6 b ON a.key<=>b.value
 POSTHOOK: type: QUERY
 Plan not optimized by CBO due to missing feature [Less_than_equal_greater_than].
 
@@ -3587,16 +3587,16 @@ Stage-0
             PARTITION-LEVEL SORT [RS_2]
               PartitionCols:key
               TableScan [TS_0] (rows=1 width=8)
-                default@myinput1,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+                default@myinput1_n6,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
           <-Map 3 [PARTITION-LEVEL SORT]
             PARTITION-LEVEL SORT [RS_3]
               PartitionCols:value
               TableScan [TS_1] (rows=1 width=8)
-                default@myinput1,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+                default@myinput1_n6,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
 
-PREHOOK: query: explain select * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key<=>b.value
+PREHOOK: query: explain select * FROM myinput1_n6 a RIGHT OUTER JOIN myinput1_n6 b ON a.key<=>b.value
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key<=>b.value
+POSTHOOK: query: explain select * FROM myinput1_n6 a RIGHT OUTER JOIN myinput1_n6 b ON a.key<=>b.value
 POSTHOOK: type: QUERY
 Plan not optimized by CBO due to missing feature [Less_than_equal_greater_than].
 
@@ -3617,16 +3617,16 @@ Stage-0
             PARTITION-LEVEL SORT [RS_2]
               PartitionCols:key
               TableScan [TS_0] (rows=1 width=8)
-                default@myinput1,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+                default@myinput1_n6,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
           <-Map 3 [PARTITION-LEVEL SORT]
             PARTITION-LEVEL SORT [RS_3]
               PartitionCols:value
               TableScan [TS_1] (rows=1 width=8)
-                default@myinput1,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+                default@myinput1_n6,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
 
-PREHOOK: query: explain select * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key<=>b.value
+PREHOOK: query: explain select * FROM myinput1_n6 a FULL OUTER JOIN myinput1_n6 b ON a.key<=>b.value
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key<=>b.value
+POSTHOOK: query: explain select * FROM myinput1_n6 a FULL OUTER JOIN myinput1_n6 b ON a.key<=>b.value
 POSTHOOK: type: QUERY
 Plan not optimized by CBO due to missing feature [Less_than_equal_greater_than].
 
@@ -3647,16 +3647,16 @@ Stage-0
             PARTITION-LEVEL SORT [RS_2]
               PartitionCols:key
               TableScan [TS_0] (rows=1 width=8)
-                default@myinput1,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+                default@myinput1_n6,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
           <-Map 3 [PARTITION-LEVEL SORT]
             PARTITION-LEVEL SORT [RS_3]
               PartitionCols:value
               TableScan [TS_1] (rows=1 width=8)
-                default@myinput1,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+                default@myinput1_n6,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
 
-PREHOOK: query: explain select /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.key<=>b.value
+PREHOOK: query: explain select /*+ MAPJOIN(b) */ * FROM myinput1_n6 a JOIN myinput1_n6 b ON a.key<=>b.value
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.key<=>b.value
+POSTHOOK: query: explain select /*+ MAPJOIN(b) */ * FROM myinput1_n6 a JOIN myinput1_n6 b ON a.key<=>b.value
 POSTHOOK: type: QUERY
 Plan not optimized by CBO due to missing feature [Less_than_equal_greater_than].
 
@@ -3671,14 +3671,14 @@ Stage-0
           Map Join Operator [MAPJOIN_7] (rows=1 width=8)
             Conds:TS_0.key=TS_0.value(Inner),Output:["_col0","_col1","_col5","_col6"]
           <-TableScan [TS_0] (rows=1 width=8)
-              default@myinput1,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+              default@myinput1_n6,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
       Map Reduce Local Work
         Stage-2
           Map 2
           keys: [HASHTABLESINK_10]
             0key,1value
             TableScan [TS_1] (rows=1 width=8)
-              default@myinput1,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+              default@myinput1_n6,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
           Map Reduce Local Work
 
 PREHOOK: query: CREATE TABLE smb_input(key int, value int)
@@ -3705,51 +3705,51 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in5.txt' into table sm
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@smb_input
-PREHOOK: query: CREATE TABLE smb_input1(key int, value int) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: query: CREATE TABLE smb_input1_n1(key int, value int) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@smb_input1
-POSTHOOK: query: CREATE TABLE smb_input1(key int, value int) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: Output: default@smb_input1_n1
+POSTHOOK: query: CREATE TABLE smb_input1_n1(key int, value int) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@smb_input1
-PREHOOK: query: CREATE TABLE smb_input2(key int, value int) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS
+POSTHOOK: Output: default@smb_input1_n1
+PREHOOK: query: CREATE TABLE smb_input2_n1(key int, value int) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@smb_input2
-POSTHOOK: query: CREATE TABLE smb_input2(key int, value int) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS
+PREHOOK: Output: default@smb_input2_n1
+POSTHOOK: query: CREATE TABLE smb_input2_n1(key int, value int) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@smb_input2
+POSTHOOK: Output: default@smb_input2_n1
 PREHOOK: query: from smb_input
-insert overwrite table smb_input1 select *
-insert overwrite table smb_input2 select *
+insert overwrite table smb_input1_n1 select *
+insert overwrite table smb_input2_n1 select *
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_input
-PREHOOK: Output: default@smb_input1
-PREHOOK: Output: default@smb_input2
+PREHOOK: Output: default@smb_input1_n1
+PREHOOK: Output: default@smb_input2_n1
 POSTHOOK: query: from smb_input
-insert overwrite table smb_input1 select *
-insert overwrite table smb_input2 select *
+insert overwrite table smb_input1_n1 select *
+insert overwrite table smb_input2_n1 select *
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_input
-POSTHOOK: Output: default@smb_input1
-POSTHOOK: Output: default@smb_input2
-POSTHOOK: Lineage: smb_input1.key SIMPLE [(smb_input)smb_input.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: smb_input1.value SIMPLE [(smb_input)smb_input.FieldSchema(name:value, type:int, comment:null), ]
-POSTHOOK: Lineage: smb_input2.key SIMPLE [(smb_input)smb_input.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: smb_input2.value SIMPLE [(smb_input)smb_input.FieldSchema(name:value, type:int, comment:null), ]
-PREHOOK: query: analyze table smb_input1 compute statistics
+POSTHOOK: Output: default@smb_input1_n1
+POSTHOOK: Output: default@smb_input2_n1
+POSTHOOK: Lineage: smb_input1_n1.key SIMPLE [(smb_input)smb_input.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_input1_n1.value SIMPLE [(smb_input)smb_input.FieldSchema(name:value, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_input2_n1.key SIMPLE [(smb_input)smb_input.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_input2_n1.value SIMPLE [(smb_input)smb_input.FieldSchema(name:value, type:int, comment:null), ]
+PREHOOK: query: analyze table smb_input1_n1 compute statistics
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_input1
-PREHOOK: Output: default@smb_input1
-POSTHOOK: query: analyze table smb_input1 compute statistics
+PREHOOK: Input: default@smb_input1_n1
+PREHOOK: Output: default@smb_input1_n1
+POSTHOOK: query: analyze table smb_input1_n1 compute statistics
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_input1
-POSTHOOK: Output: default@smb_input1
-PREHOOK: query: explain select /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key <=> b.key
+POSTHOOK: Input: default@smb_input1_n1
+POSTHOOK: Output: default@smb_input1_n1
+PREHOOK: query: explain select /*+ MAPJOIN(a) */ * FROM smb_input1_n1 a JOIN smb_input1_n1 b ON a.key <=> b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key <=> b.key
+POSTHOOK: query: explain select /*+ MAPJOIN(a) */ * FROM smb_input1_n1 a JOIN smb_input1_n1 b ON a.key <=> b.key
 POSTHOOK: type: QUERY
 Plan not optimized by CBO due to missing feature [Less_than_equal_greater_than].
 
@@ -3764,11 +3764,11 @@ Stage-0
           Sorted Merge Bucket Map Join Operator [MAPJOIN_7] (rows=28 width=8)
             BucketMapJoin:true,Conds:TS_1.key=TS_1.key(Inner),Output:["_col0","_col1","_col5","_col6"]
           <-TableScan [TS_1] (rows=26 width=8)
-              default@smb_input1,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+              default@smb_input1_n1,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
 
-PREHOOK: query: explain select /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key <=> b.key AND a.value <=> b.value
+PREHOOK: query: explain select /*+ MAPJOIN(a) */ * FROM smb_input1_n1 a JOIN smb_input1_n1 b ON a.key <=> b.key AND a.value <=> b.value
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key <=> b.key AND a.value <=> b.value
+POSTHOOK: query: explain select /*+ MAPJOIN(a) */ * FROM smb_input1_n1 a JOIN smb_input1_n1 b ON a.key <=> b.key AND a.value <=> b.value
 POSTHOOK: type: QUERY
 Plan not optimized by CBO due to missing feature [Less_than_equal_greater_than].
 
@@ -3783,19 +3783,19 @@ Stage-0
           Map Join Operator [MAPJOIN_7] (rows=28 width=8)
             BucketMapJoin:true,Conds:TS_1.key, value=TS_1.key, value(Inner),Output:["_col0","_col1","_col5","_col6"]
           <-TableScan [TS_1] (rows=26 width=8)
-              default@smb_input1,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+              default@smb_input1_n1,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
       Map Reduce Local Work
         Stage-2
           Map 1
           keys: [HASHTABLESINK_10]
             0key, value,1key, value
             TableScan [TS_0] (rows=26 width=8)
-              default@smb_input1,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+              default@smb_input1_n1,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
           Map Reduce Local Work
 
-PREHOOK: query: explain select /*+ MAPJOIN(a) */ * FROM smb_input1 a RIGHT OUTER JOIN smb_input1 b ON a.key <=> b.key
+PREHOOK: query: explain select /*+ MAPJOIN(a) */ * FROM smb_input1_n1 a RIGHT OUTER JOIN smb_input1_n1 b ON a.key <=> b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select /*+ MAPJOIN(a) */ * FROM smb_input1 a RIGHT OUTER JOIN smb_input1 b ON a.key <=> b.key
+POSTHOOK: query: explain select /*+ MAPJOIN(a) */ * FROM smb_input1_n1 a RIGHT OUTER JOIN smb_input1_n1 b ON a.key <=> b.key
 POSTHOOK: type: QUERY
 Plan not optimized by CBO due to missing feature [Less_than_equal_greater_than].
 
@@ -3810,11 +3810,11 @@ Stage-0
           Sorted Merge Bucket Map Join Operator [MAPJOIN_7] (rows=28 width=8)
             BucketMapJoin:true,Conds:TS_1.key=TS_1.key(Right Outer),Output:["_col0","_col1","_col5","_col6"]
           <-TableScan [TS_1] (rows=26 width=8)
-              default@smb_input1,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+              default@smb_input1_n1,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
 
-PREHOOK: query: explain select /*+ MAPJOIN(b) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key <=> b.key
+PREHOOK: query: explain select /*+ MAPJOIN(b) */ * FROM smb_input1_n1 a JOIN smb_input1_n1 b ON a.key <=> b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select /*+ MAPJOIN(b) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key <=> b.key
+POSTHOOK: query: explain select /*+ MAPJOIN(b) */ * FROM smb_input1_n1 a JOIN smb_input1_n1 b ON a.key <=> b.key
 POSTHOOK: type: QUERY
 Plan not optimized by CBO due to missing feature [Less_than_equal_greater_than].
 
@@ -3829,11 +3829,11 @@ Stage-0
           Sorted Merge Bucket Map Join Operator [MAPJOIN_7] (rows=28 width=8)
             BucketMapJoin:true,Conds:TS_0.key=TS_0.key(Inner),Output:["_col0","_col1","_col5","_col6"]
           <-TableScan [TS_0] (rows=26 width=8)
-              default@smb_input1,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+              default@smb_input1_n1,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
 
-PREHOOK: query: explain select /*+ MAPJOIN(b) */ * FROM smb_input1 a LEFT OUTER JOIN smb_input1 b ON a.key <=> b.key
+PREHOOK: query: explain select /*+ MAPJOIN(b) */ * FROM smb_input1_n1 a LEFT OUTER JOIN smb_input1_n1 b ON a.key <=> b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select /*+ MAPJOIN(b) */ * FROM smb_input1 a LEFT OUTER JOIN smb_input1 b ON a.key <=> b.key
+POSTHOOK: query: explain select /*+ MAPJOIN(b) */ * FROM smb_input1_n1 a LEFT OUTER JOIN smb_input1_n1 b ON a.key <=> b.key
 POSTHOOK: type: QUERY
 Plan not optimized by CBO due to missing feature [Less_than_equal_greater_than].
 
@@ -3848,7 +3848,7 @@ Stage-0
           Sorted Merge Bucket Map Join Operator [MAPJOIN_7] (rows=28 width=8)
             BucketMapJoin:true,Conds:TS_0.key=TS_0.key(Left Outer),Output:["_col0","_col1","_col5","_col6"]
           <-TableScan [TS_0] (rows=26 width=8)
-              default@smb_input1,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+              default@smb_input1_n1,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
 
 PREHOOK: query: drop table sales
 PREHOOK: type: DROPTABLE
@@ -4706,13 +4706,13 @@ Stage-0
                 default@part,p1,Tbl:COMPLETE,Col:COMPLETE,Output:["p_partkey"]
           Map Reduce Local Work
 
-PREHOOK: query: explain create view IF NOT EXISTS mfgr_price_view as
+PREHOOK: query: explain create view IF NOT EXISTS mfgr_price_view_n1 as
 select p_mfgr, p_brand,
 sum(p_retailprice) as s
 from part
 group by p_mfgr, p_brand
 PREHOOK: type: CREATEVIEW
-POSTHOOK: query: explain create view IF NOT EXISTS mfgr_price_view as
+POSTHOOK: query: explain create view IF NOT EXISTS mfgr_price_view_n1 as
 select p_mfgr, p_brand,
 sum(p_retailprice) as s
 from part
@@ -4722,12 +4722,12 @@ Plan optimized by CBO.
 
 Stage-1
   Create View Operator:
-    name:default.mfgr_price_view,original text:select p_mfgr, p_brand,
+    name:default.mfgr_price_view_n1,original text:select p_mfgr, p_brand,
 sum(p_retailprice) as s
 from part
 group by p_mfgr, p_brand
 
-PREHOOK: query: CREATE TABLE part_4(
+PREHOOK: query: CREATE TABLE part_4_n0(
 p_mfgr STRING,
 p_name STRING,
 p_size INT,
@@ -4736,8 +4736,8 @@ dr INT,
 s DOUBLE)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@part_4
-POSTHOOK: query: CREATE TABLE part_4(
+PREHOOK: Output: default@part_4_n0
+POSTHOOK: query: CREATE TABLE part_4_n0(
 p_mfgr STRING,
 p_name STRING,
 p_size INT,
@@ -4746,8 +4746,8 @@ dr INT,
 s DOUBLE)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@part_4
-PREHOOK: query: CREATE TABLE part_5(
+POSTHOOK: Output: default@part_4_n0
+PREHOOK: query: CREATE TABLE part_5_n0(
 p_mfgr STRING,
 p_name STRING,
 p_size INT,
@@ -4758,8 +4758,8 @@ cud DOUBLE,
 fv1 INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@part_5
-POSTHOOK: query: CREATE TABLE part_5(
+PREHOOK: Output: default@part_5_n0
+POSTHOOK: query: CREATE TABLE part_5_n0(
 p_mfgr STRING,
 p_name STRING,
 p_size INT,
@@ -4770,16 +4770,16 @@ cud DOUBLE,
 fv1 INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@part_5
+POSTHOOK: Output: default@part_5_n0
 PREHOOK: query: explain
 from noop(on part
 partition by p_mfgr
 order by p_name)
-INSERT OVERWRITE TABLE part_4 select p_mfgr, p_name, p_size,
+INSERT OVERWRITE TABLE part_4_n0 select p_mfgr, p_name, p_size,
 rank() over (distribute by p_mfgr sort by p_name) as r,
 dense_rank() over (distribute by p_mfgr sort by p_name) as dr,
 sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row)  as s
-INSERT OVERWRITE TABLE part_5 select  p_mfgr,p_name, p_size,
+INSERT OVERWRITE TABLE part_5_n0 select  p_mfgr,p_name, p_size,
 round(sum(p_size) over (distribute by p_mfgr sort by p_size range between 5 preceding and current row),1) as s2,
 rank() over (distribute by p_mfgr sort by p_mfgr, p_name) as r,
 dense_rank() over (distribute by p_mfgr sort by p_mfgr, p_name) as dr,
@@ -4791,11 +4791,11 @@ POSTHOOK: query: explain
 from noop(on part
 partition by p_mfgr
 order by p_name)
-INSERT OVERWRITE TABLE part_4 select p_mfgr, p_name, p_size,
+INSERT OVERWRITE TABLE part_4_n0 select p_mfgr, p_name, p_size,
 rank() over (distribute by p_mfgr sort by p_name) as r,
 dense_rank() over (distribute by p_mfgr sort by p_name) as dr,
 sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row)  as s
-INSERT OVERWRITE TABLE part_5 select  p_mfgr,p_name, p_size,
+INSERT OVERWRITE TABLE part_5_n0 select  p_mfgr,p_name, p_size,
 round(sum(p_size) over (distribute by p_mfgr sort by p_size range between 5 preceding and current row),1) as s2,
 rank() over (distribute by p_mfgr sort by p_mfgr, p_name) as r,
 dense_rank() over (distribute by p_mfgr sort by p_mfgr, p_name) as dr,
@@ -4816,11 +4816,11 @@ Stage-3
   Stats Work{}
     Stage-0
       Move Operator
-        table:{"name:":"default.part_4"}
+        table:{"name:":"default.part_4_n0"}
         Stage-2
           Reducer 3
           File Output Operator [FS_9]
-            table:{"name:":"default.part_4"}
+            table:{"name:":"default.part_4_n0"}
             Select Operator [SEL_7] (rows=26 width=239)
               Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
               PTF Operator [PTF_6] (rows=26 width=499)
@@ -4841,7 +4841,7 @@ Stage-3
                             default@part,part,Tbl:COMPLETE,Col:COMPLETE,Output:["p_mfgr","p_name","p_retailprice","p_size"]
           Reducer 5
           File Output Operator [FS_20]
-            table:{"name:":"default.part_5"}
+            table:{"name:":"default.part_5_n0"}
             Select Operator [SEL_17] (rows=26 width=247)
               Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7"]
               PTF Operator [PTF_16] (rows=26 width=499)
@@ -4869,7 +4869,7 @@ Stage-4
   Stats Work{}
     Stage-1
       Move Operator
-        table:{"name:":"default.part_5"}
+        table:{"name:":"default.part_5_n0"}
          Please refer to the previous Stage-2
 
 PREHOOK: query: explain
@@ -5145,85 +5145,85 @@ Stage-0
           Output:["_col0"]
           TableScan [TS_0]
 
-PREHOOK: query: CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE T1_n116(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1
-POSTHOOK: query: CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@T1_n116
+POSTHOOK: query: CREATE TABLE T1_n116(key STRING, val STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1
-PREHOOK: query: CREATE TABLE T2(key STRING, val STRING) STORED AS TEXTFILE
+POSTHOOK: Output: default@T1_n116
+PREHOOK: query: CREATE TABLE T2_n68(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T2
-POSTHOOK: query: CREATE TABLE T2(key STRING, val STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@T2_n68
+POSTHOOK: query: CREATE TABLE T2_n68(key STRING, val STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T2
-PREHOOK: query: CREATE TABLE T3(key STRING, val STRING) STORED AS TEXTFILE
+POSTHOOK: Output: default@T2_n68
+PREHOOK: query: CREATE TABLE T3_n24(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T3
-POSTHOOK: query: CREATE TABLE T3(key STRING, val STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@T3_n24
+POSTHOOK: query: CREATE TABLE T3_n24(key STRING, val STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T3
-PREHOOK: query: CREATE TABLE T4(key STRING, val STRING) STORED AS TEXTFILE
+POSTHOOK: Output: default@T3_n24
+PREHOOK: query: CREATE TABLE T4_n13(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T4
-POSTHOOK: query: CREATE TABLE T4(key STRING, val STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@T4_n13
+POSTHOOK: query: CREATE TABLE T4_n13(key STRING, val STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T4
-PREHOOK: query: CREATE TABLE dest_j1(key INT, value STRING) STORED AS TEXTFILE
+POSTHOOK: Output: default@T4_n13
+PREHOOK: query: CREATE TABLE dest_j1_n14(key INT, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest_j1
-POSTHOOK: query: CREATE TABLE dest_j1(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@dest_j1_n14
+POSTHOOK: query: CREATE TABLE dest_j1_n14(key INT, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest_j1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1
+POSTHOOK: Output: default@dest_j1_n14
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_n116
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1
+PREHOOK: Output: default@t1_n116
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_n116
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2
+POSTHOOK: Output: default@t1_n116
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2_n68
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t2
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2
+PREHOOK: Output: default@t2_n68
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2_n68
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t2
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T3.txt' INTO TABLE T3
+POSTHOOK: Output: default@t2_n68
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T3.txt' INTO TABLE T3_n24
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t3
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T3.txt' INTO TABLE T3
+PREHOOK: Output: default@t3_n24
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T3.txt' INTO TABLE T3_n24
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t3
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T4
+POSTHOOK: Output: default@t3_n24
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T4_n13
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t4
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T4
+PREHOOK: Output: default@t4_n13
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T4_n13
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t4
+POSTHOOK: Output: default@t4_n13
 PREHOOK: query: explain
 FROM src src1 JOIN src src2 ON (src1.key = src2.key)
-INSERT OVERWRITE TABLE dest_j1 select src1.key, src2.value
+INSERT OVERWRITE TABLE dest_j1_n14 select src1.key, src2.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 FROM src src1 JOIN src src2 ON (src1.key = src2.key)
-INSERT OVERWRITE TABLE dest_j1 select src1.key, src2.value
+INSERT OVERWRITE TABLE dest_j1_n14 select src1.key, src2.value
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -5234,13 +5234,13 @@ Stage-2
   Stats Work{}
     Stage-0(CONDITIONAL)
       Move Operator
-        table:{"name:":"default.dest_j1"}
+        table:{"name:":"default.dest_j1_n14"}
         Stage-4(CONDITIONAL CHILD TASKS: Stage-5, Stage-0)
           Conditional Operator
             Stage-1
               Reducer 2
               File Output Operator [FS_11]
-                table:{"name:":"default.dest_j1"}
+                table:{"name:":"default.dest_j1_n14"}
                 Select Operator [SEL_9] (rows=809 width=95)
                   Output:["_col0","_col1"]
                   Join Operator [JOIN_8] (rows=809 width=178)
@@ -5266,7 +5266,7 @@ Stage-2
         Stage-3
           Map 4
           File Output Operator [FS_11]
-            table:{"name:":"default.dest_j1"}
+            table:{"name:":"default.dest_j1_n14"}
             Select Operator [SEL_9] (rows=809 width=95)
               Output:["_col0","_col1"]
               Map Join Operator [MAPJOIN_16]
@@ -5284,28 +5284,28 @@ Stage-2
                  Please refer to the previous Stage-4(CONDITIONAL CHILD TASKS: Stage-5, Stage-0)
 
 PREHOOK: query: FROM src src1 JOIN src src2 ON (src1.key = src2.key)
-INSERT OVERWRITE TABLE dest_j1 select src1.key, src2.value
+INSERT OVERWRITE TABLE dest_j1_n14 select src1.key, src2.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@dest_j1
+PREHOOK: Output: default@dest_j1_n14
 POSTHOOK: query: FROM src src1 JOIN src src2 ON (src1.key = src2.key)
-INSERT OVERWRITE TABLE dest_j1 select src1.key, src2.value
+INSERT OVERWRITE TABLE dest_j1_n14 select src1.key, src2.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@dest_j1
-POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@dest_j1_n14
+POSTHOOK: Lineage: dest_j1_n14.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest_j1_n14.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain
 select /*+ STREAMTABLE(a) */ *
-FROM T1 a JOIN T2 b ON a.key = b.key
-          JOIN T3 c ON b.key = c.key
-          JOIN T4 d ON c.key = d.key
+FROM T1_n116 a JOIN T2_n68 b ON a.key = b.key
+          JOIN T3_n24 c ON b.key = c.key
+          JOIN T4_n13 d ON c.key = d.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select /*+ STREAMTABLE(a) */ *
-FROM T1 a JOIN T2 b ON a.key = b.key
-          JOIN T3 c ON b.key = c.key
-          JOIN T4 d ON c.key = d.key
+FROM T1_n116 a JOIN T2_n68 b ON a.key = b.key
+          JOIN T3_n24 c ON b.key = c.key
+          JOIN T4_n13 d ON c.key = d.key
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -5324,7 +5324,7 @@ Stage-0
               Filter Operator [FIL_24] (rows=1 width=368)
                 predicate:key is not null
                 TableScan [TS_6] (rows=1 width=368)
-                  default@t3,c,Tbl:COMPLETE,Col:NONE,Output:["key","val"]
+                  default@t3_n24,c,Tbl:COMPLETE,Col:NONE,Output:["key","val"]
       Map Reduce Local Work
         Stage-2
           Map 1
@@ -5335,7 +5335,7 @@ Stage-0
               Filter Operator [FIL_22] (rows=1 width=368)
                 predicate:key is not null
                 TableScan [TS_0] (rows=1 width=368)
-                  default@t1,a,Tbl:COMPLETE,Col:NONE,Output:["key","val"]
+                  default@t1_n116,a,Tbl:COMPLETE,Col:NONE,Output:["key","val"]
           Map Reduce Local Work
           Map 2
           keys: [HASHTABLESINK_32]
@@ -5345,7 +5345,7 @@ Stage-0
               Filter Operator [FIL_23] (rows=1 width=368)
                 predicate:key is not null
                 TableScan [TS_3] (rows=1 width=368)
-                  default@t2,b,Tbl:COMPLETE,Col:NONE,Output:["key","val"]
+                  default@t2_n68,b,Tbl:COMPLETE,Col:NONE,Output:["key","val"]
           Map Reduce Local Work
           Map 4
           keys: [HASHTABLESINK_35]
@@ -5355,20 +5355,20 @@ Stage-0
               Filter Operator [FIL_25] (rows=1 width=368)
                 predicate:key is not null
                 TableScan [TS_9] (rows=1 width=368)
-                  default@t4,d,Tbl:COMPLETE,Col:NONE,Output:["key","val"]
+                  default@t4_n13,d,Tbl:COMPLETE,Col:NONE,Output:["key","val"]
           Map Reduce Local Work
 
 PREHOOK: query: explain
 select /*+ STREAMTABLE(a,c) */ *
-FROM T1 a JOIN T2 b ON a.key = b.key
-          JOIN T3 c ON b.key = c.key
-          JOIN T4 d ON c.key = d.key
+FROM T1_n116 a JOIN T2_n68 b ON a.key = b.key
+          JOIN T3_n24 c ON b.key = c.key
+          JOIN T4_n13 d ON c.key = d.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select /*+ STREAMTABLE(a,c) */ *
-FROM T1 a JOIN T2 b ON a.key = b.key
-          JOIN T3 c ON b.key = c.key
-          JOIN T4 d ON c.key = d.key
+FROM T1_n116 a JOIN T2_n68 b ON a.key = b.key
+          JOIN T3_n24 c ON b.key = c.key
+          JOIN T4_n13 d ON c.key = d.key
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -5387,7 +5387,7 @@ Stage-0
               Filter Operator [FIL_24] (rows=1 width=368)
                 predicate:key is not null
                 TableScan [TS_6] (rows=1 width=368)
-                  default@t3,c,Tbl:COMPLETE,Col:NONE,Output:["key","val"]
+                  default@t3_n24,c,Tbl:COMPLETE,Col:NONE,Output:["key","val"]
       Map Reduce Local Work
         Stage-2
           Map 1
@@ -5398,7 +5398,7 @@ Stage-0
               Filter Operator [FIL_22] (rows=1 width=368)
                 predicate:key is not null
                 TableScan [TS_0] (rows=1 width=368)
-                  default@t1,a,Tbl:COMPLETE,Col:NONE,Output:["key","val"]
+                  default@t1_n116,a,Tbl:COMPLETE,Col:NONE,Output:["key","val"]
           Map Reduce Local Work
           Map 2
           keys: [HASHTABLESINK_32]
@@ -5408,7 +5408,7 @@ Stage-0
               Filter Operator [FIL_23] (rows=1 width=368)
                 predicate:key is not null
                 TableScan [TS_3] (rows=1 width=368)
-                  default@t2,b,Tbl:COMPLETE,Col:NONE,Output:["key","val"]
+                  default@t2_n68,b,Tbl:COMPLETE,Col:NONE,Output:["key","val"]
           Map Reduce Local Work
           Map 4
           keys: [HASHTABLESINK_35]
@@ -5418,12 +5418,12 @@ Stage-0
               Filter Operator [FIL_25] (rows=1 width=368)
                 predicate:key is not null
                 TableScan [TS_9] (rows=1 width=368)
-                  default@t4,d,Tbl:COMPLETE,Col:NONE,Output:["key","val"]
+                  default@t4_n13,d,Tbl:COMPLETE,Col:NONE,Output:["key","val"]
           Map Reduce Local Work
 
-PREHOOK: query: explain FROM T1 a JOIN src c ON c.key+1=a.key select /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
+PREHOOK: query: explain FROM T1_n116 a JOIN src c ON c.key+1=a.key select /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
 PREHOOK: type: QUERY
-POSTHOOK: query: explain FROM T1 a JOIN src c ON c.key+1=a.key select /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
+POSTHOOK: query: explain FROM T1_n116 a JOIN src c ON c.key+1=a.key select /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -5466,18 +5466,18 @@ Stage-0
               Filter Operator [FIL_17] (rows=1 width=368)
                 predicate:key is not null
                 TableScan [TS_0] (rows=1 width=368)
-                  default@t1,a,Tbl:COMPLETE,Col:NONE,Output:["key","val"]
+                  default@t1_n116,a,Tbl:COMPLETE,Col:NONE,Output:["key","val"]
           Map Reduce Local Work
 
-PREHOOK: query: FROM T1 a JOIN src c ON c.key+1=a.key select /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
+PREHOOK: query: FROM T1_n116 a JOIN src c ON c.key+1=a.key select /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n116
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: FROM T1 a JOIN src c ON c.key+1=a.key select /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
+POSTHOOK: query: FROM T1_n116 a JOIN src c ON c.key+1=a.key select /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n116
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 198	6274	194
 PREHOOK: query: explain
@@ -5543,9 +5543,9 @@ Stage-0
                             TableScan [TS_3] (rows=500 width=178)
                               default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
 
-PREHOOK: query: explain select /*+ mapjoin(k)*/ sum(hash(k.key)), sum(hash(v.val)) from T1 k join T1 v on k.key=v.val
+PREHOOK: query: explain select /*+ mapjoin(k)*/ sum(hash(k.key)), sum(hash(v.val)) from T1_n116 k join T1_n116 v on k.key=v.val
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select /*+ mapjoin(k)*/ sum(hash(k.key)), sum(hash(v.val)) from T1 k join T1 v on k.key=v.val
+POSTHOOK: query: explain select /*+ mapjoin(k)*/ sum(hash(k.key)), sum(hash(v.val)) from T1_n116 k join T1_n116 v on k.key=v.val
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -5577,7 +5577,7 @@ Stage-0
                       Filter Operator [FIL_17] (rows=1 width=184)
                         predicate:key is not null
                         TableScan [TS_0] (rows=1 width=184)
-                          default@t1,k,Tbl:COMPLETE,Col:NONE,Output:["key"]
+                          default@t1_n116,k,Tbl:COMPLETE,Col:NONE,Output:["key"]
               Map Reduce Local Work
         Stage-2
           Map 4
@@ -5588,12 +5588,12 @@ Stage-0
               Filter Operator [FIL_18] (rows=1 width=184)
                 predicate:val is not null
                 TableScan [TS_3] (rows=1 width=184)
-                  default@t1,v,Tbl:COMPLETE,Col:NONE,Output:["val"]
+                  default@t1_n116,v,Tbl:COMPLETE,Col:NONE,Output:["val"]
           Map Reduce Local Work
 
-PREHOOK: query: explain select sum(hash(k.key)), sum(hash(v.val)) from T1 k join T1 v on k.key=v.key
+PREHOOK: query: explain select sum(hash(k.key)), sum(hash(v.val)) from T1_n116 k join T1_n116 v on k.key=v.key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select sum(hash(k.key)), sum(hash(v.val)) from T1 k join T1 v on k.key=v.key
+POSTHOOK: query: explain select sum(hash(k.key)), sum(hash(v.val)) from T1_n116 k join T1_n116 v on k.key=v.key
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -5625,7 +5625,7 @@ Stage-0
                       Filter Operator [FIL_18] (rows=1 width=368)
                         predicate:key is not null
                         TableScan [TS_3] (rows=1 width=368)
-                          default@t1,v,Tbl:COMPLETE,Col:NONE,Output:["key","val"]
+                          default@t1_n116,v,Tbl:COMPLETE,Col:NONE,Output:["key","val"]
               Map Reduce Local Work
         Stage-2
           Map 1
@@ -5636,12 +5636,12 @@ Stage-0
               Filter Operator [FIL_17] (rows=1 width=184)
                 predicate:key is not null
                 TableScan [TS_0] (rows=1 width=184)
-                  default@t1,k,Tbl:COMPLETE,Col:NONE,Output:["key"]
+                  default@t1_n116,k,Tbl:COMPLETE,Col:NONE,Output:["key"]
           Map Reduce Local Work
 
-PREHOOK: query: explain select count(1) from  T1 a join T1 b on a.key = b.key
+PREHOOK: query: explain select count(1) from  T1_n116 a join T1_n116 b on a.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select count(1) from  T1 a join T1 b on a.key = b.key
+POSTHOOK: query: explain select count(1) from  T1_n116 a join T1_n116 b on a.key = b.key
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -5671,7 +5671,7 @@ Stage-0
                     Filter Operator [FIL_16] (rows=1 width=184)
                       predicate:key is not null
                       TableScan [TS_0] (rows=1 width=184)
-                        default@t1,a,Tbl:COMPLETE,Col:NONE,Output:["key"]
+                        default@t1_n116,a,Tbl:COMPLETE,Col:NONE,Output:["key"]
               Map Reduce Local Work
         Stage-2
           Map 4
@@ -5682,12 +5682,12 @@ Stage-0
               Filter Operator [FIL_17] (rows=1 width=184)
                 predicate:key is not null
                 TableScan [TS_3] (rows=1 width=184)
-                  default@t1,b,Tbl:COMPLETE,Col:NONE,Output:["key"]
+                  default@t1_n116,b,Tbl:COMPLETE,Col:NONE,Output:["key"]
           Map Reduce Local Work
 
-PREHOOK: query: explain FROM T1 a LEFT OUTER JOIN T2 c ON c.key+1=a.key select sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
+PREHOOK: query: explain FROM T1_n116 a LEFT OUTER JOIN T2_n68 c ON c.key+1=a.key select sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
 PREHOOK: type: QUERY
-POSTHOOK: query: explain FROM T1 a LEFT OUTER JOIN T2 c ON c.key+1=a.key select sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
+POSTHOOK: query: explain FROM T1_n116 a LEFT OUTER JOIN T2_n68 c ON c.key+1=a.key select sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -5717,7 +5717,7 @@ Stage-0
                   <-Select Operator [SEL_1] (rows=1 width=368)
                       Output:["_col0","_col1"]
                       TableScan [TS_0] (rows=1 width=368)
-                        default@t1,a,Tbl:COMPLETE,Col:NONE,Output:["key","val"]
+                        default@t1_n116,a,Tbl:COMPLETE,Col:NONE,Output:["key","val"]
               Map Reduce Local Work
         Stage-2
           Map 4
@@ -5726,12 +5726,12 @@ Stage-0
             Select Operator [SEL_3] (rows=1 width=184)
               Output:["_col0"]
               TableScan [TS_2] (rows=1 width=184)
-                default@t2,c,Tbl:COMPLETE,Col:NONE,Output:["key"]
+                default@t2_n68,c,Tbl:COMPLETE,Col:NONE,Output:["key"]
           Map Reduce Local Work
 
-PREHOOK: query: explain FROM T1 a RIGHT OUTER JOIN T2 c ON c.key+1=a.key select /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
+PREHOOK: query: explain FROM T1_n116 a RIGHT OUTER JOIN T2_n68 c ON c.key+1=a.key select /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
 PREHOOK: type: QUERY
-POSTHOOK: query: explain FROM T1 a RIGHT OUTER JOIN T2 c ON c.key+1=a.key select /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
+POSTHOOK: query: explain FROM T1_n116 a RIGHT OUTER JOIN T2_n68 c ON c.key+1=a.key select /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -5761,7 +5761,7 @@ Stage-0
                   <-Select Operator [SEL_3] (rows=1 width=184)
                       Output:["_col0"]
                       TableScan [TS_2] (rows=1 width=184)
-                        default@t2,c,Tbl:COMPLETE,Col:NONE,Output:["key"]
+                        default@t2_n68,c,Tbl:COMPLETE,Col:NONE,Output:["key"]
               Map Reduce Local Work
         Stage-2
           Map 1
@@ -5770,12 +5770,12 @@ Stage-0
             Select Operator [SEL_1] (rows=1 width=368)
               Output:["_col0","_col1"]
               TableScan [TS_0] (rows=1 width=368)
-                default@t1,a,Tbl:COMPLETE,Col:NONE,Output:["key","val"]
+                default@t1_n116,a,Tbl:COMPLETE,Col:NONE,Output:["key","val"]
           Map Reduce Local Work
 
-PREHOOK: query: explain FROM T1 a FULL OUTER JOIN T2 c ON c.key+1=a.key select /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
+PREHOOK: query: explain FROM T1_n116 a FULL OUTER JOIN T2_n68 c ON c.key+1=a.key select /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
 PREHOOK: type: QUERY
-POSTHOOK: query: explain FROM T1 a FULL OUTER JOIN T2 c ON c.key+1=a.key select /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
+POSTHOOK: query: explain FROM T1_n116 a FULL OUTER JOIN T2_n68 c ON c.key+1=a.key select /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -5809,18 +5809,18 @@ Stage-0
                       Select Operator [SEL_1] (rows=1 width=368)
                         Output:["_col0","_col1"]
                         TableScan [TS_0] (rows=1 width=368)
-                          default@t1,a,Tbl:COMPLETE,Col:NONE,Output:["key","val"]
+                          default@t1_n116,a,Tbl:COMPLETE,Col:NONE,Output:["key","val"]
                   <-Map 5 [PARTITION-LEVEL SORT]
                     PARTITION-LEVEL SORT [RS_5]
                       PartitionCols:(UDFToDouble(_col0) + 1.0D)
                       Select Operator [SEL_3] (rows=1 width=184)
                         Output:["_col0"]
                         TableScan [TS_2] (rows=1 width=184)
-                          default@t2,c,Tbl:COMPLETE,Col:NONE,Output:["key"]
+                          default@t2_n68,c,Tbl:COMPLETE,Col:NONE,Output:["key"]
 
-PREHOOK: query: explain select /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) from T1 k left outer join T1 v on k.key+1=v.key
+PREHOOK: query: explain select /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) from T1_n116 k left outer join T1_n116 v on k.key+1=v.key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) from T1 k left outer join T1 v on k.key+1=v.key
+POSTHOOK: query: explain select /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) from T1_n116 k left outer join T1_n116 v on k.key+1=v.key
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -5850,7 +5850,7 @@ Stage-0
                   <-Select Operator [SEL_1] (rows=1 width=184)
                       Output:["_col0"]
                       TableScan [TS_0] (rows=1 width=184)
-                        default@t1,k,Tbl:COMPLETE,Col:NONE,Output:["key"]
+                        default@t1_n116,k,Tbl:COMPLETE,Col:NONE,Output:["key"]
               Map Reduce Local Work
         Stage-2
           Map 4
@@ -5859,6 +5859,6 @@ Stage-0
             Select Operator [SEL_3] (rows=1 width=368)
               Output:["_col0","_col1"]
               TableScan [TS_2] (rows=1 width=368)
-                default@t1,v,Tbl:COMPLETE,Col:NONE,Output:["key","val"]
+                default@t1_n116,v,Tbl:COMPLETE,Col:NONE,Output:["key","val"]
           Map Reduce Local Work
 
