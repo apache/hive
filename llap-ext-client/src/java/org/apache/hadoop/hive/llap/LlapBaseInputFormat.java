@@ -49,15 +49,15 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.VertexOrB
 import org.apache.hadoop.hive.llap.ext.LlapTaskUmbilicalExternalClient;
 import org.apache.hadoop.hive.llap.ext.LlapTaskUmbilicalExternalClient.LlapTaskUmbilicalExternalResponder;
 import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
-import org.apache.hadoop.hive.llap.registry.LlapServiceInstanceSet;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.llap.security.LlapTokenIdentifier;
 import org.apache.hadoop.hive.llap.tez.Converters;
+import org.apache.hadoop.hive.ql.io.arrow.ArrowWrapperWritable;
 import org.apache.hadoop.hive.registry.ServiceInstanceSet;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.DataInputBuffer;
 import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
@@ -104,6 +104,8 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
   private String user; // "hive",
   private String pwd;  // ""
   private String query;
+  private boolean useArrow;
+  private long arrowAllocatorLimit;
   private final Random rand = new Random();
 
   public static final String URL_KEY = "llap.if.hs2.connection";
@@ -123,7 +125,14 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
     this.query = query;
   }
 
-  public LlapBaseInputFormat() {}
+  public LlapBaseInputFormat(boolean useArrow, long arrowAllocatorLimit) {
+    this.useArrow = useArrow;
+    this.arrowAllocatorLimit = arrowAllocatorLimit;
+  }
+
+  public LlapBaseInputFormat() {
+    this.useArrow = false;
+  }
 
 
   @SuppressWarnings("unchecked")
@@ -195,8 +204,16 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
     LOG.info("Registered id: " + fragmentId);
 
     @SuppressWarnings("rawtypes")
-    LlapBaseRecordReader recordReader = new LlapBaseRecordReader(socket.getInputStream(),
-        llapSplit.getSchema(), Text.class, job, llapClient, (java.io.Closeable)socket);
+    LlapBaseRecordReader recordReader;
+    if(useArrow) {
+      recordReader = new LlapArrowBatchRecordReader(
+          socket.getInputStream(), llapSplit.getSchema(),
+          ArrowWrapperWritable.class, job, llapClient, socket,
+          arrowAllocatorLimit);
+    } else {
+      recordReader = new LlapBaseRecordReader(socket.getInputStream(),
+          llapSplit.getSchema(), BytesWritable.class, job, llapClient, (java.io.Closeable)socket);
+    }
     umbilicalResponder.setRecordReader(recordReader);
     return recordReader;
   }

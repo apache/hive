@@ -15,24 +15,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.hadoop.hive.ql.io.arrow;
 
 import org.apache.arrow.vector.VectorSchemaRoot;
-import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.io.WritableComparable;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class ArrowWrapperWritable implements Writable {
+public class ArrowWrapperWritable implements WritableComparable {
   private VectorSchemaRoot vectorSchemaRoot;
 
   public ArrowWrapperWritable(VectorSchemaRoot vectorSchemaRoot) {
     this.vectorSchemaRoot = vectorSchemaRoot;
   }
+  public ArrowWrapperWritable() {}
 
   public VectorSchemaRoot getVectorSchemaRoot() {
     return vectorSchemaRoot;
+  }
+
+  public void setVectorSchemaRoot(VectorSchemaRoot vectorSchemaRoot) {
+    this.vectorSchemaRoot = vectorSchemaRoot;
   }
 
   @Override
@@ -43,5 +49,13 @@ public class ArrowWrapperWritable implements Writable {
   @Override
   public void readFields(DataInput dataInput) throws IOException {
     throw new UnsupportedOperationException();
+  }
+
+  @Override public int compareTo(Object o) {
+    return 0;
+  }
+
+  @Override public boolean equals(Object o) {
+    return true;
   }
 }
