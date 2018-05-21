@@ -78,6 +78,10 @@ public class TestBuddyAllocator {
     public long forceReservedMemory(int allocationSize, int count) {
       return allocationSize * count;
     }
+
+    @Override
+    public void debugDumpShort(StringBuilder sb) {
+    }
   }
 
   @Test
@@ -248,7 +252,7 @@ public class TestBuddyAllocator {
     try {
       a.allocateMultiple(allocs[index], size);
     } catch (AllocatorOutOfMemoryException ex) {
-      LOG.error("Failed to allocate " + allocCount + " of " + size + "; " + a.debugDump());
+      LOG.error("Failed to allocate " + allocCount + " of " + size + "; " + a.debugDumpForOomInternal());
       throw ex;
     }
     // LOG.info("Allocated " + allocCount + " of " + size + "; " + a.debugDump());

@@ -119,6 +119,10 @@ public class TestLowLevelCacheImpl {
     public long tryEvictContiguousData(int allocationSize, int count) {
       return count * allocationSize;
     }
+
+    @Override
+    public void debugDumpShort(StringBuilder sb) {
+    }
   }
 
 /*

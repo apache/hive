@@ -706,4 +706,55 @@ public class SerDeLowLevelCacheImpl implements LlapOomDebugDump {
     }
     return sb.toString();
   }
+
+
+  @Override
+  public void debugDumpShort(StringBuilder sb) {
+    sb.append("\nSerDe cache state ");
+    int allLocked = 0, allUnlocked = 0, allEvicted = 0;
+    for (Map.Entry<Object, FileCache<FileData>> e : cache.entrySet()) {
+      if (!e.getValue().incRef()) continue;
+      try {
+        FileData fd = e.getValue().getCache();
+        int fileLocked = 0, fileUnlocked = 0, fileEvicted = 0;
+        sb.append(fd.colCount).append(" columns, ").append(fd.stripes.size()).append(" stripes; ");
+        for (StripeData stripe : fd.stripes) {
+          if (stripe.data == null) continue;
+          for (int i = 0; i < stripe.data.length; ++i) {
+            LlapDataBuffer[][] colData = stripe.data[i];
+            if (colData == null) continue;
+            for (int j = 0; j < colData.length; ++j) {
+              LlapDataBuffer[] streamData = colData[j];
+              if (streamData == null) continue;
+              for (int k = 0; k < streamData.length; ++k) {
+                int newRc = streamData[k].incRef();
+                if (newRc < 0) {
+                  ++fileEvicted;
+                  continue;
+                }
+                try {
+                  if (newRc > 1) { // We hold one refcount.
+                    ++fileLocked;
+                  } else {
+                    ++fileUnlocked;
+                  }
+                } finally {
+                  streamData[k].decRef();
+                }
+              }
+            }
+          }
+        }
+        allLocked += fileLocked;
+        allUnlocked += fileUnlocked;
+        allEvicted += fileEvicted;
+        sb.append("\n  file " + e.getKey() + ": " + fileLocked + " locked, "
+            + fileUnlocked + " unlocked, " + fileEvicted + " evicted");
+      } finally {
+        e.getValue().decRef();
+      }
+    }
+    sb.append("\nSerDe cache summary: " + allLocked + " locked, "
+        + allUnlocked + " unlocked, " + allEvicted + " evicted");
+  }
 }

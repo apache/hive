@@ -24,7 +24,7 @@ import org.apache.hadoop.hive.common.io.DataCache.BooleanRef;
 import org.apache.hadoop.hive.common.io.DataCache.DiskRangeListFactory;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
 
-public interface LowLevelCache {
+public interface LowLevelCache extends LlapOomDebugDump {
   public enum Priority {
     NORMAL,
     HIGH
