@@ -1,42 +1,42 @@
-PREHOOK: query: drop table intermediate
+PREHOOK: query: drop table intermediate_n2
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table intermediate
+POSTHOOK: query: drop table intermediate_n2
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table intermediate(key int) partitioned by (p int) stored as orc
+PREHOOK: query: create table intermediate_n2(key int) partitioned by (p int) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@intermediate
-POSTHOOK: query: create table intermediate(key int) partitioned by (p int) stored as orc
+PREHOOK: Output: default@intermediate_n2
+POSTHOOK: query: create table intermediate_n2(key int) partitioned by (p int) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@intermediate
-PREHOOK: query: insert into table intermediate partition(p='455') select distinct key from src where key >= 0 order by key desc limit 2
+POSTHOOK: Output: default@intermediate_n2
+PREHOOK: query: insert into table intermediate_n2 partition(p='455') select distinct key from src where key >= 0 order by key desc limit 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@intermediate@p=455
-POSTHOOK: query: insert into table intermediate partition(p='455') select distinct key from src where key >= 0 order by key desc limit 2
+PREHOOK: Output: default@intermediate_n2@p=455
+POSTHOOK: query: insert into table intermediate_n2 partition(p='455') select distinct key from src where key >= 0 order by key desc limit 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@intermediate@p=455
-POSTHOOK: Lineage: intermediate PARTITION(p=455).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: insert into table intermediate partition(p='456') select distinct key from src where key is not null order by key asc limit 2
+POSTHOOK: Output: default@intermediate_n2@p=455
+POSTHOOK: Lineage: intermediate_n2 PARTITION(p=455).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: insert into table intermediate_n2 partition(p='456') select distinct key from src where key is not null order by key asc limit 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@intermediate@p=456
-POSTHOOK: query: insert into table intermediate partition(p='456') select distinct key from src where key is not null order by key asc limit 2
+PREHOOK: Output: default@intermediate_n2@p=456
+POSTHOOK: query: insert into table intermediate_n2 partition(p='456') select distinct key from src where key is not null order by key asc limit 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@intermediate@p=456
-POSTHOOK: Lineage: intermediate PARTITION(p=456).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: insert into table intermediate partition(p='457') select distinct key from src where key >= 100 order by key asc limit 2
+POSTHOOK: Output: default@intermediate_n2@p=456
+POSTHOOK: Lineage: intermediate_n2 PARTITION(p=456).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: insert into table intermediate_n2 partition(p='457') select distinct key from src where key >= 100 order by key asc limit 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@intermediate@p=457
-POSTHOOK: query: insert into table intermediate partition(p='457') select distinct key from src where key >= 100 order by key asc limit 2
+PREHOOK: Output: default@intermediate_n2@p=457
+POSTHOOK: query: insert into table intermediate_n2 partition(p='457') select distinct key from src where key >= 100 order by key asc limit 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@intermediate@p=457
-POSTHOOK: Lineage: intermediate PARTITION(p=457).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Output: default@intermediate_n2@p=457
+POSTHOOK: Lineage: intermediate_n2 PARTITION(p=457).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: drop table bucket0_mm
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table bucket0_mm
@@ -53,22 +53,22 @@ tblproperties("transactional"="true", "transactional_properties"="insert_only")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bucket0_mm
-PREHOOK: query: insert into table bucket0_mm select key, key from intermediate
+PREHOOK: query: insert into table bucket0_mm select key, key from intermediate_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@intermediate
-PREHOOK: Input: default@intermediate@p=455
-PREHOOK: Input: default@intermediate@p=456
-PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Input: default@intermediate_n2
+PREHOOK: Input: default@intermediate_n2@p=455
+PREHOOK: Input: default@intermediate_n2@p=456
+PREHOOK: Input: default@intermediate_n2@p=457
 PREHOOK: Output: default@bucket0_mm
-POSTHOOK: query: insert into table bucket0_mm select key, key from intermediate
+POSTHOOK: query: insert into table bucket0_mm select key, key from intermediate_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@intermediate
-POSTHOOK: Input: default@intermediate@p=455
-POSTHOOK: Input: default@intermediate@p=456
-POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Input: default@intermediate_n2
+POSTHOOK: Input: default@intermediate_n2@p=455
+POSTHOOK: Input: default@intermediate_n2@p=456
+POSTHOOK: Input: default@intermediate_n2@p=457
 POSTHOOK: Output: default@bucket0_mm
-POSTHOOK: Lineage: bucket0_mm.id SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: bucket0_mm.key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: bucket0_mm.id SIMPLE [(intermediate_n2)intermediate_n2.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: bucket0_mm.key SIMPLE [(intermediate_n2)intermediate_n2.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: select * from bucket0_mm order by key, id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucket0_mm
@@ -105,22 +105,22 @@ POSTHOOK: Input: default@bucket0_mm
 100	100
 0	0
 103	103
-PREHOOK: query: insert into table bucket0_mm select key, key from intermediate
+PREHOOK: query: insert into table bucket0_mm select key, key from intermediate_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@intermediate
-PREHOOK: Input: default@intermediate@p=455
-PREHOOK: Input: default@intermediate@p=456
-PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Input: default@intermediate_n2
+PREHOOK: Input: default@intermediate_n2@p=455
+PREHOOK: Input: default@intermediate_n2@p=456
+PREHOOK: Input: default@intermediate_n2@p=457
 PREHOOK: Output: default@bucket0_mm
-POSTHOOK: query: insert into table bucket0_mm select key, key from intermediate
+POSTHOOK: query: insert into table bucket0_mm select key, key from intermediate_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@intermediate
-POSTHOOK: Input: default@intermediate@p=455
-POSTHOOK: Input: default@intermediate@p=456
-POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Input: default@intermediate_n2
+POSTHOOK: Input: default@intermediate_n2@p=455
+POSTHOOK: Input: default@intermediate_n2@p=456
+POSTHOOK: Input: default@intermediate_n2@p=457
 POSTHOOK: Output: default@bucket0_mm
-POSTHOOK: Lineage: bucket0_mm.id SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: bucket0_mm.key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: bucket0_mm.id SIMPLE [(intermediate_n2)intermediate_n2.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: bucket0_mm.key SIMPLE [(intermediate_n2)intermediate_n2.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: select * from bucket0_mm order by key, id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucket0_mm
@@ -194,24 +194,24 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bucket1_mm
 PREHOOK: query: insert into table bucket1_mm partition (key2)
-select key + 1, key, key - 1 from intermediate
+select key + 1, key, key - 1 from intermediate_n2
 union all 
-select key - 1, key, key + 1 from intermediate
+select key - 1, key, key + 1 from intermediate_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@intermediate
-PREHOOK: Input: default@intermediate@p=455
-PREHOOK: Input: default@intermediate@p=456
-PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Input: default@intermediate_n2
+PREHOOK: Input: default@intermediate_n2@p=455
+PREHOOK: Input: default@intermediate_n2@p=456
+PREHOOK: Input: default@intermediate_n2@p=457
 PREHOOK: Output: default@bucket1_mm
 POSTHOOK: query: insert into table bucket1_mm partition (key2)
-select key + 1, key, key - 1 from intermediate
+select key + 1, key, key - 1 from intermediate_n2
 union all 
-select key - 1, key, key + 1 from intermediate
+select key - 1, key, key + 1 from intermediate_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@intermediate
-POSTHOOK: Input: default@intermediate@p=455
-POSTHOOK: Input: default@intermediate@p=456
-POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Input: default@intermediate_n2
+POSTHOOK: Input: default@intermediate_n2@p=455
+POSTHOOK: Input: default@intermediate_n2@p=456
+POSTHOOK: Input: default@intermediate_n2@p=457
 POSTHOOK: Output: default@bucket1_mm@key2=-1
 POSTHOOK: Output: default@bucket1_mm@key2=1
 POSTHOOK: Output: default@bucket1_mm@key2=101
@@ -223,28 +223,28 @@ POSTHOOK: Output: default@bucket1_mm@key2=96
 POSTHOOK: Output: default@bucket1_mm@key2=97
 POSTHOOK: Output: default@bucket1_mm@key2=98
 POSTHOOK: Output: default@bucket1_mm@key2=99
-POSTHOOK: Lineage: bucket1_mm PARTITION(key2=-1).id EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: bucket1_mm PARTITION(key2=-1).key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: bucket1_mm PARTITION(key2=101).id EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: bucket1_mm PARTITION(key2=101).key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: bucket1_mm PARTITION(key2=102).id EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: bucket1_mm PARTITION(key2=102).key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: bucket1_mm PARTITION(key2=104).id EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: bucket1_mm PARTITION(key2=104).key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: bucket1_mm PARTITION(key2=11).id EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: bucket1_mm PARTITION(key2=11).key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: bucket1_mm PARTITION(key2=1).id EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: bucket1_mm PARTITION(key2=1).key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: bucket1_mm PARTITION(key2=96).id EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: bucket1_mm PARTITION(key2=96).key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: bucket1_mm PARTITION(key2=97).id EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: bucket1_mm PARTITION(key2=97).key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: bucket1_mm PARTITION(key2=98).id EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: bucket1_mm PARTITION(key2=98).key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: bucket1_mm PARTITION(key2=99).id EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: bucket1_mm PARTITION(key2=99).key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: bucket1_mm PARTITION(key2=9).id EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: bucket1_mm PARTITION(key2=9).key EXPRESSION [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: bucket1_mm PARTITION(key2=-1).id EXPRESSION [(intermediate_n2)intermediate_n2.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: bucket1_mm PARTITION(key2=-1).key EXPRESSION [(intermediate_n2)intermediate_n2.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: bucket1_mm PARTITION(key2=101).id EXPRESSION [(intermediate_n2)intermediate_n2.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: bucket1_mm PARTITION(key2=101).key EXPRESSION [(intermediate_n2)intermediate_n2.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: bucket1_mm PARTITION(key2=102).id EXPRESSION [(intermediate_n2)intermediate_n2.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: bucket1_mm PARTITION(key2=102).key EXPRESSION [(intermediate_n2)intermediate_n2.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: bucket1_mm PARTITION(key2=104).id EXPRESSION [(intermediate_n2)intermediate_n2.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: bucket1_mm PARTITION(key2=104).key EXPRESSION [(intermediate_n2)intermediate_n2.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: bucket1_mm PARTITION(key2=11).id EXPRESSION [(intermediate_n2)intermediate_n2.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: bucket1_mm PARTITION(key2=11).key EXPRESSION [(intermediate_n2)intermediate_n2.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: bucket1_mm PARTITION(key2=1).id EXPRESSION [(intermediate_n2)intermediate_n2.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: bucket1_mm PARTITION(key2=1).key EXPRESSION [(intermediate_n2)intermediate_n2.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: bucket1_mm PARTITION(key2=96).id EXPRESSION [(intermediate_n2)intermediate_n2.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: bucket1_mm PARTITION(key2=96).key EXPRESSION [(intermediate_n2)intermediate_n2.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: bucket1_mm PARTITION(key2=97).id EXPRESSION [(intermediate_n2)intermediate_n2.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: bucket1_mm PARTITION(key2=97).key EXPRESSION [(intermediate_n2)intermediate_n2.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: bucket1_mm PARTITION(key2=98).id EXPRESSION [(intermediate_n2)intermediate_n2.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: bucket1_mm PARTITION(key2=98).key EXPRESSION [(intermediate_n2)intermediate_n2.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: bucket1_mm PARTITION(key2=99).id EXPRESSION [(intermediate_n2)intermediate_n2.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: bucket1_mm PARTITION(key2=99).key EXPRESSION [(intermediate_n2)intermediate_n2.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: bucket1_mm PARTITION(key2=9).id EXPRESSION [(intermediate_n2)intermediate_n2.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: bucket1_mm PARTITION(key2=9).key EXPRESSION [(intermediate_n2)intermediate_n2.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: select * from bucket1_mm order by key, id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucket1_mm
@@ -383,22 +383,22 @@ tblproperties("transactional"="true", "transactional_properties"="insert_only")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bucket2_mm
-PREHOOK: query: insert into table bucket2_mm select key, key from intermediate where key == 0
+PREHOOK: query: insert into table bucket2_mm select key, key from intermediate_n2 where key == 0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@intermediate
-PREHOOK: Input: default@intermediate@p=455
-PREHOOK: Input: default@intermediate@p=456
-PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Input: default@intermediate_n2
+PREHOOK: Input: default@intermediate_n2@p=455
+PREHOOK: Input: default@intermediate_n2@p=456
+PREHOOK: Input: default@intermediate_n2@p=457
 PREHOOK: Output: default@bucket2_mm
-POSTHOOK: query: insert into table bucket2_mm select key, key from intermediate where key == 0
+POSTHOOK: query: insert into table bucket2_mm select key, key from intermediate_n2 where key == 0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@intermediate
-POSTHOOK: Input: default@intermediate@p=455
-POSTHOOK: Input: default@intermediate@p=456
-POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Input: default@intermediate_n2
+POSTHOOK: Input: default@intermediate_n2@p=455
+POSTHOOK: Input: default@intermediate_n2@p=456
+POSTHOOK: Input: default@intermediate_n2@p=457
 POSTHOOK: Output: default@bucket2_mm
-POSTHOOK: Lineage: bucket2_mm.id SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: bucket2_mm.key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: bucket2_mm.id SIMPLE [(intermediate_n2)intermediate_n2.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: bucket2_mm.key SIMPLE [(intermediate_n2)intermediate_n2.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: select * from bucket2_mm order by key, id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucket2_mm
@@ -424,22 +424,22 @@ POSTHOOK: query: select * from bucket2_mm tablesample (bucket 4 out of 10) s ord
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucket2_mm
 #### A masked pattern was here ####
-PREHOOK: query: insert into table bucket2_mm select key, key from intermediate where key in (0, 103)
+PREHOOK: query: insert into table bucket2_mm select key, key from intermediate_n2 where key in (0, 103)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@intermediate
-PREHOOK: Input: default@intermediate@p=455
-PREHOOK: Input: default@intermediate@p=456
-PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Input: default@intermediate_n2
+PREHOOK: Input: default@intermediate_n2@p=455
+PREHOOK: Input: default@intermediate_n2@p=456
+PREHOOK: Input: default@intermediate_n2@p=457
 PREHOOK: Output: default@bucket2_mm
-POSTHOOK: query: insert into table bucket2_mm select key, key from intermediate where key in (0, 103)
+POSTHOOK: query: insert into table bucket2_mm select key, key from intermediate_n2 where key in (0, 103)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@intermediate
-POSTHOOK: Input: default@intermediate@p=455
-POSTHOOK: Input: default@intermediate@p=456
-POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Input: default@intermediate_n2
+POSTHOOK: Input: default@intermediate_n2@p=455
+POSTHOOK: Input: default@intermediate_n2@p=456
+POSTHOOK: Input: default@intermediate_n2@p=457
 POSTHOOK: Output: default@bucket2_mm
-POSTHOOK: Lineage: bucket2_mm.id SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: bucket2_mm.key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: bucket2_mm.id SIMPLE [(intermediate_n2)intermediate_n2.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: bucket2_mm.key SIMPLE [(intermediate_n2)intermediate_n2.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: select * from bucket2_mm
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucket2_mm
@@ -475,11 +475,11 @@ POSTHOOK: query: drop table bucket2_mm
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@bucket2_mm
 POSTHOOK: Output: default@bucket2_mm
-PREHOOK: query: drop table intermediate
+PREHOOK: query: drop table intermediate_n2
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@intermediate
-PREHOOK: Output: default@intermediate
-POSTHOOK: query: drop table intermediate
+PREHOOK: Input: default@intermediate_n2
+PREHOOK: Output: default@intermediate_n2
+POSTHOOK: query: drop table intermediate_n2
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@intermediate
-POSTHOOK: Output: default@intermediate
+POSTHOOK: Input: default@intermediate_n2
+POSTHOOK: Output: default@intermediate_n2

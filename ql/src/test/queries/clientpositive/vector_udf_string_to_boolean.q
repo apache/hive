@@ -3,21 +3,21 @@ SET hive.vectorized.execution.enabled = false;
 SET hive.int.timestamp.conversion.in.seconds=false;
 set hive.fetch.task.conversion=none;
 
-create table t (s string) stored as orc;
+create table t_n17 (s string) stored as orc;
 
-insert into t values ('false');
-insert into t values ('FALSE');
-insert into t values ('FaLsE');
-insert into t values ('true');
-insert into t values ('TRUE');
-insert into t values ('TrUe');
-insert into t values ('');
-insert into t values ('Other');
-insert into t values ('Off');
-insert into t values ('No');
-insert into t values ('0');
-insert into t values ('1');
+insert into t_n17 values ('false');
+insert into t_n17 values ('FALSE');
+insert into t_n17 values ('FaLsE');
+insert into t_n17 values ('true');
+insert into t_n17 values ('TRUE');
+insert into t_n17 values ('TrUe');
+insert into t_n17 values ('');
+insert into t_n17 values ('Other');
+insert into t_n17 values ('Off');
+insert into t_n17 values ('No');
+insert into t_n17 values ('0');
+insert into t_n17 values ('1');
 
-explain select s,cast(s as boolean) from t order by s;
+explain select s,cast(s as boolean) from t_n17 order by s;
 
-select s,cast(s as boolean) from t order by s;
+select s,cast(s as boolean) from t_n17 order by s;

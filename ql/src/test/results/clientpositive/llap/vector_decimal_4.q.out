@@ -1,60 +1,60 @@
-PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_4_1
+PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_4_1_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_4_1
+POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_4_1_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_4_2
+PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_4_2_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_4_2
+POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_4_2_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE DECIMAL_4_1(key decimal(35,25), value int) 
+PREHOOK: query: CREATE TABLE DECIMAL_4_1_n0(key decimal(35,25), value int) 
 ROW FORMAT DELIMITED
    FIELDS TERMINATED BY ' '
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DECIMAL_4_1
-POSTHOOK: query: CREATE TABLE DECIMAL_4_1(key decimal(35,25), value int) 
+PREHOOK: Output: default@DECIMAL_4_1_n0
+POSTHOOK: query: CREATE TABLE DECIMAL_4_1_n0(key decimal(35,25), value int) 
 ROW FORMAT DELIMITED
    FIELDS TERMINATED BY ' '
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DECIMAL_4_1
-PREHOOK: query: CREATE TABLE DECIMAL_4_2(key decimal(35,25), value decimal(35,25)) 
+POSTHOOK: Output: default@DECIMAL_4_1_n0
+PREHOOK: query: CREATE TABLE DECIMAL_4_2_n0(key decimal(35,25), value decimal(35,25)) 
 STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DECIMAL_4_2
-POSTHOOK: query: CREATE TABLE DECIMAL_4_2(key decimal(35,25), value decimal(35,25)) 
+PREHOOK: Output: default@DECIMAL_4_2_n0
+POSTHOOK: query: CREATE TABLE DECIMAL_4_2_n0(key decimal(35,25), value decimal(35,25)) 
 STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DECIMAL_4_2
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv7.txt' INTO TABLE DECIMAL_4_1
+POSTHOOK: Output: default@DECIMAL_4_2_n0
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv7.txt' INTO TABLE DECIMAL_4_1_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@decimal_4_1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv7.txt' INTO TABLE DECIMAL_4_1
+PREHOOK: Output: default@decimal_4_1_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv7.txt' INTO TABLE DECIMAL_4_1_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@decimal_4_1
-PREHOOK: query: INSERT OVERWRITE TABLE DECIMAL_4_2 SELECT key, key * 3 FROM DECIMAL_4_1
+POSTHOOK: Output: default@decimal_4_1_n0
+PREHOOK: query: INSERT OVERWRITE TABLE DECIMAL_4_2_n0 SELECT key, key * 3 FROM DECIMAL_4_1_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_4_1
-PREHOOK: Output: default@decimal_4_2
-POSTHOOK: query: INSERT OVERWRITE TABLE DECIMAL_4_2 SELECT key, key * 3 FROM DECIMAL_4_1
+PREHOOK: Input: default@decimal_4_1_n0
+PREHOOK: Output: default@decimal_4_2_n0
+POSTHOOK: query: INSERT OVERWRITE TABLE DECIMAL_4_2_n0 SELECT key, key * 3 FROM DECIMAL_4_1_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_4_1
-POSTHOOK: Output: default@decimal_4_2
-POSTHOOK: Lineage: decimal_4_2.key SIMPLE [(decimal_4_1)decimal_4_1.FieldSchema(name:key, type:decimal(35,25), comment:null), ]
-POSTHOOK: Lineage: decimal_4_2.value EXPRESSION [(decimal_4_1)decimal_4_1.FieldSchema(name:key, type:decimal(35,25), comment:null), ]
-PREHOOK: query: SELECT * FROM DECIMAL_4_1 ORDER BY key, value
+POSTHOOK: Input: default@decimal_4_1_n0
+POSTHOOK: Output: default@decimal_4_2_n0
+POSTHOOK: Lineage: decimal_4_2_n0.key SIMPLE [(decimal_4_1_n0)decimal_4_1_n0.FieldSchema(name:key, type:decimal(35,25), comment:null), ]
+POSTHOOK: Lineage: decimal_4_2_n0.value EXPRESSION [(decimal_4_1_n0)decimal_4_1_n0.FieldSchema(name:key, type:decimal(35,25), comment:null), ]
+PREHOOK: query: SELECT * FROM DECIMAL_4_1_n0 ORDER BY key, value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_4_1
+PREHOOK: Input: default@decimal_4_1_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM DECIMAL_4_1 ORDER BY key, value
+POSTHOOK: query: SELECT * FROM DECIMAL_4_1_n0 ORDER BY key, value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_4_1
+POSTHOOK: Input: default@decimal_4_1_n0
 #### A masked pattern was here ####
 NULL	0
 -1234567890.1234567890000000000000000	-1234567890
@@ -94,13 +94,13 @@ NULL	0
 125.2000000000000000000000000	125
 200.0000000000000000000000000	200
 1234567890.1234567800000000000000000	1234567890
-PREHOOK: query: SELECT * FROM DECIMAL_4_2 ORDER BY key, value
+PREHOOK: query: SELECT * FROM DECIMAL_4_2_n0 ORDER BY key, value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_4_2
+PREHOOK: Input: default@decimal_4_2_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM DECIMAL_4_2 ORDER BY key, value
+POSTHOOK: query: SELECT * FROM DECIMAL_4_2_n0 ORDER BY key, value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_4_2
+POSTHOOK: Input: default@decimal_4_2_n0
 #### A masked pattern was here ####
 NULL	NULL
 -1234567890.1234567890000000000000000	-3703703670.3703703670000000000000000
@@ -140,13 +140,13 @@ NULL	NULL
 125.2000000000000000000000000	375.6000000000000000000000000
 200.0000000000000000000000000	600.0000000000000000000000000
 1234567890.1234567800000000000000000	3703703670.3703703400000000000000000
-PREHOOK: query: SELECT * FROM DECIMAL_4_2 ORDER BY key
+PREHOOK: query: SELECT * FROM DECIMAL_4_2_n0 ORDER BY key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_4_2
+PREHOOK: Input: default@decimal_4_2_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM DECIMAL_4_2 ORDER BY key
+POSTHOOK: query: SELECT * FROM DECIMAL_4_2_n0 ORDER BY key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_4_2
+POSTHOOK: Input: default@decimal_4_2_n0
 #### A masked pattern was here ####
 NULL	NULL
 -1234567890.1234567890000000000000000	-3703703670.3703703670000000000000000
@@ -186,13 +186,13 @@ NULL	NULL
 125.2000000000000000000000000	375.6000000000000000000000000
 200.0000000000000000000000000	600.0000000000000000000000000
 1234567890.1234567800000000000000000	3703703670.3703703400000000000000000
-PREHOOK: query: SELECT * FROM DECIMAL_4_2 ORDER BY key, value
+PREHOOK: query: SELECT * FROM DECIMAL_4_2_n0 ORDER BY key, value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_4_2
+PREHOOK: Input: default@decimal_4_2_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM DECIMAL_4_2 ORDER BY key, value
+POSTHOOK: query: SELECT * FROM DECIMAL_4_2_n0 ORDER BY key, value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_4_2
+POSTHOOK: Input: default@decimal_4_2_n0
 #### A masked pattern was here ####
 NULL	NULL
 -1234567890.1234567890000000000000000	-3703703670.3703703670000000000000000
@@ -232,19 +232,19 @@ NULL	NULL
 125.2000000000000000000000000	375.6000000000000000000000000
 200.0000000000000000000000000	600.0000000000000000000000000
 1234567890.1234567800000000000000000	3703703670.3703703400000000000000000
-PREHOOK: query: DROP TABLE DECIMAL_4_1
+PREHOOK: query: DROP TABLE DECIMAL_4_1_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@decimal_4_1
-PREHOOK: Output: default@decimal_4_1
-POSTHOOK: query: DROP TABLE DECIMAL_4_1
+PREHOOK: Input: default@decimal_4_1_n0
+PREHOOK: Output: default@decimal_4_1_n0
+POSTHOOK: query: DROP TABLE DECIMAL_4_1_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@decimal_4_1
-POSTHOOK: Output: default@decimal_4_1
-PREHOOK: query: DROP TABLE DECIMAL_4_2
+POSTHOOK: Input: default@decimal_4_1_n0
+POSTHOOK: Output: default@decimal_4_1_n0
+PREHOOK: query: DROP TABLE DECIMAL_4_2_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@decimal_4_2
-PREHOOK: Output: default@decimal_4_2
-POSTHOOK: query: DROP TABLE DECIMAL_4_2
+PREHOOK: Input: default@decimal_4_2_n0
+PREHOOK: Output: default@decimal_4_2_n0
+POSTHOOK: query: DROP TABLE DECIMAL_4_2_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@decimal_4_2
-POSTHOOK: Output: default@decimal_4_2
+POSTHOOK: Input: default@decimal_4_2_n0
+POSTHOOK: Output: default@decimal_4_2_n0

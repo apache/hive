@@ -1,4 +1,4 @@
-PREHOOK: query: CREATE TABLE test_table(
+PREHOOK: query: CREATE TABLE test_table_n13(
     col1 INT COMMENT 'col1 one line comment',
     col2 STRING COMMENT 'col2
 two lines comment',
@@ -9,8 +9,8 @@ COMMENT 'table comment
 two lines'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_table
-POSTHOOK: query: CREATE TABLE test_table(
+PREHOOK: Output: default@test_table_n13
+POSTHOOK: query: CREATE TABLE test_table_n13(
     col1 INT COMMENT 'col1 one line comment',
     col2 STRING COMMENT 'col2
 two lines comment',
@@ -21,25 +21,25 @@ COMMENT 'table comment
 two lines'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_table
-PREHOOK: query: DESCRIBE test_table
+POSTHOOK: Output: default@test_table_n13
+PREHOOK: query: DESCRIBE test_table_n13
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@test_table
-POSTHOOK: query: DESCRIBE test_table
+PREHOOK: Input: default@test_table_n13
+POSTHOOK: query: DESCRIBE test_table_n13
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@test_table
+POSTHOOK: Input: default@test_table_n13
 col1                	int                 	col1 one line comment
 col2                	string              	col2                
                     	                    	two lines comment   
 col3                	string              	col3                
                     	                    	three lines         
                     	                    	comment             
-PREHOOK: query: DESCRIBE FORMATTED test_table
+PREHOOK: query: DESCRIBE FORMATTED test_table_n13
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@test_table
-POSTHOOK: query: DESCRIBE FORMATTED test_table
+PREHOOK: Input: default@test_table_n13
+POSTHOOK: query: DESCRIBE FORMATTED test_table_n13
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@test_table
+POSTHOOK: Input: default@test_table_n13
 # col_name            	data_type           	comment             
 col1                	int                 	col1 one line comment
 col2                	string              	col2                

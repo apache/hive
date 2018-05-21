@@ -1,8 +1,8 @@
-PREHOOK: query: DROP TABLE dest1
+PREHOOK: query: DROP TABLE dest1_n43
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE dest1
+POSTHOOK: query: DROP TABLE dest1_n43
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE dest1(a array<int>, b array<string>, c map<string,string>, d int, e string)
+PREHOOK: query: CREATE TABLE dest1_n43(a array<int>, b array<string>, c map<string,string>, d int, e string)
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '1'
 COLLECTION ITEMS TERMINATED BY '2'
@@ -11,8 +11,8 @@ LINES TERMINATED BY '10'
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest1
-POSTHOOK: query: CREATE TABLE dest1(a array<int>, b array<string>, c map<string,string>, d int, e string)
+PREHOOK: Output: default@dest1_n43
+POSTHOOK: query: CREATE TABLE dest1_n43(a array<int>, b array<string>, c map<string,string>, d int, e string)
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '1'
 COLLECTION ITEMS TERMINATED BY '2'
@@ -21,14 +21,14 @@ LINES TERMINATED BY '10'
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest1
+POSTHOOK: Output: default@dest1_n43
 PREHOOK: query: EXPLAIN
 FROM src_thrift
-INSERT OVERWRITE TABLE dest1 SELECT src_thrift.lint, src_thrift.lstring, src_thrift.mstringstring, src_thrift.aint, src_thrift.astring DISTRIBUTE BY 1
+INSERT OVERWRITE TABLE dest1_n43 SELECT src_thrift.lint, src_thrift.lstring, src_thrift.mstringstring, src_thrift.aint, src_thrift.astring DISTRIBUTE BY 1
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 FROM src_thrift
-INSERT OVERWRITE TABLE dest1 SELECT src_thrift.lint, src_thrift.lstring, src_thrift.mstringstring, src_thrift.aint, src_thrift.astring DISTRIBUTE BY 1
+INSERT OVERWRITE TABLE dest1_n43 SELECT src_thrift.lint, src_thrift.lstring, src_thrift.mstringstring, src_thrift.aint, src_thrift.astring DISTRIBUTE BY 1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -63,7 +63,7 @@ STAGE PLANS:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: default.dest1
+                name: default.dest1_n43
 
   Stage: Stage-0
     Move Operator
@@ -73,34 +73,34 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n43
 
   Stage: Stage-2
     Stats Work
       Basic Stats Work:
 
 PREHOOK: query: FROM src_thrift
-INSERT OVERWRITE TABLE dest1 SELECT src_thrift.lint, src_thrift.lstring, src_thrift.mstringstring, src_thrift.aint, src_thrift.astring DISTRIBUTE BY 1
+INSERT OVERWRITE TABLE dest1_n43 SELECT src_thrift.lint, src_thrift.lstring, src_thrift.mstringstring, src_thrift.aint, src_thrift.astring DISTRIBUTE BY 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_thrift
-PREHOOK: Output: default@dest1
+PREHOOK: Output: default@dest1_n43
 POSTHOOK: query: FROM src_thrift
-INSERT OVERWRITE TABLE dest1 SELECT src_thrift.lint, src_thrift.lstring, src_thrift.mstringstring, src_thrift.aint, src_thrift.astring DISTRIBUTE BY 1
+INSERT OVERWRITE TABLE dest1_n43 SELECT src_thrift.lint, src_thrift.lstring, src_thrift.mstringstring, src_thrift.aint, src_thrift.astring DISTRIBUTE BY 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_thrift
-POSTHOOK: Output: default@dest1
-POSTHOOK: Lineage: dest1.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
-POSTHOOK: Lineage: dest1.b SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lstring, type:array<string>, comment:from deserializer), ]
-POSTHOOK: Lineage: dest1.c SIMPLE [(src_thrift)src_thrift.FieldSchema(name:mstringstring, type:map<string,string>, comment:from deserializer), ]
-POSTHOOK: Lineage: dest1.d SIMPLE [(src_thrift)src_thrift.FieldSchema(name:aint, type:int, comment:from deserializer), ]
-POSTHOOK: Lineage: dest1.e SIMPLE [(src_thrift)src_thrift.FieldSchema(name:astring, type:string, comment:from deserializer), ]
-PREHOOK: query: SELECT dest1.* FROM dest1 CLUSTER BY 1
+POSTHOOK: Output: default@dest1_n43
+POSTHOOK: Lineage: dest1_n43.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
+POSTHOOK: Lineage: dest1_n43.b SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lstring, type:array<string>, comment:from deserializer), ]
+POSTHOOK: Lineage: dest1_n43.c SIMPLE [(src_thrift)src_thrift.FieldSchema(name:mstringstring, type:map<string,string>, comment:from deserializer), ]
+POSTHOOK: Lineage: dest1_n43.d SIMPLE [(src_thrift)src_thrift.FieldSchema(name:aint, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: dest1_n43.e SIMPLE [(src_thrift)src_thrift.FieldSchema(name:astring, type:string, comment:from deserializer), ]
+PREHOOK: query: SELECT dest1_n43.* FROM dest1_n43 CLUSTER BY 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n43
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT dest1.* FROM dest1 CLUSTER BY 1
+POSTHOOK: query: SELECT dest1_n43.* FROM dest1_n43 CLUSTER BY 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n43
 #### A masked pattern was here ####
 NULL	NULL	NULL	0	NULL
 [0,0,0]	["0","0","0"]	{"key_0":"value_0"}	1712634731	record_0
@@ -113,13 +113,13 @@ NULL	NULL	NULL	0	NULL
 [7,14,21]	["70","700","7000"]	{"key_7":"value_7"}	-1461153973	record_7
 [8,16,24]	["80","800","8000"]	{"key_8":"value_8"}	1638581578	record_8
 [9,18,27]	["90","900","9000"]	{"key_9":"value_9"}	336964413	record_9
-PREHOOK: query: SELECT dest1.a[0], dest1.b[0], dest1.c['key2'], dest1.d, dest1.e FROM dest1 CLUSTER BY 1
+PREHOOK: query: SELECT dest1_n43.a[0], dest1_n43.b[0], dest1_n43.c['key2'], dest1_n43.d, dest1_n43.e FROM dest1_n43 CLUSTER BY 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n43
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT dest1.a[0], dest1.b[0], dest1.c['key2'], dest1.d, dest1.e FROM dest1 CLUSTER BY 1
+POSTHOOK: query: SELECT dest1_n43.a[0], dest1_n43.b[0], dest1_n43.c['key2'], dest1_n43.d, dest1_n43.e FROM dest1_n43 CLUSTER BY 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n43
 #### A masked pattern was here ####
 0	0	NULL	1712634731	record_0
 1	10	NULL	465985200	record_1
@@ -132,38 +132,38 @@ POSTHOOK: Input: default@dest1
 8	80	NULL	1638581578	record_8
 9	90	NULL	336964413	record_9
 NULL	NULL	NULL	0	NULL
-PREHOOK: query: DROP TABLE dest1
+PREHOOK: query: DROP TABLE dest1_n43
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@dest1
-PREHOOK: Output: default@dest1
-POSTHOOK: query: DROP TABLE dest1
+PREHOOK: Input: default@dest1_n43
+PREHOOK: Output: default@dest1_n43
+POSTHOOK: query: DROP TABLE dest1_n43
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@dest1
-POSTHOOK: Output: default@dest1
-PREHOOK: query: CREATE TABLE dest1(a array<int>) ROW FORMAT DELIMITED FIELDS TERMINATED BY '1' ESCAPED BY '\\'
+POSTHOOK: Input: default@dest1_n43
+POSTHOOK: Output: default@dest1_n43
+PREHOOK: query: CREATE TABLE dest1_n43(a array<int>) ROW FORMAT DELIMITED FIELDS TERMINATED BY '1' ESCAPED BY '\\'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest1
-POSTHOOK: query: CREATE TABLE dest1(a array<int>) ROW FORMAT DELIMITED FIELDS TERMINATED BY '1' ESCAPED BY '\\'
+PREHOOK: Output: default@dest1_n43
+POSTHOOK: query: CREATE TABLE dest1_n43(a array<int>) ROW FORMAT DELIMITED FIELDS TERMINATED BY '1' ESCAPED BY '\\'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest1
-PREHOOK: query: INSERT OVERWRITE TABLE dest1 SELECT src_thrift.lint FROM src_thrift DISTRIBUTE BY 1
+POSTHOOK: Output: default@dest1_n43
+PREHOOK: query: INSERT OVERWRITE TABLE dest1_n43 SELECT src_thrift.lint FROM src_thrift DISTRIBUTE BY 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_thrift
-PREHOOK: Output: default@dest1
-POSTHOOK: query: INSERT OVERWRITE TABLE dest1 SELECT src_thrift.lint FROM src_thrift DISTRIBUTE BY 1
+PREHOOK: Output: default@dest1_n43
+POSTHOOK: query: INSERT OVERWRITE TABLE dest1_n43 SELECT src_thrift.lint FROM src_thrift DISTRIBUTE BY 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_thrift
-POSTHOOK: Output: default@dest1
-POSTHOOK: Lineage: dest1.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
-PREHOOK: query: SELECT * from dest1
+POSTHOOK: Output: default@dest1_n43
+POSTHOOK: Lineage: dest1_n43.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
+PREHOOK: query: SELECT * from dest1_n43
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n43
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * from dest1
+POSTHOOK: query: SELECT * from dest1_n43
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n43
 #### A masked pattern was here ####
 NULL
 [0,0,0]
@@ -176,38 +176,38 @@ NULL
 [7,14,21]
 [8,16,24]
 [9,18,27]
-PREHOOK: query: DROP TABLE dest1
+PREHOOK: query: DROP TABLE dest1_n43
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@dest1
-PREHOOK: Output: default@dest1
-POSTHOOK: query: DROP TABLE dest1
+PREHOOK: Input: default@dest1_n43
+PREHOOK: Output: default@dest1_n43
+POSTHOOK: query: DROP TABLE dest1_n43
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@dest1
-POSTHOOK: Output: default@dest1
-PREHOOK: query: CREATE TABLE dest1(a map<string,string>) ROW FORMAT DELIMITED FIELDS TERMINATED BY '1' ESCAPED BY '\\'
+POSTHOOK: Input: default@dest1_n43
+POSTHOOK: Output: default@dest1_n43
+PREHOOK: query: CREATE TABLE dest1_n43(a map<string,string>) ROW FORMAT DELIMITED FIELDS TERMINATED BY '1' ESCAPED BY '\\'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest1
-POSTHOOK: query: CREATE TABLE dest1(a map<string,string>) ROW FORMAT DELIMITED FIELDS TERMINATED BY '1' ESCAPED BY '\\'
+PREHOOK: Output: default@dest1_n43
+POSTHOOK: query: CREATE TABLE dest1_n43(a map<string,string>) ROW FORMAT DELIMITED FIELDS TERMINATED BY '1' ESCAPED BY '\\'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest1
-PREHOOK: query: INSERT OVERWRITE TABLE dest1 SELECT src_thrift.mstringstring FROM src_thrift DISTRIBUTE BY 1
+POSTHOOK: Output: default@dest1_n43
+PREHOOK: query: INSERT OVERWRITE TABLE dest1_n43 SELECT src_thrift.mstringstring FROM src_thrift DISTRIBUTE BY 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_thrift
-PREHOOK: Output: default@dest1
-POSTHOOK: query: INSERT OVERWRITE TABLE dest1 SELECT src_thrift.mstringstring FROM src_thrift DISTRIBUTE BY 1
+PREHOOK: Output: default@dest1_n43
+POSTHOOK: query: INSERT OVERWRITE TABLE dest1_n43 SELECT src_thrift.mstringstring FROM src_thrift DISTRIBUTE BY 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_thrift
-POSTHOOK: Output: default@dest1
-POSTHOOK: Lineage: dest1.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:mstringstring, type:map<string,string>, comment:from deserializer), ]
-PREHOOK: query: SELECT * from dest1
+POSTHOOK: Output: default@dest1_n43
+POSTHOOK: Lineage: dest1_n43.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:mstringstring, type:map<string,string>, comment:from deserializer), ]
+PREHOOK: query: SELECT * from dest1_n43
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n43
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * from dest1
+POSTHOOK: query: SELECT * from dest1_n43
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n43
 #### A masked pattern was here ####
 NULL
 {"key_0":"value_0"}
@@ -753,40 +753,40 @@ POSTHOOK: query: DROP TABLE destBin
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@destbin
 POSTHOOK: Output: default@destbin
-PREHOOK: query: DROP TABLE dest2
+PREHOOK: query: DROP TABLE dest2_n7
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE dest2
+POSTHOOK: query: DROP TABLE dest2_n7
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: DROP TABLE dest3
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE dest3
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE dest2 (a map<string,map<string,map<string,uniontype<int, bigint, string, double, boolean, array<string>, map<string,string>>>>>)
+PREHOOK: query: CREATE TABLE dest2_n7 (a map<string,map<string,map<string,uniontype<int, bigint, string, double, boolean, array<string>, map<string,string>>>>>)
   ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe' STORED AS SEQUENCEFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest2
-POSTHOOK: query: CREATE TABLE dest2 (a map<string,map<string,map<string,uniontype<int, bigint, string, double, boolean, array<string>, map<string,string>>>>>)
+PREHOOK: Output: default@dest2_n7
+POSTHOOK: query: CREATE TABLE dest2_n7 (a map<string,map<string,map<string,uniontype<int, bigint, string, double, boolean, array<string>, map<string,string>>>>>)
   ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe' STORED AS SEQUENCEFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest2
-PREHOOK: query: INSERT OVERWRITE TABLE dest2 SELECT src_thrift.attributes FROM src_thrift
+POSTHOOK: Output: default@dest2_n7
+PREHOOK: query: INSERT OVERWRITE TABLE dest2_n7 SELECT src_thrift.attributes FROM src_thrift
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_thrift
-PREHOOK: Output: default@dest2
-POSTHOOK: query: INSERT OVERWRITE TABLE dest2 SELECT src_thrift.attributes FROM src_thrift
+PREHOOK: Output: default@dest2_n7
+POSTHOOK: query: INSERT OVERWRITE TABLE dest2_n7 SELECT src_thrift.attributes FROM src_thrift
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_thrift
-POSTHOOK: Output: default@dest2
-POSTHOOK: Lineage: dest2.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:attributes, type:map<string,map<string,map<string,uniontype<int,bigint,string,double,boolean,array<string>,map<string,string>>>>>, comment:from deserializer), ]
-PREHOOK: query: SELECT a from dest2 limit 10
+POSTHOOK: Output: default@dest2_n7
+POSTHOOK: Lineage: dest2_n7.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:attributes, type:map<string,map<string,map<string,uniontype<int,bigint,string,double,boolean,array<string>,map<string,string>>>>>, comment:from deserializer), ]
+PREHOOK: query: SELECT a from dest2_n7 limit 10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest2
+PREHOOK: Input: default@dest2_n7
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a from dest2 limit 10
+POSTHOOK: query: SELECT a from dest2_n7 limit 10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest2
+POSTHOOK: Input: default@dest2_n7
 #### A masked pattern was here ####
 {"key_0":{"erVal0":{"value_0":{3:1.0}}}}
 {"key_1":{"erVal1":{"value_1":{3:1.0}}}}

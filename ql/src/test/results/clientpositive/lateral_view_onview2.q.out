@@ -1,37 +1,37 @@
-PREHOOK: query: CREATE TABLE lv_table( c1 STRING,  c2 ARRAY<INT>, c3 INT, c4 CHAR(1))
+PREHOOK: query: CREATE TABLE lv_table_n1( c1 STRING,  c2 ARRAY<INT>, c3 INT, c4 CHAR(1))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@lv_table
-POSTHOOK: query: CREATE TABLE lv_table( c1 STRING,  c2 ARRAY<INT>, c3 INT, c4 CHAR(1))
+PREHOOK: Output: default@lv_table_n1
+POSTHOOK: query: CREATE TABLE lv_table_n1( c1 STRING,  c2 ARRAY<INT>, c3 INT, c4 CHAR(1))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@lv_table
-PREHOOK: query: INSERT OVERWRITE TABLE lv_table SELECT 'abc  ', array(1,2,3), 100, 't' FROM src
+POSTHOOK: Output: default@lv_table_n1
+PREHOOK: query: INSERT OVERWRITE TABLE lv_table_n1 SELECT 'abc  ', array(1,2,3), 100, 't' FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@lv_table
-POSTHOOK: query: INSERT OVERWRITE TABLE lv_table SELECT 'abc  ', array(1,2,3), 100, 't' FROM src
+PREHOOK: Output: default@lv_table_n1
+POSTHOOK: query: INSERT OVERWRITE TABLE lv_table_n1 SELECT 'abc  ', array(1,2,3), 100, 't' FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@lv_table
-POSTHOOK: Lineage: lv_table.c1 SIMPLE []
-POSTHOOK: Lineage: lv_table.c2 EXPRESSION []
-POSTHOOK: Lineage: lv_table.c3 SIMPLE []
-POSTHOOK: Lineage: lv_table.c4 EXPRESSION []
-PREHOOK: query: CREATE OR REPLACE VIEW lv_view AS SELECT * FROM lv_table
+POSTHOOK: Output: default@lv_table_n1
+POSTHOOK: Lineage: lv_table_n1.c1 SIMPLE []
+POSTHOOK: Lineage: lv_table_n1.c2 EXPRESSION []
+POSTHOOK: Lineage: lv_table_n1.c3 SIMPLE []
+POSTHOOK: Lineage: lv_table_n1.c4 EXPRESSION []
+PREHOOK: query: CREATE OR REPLACE VIEW lv_view AS SELECT * FROM lv_table_n1
 PREHOOK: type: CREATEVIEW
-PREHOOK: Input: default@lv_table
+PREHOOK: Input: default@lv_table_n1
 PREHOOK: Output: database:default
 PREHOOK: Output: default@lv_view
-POSTHOOK: query: CREATE OR REPLACE VIEW lv_view AS SELECT * FROM lv_table
+POSTHOOK: query: CREATE OR REPLACE VIEW lv_view AS SELECT * FROM lv_table_n1
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Input: default@lv_table
+POSTHOOK: Input: default@lv_table_n1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@lv_view
-POSTHOOK: Lineage: lv_view.c1 SIMPLE [(lv_table)lv_table.FieldSchema(name:c1, type:string, comment:null), ]
-POSTHOOK: Lineage: lv_view.c2 SIMPLE [(lv_table)lv_table.FieldSchema(name:c2, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: lv_view.c3 SIMPLE [(lv_table)lv_table.FieldSchema(name:c3, type:int, comment:null), ]
-POSTHOOK: Lineage: lv_view.c4 SIMPLE [(lv_table)lv_table.FieldSchema(name:c4, type:char(1), comment:null), ]
+POSTHOOK: Lineage: lv_view.c1 SIMPLE [(lv_table_n1)lv_table_n1.FieldSchema(name:c1, type:string, comment:null), ]
+POSTHOOK: Lineage: lv_view.c2 SIMPLE [(lv_table_n1)lv_table_n1.FieldSchema(name:c2, type:array<int>, comment:null), ]
+POSTHOOK: Lineage: lv_view.c3 SIMPLE [(lv_table_n1)lv_table_n1.FieldSchema(name:c3, type:int, comment:null), ]
+POSTHOOK: Lineage: lv_view.c4 SIMPLE [(lv_table_n1)lv_table_n1.FieldSchema(name:c4, type:char(1), comment:null), ]
 PREHOOK: query: EXPLAIN SELECT myTable.myCol, myTable2.myCol2 FROM lv_view LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LATERAL VIEW explode(array('a', 'b', 'c')) myTable2 AS myCol2 LIMIT 9
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT myTable.myCol, myTable2.myCol2 FROM lv_view LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LATERAL VIEW explode(array('a', 'b', 'c')) myTable2 AS myCol2 LIMIT 9
@@ -45,7 +45,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: lv_table
+            alias: lv_table_n1
             Statistics: Num rows: 500 Data size: 8500 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE

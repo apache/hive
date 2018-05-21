@@ -263,20 +263,20 @@ STAGE PLANS:
             Statistics: Num rows: 48 Data size: 4560 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
-PREHOOK: query: create table tmp as select 1
+PREHOOK: query: create table tmp_n0 as select 1
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tmp
-POSTHOOK: query: create table tmp as select 1
+PREHOOK: Output: default@tmp_n0
+POSTHOOK: query: create table tmp_n0 as select 1
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tmp
-POSTHOOK: Lineage: tmp._c0 SIMPLE []
-PREHOOK: query: explain create table tmp as select 1
+POSTHOOK: Output: default@tmp_n0
+POSTHOOK: Lineage: tmp_n0._c0 SIMPLE []
+PREHOOK: query: explain create table tmp_n0 as select 1
 PREHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: query: explain create table tmp as select 1
+POSTHOOK: query: explain create table tmp_n0 as select 1
 POSTHOOK: type: CREATETABLE_AS_SELECT
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -307,7 +307,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.tmp
+                    name: default.tmp_n0
 
   Stage: Stage-6
     Conditional Operator
@@ -331,7 +331,7 @@ STAGE PLANS:
           input format: org.apache.hadoop.mapred.TextInputFormat
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
           serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: default.tmp
+          name: default.tmp_n0
 
   Stage: Stage-2
     Map Reduce
@@ -343,7 +343,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.tmp
+                  name: default.tmp_n0
 
   Stage: Stage-4
     Map Reduce
@@ -355,7 +355,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.tmp
+                  name: default.tmp_n0
 
   Stage: Stage-5
     Move Operator

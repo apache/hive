@@ -285,7 +285,7 @@ POSTHOOK: Input: default@src
 96	1
 97	2
 98	2
-PREHOOK: query: create view cv1 as 
+PREHOOK: query: create view cv1_n6 as 
 select b.key, count(*) as c
 from src b
 group by b.key
@@ -297,8 +297,8 @@ having exists
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@cv1
-POSTHOOK: query: create view cv1 as 
+PREHOOK: Output: default@cv1_n6
+POSTHOOK: query: create view cv1_n6 as 
 select b.key, count(*) as c
 from src b
 group by b.key
@@ -310,17 +310,17 @@ having exists
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@cv1
-POSTHOOK: Lineage: cv1.c EXPRESSION [(src)b.null, ]
-POSTHOOK: Lineage: cv1.key SIMPLE [(src)b.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: select * from cv1
+POSTHOOK: Output: default@cv1_n6
+POSTHOOK: Lineage: cv1_n6.c EXPRESSION [(src)b.null, ]
+POSTHOOK: Lineage: cv1_n6.key SIMPLE [(src)b.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: select * from cv1_n6
 PREHOOK: type: QUERY
-PREHOOK: Input: default@cv1
+PREHOOK: Input: default@cv1_n6
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: select * from cv1
+POSTHOOK: query: select * from cv1_n6
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@cv1
+POSTHOOK: Input: default@cv1_n6
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 90	3

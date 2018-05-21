@@ -1,76 +1,76 @@
-PREHOOK: query: drop table if exists p1
+PREHOOK: query: drop table if exists p1_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table if exists p1
+POSTHOOK: query: drop table if exists p1_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: drop table if exists t
+PREHOOK: query: drop table if exists t_n32
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table if exists t
+POSTHOOK: query: drop table if exists t_n32
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table t (a int)
+PREHOOK: query: create table t_n32 (a int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t
-POSTHOOK: query: create table t (a int)
+PREHOOK: Output: default@t_n32
+POSTHOOK: query: create table t_n32 (a int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t
-PREHOOK: query: insert into t values (1)
+POSTHOOK: Output: default@t_n32
+PREHOOK: query: insert into t_n32 values (1)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values (1)
+PREHOOK: Output: default@t_n32
+POSTHOOK: query: insert into t_n32 values (1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.a SCRIPT []
-PREHOOK: query: create table p1 (a int) partitioned by (p int)
+POSTHOOK: Output: default@t_n32
+POSTHOOK: Lineage: t_n32.a SCRIPT []
+PREHOOK: query: create table p1_n0 (a int) partitioned by (p int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@p1
-POSTHOOK: query: create table p1 (a int) partitioned by (p int)
+PREHOOK: Output: default@p1_n0
+POSTHOOK: query: create table p1_n0 (a int) partitioned by (p int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@p1
-PREHOOK: query: insert into p1 partition (p=1) values (1)
+POSTHOOK: Output: default@p1_n0
+PREHOOK: query: insert into p1_n0 partition (p=1) values (1)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@p1@p=1
-POSTHOOK: query: insert into p1 partition (p=1) values (1)
+PREHOOK: Output: default@p1_n0@p=1
+POSTHOOK: query: insert into p1_n0 partition (p=1) values (1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@p1@p=1
-POSTHOOK: Lineage: p1 PARTITION(p=1).a SCRIPT []
-PREHOOK: query: insert into p1 partition (p=2) values (1)
+POSTHOOK: Output: default@p1_n0@p=1
+POSTHOOK: Lineage: p1_n0 PARTITION(p=1).a SCRIPT []
+PREHOOK: query: insert into p1_n0 partition (p=2) values (1)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@p1@p=2
-POSTHOOK: query: insert into p1 partition (p=2) values (1)
+PREHOOK: Output: default@p1_n0@p=2
+POSTHOOK: query: insert into p1_n0 partition (p=2) values (1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@p1@p=2
-POSTHOOK: Lineage: p1 PARTITION(p=2).a SCRIPT []
-PREHOOK: query: truncate table p1
+POSTHOOK: Output: default@p1_n0@p=2
+POSTHOOK: Lineage: p1_n0 PARTITION(p=2).a SCRIPT []
+PREHOOK: query: truncate table p1_n0
 PREHOOK: type: TRUNCATETABLE
-PREHOOK: Output: default@p1@p=1
-PREHOOK: Output: default@p1@p=2
-POSTHOOK: query: truncate table p1
+PREHOOK: Output: default@p1_n0@p=1
+PREHOOK: Output: default@p1_n0@p=2
+POSTHOOK: query: truncate table p1_n0
 POSTHOOK: type: TRUNCATETABLE
-POSTHOOK: Output: default@p1@p=1
-POSTHOOK: Output: default@p1@p=2
-PREHOOK: query: insert into p1 partition (p=1) values (1)
+POSTHOOK: Output: default@p1_n0@p=1
+POSTHOOK: Output: default@p1_n0@p=2
+PREHOOK: query: insert into p1_n0 partition (p=1) values (1)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@p1@p=1
-POSTHOOK: query: insert into p1 partition (p=1) values (1)
+PREHOOK: Output: default@p1_n0@p=1
+POSTHOOK: query: insert into p1_n0 partition (p=1) values (1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@p1@p=1
-POSTHOOK: Lineage: p1 PARTITION(p=1).a SCRIPT []
+POSTHOOK: Output: default@p1_n0@p=1
+POSTHOOK: Lineage: p1_n0 PARTITION(p=1).a SCRIPT []
 PREHOOK: query: explain
-select * from p1 join t on (t.a=p1.a)
+select * from p1_n0 join t_n32 on (t_n32.a=p1_n0.a)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select * from p1 join t on (t.a=p1.a)
+select * from p1_n0 join t_n32 on (t_n32.a=p1_n0.a)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -81,7 +81,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: p1
+            alias: p1_n0
             Statistics: Num rows: 1 Data size: 1 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: a is not null (type: boolean)
@@ -97,7 +97,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 1 Basic stats: PARTIAL Column stats: NONE
                   value expressions: _col1 (type: int)
           TableScan
-            alias: t
+            alias: t_n32
             Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: a is not null (type: boolean)
@@ -134,12 +134,12 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: describe formatted p1
+PREHOOK: query: describe formatted p1_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@p1
-POSTHOOK: query: describe formatted p1
+PREHOOK: Input: default@p1_n0
+POSTHOOK: query: describe formatted p1_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@p1
+POSTHOOK: Input: default@p1_n0
 # col_name            	data_type           	comment             
 a                   	int                 	                    
 	 	 

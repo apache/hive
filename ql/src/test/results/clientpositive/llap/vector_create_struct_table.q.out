@@ -1,32 +1,32 @@
-PREHOOK: query: create table string_fields(strct struct<a:int, b:string, c:string>)
+PREHOOK: query: create table string_fields_n0(strct struct<a:int, b:string, c:string>)
 row format delimited
   fields terminated by '\t'
   collection items terminated by '\001'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@string_fields
-POSTHOOK: query: create table string_fields(strct struct<a:int, b:string, c:string>)
+PREHOOK: Output: default@string_fields_n0
+POSTHOOK: query: create table string_fields_n0(strct struct<a:int, b:string, c:string>)
 row format delimited
   fields terminated by '\t'
   collection items terminated by '\001'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@string_fields
+POSTHOOK: Output: default@string_fields_n0
 PREHOOK: query: load data local inpath '../../data/files/kv1.txt'
-overwrite into table string_fields
+overwrite into table string_fields_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@string_fields
+PREHOOK: Output: default@string_fields_n0
 POSTHOOK: query: load data local inpath '../../data/files/kv1.txt'
-overwrite into table string_fields
+overwrite into table string_fields_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@string_fields
+POSTHOOK: Output: default@string_fields_n0
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
-SELECT strct, strct.a, strct.b, strct.c FROM string_fields LIMIT 10
+SELECT strct, strct.a, strct.b, strct.c FROM string_fields_n0 LIMIT 10
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
-SELECT strct, strct.a, strct.b, strct.c FROM string_fields LIMIT 10
+SELECT strct, strct.a, strct.b, strct.c FROM string_fields_n0 LIMIT 10
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -44,7 +44,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: string_fields
+                  alias: string_fields_n0
                   Statistics: Num rows: 1 Data size: 428 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -92,13 +92,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT strct, strct.a, strct.b, strct.c FROM string_fields LIMIT 10
+PREHOOK: query: SELECT strct, strct.a, strct.b, strct.c FROM string_fields_n0 LIMIT 10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@string_fields
+PREHOOK: Input: default@string_fields_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT strct, strct.a, strct.b, strct.c FROM string_fields LIMIT 10
+POSTHOOK: query: SELECT strct, strct.a, strct.b, strct.c FROM string_fields_n0 LIMIT 10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@string_fields
+POSTHOOK: Input: default@string_fields_n0
 #### A masked pattern was here ####
 {"a":238,"b":"val_238","c":null}	238	val_238	NULL
 {"a":86,"b":"val_86","c":null}	86	val_86	NULL
@@ -110,35 +110,35 @@ POSTHOOK: Input: default@string_fields
 {"a":278,"b":"val_278","c":null}	278	val_278	NULL
 {"a":98,"b":"val_98","c":null}	98	val_98	NULL
 {"a":484,"b":"val_484","c":null}	484	val_484	NULL
-PREHOOK: query: create table char_fields(strct struct<a:int, b:char(10), c:char(10)>)
+PREHOOK: query: create table char_fields_n0(strct struct<a:int, b:char(10), c:char(10)>)
 row format delimited
   fields terminated by '\t'
   collection items terminated by '\001'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@char_fields
-POSTHOOK: query: create table char_fields(strct struct<a:int, b:char(10), c:char(10)>)
+PREHOOK: Output: default@char_fields_n0
+POSTHOOK: query: create table char_fields_n0(strct struct<a:int, b:char(10), c:char(10)>)
 row format delimited
   fields terminated by '\t'
   collection items terminated by '\001'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@char_fields
+POSTHOOK: Output: default@char_fields_n0
 PREHOOK: query: load data local inpath '../../data/files/kv1.txt'
-overwrite into table char_fields
+overwrite into table char_fields_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@char_fields
+PREHOOK: Output: default@char_fields_n0
 POSTHOOK: query: load data local inpath '../../data/files/kv1.txt'
-overwrite into table char_fields
+overwrite into table char_fields_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@char_fields
+POSTHOOK: Output: default@char_fields_n0
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
-SELECT strct, strct.a, strct.b, strct.c FROM char_fields LIMIT 10
+SELECT strct, strct.a, strct.b, strct.c FROM char_fields_n0 LIMIT 10
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
-SELECT strct, strct.a, strct.b, strct.c FROM char_fields LIMIT 10
+SELECT strct, strct.a, strct.b, strct.c FROM char_fields_n0 LIMIT 10
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -156,7 +156,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: char_fields
+                  alias: char_fields_n0
                   Statistics: Num rows: 1 Data size: 248 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -204,13 +204,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT strct, strct.a, strct.b, strct.c FROM char_fields LIMIT 10
+PREHOOK: query: SELECT strct, strct.a, strct.b, strct.c FROM char_fields_n0 LIMIT 10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@char_fields
+PREHOOK: Input: default@char_fields_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT strct, strct.a, strct.b, strct.c FROM char_fields LIMIT 10
+POSTHOOK: query: SELECT strct, strct.a, strct.b, strct.c FROM char_fields_n0 LIMIT 10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@char_fields
+POSTHOOK: Input: default@char_fields_n0
 #### A masked pattern was here ####
 {"a":238,"b":"val_238   ","c":null}	238	val_238   	NULL
 {"a":86,"b":"val_86    ","c":null}	86	val_86    	NULL
@@ -222,35 +222,35 @@ POSTHOOK: Input: default@char_fields
 {"a":278,"b":"val_278   ","c":null}	278	val_278   	NULL
 {"a":98,"b":"val_98    ","c":null}	98	val_98    	NULL
 {"a":484,"b":"val_484   ","c":null}	484	val_484   	NULL
-PREHOOK: query: create table varchar_fields(strct struct<a:int, b:varchar(5), c:varchar(5)>)
+PREHOOK: query: create table varchar_fields_n0(strct struct<a:int, b:varchar(5), c:varchar(5)>)
 row format delimited
   fields terminated by '\t'
   collection items terminated by '\001'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@varchar_fields
-POSTHOOK: query: create table varchar_fields(strct struct<a:int, b:varchar(5), c:varchar(5)>)
+PREHOOK: Output: default@varchar_fields_n0
+POSTHOOK: query: create table varchar_fields_n0(strct struct<a:int, b:varchar(5), c:varchar(5)>)
 row format delimited
   fields terminated by '\t'
   collection items terminated by '\001'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@varchar_fields
+POSTHOOK: Output: default@varchar_fields_n0
 PREHOOK: query: load data local inpath '../../data/files/kv1.txt'
-overwrite into table varchar_fields
+overwrite into table varchar_fields_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@varchar_fields
+PREHOOK: Output: default@varchar_fields_n0
 POSTHOOK: query: load data local inpath '../../data/files/kv1.txt'
-overwrite into table varchar_fields
+overwrite into table varchar_fields_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@varchar_fields
+POSTHOOK: Output: default@varchar_fields_n0
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
-SELECT strct, strct.a, strct.b, strct.c FROM varchar_fields LIMIT 10
+SELECT strct, strct.a, strct.b, strct.c FROM varchar_fields_n0 LIMIT 10
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
-SELECT strct, strct.a, strct.b, strct.c FROM varchar_fields LIMIT 10
+SELECT strct, strct.a, strct.b, strct.c FROM varchar_fields_n0 LIMIT 10
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -268,7 +268,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: varchar_fields
+                  alias: varchar_fields_n0
                   Statistics: Num rows: 1 Data size: 238 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -316,13 +316,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT strct, strct.a, strct.b, strct.c FROM varchar_fields LIMIT 10
+PREHOOK: query: SELECT strct, strct.a, strct.b, strct.c FROM varchar_fields_n0 LIMIT 10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@varchar_fields
+PREHOOK: Input: default@varchar_fields_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT strct, strct.a, strct.b, strct.c FROM varchar_fields LIMIT 10
+POSTHOOK: query: SELECT strct, strct.a, strct.b, strct.c FROM varchar_fields_n0 LIMIT 10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@varchar_fields
+POSTHOOK: Input: default@varchar_fields_n0
 #### A masked pattern was here ####
 {"a":238,"b":"val_2","c":null}	238	val_2	NULL
 {"a":86,"b":"val_8","c":null}	86	val_8	NULL

@@ -1,12 +1,12 @@
-PREHOOK: query: drop table if exists vectortab2k
+PREHOOK: query: drop table if exists vectortab2k_n1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table if exists vectortab2k
+POSTHOOK: query: drop table if exists vectortab2k_n1
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: drop table if exists vectortab2korc
+PREHOOK: query: drop table if exists vectortab2korc_n1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table if exists vectortab2korc
+POSTHOOK: query: drop table if exists vectortab2korc_n1
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table vectortab2k(
+PREHOOK: query: create table vectortab2k_n1(
             t tinyint,
             si smallint,
             i int,
@@ -24,8 +24,8 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@vectortab2k
-POSTHOOK: query: create table vectortab2k(
+PREHOOK: Output: default@vectortab2k_n1
+POSTHOOK: query: create table vectortab2k_n1(
             t tinyint,
             si smallint,
             i int,
@@ -43,16 +43,16 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@vectortab2k
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/vectortab2k' OVERWRITE INTO TABLE vectortab2k
+POSTHOOK: Output: default@vectortab2k_n1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/vectortab2k' OVERWRITE INTO TABLE vectortab2k_n1
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@vectortab2k
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/vectortab2k' OVERWRITE INTO TABLE vectortab2k
+PREHOOK: Output: default@vectortab2k_n1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/vectortab2k' OVERWRITE INTO TABLE vectortab2k_n1
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@vectortab2k
-PREHOOK: query: create table vectortab2korc(
+POSTHOOK: Output: default@vectortab2k_n1
+PREHOOK: query: create table vectortab2korc_n1(
             t tinyint,
             si smallint,
             i int,
@@ -69,8 +69,8 @@ PREHOOK: query: create table vectortab2korc(
 STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@vectortab2korc
-POSTHOOK: query: create table vectortab2korc(
+PREHOOK: Output: default@vectortab2korc_n1
+POSTHOOK: query: create table vectortab2korc_n1(
             t tinyint,
             si smallint,
             i int,
@@ -87,28 +87,28 @@ POSTHOOK: query: create table vectortab2korc(
 STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@vectortab2korc
-PREHOOK: query: INSERT INTO TABLE vectortab2korc SELECT * FROM vectortab2k
+POSTHOOK: Output: default@vectortab2korc_n1
+PREHOOK: query: INSERT INTO TABLE vectortab2korc_n1 SELECT * FROM vectortab2k_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@vectortab2k
-PREHOOK: Output: default@vectortab2korc
-POSTHOOK: query: INSERT INTO TABLE vectortab2korc SELECT * FROM vectortab2k
+PREHOOK: Input: default@vectortab2k_n1
+PREHOOK: Output: default@vectortab2korc_n1
+POSTHOOK: query: INSERT INTO TABLE vectortab2korc_n1 SELECT * FROM vectortab2k_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@vectortab2k
-POSTHOOK: Output: default@vectortab2korc
-POSTHOOK: Lineage: vectortab2korc.b SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: vectortab2korc.bo SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: vectortab2korc.d SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: vectortab2korc.dc SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:dc, type:decimal(38,18), comment:null), ]
-POSTHOOK: Lineage: vectortab2korc.dt SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:dt, type:date, comment:null), ]
-POSTHOOK: Lineage: vectortab2korc.f SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: vectortab2korc.i SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: vectortab2korc.s SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: vectortab2korc.s2 SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:s2, type:string, comment:null), ]
-POSTHOOK: Lineage: vectortab2korc.si SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: vectortab2korc.t SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: vectortab2korc.ts SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:ts, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: vectortab2korc.ts2 SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:ts2, type:timestamp, comment:null), ]
+POSTHOOK: Input: default@vectortab2k_n1
+POSTHOOK: Output: default@vectortab2korc_n1
+POSTHOOK: Lineage: vectortab2korc_n1.b SIMPLE [(vectortab2k_n1)vectortab2k_n1.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc_n1.bo SIMPLE [(vectortab2k_n1)vectortab2k_n1.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc_n1.d SIMPLE [(vectortab2k_n1)vectortab2k_n1.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc_n1.dc SIMPLE [(vectortab2k_n1)vectortab2k_n1.FieldSchema(name:dc, type:decimal(38,18), comment:null), ]
+POSTHOOK: Lineage: vectortab2korc_n1.dt SIMPLE [(vectortab2k_n1)vectortab2k_n1.FieldSchema(name:dt, type:date, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc_n1.f SIMPLE [(vectortab2k_n1)vectortab2k_n1.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc_n1.i SIMPLE [(vectortab2k_n1)vectortab2k_n1.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc_n1.s SIMPLE [(vectortab2k_n1)vectortab2k_n1.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc_n1.s2 SIMPLE [(vectortab2k_n1)vectortab2k_n1.FieldSchema(name:s2, type:string, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc_n1.si SIMPLE [(vectortab2k_n1)vectortab2k_n1.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc_n1.t SIMPLE [(vectortab2k_n1)vectortab2k_n1.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc_n1.ts SIMPLE [(vectortab2k_n1)vectortab2k_n1.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc_n1.ts2 SIMPLE [(vectortab2k_n1)vectortab2k_n1.FieldSchema(name:ts2, type:timestamp, comment:null), ]
 PREHOOK: query: drop table if exists varchar_lazy_binary_columnar
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table if exists varchar_lazy_binary_columnar
@@ -122,10 +122,10 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@varchar_lazy_binary_columnar
 PREHOOK: query: explain vectorization expression
-insert overwrite table varchar_lazy_binary_columnar select t, si, i, b, f, d, s from vectortab2korc
+insert overwrite table varchar_lazy_binary_columnar select t, si, i, b, f, d, s from vectortab2korc_n1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
-insert overwrite table varchar_lazy_binary_columnar select t, si, i, b, f, d, s from vectortab2korc
+insert overwrite table varchar_lazy_binary_columnar select t, si, i, b, f, d, s from vectortab2korc_n1
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -145,7 +145,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: vectortab2korc
+                  alias: vectortab2korc_n1
                   Statistics: Num rows: 2000 Data size: 410616 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true

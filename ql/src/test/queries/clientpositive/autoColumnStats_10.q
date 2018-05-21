@@ -1,52 +1,52 @@
 set hive.mapred.mode=nonstrict;
 set hive.stats.column.autogather=true;
 
-drop table p;
+drop table p_n1;
 
-CREATE TABLE p(insert_num int, c1 tinyint, c2 smallint);
+CREATE TABLE p_n1(insert_num int, c1 tinyint, c2 smallint);
 
-desc formatted p;
+desc formatted p_n1;
 
-insert into p values (1,22,333);
+insert into p_n1 values (1,22,333);
 
-desc formatted p;
+desc formatted p_n1;
 
-alter table p replace columns (insert_num int, c1 STRING, c2 STRING);
+alter table p_n1 replace columns (insert_num int, c1 STRING, c2 STRING);
 
-desc formatted p;
+desc formatted p_n1;
 
-desc formatted p insert_num;
-desc formatted p c1;
+desc formatted p_n1 insert_num;
+desc formatted p_n1 c1;
 
-insert into p values (2,11,111);
+insert into p_n1 values (2,11,111);
 
-desc formatted p;
+desc formatted p_n1;
 
-desc formatted p insert_num;
-desc formatted p c1;
+desc formatted p_n1 insert_num;
+desc formatted p_n1 c1;
 
 set hive.stats.column.autogather=false;
 
-drop table p;
+drop table p_n1;
 
-CREATE TABLE p(insert_num int, c1 tinyint, c2 smallint);
+CREATE TABLE p_n1(insert_num int, c1 tinyint, c2 smallint);
 
-desc formatted p;
+desc formatted p_n1;
 
-insert into p values (1,22,333);
+insert into p_n1 values (1,22,333);
 
-desc formatted p;
+desc formatted p_n1;
 
-alter table p replace columns (insert_num int, c1 STRING, c2 STRING);
+alter table p_n1 replace columns (insert_num int, c1 STRING, c2 STRING);
 
-desc formatted p;
+desc formatted p_n1;
 
-desc formatted p insert_num;
-desc formatted p c1;
+desc formatted p_n1 insert_num;
+desc formatted p_n1 c1;
 
-insert into p values (2,11,111);
+insert into p_n1 values (2,11,111);
 
-desc formatted p;
+desc formatted p_n1;
 
-desc formatted p insert_num;
-desc formatted p c1;
+desc formatted p_n1 insert_num;
+desc formatted p_n1 c1;

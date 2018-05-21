@@ -14,14 +14,14 @@ PREHOOK: Input: database:x314
 POSTHOOK: query: use x314
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:x314
-PREHOOK: query: create table source(s1 int, s2 int)
+PREHOOK: query: create table source_n0(s1 int, s2 int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:x314
-PREHOOK: Output: x314@source
-POSTHOOK: query: create table source(s1 int, s2 int)
+PREHOOK: Output: x314@source_n0
+POSTHOOK: query: create table source_n0(s1 int, s2 int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:x314
-POSTHOOK: Output: x314@source
+POSTHOOK: Output: x314@source_n0
 PREHOOK: query: create table target1(x int, y int, z int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:x314
@@ -46,36 +46,36 @@ POSTHOOK: query: create table target3(x int, y int, z int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:x314
 POSTHOOK: Output: x314@target3
-PREHOOK: query: insert into source(s2,s1) values(2,1)
+PREHOOK: query: insert into source_n0(s2,s1) values(2,1)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: x314@source
-POSTHOOK: query: insert into source(s2,s1) values(2,1)
+PREHOOK: Output: x314@source_n0
+POSTHOOK: query: insert into source_n0(s2,s1) values(2,1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: x314@source
-POSTHOOK: Lineage: source.s1 SCRIPT []
-POSTHOOK: Lineage: source.s2 SCRIPT []
-PREHOOK: query: select * from source
+POSTHOOK: Output: x314@source_n0
+POSTHOOK: Lineage: source_n0.s1 SCRIPT []
+POSTHOOK: Lineage: source_n0.s2 SCRIPT []
+PREHOOK: query: select * from source_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: x314@source
+PREHOOK: Input: x314@source_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from source
+POSTHOOK: query: select * from source_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: x314@source
+POSTHOOK: Input: x314@source_n0
 #### A masked pattern was here ####
 1	2
-PREHOOK: query: insert into target1(z,x) select * from source
+PREHOOK: query: insert into target1(z,x) select * from source_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: x314@source
+PREHOOK: Input: x314@source_n0
 PREHOOK: Output: x314@target1
-POSTHOOK: query: insert into target1(z,x) select * from source
+POSTHOOK: query: insert into target1(z,x) select * from source_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: x314@source
+POSTHOOK: Input: x314@source_n0
 POSTHOOK: Output: x314@target1
-POSTHOOK: Lineage: target1.x SIMPLE [(source)source.FieldSchema(name:s2, type:int, comment:null), ]
+POSTHOOK: Lineage: target1.x SIMPLE [(source_n0)source_n0.FieldSchema(name:s2, type:int, comment:null), ]
 POSTHOOK: Lineage: target1.y SIMPLE []
-POSTHOOK: Lineage: target1.z SIMPLE [(source)source.FieldSchema(name:s1, type:int, comment:null), ]
+POSTHOOK: Lineage: target1.z SIMPLE [(source_n0)source_n0.FieldSchema(name:s1, type:int, comment:null), ]
 PREHOOK: query: select * from target1
 PREHOOK: type: QUERY
 PREHOOK: Input: x314@target1
@@ -85,22 +85,22 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: x314@target1
 #### A masked pattern was here ####
 2	NULL	1
-PREHOOK: query: from source insert into target1(x,y) select * insert into target2(x,z) select s2,s1
+PREHOOK: query: from source_n0 insert into target1(x,y) select * insert into target2(x,z) select s2,s1
 PREHOOK: type: QUERY
-PREHOOK: Input: x314@source
+PREHOOK: Input: x314@source_n0
 PREHOOK: Output: x314@target1
 PREHOOK: Output: x314@target2
-POSTHOOK: query: from source insert into target1(x,y) select * insert into target2(x,z) select s2,s1
+POSTHOOK: query: from source_n0 insert into target1(x,y) select * insert into target2(x,z) select s2,s1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: x314@source
+POSTHOOK: Input: x314@source_n0
 POSTHOOK: Output: x314@target1
 POSTHOOK: Output: x314@target2
-POSTHOOK: Lineage: target1.x SIMPLE [(source)source.FieldSchema(name:s1, type:int, comment:null), ]
-POSTHOOK: Lineage: target1.y SIMPLE [(source)source.FieldSchema(name:s2, type:int, comment:null), ]
+POSTHOOK: Lineage: target1.x SIMPLE [(source_n0)source_n0.FieldSchema(name:s1, type:int, comment:null), ]
+POSTHOOK: Lineage: target1.y SIMPLE [(source_n0)source_n0.FieldSchema(name:s2, type:int, comment:null), ]
 POSTHOOK: Lineage: target1.z SIMPLE []
-POSTHOOK: Lineage: target2.x SIMPLE [(source)source.FieldSchema(name:s2, type:int, comment:null), ]
+POSTHOOK: Lineage: target2.x SIMPLE [(source_n0)source_n0.FieldSchema(name:s2, type:int, comment:null), ]
 POSTHOOK: Lineage: target2.y SIMPLE []
-POSTHOOK: Lineage: target2.z SIMPLE [(source)source.FieldSchema(name:s1, type:int, comment:null), ]
+POSTHOOK: Lineage: target2.z SIMPLE [(source_n0)source_n0.FieldSchema(name:s1, type:int, comment:null), ]
 PREHOOK: query: select * from target1 order by x,y,z
 PREHOOK: type: QUERY
 PREHOOK: Input: x314@target1
@@ -120,22 +120,22 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: x314@target2
 #### A masked pattern was here ####
 2	NULL	1
-PREHOOK: query: from source insert into target1(x,y,z) select null as x, * insert into target2(x,y,z) select null as x, source.*
+PREHOOK: query: from source_n0 insert into target1(x,y,z) select null as x, * insert into target2(x,y,z) select null as x, source_n0.*
 PREHOOK: type: QUERY
-PREHOOK: Input: x314@source
+PREHOOK: Input: x314@source_n0
 PREHOOK: Output: x314@target1
 PREHOOK: Output: x314@target2
-POSTHOOK: query: from source insert into target1(x,y,z) select null as x, * insert into target2(x,y,z) select null as x, source.*
+POSTHOOK: query: from source_n0 insert into target1(x,y,z) select null as x, * insert into target2(x,y,z) select null as x, source_n0.*
 POSTHOOK: type: QUERY
-POSTHOOK: Input: x314@source
+POSTHOOK: Input: x314@source_n0
 POSTHOOK: Output: x314@target1
 POSTHOOK: Output: x314@target2
 POSTHOOK: Lineage: target1.x EXPRESSION []
-POSTHOOK: Lineage: target1.y SIMPLE [(source)source.FieldSchema(name:s1, type:int, comment:null), ]
-POSTHOOK: Lineage: target1.z SIMPLE [(source)source.FieldSchema(name:s2, type:int, comment:null), ]
+POSTHOOK: Lineage: target1.y SIMPLE [(source_n0)source_n0.FieldSchema(name:s1, type:int, comment:null), ]
+POSTHOOK: Lineage: target1.z SIMPLE [(source_n0)source_n0.FieldSchema(name:s2, type:int, comment:null), ]
 POSTHOOK: Lineage: target2.x EXPRESSION []
-POSTHOOK: Lineage: target2.y SIMPLE [(source)source.FieldSchema(name:s1, type:int, comment:null), ]
-POSTHOOK: Lineage: target2.z SIMPLE [(source)source.FieldSchema(name:s2, type:int, comment:null), ]
+POSTHOOK: Lineage: target2.y SIMPLE [(source_n0)source_n0.FieldSchema(name:s1, type:int, comment:null), ]
+POSTHOOK: Lineage: target2.z SIMPLE [(source_n0)source_n0.FieldSchema(name:s2, type:int, comment:null), ]
 PREHOOK: query: select * from target1 order by x,y,z
 PREHOOK: type: QUERY
 PREHOOK: Input: x314@target1
@@ -165,17 +165,17 @@ POSTHOOK: query: create table source2(s1 int, s2 int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:x314
 POSTHOOK: Output: x314@source2
-PREHOOK: query: insert into target3 (x,z) select source.s1,source2.s2 from source left outer join source2 on source.s1=source2.s2
+PREHOOK: query: insert into target3 (x,z) select source_n0.s1,source2.s2 from source_n0 left outer join source2 on source_n0.s1=source2.s2
 PREHOOK: type: QUERY
-PREHOOK: Input: x314@source
 PREHOOK: Input: x314@source2
+PREHOOK: Input: x314@source_n0
 PREHOOK: Output: x314@target3
-POSTHOOK: query: insert into target3 (x,z) select source.s1,source2.s2 from source left outer join source2 on source.s1=source2.s2
+POSTHOOK: query: insert into target3 (x,z) select source_n0.s1,source2.s2 from source_n0 left outer join source2 on source_n0.s1=source2.s2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: x314@source
 POSTHOOK: Input: x314@source2
+POSTHOOK: Input: x314@source_n0
 POSTHOOK: Output: x314@target3
-POSTHOOK: Lineage: target3.x SIMPLE [(source)source.FieldSchema(name:s1, type:int, comment:null), ]
+POSTHOOK: Lineage: target3.x SIMPLE [(source_n0)source_n0.FieldSchema(name:s1, type:int, comment:null), ]
 POSTHOOK: Lineage: target3.y SIMPLE []
 POSTHOOK: Lineage: target3.z SIMPLE [(source2)source2.FieldSchema(name:s2, type:int, comment:null), ]
 PREHOOK: query: select * from target3
@@ -187,11 +187,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: x314@target3
 #### A masked pattern was here ####
 1	NULL	NULL
-PREHOOK: query: CREATE TABLE pageviews (userid VARCHAR(64), link STRING, source STRING) PARTITIONED BY (datestamp STRING, i int) CLUSTERED BY (userid) INTO 4 BUCKETS STORED AS ORC
+PREHOOK: query: CREATE TABLE pageviews (userid VARCHAR(64), link STRING, source_n0 STRING) PARTITIONED BY (datestamp STRING, i int) CLUSTERED BY (userid) INTO 4 BUCKETS STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:x314
 PREHOOK: Output: x314@pageviews
-POSTHOOK: query: CREATE TABLE pageviews (userid VARCHAR(64), link STRING, source STRING) PARTITIONED BY (datestamp STRING, i int) CLUSTERED BY (userid) INTO 4 BUCKETS STORED AS ORC
+POSTHOOK: query: CREATE TABLE pageviews (userid VARCHAR(64), link STRING, source_n0 STRING) PARTITIONED BY (datestamp STRING, i int) CLUSTERED BY (userid) INTO 4 BUCKETS STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:x314
 POSTHOOK: Output: x314@pageviews
@@ -204,7 +204,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: x314@pageviews@datestamp=2014-09-23/i=1
 POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-23,i=1).link SCRIPT []
-POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-23,i=1).source SIMPLE []
+POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-23,i=1).source_n0 SIMPLE []
 POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-23,i=1).userid SCRIPT []
 PREHOOK: query: select * from pageviews
 PREHOOK: type: QUERY
@@ -226,7 +226,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: x314@pageviews@datestamp=2014-09-23/i=7
 POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-23,i=7).link SCRIPT []
-POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-23,i=7).source SIMPLE []
+POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-23,i=7).source_n0 SIMPLE []
 POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-23,i=7).userid SCRIPT []
 PREHOOK: query: INSERT INTO TABLE pageviews PARTITION (datestamp,i)(userid,i,link,datestamp) VALUES ('jsmith', 17, '17mail.com', '2014-09-23')
 PREHOOK: type: QUERY
@@ -237,7 +237,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: x314@pageviews@datestamp=2014-09-23/i=17
 POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-23,i=17).link SCRIPT []
-POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-23,i=17).source SIMPLE []
+POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-23,i=17).source_n0 SIMPLE []
 POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-23,i=17).userid SCRIPT []
 PREHOOK: query: INSERT INTO TABLE pageviews PARTITION (datestamp,i)(userid,i,link,datestamp) VALUES ('jsmith', 19, '19mail.com', '2014-09-24')
 PREHOOK: type: QUERY
@@ -248,7 +248,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: x314@pageviews@datestamp=2014-09-24/i=19
 POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-24,i=19).link SCRIPT []
-POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-24,i=19).source SIMPLE []
+POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-24,i=19).source_n0 SIMPLE []
 POSTHOOK: Lineage: pageviews PARTITION(datestamp=2014-09-24,i=19).userid SCRIPT []
 PREHOOK: query: INSERT INTO TABLE pageviews PARTITION (datestamp,i)(userid,i,link) VALUES ('jsmith', 23, '23mail.com')
 PREHOOK: type: QUERY
@@ -259,7 +259,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: x314@pageviews@datestamp=__HIVE_DEFAULT_PARTITION__/i=23
 POSTHOOK: Lineage: pageviews PARTITION(datestamp=__HIVE_DEFAULT_PARTITION__,i=23).link SCRIPT []
-POSTHOOK: Lineage: pageviews PARTITION(datestamp=__HIVE_DEFAULT_PARTITION__,i=23).source SIMPLE []
+POSTHOOK: Lineage: pageviews PARTITION(datestamp=__HIVE_DEFAULT_PARTITION__,i=23).source_n0 SIMPLE []
 POSTHOOK: Lineage: pageviews PARTITION(datestamp=__HIVE_DEFAULT_PARTITION__,i=23).userid SCRIPT []
 PREHOOK: query: select * from pageviews order by link
 PREHOOK: type: QUERY
@@ -289,8 +289,8 @@ PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:x314
 PREHOOK: Output: database:x314
 PREHOOK: Output: x314@pageviews
-PREHOOK: Output: x314@source
 PREHOOK: Output: x314@source2
+PREHOOK: Output: x314@source_n0
 PREHOOK: Output: x314@target1
 PREHOOK: Output: x314@target2
 PREHOOK: Output: x314@target3
@@ -299,8 +299,8 @@ POSTHOOK: type: DROPDATABASE
 POSTHOOK: Input: database:x314
 POSTHOOK: Output: database:x314
 POSTHOOK: Output: x314@pageviews
-POSTHOOK: Output: x314@source
 POSTHOOK: Output: x314@source2
+POSTHOOK: Output: x314@source_n0
 POSTHOOK: Output: x314@target1
 POSTHOOK: Output: x314@target2
 POSTHOOK: Output: x314@target3

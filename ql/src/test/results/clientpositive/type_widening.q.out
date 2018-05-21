@@ -1096,17 +1096,17 @@ POSTHOOK: Input: default@src
 9223372036854775807
 9223372036854775807
 9223372036854775807
-PREHOOK: query: create table t1(a tinyint, b smallint)
+PREHOOK: query: create table t1_n114(a tinyint, b smallint)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t1
-POSTHOOK: query: create table t1(a tinyint, b smallint)
+PREHOOK: Output: default@t1_n114
+POSTHOOK: query: create table t1_n114(a tinyint, b smallint)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t1
-PREHOOK: query: explain select * from t1 where a > 2
+POSTHOOK: Output: default@t1_n114
+PREHOOK: query: explain select * from t1_n114 where a > 2
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from t1 where a > 2
+POSTHOOK: query: explain select * from t1_n114 where a > 2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -1117,7 +1117,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: t1
+          alias: t1_n114
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Filter Operator
             predicate: (a > 2Y) (type: boolean)
@@ -1128,9 +1128,9 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               ListSink
 
-PREHOOK: query: explain select * from t1 where b < 2
+PREHOOK: query: explain select * from t1_n114 where b < 2
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from t1 where b < 2
+POSTHOOK: query: explain select * from t1_n114 where b < 2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -1141,7 +1141,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: t1
+          alias: t1_n114
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Filter Operator
             predicate: (b < 2S) (type: boolean)
@@ -1152,9 +1152,9 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               ListSink
 
-PREHOOK: query: explain select * from t1 where a < 200
+PREHOOK: query: explain select * from t1_n114 where a < 200
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from t1 where a < 200
+POSTHOOK: query: explain select * from t1_n114 where a < 200
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -1165,7 +1165,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: t1
+          alias: t1_n114
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Filter Operator
             predicate: (UDFToInteger(a) < 200) (type: boolean)
@@ -1176,9 +1176,9 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               ListSink
 
-PREHOOK: query: explain select * from t1 where b > 40000
+PREHOOK: query: explain select * from t1_n114 where b > 40000
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from t1 where b > 40000
+POSTHOOK: query: explain select * from t1_n114 where b > 40000
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -1189,7 +1189,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: t1
+          alias: t1_n114
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Filter Operator
             predicate: (UDFToInteger(b) > 40000) (type: boolean)
@@ -1200,11 +1200,11 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               ListSink
 
-PREHOOK: query: drop table t1
+PREHOOK: query: drop table t1_n114
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@t1
-POSTHOOK: query: drop table t1
+PREHOOK: Input: default@t1_n114
+PREHOOK: Output: default@t1_n114
+POSTHOOK: query: drop table t1_n114
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@t1
+POSTHOOK: Input: default@t1_n114
+POSTHOOK: Output: default@t1_n114

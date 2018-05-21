@@ -1,4 +1,4 @@
-PREHOOK: query: create table if not exists source_table_001 (
+PREHOOK: query: create table if not exists source_table_001_n0 (
 MY_DATE timestamp,
 MY_ID bigint,
 MY_ID2 bigint,
@@ -10,8 +10,8 @@ stored AS ORC
 TBLPROPERTIES("transactional"="true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@source_table_001
-POSTHOOK: query: create table if not exists source_table_001 (
+PREHOOK: Output: default@source_table_001_n0
+POSTHOOK: query: create table if not exists source_table_001_n0 (
 MY_DATE timestamp,
 MY_ID bigint,
 MY_ID2 bigint,
@@ -23,77 +23,77 @@ stored AS ORC
 TBLPROPERTIES("transactional"="true")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@source_table_001
-PREHOOK: query: insert into table source_table_001
+POSTHOOK: Output: default@source_table_001_n0
+PREHOOK: query: insert into table source_table_001_n0
   values ('2010-10-10 00:00:00', 1, 1, 'env', 1, 1)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@source_table_001
-POSTHOOK: query: insert into table source_table_001
+PREHOOK: Output: default@source_table_001_n0
+POSTHOOK: query: insert into table source_table_001_n0
   values ('2010-10-10 00:00:00', 1, 1, 'env', 1, 1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@source_table_001
-POSTHOOK: Lineage: source_table_001.down_volume SCRIPT []
-POSTHOOK: Lineage: source_table_001.environment SCRIPT []
-POSTHOOK: Lineage: source_table_001.my_date SCRIPT []
-POSTHOOK: Lineage: source_table_001.my_id SCRIPT []
-POSTHOOK: Lineage: source_table_001.my_id2 SCRIPT []
-POSTHOOK: Lineage: source_table_001.up_volume SCRIPT []
-PREHOOK: query: analyze table source_table_001 compute statistics for columns
+POSTHOOK: Output: default@source_table_001_n0
+POSTHOOK: Lineage: source_table_001_n0.down_volume SCRIPT []
+POSTHOOK: Lineage: source_table_001_n0.environment SCRIPT []
+POSTHOOK: Lineage: source_table_001_n0.my_date SCRIPT []
+POSTHOOK: Lineage: source_table_001_n0.my_id SCRIPT []
+POSTHOOK: Lineage: source_table_001_n0.my_id2 SCRIPT []
+POSTHOOK: Lineage: source_table_001_n0.up_volume SCRIPT []
+PREHOOK: query: analyze table source_table_001_n0 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@source_table_001
-PREHOOK: Output: default@source_table_001
+PREHOOK: Input: default@source_table_001_n0
+PREHOOK: Output: default@source_table_001_n0
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table source_table_001 compute statistics for columns
+POSTHOOK: query: analyze table source_table_001_n0 compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@source_table_001
-POSTHOOK: Output: default@source_table_001
+POSTHOOK: Input: default@source_table_001_n0
+POSTHOOK: Output: default@source_table_001_n0
 #### A masked pattern was here ####
-PREHOOK: query: CREATE MATERIALIZED VIEW source_table_001_mv ENABLE REWRITE AS
+PREHOOK: query: CREATE MATERIALIZED VIEW source_table_001_mv_n0 ENABLE REWRITE AS
 SELECT
 SUM(A.DOWN_VOLUME) AS DOWN_VOLUME_SUM,
 SUM(A.UP_VOLUME) AS UP_VOLUME_SUM,
 A.MY_ID,A.MY_DATE,A.MY_ID2,A.ENVIRONMENT
-from source_table_001 AS A
+from source_table_001_n0 AS A
 group by A.MY_ID,A.MY_ID2,A.ENVIRONMENT,A.MY_DATE
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
-PREHOOK: Input: default@source_table_001
+PREHOOK: Input: default@source_table_001_n0
 PREHOOK: Output: database:default
-PREHOOK: Output: default@source_table_001_mv
-POSTHOOK: query: CREATE MATERIALIZED VIEW source_table_001_mv ENABLE REWRITE AS
+PREHOOK: Output: default@source_table_001_mv_n0
+POSTHOOK: query: CREATE MATERIALIZED VIEW source_table_001_mv_n0 ENABLE REWRITE AS
 SELECT
 SUM(A.DOWN_VOLUME) AS DOWN_VOLUME_SUM,
 SUM(A.UP_VOLUME) AS UP_VOLUME_SUM,
 A.MY_ID,A.MY_DATE,A.MY_ID2,A.ENVIRONMENT
-from source_table_001 AS A
+from source_table_001_n0 AS A
 group by A.MY_ID,A.MY_ID2,A.ENVIRONMENT,A.MY_DATE
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
-POSTHOOK: Input: default@source_table_001
+POSTHOOK: Input: default@source_table_001_n0
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@source_table_001_mv
-PREHOOK: query: analyze table source_table_001_mv compute statistics for columns
+POSTHOOK: Output: default@source_table_001_mv_n0
+PREHOOK: query: analyze table source_table_001_mv_n0 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@source_table_001_mv
-PREHOOK: Output: default@source_table_001_mv
+PREHOOK: Input: default@source_table_001_mv_n0
+PREHOOK: Output: default@source_table_001_mv_n0
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table source_table_001_mv compute statistics for columns
+POSTHOOK: query: analyze table source_table_001_mv_n0 compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@source_table_001_mv
-POSTHOOK: Output: default@source_table_001_mv
+POSTHOOK: Input: default@source_table_001_mv_n0
+POSTHOOK: Output: default@source_table_001_mv_n0
 #### A masked pattern was here ####
 PREHOOK: query: explain
 select
 SUM(A.DOWN_VOLUME) AS DOWNLOAD_VOLUME_BYTES,
 FLOOR(A.MY_DATE to hour),A.MY_ID2,A.ENVIRONMENT
-FROM source_table_001 AS A
+FROM source_table_001_n0 AS A
 group by A.MY_ID,A.MY_ID2,A.ENVIRONMENT,FLOOR(A.MY_DATE to hour)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select
 SUM(A.DOWN_VOLUME) AS DOWNLOAD_VOLUME_BYTES,
 FLOOR(A.MY_DATE to hour),A.MY_ID2,A.ENVIRONMENT
-FROM source_table_001 AS A
+FROM source_table_001_n0 AS A
 group by A.MY_ID,A.MY_ID2,A.ENVIRONMENT,FLOOR(A.MY_DATE to hour)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -111,7 +111,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: default.source_table_001_mv
+                  alias: default.source_table_001_mv_n0
                   Statistics: Num rows: 1 Data size: 151 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: down_volume_sum (type: bigint), my_id (type: bigint), my_id2 (type: bigint), environment (type: string), floor_hour(my_date) (type: timestamp)
@@ -158,58 +158,58 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: DROP MATERIALIZED VIEW source_table_001_mv
+PREHOOK: query: DROP MATERIALIZED VIEW source_table_001_mv_n0
 PREHOOK: type: DROP_MATERIALIZED_VIEW
-PREHOOK: Input: default@source_table_001_mv
-PREHOOK: Output: default@source_table_001_mv
-POSTHOOK: query: DROP MATERIALIZED VIEW source_table_001_mv
+PREHOOK: Input: default@source_table_001_mv_n0
+PREHOOK: Output: default@source_table_001_mv_n0
+POSTHOOK: query: DROP MATERIALIZED VIEW source_table_001_mv_n0
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
-POSTHOOK: Input: default@source_table_001_mv
-POSTHOOK: Output: default@source_table_001_mv
-PREHOOK: query: CREATE MATERIALIZED VIEW source_table_001_mv ENABLE REWRITE AS
+POSTHOOK: Input: default@source_table_001_mv_n0
+POSTHOOK: Output: default@source_table_001_mv_n0
+PREHOOK: query: CREATE MATERIALIZED VIEW source_table_001_mv_n0 ENABLE REWRITE AS
 SELECT
 SUM(A.DOWN_VOLUME) AS DOWN_VOLUME_SUM,
 SUM(A.UP_VOLUME) AS UP_VOLUME_SUM,
 A.MY_ID,FLOOR(A.MY_DATE to hour),A.MY_ID2,A.ENVIRONMENT
-from source_table_001 AS A
+from source_table_001_n0 AS A
 group by A.MY_ID,A.MY_ID2,A.ENVIRONMENT,FLOOR(A.MY_DATE to hour)
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
-PREHOOK: Input: default@source_table_001
+PREHOOK: Input: default@source_table_001_n0
 PREHOOK: Output: database:default
-PREHOOK: Output: default@source_table_001_mv
-POSTHOOK: query: CREATE MATERIALIZED VIEW source_table_001_mv ENABLE REWRITE AS
+PREHOOK: Output: default@source_table_001_mv_n0
+POSTHOOK: query: CREATE MATERIALIZED VIEW source_table_001_mv_n0 ENABLE REWRITE AS
 SELECT
 SUM(A.DOWN_VOLUME) AS DOWN_VOLUME_SUM,
 SUM(A.UP_VOLUME) AS UP_VOLUME_SUM,
 A.MY_ID,FLOOR(A.MY_DATE to hour),A.MY_ID2,A.ENVIRONMENT
-from source_table_001 AS A
+from source_table_001_n0 AS A
 group by A.MY_ID,A.MY_ID2,A.ENVIRONMENT,FLOOR(A.MY_DATE to hour)
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
-POSTHOOK: Input: default@source_table_001
+POSTHOOK: Input: default@source_table_001_n0
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@source_table_001_mv
-PREHOOK: query: analyze table source_table_001_mv compute statistics for columns
+POSTHOOK: Output: default@source_table_001_mv_n0
+PREHOOK: query: analyze table source_table_001_mv_n0 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@source_table_001_mv
-PREHOOK: Output: default@source_table_001_mv
+PREHOOK: Input: default@source_table_001_mv_n0
+PREHOOK: Output: default@source_table_001_mv_n0
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table source_table_001_mv compute statistics for columns
+POSTHOOK: query: analyze table source_table_001_mv_n0 compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@source_table_001_mv
-POSTHOOK: Output: default@source_table_001_mv
+POSTHOOK: Input: default@source_table_001_mv_n0
+POSTHOOK: Output: default@source_table_001_mv_n0
 #### A masked pattern was here ####
 PREHOOK: query: explain
 select
 SUM(A.DOWN_VOLUME) AS DOWNLOAD_VOLUME_BYTES,
 FLOOR(A.MY_DATE to day),A.MY_ID2,A.ENVIRONMENT
-FROM source_table_001 AS A
+FROM source_table_001_n0 AS A
 group by A.MY_ID,A.MY_ID2,A.ENVIRONMENT,FLOOR(A.MY_DATE to day)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select
 SUM(A.DOWN_VOLUME) AS DOWNLOAD_VOLUME_BYTES,
 FLOOR(A.MY_DATE to day),A.MY_ID2,A.ENVIRONMENT
-FROM source_table_001 AS A
+FROM source_table_001_n0 AS A
 group by A.MY_ID,A.MY_ID2,A.ENVIRONMENT,FLOOR(A.MY_DATE to day)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -227,7 +227,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: default.source_table_001_mv
+                  alias: default.source_table_001_mv_n0
                   Statistics: Num rows: 1 Data size: 151 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: down_volume_sum (type: bigint), my_id (type: bigint), my_id2 (type: bigint), environment (type: string), floor_day(_c3) (type: timestamp)
@@ -278,14 +278,14 @@ PREHOOK: query: explain
 select
 SUM(A.DOWN_VOLUME) AS DOWNLOAD_VOLUME_BYTES,
 FLOOR(A.MY_DATE to hour),A.MY_ID2,A.ENVIRONMENT
-FROM source_table_001 AS A
+FROM source_table_001_n0 AS A
 group by A.MY_ID,A.MY_ID2,A.ENVIRONMENT,FLOOR(A.MY_DATE to hour)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select
 SUM(A.DOWN_VOLUME) AS DOWNLOAD_VOLUME_BYTES,
 FLOOR(A.MY_DATE to hour),A.MY_ID2,A.ENVIRONMENT
-FROM source_table_001 AS A
+FROM source_table_001_n0 AS A
 group by A.MY_ID,A.MY_ID2,A.ENVIRONMENT,FLOOR(A.MY_DATE to hour)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -297,7 +297,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: default.source_table_001_mv
+          alias: default.source_table_001_mv_n0
           Select Operator
             expressions: down_volume_sum (type: bigint), _c3 (type: timestamp), my_id2 (type: bigint), environment (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
@@ -307,14 +307,14 @@ PREHOOK: query: explain
 select
 SUM(A.DOWN_VOLUME) AS DOWNLOAD_VOLUME_BYTES,
 FLOOR(A.MY_DATE to second),A.MY_ID2,A.ENVIRONMENT
-FROM source_table_001 AS A
+FROM source_table_001_n0 AS A
 group by A.MY_ID,A.MY_ID2,A.ENVIRONMENT,FLOOR(A.MY_DATE to second)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select
 SUM(A.DOWN_VOLUME) AS DOWNLOAD_VOLUME_BYTES,
 FLOOR(A.MY_DATE to second),A.MY_ID2,A.ENVIRONMENT
-FROM source_table_001 AS A
+FROM source_table_001_n0 AS A
 group by A.MY_ID,A.MY_ID2,A.ENVIRONMENT,FLOOR(A.MY_DATE to second)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -379,11 +379,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: DROP MATERIALIZED VIEW source_table_001_mv
+PREHOOK: query: DROP MATERIALIZED VIEW source_table_001_mv_n0
 PREHOOK: type: DROP_MATERIALIZED_VIEW
-PREHOOK: Input: default@source_table_001_mv
-PREHOOK: Output: default@source_table_001_mv
-POSTHOOK: query: DROP MATERIALIZED VIEW source_table_001_mv
+PREHOOK: Input: default@source_table_001_mv_n0
+PREHOOK: Output: default@source_table_001_mv_n0
+POSTHOOK: query: DROP MATERIALIZED VIEW source_table_001_mv_n0
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
-POSTHOOK: Input: default@source_table_001_mv
-POSTHOOK: Output: default@source_table_001_mv
+POSTHOOK: Input: default@source_table_001_mv_n0
+POSTHOOK: Output: default@source_table_001_mv_n0

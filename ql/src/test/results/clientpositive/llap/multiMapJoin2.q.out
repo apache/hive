@@ -1617,54 +1617,54 @@ RUN: Stage-1:MAPRED
 406	1
 66	1
 98	1
-PREHOOK: query: CREATE TABLE part_table(key string, value string) PARTITIONED BY (partitionId int)
+PREHOOK: query: CREATE TABLE part_table_n0(key string, value string) PARTITIONED BY (partitionId int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@part_table
-POSTHOOK: query: CREATE TABLE part_table(key string, value string) PARTITIONED BY (partitionId int)
+PREHOOK: Output: default@part_table_n0
+POSTHOOK: query: CREATE TABLE part_table_n0(key string, value string) PARTITIONED BY (partitionId int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@part_table
+POSTHOOK: Output: default@part_table_n0
 RUN: Stage-0:DDL
-PREHOOK: query: INSERT OVERWRITE TABLE part_table PARTITION (partitionId=1)
+PREHOOK: query: INSERT OVERWRITE TABLE part_table_n0 PARTITION (partitionId=1)
   SELECT key, value FROM src ORDER BY key, value LIMIT 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@part_table@partitionid=1
-POSTHOOK: query: INSERT OVERWRITE TABLE part_table PARTITION (partitionId=1)
+PREHOOK: Output: default@part_table_n0@partitionid=1
+POSTHOOK: query: INSERT OVERWRITE TABLE part_table_n0 PARTITION (partitionId=1)
   SELECT key, value FROM src ORDER BY key, value LIMIT 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@part_table@partitionid=1
-POSTHOOK: Lineage: part_table PARTITION(partitionid=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: part_table PARTITION(partitionid=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@part_table_n0@partitionid=1
+POSTHOOK: Lineage: part_table_n0 PARTITION(partitionid=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: part_table_n0 PARTITION(partitionid=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 RUN: Stage-1:MAPRED
 RUN: Stage-2:DEPENDENCY_COLLECTION
 RUN: Stage-0:MOVE
 RUN: Stage-3:STATS
-PREHOOK: query: INSERT OVERWRITE TABLE part_table PARTITION (partitionId=2)
+PREHOOK: query: INSERT OVERWRITE TABLE part_table_n0 PARTITION (partitionId=2)
   SELECT key, value FROM src1 ORDER BY key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1
-PREHOOK: Output: default@part_table@partitionid=2
-POSTHOOK: query: INSERT OVERWRITE TABLE part_table PARTITION (partitionId=2)
+PREHOOK: Output: default@part_table_n0@partitionid=2
+POSTHOOK: query: INSERT OVERWRITE TABLE part_table_n0 PARTITION (partitionId=2)
   SELECT key, value FROM src1 ORDER BY key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1
-POSTHOOK: Output: default@part_table@partitionid=2
-POSTHOOK: Lineage: part_table PARTITION(partitionid=2).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: part_table PARTITION(partitionid=2).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@part_table_n0@partitionid=2
+POSTHOOK: Lineage: part_table_n0 PARTITION(partitionid=2).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: part_table_n0 PARTITION(partitionid=2).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 RUN: Stage-1:MAPRED
 RUN: Stage-2:DEPENDENCY_COLLECTION
 RUN: Stage-0:MOVE
 RUN: Stage-3:STATS
 PREHOOK: query: EXPLAIN
 SELECT count(*)
-FROM part_table x JOIN src1 y ON (x.key = y.key)
+FROM part_table_n0 x JOIN src1 y ON (x.key = y.key)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT count(*)
-FROM part_table x JOIN src1 y ON (x.key = y.key)
+FROM part_table_n0 x JOIN src1 y ON (x.key = y.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1753,19 +1753,19 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT count(*)
-FROM part_table x JOIN src1 y ON (x.key = y.key)
+FROM part_table_n0 x JOIN src1 y ON (x.key = y.key)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@part_table
-PREHOOK: Input: default@part_table@partitionid=1
-PREHOOK: Input: default@part_table@partitionid=2
+PREHOOK: Input: default@part_table_n0
+PREHOOK: Input: default@part_table_n0@partitionid=1
+PREHOOK: Input: default@part_table_n0@partitionid=2
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT count(*)
-FROM part_table x JOIN src1 y ON (x.key = y.key)
+FROM part_table_n0 x JOIN src1 y ON (x.key = y.key)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@part_table
-POSTHOOK: Input: default@part_table@partitionid=1
-POSTHOOK: Input: default@part_table@partitionid=2
+POSTHOOK: Input: default@part_table_n0
+POSTHOOK: Input: default@part_table_n0@partitionid=1
+POSTHOOK: Input: default@part_table_n0@partitionid=2
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 RUN: Stage-1:MAPRED

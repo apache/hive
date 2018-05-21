@@ -1,4 +1,4 @@
-PREHOOK: query: create table over1k(
+PREHOOK: query: create table over1k_n1(
            t tinyint,
            si smallint,
            i int,
@@ -14,8 +14,8 @@ PREHOOK: query: create table over1k(
        fields terminated by '|'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@over1k
-POSTHOOK: query: create table over1k(
+PREHOOK: Output: default@over1k_n1
+POSTHOOK: query: create table over1k_n1(
            t tinyint,
            si smallint,
            i int,
@@ -31,20 +31,20 @@ POSTHOOK: query: create table over1k(
        fields terminated by '|'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@over1k
-PREHOOK: query: load data local inpath '../../data/files/over1k' into table over1k
+POSTHOOK: Output: default@over1k_n1
+PREHOOK: query: load data local inpath '../../data/files/over1k' into table over1k_n1
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@over1k
-POSTHOOK: query: load data local inpath '../../data/files/over1k' into table over1k
+PREHOOK: Output: default@over1k_n1
+POSTHOOK: query: load data local inpath '../../data/files/over1k' into table over1k_n1
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@over1k
-PREHOOK: query: create table over1k_orc like over1k
+POSTHOOK: Output: default@over1k_n1
+PREHOOK: query: create table over1k_orc like over1k_n1
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@over1k_orc
-POSTHOOK: query: create table over1k_orc like over1k
+POSTHOOK: query: create table over1k_orc like over1k_n1
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@over1k_orc
@@ -56,25 +56,25 @@ POSTHOOK: query: alter table over1k_orc set fileformat orc
 POSTHOOK: type: ALTERTABLE_FILEFORMAT
 POSTHOOK: Input: default@over1k_orc
 POSTHOOK: Output: default@over1k_orc
-PREHOOK: query: insert overwrite table over1k_orc select * from over1k
+PREHOOK: query: insert overwrite table over1k_orc select * from over1k_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over1k
+PREHOOK: Input: default@over1k_n1
 PREHOOK: Output: default@over1k_orc
-POSTHOOK: query: insert overwrite table over1k_orc select * from over1k
+POSTHOOK: query: insert overwrite table over1k_orc select * from over1k_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over1k
+POSTHOOK: Input: default@over1k_n1
 POSTHOOK: Output: default@over1k_orc
-POSTHOOK: Lineage: over1k_orc.b SIMPLE [(over1k)over1k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: over1k_orc.bin SIMPLE [(over1k)over1k.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: over1k_orc.bo SIMPLE [(over1k)over1k.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: over1k_orc.d SIMPLE [(over1k)over1k.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: over1k_orc.dec SIMPLE [(over1k)over1k.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
-POSTHOOK: Lineage: over1k_orc.f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: over1k_orc.i SIMPLE [(over1k)over1k.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: over1k_orc.s SIMPLE [(over1k)over1k.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: over1k_orc.si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: over1k_orc.t SIMPLE [(over1k)over1k.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: over1k_orc.ts SIMPLE [(over1k)over1k.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: over1k_orc.b SIMPLE [(over1k_n1)over1k_n1.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: over1k_orc.bin SIMPLE [(over1k_n1)over1k_n1.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: over1k_orc.bo SIMPLE [(over1k_n1)over1k_n1.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: over1k_orc.d SIMPLE [(over1k_n1)over1k_n1.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: over1k_orc.dec SIMPLE [(over1k_n1)over1k_n1.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
+POSTHOOK: Lineage: over1k_orc.f SIMPLE [(over1k_n1)over1k_n1.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: over1k_orc.i SIMPLE [(over1k_n1)over1k_n1.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: over1k_orc.s SIMPLE [(over1k_n1)over1k_n1.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: over1k_orc.si SIMPLE [(over1k_n1)over1k_n1.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: over1k_orc.t SIMPLE [(over1k_n1)over1k_n1.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: over1k_orc.ts SIMPLE [(over1k_n1)over1k_n1.FieldSchema(name:ts, type:timestamp, comment:null), ]
 PREHOOK: query: create table over1k_part_orc(
            si smallint,
            i int,

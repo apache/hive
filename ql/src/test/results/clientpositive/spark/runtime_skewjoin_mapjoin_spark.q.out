@@ -1,31 +1,31 @@
-PREHOOK: query: CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE T1_n94(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1
-POSTHOOK: query: CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@T1_n94
+POSTHOOK: query: CREATE TABLE T1_n94(key STRING, val STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1
+POSTHOOK: Output: default@T1_n94
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_n94
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1
+PREHOOK: Output: default@t1_n94
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_n94
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t1
+POSTHOOK: Output: default@t1_n94
 PREHOOK: query: EXPLAIN
 SELECT COUNT(*) FROM
   (SELECT src1.key,src1.value FROM src src1 JOIN src src2 ON src1.key=src2.key) a
 JOIN
-  (SELECT src.key,src.value FROM src JOIN T1 ON src.key=T1.key) b
+  (SELECT src.key,src.value FROM src JOIN T1_n94 ON src.key=T1_n94.key) b
 ON a.key=b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT COUNT(*) FROM
   (SELECT src1.key,src1.value FROM src src1 JOIN src src2 ON src1.key=src2.key) a
 JOIN
-  (SELECT src.key,src.value FROM src JOIN T1 ON src.key=T1.key) b
+  (SELECT src.key,src.value FROM src JOIN T1_n94 ON src.key=T1_n94.key) b
 ON a.key=b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -149,7 +149,7 @@ STAGE PLANS:
         Map 7 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n94
                   Statistics: Num rows: 1 Data size: 30 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -317,19 +317,19 @@ STAGE PLANS:
 PREHOOK: query: SELECT COUNT(*) FROM
   (SELECT src1.key,src1.value FROM src src1 JOIN src src2 ON src1.key=src2.key) a
 JOIN
-  (SELECT src.key,src.value FROM src JOIN T1 ON src.key=T1.key) b
+  (SELECT src.key,src.value FROM src JOIN T1_n94 ON src.key=T1_n94.key) b
 ON a.key=b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n94
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT COUNT(*) FROM
   (SELECT src1.key,src1.value FROM src src1 JOIN src src2 ON src1.key=src2.key) a
 JOIN
-  (SELECT src.key,src.value FROM src JOIN T1 ON src.key=T1.key) b
+  (SELECT src.key,src.value FROM src JOIN T1_n94 ON src.key=T1_n94.key) b
 ON a.key=b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n94
 #### A masked pattern was here ####
 3

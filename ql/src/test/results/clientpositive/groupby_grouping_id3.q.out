@@ -1,29 +1,29 @@
-PREHOOK: query: CREATE TABLE T1(key INT, value INT) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE T1_n86(key INT, value INT) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1
-POSTHOOK: query: CREATE TABLE T1(key INT, value INT) STORED AS TEXTFILE
+PREHOOK: Output: default@T1_n86
+POSTHOOK: query: CREATE TABLE T1_n86(key INT, value INT) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/groupby_groupingid.txt' INTO TABLE T1
+POSTHOOK: Output: default@T1_n86
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/groupby_groupingid.txt' INTO TABLE T1_n86
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/groupby_groupingid.txt' INTO TABLE T1
+PREHOOK: Output: default@t1_n86
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/groupby_groupingid.txt' INTO TABLE T1_n86
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t1
+POSTHOOK: Output: default@t1_n86
 PREHOOK: query: EXPLAIN
 SELECT key, value, GROUPING__ID, count(*)
-FROM T1
+FROM T1_n86
 GROUP BY key, value
 GROUPING SETS ((), (key))
 HAVING GROUPING__ID = 1
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT key, value, GROUPING__ID, count(*)
-FROM T1
+FROM T1_n86
 GROUP BY key, value
 GROUPING SETS ((), (key))
 HAVING GROUPING__ID = 1
@@ -37,7 +37,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
+            alias: t1_n86
             Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int)
@@ -85,20 +85,20 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT key, value, GROUPING__ID, count(*)
-FROM T1
+FROM T1_n86
 GROUP BY key, value
 GROUPING SETS ((), (key))
 HAVING GROUPING__ID = 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n86
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT key, value, GROUPING__ID, count(*)
-FROM T1
+FROM T1_n86
 GROUP BY key, value
 GROUPING SETS ((), (key))
 HAVING GROUPING__ID = 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n86
 #### A masked pattern was here ####
 1	NULL	1	2
 2	NULL	1	1
@@ -106,14 +106,14 @@ POSTHOOK: Input: default@t1
 4	NULL	1	1
 PREHOOK: query: EXPLAIN
 SELECT key, value, GROUPING__ID, count(*)
-FROM T1
+FROM T1_n86
 GROUP BY key, value
 GROUPING SETS ((), (key))
 HAVING GROUPING__ID = 1
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT key, value, GROUPING__ID, count(*)
-FROM T1
+FROM T1_n86
 GROUP BY key, value
 GROUPING SETS ((), (key))
 HAVING GROUPING__ID = 1
@@ -127,7 +127,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
+            alias: t1_n86
             Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: int), value (type: int)
@@ -174,20 +174,20 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT key, value, GROUPING__ID, count(*)
-FROM T1
+FROM T1_n86
 GROUP BY key, value
 GROUPING SETS ((), (key))
 HAVING GROUPING__ID = 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n86
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT key, value, GROUPING__ID, count(*)
-FROM T1
+FROM T1_n86
 GROUP BY key, value
 GROUPING SETS ((), (key))
 HAVING GROUPING__ID = 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n86
 #### A masked pattern was here ####
 1	NULL	1	2
 2	NULL	1	1

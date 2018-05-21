@@ -1,210 +1,210 @@
-PREHOOK: query: create table small_alltypesorc1a as select * from alltypesorc where cint is not null and cstring1 is not null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 5
+PREHOOK: query: create table small_alltypesorc1a_n1 as select * from alltypesorc where cint is not null and cstring1 is not null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 5
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
-PREHOOK: Output: default@small_alltypesorc1a
-POSTHOOK: query: create table small_alltypesorc1a as select * from alltypesorc where cint is not null and cstring1 is not null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 5
+PREHOOK: Output: default@small_alltypesorc1a_n1
+POSTHOOK: query: create table small_alltypesorc1a_n1 as select * from alltypesorc where cint is not null and cstring1 is not null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 5
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@small_alltypesorc1a
-POSTHOOK: Lineage: small_alltypesorc1a.cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc1a.cboolean1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc1a.cboolean2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc1a.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc1a.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc1a.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc1a.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc1a.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc1a.cstring2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc1a.ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc1a.ctimestamp2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc1a.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
-PREHOOK: query: create table small_alltypesorc2a as select * from alltypesorc where cint is null and cstring1 is not null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 5
+POSTHOOK: Output: default@small_alltypesorc1a_n1
+POSTHOOK: Lineage: small_alltypesorc1a_n1.cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc1a_n1.cboolean1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc1a_n1.cboolean2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc1a_n1.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc1a_n1.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc1a_n1.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc1a_n1.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc1a_n1.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc1a_n1.cstring2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc1a_n1.ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc1a_n1.ctimestamp2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc1a_n1.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+PREHOOK: query: create table small_alltypesorc2a_n1 as select * from alltypesorc where cint is null and cstring1 is not null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 5
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
-PREHOOK: Output: default@small_alltypesorc2a
-POSTHOOK: query: create table small_alltypesorc2a as select * from alltypesorc where cint is null and cstring1 is not null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 5
+PREHOOK: Output: default@small_alltypesorc2a_n1
+POSTHOOK: query: create table small_alltypesorc2a_n1 as select * from alltypesorc where cint is null and cstring1 is not null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 5
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@small_alltypesorc2a
-POSTHOOK: Lineage: small_alltypesorc2a.cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc2a.cboolean1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc2a.cboolean2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc2a.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc2a.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc2a.cint SIMPLE []
-POSTHOOK: Lineage: small_alltypesorc2a.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc2a.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc2a.cstring2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc2a.ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc2a.ctimestamp2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc2a.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
-PREHOOK: query: create table small_alltypesorc3a as select * from alltypesorc where cint is not null and cstring1 is null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 5
+POSTHOOK: Output: default@small_alltypesorc2a_n1
+POSTHOOK: Lineage: small_alltypesorc2a_n1.cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc2a_n1.cboolean1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc2a_n1.cboolean2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc2a_n1.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc2a_n1.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc2a_n1.cint SIMPLE []
+POSTHOOK: Lineage: small_alltypesorc2a_n1.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc2a_n1.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc2a_n1.cstring2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc2a_n1.ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc2a_n1.ctimestamp2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc2a_n1.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+PREHOOK: query: create table small_alltypesorc3a_n1 as select * from alltypesorc where cint is not null and cstring1 is null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 5
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
-PREHOOK: Output: default@small_alltypesorc3a
-POSTHOOK: query: create table small_alltypesorc3a as select * from alltypesorc where cint is not null and cstring1 is null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 5
+PREHOOK: Output: default@small_alltypesorc3a_n1
+POSTHOOK: query: create table small_alltypesorc3a_n1 as select * from alltypesorc where cint is not null and cstring1 is null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 5
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@small_alltypesorc3a
-POSTHOOK: Lineage: small_alltypesorc3a.cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc3a.cboolean1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc3a.cboolean2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc3a.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc3a.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc3a.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc3a.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc3a.cstring1 SIMPLE []
-POSTHOOK: Lineage: small_alltypesorc3a.cstring2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc3a.ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc3a.ctimestamp2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc3a.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
-PREHOOK: query: create table small_alltypesorc4a as select * from alltypesorc where cint is null and cstring1 is null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 5
+POSTHOOK: Output: default@small_alltypesorc3a_n1
+POSTHOOK: Lineage: small_alltypesorc3a_n1.cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc3a_n1.cboolean1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc3a_n1.cboolean2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc3a_n1.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc3a_n1.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc3a_n1.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc3a_n1.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc3a_n1.cstring1 SIMPLE []
+POSTHOOK: Lineage: small_alltypesorc3a_n1.cstring2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc3a_n1.ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc3a_n1.ctimestamp2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc3a_n1.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+PREHOOK: query: create table small_alltypesorc4a_n1 as select * from alltypesorc where cint is null and cstring1 is null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 5
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
-PREHOOK: Output: default@small_alltypesorc4a
-POSTHOOK: query: create table small_alltypesorc4a as select * from alltypesorc where cint is null and cstring1 is null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 5
+PREHOOK: Output: default@small_alltypesorc4a_n1
+POSTHOOK: query: create table small_alltypesorc4a_n1 as select * from alltypesorc where cint is null and cstring1 is null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 5
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@small_alltypesorc4a
-POSTHOOK: Lineage: small_alltypesorc4a.cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc4a.cboolean1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc4a.cboolean2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc4a.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc4a.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc4a.cint SIMPLE []
-POSTHOOK: Lineage: small_alltypesorc4a.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc4a.cstring1 SIMPLE []
-POSTHOOK: Lineage: small_alltypesorc4a.cstring2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc4a.ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc4a.ctimestamp2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc4a.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
-PREHOOK: query: select * from small_alltypesorc1a
+POSTHOOK: Output: default@small_alltypesorc4a_n1
+POSTHOOK: Lineage: small_alltypesorc4a_n1.cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc4a_n1.cboolean1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc4a_n1.cboolean2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc4a_n1.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc4a_n1.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc4a_n1.cint SIMPLE []
+POSTHOOK: Lineage: small_alltypesorc4a_n1.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc4a_n1.cstring1 SIMPLE []
+POSTHOOK: Lineage: small_alltypesorc4a_n1.cstring2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc4a_n1.ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc4a_n1.ctimestamp2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc4a_n1.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+PREHOOK: query: select * from small_alltypesorc1a_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@small_alltypesorc1a
+PREHOOK: Input: default@small_alltypesorc1a_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from small_alltypesorc1a
+POSTHOOK: query: select * from small_alltypesorc1a_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@small_alltypesorc1a
+POSTHOOK: Input: default@small_alltypesorc1a_n1
 #### A masked pattern was here ####
 NULL	NULL	-1015272448	-1887561756	NULL	NULL	jTQ68531mP	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 15:59:45.854	false	false
 NULL	NULL	-850295959	-1887561756	NULL	NULL	WMIgGA73	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 16:00:00.348	false	false
 NULL	NULL	-886426182	-1887561756	NULL	NULL	0i88xYq3gx1nW4vKjp7vBp3	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 16:00:04.472	true	false
 NULL	NULL	-899422227	-1645852809	NULL	NULL	73xdw4X	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:07.395	false	false
 NULL	NULL	-971543377	-1645852809	NULL	NULL	uN803aW	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:05.43	false	false
-PREHOOK: query: select * from small_alltypesorc2a
+PREHOOK: query: select * from small_alltypesorc2a_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@small_alltypesorc2a
+PREHOOK: Input: default@small_alltypesorc2a_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from small_alltypesorc2a
+POSTHOOK: query: select * from small_alltypesorc2a_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@small_alltypesorc2a
+POSTHOOK: Input: default@small_alltypesorc2a_n1
 #### A masked pattern was here ####
 -51	NULL	NULL	-1731061911	-51.0	NULL	Pw53BBJ	yL443x2437PO5Hv1U3lCjq2D	1969-12-31 16:00:08.451	NULL	true	false
 -51	NULL	NULL	-1846191223	-51.0	NULL	Ul085f84S33Xd32u	x1JC58g0Ukp	1969-12-31 16:00:08.451	NULL	true	true
 -51	NULL	NULL	-1874052220	-51.0	NULL	c61B47I604gymFJ	sjWQS78	1969-12-31 16:00:08.451	NULL	false	false
 -51	NULL	NULL	-1927203921	-51.0	NULL	45ja5suO	42S0I0	1969-12-31 16:00:08.451	NULL	true	true
 -51	NULL	NULL	-1970551565	-51.0	NULL	r2uhJH3	loXMWyrHjVeK	1969-12-31 16:00:08.451	NULL	false	false
-PREHOOK: query: select * from small_alltypesorc3a
+PREHOOK: query: select * from small_alltypesorc3a_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@small_alltypesorc3a
+PREHOOK: Input: default@small_alltypesorc3a_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from small_alltypesorc3a
+POSTHOOK: query: select * from small_alltypesorc3a_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@small_alltypesorc3a
+POSTHOOK: Input: default@small_alltypesorc3a_n1
 #### A masked pattern was here ####
 -51	NULL	-31312632	1086455747	-51.0	NULL	NULL	Bc7xt12568c451o64LF5	1969-12-31 16:00:08.451	NULL	NULL	true
 -51	NULL	-337975743	608681041	-51.0	NULL	NULL	Ih2r28o6	1969-12-31 16:00:08.451	NULL	NULL	true
 -51	NULL	-413196097	-306198070	-51.0	NULL	NULL	F53QcSDPpxYF1Ub	1969-12-31 16:00:08.451	NULL	NULL	false
 -51	NULL	-591488718	803603078	-51.0	NULL	NULL	X616UtmmA3FHan	1969-12-31 16:00:08.451	NULL	NULL	true
 -51	NULL	-738306196	-460430946	-51.0	NULL	NULL	dBOqv	1969-12-31 16:00:08.451	NULL	NULL	false
-PREHOOK: query: select * from small_alltypesorc4a
+PREHOOK: query: select * from small_alltypesorc4a_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@small_alltypesorc4a
+PREHOOK: Input: default@small_alltypesorc4a_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from small_alltypesorc4a
+POSTHOOK: query: select * from small_alltypesorc4a_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@small_alltypesorc4a
+POSTHOOK: Input: default@small_alltypesorc4a_n1
 #### A masked pattern was here ####
 -64	-7196	NULL	-1615920595	-64.0	-7196.0	NULL	X5rDjl	1969-12-31 16:00:11.912	1969-12-31 15:59:58.174	NULL	false
 -64	-7196	NULL	-1639157869	-64.0	-7196.0	NULL	IJ0Oj7qAiqNGsN7gn	1969-12-31 16:00:01.785	1969-12-31 15:59:58.174	NULL	false
 -64	-7196	NULL	-527203677	-64.0	-7196.0	NULL	JBE4H5RoK412Cs260I72	1969-12-31 15:59:50.184	1969-12-31 15:59:58.174	NULL	true
 -64	-7196	NULL	406535485	-64.0	-7196.0	NULL	E011i	1969-12-31 15:59:56.048	1969-12-31 15:59:58.174	NULL	false
 -64	-7196	NULL	658026952	-64.0	-7196.0	NULL	4tAur	1969-12-31 15:59:53.866	1969-12-31 15:59:58.174	NULL	true
-PREHOOK: query: create table small_alltypesorc_a stored as orc as select * from 
-(select * from (select * from small_alltypesorc1a) sq1
+PREHOOK: query: create table small_alltypesorc_a_n1 stored as orc as select * from 
+(select * from (select * from small_alltypesorc1a_n1) sq1
  union all
- select * from (select * from small_alltypesorc2a) sq2
+ select * from (select * from small_alltypesorc2a_n1) sq2
  union all
- select * from (select * from small_alltypesorc3a) sq3
+ select * from (select * from small_alltypesorc3a_n1) sq3
  union all
- select * from (select * from small_alltypesorc4a) sq4) q
+ select * from (select * from small_alltypesorc4a_n1) sq4) q
 PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: default@small_alltypesorc1a
-PREHOOK: Input: default@small_alltypesorc2a
-PREHOOK: Input: default@small_alltypesorc3a
-PREHOOK: Input: default@small_alltypesorc4a
+PREHOOK: Input: default@small_alltypesorc1a_n1
+PREHOOK: Input: default@small_alltypesorc2a_n1
+PREHOOK: Input: default@small_alltypesorc3a_n1
+PREHOOK: Input: default@small_alltypesorc4a_n1
 PREHOOK: Output: database:default
-PREHOOK: Output: default@small_alltypesorc_a
-POSTHOOK: query: create table small_alltypesorc_a stored as orc as select * from 
-(select * from (select * from small_alltypesorc1a) sq1
+PREHOOK: Output: default@small_alltypesorc_a_n1
+POSTHOOK: query: create table small_alltypesorc_a_n1 stored as orc as select * from 
+(select * from (select * from small_alltypesorc1a_n1) sq1
  union all
- select * from (select * from small_alltypesorc2a) sq2
+ select * from (select * from small_alltypesorc2a_n1) sq2
  union all
- select * from (select * from small_alltypesorc3a) sq3
+ select * from (select * from small_alltypesorc3a_n1) sq3
  union all
- select * from (select * from small_alltypesorc4a) sq4) q
+ select * from (select * from small_alltypesorc4a_n1) sq4) q
 POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: default@small_alltypesorc1a
-POSTHOOK: Input: default@small_alltypesorc2a
-POSTHOOK: Input: default@small_alltypesorc3a
-POSTHOOK: Input: default@small_alltypesorc4a
+POSTHOOK: Input: default@small_alltypesorc1a_n1
+POSTHOOK: Input: default@small_alltypesorc2a_n1
+POSTHOOK: Input: default@small_alltypesorc3a_n1
+POSTHOOK: Input: default@small_alltypesorc4a_n1
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@small_alltypesorc_a
-POSTHOOK: Lineage: small_alltypesorc_a.cbigint EXPRESSION [(small_alltypesorc1a)small_alltypesorc1a.FieldSchema(name:cbigint, type:bigint, comment:null), (small_alltypesorc2a)small_alltypesorc2a.FieldSchema(name:cbigint, type:bigint, comment:null), (small_alltypesorc3a)small_alltypesorc3a.FieldSchema(name:cbigint, type:bigint, comment:null), (small_alltypesorc4a)small_alltypesorc4a.FieldSchema(name:cbigint, type:bigint, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc_a.cboolean1 EXPRESSION [(small_alltypesorc1a)small_alltypesorc1a.FieldSchema(name:cboolean1, type:boolean, comment:null), (small_alltypesorc2a)small_alltypesorc2a.FieldSchema(name:cboolean1, type:boolean, comment:null), (small_alltypesorc3a)small_alltypesorc3a.FieldSchema(name:cboolean1, type:boolean, comment:null), (small_alltypesorc4a)small_alltypesorc4a.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc_a.cboolean2 EXPRESSION [(small_alltypesorc1a)small_alltypesorc1a.FieldSchema(name:cboolean2, type:boolean, comment:null), (small_alltypesorc2a)small_alltypesorc2a.FieldSchema(name:cboolean2, type:boolean, comment:null), (small_alltypesorc3a)small_alltypesorc3a.FieldSchema(name:cboolean2, type:boolean, comment:null), (small_alltypesorc4a)small_alltypesorc4a.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc_a.cdouble EXPRESSION [(small_alltypesorc1a)small_alltypesorc1a.FieldSchema(name:cdouble, type:double, comment:null), (small_alltypesorc2a)small_alltypesorc2a.FieldSchema(name:cdouble, type:double, comment:null), (small_alltypesorc3a)small_alltypesorc3a.FieldSchema(name:cdouble, type:double, comment:null), (small_alltypesorc4a)small_alltypesorc4a.FieldSchema(name:cdouble, type:double, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc_a.cfloat EXPRESSION [(small_alltypesorc1a)small_alltypesorc1a.FieldSchema(name:cfloat, type:float, comment:null), (small_alltypesorc2a)small_alltypesorc2a.FieldSchema(name:cfloat, type:float, comment:null), (small_alltypesorc3a)small_alltypesorc3a.FieldSchema(name:cfloat, type:float, comment:null), (small_alltypesorc4a)small_alltypesorc4a.FieldSchema(name:cfloat, type:float, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc_a.cint EXPRESSION [(small_alltypesorc1a)small_alltypesorc1a.FieldSchema(name:cint, type:int, comment:null), (small_alltypesorc2a)small_alltypesorc2a.FieldSchema(name:cint, type:int, comment:null), (small_alltypesorc3a)small_alltypesorc3a.FieldSchema(name:cint, type:int, comment:null), (small_alltypesorc4a)small_alltypesorc4a.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc_a.csmallint EXPRESSION [(small_alltypesorc1a)small_alltypesorc1a.FieldSchema(name:csmallint, type:smallint, comment:null), (small_alltypesorc2a)small_alltypesorc2a.FieldSchema(name:csmallint, type:smallint, comment:null), (small_alltypesorc3a)small_alltypesorc3a.FieldSchema(name:csmallint, type:smallint, comment:null), (small_alltypesorc4a)small_alltypesorc4a.FieldSchema(name:csmallint, type:smallint, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc_a.cstring1 EXPRESSION [(small_alltypesorc1a)small_alltypesorc1a.FieldSchema(name:cstring1, type:string, comment:null), (small_alltypesorc2a)small_alltypesorc2a.FieldSchema(name:cstring1, type:string, comment:null), (small_alltypesorc3a)small_alltypesorc3a.FieldSchema(name:cstring1, type:string, comment:null), (small_alltypesorc4a)small_alltypesorc4a.FieldSchema(name:cstring1, type:string, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc_a.cstring2 EXPRESSION [(small_alltypesorc1a)small_alltypesorc1a.FieldSchema(name:cstring2, type:string, comment:null), (small_alltypesorc2a)small_alltypesorc2a.FieldSchema(name:cstring2, type:string, comment:null), (small_alltypesorc3a)small_alltypesorc3a.FieldSchema(name:cstring2, type:string, comment:null), (small_alltypesorc4a)small_alltypesorc4a.FieldSchema(name:cstring2, type:string, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc_a.ctimestamp1 EXPRESSION [(small_alltypesorc1a)small_alltypesorc1a.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), (small_alltypesorc2a)small_alltypesorc2a.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), (small_alltypesorc3a)small_alltypesorc3a.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), (small_alltypesorc4a)small_alltypesorc4a.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc_a.ctimestamp2 EXPRESSION [(small_alltypesorc1a)small_alltypesorc1a.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), (small_alltypesorc2a)small_alltypesorc2a.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), (small_alltypesorc3a)small_alltypesorc3a.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), (small_alltypesorc4a)small_alltypesorc4a.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: small_alltypesorc_a.ctinyint EXPRESSION [(small_alltypesorc1a)small_alltypesorc1a.FieldSchema(name:ctinyint, type:tinyint, comment:null), (small_alltypesorc2a)small_alltypesorc2a.FieldSchema(name:ctinyint, type:tinyint, comment:null), (small_alltypesorc3a)small_alltypesorc3a.FieldSchema(name:ctinyint, type:tinyint, comment:null), (small_alltypesorc4a)small_alltypesorc4a.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
-PREHOOK: query: ANALYZE TABLE small_alltypesorc_a COMPUTE STATISTICS
+POSTHOOK: Output: default@small_alltypesorc_a_n1
+POSTHOOK: Lineage: small_alltypesorc_a_n1.cbigint EXPRESSION [(small_alltypesorc1a_n1)small_alltypesorc1a_n1.FieldSchema(name:cbigint, type:bigint, comment:null), (small_alltypesorc2a_n1)small_alltypesorc2a_n1.FieldSchema(name:cbigint, type:bigint, comment:null), (small_alltypesorc3a_n1)small_alltypesorc3a_n1.FieldSchema(name:cbigint, type:bigint, comment:null), (small_alltypesorc4a_n1)small_alltypesorc4a_n1.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_a_n1.cboolean1 EXPRESSION [(small_alltypesorc1a_n1)small_alltypesorc1a_n1.FieldSchema(name:cboolean1, type:boolean, comment:null), (small_alltypesorc2a_n1)small_alltypesorc2a_n1.FieldSchema(name:cboolean1, type:boolean, comment:null), (small_alltypesorc3a_n1)small_alltypesorc3a_n1.FieldSchema(name:cboolean1, type:boolean, comment:null), (small_alltypesorc4a_n1)small_alltypesorc4a_n1.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_a_n1.cboolean2 EXPRESSION [(small_alltypesorc1a_n1)small_alltypesorc1a_n1.FieldSchema(name:cboolean2, type:boolean, comment:null), (small_alltypesorc2a_n1)small_alltypesorc2a_n1.FieldSchema(name:cboolean2, type:boolean, comment:null), (small_alltypesorc3a_n1)small_alltypesorc3a_n1.FieldSchema(name:cboolean2, type:boolean, comment:null), (small_alltypesorc4a_n1)small_alltypesorc4a_n1.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_a_n1.cdouble EXPRESSION [(small_alltypesorc1a_n1)small_alltypesorc1a_n1.FieldSchema(name:cdouble, type:double, comment:null), (small_alltypesorc2a_n1)small_alltypesorc2a_n1.FieldSchema(name:cdouble, type:double, comment:null), (small_alltypesorc3a_n1)small_alltypesorc3a_n1.FieldSchema(name:cdouble, type:double, comment:null), (small_alltypesorc4a_n1)small_alltypesorc4a_n1.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_a_n1.cfloat EXPRESSION [(small_alltypesorc1a_n1)small_alltypesorc1a_n1.FieldSchema(name:cfloat, type:float, comment:null), (small_alltypesorc2a_n1)small_alltypesorc2a_n1.FieldSchema(name:cfloat, type:float, comment:null), (small_alltypesorc3a_n1)small_alltypesorc3a_n1.FieldSchema(name:cfloat, type:float, comment:null), (small_alltypesorc4a_n1)small_alltypesorc4a_n1.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_a_n1.cint EXPRESSION [(small_alltypesorc1a_n1)small_alltypesorc1a_n1.FieldSchema(name:cint, type:int, comment:null), (small_alltypesorc2a_n1)small_alltypesorc2a_n1.FieldSchema(name:cint, type:int, comment:null), (small_alltypesorc3a_n1)small_alltypesorc3a_n1.FieldSchema(name:cint, type:int, comment:null), (small_alltypesorc4a_n1)small_alltypesorc4a_n1.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_a_n1.csmallint EXPRESSION [(small_alltypesorc1a_n1)small_alltypesorc1a_n1.FieldSchema(name:csmallint, type:smallint, comment:null), (small_alltypesorc2a_n1)small_alltypesorc2a_n1.FieldSchema(name:csmallint, type:smallint, comment:null), (small_alltypesorc3a_n1)small_alltypesorc3a_n1.FieldSchema(name:csmallint, type:smallint, comment:null), (small_alltypesorc4a_n1)small_alltypesorc4a_n1.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_a_n1.cstring1 EXPRESSION [(small_alltypesorc1a_n1)small_alltypesorc1a_n1.FieldSchema(name:cstring1, type:string, comment:null), (small_alltypesorc2a_n1)small_alltypesorc2a_n1.FieldSchema(name:cstring1, type:string, comment:null), (small_alltypesorc3a_n1)small_alltypesorc3a_n1.FieldSchema(name:cstring1, type:string, comment:null), (small_alltypesorc4a_n1)small_alltypesorc4a_n1.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_a_n1.cstring2 EXPRESSION [(small_alltypesorc1a_n1)small_alltypesorc1a_n1.FieldSchema(name:cstring2, type:string, comment:null), (small_alltypesorc2a_n1)small_alltypesorc2a_n1.FieldSchema(name:cstring2, type:string, comment:null), (small_alltypesorc3a_n1)small_alltypesorc3a_n1.FieldSchema(name:cstring2, type:string, comment:null), (small_alltypesorc4a_n1)small_alltypesorc4a_n1.FieldSchema(name:cstring2, type:string, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_a_n1.ctimestamp1 EXPRESSION [(small_alltypesorc1a_n1)small_alltypesorc1a_n1.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), (small_alltypesorc2a_n1)small_alltypesorc2a_n1.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), (small_alltypesorc3a_n1)small_alltypesorc3a_n1.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), (small_alltypesorc4a_n1)small_alltypesorc4a_n1.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_a_n1.ctimestamp2 EXPRESSION [(small_alltypesorc1a_n1)small_alltypesorc1a_n1.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), (small_alltypesorc2a_n1)small_alltypesorc2a_n1.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), (small_alltypesorc3a_n1)small_alltypesorc3a_n1.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), (small_alltypesorc4a_n1)small_alltypesorc4a_n1.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: small_alltypesorc_a_n1.ctinyint EXPRESSION [(small_alltypesorc1a_n1)small_alltypesorc1a_n1.FieldSchema(name:ctinyint, type:tinyint, comment:null), (small_alltypesorc2a_n1)small_alltypesorc2a_n1.FieldSchema(name:ctinyint, type:tinyint, comment:null), (small_alltypesorc3a_n1)small_alltypesorc3a_n1.FieldSchema(name:ctinyint, type:tinyint, comment:null), (small_alltypesorc4a_n1)small_alltypesorc4a_n1.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+PREHOOK: query: ANALYZE TABLE small_alltypesorc_a_n1 COMPUTE STATISTICS
 PREHOOK: type: QUERY
-PREHOOK: Input: default@small_alltypesorc_a
-PREHOOK: Output: default@small_alltypesorc_a
-POSTHOOK: query: ANALYZE TABLE small_alltypesorc_a COMPUTE STATISTICS
+PREHOOK: Input: default@small_alltypesorc_a_n1
+PREHOOK: Output: default@small_alltypesorc_a_n1
+POSTHOOK: query: ANALYZE TABLE small_alltypesorc_a_n1 COMPUTE STATISTICS
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@small_alltypesorc_a
-POSTHOOK: Output: default@small_alltypesorc_a
-PREHOOK: query: ANALYZE TABLE small_alltypesorc_a COMPUTE STATISTICS FOR COLUMNS
+POSTHOOK: Input: default@small_alltypesorc_a_n1
+POSTHOOK: Output: default@small_alltypesorc_a_n1
+PREHOOK: query: ANALYZE TABLE small_alltypesorc_a_n1 COMPUTE STATISTICS FOR COLUMNS
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@small_alltypesorc_a
-PREHOOK: Output: default@small_alltypesorc_a
+PREHOOK: Input: default@small_alltypesorc_a_n1
+PREHOOK: Output: default@small_alltypesorc_a_n1
 #### A masked pattern was here ####
-POSTHOOK: query: ANALYZE TABLE small_alltypesorc_a COMPUTE STATISTICS FOR COLUMNS
+POSTHOOK: query: ANALYZE TABLE small_alltypesorc_a_n1 COMPUTE STATISTICS FOR COLUMNS
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@small_alltypesorc_a
-POSTHOOK: Output: default@small_alltypesorc_a
+POSTHOOK: Input: default@small_alltypesorc_a_n1
+POSTHOOK: Output: default@small_alltypesorc_a_n1
 #### A masked pattern was here ####
-PREHOOK: query: select * from small_alltypesorc_a
+PREHOOK: query: select * from small_alltypesorc_a_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@small_alltypesorc_a
+PREHOOK: Input: default@small_alltypesorc_a_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from small_alltypesorc_a
+POSTHOOK: query: select * from small_alltypesorc_a_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@small_alltypesorc_a
+POSTHOOK: Input: default@small_alltypesorc_a_n1
 #### A masked pattern was here ####
 -51	NULL	-31312632	1086455747	-51.0	NULL	NULL	Bc7xt12568c451o64LF5	1969-12-31 16:00:08.451	NULL	NULL	true
 -51	NULL	-337975743	608681041	-51.0	NULL	NULL	Ih2r28o6	1969-12-31 16:00:08.451	NULL	NULL	true
@@ -228,121 +228,121 @@ NULL	NULL	-899422227	-1645852809	NULL	NULL	73xdw4X	xH7445Rals48VOulSyR5F	NULL	19
 NULL	NULL	-971543377	-1645852809	NULL	NULL	uN803aW	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:05.43	false	false
 PREHOOK: query: explain vectorization detail formatted
 select count(*) from (select c.cstring1 
-from small_alltypesorc_a c
-left outer join small_alltypesorc_a cd
+from small_alltypesorc_a_n1 c
+left outer join small_alltypesorc_a_n1 cd
   on cd.cint = c.cint 
-left outer join small_alltypesorc_a hd
+left outer join small_alltypesorc_a_n1 hd
   on hd.cstring1 = c.cstring1
 ) t1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail formatted
 select count(*) from (select c.cstring1 
-from small_alltypesorc_a c
-left outer join small_alltypesorc_a cd
+from small_alltypesorc_a_n1 c
+left outer join small_alltypesorc_a_n1 cd
   on cd.cint = c.cint 
-left outer join small_alltypesorc_a hd
+left outer join small_alltypesorc_a_n1 hd
   on hd.cstring1 = c.cstring1
 ) t1
 POSTHOOK: type: QUERY
-{"PLAN VECTORIZATION":{"enabled":true,"enabledConditionsMet":["hive.vectorized.execution.enabled IS true"]},"STAGE DEPENDENCIES":{"Stage-8":{"ROOT STAGE":"TRUE"},"Stage-3":{"DEPENDENT STAGES":"Stage-8"},"Stage-0":{"DEPENDENT STAGES":"Stage-3"}},"STAGE PLANS":{"Stage-8":{"Map Reduce Local Work":{"Alias -> Map Local Tables:":{"$hdt$_1:cd":{"Fetch Operator":{"limit:":"-1"}},"$hdt$_2:hd":{"Fetch Operator":{"limit:":"-1"}}},"Alias -> Map Local Operator Tree:":{"$hdt$_1:cd":{"TableScan":{"alias:":"cd","columns:":["cint"],"database:":"default","Statistics:":"Num rows: 20 Data size: 4400 Basic stats: COMPLETE Column stats: NONE","table:":"small_alltypesorc_a","isTempTable:":"false","OperatorId:":"TS_2","children":{"Select Operator":{"expressions:":"cint (type: int)","columnExprMap:":{"_col0":"cint"},"outputColumnNames:":["_col0"],"Statistics:":"Num rows: 20 Data size: 4400 Basic stats: COMPLETE Column stats: NONE","OperatorId:":"SEL_3","children":{"HashTable Sink Operator":{"keys:":{"0":"_col0 (type: int)","1":"_col0 (type: int)"},"OperatorId:":"HASHTABLESINK_26"}}}}}},"$hdt$_2:hd":{"TableScan":{"alias:":"hd","columns:":["cstring1"],"database:":"default","Statistics:":"Num rows: 20 Data size: 4400 Basic stats: COMPLETE Column stats: NONE","table:":"small_alltypesorc_a","isTempTable:":"false","OperatorId:":"TS_4","children":{"Select Operator":{"expressions:":"cstring1 (type: string)","columnExprMap:":{"_col0":"cstring1"},"outputColumnNames:":["_col0"],"Statistics:":"Num rows: 20 Data size: 4400 Basic stats: COMPLETE Column stats: NONE","OperatorId:":"SEL_5","children":{"HashTable Sink Operator":{"keys:":{"0":"_col1 (type: string)","1":"_col0 (type: string)"},"OperatorId:":"HASHTABLESINK_24"}}}}}}}}},"Stage-3":{"Map Reduce":{"Map Operator Tree:":[{"TableScan":{"alias:":"c","columns:":["cint","cstring1"],"database:":"default","Statistics:":"Num rows: 20 Data size: 4400 Basic stats: COMPLETE Column stats: NONE","table:":"small_alltypesorc_a","TableScan Vectorization:":{"native:":"true","vectorizationSchemaColumns:":"[0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]"},"isTempTable:":"false","OperatorId:":"TS_0","children":{"Select Operator":{"expressions:":"cint (type: int), cstring1 (type: string)","columnExprMap:":{"_col0":"cint","_col1":"cstring1"},"outputColumnNames:":["_col0","_col1"],"Select Vectorization:":{"className:":"VectorSelectOperator","native:":"true","projectedOutputColumnNums:":"[2, 6]"},"Statistics:":"Num rows: 20 Data size: 4400 Basic stats: COMPLETE Column stats: NONE","OperatorId:":"SEL_28","children":{"Map Join Operator":{"columnExprMap:":{"_col1":"0:_col1"},"condition map:":[{"":"Left Outer Join 0 to 1"}],"keys:":{"0":"_col0 (type: int)","1":"_col0 (type: int)"},"Map Join Vectorization:":{"bigTableKeyExpressions:":["col 2:int"],"bigTableValueExpressions:":["col 6:string"],"className:":"VectorMapJoinOperator","native:":"false","nativeConditionsMet:":["hive.mapjoin.optimized.hashtable IS true","hive.vectorized.execution.mapjoin.native.enabled IS true","One MapJoin Condition IS true","No nullsafe IS true","Small table vectorizes IS true","Outer Join has keys IS true","Optimized Table and Supports Key Types IS true"],"nativeConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false"]},"outputColumnNames:":["_col1"],"Statistics:":"Num rows: 22 Data size: 4840 Basic stats: COMPLETE Column stats: NONE","OperatorId:":"MAPJOIN_29","children":{"Map Join Operator":{"condition map:":[{"":"Left Outer Join 0 to 1"}],"keys:":{"0":"_col1 (type: string)","1":"_col0 (type: string)"},"Map Join Vectorization:":{"bigTableKeyExpressions:":["col 0:string"],"className:":"VectorMapJoinOperator","native:":"false","nativeConditionsMet:":["hive.mapjoin.optimized.hashtable IS true","hive.vectorized.execution.mapjoin.native.enabled IS true","One MapJoin Condition IS true","No nullsafe IS true","Small table vectorizes IS true","Outer Join has keys IS true","Optimized Table and Supports Key Types IS true"],"nativeConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false"]},"Statistics:":"Num rows: 24 Data size: 5324 Basic stats: COMPLETE Column stats: NONE","OperatorId:":"MAPJOIN_30","children":{"Group By Operator":{"aggregations:":["count()"],"Group By Vectorization:":{"aggregators:":["VectorUDAFCountStar(*) -> bigint"],"className:":"VectorGroupByOperator","groupByMode:":"HASH","native:":"false","vectorProcessingMode:":"HASH","projectedOutputColumnNums:":"[0]"},"mode:":"hash","outputColumnNames:":["_col0"],"Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","OperatorId:":"GBY_31","children":{"Reduce Output Operator":{"columnExprMap:":{"VALUE._col0":"_col0"},"sort order:":"","Reduce Sink Vectorization:":{"className:":"VectorReduceSinkOperator","native:":"false","nativeConditionsMet:":["hive.vectorized.execution.reducesink.new.enabled IS true","No PTF TopN IS true","No DISTINCT columns IS true","BinarySortableSerDe for keys IS true","LazyBinarySerDe for values IS true"],"nativeConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false"]},"Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","value expressions:":"_col0 (type: bigint)","OperatorId:":"RS_32"}}}}}}}}}}}}],"Execution mode:":"vectorized","Map Vectorization:":{"enabled:":"true","enabledConditionsMet:":["hive.vectorized.use.vectorized.input.format IS true"],"inputFormatFeatureSupport:":"[]","featureSupportInUse:":"[]","inputFileFormats:":["org.apache.hadoop.hive.ql.io.orc.OrcInputFormat"],"allNative:":"false","usesVectorUDFAdaptor:":"false","vectorized:":"true","rowBatchContext:":{"dataColumnCount:":"12","includeColumns:":"[2, 6]","dataColumns:":["ctinyint:tinyint","csmallint:smallint","cint:int","cbigint:bigint","cfloat:float","cdouble:double","cstring1:string","cstring2:string","ctimestamp1:timestamp","ctimestamp2:timestamp","cboolean1:boolean","cboolean2:boolean"],"partitionColumnCount:":"0","scratchColumnTypeNames:":"[]"}},"Local Work:":{"Map Reduce Local Work":{}},"Reduce Vectorization:":{"enabled:":"false","enableConditionsMet:":["hive.vectorized.execution.reduce.enabled IS true"],"enableConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false"]},"Reduce Operator Tree:":{"Group By Operator":{"aggregations:":["count(VALUE._col0)"],"mode:":"mergepartial","outputColumnNames:":["_col0"],"Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","OperatorId:":"GBY_15","children":{"File Output Operator":{"compressed:":"false","Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","table:":{"input format:":"org.apache.hadoop.mapred.SequenceFileInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"},"OperatorId:":"FS_17"}}}}}},"Stage-0":{"Fetch Operator":{"limit:":"-1","Processor Tree:":{"ListSink":{"OperatorId:":"LIST_SINK_33"}}}}}}
+{"PLAN VECTORIZATION":{"enabled":true,"enabledConditionsMet":["hive.vectorized.execution.enabled IS true"]},"STAGE DEPENDENCIES":{"Stage-8":{"ROOT STAGE":"TRUE"},"Stage-3":{"DEPENDENT STAGES":"Stage-8"},"Stage-0":{"DEPENDENT STAGES":"Stage-3"}},"STAGE PLANS":{"Stage-8":{"Map Reduce Local Work":{"Alias -> Map Local Tables:":{"$hdt$_1:cd":{"Fetch Operator":{"limit:":"-1"}},"$hdt$_2:hd":{"Fetch Operator":{"limit:":"-1"}}},"Alias -> Map Local Operator Tree:":{"$hdt$_1:cd":{"TableScan":{"alias:":"cd","columns:":["cint"],"database:":"default","Statistics:":"Num rows: 20 Data size: 4400 Basic stats: COMPLETE Column stats: NONE","table:":"small_alltypesorc_a_n1","isTempTable:":"false","OperatorId:":"TS_2","children":{"Select Operator":{"expressions:":"cint (type: int)","columnExprMap:":{"_col0":"cint"},"outputColumnNames:":["_col0"],"Statistics:":"Num rows: 20 Data size: 4400 Basic stats: COMPLETE Column stats: NONE","OperatorId:":"SEL_3","children":{"HashTable Sink Operator":{"keys:":{"0":"_col0 (type: int)","1":"_col0 (type: int)"},"OperatorId:":"HASHTABLESINK_26"}}}}}},"$hdt$_2:hd":{"TableScan":{"alias:":"hd","columns:":["cstring1"],"database:":"default","Statistics:":"Num rows: 20 Data size: 4400 Basic stats: COMPLETE Column stats: NONE","table:":"small_alltypesorc_a_n1","isTempTable:":"false","OperatorId:":"TS_4","children":{"Select Operator":{"expressions:":"cstring1 (type: string)","columnExprMap:":{"_col0":"cstring1"},"outputColumnNames:":["_col0"],"Statistics:":"Num rows: 20 Data size: 4400 Basic stats: COMPLETE Column stats: NONE","OperatorId:":"SEL_5","children":{"HashTable Sink Operator":{"keys:":{"0":"_col1 (type: string)","1":"_col0 (type: string)"},"OperatorId:":"HASHTABLESINK_24"}}}}}}}}},"Stage-3":{"Map Reduce":{"Map Operator Tree:":[{"TableScan":{"alias:":"c","columns:":["cint","cstring1"],"database:":"default","Statistics:":"Num rows: 20 Data size: 4400 Basic stats: COMPLETE Column stats: NONE","table:":"small_alltypesorc_a_n1","TableScan Vectorization:":{"native:":"true","vectorizationSchemaColumns:":"[0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]"},"isTempTable:":"false","OperatorId:":"TS_0","children":{"Select Operator":{"expressions:":"cint (type: int), cstring1 (type: string)","columnExprMap:":{"_col0":"cint","_col1":"cstring1"},"outputColumnNames:":["_col0","_col1"],"Select Vectorization:":{"className:":"VectorSelectOperator","native:":"true","projectedOutputColumnNums:":"[2, 6]"},"Statistics:":"Num rows: 20 Data size: 4400 Basic stats: COMPLETE Column stats: NONE","OperatorId:":"SEL_28","children":{"Map Join Operator":{"columnExprMap:":{"_col1":"0:_col1"},"condition map:":[{"":"Left Outer Join 0 to 1"}],"keys:":{"0":"_col0 (type: int)","1":"_col0 (type: int)"},"Map Join Vectorization:":{"bigTableKeyExpressions:":["col 2:int"],"bigTableValueExpressions:":["col 6:string"],"className:":"VectorMapJoinOperator","native:":"false","nativeConditionsMet:":["hive.mapjoin.optimized.hashtable IS true","hive.vectorized.execution.mapjoin.native.enabled IS true","One MapJoin Condition IS true","No nullsafe IS true","Small table vectorizes IS true","Outer Join has keys IS true","Optimized Table and Supports Key Types IS true"],"nativeConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false"]},"outputColumnNames:":["_col1"],"Statistics:":"Num rows: 22 Data size: 4840 Basic stats: COMPLETE Column stats: NONE","OperatorId:":"MAPJOIN_29","children":{"Map Join Operator":{"condition map:":[{"":"Left Outer Join 0 to 1"}],"keys:":{"0":"_col1 (type: string)","1":"_col0 (type: string)"},"Map Join Vectorization:":{"bigTableKeyExpressions:":["col 0:string"],"className:":"VectorMapJoinOperator","native:":"false","nativeConditionsMet:":["hive.mapjoin.optimized.hashtable IS true","hive.vectorized.execution.mapjoin.native.enabled IS true","One MapJoin Condition IS true","No nullsafe IS true","Small table vectorizes IS true","Outer Join has keys IS true","Optimized Table and Supports Key Types IS true"],"nativeConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false"]},"Statistics:":"Num rows: 24 Data size: 5324 Basic stats: COMPLETE Column stats: NONE","OperatorId:":"MAPJOIN_30","children":{"Group By Operator":{"aggregations:":["count()"],"Group By Vectorization:":{"aggregators:":["VectorUDAFCountStar(*) -> bigint"],"className:":"VectorGroupByOperator","groupByMode:":"HASH","native:":"false","vectorProcessingMode:":"HASH","projectedOutputColumnNums:":"[0]"},"mode:":"hash","outputColumnNames:":["_col0"],"Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","OperatorId:":"GBY_31","children":{"Reduce Output Operator":{"columnExprMap:":{"VALUE._col0":"_col0"},"sort order:":"","Reduce Sink Vectorization:":{"className:":"VectorReduceSinkOperator","native:":"false","nativeConditionsMet:":["hive.vectorized.execution.reducesink.new.enabled IS true","No PTF TopN IS true","No DISTINCT columns IS true","BinarySortableSerDe for keys IS true","LazyBinarySerDe for values IS true"],"nativeConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false"]},"Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","value expressions:":"_col0 (type: bigint)","OperatorId:":"RS_32"}}}}}}}}}}}}],"Execution mode:":"vectorized","Map Vectorization:":{"enabled:":"true","enabledConditionsMet:":["hive.vectorized.use.vectorized.input.format IS true"],"inputFormatFeatureSupport:":"[]","featureSupportInUse:":"[]","inputFileFormats:":["org.apache.hadoop.hive.ql.io.orc.OrcInputFormat"],"allNative:":"false","usesVectorUDFAdaptor:":"false","vectorized:":"true","rowBatchContext:":{"dataColumnCount:":"12","includeColumns:":"[2, 6]","dataColumns:":["ctinyint:tinyint","csmallint:smallint","cint:int","cbigint:bigint","cfloat:float","cdouble:double","cstring1:string","cstring2:string","ctimestamp1:timestamp","ctimestamp2:timestamp","cboolean1:boolean","cboolean2:boolean"],"partitionColumnCount:":"0","scratchColumnTypeNames:":"[]"}},"Local Work:":{"Map Reduce Local Work":{}},"Reduce Vectorization:":{"enabled:":"false","enableConditionsMet:":["hive.vectorized.execution.reduce.enabled IS true"],"enableConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false"]},"Reduce Operator Tree:":{"Group By Operator":{"aggregations:":["count(VALUE._col0)"],"mode:":"mergepartial","outputColumnNames:":["_col0"],"Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","OperatorId:":"GBY_15","children":{"File Output Operator":{"compressed:":"false","Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","table:":{"input format:":"org.apache.hadoop.mapred.SequenceFileInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"},"OperatorId:":"FS_17"}}}}}},"Stage-0":{"Fetch Operator":{"limit:":"-1","Processor Tree:":{"ListSink":{"OperatorId:":"LIST_SINK_33"}}}}}}
 PREHOOK: query: select count(*) from (select c.cstring1
-from small_alltypesorc_a c
-left outer join small_alltypesorc_a cd
+from small_alltypesorc_a_n1 c
+left outer join small_alltypesorc_a_n1 cd
   on cd.cint = c.cint 
-left outer join small_alltypesorc_a hd
+left outer join small_alltypesorc_a_n1 hd
   on hd.cstring1 = c.cstring1
 ) t1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@small_alltypesorc_a
+PREHOOK: Input: default@small_alltypesorc_a_n1
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from (select c.cstring1
-from small_alltypesorc_a c
-left outer join small_alltypesorc_a cd
+from small_alltypesorc_a_n1 c
+left outer join small_alltypesorc_a_n1 cd
   on cd.cint = c.cint 
-left outer join small_alltypesorc_a hd
+left outer join small_alltypesorc_a_n1 hd
   on hd.cstring1 = c.cstring1
 ) t1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@small_alltypesorc_a
+POSTHOOK: Input: default@small_alltypesorc_a_n1
 #### A masked pattern was here ####
 20
 PREHOOK: query: explain vectorization detail formatted
 select count(*) from (select c.cstring1 
-from small_alltypesorc_a c
-left outer join small_alltypesorc_a cd
+from small_alltypesorc_a_n1 c
+left outer join small_alltypesorc_a_n1 cd
   on cd.cstring2 = c.cstring2 
-left outer join small_alltypesorc_a hd
+left outer join small_alltypesorc_a_n1 hd
   on hd.cstring1 = c.cstring1
 ) t1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail formatted
 select count(*) from (select c.cstring1 
-from small_alltypesorc_a c
-left outer join small_alltypesorc_a cd
+from small_alltypesorc_a_n1 c
+left outer join small_alltypesorc_a_n1 cd
   on cd.cstring2 = c.cstring2 
-left outer join small_alltypesorc_a hd
+left outer join small_alltypesorc_a_n1 hd
   on hd.cstring1 = c.cstring1
 ) t1
 POSTHOOK: type: QUERY
-{"PLAN VECTORIZATION":{"enabled":true,"enabledConditionsMet":["hive.vectorized.execution.enabled IS true"]},"STAGE DEPENDENCIES":{"Stage-8":{"ROOT STAGE":"TRUE"},"Stage-3":{"DEPENDENT STAGES":"Stage-8"},"Stage-0":{"DEPENDENT STAGES":"Stage-3"}},"STAGE PLANS":{"Stage-8":{"Map Reduce Local Work":{"Alias -> Map Local Tables:":{"$hdt$_1:cd":{"Fetch Operator":{"limit:":"-1"}},"$hdt$_2:hd":{"Fetch Operator":{"limit:":"-1"}}},"Alias -> Map Local Operator Tree:":{"$hdt$_1:cd":{"TableScan":{"alias:":"cd","columns:":["cstring2"],"database:":"default","Statistics:":"Num rows: 20 Data size: 4400 Basic stats: COMPLETE Column stats: NONE","table:":"small_alltypesorc_a","isTempTable:":"false","OperatorId:":"TS_2","children":{"Select Operator":{"expressions:":"cstring2 (type: string)","columnExprMap:":{"_col0":"cstring2"},"outputColumnNames:":["_col0"],"Statistics:":"Num rows: 20 Data size: 4400 Basic stats: COMPLETE Column stats: NONE","OperatorId:":"SEL_3","children":{"HashTable Sink Operator":{"keys:":{"0":"_col1 (type: string)","1":"_col0 (type: string)"},"OperatorId:":"HASHTABLESINK_26"}}}}}},"$hdt$_2:hd":{"TableScan":{"alias:":"hd","columns:":["cstring1"],"database:":"default","Statistics:":"Num rows: 20 Data size: 4400 Basic stats: COMPLETE Column stats: NONE","table:":"small_alltypesorc_a","isTempTable:":"false","OperatorId:":"TS_4","children":{"Select Operator":{"expressions:":"cstring1 (type: string)","columnExprMap:":{"_col0":"cstring1"},"outputColumnNames:":["_col0"],"Statistics:":"Num rows: 20 Data size: 4400 Basic stats: COMPLETE Column stats: NONE","OperatorId:":"SEL_5","children":{"HashTable Sink Operator":{"keys:":{"0":"_col0 (type: string)","1":"_col0 (type: string)"},"OperatorId:":"HASHTABLESINK_24"}}}}}}}}},"Stage-3":{"Map Reduce":{"Map Operator Tree:":[{"TableScan":{"alias:":"c","columns:":["cstring1","cstring2"],"database:":"default","Statistics:":"Num rows: 20 Data size: 4400 Basic stats: COMPLETE Column stats: NONE","table:":"small_alltypesorc_a","TableScan Vectorization:":{"native:":"true","vectorizationSchemaColumns:":"[0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]"},"isTempTable:":"false","OperatorId:":"TS_0","children":{"Select Operator":{"expressions:":"cstring1 (type: string), cstring2 (type: string)","columnExprMap:":{"_col0":"cstring1","_col1":"cstring2"},"outputColumnNames:":["_col0","_col1"],"Select Vectorization:":{"className:":"VectorSelectOperator","native:":"true","projectedOutputColumnNums:":"[6, 7]"},"Statistics:":"Num rows: 20 Data size: 4400 Basic stats: COMPLETE Column stats: NONE","OperatorId:":"SEL_28","children":{"Map Join Operator":{"columnExprMap:":{"_col0":"0:_col0"},"condition map:":[{"":"Left Outer Join 0 to 1"}],"keys:":{"0":"_col1 (type: string)","1":"_col0 (type: string)"},"Map Join Vectorization:":{"bigTableKeyExpressions:":["col 7:string"],"bigTableValueExpressions:":["col 6:string"],"className:":"VectorMapJoinOperator","native:":"false","nativeConditionsMet:":["hive.mapjoin.optimized.hashtable IS true","hive.vectorized.execution.mapjoin.native.enabled IS true","One MapJoin Condition IS true","No nullsafe IS true","Small table vectorizes IS true","Outer Join has keys IS true","Optimized Table and Supports Key Types IS true"],"nativeConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false"]},"outputColumnNames:":["_col0"],"Statistics:":"Num rows: 22 Data size: 4840 Basic stats: COMPLETE Column stats: NONE","OperatorId:":"MAPJOIN_29","children":{"Map Join Operator":{"condition map:":[{"":"Left Outer Join 0 to 1"}],"keys:":{"0":"_col0 (type: string)","1":"_col0 (type: string)"},"Map Join Vectorization:":{"bigTableKeyExpressions:":["col 0:string"],"className:":"VectorMapJoinOperator","native:":"false","nativeConditionsMet:":["hive.mapjoin.optimized.hashtable IS true","hive.vectorized.execution.mapjoin.native.enabled IS true","One MapJoin Condition IS true","No nullsafe IS true","Small table vectorizes IS true","Outer Join has keys IS true","Optimized Table and Supports Key Types IS true"],"nativeConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false"]},"Statistics:":"Num rows: 24 Data size: 5324 Basic stats: COMPLETE Column stats: NONE","OperatorId:":"MAPJOIN_30","children":{"Group By Operator":{"aggregations:":["count()"],"Group By Vectorization:":{"aggregators:":["VectorUDAFCountStar(*) -> bigint"],"className:":"VectorGroupByOperator","groupByMode:":"HASH","native:":"false","vectorProcessingMode:":"HASH","projectedOutputColumnNums:":"[0]"},"mode:":"hash","outputColumnNames:":["_col0"],"Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","OperatorId:":"GBY_31","children":{"Reduce Output Operator":{"columnExprMap:":{"VALUE._col0":"_col0"},"sort order:":"","Reduce Sink Vectorization:":{"className:":"VectorReduceSinkOperator","native:":"false","nativeConditionsMet:":["hive.vectorized.execution.reducesink.new.enabled IS true","No PTF TopN IS true","No DISTINCT columns IS true","BinarySortableSerDe for keys IS true","LazyBinarySerDe for values IS true"],"nativeConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false"]},"Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","value expressions:":"_col0 (type: bigint)","OperatorId:":"RS_32"}}}}}}}}}}}}],"Execution mode:":"vectorized","Map Vectorization:":{"enabled:":"true","enabledConditionsMet:":["hive.vectorized.use.vectorized.input.format IS true"],"inputFormatFeatureSupport:":"[]","featureSupportInUse:":"[]","inputFileFormats:":["org.apache.hadoop.hive.ql.io.orc.OrcInputFormat"],"allNative:":"false","usesVectorUDFAdaptor:":"false","vectorized:":"true","rowBatchContext:":{"dataColumnCount:":"12","includeColumns:":"[6, 7]","dataColumns:":["ctinyint:tinyint","csmallint:smallint","cint:int","cbigint:bigint","cfloat:float","cdouble:double","cstring1:string","cstring2:string","ctimestamp1:timestamp","ctimestamp2:timestamp","cboolean1:boolean","cboolean2:boolean"],"partitionColumnCount:":"0","scratchColumnTypeNames:":"[]"}},"Local Work:":{"Map Reduce Local Work":{}},"Reduce Vectorization:":{"enabled:":"false","enableConditionsMet:":["hive.vectorized.execution.reduce.enabled IS true"],"enableConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false"]},"Reduce Operator Tree:":{"Group By Operator":{"aggregations:":["count(VALUE._col0)"],"mode:":"mergepartial","outputColumnNames:":["_col0"],"Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","OperatorId:":"GBY_15","children":{"File Output Operator":{"compressed:":"false","Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","table:":{"input format:":"org.apache.hadoop.mapred.SequenceFileInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"},"OperatorId:":"FS_17"}}}}}},"Stage-0":{"Fetch Operator":{"limit:":"-1","Processor Tree:":{"ListSink":{"OperatorId:":"LIST_SINK_33"}}}}}}
+{"PLAN VECTORIZATION":{"enabled":true,"enabledConditionsMet":["hive.vectorized.execution.enabled IS true"]},"STAGE DEPENDENCIES":{"Stage-8":{"ROOT STAGE":"TRUE"},"Stage-3":{"DEPENDENT STAGES":"Stage-8"},"Stage-0":{"DEPENDENT STAGES":"Stage-3"}},"STAGE PLANS":{"Stage-8":{"Map Reduce Local Work":{"Alias -> Map Local Tables:":{"$hdt$_1:cd":{"Fetch Operator":{"limit:":"-1"}},"$hdt$_2:hd":{"Fetch Operator":{"limit:":"-1"}}},"Alias -> Map Local Operator Tree:":{"$hdt$_1:cd":{"TableScan":{"alias:":"cd","columns:":["cstring2"],"database:":"default","Statistics:":"Num rows: 20 Data size: 4400 Basic stats: COMPLETE Column stats: NONE","table:":"small_alltypesorc_a_n1","isTempTable:":"false","OperatorId:":"TS_2","children":{"Select Operator":{"expressions:":"cstring2 (type: string)","columnExprMap:":{"_col0":"cstring2"},"outputColumnNames:":["_col0"],"Statistics:":"Num rows: 20 Data size: 4400 Basic stats: COMPLETE Column stats: NONE","OperatorId:":"SEL_3","children":{"HashTable Sink Operator":{"keys:":{"0":"_col1 (type: string)","1":"_col0 (type: string)"},"OperatorId:":"HASHTABLESINK_26"}}}}}},"$hdt$_2:hd":{"TableScan":{"alias:":"hd","columns:":["cstring1"],"database:":"default","Statistics:":"Num rows: 20 Data size: 4400 Basic stats: COMPLETE Column stats: NONE","table:":"small_alltypesorc_a_n1","isTempTable:":"false","OperatorId:":"TS_4","children":{"Select Operator":{"expressions:":"cstring1 (type: string)","columnExprMap:":{"_col0":"cstring1"},"outputColumnNames:":["_col0"],"Statistics:":"Num rows: 20 Data size: 4400 Basic stats: COMPLETE Column stats: NONE","OperatorId:":"SEL_5","children":{"HashTable Sink Operator":{"keys:":{"0":"_col0 (type: string)","1":"_col0 (type: string)"},"OperatorId:":"HASHTABLESINK_24"}}}}}}}}},"Stage-3":{"Map Reduce":{"Map Operator Tree:":[{"TableScan":{"alias:":"c","columns:":["cstring1","cstring2"],"database:":"default","Statistics:":"Num rows: 20 Data size: 4400 Basic stats: COMPLETE Column stats: NONE","table:":"small_alltypesorc_a_n1","TableScan Vectorization:":{"native:":"true","vectorizationSchemaColumns:":"[0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]"},"isTempTable:":"false","OperatorId:":"TS_0","children":{"Select Operator":{"expressions:":"cstring1 (type: string), cstring2 (type: string)","columnExprMap:":{"_col0":"cstring1","_col1":"cstring2"},"outputColumnNames:":["_col0","_col1"],"Select Vectorization:":{"className:":"VectorSelectOperator","native:":"true","projectedOutputColumnNums:":"[6, 7]"},"Statistics:":"Num rows: 20 Data size: 4400 Basic stats: COMPLETE Column stats: NONE","OperatorId:":"SEL_28","children":{"Map Join Operator":{"columnExprMap:":{"_col0":"0:_col0"},"condition map:":[{"":"Left Outer Join 0 to 1"}],"keys:":{"0":"_col1 (type: string)","1":"_col0 (type: string)"},"Map Join Vectorization:":{"bigTableKeyExpressions:":["col 7:string"],"bigTableValueExpressions:":["col 6:string"],"className:":"VectorMapJoinOperator","native:":"false","nativeConditionsMet:":["hive.mapjoin.optimized.hashtable IS true","hive.vectorized.execution.mapjoin.native.enabled IS true","One MapJoin Condition IS true","No nullsafe IS true","Small table vectorizes IS true","Outer Join has keys IS true","Optimized Table and Supports Key Types IS true"],"nativeConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false"]},"outputColumnNames:":["_col0"],"Statistics:":"Num rows: 22 Data size: 4840 Basic stats: COMPLETE Column stats: NONE","OperatorId:":"MAPJOIN_29","children":{"Map Join Operator":{"condition map:":[{"":"Left Outer Join 0 to 1"}],"keys:":{"0":"_col0 (type: string)","1":"_col0 (type: string)"},"Map Join Vectorization:":{"bigTableKeyExpressions:":["col 0:string"],"className:":"VectorMapJoinOperator","native:":"false","nativeConditionsMet:":["hive.mapjoin.optimized.hashtable IS true","hive.vectorized.execution.mapjoin.native.enabled IS true","One MapJoin Condition IS true","No nullsafe IS true","Small table vectorizes IS true","Outer Join has keys IS true","Optimized Table and Supports Key Types IS true"],"nativeConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false"]},"Statistics:":"Num rows: 24 Data size: 5324 Basic stats: COMPLETE Column stats: NONE","OperatorId:":"MAPJOIN_30","children":{"Group By Operator":{"aggregations:":["count()"],"Group By Vectorization:":{"aggregators:":["VectorUDAFCountStar(*) -> bigint"],"className:":"VectorGroupByOperator","groupByMode:":"HASH","native:":"false","vectorProcessingMode:":"HASH","projectedOutputColumnNums:":"[0]"},"mode:":"hash","outputColumnNames:":["_col0"],"Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","OperatorId:":"GBY_31","children":{"Reduce Output Operator":{"columnExprMap:":{"VALUE._col0":"_col0"},"sort order:":"","Reduce Sink Vectorization:":{"className:":"VectorReduceSinkOperator","native:":"false","nativeConditionsMet:":["hive.vectorized.execution.reducesink.new.enabled IS true","No PTF TopN IS true","No DISTINCT columns IS true","BinarySortableSerDe for keys IS true","LazyBinarySerDe for values IS true"],"nativeConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false"]},"Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","value expressions:":"_col0 (type: bigint)","OperatorId:":"RS_32"}}}}}}}}}}}}],"Execution mode:":"vectorized","Map Vectorization:":{"enabled:":"true","enabledConditionsMet:":["hive.vectorized.use.vectorized.input.format IS true"],"inputFormatFeatureSupport:":"[]","featureSupportInUse:":"[]","inputFileFormats:":["org.apache.hadoop.hive.ql.io.orc.OrcInputFormat"],"allNative:":"false","usesVectorUDFAdaptor:":"false","vectorized:":"true","rowBatchContext:":{"dataColumnCount:":"12","includeColumns:":"[6, 7]","dataColumns:":["ctinyint:tinyint","csmallint:smallint","cint:int","cbigint:bigint","cfloat:float","cdouble:double","cstring1:string","cstring2:string","ctimestamp1:timestamp","ctimestamp2:timestamp","cboolean1:boolean","cboolean2:boolean"],"partitionColumnCount:":"0","scratchColumnTypeNames:":"[]"}},"Local Work:":{"Map Reduce Local Work":{}},"Reduce Vectorization:":{"enabled:":"false","enableConditionsMet:":["hive.vectorized.execution.reduce.enabled IS true"],"enableConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false"]},"Reduce Operator Tree:":{"Group By Operator":{"aggregations:":["count(VALUE._col0)"],"mode:":"mergepartial","outputColumnNames:":["_col0"],"Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","OperatorId:":"GBY_15","children":{"File Output Operator":{"compressed:":"false","Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","table:":{"input format:":"org.apache.hadoop.mapred.SequenceFileInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"},"OperatorId:":"FS_17"}}}}}},"Stage-0":{"Fetch Operator":{"limit:":"-1","Processor Tree:":{"ListSink":{"OperatorId:":"LIST_SINK_33"}}}}}}
 PREHOOK: query: select count(*) from (select c.cstring1
-from small_alltypesorc_a c
-left outer join small_alltypesorc_a cd
+from small_alltypesorc_a_n1 c
+left outer join small_alltypesorc_a_n1 cd
   on cd.cstring2 = c.cstring2 
-left outer join small_alltypesorc_a hd
+left outer join small_alltypesorc_a_n1 hd
   on hd.cstring1 = c.cstring1
 ) t1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@small_alltypesorc_a
+PREHOOK: Input: default@small_alltypesorc_a_n1
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from (select c.cstring1
-from small_alltypesorc_a c
-left outer join small_alltypesorc_a cd
+from small_alltypesorc_a_n1 c
+left outer join small_alltypesorc_a_n1 cd
   on cd.cstring2 = c.cstring2 
-left outer join small_alltypesorc_a hd
+left outer join small_alltypesorc_a_n1 hd
   on hd.cstring1 = c.cstring1
 ) t1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@small_alltypesorc_a
+POSTHOOK: Input: default@small_alltypesorc_a_n1
 #### A masked pattern was here ####
 28
 PREHOOK: query: explain vectorization detail formatted
 select count(*) from (select c.cstring1 
-from small_alltypesorc_a c
-left outer join small_alltypesorc_a cd
+from small_alltypesorc_a_n1 c
+left outer join small_alltypesorc_a_n1 cd
   on cd.cstring2 = c.cstring2 and cd.cbigint = c.cbigint
-left outer join small_alltypesorc_a hd
+left outer join small_alltypesorc_a_n1 hd
   on hd.cstring1 = c.cstring1 and hd.cint = c.cint
 ) t1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail formatted
 select count(*) from (select c.cstring1 
-from small_alltypesorc_a c
-left outer join small_alltypesorc_a cd
+from small_alltypesorc_a_n1 c
+left outer join small_alltypesorc_a_n1 cd
   on cd.cstring2 = c.cstring2 and cd.cbigint = c.cbigint
-left outer join small_alltypesorc_a hd
+left outer join small_alltypesorc_a_n1 hd
   on hd.cstring1 = c.cstring1 and hd.cint = c.cint
 ) t1
 POSTHOOK: type: QUERY
-{"PLAN VECTORIZATION":{"enabled":true,"enabledConditionsMet":["hive.vectorized.execution.enabled IS true"]},"STAGE DEPENDENCIES":{"Stage-8":{"ROOT STAGE":"TRUE"},"Stage-3":{"DEPENDENT STAGES":"Stage-8"},"Stage-0":{"DEPENDENT STAGES":"Stage-3"}},"STAGE PLANS":{"Stage-8":{"Map Reduce Local Work":{"Alias -> Map Local Tables:":{"$hdt$_1:cd":{"Fetch Operator":{"limit:":"-1"}},"$hdt$_2:hd":{"Fetch Operator":{"limit:":"-1"}}},"Alias -> Map Local Operator Tree:":{"$hdt$_1:cd":{"TableScan":{"alias:":"cd","columns:":["cbigint","cstring2"],"database:":"default","Statistics:":"Num rows: 20 Data size: 4400 Basic stats: COMPLETE Column stats: NONE","table:":"small_alltypesorc_a","isTempTable:":"false","OperatorId:":"TS_2","children":{"Select Operator":{"expressions:":"cbigint (type: bigint), cstring2 (type: string)","columnExprMap:":{"_col0":"cbigint","_col1":"cstring2"},"outputColumnNames:":["_col0","_col1"],"Statistics:":"Num rows: 20 Data size: 4400 Basic stats: COMPLETE Column stats: NONE","OperatorId:":"SEL_3","children":{"HashTable Sink Operator":{"keys:":{"0":"_col1 (type: bigint), _col3 (type: string)","1":"_col0 (type: bigint), _col1 (type: string)"},"OperatorId:":"HASHTABLESINK_26"}}}}}},"$hdt$_2:hd":{"TableScan":{"alias:":"hd","columns:":["cint","cstring1"],"database:":"default","Statistics:":"Num rows: 20 Data size: 4400 Basic stats: COMPLETE Column stats: NONE","table:":"small_alltypesorc_a","isTempTable:":"false","OperatorId:":"TS_4","children":{"Select Operator":{"expressions:":"cint (type: int), cstring1 (type: string)","columnExprMap:":{"_col0":"cint","_col1":"cstring1"},"outputColumnNames:":["_col0","_col1"],"Statistics:":"Num rows: 20 Data size: 4400 Basic stats: COMPLETE Column stats: NONE","OperatorId:":"SEL_5","children":{"HashTable Sink Operator":{"keys:":{"0":"_col0 (type: int), _col2 (type: string)","1":"_col0 (type: int), _col1 (type: string)"},"OperatorId:":"HASHTABLESINK_24"}}}}}}}}},"Stage-3":{"Map Reduce":{"Map Operator Tree:":[{"TableScan":{"alias:":"c","columns:":["cint","cbigint","cstring1","cstring2"],"database:":"default","Statistics:":"Num rows: 20 Data size: 4400 Basic stats: COMPLETE Column stats: NONE","table:":"small_alltypesorc_a","TableScan Vectorization:":{"native:":"true","vectorizationSchemaColumns:":"[0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]"},"isTempTable:":"false","OperatorId:":"TS_0","children":{"Select Operator":{"expressions:":"cint (type: int), cbigint (type: bigint), cstring1 (type: string), cstring2 (type: string)","columnExprMap:":{"_col0":"cint","_col1":"cbigint","_col2":"cstring1","_col3":"cstring2"},"outputColumnNames:":["_col0","_col1","_col2","_col3"],"Select Vectorization:":{"className:":"VectorSelectOperator","native:":"true","projectedOutputColumnNums:":"[2, 3, 6, 7]"},"Statistics:":"Num rows: 20 Data size: 4400 Basic stats: COMPLETE Column stats: NONE","OperatorId:":"SEL_28","children":{"Map Join Operator":{"columnExprMap:":{"_col0":"0:_col0","_col2":"0:_col2"},"condition map:":[{"":"Left Outer Join 0 to 1"}],"keys:":{"0":"_col1 (type: bigint), _col3 (type: string)","1":"_col0 (type: bigint), _col1 (type: string)"},"Map Join Vectorization:":{"bigTableKeyExpressions:":["col 3:bigint","col 7:string"],"bigTableValueExpressions:":["col 2:int","col 6:string"],"className:":"VectorMapJoinOperator","native:":"false","nativeConditionsMet:":["hive.mapjoin.optimized.hashtable IS true","hive.vectorized.execution.mapjoin.native.enabled IS true","One MapJoin Condition IS true","No nullsafe IS true","Small table vectorizes IS true","Outer Join has keys IS true","Optimized Table and Supports Key Types IS true"],"nativeConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false"]},"outputColumnNames:":["_col0","_col2"],"Statistics:":"Num rows: 22 Data size: 4840 Basic stats: COMPLETE Column stats: NONE","OperatorId:":"MAPJOIN_29","children":{"Map Join Operator":{"condition map:":[{"":"Left Outer Join 0 to 1"}],"keys:":{"0":"_col0 (type: int), _col2 (type: string)","1":"_col0 (type: int), _col1 (type: string)"},"Map Join Vectorization:":{"bigTableKeyExpressions:":["col 0:int","col 1:string"],"className:":"VectorMapJoinOperator","native:":"false","nativeConditionsMet:":["hive.mapjoin.optimized.hashtable IS true","hive.vectorized.execution.mapjoin.native.enabled IS true","One MapJoin Condition IS true","No nullsafe IS true","Small table vectorizes IS true","Outer Join has keys IS true","Optimized Table and Supports Key Types IS true"],"nativeConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false"]},"Statistics:":"Num rows: 24 Data size: 5324 Basic stats: COMPLETE Column stats: NONE","OperatorId:":"MAPJOIN_30","children":{"Group By Operator":{"aggregations:":["count()"],"Group By Vectorization:":{"aggregators:":["VectorUDAFCountStar(*) -> bigint"],"className:":"VectorGroupByOperator","groupByMode:":"HASH","native:":"false","vectorProcessingMode:":"HASH","projectedOutputColumnNums:":"[0]"},"mode:":"hash","outputColumnNames:":["_col0"],"Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","OperatorId:":"GBY_31","children":{"Reduce Output Operator":{"columnExprMap:":{"VALUE._col0":"_col0"},"sort order:":"","Reduce Sink Vectorization:":{"className:":"VectorReduceSinkOperator","native:":"false","nativeConditionsMet:":["hive.vectorized.execution.reducesink.new.enabled IS true","No PTF TopN IS true","No DISTINCT columns IS true","BinarySortableSerDe for keys IS true","LazyBinarySerDe for values IS true"],"nativeConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false"]},"Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","value expressions:":"_col0 (type: bigint)","OperatorId:":"RS_32"}}}}}}}}}}}}],"Execution mode:":"vectorized","Map Vectorization:":{"enabled:":"true","enabledConditionsMet:":["hive.vectorized.use.vectorized.input.format IS true"],"inputFormatFeatureSupport:":"[]","featureSupportInUse:":"[]","inputFileFormats:":["org.apache.hadoop.hive.ql.io.orc.OrcInputFormat"],"allNative:":"false","usesVectorUDFAdaptor:":"false","vectorized:":"true","rowBatchContext:":{"dataColumnCount:":"12","includeColumns:":"[2, 3, 6, 7]","dataColumns:":["ctinyint:tinyint","csmallint:smallint","cint:int","cbigint:bigint","cfloat:float","cdouble:double","cstring1:string","cstring2:string","ctimestamp1:timestamp","ctimestamp2:timestamp","cboolean1:boolean","cboolean2:boolean"],"partitionColumnCount:":"0","scratchColumnTypeNames:":"[]"}},"Local Work:":{"Map Reduce Local Work":{}},"Reduce Vectorization:":{"enabled:":"false","enableConditionsMet:":["hive.vectorized.execution.reduce.enabled IS true"],"enableConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false"]},"Reduce Operator Tree:":{"Group By Operator":{"aggregations:":["count(VALUE._col0)"],"mode:":"mergepartial","outputColumnNames:":["_col0"],"Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","OperatorId:":"GBY_15","children":{"File Output Operator":{"compressed:":"false","Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","table:":{"input format:":"org.apache.hadoop.mapred.SequenceFileInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"},"OperatorId:":"FS_17"}}}}}},"Stage-0":{"Fetch Operator":{"limit:":"-1","Processor Tree:":{"ListSink":{"OperatorId:":"LIST_SINK_33"}}}}}}
+{"PLAN VECTORIZATION":{"enabled":true,"enabledConditionsMet":["hive.vectorized.execution.enabled IS true"]},"STAGE DEPENDENCIES":{"Stage-8":{"ROOT STAGE":"TRUE"},"Stage-3":{"DEPENDENT STAGES":"Stage-8"},"Stage-0":{"DEPENDENT STAGES":"Stage-3"}},"STAGE PLANS":{"Stage-8":{"Map Reduce Local Work":{"Alias -> Map Local Tables:":{"$hdt$_1:cd":{"Fetch Operator":{"limit:":"-1"}},"$hdt$_2:hd":{"Fetch Operator":{"limit:":"-1"}}},"Alias -> Map Local Operator Tree:":{"$hdt$_1:cd":{"TableScan":{"alias:":"cd","columns:":["cbigint","cstring2"],"database:":"default","Statistics:":"Num rows: 20 Data size: 4400 Basic stats: COMPLETE Column stats: NONE","table:":"small_alltypesorc_a_n1","isTempTable:":"false","OperatorId:":"TS_2","children":{"Select Operator":{"expressions:":"cbigint (type: bigint), cstring2 (type: string)","columnExprMap:":{"_col0":"cbigint","_col1":"cstring2"},"outputColumnNames:":["_col0","_col1"],"Statistics:":"Num rows: 20 Data size: 4400 Basic stats: COMPLETE Column stats: NONE","OperatorId:":"SEL_3","children":{"HashTable Sink Operator":{"keys:":{"0":"_col1 (type: bigint), _col3 (type: string)","1":"_col0 (type: bigint), _col1 (type: string)"},"OperatorId:":"HASHTABLESINK_26"}}}}}},"$hdt$_2:hd":{"TableScan":{"alias:":"hd","columns:":["cint","cstring1"],"database:":"default","Statistics:":"Num rows: 20 Data size: 4400 Basic stats: COMPLETE Column stats: NONE","table:":"small_alltypesorc_a_n1","isTempTable:":"false","OperatorId:":"TS_4","children":{"Select Operator":{"expressions:":"cint (type: int), cstring1 (type: string)","columnExprMap:":{"_col0":"cint","_col1":"cstring1"},"outputColumnNames:":["_col0","_col1"],"Statistics:":"Num rows: 20 Data size: 4400 Basic stats: COMPLETE Column stats: NONE","OperatorId:":"SEL_5","children":{"HashTable Sink Operator":{"keys:":{"0":"_col0 (type: int), _col2 (type: string)","1":"_col0 (type: int), _col1 (type: string)"},"OperatorId:":"HASHTABLESINK_24"}}}}}}}}},"Stage-3":{"Map Reduce":{"Map Operator Tree:":[{"TableScan":{"alias:":"c","columns:":["cint","cbigint","cstring1","cstring2"],"database:":"default","Statistics:":"Num rows: 20 Data size: 4400 Basic stats: COMPLETE Column stats: NONE","table:":"small_alltypesorc_a_n1","TableScan Vectorization:":{"native:":"true","vectorizationSchemaColumns:":"[0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]"},"isTempTable:":"false","OperatorId:":"TS_0","children":{"Select Operator":{"expressions:":"cint (type: int), cbigint (type: bigint), cstring1 (type: string), cstring2 (type: string)","columnExprMap:":{"_col0":"cint","_col1":"cbigint","_col2":"cstring1","_col3":"cstring2"},"outputColumnNames:":["_col0","_col1","_col2","_col3"],"Select Vectorization:":{"className:":"VectorSelectOperator","native:":"true","projectedOutputColumnNums:":"[2, 3, 6, 7]"},"Statistics:":"Num rows: 20 Data size: 4400 Basic stats: COMPLETE Column stats: NONE","OperatorId:":"SEL_28","children":{"Map Join Operator":{"columnExprMap:":{"_col0":"0:_col0","_col2":"0:_col2"},"condition map:":[{"":"Left Outer Join 0 to 1"}],"keys:":{"0":"_col1 (type: bigint), _col3 (type: string)","1":"_col0 (type: bigint), _col1 (type: string)"},"Map Join Vectorization:":{"bigTableKeyExpressions:":["col 3:bigint","col 7:string"],"bigTableValueExpressions:":["col 2:int","col 6:string"],"className:":"VectorMapJoinOperator","native:":"false","nativeConditionsMet:":["hive.mapjoin.optimized.hashtable IS true","hive.vectorized.execution.mapjoin.native.enabled IS true","One MapJoin Condition IS true","No nullsafe IS true","Small table vectorizes IS true","Outer Join has keys IS true","Optimized Table and Supports Key Types IS true"],"nativeConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false"]},"outputColumnNames:":["_col0","_col2"],"Statistics:":"Num rows: 22 Data size: 4840 Basic stats: COMPLETE Column stats: NONE","OperatorId:":"MAPJOIN_29","children":{"Map Join Operator":{"condition map:":[{"":"Left Outer Join 0 to 1"}],"keys:":{"0":"_col0 (type: int), _col2 (type: string)","1":"_col0 (type: int), _col1 (type: string)"},"Map Join Vectorization:":{"bigTableKeyExpressions:":["col 0:int","col 1:string"],"className:":"VectorMapJoinOperator","native:":"false","nativeConditionsMet:":["hive.mapjoin.optimized.hashtable IS true","hive.vectorized.execution.mapjoin.native.enabled IS true","One MapJoin Condition IS true","No nullsafe IS true","Small table vectorizes IS true","Outer Join has keys IS true","Optimized Table and Supports Key Types IS true"],"nativeConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false"]},"Statistics:":"Num rows: 24 Data size: 5324 Basic stats: COMPLETE Column stats: NONE","OperatorId:":"MAPJOIN_30","children":{"Group By Operator":{"aggregations:":["count()"],"Group By Vectorization:":{"aggregators:":["VectorUDAFCountStar(*) -> bigint"],"className:":"VectorGroupByOperator","groupByMode:":"HASH","native:":"false","vectorProcessingMode:":"HASH","projectedOutputColumnNums:":"[0]"},"mode:":"hash","outputColumnNames:":["_col0"],"Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","OperatorId:":"GBY_31","children":{"Reduce Output Operator":{"columnExprMap:":{"VALUE._col0":"_col0"},"sort order:":"","Reduce Sink Vectorization:":{"className:":"VectorReduceSinkOperator","native:":"false","nativeConditionsMet:":["hive.vectorized.execution.reducesink.new.enabled IS true","No PTF TopN IS true","No DISTINCT columns IS true","BinarySortableSerDe for keys IS true","LazyBinarySerDe for values IS true"],"nativeConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false"]},"Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","value expressions:":"_col0 (type: bigint)","OperatorId:":"RS_32"}}}}}}}}}}}}],"Execution mode:":"vectorized","Map Vectorization:":{"enabled:":"true","enabledConditionsMet:":["hive.vectorized.use.vectorized.input.format IS true"],"inputFormatFeatureSupport:":"[]","featureSupportInUse:":"[]","inputFileFormats:":["org.apache.hadoop.hive.ql.io.orc.OrcInputFormat"],"allNative:":"false","usesVectorUDFAdaptor:":"false","vectorized:":"true","rowBatchContext:":{"dataColumnCount:":"12","includeColumns:":"[2, 3, 6, 7]","dataColumns:":["ctinyint:tinyint","csmallint:smallint","cint:int","cbigint:bigint","cfloat:float","cdouble:double","cstring1:string","cstring2:string","ctimestamp1:timestamp","ctimestamp2:timestamp","cboolean1:boolean","cboolean2:boolean"],"partitionColumnCount:":"0","scratchColumnTypeNames:":"[]"}},"Local Work:":{"Map Reduce Local Work":{}},"Reduce Vectorization:":{"enabled:":"false","enableConditionsMet:":["hive.vectorized.execution.reduce.enabled IS true"],"enableConditionsNotMet:":["hive.execution.engine mr IN [tez, spark] IS false"]},"Reduce Operator Tree:":{"Group By Operator":{"aggregations:":["count(VALUE._col0)"],"mode:":"mergepartial","outputColumnNames:":["_col0"],"Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","OperatorId:":"GBY_15","children":{"File Output Operator":{"compressed:":"false","Statistics:":"Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE","table:":{"input format:":"org.apache.hadoop.mapred.SequenceFileInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat","serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"},"OperatorId:":"FS_17"}}}}}},"Stage-0":{"Fetch Operator":{"limit:":"-1","Processor Tree:":{"ListSink":{"OperatorId:":"LIST_SINK_33"}}}}}}
 PREHOOK: query: select count(*) from (select c.cstring1
-from small_alltypesorc_a c
-left outer join small_alltypesorc_a cd
+from small_alltypesorc_a_n1 c
+left outer join small_alltypesorc_a_n1 cd
   on cd.cstring2 = c.cstring2 and cd.cbigint = c.cbigint
-left outer join small_alltypesorc_a hd
+left outer join small_alltypesorc_a_n1 hd
   on hd.cstring1 = c.cstring1 and hd.cint = c.cint
 ) t1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@small_alltypesorc_a
+PREHOOK: Input: default@small_alltypesorc_a_n1
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from (select c.cstring1
-from small_alltypesorc_a c
-left outer join small_alltypesorc_a cd
+from small_alltypesorc_a_n1 c
+left outer join small_alltypesorc_a_n1 cd
   on cd.cstring2 = c.cstring2 and cd.cbigint = c.cbigint
-left outer join small_alltypesorc_a hd
+left outer join small_alltypesorc_a_n1 hd
   on hd.cstring1 = c.cstring1 and hd.cint = c.cint
 ) t1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@small_alltypesorc_a
+POSTHOOK: Input: default@small_alltypesorc_a_n1
 #### A masked pattern was here ####
 28

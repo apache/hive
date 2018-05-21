@@ -74,11 +74,11 @@ POSTHOOK: Input: default@src
 86		
 98		
 PREHOOK: query: explain
-create table dummy as
+create table dummy_n6 as
 select distinct key, "X" as dummy1, "X" as dummy2 from src tablesample (10 rows)
 PREHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: query: explain
-create table dummy as
+create table dummy_n6 as
 select distinct key, "X" as dummy1, "X" as dummy2 from src tablesample (10 rows)
 POSTHOOK: type: CREATETABLE_AS_SELECT
 STAGE DEPENDENCIES:
@@ -127,7 +127,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.dummy
+                  name: default.dummy_n6
 
   Stage: Stage-0
     Move Operator
@@ -142,34 +142,34 @@ STAGE PLANS:
           input format: org.apache.hadoop.mapred.TextInputFormat
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
           serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          name: default.dummy
+          name: default.dummy_n6
 
   Stage: Stage-2
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: create table dummy as
+PREHOOK: query: create table dummy_n6 as
 select distinct key, "X" as dummy1, "X" as dummy2 from src tablesample (10 rows)
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dummy
-POSTHOOK: query: create table dummy as
+PREHOOK: Output: default@dummy_n6
+POSTHOOK: query: create table dummy_n6 as
 select distinct key, "X" as dummy1, "X" as dummy2 from src tablesample (10 rows)
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dummy
-POSTHOOK: Lineage: dummy.dummy1 SIMPLE []
-POSTHOOK: Lineage: dummy.dummy2 SIMPLE []
-POSTHOOK: Lineage: dummy.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: select key,dummy1,dummy2 from dummy
+POSTHOOK: Output: default@dummy_n6
+POSTHOOK: Lineage: dummy_n6.dummy1 SIMPLE []
+POSTHOOK: Lineage: dummy_n6.dummy2 SIMPLE []
+POSTHOOK: Lineage: dummy_n6.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: select key,dummy1,dummy2 from dummy_n6
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dummy
+PREHOOK: Input: default@dummy_n6
 #### A masked pattern was here ####
-POSTHOOK: query: select key,dummy1,dummy2 from dummy
+POSTHOOK: query: select key,dummy1,dummy2 from dummy_n6
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dummy
+POSTHOOK: Input: default@dummy_n6
 #### A masked pattern was here ####
 165	X	X
 238	X	X

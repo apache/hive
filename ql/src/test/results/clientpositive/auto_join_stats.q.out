@@ -1,30 +1,30 @@
-PREHOOK: query: create table smalltable(key string, value string) stored as textfile
+PREHOOK: query: create table smalltable_n0(key string, value string) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@smalltable
-POSTHOOK: query: create table smalltable(key string, value string) stored as textfile
+PREHOOK: Output: default@smalltable_n0
+POSTHOOK: query: create table smalltable_n0(key string, value string) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@smalltable
-PREHOOK: query: load data local inpath '../../data/files/T1.txt' into table smalltable
+POSTHOOK: Output: default@smalltable_n0
+PREHOOK: query: load data local inpath '../../data/files/T1.txt' into table smalltable_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@smalltable
-POSTHOOK: query: load data local inpath '../../data/files/T1.txt' into table smalltable
+PREHOOK: Output: default@smalltable_n0
+POSTHOOK: query: load data local inpath '../../data/files/T1.txt' into table smalltable_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@smalltable
-PREHOOK: query: analyze table smalltable compute statistics
+POSTHOOK: Output: default@smalltable_n0
+PREHOOK: query: analyze table smalltable_n0 compute statistics
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smalltable
-PREHOOK: Output: default@smalltable
-POSTHOOK: query: analyze table smalltable compute statistics
+PREHOOK: Input: default@smalltable_n0
+PREHOOK: Output: default@smalltable_n0
+POSTHOOK: query: analyze table smalltable_n0 compute statistics
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smalltable
-POSTHOOK: Output: default@smalltable
-PREHOOK: query: explain select src1.key, src2.key, smalltable.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable ON (src1.key + src2.key = smalltable.key)
+POSTHOOK: Input: default@smalltable_n0
+POSTHOOK: Output: default@smalltable_n0
+PREHOOK: query: explain select src1.key, src2.key, smalltable_n0.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable_n0 ON (src1.key + src2.key = smalltable_n0.key)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select src1.key, src2.key, smalltable.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable ON (src1.key + src2.key = smalltable.key)
+POSTHOOK: query: explain select src1.key, src2.key, smalltable_n0.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable_n0 ON (src1.key + src2.key = smalltable_n0.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-8 is a root stage , consists of Stage-10, Stage-11, Stage-1
@@ -98,13 +98,13 @@ STAGE PLANS:
   Stage: Stage-9
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_2:smalltable 
+        $hdt$_2:smalltable_n0 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_2:smalltable 
+        $hdt$_2:smalltable_n0 
           TableScan
-            alias: smalltable
+            alias: smalltable_n0
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -250,45 +250,45 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select src1.key, src2.key, smalltable.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable ON (src1.key + src2.key = smalltable.key)
+PREHOOK: query: select src1.key, src2.key, smalltable_n0.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable_n0 ON (src1.key + src2.key = smalltable_n0.key)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smalltable
+PREHOOK: Input: default@smalltable_n0
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: select src1.key, src2.key, smalltable.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable ON (src1.key + src2.key = smalltable.key)
+POSTHOOK: query: select src1.key, src2.key, smalltable_n0.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable_n0 ON (src1.key + src2.key = smalltable_n0.key)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smalltable
+POSTHOOK: Input: default@smalltable_n0
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 4	4	8
 4	4	8
-PREHOOK: query: create table smalltable2(key string, value string) stored as textfile
+PREHOOK: query: create table smalltable2_n0(key string, value string) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@smalltable2
-POSTHOOK: query: create table smalltable2(key string, value string) stored as textfile
+PREHOOK: Output: default@smalltable2_n0
+POSTHOOK: query: create table smalltable2_n0(key string, value string) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@smalltable2
-PREHOOK: query: load data local inpath '../../data/files/T1.txt' into table smalltable2
+POSTHOOK: Output: default@smalltable2_n0
+PREHOOK: query: load data local inpath '../../data/files/T1.txt' into table smalltable2_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@smalltable2
-POSTHOOK: query: load data local inpath '../../data/files/T1.txt' into table smalltable2
+PREHOOK: Output: default@smalltable2_n0
+POSTHOOK: query: load data local inpath '../../data/files/T1.txt' into table smalltable2_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@smalltable2
-PREHOOK: query: analyze table smalltable compute statistics
+POSTHOOK: Output: default@smalltable2_n0
+PREHOOK: query: analyze table smalltable_n0 compute statistics
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smalltable
-PREHOOK: Output: default@smalltable
-POSTHOOK: query: analyze table smalltable compute statistics
+PREHOOK: Input: default@smalltable_n0
+PREHOOK: Output: default@smalltable_n0
+POSTHOOK: query: analyze table smalltable_n0 compute statistics
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smalltable
-POSTHOOK: Output: default@smalltable
-PREHOOK: query: explain select src1.key, src2.key, smalltable.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable ON (src1.key + src2.key = smalltable.key) JOIN smalltable2 ON (src1.key + src2.key = smalltable2.key)
+POSTHOOK: Input: default@smalltable_n0
+POSTHOOK: Output: default@smalltable_n0
+PREHOOK: query: explain select src1.key, src2.key, smalltable_n0.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable_n0 ON (src1.key + src2.key = smalltable_n0.key) JOIN smalltable2_n0 ON (src1.key + src2.key = smalltable2_n0.key)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select src1.key, src2.key, smalltable.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable ON (src1.key + src2.key = smalltable.key) JOIN smalltable2 ON (src1.key + src2.key = smalltable2.key)
+POSTHOOK: query: explain select src1.key, src2.key, smalltable_n0.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable_n0 ON (src1.key + src2.key = smalltable_n0.key) JOIN smalltable2_n0 ON (src1.key + src2.key = smalltable2_n0.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-9 is a root stage , consists of Stage-11, Stage-12, Stage-1
@@ -362,16 +362,16 @@ STAGE PLANS:
   Stage: Stage-10
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:smalltable 
+        $hdt$_0:smalltable_n0 
           Fetch Operator
             limit: -1
-        $hdt$_3:smalltable2 
+        $hdt$_3:smalltable2_n0 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:smalltable 
+        $hdt$_0:smalltable_n0 
           TableScan
-            alias: smalltable
+            alias: smalltable_n0
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -385,9 +385,9 @@ STAGE PLANS:
                     0 (UDFToDouble(_col0) + UDFToDouble(_col1)) (type: double)
                     1 UDFToDouble(_col0) (type: double)
                     2 UDFToDouble(_col0) (type: double)
-        $hdt$_3:smalltable2 
+        $hdt$_3:smalltable2_n0 
           TableScan
-            alias: smalltable2
+            alias: smalltable2_n0
             Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -540,16 +540,16 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select src1.key, src2.key, smalltable.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable ON (src1.key + src2.key = smalltable.key) JOIN smalltable2 ON (src1.key + src2.key = smalltable2.key)
+PREHOOK: query: select src1.key, src2.key, smalltable_n0.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable_n0 ON (src1.key + src2.key = smalltable_n0.key) JOIN smalltable2_n0 ON (src1.key + src2.key = smalltable2_n0.key)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smalltable
-PREHOOK: Input: default@smalltable2
+PREHOOK: Input: default@smalltable2_n0
+PREHOOK: Input: default@smalltable_n0
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: select src1.key, src2.key, smalltable.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable ON (src1.key + src2.key = smalltable.key) JOIN smalltable2 ON (src1.key + src2.key = smalltable2.key)
+POSTHOOK: query: select src1.key, src2.key, smalltable_n0.key from src src1 JOIN src src2 ON (src1.key = src2.key) JOIN smalltable_n0 ON (src1.key + src2.key = smalltable_n0.key) JOIN smalltable2_n0 ON (src1.key + src2.key = smalltable2_n0.key)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smalltable
-POSTHOOK: Input: default@smalltable2
+POSTHOOK: Input: default@smalltable2_n0
+POSTHOOK: Input: default@smalltable_n0
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 4	4	8

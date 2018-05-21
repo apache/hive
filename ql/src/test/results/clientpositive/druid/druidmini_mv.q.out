@@ -1,4 +1,4 @@
-PREHOOK: query: CREATE TABLE cmv_basetable
+PREHOOK: query: CREATE TABLE cmv_basetable_n2
 STORED AS orc
 TBLPROPERTIES ('transactional'='true')
 AS
@@ -19,8 +19,8 @@ FROM TABLE (
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: database:default
-PREHOOK: Output: default@cmv_basetable
-POSTHOOK: query: CREATE TABLE cmv_basetable
+PREHOOK: Output: default@cmv_basetable_n2
+POSTHOOK: query: CREATE TABLE cmv_basetable_n2
 STORED AS orc
 TBLPROPERTIES ('transactional'='true')
 AS
@@ -41,52 +41,52 @@ FROM TABLE (
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@cmv_basetable
-POSTHOOK: Lineage: cmv_basetable.a SCRIPT []
-POSTHOOK: Lineage: cmv_basetable.b SCRIPT []
-POSTHOOK: Lineage: cmv_basetable.c SCRIPT []
-POSTHOOK: Lineage: cmv_basetable.d SCRIPT []
-POSTHOOK: Lineage: cmv_basetable.t SIMPLE []
-POSTHOOK: Lineage: cmv_basetable.userid SCRIPT []
-PREHOOK: query: CREATE MATERIALIZED VIEW cmv_mat_view ENABLE REWRITE
+POSTHOOK: Output: default@cmv_basetable_n2
+POSTHOOK: Lineage: cmv_basetable_n2.a SCRIPT []
+POSTHOOK: Lineage: cmv_basetable_n2.b SCRIPT []
+POSTHOOK: Lineage: cmv_basetable_n2.c SCRIPT []
+POSTHOOK: Lineage: cmv_basetable_n2.d SCRIPT []
+POSTHOOK: Lineage: cmv_basetable_n2.t SIMPLE []
+POSTHOOK: Lineage: cmv_basetable_n2.userid SCRIPT []
+PREHOOK: query: CREATE MATERIALIZED VIEW cmv_mat_view_n2 ENABLE REWRITE
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "HOUR")
 AS
 SELECT cast(t AS timestamp with local time zone) as `__time`, a, b, c, userid
-FROM cmv_basetable
+FROM cmv_basetable_n2
 WHERE a = 2
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
-PREHOOK: Input: default@cmv_basetable
+PREHOOK: Input: default@cmv_basetable_n2
 PREHOOK: Output: database:default
-PREHOOK: Output: default@cmv_mat_view
-POSTHOOK: query: CREATE MATERIALIZED VIEW cmv_mat_view ENABLE REWRITE
+PREHOOK: Output: default@cmv_mat_view_n2
+POSTHOOK: query: CREATE MATERIALIZED VIEW cmv_mat_view_n2 ENABLE REWRITE
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "HOUR")
 AS
 SELECT cast(t AS timestamp with local time zone) as `__time`, a, b, c, userid
-FROM cmv_basetable
+FROM cmv_basetable_n2
 WHERE a = 2
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
-POSTHOOK: Input: default@cmv_basetable
+POSTHOOK: Input: default@cmv_basetable_n2
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@cmv_mat_view
-PREHOOK: query: SELECT a, b, c FROM cmv_mat_view
+POSTHOOK: Output: default@cmv_mat_view_n2
+PREHOOK: query: SELECT a, b, c FROM cmv_mat_view_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@cmv_mat_view
+PREHOOK: Input: default@cmv_mat_view_n2
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: SELECT a, b, c FROM cmv_mat_view
+POSTHOOK: query: SELECT a, b, c FROM cmv_mat_view_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@cmv_mat_view
+POSTHOOK: Input: default@cmv_mat_view_n2
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 2	bob	3.140000104904175
 2	bonnie	172342.203125
-PREHOOK: query: SHOW TBLPROPERTIES cmv_mat_view
+PREHOOK: query: SHOW TBLPROPERTIES cmv_mat_view_n2
 PREHOOK: type: SHOW_TBLPROPERTIES
-POSTHOOK: query: SHOW TBLPROPERTIES cmv_mat_view
+POSTHOOK: query: SHOW TBLPROPERTIES cmv_mat_view_n2
 POSTHOOK: type: SHOW_TBLPROPERTIES
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true"}
 bucketing_version	2
-druid.datasource	default.cmv_mat_view
+druid.datasource	default.cmv_mat_view_n2
 druid.segment.granularity	HOUR
 numFiles	0
 numRows	2
@@ -94,46 +94,46 @@ rawDataSize	0
 storage_handler	org.apache.hadoop.hive.druid.DruidStorageHandler
 totalSize	0
 #### A masked pattern was here ####
-PREHOOK: query: CREATE MATERIALIZED VIEW IF NOT EXISTS cmv_mat_view2 ENABLE REWRITE
+PREHOOK: query: CREATE MATERIALIZED VIEW IF NOT EXISTS cmv_mat_view2_n0 ENABLE REWRITE
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "HOUR")
 AS
 SELECT cast(t AS timestamp with local time zone) as `__time`, a, b, c, userid
-FROM cmv_basetable
+FROM cmv_basetable_n2
 WHERE a = 3
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
-PREHOOK: Input: default@cmv_basetable
+PREHOOK: Input: default@cmv_basetable_n2
 PREHOOK: Output: database:default
-PREHOOK: Output: default@cmv_mat_view2
-POSTHOOK: query: CREATE MATERIALIZED VIEW IF NOT EXISTS cmv_mat_view2 ENABLE REWRITE
+PREHOOK: Output: default@cmv_mat_view2_n0
+POSTHOOK: query: CREATE MATERIALIZED VIEW IF NOT EXISTS cmv_mat_view2_n0 ENABLE REWRITE
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "HOUR")
 AS
 SELECT cast(t AS timestamp with local time zone) as `__time`, a, b, c, userid
-FROM cmv_basetable
+FROM cmv_basetable_n2
 WHERE a = 3
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
-POSTHOOK: Input: default@cmv_basetable
+POSTHOOK: Input: default@cmv_basetable_n2
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@cmv_mat_view2
-PREHOOK: query: SELECT a, c FROM cmv_mat_view2
+POSTHOOK: Output: default@cmv_mat_view2_n0
+PREHOOK: query: SELECT a, c FROM cmv_mat_view2_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@cmv_mat_view2
+PREHOOK: Input: default@cmv_mat_view2_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: SELECT a, c FROM cmv_mat_view2
+POSTHOOK: query: SELECT a, c FROM cmv_mat_view2_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@cmv_mat_view2
+POSTHOOK: Input: default@cmv_mat_view2_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 3	15.800000190734863
 3	9.800000190734863
 3	978.760009765625
-PREHOOK: query: SHOW TBLPROPERTIES cmv_mat_view2
+PREHOOK: query: SHOW TBLPROPERTIES cmv_mat_view2_n0
 PREHOOK: type: SHOW_TBLPROPERTIES
-POSTHOOK: query: SHOW TBLPROPERTIES cmv_mat_view2
+POSTHOOK: query: SHOW TBLPROPERTIES cmv_mat_view2_n0
 POSTHOOK: type: SHOW_TBLPROPERTIES
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true"}
 bucketing_version	2
-druid.datasource	default.cmv_mat_view2
+druid.datasource	default.cmv_mat_view2_n0
 druid.segment.granularity	HOUR
 numFiles	0
 numRows	3
@@ -143,12 +143,12 @@ totalSize	0
 #### A masked pattern was here ####
 PREHOOK: query: EXPLAIN
 SELECT a, c
-FROM cmv_basetable
+FROM cmv_basetable_n2
 WHERE a = 3
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT a, c
-FROM cmv_basetable
+FROM cmv_basetable_n2
 WHERE a = 3
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -160,7 +160,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: cmv_basetable
+          alias: cmv_basetable_n2
           Filter Operator
             predicate: (a = 3) (type: boolean)
             Select Operator
@@ -169,16 +169,16 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: SELECT a, c
-FROM cmv_basetable
+FROM cmv_basetable_n2
 WHERE a = 3
 PREHOOK: type: QUERY
-PREHOOK: Input: default@cmv_basetable
+PREHOOK: Input: default@cmv_basetable_n2
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT a, c
-FROM cmv_basetable
+FROM cmv_basetable_n2
 WHERE a = 3
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@cmv_basetable
+POSTHOOK: Input: default@cmv_basetable_n2
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 3	15.8
 3	9.8
@@ -186,16 +186,16 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: EXPLAIN
 SELECT * FROM (
-  (SELECT a, c FROM cmv_basetable WHERE a = 3) table1
+  (SELECT a, c FROM cmv_basetable_n2 WHERE a = 3) table1
   JOIN
-  (SELECT a, c FROM cmv_basetable WHERE d = 3) table2
+  (SELECT a, c FROM cmv_basetable_n2 WHERE d = 3) table2
   ON table1.a = table2.a)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT * FROM (
-  (SELECT a, c FROM cmv_basetable WHERE a = 3) table1
+  (SELECT a, c FROM cmv_basetable_n2 WHERE a = 3) table1
   JOIN
-  (SELECT a, c FROM cmv_basetable WHERE d = 3) table2
+  (SELECT a, c FROM cmv_basetable_n2 WHERE d = 3) table2
   ON table1.a = table2.a)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -213,7 +213,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: cmv_basetable
+                  alias: cmv_basetable_n2
                   Statistics: Num rows: 6 Data size: 72 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (a = 3) (type: boolean)
@@ -229,7 +229,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: cmv_basetable
+                  alias: cmv_basetable_n2
                   Statistics: Num rows: 6 Data size: 96 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((a = 3) and (d = 3)) (type: boolean)
@@ -272,53 +272,53 @@ STAGE PLANS:
 
 Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: SELECT * FROM (
-  (SELECT a, c FROM cmv_basetable WHERE a = 3) table1
+  (SELECT a, c FROM cmv_basetable_n2 WHERE a = 3) table1
   JOIN
-  (SELECT a, c FROM cmv_basetable WHERE d = 3) table2
+  (SELECT a, c FROM cmv_basetable_n2 WHERE d = 3) table2
   ON table1.a = table2.a)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@cmv_basetable
+PREHOOK: Input: default@cmv_basetable_n2
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT * FROM (
-  (SELECT a, c FROM cmv_basetable WHERE a = 3) table1
+  (SELECT a, c FROM cmv_basetable_n2 WHERE a = 3) table1
   JOIN
-  (SELECT a, c FROM cmv_basetable WHERE d = 3) table2
+  (SELECT a, c FROM cmv_basetable_n2 WHERE d = 3) table2
   ON table1.a = table2.a)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@cmv_basetable
+POSTHOOK: Input: default@cmv_basetable_n2
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 3	15.8	3	978.76
 3	9.8	3	978.76
 3	978.76	3	978.76
-PREHOOK: query: INSERT INTO cmv_basetable VALUES
+PREHOOK: query: INSERT INTO cmv_basetable_n2 VALUES
  (cast(current_timestamp() AS timestamp), 3, 'charlie', 'charlie_c', 15.8, 1)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@cmv_basetable
-POSTHOOK: query: INSERT INTO cmv_basetable VALUES
+PREHOOK: Output: default@cmv_basetable_n2
+POSTHOOK: query: INSERT INTO cmv_basetable_n2 VALUES
  (cast(current_timestamp() AS timestamp), 3, 'charlie', 'charlie_c', 15.8, 1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@cmv_basetable
-POSTHOOK: Lineage: cmv_basetable.a SCRIPT []
-POSTHOOK: Lineage: cmv_basetable.b SCRIPT []
-POSTHOOK: Lineage: cmv_basetable.c SCRIPT []
-POSTHOOK: Lineage: cmv_basetable.d SCRIPT []
-POSTHOOK: Lineage: cmv_basetable.t SCRIPT []
-POSTHOOK: Lineage: cmv_basetable.userid SCRIPT []
+POSTHOOK: Output: default@cmv_basetable_n2
+POSTHOOK: Lineage: cmv_basetable_n2.a SCRIPT []
+POSTHOOK: Lineage: cmv_basetable_n2.b SCRIPT []
+POSTHOOK: Lineage: cmv_basetable_n2.c SCRIPT []
+POSTHOOK: Lineage: cmv_basetable_n2.d SCRIPT []
+POSTHOOK: Lineage: cmv_basetable_n2.t SCRIPT []
+POSTHOOK: Lineage: cmv_basetable_n2.userid SCRIPT []
 Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: EXPLAIN
 SELECT * FROM (
-  (SELECT a, c FROM cmv_basetable WHERE a = 3) table1
+  (SELECT a, c FROM cmv_basetable_n2 WHERE a = 3) table1
   JOIN
-  (SELECT a, c FROM cmv_basetable WHERE d = 3) table2
+  (SELECT a, c FROM cmv_basetable_n2 WHERE d = 3) table2
   ON table1.a = table2.a)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT * FROM (
-  (SELECT a, c FROM cmv_basetable WHERE a = 3) table1
+  (SELECT a, c FROM cmv_basetable_n2 WHERE a = 3) table1
   JOIN
-  (SELECT a, c FROM cmv_basetable WHERE d = 3) table2
+  (SELECT a, c FROM cmv_basetable_n2 WHERE d = 3) table2
   ON table1.a = table2.a)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -336,7 +336,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: cmv_basetable
+                  alias: cmv_basetable_n2
                   Statistics: Num rows: 30 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (a = 3) (type: boolean)
@@ -352,7 +352,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: cmv_basetable
+                  alias: cmv_basetable_n2
                   Statistics: Num rows: 30 Data size: 480 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((a = 3) and (d = 3)) (type: boolean)
@@ -395,30 +395,30 @@ STAGE PLANS:
 
 Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: SELECT * FROM (
-  (SELECT a, c FROM cmv_basetable WHERE a = 3) table1
+  (SELECT a, c FROM cmv_basetable_n2 WHERE a = 3) table1
   JOIN
-  (SELECT a, c FROM cmv_basetable WHERE d = 3) table2
+  (SELECT a, c FROM cmv_basetable_n2 WHERE d = 3) table2
   ON table1.a = table2.a)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@cmv_basetable
+PREHOOK: Input: default@cmv_basetable_n2
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT * FROM (
-  (SELECT a, c FROM cmv_basetable WHERE a = 3) table1
+  (SELECT a, c FROM cmv_basetable_n2 WHERE a = 3) table1
   JOIN
-  (SELECT a, c FROM cmv_basetable WHERE d = 3) table2
+  (SELECT a, c FROM cmv_basetable_n2 WHERE d = 3) table2
   ON table1.a = table2.a)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@cmv_basetable
+POSTHOOK: Input: default@cmv_basetable_n2
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 3	15.8	3	978.76
 3	15.8	3	978.76
 3	9.8	3	978.76
 3	978.76	3	978.76
 PREHOOK: query: EXPLAIN
-ALTER MATERIALIZED VIEW cmv_mat_view2 REBUILD
+ALTER MATERIALIZED VIEW cmv_mat_view2_n0 REBUILD
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-ALTER MATERIALIZED VIEW cmv_mat_view2 REBUILD
+ALTER MATERIALIZED VIEW cmv_mat_view2_n0 REBUILD
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -432,7 +432,7 @@ STAGE PLANS:
       Alter Table Operator:
         Alter Table
           type: drop props
-          old name: default.cmv_mat_view2
+          old name: default.cmv_mat_view2_n0
           properties:
             COLUMN_STATS_ACCURATE 
 
@@ -453,7 +453,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: cmv_basetable
+                  alias: cmv_basetable_n2
                   Statistics: Num rows: 30 Data size: 21960 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (a = 3) (type: boolean)
@@ -486,26 +486,26 @@ STAGE PLANS:
                       input format: org.apache.hadoop.hive.druid.io.DruidQueryBasedInputFormat
                       output format: org.apache.hadoop.hive.druid.io.DruidOutputFormat
                       serde: org.apache.hadoop.hive.druid.serde.DruidSerDe
-                      name: default.cmv_mat_view2
+                      name: default.cmv_mat_view2_n0
 
   Stage: Stage-5
       Insert operator:
         Commit-Insert-Hook
 
-PREHOOK: query: ALTER MATERIALIZED VIEW cmv_mat_view2 REBUILD
+PREHOOK: query: ALTER MATERIALIZED VIEW cmv_mat_view2_n0 REBUILD
 PREHOOK: type: QUERY
-PREHOOK: Input: default@cmv_basetable
-PREHOOK: Output: default@cmv_mat_view2
-POSTHOOK: query: ALTER MATERIALIZED VIEW cmv_mat_view2 REBUILD
+PREHOOK: Input: default@cmv_basetable_n2
+PREHOOK: Output: default@cmv_mat_view2_n0
+POSTHOOK: query: ALTER MATERIALIZED VIEW cmv_mat_view2_n0 REBUILD
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@cmv_basetable
-POSTHOOK: Output: default@cmv_mat_view2
-PREHOOK: query: SHOW TBLPROPERTIES cmv_mat_view2
+POSTHOOK: Input: default@cmv_basetable_n2
+POSTHOOK: Output: default@cmv_mat_view2_n0
+PREHOOK: query: SHOW TBLPROPERTIES cmv_mat_view2_n0
 PREHOOK: type: SHOW_TBLPROPERTIES
-POSTHOOK: query: SHOW TBLPROPERTIES cmv_mat_view2
+POSTHOOK: query: SHOW TBLPROPERTIES cmv_mat_view2_n0
 POSTHOOK: type: SHOW_TBLPROPERTIES
 bucketing_version	2
-druid.datasource	default.cmv_mat_view2
+druid.datasource	default.cmv_mat_view2_n0
 druid.segment.granularity	HOUR
 #### A masked pattern was here ####
 numFiles	0
@@ -514,19 +514,19 @@ rawDataSize	0
 storage_handler	org.apache.hadoop.hive.druid.DruidStorageHandler
 totalSize	0
 #### A masked pattern was here ####
-Warning: Shuffle Join MERGEJOIN[10][tables = [cmv_mat_view2, $hdt$_0]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[10][tables = [cmv_mat_view2_n0, $hdt$_0]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: EXPLAIN
 SELECT * FROM (
-  (SELECT a, c FROM cmv_basetable WHERE a = 3) table1
+  (SELECT a, c FROM cmv_basetable_n2 WHERE a = 3) table1
   JOIN
-  (SELECT a, c FROM cmv_basetable WHERE d = 3) table2
+  (SELECT a, c FROM cmv_basetable_n2 WHERE d = 3) table2
   ON table1.a = table2.a)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT * FROM (
-  (SELECT a, c FROM cmv_basetable WHERE a = 3) table1
+  (SELECT a, c FROM cmv_basetable_n2 WHERE a = 3) table1
   JOIN
-  (SELECT a, c FROM cmv_basetable WHERE d = 3) table2
+  (SELECT a, c FROM cmv_basetable_n2 WHERE d = 3) table2
   ON table1.a = table2.a)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -544,7 +544,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: cmv_basetable
+                  alias: cmv_basetable_n2
                   Statistics: Num rows: 30 Data size: 480 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((a = 3) and (d = 3)) (type: boolean)
@@ -560,11 +560,11 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: cmv_mat_view2
+                  alias: cmv_mat_view2_n0
                   properties:
                     druid.fieldNames a,c
                     druid.fieldTypes int,double
-                    druid.query.json {"queryType":"scan","dataSource":"default.cmv_mat_view2","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"columns":["a","c"],"resultFormat":"compactedList"}
+                    druid.query.json {"queryType":"scan","dataSource":"default.cmv_mat_view2_n0","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"columns":["a","c"],"resultFormat":"compactedList"}
                     druid.query.type scan
                   Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
@@ -599,50 +599,50 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[10][tables = [cmv_mat_view2, $hdt$_0]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[10][tables = [cmv_mat_view2_n0, $hdt$_0]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: SELECT * FROM (
-  (SELECT a, c FROM cmv_basetable WHERE a = 3) table1
+  (SELECT a, c FROM cmv_basetable_n2 WHERE a = 3) table1
   JOIN
-  (SELECT a, c FROM cmv_basetable WHERE d = 3) table2
+  (SELECT a, c FROM cmv_basetable_n2 WHERE d = 3) table2
   ON table1.a = table2.a)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@cmv_basetable
-PREHOOK: Input: default@cmv_mat_view2
+PREHOOK: Input: default@cmv_basetable_n2
+PREHOOK: Input: default@cmv_mat_view2_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT * FROM (
-  (SELECT a, c FROM cmv_basetable WHERE a = 3) table1
+  (SELECT a, c FROM cmv_basetable_n2 WHERE a = 3) table1
   JOIN
-  (SELECT a, c FROM cmv_basetable WHERE d = 3) table2
+  (SELECT a, c FROM cmv_basetable_n2 WHERE d = 3) table2
   ON table1.a = table2.a)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@cmv_basetable
-POSTHOOK: Input: default@cmv_mat_view2
+POSTHOOK: Input: default@cmv_basetable_n2
+POSTHOOK: Input: default@cmv_mat_view2_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 3	15.800000190734863	3	978.76
 3	15.800000190734863	3	978.76
 3	9.800000190734863	3	978.76
 3	978.760009765625	3	978.76
-PREHOOK: query: DROP MATERIALIZED VIEW cmv_mat_view
+PREHOOK: query: DROP MATERIALIZED VIEW cmv_mat_view_n2
 PREHOOK: type: DROP_MATERIALIZED_VIEW
-PREHOOK: Input: default@cmv_mat_view
-PREHOOK: Output: default@cmv_mat_view
-POSTHOOK: query: DROP MATERIALIZED VIEW cmv_mat_view
+PREHOOK: Input: default@cmv_mat_view_n2
+PREHOOK: Output: default@cmv_mat_view_n2
+POSTHOOK: query: DROP MATERIALIZED VIEW cmv_mat_view_n2
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
-POSTHOOK: Input: default@cmv_mat_view
-POSTHOOK: Output: default@cmv_mat_view
-PREHOOK: query: DROP MATERIALIZED VIEW cmv_mat_view2
+POSTHOOK: Input: default@cmv_mat_view_n2
+POSTHOOK: Output: default@cmv_mat_view_n2
+PREHOOK: query: DROP MATERIALIZED VIEW cmv_mat_view2_n0
 PREHOOK: type: DROP_MATERIALIZED_VIEW
-PREHOOK: Input: default@cmv_mat_view2
-PREHOOK: Output: default@cmv_mat_view2
-POSTHOOK: query: DROP MATERIALIZED VIEW cmv_mat_view2
+PREHOOK: Input: default@cmv_mat_view2_n0
+PREHOOK: Output: default@cmv_mat_view2_n0
+POSTHOOK: query: DROP MATERIALIZED VIEW cmv_mat_view2_n0
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
-POSTHOOK: Input: default@cmv_mat_view2
-POSTHOOK: Output: default@cmv_mat_view2
-PREHOOK: query: DROP TABLE cmv_basetable
+POSTHOOK: Input: default@cmv_mat_view2_n0
+POSTHOOK: Output: default@cmv_mat_view2_n0
+PREHOOK: query: DROP TABLE cmv_basetable_n2
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@cmv_basetable
-PREHOOK: Output: default@cmv_basetable
-POSTHOOK: query: DROP TABLE cmv_basetable
+PREHOOK: Input: default@cmv_basetable_n2
+PREHOOK: Output: default@cmv_basetable_n2
+POSTHOOK: query: DROP TABLE cmv_basetable_n2
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@cmv_basetable
-POSTHOOK: Output: default@cmv_basetable
+POSTHOOK: Input: default@cmv_basetable_n2
+POSTHOOK: Output: default@cmv_basetable_n2

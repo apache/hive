@@ -1,29 +1,29 @@
-PREHOOK: query: drop table employee
+PREHOOK: query: drop table employee_n1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table employee
+POSTHOOK: query: drop table employee_n1
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table employee (department_id int, gender varchar(10), education_level int)
+PREHOOK: query: create table employee_n1 (department_id int, gender varchar(10), education_level int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@employee
-POSTHOOK: query: create table employee (department_id int, gender varchar(10), education_level int)
+PREHOOK: Output: default@employee_n1
+POSTHOOK: query: create table employee_n1 (department_id int, gender varchar(10), education_level int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@employee
-PREHOOK: query: insert into employee values (1, 'M', 1),(1, 'M', 1),(2, 'F', 1),(1, 'F', 3),(1, 'M', 2),(4, 'M', 1),(2, 'F', 1),(2, 'F', 3),(3, 'M', 2)
+POSTHOOK: Output: default@employee_n1
+PREHOOK: query: insert into employee_n1 values (1, 'M', 1),(1, 'M', 1),(2, 'F', 1),(1, 'F', 3),(1, 'M', 2),(4, 'M', 1),(2, 'F', 1),(2, 'F', 3),(3, 'M', 2)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@employee
-POSTHOOK: query: insert into employee values (1, 'M', 1),(1, 'M', 1),(2, 'F', 1),(1, 'F', 3),(1, 'M', 2),(4, 'M', 1),(2, 'F', 1),(2, 'F', 3),(3, 'M', 2)
+PREHOOK: Output: default@employee_n1
+POSTHOOK: query: insert into employee_n1 values (1, 'M', 1),(1, 'M', 1),(2, 'F', 1),(1, 'F', 3),(1, 'M', 2),(4, 'M', 1),(2, 'F', 1),(2, 'F', 3),(3, 'M', 2)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@employee
-POSTHOOK: Lineage: employee.department_id SCRIPT []
-POSTHOOK: Lineage: employee.education_level SCRIPT []
-POSTHOOK: Lineage: employee.gender SCRIPT []
-PREHOOK: query: explain select count(distinct department_id), count(distinct gender), count(distinct education_level) from employee
+POSTHOOK: Output: default@employee_n1
+POSTHOOK: Lineage: employee_n1.department_id SCRIPT []
+POSTHOOK: Lineage: employee_n1.education_level SCRIPT []
+POSTHOOK: Lineage: employee_n1.gender SCRIPT []
+PREHOOK: query: explain select count(distinct department_id), count(distinct gender), count(distinct education_level) from employee_n1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select count(distinct department_id), count(distinct gender), count(distinct education_level) from employee
+POSTHOOK: query: explain select count(distinct department_id), count(distinct gender), count(distinct education_level) from employee_n1
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -55,53 +55,53 @@ Stage-0
                       Select Operator [SEL_1] (rows=9 width=93)
                         Output:["_col0","_col1","_col2"]
                         TableScan [TS_0] (rows=9 width=93)
-                          default@employee,employee,Tbl:COMPLETE,Col:COMPLETE,Output:["department_id","gender","education_level"]
+                          default@employee_n1,employee_n1,Tbl:COMPLETE,Col:COMPLETE,Output:["department_id","gender","education_level"]
 
-PREHOOK: query: select count(distinct department_id), count(distinct gender), count(distinct education_level) from employee
+PREHOOK: query: select count(distinct department_id), count(distinct gender), count(distinct education_level) from employee_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@employee
+PREHOOK: Input: default@employee_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select count(distinct department_id), count(distinct gender), count(distinct education_level) from employee
+POSTHOOK: query: select count(distinct department_id), count(distinct gender), count(distinct education_level) from employee_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@employee
+POSTHOOK: Input: default@employee_n1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 4	2	3
-PREHOOK: query: select count(distinct department_id), count(distinct gender), count(distinct education_level), count(distinct education_level) from employee
+PREHOOK: query: select count(distinct department_id), count(distinct gender), count(distinct education_level), count(distinct education_level) from employee_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@employee
+PREHOOK: Input: default@employee_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select count(distinct department_id), count(distinct gender), count(distinct education_level), count(distinct education_level) from employee
+POSTHOOK: query: select count(distinct department_id), count(distinct gender), count(distinct education_level), count(distinct education_level) from employee_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@employee
+POSTHOOK: Input: default@employee_n1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 4	2	3	3
 PREHOOK: query: select count(distinct department_id), count(distinct gender), count(distinct education_level), 
-count(distinct education_level, department_id) from employee
+count(distinct education_level, department_id) from employee_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@employee
+PREHOOK: Input: default@employee_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(distinct department_id), count(distinct gender), count(distinct education_level), 
-count(distinct education_level, department_id) from employee
+count(distinct education_level, department_id) from employee_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@employee
+POSTHOOK: Input: default@employee_n1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 4	2	3	7
 PREHOOK: query: select count(distinct gender), count(distinct department_id), count(distinct gender), count(distinct education_level),
-count(distinct education_level, department_id), count(distinct department_id, education_level) from employee
+count(distinct education_level, department_id), count(distinct department_id, education_level) from employee_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@employee
+PREHOOK: Input: default@employee_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(distinct gender), count(distinct department_id), count(distinct gender), count(distinct education_level),
-count(distinct education_level, department_id), count(distinct department_id, education_level) from employee
+count(distinct education_level, department_id), count(distinct department_id, education_level) from employee_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@employee
+POSTHOOK: Input: default@employee_n1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 2	4	2	3	7	7
 PREHOOK: query: explain select count(distinct gender), count(distinct department_id), count(distinct gender), count(distinct education_level),
-count(distinct education_level, department_id), count(distinct department_id, education_level), count(distinct department_id, education_level, gender) from employee
+count(distinct education_level, department_id), count(distinct department_id, education_level), count(distinct department_id, education_level, gender) from employee_n1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select count(distinct gender), count(distinct department_id), count(distinct gender), count(distinct education_level),
-count(distinct education_level, department_id), count(distinct department_id, education_level), count(distinct department_id, education_level, gender) from employee
+count(distinct education_level, department_id), count(distinct department_id, education_level), count(distinct department_id, education_level, gender) from employee_n1
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -135,45 +135,45 @@ Stage-0
                         Select Operator [SEL_1] (rows=9 width=93)
                           Output:["_col0","_col1","_col2"]
                           TableScan [TS_0] (rows=9 width=93)
-                            default@employee,employee,Tbl:COMPLETE,Col:COMPLETE,Output:["gender","department_id","education_level"]
+                            default@employee_n1,employee_n1,Tbl:COMPLETE,Col:COMPLETE,Output:["gender","department_id","education_level"]
 
 PREHOOK: query: select count(distinct gender), count(distinct department_id), count(distinct gender), count(distinct education_level),
-count(distinct education_level, department_id), count(distinct department_id, education_level), count(distinct department_id, education_level, gender) from employee
+count(distinct education_level, department_id), count(distinct department_id, education_level), count(distinct department_id, education_level, gender) from employee_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@employee
+PREHOOK: Input: default@employee_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(distinct gender), count(distinct department_id), count(distinct gender), count(distinct education_level),
-count(distinct education_level, department_id), count(distinct department_id, education_level), count(distinct department_id, education_level, gender) from employee
+count(distinct education_level, department_id), count(distinct department_id, education_level), count(distinct department_id, education_level, gender) from employee_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@employee
+POSTHOOK: Input: default@employee_n1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 2	4	2	3	7	7	7
 PREHOOK: query: select count(case i when 3 then 1 else null end) as c0, count(case i when 5 then 1 else null end) as c1, 
 count(case i when 6 then 1 else null end) as c2 from (select grouping__id as i, department_id, gender, 
-education_level from employee group by department_id, gender, education_level grouping sets 
+education_level from employee_n1 group by department_id, gender, education_level grouping sets 
 (department_id, gender, education_level))subq
 PREHOOK: type: QUERY
-PREHOOK: Input: default@employee
+PREHOOK: Input: default@employee_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(case i when 3 then 1 else null end) as c0, count(case i when 5 then 1 else null end) as c1, 
 count(case i when 6 then 1 else null end) as c2 from (select grouping__id as i, department_id, gender, 
-education_level from employee group by department_id, gender, education_level grouping sets 
+education_level from employee_n1 group by department_id, gender, education_level grouping sets 
 (department_id, gender, education_level))subq
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@employee
+POSTHOOK: Input: default@employee_n1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 4	2	3
-PREHOOK: query: select grouping__id as i, department_id, gender, education_level from employee 
+PREHOOK: query: select grouping__id as i, department_id, gender, education_level from employee_n1 
 group by department_id, gender, education_level grouping sets 
 (department_id, gender, education_level, (education_level, department_id))
 PREHOOK: type: QUERY
-PREHOOK: Input: default@employee
+PREHOOK: Input: default@employee_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select grouping__id as i, department_id, gender, education_level from employee 
+POSTHOOK: query: select grouping__id as i, department_id, gender, education_level from employee_n1 
 group by department_id, gender, education_level grouping sets 
 (department_id, gender, education_level, (education_level, department_id))
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@employee
+POSTHOOK: Input: default@employee_n1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 6	NULL	NULL	1
 6	NULL	NULL	2

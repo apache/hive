@@ -1,74 +1,74 @@
-PREHOOK: query: create table sih_i_part (key int, value string) partitioned by (p string)
+PREHOOK: query: create table sih_i_part_n1 (key int, value string) partitioned by (p string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@sih_i_part
-POSTHOOK: query: create table sih_i_part (key int, value string) partitioned by (p string)
+PREHOOK: Output: default@sih_i_part_n1
+POSTHOOK: query: create table sih_i_part_n1 (key int, value string) partitioned by (p string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@sih_i_part
-PREHOOK: query: insert overwrite table sih_i_part partition (p='1') select key, value from src
+POSTHOOK: Output: default@sih_i_part_n1
+PREHOOK: query: insert overwrite table sih_i_part_n1 partition (p='1') select key, value from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@sih_i_part@p=1
-POSTHOOK: query: insert overwrite table sih_i_part partition (p='1') select key, value from src
+PREHOOK: Output: default@sih_i_part_n1@p=1
+POSTHOOK: query: insert overwrite table sih_i_part_n1 partition (p='1') select key, value from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@sih_i_part@p=1
-POSTHOOK: Lineage: sih_i_part PARTITION(p=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: sih_i_part PARTITION(p=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: insert overwrite table sih_i_part partition (p='2') select key+10000, value from src
+POSTHOOK: Output: default@sih_i_part_n1@p=1
+POSTHOOK: Lineage: sih_i_part_n1 PARTITION(p=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: sih_i_part_n1 PARTITION(p=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table sih_i_part_n1 partition (p='2') select key+10000, value from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@sih_i_part@p=2
-POSTHOOK: query: insert overwrite table sih_i_part partition (p='2') select key+10000, value from src
+PREHOOK: Output: default@sih_i_part_n1@p=2
+POSTHOOK: query: insert overwrite table sih_i_part_n1 partition (p='2') select key+10000, value from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@sih_i_part@p=2
-POSTHOOK: Lineage: sih_i_part PARTITION(p=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: sih_i_part PARTITION(p=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: insert overwrite table sih_i_part partition (p='3') select key+20000, value from src
+POSTHOOK: Output: default@sih_i_part_n1@p=2
+POSTHOOK: Lineage: sih_i_part_n1 PARTITION(p=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: sih_i_part_n1 PARTITION(p=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table sih_i_part_n1 partition (p='3') select key+20000, value from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@sih_i_part@p=3
-POSTHOOK: query: insert overwrite table sih_i_part partition (p='3') select key+20000, value from src
+PREHOOK: Output: default@sih_i_part_n1@p=3
+POSTHOOK: query: insert overwrite table sih_i_part_n1 partition (p='3') select key+20000, value from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@sih_i_part@p=3
-POSTHOOK: Lineage: sih_i_part PARTITION(p=3).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: sih_i_part PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: create table sih_src as select key, value from sih_i_part order by key, value
+POSTHOOK: Output: default@sih_i_part_n1@p=3
+POSTHOOK: Lineage: sih_i_part_n1 PARTITION(p=3).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: sih_i_part_n1 PARTITION(p=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create table sih_src_n1 as select key, value from sih_i_part_n1 order by key, value
 PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: default@sih_i_part
-PREHOOK: Input: default@sih_i_part@p=1
-PREHOOK: Input: default@sih_i_part@p=2
-PREHOOK: Input: default@sih_i_part@p=3
+PREHOOK: Input: default@sih_i_part_n1
+PREHOOK: Input: default@sih_i_part_n1@p=1
+PREHOOK: Input: default@sih_i_part_n1@p=2
+PREHOOK: Input: default@sih_i_part_n1@p=3
 PREHOOK: Output: database:default
-PREHOOK: Output: default@sih_src
-POSTHOOK: query: create table sih_src as select key, value from sih_i_part order by key, value
+PREHOOK: Output: default@sih_src_n1
+POSTHOOK: query: create table sih_src_n1 as select key, value from sih_i_part_n1 order by key, value
 POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: default@sih_i_part
-POSTHOOK: Input: default@sih_i_part@p=1
-POSTHOOK: Input: default@sih_i_part@p=2
-POSTHOOK: Input: default@sih_i_part@p=3
+POSTHOOK: Input: default@sih_i_part_n1
+POSTHOOK: Input: default@sih_i_part_n1@p=1
+POSTHOOK: Input: default@sih_i_part_n1@p=2
+POSTHOOK: Input: default@sih_i_part_n1@p=3
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@sih_src
-POSTHOOK: Lineage: sih_src.key SIMPLE [(sih_i_part)sih_i_part.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: sih_src.value SIMPLE [(sih_i_part)sih_i_part.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: create table sih_src2 as select key, value from sih_src order by key, value
+POSTHOOK: Output: default@sih_src_n1
+POSTHOOK: Lineage: sih_src_n1.key SIMPLE [(sih_i_part_n1)sih_i_part_n1.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: sih_src_n1.value SIMPLE [(sih_i_part_n1)sih_i_part_n1.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: create table sih_src2_n1 as select key, value from sih_src_n1 order by key, value
 PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: default@sih_src
+PREHOOK: Input: default@sih_src_n1
 PREHOOK: Output: database:default
-PREHOOK: Output: default@sih_src2
-POSTHOOK: query: create table sih_src2 as select key, value from sih_src order by key, value
+PREHOOK: Output: default@sih_src2_n1
+POSTHOOK: query: create table sih_src2_n1 as select key, value from sih_src_n1 order by key, value
 POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: default@sih_src
+POSTHOOK: Input: default@sih_src_n1
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@sih_src2
-POSTHOOK: Lineage: sih_src2.key SIMPLE [(sih_src)sih_src.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: sih_src2.value SIMPLE [(sih_src)sih_src.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: desc formatted sih_src
+POSTHOOK: Output: default@sih_src2_n1
+POSTHOOK: Lineage: sih_src2_n1.key SIMPLE [(sih_src_n1)sih_src_n1.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: sih_src2_n1.value SIMPLE [(sih_src_n1)sih_src_n1.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: desc formatted sih_src_n1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@sih_src
+PREHOOK: Input: default@sih_src_n1
 # col_name            	data_type           	comment             
 key                 	int                 	                    
 value               	string              	                    
@@ -98,7 +98,7 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: explain select count(1) from sih_src
+PREHOOK: query: explain select count(1) from sih_src_n1
 PREHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -110,12 +110,12 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(1) from sih_src
+PREHOOK: query: select count(1) from sih_src_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@sih_src
+PREHOOK: Input: default@sih_src_n1
 #### A masked pattern was here ####
 1500
-PREHOOK: query: explain select count(1) from sih_src tablesample(1 percent)
+PREHOOK: query: explain select count(1) from sih_src_n1 tablesample(1 percent)
 PREHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -126,7 +126,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: sih_src
+            alias: sih_src_n1
             Statistics: Num rows: 1500 Data size: 18124 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               Statistics: Num rows: 1500 Data size: 18124 Basic stats: COMPLETE Column stats: COMPLETE
@@ -160,12 +160,12 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(1) from sih_src tablesample(1 percent)
+PREHOOK: query: select count(1) from sih_src_n1 tablesample(1 percent)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@sih_src
+PREHOOK: Input: default@sih_src_n1
 #### A masked pattern was here ####
 25
-PREHOOK: query: explain select count(1) from sih_src tablesample(10 rows)
+PREHOOK: query: explain select count(1) from sih_src_n1 tablesample(10 rows)
 PREHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -176,7 +176,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: sih_src
+            alias: sih_src_n1
             Row Limit Per Split: 10
             Statistics: Num rows: 1500 Data size: 18124 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
@@ -211,8 +211,8 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(1) from sih_src tablesample(10 rows)
+PREHOOK: query: select count(1) from sih_src_n1 tablesample(10 rows)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@sih_src
+PREHOOK: Input: default@sih_src_n1
 #### A masked pattern was here ####
 650

@@ -94,30 +94,30 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 2011-12-02 00:00:00
-PREHOOK: query: create table t (dt int)
+PREHOOK: query: create table t_n18 (dt int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t
-POSTHOOK: query: create table t (dt int)
+PREHOOK: Output: default@t_n18
+POSTHOOK: query: create table t_n18 (dt int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t
-PREHOOK: query: insert into t values (1),(2)
+POSTHOOK: Output: default@t_n18
+PREHOOK: query: insert into t_n18 values (1),(2)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values (1),(2)
+PREHOOK: Output: default@t_n18
+POSTHOOK: query: insert into t_n18 values (1),(2)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.dt SCRIPT []
+POSTHOOK: Output: default@t_n18
+POSTHOOK: Lineage: t_n18.dt SCRIPT []
 PREHOOK: query: explain
 select
 	date '2012-01-01' + interval (-dt*dt) day,
 	date '2012-01-01' - interval (-dt*dt) day,
 	date '2012-01-01' + 1 day + '2' days,
 	date '2012-01-01' + interval (dt || '-1') year to month
-	from t
+	from t_n18
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select
@@ -125,7 +125,7 @@ select
 	date '2012-01-01' - interval (-dt*dt) day,
 	date '2012-01-01' + 1 day + '2' days,
 	date '2012-01-01' + interval (dt || '-1') year to month
-	from t
+	from t_n18
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -136,7 +136,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t
+            alias: t_n18
             Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: (DATE'2012-01-01' + IntervalDayLiteralProcessor(((- dt) * dt))) (type: timestamp), (DATE'2012-01-01' - IntervalDayLiteralProcessor(((- dt) * dt))) (type: timestamp), TIMESTAMP'2012-01-04 00:00:00.0' (type: timestamp), (DATE'2012-01-01' + IntervalYearMonthLiteralProcessor(concat(dt, '-1'))) (type: date)
@@ -162,18 +162,18 @@ PREHOOK: query: select
         date '2012-01-01' - interval (-dt*dt) day,
         date '2012-01-01' + 1 day + '2' days,
         date '2012-01-01' + interval (dt || '-1') year to month
-        from t
+        from t_n18
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t
+PREHOOK: Input: default@t_n18
 #### A masked pattern was here ####
 POSTHOOK: query: select
         date '2012-01-01' + interval (-dt*dt) day,
         date '2012-01-01' - interval (-dt*dt) day,
         date '2012-01-01' + 1 day + '2' days,
         date '2012-01-01' + interval (dt || '-1') year to month
-        from t
+        from t_n18
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n18
 #### A masked pattern was here ####
 2011-12-31 00:00:00	2012-01-02 00:00:00	2012-01-04 00:00:00	2013-02-01
 2011-12-28 00:00:00	2012-01-05 00:00:00	2012-01-04 00:00:00	2014-02-01

@@ -1,13 +1,13 @@
-PREHOOK: query: create table union_subq_union(key int, value string)
+PREHOOK: query: create table union_subq_union_n2(key int, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@union_subq_union
-POSTHOOK: query: create table union_subq_union(key int, value string)
+PREHOOK: Output: default@union_subq_union_n2
+POSTHOOK: query: create table union_subq_union_n2(key int, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@union_subq_union
+POSTHOOK: Output: default@union_subq_union_n2
 PREHOOK: query: explain
-insert overwrite table union_subq_union 
+insert overwrite table union_subq_union_n2 
 select * from (
 
 select * from (
@@ -27,7 +27,7 @@ select key, value from src
 ) aa
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-insert overwrite table union_subq_union 
+insert overwrite table union_subq_union_n2 
 select * from (
 
 select * from (
@@ -79,7 +79,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.union_subq_union
+                            name: default.union_subq_union_n2
             Execution mode: vectorized
         Map 2 
             Map Operator Tree:
@@ -101,7 +101,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.union_subq_union
+                            name: default.union_subq_union_n2
             Execution mode: vectorized
         Map 3 
             Map Operator Tree:
@@ -142,7 +142,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.union_subq_union
+                        name: default.union_subq_union_n2
         Reducer 6 
             Execution mode: vectorized
             Reduce Operator Tree:
@@ -162,7 +162,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.union_subq_union
+                        name: default.union_subq_union_n2
 
   Stage: Stage-0
     Move Operator
@@ -172,13 +172,13 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.union_subq_union
+              name: default.union_subq_union_n2
 
   Stage: Stage-2
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: insert overwrite table union_subq_union 
+PREHOOK: query: insert overwrite table union_subq_union_n2 
 select * from (
 
 select * from (
@@ -198,8 +198,8 @@ select key, value from src
 ) aa
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@union_subq_union
-POSTHOOK: query: insert overwrite table union_subq_union 
+PREHOOK: Output: default@union_subq_union_n2
+POSTHOOK: query: insert overwrite table union_subq_union_n2 
 select * from (
 
 select * from (
@@ -219,16 +219,16 @@ select key, value from src
 ) aa
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@union_subq_union
-POSTHOOK: Lineage: union_subq_union.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: union_subq_union.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from union_subq_union order by key, value limit 20
+POSTHOOK: Output: default@union_subq_union_n2
+POSTHOOK: Lineage: union_subq_union_n2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: union_subq_union_n2.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from union_subq_union_n2 order by key, value limit 20
 PREHOOK: type: QUERY
-PREHOOK: Input: default@union_subq_union
+PREHOOK: Input: default@union_subq_union_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select * from union_subq_union order by key, value limit 20
+POSTHOOK: query: select * from union_subq_union_n2 order by key, value limit 20
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@union_subq_union
+POSTHOOK: Input: default@union_subq_union_n2
 #### A masked pattern was here ####
 0	val_0
 0	val_0

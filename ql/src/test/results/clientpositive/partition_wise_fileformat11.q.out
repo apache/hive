@@ -1,114 +1,114 @@
-PREHOOK: query: create table partition_test_partitioned(key string, value string) partitioned by (dt string) stored as rcfile
+PREHOOK: query: create table partition_test_partitioned_n4(key string, value string) partitioned by (dt string) stored as rcfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@partition_test_partitioned
-POSTHOOK: query: create table partition_test_partitioned(key string, value string) partitioned by (dt string) stored as rcfile
+PREHOOK: Output: default@partition_test_partitioned_n4
+POSTHOOK: query: create table partition_test_partitioned_n4(key string, value string) partitioned by (dt string) stored as rcfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@partition_test_partitioned
-PREHOOK: query: alter table partition_test_partitioned set serde 'org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe'
+POSTHOOK: Output: default@partition_test_partitioned_n4
+PREHOOK: query: alter table partition_test_partitioned_n4 set serde 'org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe'
 PREHOOK: type: ALTERTABLE_SERIALIZER
-PREHOOK: Input: default@partition_test_partitioned
-PREHOOK: Output: default@partition_test_partitioned
-POSTHOOK: query: alter table partition_test_partitioned set serde 'org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe'
+PREHOOK: Input: default@partition_test_partitioned_n4
+PREHOOK: Output: default@partition_test_partitioned_n4
+POSTHOOK: query: alter table partition_test_partitioned_n4 set serde 'org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe'
 POSTHOOK: type: ALTERTABLE_SERIALIZER
-POSTHOOK: Input: default@partition_test_partitioned
-POSTHOOK: Output: default@partition_test_partitioned
-PREHOOK: query: insert overwrite table partition_test_partitioned partition(dt='1') select * from src where key = 238
+POSTHOOK: Input: default@partition_test_partitioned_n4
+POSTHOOK: Output: default@partition_test_partitioned_n4
+PREHOOK: query: insert overwrite table partition_test_partitioned_n4 partition(dt='1') select * from src where key = 238
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@partition_test_partitioned@dt=1
-POSTHOOK: query: insert overwrite table partition_test_partitioned partition(dt='1') select * from src where key = 238
+PREHOOK: Output: default@partition_test_partitioned_n4@dt=1
+POSTHOOK: query: insert overwrite table partition_test_partitioned_n4 partition(dt='1') select * from src where key = 238
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@partition_test_partitioned@dt=1
-POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from partition_test_partitioned where dt is not null
+POSTHOOK: Output: default@partition_test_partitioned_n4@dt=1
+POSTHOOK: Lineage: partition_test_partitioned_n4 PARTITION(dt=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_test_partitioned_n4 PARTITION(dt=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from partition_test_partitioned_n4 where dt is not null
 PREHOOK: type: QUERY
-PREHOOK: Input: default@partition_test_partitioned
-PREHOOK: Input: default@partition_test_partitioned@dt=1
+PREHOOK: Input: default@partition_test_partitioned_n4
+PREHOOK: Input: default@partition_test_partitioned_n4@dt=1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from partition_test_partitioned where dt is not null
+POSTHOOK: query: select * from partition_test_partitioned_n4 where dt is not null
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@partition_test_partitioned
-POSTHOOK: Input: default@partition_test_partitioned@dt=1
+POSTHOOK: Input: default@partition_test_partitioned_n4
+POSTHOOK: Input: default@partition_test_partitioned_n4@dt=1
 #### A masked pattern was here ####
 238	val_238	1
 238	val_238	1
-PREHOOK: query: select key+key, value from partition_test_partitioned where dt is not null
+PREHOOK: query: select key+key, value from partition_test_partitioned_n4 where dt is not null
 PREHOOK: type: QUERY
-PREHOOK: Input: default@partition_test_partitioned
-PREHOOK: Input: default@partition_test_partitioned@dt=1
+PREHOOK: Input: default@partition_test_partitioned_n4
+PREHOOK: Input: default@partition_test_partitioned_n4@dt=1
 #### A masked pattern was here ####
-POSTHOOK: query: select key+key, value from partition_test_partitioned where dt is not null
+POSTHOOK: query: select key+key, value from partition_test_partitioned_n4 where dt is not null
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@partition_test_partitioned
-POSTHOOK: Input: default@partition_test_partitioned@dt=1
+POSTHOOK: Input: default@partition_test_partitioned_n4
+POSTHOOK: Input: default@partition_test_partitioned_n4@dt=1
 #### A masked pattern was here ####
 476.0	val_238
 476.0	val_238
-PREHOOK: query: alter table partition_test_partitioned change key key int
+PREHOOK: query: alter table partition_test_partitioned_n4 change key key int
 PREHOOK: type: ALTERTABLE_RENAMECOL
-PREHOOK: Input: default@partition_test_partitioned
-PREHOOK: Output: default@partition_test_partitioned
-POSTHOOK: query: alter table partition_test_partitioned change key key int
+PREHOOK: Input: default@partition_test_partitioned_n4
+PREHOOK: Output: default@partition_test_partitioned_n4
+POSTHOOK: query: alter table partition_test_partitioned_n4 change key key int
 POSTHOOK: type: ALTERTABLE_RENAMECOL
-POSTHOOK: Input: default@partition_test_partitioned
-POSTHOOK: Output: default@partition_test_partitioned
-PREHOOK: query: select key+key, value from partition_test_partitioned where dt is not null
+POSTHOOK: Input: default@partition_test_partitioned_n4
+POSTHOOK: Output: default@partition_test_partitioned_n4
+PREHOOK: query: select key+key, value from partition_test_partitioned_n4 where dt is not null
 PREHOOK: type: QUERY
-PREHOOK: Input: default@partition_test_partitioned
-PREHOOK: Input: default@partition_test_partitioned@dt=1
+PREHOOK: Input: default@partition_test_partitioned_n4
+PREHOOK: Input: default@partition_test_partitioned_n4@dt=1
 #### A masked pattern was here ####
-POSTHOOK: query: select key+key, value from partition_test_partitioned where dt is not null
+POSTHOOK: query: select key+key, value from partition_test_partitioned_n4 where dt is not null
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@partition_test_partitioned
-POSTHOOK: Input: default@partition_test_partitioned@dt=1
+POSTHOOK: Input: default@partition_test_partitioned_n4
+POSTHOOK: Input: default@partition_test_partitioned_n4@dt=1
 #### A masked pattern was here ####
 476	val_238
 476	val_238
-PREHOOK: query: select * from partition_test_partitioned where dt is not null
+PREHOOK: query: select * from partition_test_partitioned_n4 where dt is not null
 PREHOOK: type: QUERY
-PREHOOK: Input: default@partition_test_partitioned
-PREHOOK: Input: default@partition_test_partitioned@dt=1
+PREHOOK: Input: default@partition_test_partitioned_n4
+PREHOOK: Input: default@partition_test_partitioned_n4@dt=1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from partition_test_partitioned where dt is not null
+POSTHOOK: query: select * from partition_test_partitioned_n4 where dt is not null
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@partition_test_partitioned
-POSTHOOK: Input: default@partition_test_partitioned@dt=1
+POSTHOOK: Input: default@partition_test_partitioned_n4
+POSTHOOK: Input: default@partition_test_partitioned_n4@dt=1
 #### A masked pattern was here ####
 238	val_238	1
 238	val_238	1
-PREHOOK: query: alter table partition_test_partitioned add columns (value2 string)
+PREHOOK: query: alter table partition_test_partitioned_n4 add columns (value2 string)
 PREHOOK: type: ALTERTABLE_ADDCOLS
-PREHOOK: Input: default@partition_test_partitioned
-PREHOOK: Output: default@partition_test_partitioned
-POSTHOOK: query: alter table partition_test_partitioned add columns (value2 string)
+PREHOOK: Input: default@partition_test_partitioned_n4
+PREHOOK: Output: default@partition_test_partitioned_n4
+POSTHOOK: query: alter table partition_test_partitioned_n4 add columns (value2 string)
 POSTHOOK: type: ALTERTABLE_ADDCOLS
-POSTHOOK: Input: default@partition_test_partitioned
-POSTHOOK: Output: default@partition_test_partitioned
-PREHOOK: query: select key+key, value from partition_test_partitioned where dt is not null
+POSTHOOK: Input: default@partition_test_partitioned_n4
+POSTHOOK: Output: default@partition_test_partitioned_n4
+PREHOOK: query: select key+key, value from partition_test_partitioned_n4 where dt is not null
 PREHOOK: type: QUERY
-PREHOOK: Input: default@partition_test_partitioned
-PREHOOK: Input: default@partition_test_partitioned@dt=1
+PREHOOK: Input: default@partition_test_partitioned_n4
+PREHOOK: Input: default@partition_test_partitioned_n4@dt=1
 #### A masked pattern was here ####
-POSTHOOK: query: select key+key, value from partition_test_partitioned where dt is not null
+POSTHOOK: query: select key+key, value from partition_test_partitioned_n4 where dt is not null
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@partition_test_partitioned
-POSTHOOK: Input: default@partition_test_partitioned@dt=1
+POSTHOOK: Input: default@partition_test_partitioned_n4
+POSTHOOK: Input: default@partition_test_partitioned_n4@dt=1
 #### A masked pattern was here ####
 476	val_238
 476	val_238
-PREHOOK: query: select * from partition_test_partitioned where dt is not null
+PREHOOK: query: select * from partition_test_partitioned_n4 where dt is not null
 PREHOOK: type: QUERY
-PREHOOK: Input: default@partition_test_partitioned
-PREHOOK: Input: default@partition_test_partitioned@dt=1
+PREHOOK: Input: default@partition_test_partitioned_n4
+PREHOOK: Input: default@partition_test_partitioned_n4@dt=1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from partition_test_partitioned where dt is not null
+POSTHOOK: query: select * from partition_test_partitioned_n4 where dt is not null
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@partition_test_partitioned
-POSTHOOK: Input: default@partition_test_partitioned@dt=1
+POSTHOOK: Input: default@partition_test_partitioned_n4
+POSTHOOK: Input: default@partition_test_partitioned_n4@dt=1
 #### A masked pattern was here ####
 238	val_238	NULL	1
 238	val_238	NULL	1

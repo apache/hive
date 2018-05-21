@@ -1,20 +1,20 @@
-PREHOOK: query: create table studenttab10k (age2 int)
+PREHOOK: query: create table studenttab10k_n0 (age2 int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@studenttab10k
-POSTHOOK: query: create table studenttab10k (age2 int)
+PREHOOK: Output: default@studenttab10k_n0
+POSTHOOK: query: create table studenttab10k_n0 (age2 int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@studenttab10k
-PREHOOK: query: insert into studenttab10k values(1)
+POSTHOOK: Output: default@studenttab10k_n0
+PREHOOK: query: insert into studenttab10k_n0 values(1)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@studenttab10k
-POSTHOOK: query: insert into studenttab10k values(1)
+PREHOOK: Output: default@studenttab10k_n0
+POSTHOOK: query: insert into studenttab10k_n0 values(1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@studenttab10k
-POSTHOOK: Lineage: studenttab10k.age2 SCRIPT []
+POSTHOOK: Output: default@studenttab10k_n0
+POSTHOOK: Lineage: studenttab10k_n0.age2 SCRIPT []
 PREHOOK: query: create table student_acid (age int, grade int)
  clustered by (age) into 1 buckets
 PREHOOK: type: CREATETABLE
@@ -25,15 +25,15 @@ POSTHOOK: query: create table student_acid (age int, grade int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@student_acid
-PREHOOK: query: insert into student_acid(age) select * from studenttab10k
+PREHOOK: query: insert into student_acid(age) select * from studenttab10k_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@studenttab10k
+PREHOOK: Input: default@studenttab10k_n0
 PREHOOK: Output: default@student_acid
-POSTHOOK: query: insert into student_acid(age) select * from studenttab10k
+POSTHOOK: query: insert into student_acid(age) select * from studenttab10k_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@studenttab10k
+POSTHOOK: Input: default@studenttab10k_n0
 POSTHOOK: Output: default@student_acid
-POSTHOOK: Lineage: student_acid.age SIMPLE [(studenttab10k)studenttab10k.FieldSchema(name:age2, type:int, comment:null), ]
+POSTHOOK: Lineage: student_acid.age SIMPLE [(studenttab10k_n0)studenttab10k_n0.FieldSchema(name:age2, type:int, comment:null), ]
 POSTHOOK: Lineage: student_acid.grade SIMPLE []
 PREHOOK: query: select * from student_acid
 PREHOOK: type: QUERY
@@ -44,15 +44,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@student_acid
 #### A masked pattern was here ####
 1	NULL
-PREHOOK: query: insert into student_acid(grade, age) select 3 g, * from studenttab10k
+PREHOOK: query: insert into student_acid(grade, age) select 3 g, * from studenttab10k_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@studenttab10k
+PREHOOK: Input: default@studenttab10k_n0
 PREHOOK: Output: default@student_acid
-POSTHOOK: query: insert into student_acid(grade, age) select 3 g, * from studenttab10k
+POSTHOOK: query: insert into student_acid(grade, age) select 3 g, * from studenttab10k_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@studenttab10k
+POSTHOOK: Input: default@studenttab10k_n0
 POSTHOOK: Output: default@student_acid
-POSTHOOK: Lineage: student_acid.age SIMPLE [(studenttab10k)studenttab10k.FieldSchema(name:age2, type:int, comment:null), ]
+POSTHOOK: Lineage: student_acid.age SIMPLE [(studenttab10k_n0)studenttab10k_n0.FieldSchema(name:age2, type:int, comment:null), ]
 POSTHOOK: Lineage: student_acid.grade SIMPLE []
 PREHOOK: query: select * from student_acid
 PREHOOK: type: QUERY

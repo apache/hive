@@ -3417,7 +3417,7 @@ Manufacturer#5	almond antique medium spring khaki	6
 Manufacturer#5	almond antique sky peru orange	2
 Manufacturer#5	almond aquamarine dodger light gainsboro	46
 Manufacturer#5	almond azure blanched chiffon midnight	23
-PREHOOK: query: create view IF NOT EXISTS mfgr_price_view as 
+PREHOOK: query: create view IF NOT EXISTS mfgr_price_view_n0 as 
 select p_mfgr, p_brand, 
 round(sum(p_retailprice),2) as s
 from part_orc 
@@ -3425,8 +3425,8 @@ group by p_mfgr, p_brand
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@part_orc
 PREHOOK: Output: database:default
-PREHOOK: Output: default@mfgr_price_view
-POSTHOOK: query: create view IF NOT EXISTS mfgr_price_view as 
+PREHOOK: Output: default@mfgr_price_view_n0
+POSTHOOK: query: create view IF NOT EXISTS mfgr_price_view_n0 as 
 select p_mfgr, p_brand, 
 round(sum(p_retailprice),2) as s
 from part_orc 
@@ -3434,14 +3434,14 @@ group by p_mfgr, p_brand
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@part_orc
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@mfgr_price_view
-POSTHOOK: Lineage: mfgr_price_view.p_brand SIMPLE [(part_orc)part_orc.FieldSchema(name:p_brand, type:string, comment:null), ]
-POSTHOOK: Lineage: mfgr_price_view.p_mfgr SIMPLE [(part_orc)part_orc.FieldSchema(name:p_mfgr, type:string, comment:null), ]
-POSTHOOK: Lineage: mfgr_price_view.s EXPRESSION [(part_orc)part_orc.FieldSchema(name:p_retailprice, type:double, comment:null), ]
+POSTHOOK: Output: default@mfgr_price_view_n0
+POSTHOOK: Lineage: mfgr_price_view_n0.p_brand SIMPLE [(part_orc)part_orc.FieldSchema(name:p_brand, type:string, comment:null), ]
+POSTHOOK: Lineage: mfgr_price_view_n0.p_mfgr SIMPLE [(part_orc)part_orc.FieldSchema(name:p_mfgr, type:string, comment:null), ]
+POSTHOOK: Lineage: mfgr_price_view_n0.s EXPRESSION [(part_orc)part_orc.FieldSchema(name:p_retailprice, type:double, comment:null), ]
 PREHOOK: query: explain vectorization detail
 select p_mfgr, p_brand, s, 
 round(sum(s) over w1,2) as s1
-from noop(on mfgr_price_view 
+from noop(on mfgr_price_view_n0 
 partition by p_mfgr 
 order by p_mfgr)  
 window w1 as ( partition by p_mfgr order by p_brand rows between 2 preceding and current row)
@@ -3449,7 +3449,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select p_mfgr, p_brand, s, 
 round(sum(s) over w1,2) as s1
-from noop(on mfgr_price_view 
+from noop(on mfgr_price_view_n0 
 partition by p_mfgr 
 order by p_mfgr)  
 window w1 as ( partition by p_mfgr order by p_brand rows between 2 preceding and current row)
@@ -3549,7 +3549,7 @@ STAGE PLANS:
                   PTF Operator
                     Function definitions:
                         Input definition
-                          input alias: mfgr_price_view
+                          input alias: mfgr_price_view_n0
                           output shape: _col0: string, _col1: string, _col2: double
                           type: TABLE
                         Partition table definition
@@ -3617,22 +3617,22 @@ STAGE PLANS:
 
 PREHOOK: query: select p_mfgr, p_brand, s, 
 round(sum(s) over w1,2) as s1
-from noop(on mfgr_price_view 
+from noop(on mfgr_price_view_n0 
 partition by p_mfgr 
 order by p_mfgr)  
 window w1 as ( partition by p_mfgr order by p_brand rows between 2 preceding and current row)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@mfgr_price_view
+PREHOOK: Input: default@mfgr_price_view_n0
 PREHOOK: Input: default@part_orc
 #### A masked pattern was here ####
 POSTHOOK: query: select p_mfgr, p_brand, s, 
 round(sum(s) over w1,2) as s1
-from noop(on mfgr_price_view 
+from noop(on mfgr_price_view_n0 
 partition by p_mfgr 
 order by p_mfgr)  
 window w1 as ( partition by p_mfgr order by p_brand rows between 2 preceding and current row)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@mfgr_price_view
+POSTHOOK: Input: default@mfgr_price_view_n0
 POSTHOOK: Input: default@part_orc
 #### A masked pattern was here ####
 Manufacturer#1	Brand#12	4800.84	4800.84

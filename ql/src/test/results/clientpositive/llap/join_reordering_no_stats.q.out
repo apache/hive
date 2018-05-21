@@ -344,73 +344,73 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: CREATE TABLE Employee_Part(employeeID int, employeeName String) partitioned by (employeeSalary double, country string)
+PREHOOK: query: CREATE TABLE Employee_Part_n1(employeeID int, employeeName String) partitioned by (employeeSalary double, country string)
 row format delimited fields terminated by '|'  stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@Employee_Part
-POSTHOOK: query: CREATE TABLE Employee_Part(employeeID int, employeeName String) partitioned by (employeeSalary double, country string)
+PREHOOK: Output: default@Employee_Part_n1
+POSTHOOK: query: CREATE TABLE Employee_Part_n1(employeeID int, employeeName String) partitioned by (employeeSalary double, country string)
 row format delimited fields terminated by '|'  stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@Employee_Part
-PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee.dat"  INTO TABLE Employee_Part partition(employeeSalary='2000.0', country='USA')
+POSTHOOK: Output: default@Employee_Part_n1
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee.dat"  INTO TABLE Employee_Part_n1 partition(employeeSalary='2000.0', country='USA')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@employee_part
-POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee.dat"  INTO TABLE Employee_Part partition(employeeSalary='2000.0', country='USA')
+PREHOOK: Output: default@employee_part_n1
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee.dat"  INTO TABLE Employee_Part_n1 partition(employeeSalary='2000.0', country='USA')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@employee_part
-POSTHOOK: Output: default@employee_part@employeesalary=2000.0/country=USA
-PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_Part partition(employeeSalary='2000.0', country='UK')
+POSTHOOK: Output: default@employee_part_n1
+POSTHOOK: Output: default@employee_part_n1@employeesalary=2000.0/country=USA
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_Part_n1 partition(employeeSalary='2000.0', country='UK')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@employee_part
-POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_Part partition(employeeSalary='2000.0', country='UK')
+PREHOOK: Output: default@employee_part_n1
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_Part_n1 partition(employeeSalary='2000.0', country='UK')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@employee_part
-POSTHOOK: Output: default@employee_part@employeesalary=2000.0/country=UK
-PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_Part partition(employeeSalary='3000.0', country='USA')
+POSTHOOK: Output: default@employee_part_n1
+POSTHOOK: Output: default@employee_part_n1@employeesalary=2000.0/country=UK
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_Part_n1 partition(employeeSalary='3000.0', country='USA')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@employee_part
-POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_Part partition(employeeSalary='3000.0', country='USA')
+PREHOOK: Output: default@employee_part_n1
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_Part_n1 partition(employeeSalary='3000.0', country='USA')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@employee_part
-POSTHOOK: Output: default@employee_part@employeesalary=3000.0/country=USA
-PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_Part partition(employeeSalary='4000.0', country='USA')
+POSTHOOK: Output: default@employee_part_n1
+POSTHOOK: Output: default@employee_part_n1@employeesalary=3000.0/country=USA
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_Part_n1 partition(employeeSalary='4000.0', country='USA')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@employee_part
-POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_Part partition(employeeSalary='4000.0', country='USA')
+PREHOOK: Output: default@employee_part_n1
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_Part_n1 partition(employeeSalary='4000.0', country='USA')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@employee_part
-POSTHOOK: Output: default@employee_part@employeesalary=4000.0/country=USA
-PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_Part partition(employeeSalary='3500.0', country='UK')
+POSTHOOK: Output: default@employee_part_n1
+POSTHOOK: Output: default@employee_part_n1@employeesalary=4000.0/country=USA
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_Part_n1 partition(employeeSalary='3500.0', country='UK')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@employee_part
-POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_Part partition(employeeSalary='3500.0', country='UK')
+PREHOOK: Output: default@employee_part_n1
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_Part_n1 partition(employeeSalary='3500.0', country='UK')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@employee_part
-POSTHOOK: Output: default@employee_part@employeesalary=3500.0/country=UK
-PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee.dat"  INTO TABLE Employee_Part partition(employeeSalary='3000.0', country='UK')
+POSTHOOK: Output: default@employee_part_n1
+POSTHOOK: Output: default@employee_part_n1@employeesalary=3500.0/country=UK
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee.dat"  INTO TABLE Employee_Part_n1 partition(employeeSalary='3000.0', country='UK')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@employee_part
-POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee.dat"  INTO TABLE Employee_Part partition(employeeSalary='3000.0', country='UK')
+PREHOOK: Output: default@employee_part_n1
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee.dat"  INTO TABLE Employee_Part_n1 partition(employeeSalary='3000.0', country='UK')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@employee_part
-POSTHOOK: Output: default@employee_part@employeesalary=3000.0/country=UK
-PREHOOK: query: explain select count(1) from Employee_Part,supplier_nostats,lineitem_nostats where employeeID= l_partkey and s_suppkey = l_suppkey
+POSTHOOK: Output: default@employee_part_n1
+POSTHOOK: Output: default@employee_part_n1@employeesalary=3000.0/country=UK
+PREHOOK: query: explain select count(1) from Employee_Part_n1,supplier_nostats,lineitem_nostats where employeeID= l_partkey and s_suppkey = l_suppkey
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select count(1) from Employee_Part,supplier_nostats,lineitem_nostats where employeeID= l_partkey and s_suppkey = l_suppkey
+POSTHOOK: query: explain select count(1) from Employee_Part_n1,supplier_nostats,lineitem_nostats where employeeID= l_partkey and s_suppkey = l_suppkey
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -468,7 +468,7 @@ STAGE PLANS:
         Map 6 
             Map Operator Tree:
                 TableScan
-                  alias: employee_part
+                  alias: employee_part_n1
                   Statistics: Num rows: 8 Data size: 28 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: employeeid is not null (type: boolean)
@@ -541,9 +541,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select count(1) from Employee_Part,supplier_nostats,lineitem_nostats where employeeID= l_partkey and s_suppkey = l_suppkey
+PREHOOK: query: explain select count(1) from Employee_Part_n1,supplier_nostats,lineitem_nostats where employeeID= l_partkey and s_suppkey = l_suppkey
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select count(1) from Employee_Part,supplier_nostats,lineitem_nostats where employeeID= l_partkey and s_suppkey = l_suppkey
+POSTHOOK: query: explain select count(1) from Employee_Part_n1,supplier_nostats,lineitem_nostats where employeeID= l_partkey and s_suppkey = l_suppkey
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -601,7 +601,7 @@ STAGE PLANS:
         Map 6 
             Map Operator Tree:
                 TableScan
-                  alias: employee_part
+                  alias: employee_part_n1
                   Statistics: Num rows: 8 Data size: 28 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: employeeid is not null (type: boolean)
@@ -674,14 +674,14 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: drop table Employee_Part
+PREHOOK: query: drop table Employee_Part_n1
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@employee_part
-PREHOOK: Output: default@employee_part
-POSTHOOK: query: drop table Employee_Part
+PREHOOK: Input: default@employee_part_n1
+PREHOOK: Output: default@employee_part_n1
+POSTHOOK: query: drop table Employee_Part_n1
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@employee_part
-POSTHOOK: Output: default@employee_part
+POSTHOOK: Input: default@employee_part_n1
+POSTHOOK: Output: default@employee_part_n1
 PREHOOK: query: drop table supplier_nostats
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@supplier_nostats

@@ -1,6 +1,6 @@
-DROP TABLE IF EXISTS UserVisits_web_text_none;
+DROP TABLE IF EXISTS UserVisits_web_text_none_n0;
 
-CREATE TABLE UserVisits_web_text_none (
+CREATE TABLE UserVisits_web_text_none_n0 (
   sourceIP string,
   destURL string,
   visitDate string,
@@ -12,23 +12,23 @@ CREATE TABLE UserVisits_web_text_none (
   avgTimeOnSite int)
 row format delimited fields terminated by '|'  stored as textfile;
 
-LOAD DATA LOCAL INPATH "../../data/files/UserVisits.dat" INTO TABLE UserVisits_web_text_none;
+LOAD DATA LOCAL INPATH "../../data/files/UserVisits.dat" INTO TABLE UserVisits_web_text_none_n0;
 
-desc extended UserVisits_web_text_none sourceIP;
-desc formatted UserVisits_web_text_none sourceIP;
+desc extended UserVisits_web_text_none_n0 sourceIP;
+desc formatted UserVisits_web_text_none_n0 sourceIP;
 
 explain
-analyze table UserVisits_web_text_none compute statistics for columns sourceIP, avgTimeOnSite, adRevenue;
+analyze table UserVisits_web_text_none_n0 compute statistics for columns sourceIP, avgTimeOnSite, adRevenue;
 
 explain extended
-analyze table UserVisits_web_text_none compute statistics for columns sourceIP, avgTimeOnSite, adRevenue;
+analyze table UserVisits_web_text_none_n0 compute statistics for columns sourceIP, avgTimeOnSite, adRevenue;
 
-analyze table UserVisits_web_text_none compute statistics for columns sourceIP, avgTimeOnSite, adRevenue;
-desc formatted UserVisits_web_text_none sourceIP;
-desc formatted UserVisits_web_text_none avgTimeOnSite;
-desc formatted UserVisits_web_text_none adRevenue;
+analyze table UserVisits_web_text_none_n0 compute statistics for columns sourceIP, avgTimeOnSite, adRevenue;
+desc formatted UserVisits_web_text_none_n0 sourceIP;
+desc formatted UserVisits_web_text_none_n0 avgTimeOnSite;
+desc formatted UserVisits_web_text_none_n0 adRevenue;
 
-CREATE TABLE empty_tab(
+CREATE TABLE empty_tab_n0(
    a int,
    b double,
    c string,
@@ -36,18 +36,18 @@ CREATE TABLE empty_tab(
    e binary)
 row format delimited fields terminated by '|'  stored as textfile;
 
-desc formatted empty_tab a;
+desc formatted empty_tab_n0 a;
 explain
-analyze table empty_tab compute statistics for columns a,b,c,d,e;
+analyze table empty_tab_n0 compute statistics for columns a,b,c,d,e;
 
-analyze table empty_tab compute statistics for columns a,b,c,d,e;
-desc formatted empty_tab a;
-desc formatted empty_tab b;
+analyze table empty_tab_n0 compute statistics for columns a,b,c,d,e;
+desc formatted empty_tab_n0 a;
+desc formatted empty_tab_n0 b;
 
 CREATE DATABASE test;
 USE test;
 
-CREATE TABLE UserVisits_web_text_none (
+CREATE TABLE UserVisits_web_text_none_n0 (
   sourceIP string,
   destURL string,
   visitDate string,
@@ -59,17 +59,17 @@ CREATE TABLE UserVisits_web_text_none (
   avgTimeOnSite int)
 row format delimited fields terminated by '|'  stored as textfile;
 
-LOAD DATA LOCAL INPATH "../../data/files/UserVisits.dat" INTO TABLE UserVisits_web_text_none;
+LOAD DATA LOCAL INPATH "../../data/files/UserVisits.dat" INTO TABLE UserVisits_web_text_none_n0;
 
-desc extended UserVisits_web_text_none sourceIP;
-desc extended test.UserVisits_web_text_none sourceIP;
-desc extended default.UserVisits_web_text_none sourceIP;
-desc formatted UserVisits_web_text_none sourceIP;
-desc formatted test.UserVisits_web_text_none sourceIP;
-desc formatted default.UserVisits_web_text_none sourceIP;
+desc extended UserVisits_web_text_none_n0 sourceIP;
+desc extended test.UserVisits_web_text_none_n0 sourceIP;
+desc extended default.UserVisits_web_text_none_n0 sourceIP;
+desc formatted UserVisits_web_text_none_n0 sourceIP;
+desc formatted test.UserVisits_web_text_none_n0 sourceIP;
+desc formatted default.UserVisits_web_text_none_n0 sourceIP;
 
-analyze table UserVisits_web_text_none compute statistics for columns sKeyword;
-desc extended UserVisits_web_text_none sKeyword;
-desc formatted UserVisits_web_text_none sKeyword;
-desc formatted test.UserVisits_web_text_none sKeyword;
+analyze table UserVisits_web_text_none_n0 compute statistics for columns sKeyword;
+desc extended UserVisits_web_text_none_n0 sKeyword;
+desc formatted UserVisits_web_text_none_n0 sKeyword;
+desc formatted test.UserVisits_web_text_none_n0 sKeyword;
 

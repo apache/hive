@@ -1,64 +1,64 @@
-PREHOOK: query: CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE T1_n38(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1
-POSTHOOK: query: CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@T1_n38
+POSTHOOK: query: CREATE TABLE T1_n38(key STRING, val STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1
+POSTHOOK: Output: default@T1_n38
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_n38
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1
+PREHOOK: Output: default@t1_n38
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_n38
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t1
-PREHOOK: query: CREATE TABLE T2(key STRING, val STRING) STORED AS TEXTFILE
+POSTHOOK: Output: default@t1_n38
+PREHOOK: query: CREATE TABLE T2_n25(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T2
-POSTHOOK: query: CREATE TABLE T2(key STRING, val STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@T2_n25
+POSTHOOK: query: CREATE TABLE T2_n25(key STRING, val STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T2
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2
+POSTHOOK: Output: default@T2_n25
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2_n25
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t2
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2
+PREHOOK: Output: default@t2_n25
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2_n25
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t2
-PREHOOK: query: CREATE TABLE T3(key STRING, val STRING)
+POSTHOOK: Output: default@t2_n25
+PREHOOK: query: CREATE TABLE T3_n9(key STRING, val STRING)
 SKEWED BY (val) ON ((12)) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T3
-POSTHOOK: query: CREATE TABLE T3(key STRING, val STRING)
+PREHOOK: Output: default@T3_n9
+POSTHOOK: query: CREATE TABLE T3_n9(key STRING, val STRING)
 SKEWED BY (val) ON ((12)) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T3
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T3.txt' INTO TABLE T3
+POSTHOOK: Output: default@T3_n9
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T3.txt' INTO TABLE T3_n9
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t3
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T3.txt' INTO TABLE T3
+PREHOOK: Output: default@t3_n9
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T3.txt' INTO TABLE T3_n9
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t3
+POSTHOOK: Output: default@t3_n9
 PREHOOK: query: EXPLAIN
 select *
 from 
-T1 a join T2 b on a.key = b.key 
-join T3 c on a.val = c.val
+T1_n38 a join T2_n25 b on a.key = b.key 
+join T3_n9 c on a.val = c.val
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 select *
 from 
-T1 a join T2 b on a.key = b.key 
-join T3 c on a.val = c.val
+T1_n38 a join T2_n25 b on a.key = b.key 
+join T3_n9 c on a.val = c.val
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -171,22 +171,22 @@ STAGE PLANS:
 
 PREHOOK: query: select *
 from 
-T1 a join T2 b on a.key = b.key 
-join T3 c on a.val = c.val
+T1_n38 a join T2_n25 b on a.key = b.key 
+join T3_n9 c on a.val = c.val
 order by a.key, b.key, c.key, a.val, b.val, c.val
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
-PREHOOK: Input: default@t3
+PREHOOK: Input: default@t1_n38
+PREHOOK: Input: default@t2_n25
+PREHOOK: Input: default@t3_n9
 #### A masked pattern was here ####
 POSTHOOK: query: select *
 from 
-T1 a join T2 b on a.key = b.key 
-join T3 c on a.val = c.val
+T1_n38 a join T2_n25 b on a.key = b.key 
+join T3_n9 c on a.val = c.val
 order by a.key, b.key, c.key, a.val, b.val, c.val
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
-POSTHOOK: Input: default@t3
+POSTHOOK: Input: default@t1_n38
+POSTHOOK: Input: default@t2_n25
+POSTHOOK: Input: default@t3_n9
 #### A masked pattern was here ####
 2	12	2	22	2	12

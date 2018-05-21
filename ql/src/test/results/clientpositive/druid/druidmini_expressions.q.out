@@ -1,4 +1,4 @@
-PREHOOK: query: CREATE TABLE druid_table
+PREHOOK: query: CREATE TABLE druid_table_n0
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "HOUR", "druid.query.granularity" = "MINUTE")
 AS
@@ -17,8 +17,8 @@ SELECT cast (`ctimestamp1` as timestamp with local time zone) as `__time`,
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
-PREHOOK: Output: default@druid_table
-POSTHOOK: query: CREATE TABLE druid_table
+PREHOOK: Output: default@druid_table_n0
+POSTHOOK: query: CREATE TABLE druid_table_n0
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "HOUR", "druid.query.granularity" = "MINUTE")
 AS
@@ -37,101 +37,101 @@ SELECT cast (`ctimestamp1` as timestamp with local time zone) as `__time`,
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@druid_table
-POSTHOOK: Lineage: druid_table.__time EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: druid_table.cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
-POSTHOOK: Lineage: druid_table.cboolean1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: druid_table.cboolean2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
-POSTHOOK: Lineage: druid_table.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
-POSTHOOK: Lineage: druid_table.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
-POSTHOOK: Lineage: druid_table.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: druid_table.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
-POSTHOOK: Lineage: druid_table.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
-POSTHOOK: Lineage: druid_table.cstring2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), ]
-POSTHOOK: Lineage: druid_table.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+POSTHOOK: Output: default@druid_table_n0
+POSTHOOK: Lineage: druid_table_n0.__time EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: druid_table_n0.cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: druid_table_n0.cboolean1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: druid_table_n0.cboolean2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
+POSTHOOK: Lineage: druid_table_n0.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: druid_table_n0.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: druid_table_n0.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: druid_table_n0.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: druid_table_n0.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: druid_table_n0.cstring2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), ]
+POSTHOOK: Lineage: druid_table_n0.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
 PREHOOK: query: -- MATH AND STRING functions
 
-SELECT count(*) FROM druid_table WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10 AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3
+SELECT count(*) FROM druid_table_n0 WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10 AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3
 PREHOOK: type: QUERY
-PREHOOK: Input: default@druid_table
+PREHOOK: Input: default@druid_table_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: -- MATH AND STRING functions
 
-SELECT count(*) FROM druid_table WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10 AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3
+SELECT count(*) FROM druid_table_n0 WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10 AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@druid_table
+POSTHOOK: Input: default@druid_table_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 837
-PREHOOK: query: SELECT count(*) FROM druid_table WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
+PREHOOK: query: SELECT count(*) FROM druid_table_n0 WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@druid_table
+PREHOOK: Input: default@druid_table_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: SELECT count(*) FROM druid_table WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
+POSTHOOK: query: SELECT count(*) FROM druid_table_n0 WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@druid_table
+POSTHOOK: Input: default@druid_table_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 4838
-PREHOOK: query: SELECT count(*) FROM druid_table WHERE power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3
+PREHOOK: query: SELECT count(*) FROM druid_table_n0 WHERE power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3
 PREHOOK: type: QUERY
-PREHOOK: Input: default@druid_table
+PREHOOK: Input: default@druid_table_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: SELECT count(*) FROM druid_table WHERE power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3
+POSTHOOK: query: SELECT count(*) FROM druid_table_n0 WHERE power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@druid_table
+POSTHOOK: Input: default@druid_table_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 837
 PREHOOK: query: SELECT  SUM(cfloat + 1), CAST(SUM(cdouble + ctinyint) AS INTEGER), SUM(ctinyint) + 1 , CAST(SUM(csmallint) + SUM(cint) AS DOUBLE), SUM(cint), SUM(cbigint)
-FROM druid_table WHERE ceil(cfloat) > 0 AND floor(cdouble) * 2 < 1000 OR ln(cdouble) / log10(10) > 0 AND COS(cint) > 0 OR SIN(cdouble) > 1
+FROM druid_table_n0 WHERE ceil(cfloat) > 0 AND floor(cdouble) * 2 < 1000 OR ln(cdouble) / log10(10) > 0 AND COS(cint) > 0 OR SIN(cdouble) > 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@druid_table
+PREHOOK: Input: default@druid_table_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT  SUM(cfloat + 1), CAST(SUM(cdouble + ctinyint) AS INTEGER), SUM(ctinyint) + 1 , CAST(SUM(csmallint) + SUM(cint) AS DOUBLE), SUM(cint), SUM(cbigint)
-FROM druid_table WHERE ceil(cfloat) > 0 AND floor(cdouble) * 2 < 1000 OR ln(cdouble) / log10(10) > 0 AND COS(cint) > 0 OR SIN(cdouble) > 1
+FROM druid_table_n0 WHERE ceil(cfloat) > 0 AND floor(cdouble) * 2 < 1000 OR ln(cdouble) / log10(10) > 0 AND COS(cint) > 0 OR SIN(cdouble) > 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@druid_table
+POSTHOOK: Input: default@druid_table_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 19884.64700973034	27373419	14472	8.51628242804E11	851620413654	68151649880
 PREHOOK: query: SELECT  SUM(cfloat + 1), CAST(SUM(cdouble + ctinyint) AS INTEGER), SUM(ctinyint) + 1 , CAST(SUM(csmallint) + SUM(cint) AS DOUBLE), SUM(cint), SUM(cbigint)
-FROM druid_table WHERE ceil(cfloat) > 0 AND floor(cdouble) * 2 < 1000
+FROM druid_table_n0 WHERE ceil(cfloat) > 0 AND floor(cdouble) * 2 < 1000
 PREHOOK: type: QUERY
-PREHOOK: Input: default@druid_table
+PREHOOK: Input: default@druid_table_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT  SUM(cfloat + 1), CAST(SUM(cdouble + ctinyint) AS INTEGER), SUM(ctinyint) + 1 , CAST(SUM(csmallint) + SUM(cint) AS DOUBLE), SUM(cint), SUM(cbigint)
-FROM druid_table WHERE ceil(cfloat) > 0 AND floor(cdouble) * 2 < 1000
+FROM druid_table_n0 WHERE ceil(cfloat) > 0 AND floor(cdouble) * 2 < 1000
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@druid_table
+POSTHOOK: Input: default@druid_table_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 54430.27000427246	-3740445	51268	1.31919188502E11	131922984948	92160895030
 PREHOOK: query: SELECT  SUM(cfloat + 1), CAST(SUM(cdouble + ctinyint) AS INTEGER), SUM(ctinyint) + 1 , CAST(SUM(csmallint) + SUM(cint) AS DOUBLE), SUM(cint), SUM(cbigint)
-FROM druid_table WHERE  ln(cdouble) / log10(10) > 0 AND COS(cint) > 0 OR SIN(cdouble) > 1
+FROM druid_table_n0 WHERE  ln(cdouble) / log10(10) > 0 AND COS(cint) > 0 OR SIN(cdouble) > 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@druid_table
+PREHOOK: Input: default@druid_table_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT  SUM(cfloat + 1), CAST(SUM(cdouble + ctinyint) AS INTEGER), SUM(ctinyint) + 1 , CAST(SUM(csmallint) + SUM(cint) AS DOUBLE), SUM(cint), SUM(cbigint)
-FROM druid_table WHERE  ln(cdouble) / log10(10) > 0 AND COS(cint) > 0 OR SIN(cdouble) > 1
+FROM druid_table_n0 WHERE  ln(cdouble) / log10(10) > 0 AND COS(cint) > 0 OR SIN(cdouble) > 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@druid_table
+POSTHOOK: Input: default@druid_table_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 -2389.5169917345047	27640645	-5707	7.19705549994E11	719697428706	13774723379
 PREHOOK: query: SELECT  SUM(cfloat + 1), CAST(SUM(cdouble + ctinyint) AS INTEGER), SUM(ctinyint) + 1 , CAST(SUM(csmallint) + SUM(cint) AS DOUBLE), SUM(cint), SUM(cbigint)
-FROM druid_table WHERE  SIN(cdouble) > 1
+FROM druid_table_n0 WHERE  SIN(cdouble) > 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@druid_table
+PREHOOK: Input: default@druid_table_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT  SUM(cfloat + 1), CAST(SUM(cdouble + ctinyint) AS INTEGER), SUM(ctinyint) + 1 , CAST(SUM(csmallint) + SUM(cint) AS DOUBLE), SUM(cint), SUM(cbigint)
-FROM druid_table WHERE  SIN(cdouble) > 1
+FROM druid_table_n0 WHERE  SIN(cdouble) > 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@druid_table
+POSTHOOK: Input: default@druid_table_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-PREHOOK: query: SELECT cstring1 || '_'|| cstring2, substring(cstring2, 2, 3) as concat , upper(cstring2), lower(cstring1), SUM(cdouble) as s FROM druid_table WHERE cstring1 IS NOT NULL AND cstring2 IS NOT NULL AND cstring2 like 'Y%'
+PREHOOK: query: SELECT cstring1 || '_'|| cstring2, substring(cstring2, 2, 3) as concat , upper(cstring2), lower(cstring1), SUM(cdouble) as s FROM druid_table_n0 WHERE cstring1 IS NOT NULL AND cstring2 IS NOT NULL AND cstring2 like 'Y%'
  GROUP BY cstring1 || '_'|| cstring2, substring(cstring2, 2, 3), upper(cstring2), lower(cstring1) ORDER BY concat DESC LIMIT 10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@druid_table
+PREHOOK: Input: default@druid_table_n0
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: SELECT cstring1 || '_'|| cstring2, substring(cstring2, 2, 3) as concat , upper(cstring2), lower(cstring1), SUM(cdouble) as s FROM druid_table WHERE cstring1 IS NOT NULL AND cstring2 IS NOT NULL AND cstring2 like 'Y%'
+POSTHOOK: query: SELECT cstring1 || '_'|| cstring2, substring(cstring2, 2, 3) as concat , upper(cstring2), lower(cstring1), SUM(cdouble) as s FROM druid_table_n0 WHERE cstring1 IS NOT NULL AND cstring2 IS NOT NULL AND cstring2 like 'Y%'
  GROUP BY cstring1 || '_'|| cstring2, substring(cstring2, 2, 3), upper(cstring2), lower(cstring1) ORDER BY concat DESC LIMIT 10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@druid_table
+POSTHOOK: Input: default@druid_table_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 8Nj7qpHBTH1GUkMM1BXr2_YyROa06YMuK3C2eg85d	yRO	YYROA06YMUK3C2EG85D	8nj7qphbth1gukmm1bxr2	0.0
 k7rg3Vw6IpwU6_YyKI8Rb72WP5dP1BMSPoT	yKI	YYKI8RB72WP5DP1BMSPOT	k7rg3vw6ipwu6	0.0
@@ -143,9 +143,9 @@ kM4k0y1fqwton_YpK3CTDWEXOV	pK3	YPK3CTDWEXOV	km4k0y1fqwton	0.0
 TBI20Ba2YuO44754E2BM_YpB20i4	pB2	YPB20I4	tbi20ba2yuo44754e2bm	0.0
 jiqEpNs7qXo0y37_Ynnw5opXqf6BU	nnw	YNNW5OPXQF6BU	jiqepns7qxo0y37	0.0
 TgS6dAlI2w4y_Ynh42DscA373RX27nBkft	nh4	YNH42DSCA373RX27NBKFT	tgs6dali2w4y	0.0
-PREHOOK: query: EXPLAIN SELECT count(*) FROM druid_table WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10 AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3
+PREHOOK: query: EXPLAIN SELECT count(*) FROM druid_table_n0 WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10 AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT count(*) FROM druid_table WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10 AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3
+POSTHOOK: query: EXPLAIN SELECT count(*) FROM druid_table_n0 WHERE character_length(CAST(ctinyint AS STRING)) > 1 AND char_length(CAST(ctinyint AS STRING)) < 10 AND power(cfloat, 2) * pow(csmallint, 3) > 1 AND SQRT(ABS(ctinyint)) > 3
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -162,12 +162,12 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: druid_table
+                  alias: druid_table_n0
                   filterExpr: (character_length(UDFToString(ctinyint)) < 10) (type: boolean)
                   properties:
                     druid.fieldNames __time,cstring1,cstring2,cdouble,cfloat,ctinyint,csmallint,cint,cbigint,cboolean1,cboolean2
                     druid.fieldTypes timestamp with local time zone,string,string,double,float,tinyint,smallint,int,bigint,boolean,boolean
-                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"and","fields":[{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) > 1)"},{"type":"expression","expression":"((pow(\"cfloat\",2) * pow(\"csmallint\",3)) > 1)"},{"type":"expression","expression":"(sqrt(abs(\"ctinyint\")) > 3)"}]},"columns":["__time","cstring1","cstring2","cdouble","cfloat","ctinyint","csmallint","cint","cbigint","cboolean1","cboolean2"],"resultFormat":"compactedList"}
+                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table_n0","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"filter":{"type":"and","fields":[{"type":"expression","expression":"(strlen(CAST(\"ctinyint\", 'STRING')) > 1)"},{"type":"expression","expression":"((pow(\"cfloat\",2) * pow(\"csmallint\",3)) > 1)"},{"type":"expression","expression":"(sqrt(abs(\"ctinyint\")) > 3)"}]},"columns":["__time","cstring1","cstring2","cdouble","cfloat","ctinyint","csmallint","cint","cbigint","cboolean1","cboolean2"],"resultFormat":"compactedList"}
                     druid.query.type scan
                   Statistics: Num rows: 9173 Data size: 34864 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -206,10 +206,10 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: EXPLAIN SELECT SUM(cfloat + 1), CAST(SUM(cdouble + ctinyint) AS INTEGER), SUM(ctinyint) + 1 , CAST(SUM(csmallint) + SUM(cint) AS DOUBLE), SUM(cint), SUM(cbigint)
-        FROM druid_table WHERE ceil(cfloat) > 0 AND floor(cdouble) * 2 < 1000 OR ln(cdouble) / log10(10) > 0 AND COS(cint) > 0 OR SIN(cdouble) > 1
+        FROM druid_table_n0 WHERE ceil(cfloat) > 0 AND floor(cdouble) * 2 < 1000 OR ln(cdouble) / log10(10) > 0 AND COS(cint) > 0 OR SIN(cdouble) > 1
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT SUM(cfloat + 1), CAST(SUM(cdouble + ctinyint) AS INTEGER), SUM(ctinyint) + 1 , CAST(SUM(csmallint) + SUM(cint) AS DOUBLE), SUM(cint), SUM(cbigint)
-        FROM druid_table WHERE ceil(cfloat) > 0 AND floor(cdouble) * 2 < 1000 OR ln(cdouble) / log10(10) > 0 AND COS(cint) > 0 OR SIN(cdouble) > 1
+        FROM druid_table_n0 WHERE ceil(cfloat) > 0 AND floor(cdouble) * 2 < 1000 OR ln(cdouble) / log10(10) > 0 AND COS(cint) > 0 OR SIN(cdouble) > 1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -220,21 +220,21 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: druid_table
+          alias: druid_table_n0
           properties:
             druid.fieldNames $f0,_o__c1,_o__c2,_o__c3,$f4,$f5
             druid.fieldTypes double,int,bigint,double,bigint,bigint
-            druid.query.json {"queryType":"timeseries","dataSource":"default.druid_table","descending":false,"granularity":"all","filter":{"type":"or","fields":[{"type":"and","fields":[{"type":"expression","expression":"(ceil(\"cfloat\") > 0)"},{"type":"expression","expression":"((floor(\"cdouble\") * 2) < 1000)"}]},{"type":"and","fields":[{"type":"expression","expression":"((log(\"cdouble\") / 1.0) > 0)"},{"type":"expression","expression":"(cos(\"cint\") > 0)"}]},{"type":"expression","expression":"(sin(\"cdouble\") > 1)"}]},"aggregations":[{"type":"doubleSum","name":"$f0","expression":"(\"cfloat\" + CAST(1, 'DOUBLE'))"},{"type":"doubleSum","name":"$f1","expression":"(\"cdouble\" + CAST(\"ctinyint\", 'DOUBLE'))"},{"type":"longSum","name":"$f2","fieldName":"ctinyint"},{"type":"longSum","name":"$f3","fieldName":"csmallint"},{"type":"longSum","name":"$f4","fieldName":"cint"},{"type":"longSum","name":"$f5","fieldName":"cbigint"}],"postAggregations":[{"type":"expression","name":"_o__c1","expression":"CAST(\"$f1\", 'LONG')"},{"type":"expression","name":"_o__c2","expression":"(\"$f2\" + 1)"},{"type":"expression","name":"_o__c3","expression":"CAST((\"$f3\" + \"$f4\"), 'DOUBLE')"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"context":{"skipEmptyBuckets":true}}
+            druid.query.json {"queryType":"timeseries","dataSource":"default.druid_table_n0","descending":false,"granularity":"all","filter":{"type":"or","fields":[{"type":"and","fields":[{"type":"expression","expression":"(ceil(\"cfloat\") > 0)"},{"type":"expression","expression":"((floor(\"cdouble\") * 2) < 1000)"}]},{"type":"and","fields":[{"type":"expression","expression":"((log(\"cdouble\") / 1.0) > 0)"},{"type":"expression","expression":"(cos(\"cint\") > 0)"}]},{"type":"expression","expression":"(sin(\"cdouble\") > 1)"}]},"aggregations":[{"type":"doubleSum","name":"$f0","expression":"(\"cfloat\" + CAST(1, 'DOUBLE'))"},{"type":"doubleSum","name":"$f1","expression":"(\"cdouble\" + CAST(\"ctinyint\", 'DOUBLE'))"},{"type":"longSum","name":"$f2","fieldName":"ctinyint"},{"type":"longSum","name":"$f3","fieldName":"csmallint"},{"type":"longSum","name":"$f4","fieldName":"cint"},{"type":"longSum","name":"$f5","fieldName":"cbigint"}],"postAggregations":[{"type":"expression","name":"_o__c1","expression":"CAST(\"$f1\", 'LONG')"},{"type":"expression","name":"_o__c2","expression":"(\"$f2\" + 1)"},{"type":"expression","name":"_o__c3","expression":"CAST((\"$f3\" + \"$f4\"), 'DOUBLE')"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"context":{"skipEmptyBuckets":true}}
             druid.query.type timeseries
           Select Operator
             expressions: $f0 (type: double), _o__c1 (type: int), _o__c2 (type: bigint), _o__c3 (type: double), $f4 (type: bigint), $f5 (type: bigint)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
             ListSink
 
-PREHOOK: query: EXPLAIN SELECT cstring1 || '_'|| cstring2, substring(cstring2, 2, 3) as concat , upper(cstring2), lower(cstring1), SUM(cdouble) as s FROM druid_table WHERE cstring1 IS NOT NULL AND cstring2 IS NOT NULL AND cstring2 like 'Y%'
+PREHOOK: query: EXPLAIN SELECT cstring1 || '_'|| cstring2, substring(cstring2, 2, 3) as concat , upper(cstring2), lower(cstring1), SUM(cdouble) as s FROM druid_table_n0 WHERE cstring1 IS NOT NULL AND cstring2 IS NOT NULL AND cstring2 like 'Y%'
          GROUP BY cstring1 || '_'|| cstring2, substring(cstring2, 2, 3), upper(cstring2), lower(cstring1) ORDER BY concat DESC LIMIT 10
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT cstring1 || '_'|| cstring2, substring(cstring2, 2, 3) as concat , upper(cstring2), lower(cstring1), SUM(cdouble) as s FROM druid_table WHERE cstring1 IS NOT NULL AND cstring2 IS NOT NULL AND cstring2 like 'Y%'
+POSTHOOK: query: EXPLAIN SELECT cstring1 || '_'|| cstring2, substring(cstring2, 2, 3) as concat , upper(cstring2), lower(cstring1), SUM(cdouble) as s FROM druid_table_n0 WHERE cstring1 IS NOT NULL AND cstring2 IS NOT NULL AND cstring2 like 'Y%'
          GROUP BY cstring1 || '_'|| cstring2, substring(cstring2, 2, 3), upper(cstring2), lower(cstring1) ORDER BY concat DESC LIMIT 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -246,22 +246,22 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: druid_table
+          alias: druid_table_n0
           properties:
             druid.fieldNames vc,vc0,vc1,vc2,$f4
             druid.fieldTypes string,string,string,string,double
-            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table","granularity":"all","dimensions":[{"type":"default","dimension":"vc","outputName":"vc","outputType":"STRING"},{"type":"default","dimension":"vc0","outputName":"vc0","outputType":"STRING"},{"type":"default","dimension":"vc1","outputName":"vc1","outputType":"STRING"},{"type":"default","dimension":"vc2","outputName":"vc2","outputType":"STRING"}],"virtualColumns":[{"type":"expression","name":"vc","expression":"concat(concat(\"cstring1\",'_'),\"cstring2\")","outputType":"STRING"},{"type":"expression","name":"vc0","expression":"substring(\"cstring2\", 1, 3)","outputType":"STRING"},{"type":"expression","name":"vc1","expression":"upper(\"cstring2\")","outputType":"STRING"},{"type":"expression","name":"vc2","expression":"lower(\"cstring1\")","outputType":"STRING"}],"limitSpec":{"type":"default","limit":10,"columns":[{"dimension":"vc0","direction":"descending","dimensionOrder":"lexicographic"}]},"filter":{"type":"and","fields":[{"type":"expression","expression":"like(\"cstring2\",'Y%')"},{"type":"not","field":{"type":"selector","dimension":"cstring1","value":null}},{"type":"not","field":{"type":"selector","dimension":"cstring2","value":null}}]},"aggregations":[{"type":"doubleSum","name":"$f4","fieldName":"cdouble"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table_n0","granularity":"all","dimensions":[{"type":"default","dimension":"vc","outputName":"vc","outputType":"STRING"},{"type":"default","dimension":"vc0","outputName":"vc0","outputType":"STRING"},{"type":"default","dimension":"vc1","outputName":"vc1","outputType":"STRING"},{"type":"default","dimension":"vc2","outputName":"vc2","outputType":"STRING"}],"virtualColumns":[{"type":"expression","name":"vc","expression":"concat(concat(\"cstring1\",'_'),\"cstring2\")","outputType":"STRING"},{"type":"expression","name":"vc0","expression":"substring(\"cstring2\", 1, 3)","outputType":"STRING"},{"type":"expression","name":"vc1","expression":"upper(\"cstring2\")","outputType":"STRING"},{"type":"expression","name":"vc2","expression":"lower(\"cstring1\")","outputType":"STRING"}],"limitSpec":{"type":"default","limit":10,"columns":[{"dimension":"vc0","direction":"descending","dimensionOrder":"lexicographic"}]},"filter":{"type":"and","fields":[{"type":"expression","expression":"like(\"cstring2\",'Y%')"},{"type":"not","field":{"type":"selector","dimension":"cstring1","value":null}},{"type":"not","field":{"type":"selector","dimension":"cstring2","value":null}}]},"aggregations":[{"type":"doubleSum","name":"$f4","fieldName":"cdouble"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
             druid.query.type groupBy
           Select Operator
             expressions: vc (type: string), vc0 (type: string), vc1 (type: string), vc2 (type: string), $f4 (type: double)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4
             ListSink
 
-PREHOOK: query: DROP TABLE druid_table
+PREHOOK: query: DROP TABLE druid_table_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@druid_table
-PREHOOK: Output: default@druid_table
-POSTHOOK: query: DROP TABLE druid_table
+PREHOOK: Input: default@druid_table_n0
+PREHOOK: Output: default@druid_table_n0
+POSTHOOK: query: DROP TABLE druid_table_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@druid_table
-POSTHOOK: Output: default@druid_table
+POSTHOOK: Input: default@druid_table_n0
+POSTHOOK: Output: default@druid_table_n0

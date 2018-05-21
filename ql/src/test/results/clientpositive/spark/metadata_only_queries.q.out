@@ -1,4 +1,4 @@
-PREHOOK: query: create table over10k(
+PREHOOK: query: create table over10k_n12(
            t tinyint,
            si smallint,
            i int,
@@ -14,8 +14,8 @@ PREHOOK: query: create table over10k(
        fields terminated by '|'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@over10k
-POSTHOOK: query: create table over10k(
+PREHOOK: Output: default@over10k_n12
+POSTHOOK: query: create table over10k_n12(
            t tinyint,
            si smallint,
            i int,
@@ -31,15 +31,15 @@ POSTHOOK: query: create table over10k(
        fields terminated by '|'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@over10k
-PREHOOK: query: load data local inpath '../../data/files/over10k' into table over10k
+POSTHOOK: Output: default@over10k_n12
+PREHOOK: query: load data local inpath '../../data/files/over10k' into table over10k_n12
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@over10k
-POSTHOOK: query: load data local inpath '../../data/files/over10k' into table over10k
+PREHOOK: Output: default@over10k_n12
+POSTHOOK: query: load data local inpath '../../data/files/over10k' into table over10k_n12
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@over10k
+POSTHOOK: Output: default@over10k_n12
 PREHOOK: query: create table stats_tbl(
            t tinyint,
            si smallint,
@@ -100,82 +100,82 @@ POSTHOOK: query: create table stats_tbl_part(
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stats_tbl_part
-PREHOOK: query: insert overwrite table stats_tbl select * from over10k
+PREHOOK: query: insert overwrite table stats_tbl select * from over10k_n12
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n12
 PREHOOK: Output: default@stats_tbl
-POSTHOOK: query: insert overwrite table stats_tbl select * from over10k
+POSTHOOK: query: insert overwrite table stats_tbl select * from over10k_n12
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n12
 POSTHOOK: Output: default@stats_tbl
-POSTHOOK: Lineage: stats_tbl.b SIMPLE [(over10k)over10k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: stats_tbl.bin SIMPLE [(over10k)over10k.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: stats_tbl.bo SIMPLE [(over10k)over10k.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: stats_tbl.d SIMPLE [(over10k)over10k.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_tbl.dec SIMPLE [(over10k)over10k.FieldSchema(name:dec, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: stats_tbl.f SIMPLE [(over10k)over10k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: stats_tbl.i SIMPLE [(over10k)over10k.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_tbl.s SIMPLE [(over10k)over10k.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_tbl.si SIMPLE [(over10k)over10k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: stats_tbl.t SIMPLE [(over10k)over10k.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: stats_tbl.ts SIMPLE [(over10k)over10k.FieldSchema(name:ts, type:timestamp, comment:null), ]
-PREHOOK: query: insert into table stats_tbl_part partition (dt='2010') select * from over10k where t>0 and t<30
+POSTHOOK: Lineage: stats_tbl.b SIMPLE [(over10k_n12)over10k_n12.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: stats_tbl.bin SIMPLE [(over10k_n12)over10k_n12.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: stats_tbl.bo SIMPLE [(over10k_n12)over10k_n12.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: stats_tbl.d SIMPLE [(over10k_n12)over10k_n12.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: stats_tbl.dec SIMPLE [(over10k_n12)over10k_n12.FieldSchema(name:dec, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: stats_tbl.f SIMPLE [(over10k_n12)over10k_n12.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: stats_tbl.i SIMPLE [(over10k_n12)over10k_n12.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: stats_tbl.s SIMPLE [(over10k_n12)over10k_n12.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: stats_tbl.si SIMPLE [(over10k_n12)over10k_n12.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: stats_tbl.t SIMPLE [(over10k_n12)over10k_n12.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: stats_tbl.ts SIMPLE [(over10k_n12)over10k_n12.FieldSchema(name:ts, type:timestamp, comment:null), ]
+PREHOOK: query: insert into table stats_tbl_part partition (dt='2010') select * from over10k_n12 where t>0 and t<30
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n12
 PREHOOK: Output: default@stats_tbl_part@dt=2010
-POSTHOOK: query: insert into table stats_tbl_part partition (dt='2010') select * from over10k where t>0 and t<30
+POSTHOOK: query: insert into table stats_tbl_part partition (dt='2010') select * from over10k_n12 where t>0 and t<30
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n12
 POSTHOOK: Output: default@stats_tbl_part@dt=2010
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2010).b SIMPLE [(over10k)over10k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2010).bin SIMPLE [(over10k)over10k.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2010).bo SIMPLE [(over10k)over10k.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2010).d SIMPLE [(over10k)over10k.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2010).dec SIMPLE [(over10k)over10k.FieldSchema(name:dec, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2010).f SIMPLE [(over10k)over10k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2010).i SIMPLE [(over10k)over10k.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2010).s SIMPLE [(over10k)over10k.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2010).si SIMPLE [(over10k)over10k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2010).t SIMPLE [(over10k)over10k.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2010).ts SIMPLE [(over10k)over10k.FieldSchema(name:ts, type:timestamp, comment:null), ]
-PREHOOK: query: insert into table stats_tbl_part partition (dt='2011') select * from over10k where t>30 and t<60
+POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2010).b SIMPLE [(over10k_n12)over10k_n12.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2010).bin SIMPLE [(over10k_n12)over10k_n12.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2010).bo SIMPLE [(over10k_n12)over10k_n12.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2010).d SIMPLE [(over10k_n12)over10k_n12.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2010).dec SIMPLE [(over10k_n12)over10k_n12.FieldSchema(name:dec, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2010).f SIMPLE [(over10k_n12)over10k_n12.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2010).i SIMPLE [(over10k_n12)over10k_n12.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2010).s SIMPLE [(over10k_n12)over10k_n12.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2010).si SIMPLE [(over10k_n12)over10k_n12.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2010).t SIMPLE [(over10k_n12)over10k_n12.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2010).ts SIMPLE [(over10k_n12)over10k_n12.FieldSchema(name:ts, type:timestamp, comment:null), ]
+PREHOOK: query: insert into table stats_tbl_part partition (dt='2011') select * from over10k_n12 where t>30 and t<60
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n12
 PREHOOK: Output: default@stats_tbl_part@dt=2011
-POSTHOOK: query: insert into table stats_tbl_part partition (dt='2011') select * from over10k where t>30 and t<60
+POSTHOOK: query: insert into table stats_tbl_part partition (dt='2011') select * from over10k_n12 where t>30 and t<60
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n12
 POSTHOOK: Output: default@stats_tbl_part@dt=2011
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2011).b SIMPLE [(over10k)over10k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2011).bin SIMPLE [(over10k)over10k.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2011).bo SIMPLE [(over10k)over10k.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2011).d SIMPLE [(over10k)over10k.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2011).dec SIMPLE [(over10k)over10k.FieldSchema(name:dec, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2011).f SIMPLE [(over10k)over10k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2011).i SIMPLE [(over10k)over10k.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2011).s SIMPLE [(over10k)over10k.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2011).si SIMPLE [(over10k)over10k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2011).t SIMPLE [(over10k)over10k.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2011).ts SIMPLE [(over10k)over10k.FieldSchema(name:ts, type:timestamp, comment:null), ]
-PREHOOK: query: insert into table stats_tbl_part partition (dt='2012') select * from over10k where t>60
+POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2011).b SIMPLE [(over10k_n12)over10k_n12.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2011).bin SIMPLE [(over10k_n12)over10k_n12.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2011).bo SIMPLE [(over10k_n12)over10k_n12.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2011).d SIMPLE [(over10k_n12)over10k_n12.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2011).dec SIMPLE [(over10k_n12)over10k_n12.FieldSchema(name:dec, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2011).f SIMPLE [(over10k_n12)over10k_n12.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2011).i SIMPLE [(over10k_n12)over10k_n12.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2011).s SIMPLE [(over10k_n12)over10k_n12.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2011).si SIMPLE [(over10k_n12)over10k_n12.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2011).t SIMPLE [(over10k_n12)over10k_n12.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2011).ts SIMPLE [(over10k_n12)over10k_n12.FieldSchema(name:ts, type:timestamp, comment:null), ]
+PREHOOK: query: insert into table stats_tbl_part partition (dt='2012') select * from over10k_n12 where t>60
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over10k
+PREHOOK: Input: default@over10k_n12
 PREHOOK: Output: default@stats_tbl_part@dt=2012
-POSTHOOK: query: insert into table stats_tbl_part partition (dt='2012') select * from over10k where t>60
+POSTHOOK: query: insert into table stats_tbl_part partition (dt='2012') select * from over10k_n12 where t>60
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over10k
+POSTHOOK: Input: default@over10k_n12
 POSTHOOK: Output: default@stats_tbl_part@dt=2012
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2012).b SIMPLE [(over10k)over10k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2012).bin SIMPLE [(over10k)over10k.FieldSchema(name:bin, type:binary, comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2012).bo SIMPLE [(over10k)over10k.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2012).d SIMPLE [(over10k)over10k.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2012).dec SIMPLE [(over10k)over10k.FieldSchema(name:dec, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2012).f SIMPLE [(over10k)over10k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2012).i SIMPLE [(over10k)over10k.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2012).s SIMPLE [(over10k)over10k.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2012).si SIMPLE [(over10k)over10k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2012).t SIMPLE [(over10k)over10k.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2012).ts SIMPLE [(over10k)over10k.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2012).b SIMPLE [(over10k_n12)over10k_n12.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2012).bin SIMPLE [(over10k_n12)over10k_n12.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2012).bo SIMPLE [(over10k_n12)over10k_n12.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2012).d SIMPLE [(over10k_n12)over10k_n12.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2012).dec SIMPLE [(over10k_n12)over10k_n12.FieldSchema(name:dec, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2012).f SIMPLE [(over10k_n12)over10k_n12.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2012).i SIMPLE [(over10k_n12)over10k_n12.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2012).s SIMPLE [(over10k_n12)over10k_n12.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2012).si SIMPLE [(over10k_n12)over10k_n12.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2012).t SIMPLE [(over10k_n12)over10k_n12.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2012).ts SIMPLE [(over10k_n12)over10k_n12.FieldSchema(name:ts, type:timestamp, comment:null), ]
 PREHOOK: query: explain 
 select count(*), sum(1), sum(0.2), count(1), count(s), count(bo), count(bin), count(si), max(i), min(b) from stats_tbl
 PREHOOK: type: QUERY

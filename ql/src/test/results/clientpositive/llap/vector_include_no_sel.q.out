@@ -68,39 +68,39 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/store_sales.txt' OVERW
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@store_sales_txt
-PREHOOK: query: create table store_sales stored as orc as select * from store_sales_txt
+PREHOOK: query: create table store_sales_n1 stored as orc as select * from store_sales_txt
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@store_sales_txt
 PREHOOK: Output: database:default
-PREHOOK: Output: default@store_sales
-POSTHOOK: query: create table store_sales stored as orc as select * from store_sales_txt
+PREHOOK: Output: default@store_sales_n1
+POSTHOOK: query: create table store_sales_n1 stored as orc as select * from store_sales_txt
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@store_sales_txt
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@store_sales
-POSTHOOK: Lineage: store_sales.ss_addr_sk SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_addr_sk, type:int, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_cdemo_sk SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_cdemo_sk, type:int, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_coupon_amt SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_coupon_amt, type:float, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_customer_sk SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_customer_sk, type:int, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_ext_discount_amt SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_ext_discount_amt, type:float, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_ext_list_price SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_ext_list_price, type:float, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_ext_sales_price SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_ext_sales_price, type:float, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_ext_tax SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_ext_tax, type:float, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_ext_wholesale_cost SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_ext_wholesale_cost, type:float, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_hdemo_sk SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_hdemo_sk, type:int, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_item_sk SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_item_sk, type:int, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_list_price SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_list_price, type:float, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_net_paid SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_net_paid, type:float, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_net_paid_inc_tax SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_net_paid_inc_tax, type:float, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_net_profit SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_net_profit, type:float, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_promo_sk SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_promo_sk, type:int, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_quantity SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_quantity, type:int, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_sales_price SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_sales_price, type:float, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_sold_date_sk SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_sold_date_sk, type:int, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_sold_time_sk SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_sold_time_sk, type:int, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_store_sk SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_store_sk, type:int, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_ticket_number SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_ticket_number, type:int, comment:null), ]
-POSTHOOK: Lineage: store_sales.ss_wholesale_cost SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_wholesale_cost, type:float, comment:null), ]
+POSTHOOK: Output: default@store_sales_n1
+POSTHOOK: Lineage: store_sales_n1.ss_addr_sk SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_addr_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: store_sales_n1.ss_cdemo_sk SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_cdemo_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: store_sales_n1.ss_coupon_amt SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_coupon_amt, type:float, comment:null), ]
+POSTHOOK: Lineage: store_sales_n1.ss_customer_sk SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_customer_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: store_sales_n1.ss_ext_discount_amt SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_ext_discount_amt, type:float, comment:null), ]
+POSTHOOK: Lineage: store_sales_n1.ss_ext_list_price SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_ext_list_price, type:float, comment:null), ]
+POSTHOOK: Lineage: store_sales_n1.ss_ext_sales_price SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_ext_sales_price, type:float, comment:null), ]
+POSTHOOK: Lineage: store_sales_n1.ss_ext_tax SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_ext_tax, type:float, comment:null), ]
+POSTHOOK: Lineage: store_sales_n1.ss_ext_wholesale_cost SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_ext_wholesale_cost, type:float, comment:null), ]
+POSTHOOK: Lineage: store_sales_n1.ss_hdemo_sk SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_hdemo_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: store_sales_n1.ss_item_sk SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_item_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: store_sales_n1.ss_list_price SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_list_price, type:float, comment:null), ]
+POSTHOOK: Lineage: store_sales_n1.ss_net_paid SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_net_paid, type:float, comment:null), ]
+POSTHOOK: Lineage: store_sales_n1.ss_net_paid_inc_tax SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_net_paid_inc_tax, type:float, comment:null), ]
+POSTHOOK: Lineage: store_sales_n1.ss_net_profit SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_net_profit, type:float, comment:null), ]
+POSTHOOK: Lineage: store_sales_n1.ss_promo_sk SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_promo_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: store_sales_n1.ss_quantity SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_quantity, type:int, comment:null), ]
+POSTHOOK: Lineage: store_sales_n1.ss_sales_price SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_sales_price, type:float, comment:null), ]
+POSTHOOK: Lineage: store_sales_n1.ss_sold_date_sk SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_sold_date_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: store_sales_n1.ss_sold_time_sk SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_sold_time_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: store_sales_n1.ss_store_sk SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_store_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: store_sales_n1.ss_ticket_number SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_ticket_number, type:int, comment:null), ]
+POSTHOOK: Lineage: store_sales_n1.ss_wholesale_cost SIMPLE [(store_sales_txt)store_sales_txt.FieldSchema(name:ss_wholesale_cost, type:float, comment:null), ]
 PREHOOK: query: create table customer_demographics_txt
 (
     cd_demo_sk                int,
@@ -162,16 +162,16 @@ POSTHOOK: Lineage: customer_demographics.cd_education_status SIMPLE [(customer_d
 POSTHOOK: Lineage: customer_demographics.cd_gender SIMPLE [(customer_demographics_txt)customer_demographics_txt.FieldSchema(name:cd_gender, type:string, comment:null), ]
 POSTHOOK: Lineage: customer_demographics.cd_marital_status SIMPLE [(customer_demographics_txt)customer_demographics_txt.FieldSchema(name:cd_marital_status, type:string, comment:null), ]
 POSTHOOK: Lineage: customer_demographics.cd_purchase_estimate SIMPLE [(customer_demographics_txt)customer_demographics_txt.FieldSchema(name:cd_purchase_estimate, type:int, comment:null), ]
-Warning: Shuffle Join MERGEJOIN[13][tables = [customer_demographics, store_sales]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[13][tables = [customer_demographics, store_sales_n1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain vectorization expression
-select count(1) from customer_demographics,store_sales
-where ((customer_demographics.cd_demo_sk = store_sales.ss_cdemo_sk and customer_demographics.cd_marital_status = 'M') or
-       (customer_demographics.cd_demo_sk = store_sales.ss_cdemo_sk and customer_demographics.cd_marital_status = 'U'))
+select count(1) from customer_demographics,store_sales_n1
+where ((customer_demographics.cd_demo_sk = store_sales_n1.ss_cdemo_sk and customer_demographics.cd_marital_status = 'M') or
+       (customer_demographics.cd_demo_sk = store_sales_n1.ss_cdemo_sk and customer_demographics.cd_marital_status = 'U'))
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
-select count(1) from customer_demographics,store_sales
-where ((customer_demographics.cd_demo_sk = store_sales.ss_cdemo_sk and customer_demographics.cd_marital_status = 'M') or
-       (customer_demographics.cd_demo_sk = store_sales.ss_cdemo_sk and customer_demographics.cd_marital_status = 'U'))
+select count(1) from customer_demographics,store_sales_n1
+where ((customer_demographics.cd_demo_sk = store_sales_n1.ss_cdemo_sk and customer_demographics.cd_marital_status = 'M') or
+       (customer_demographics.cd_demo_sk = store_sales_n1.ss_cdemo_sk and customer_demographics.cd_marital_status = 'U'))
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -220,7 +220,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: store_sales
+                  alias: store_sales_n1
                   Statistics: Num rows: 1000 Data size: 3804 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -307,19 +307,19 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[13][tables = [customer_demographics, store_sales]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: select count(1) from customer_demographics,store_sales
-where ((customer_demographics.cd_demo_sk = store_sales.ss_cdemo_sk and customer_demographics.cd_marital_status = 'M') or
-       (customer_demographics.cd_demo_sk = store_sales.ss_cdemo_sk and customer_demographics.cd_marital_status = 'U'))
+Warning: Shuffle Join MERGEJOIN[13][tables = [customer_demographics, store_sales_n1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: select count(1) from customer_demographics,store_sales_n1
+where ((customer_demographics.cd_demo_sk = store_sales_n1.ss_cdemo_sk and customer_demographics.cd_marital_status = 'M') or
+       (customer_demographics.cd_demo_sk = store_sales_n1.ss_cdemo_sk and customer_demographics.cd_marital_status = 'U'))
 PREHOOK: type: QUERY
 PREHOOK: Input: default@customer_demographics
-PREHOOK: Input: default@store_sales
+PREHOOK: Input: default@store_sales_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select count(1) from customer_demographics,store_sales
-where ((customer_demographics.cd_demo_sk = store_sales.ss_cdemo_sk and customer_demographics.cd_marital_status = 'M') or
-       (customer_demographics.cd_demo_sk = store_sales.ss_cdemo_sk and customer_demographics.cd_marital_status = 'U'))
+POSTHOOK: query: select count(1) from customer_demographics,store_sales_n1
+where ((customer_demographics.cd_demo_sk = store_sales_n1.ss_cdemo_sk and customer_demographics.cd_marital_status = 'M') or
+       (customer_demographics.cd_demo_sk = store_sales_n1.ss_cdemo_sk and customer_demographics.cd_marital_status = 'U'))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@customer_demographics
-POSTHOOK: Input: default@store_sales
+POSTHOOK: Input: default@store_sales_n1
 #### A masked pattern was here ####
 0

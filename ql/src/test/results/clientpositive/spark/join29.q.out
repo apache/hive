@@ -1,19 +1,19 @@
-PREHOOK: query: CREATE TABLE dest_j1(key STRING, cnt1 INT, cnt2 INT)
+PREHOOK: query: CREATE TABLE dest_j1_n6(key STRING, cnt1 INT, cnt2 INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest_j1
-POSTHOOK: query: CREATE TABLE dest_j1(key STRING, cnt1 INT, cnt2 INT)
+PREHOOK: Output: default@dest_j1_n6
+POSTHOOK: query: CREATE TABLE dest_j1_n6(key STRING, cnt1 INT, cnt2 INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest_j1
+POSTHOOK: Output: default@dest_j1_n6
 PREHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE dest_j1 
+INSERT OVERWRITE TABLE dest_j1_n6 
 SELECT subq1.key, subq1.cnt, subq2.cnt
 FROM (select x.key, count(1) as cnt from src1 x group by x.key) subq1 JOIN 
      (select y.key, count(1) as cnt from src y group by y.key) subq2 ON (subq1.key = subq2.key)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE dest_j1 
+INSERT OVERWRITE TABLE dest_j1_n6 
 SELECT subq1.key, subq1.cnt, subq2.cnt
 FROM (select x.key, count(1) as cnt from src1 x group by x.key) subq1 JOIN 
      (select y.key, count(1) as cnt from src y group by y.key) subq2 ON (subq1.key = subq2.key)
@@ -127,7 +127,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.dest_j1
+                          name: default.dest_j1_n6
 
   Stage: Stage-0
     Move Operator
@@ -137,38 +137,38 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest_j1
+              name: default.dest_j1_n6
 
   Stage: Stage-2
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: INSERT OVERWRITE TABLE dest_j1 
+PREHOOK: query: INSERT OVERWRITE TABLE dest_j1_n6 
 SELECT subq1.key, subq1.cnt, subq2.cnt
 FROM (select x.key, count(1) as cnt from src1 x group by x.key) subq1 JOIN 
      (select y.key, count(1) as cnt from src y group by y.key) subq2 ON (subq1.key = subq2.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
-PREHOOK: Output: default@dest_j1
-POSTHOOK: query: INSERT OVERWRITE TABLE dest_j1 
+PREHOOK: Output: default@dest_j1_n6
+POSTHOOK: query: INSERT OVERWRITE TABLE dest_j1_n6 
 SELECT subq1.key, subq1.cnt, subq2.cnt
 FROM (select x.key, count(1) as cnt from src1 x group by x.key) subq1 JOIN 
      (select y.key, count(1) as cnt from src y group by y.key) subq2 ON (subq1.key = subq2.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
-POSTHOOK: Output: default@dest_j1
-POSTHOOK: Lineage: dest_j1.cnt1 EXPRESSION [(src1)x.null, ]
-POSTHOOK: Lineage: dest_j1.cnt2 EXPRESSION [(src)y.null, ]
-POSTHOOK: Lineage: dest_j1.key SIMPLE [(src1)x.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: select * from dest_j1
+POSTHOOK: Output: default@dest_j1_n6
+POSTHOOK: Lineage: dest_j1_n6.cnt1 EXPRESSION [(src1)x.null, ]
+POSTHOOK: Lineage: dest_j1_n6.cnt2 EXPRESSION [(src)y.null, ]
+POSTHOOK: Lineage: dest_j1_n6.key SIMPLE [(src1)x.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: select * from dest_j1_n6
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest_j1
+PREHOOK: Input: default@dest_j1_n6
 #### A masked pattern was here ####
-POSTHOOK: query: select * from dest_j1
+POSTHOOK: query: select * from dest_j1_n6
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest_j1
+POSTHOOK: Input: default@dest_j1_n6
 #### A masked pattern was here ####
 128	1	3
 146	1	2

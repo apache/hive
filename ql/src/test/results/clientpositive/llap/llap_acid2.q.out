@@ -1,8 +1,8 @@
-PREHOOK: query: DROP TABLE orc_llap
+PREHOOK: query: DROP TABLE orc_llap_n2
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE orc_llap
+POSTHOOK: query: DROP TABLE orc_llap_n2
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE orc_llap (
+PREHOOK: query: CREATE TABLE orc_llap_n2 (
     cint INT,
     cbigint BIGINT,
     cfloat FLOAT,
@@ -20,8 +20,8 @@ PREHOOK: query: CREATE TABLE orc_llap (
 )  stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@orc_llap
-POSTHOOK: query: CREATE TABLE orc_llap (
+PREHOOK: Output: default@orc_llap_n2
+POSTHOOK: query: CREATE TABLE orc_llap_n2 (
     cint INT,
     cbigint BIGINT,
     cfloat FLOAT,
@@ -39,37 +39,37 @@ POSTHOOK: query: CREATE TABLE orc_llap (
 )  stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@orc_llap
-PREHOOK: query: insert into table orc_llap
+POSTHOOK: Output: default@orc_llap_n2
+PREHOOK: query: insert into table orc_llap_n2
 select cint, cbigint, cfloat, cdouble,
  cint as c1, cbigint as c2, cfloat as c3, cdouble as c4,
  cint as c8, cbigint as c7, cfloat as c6, cdouble as c5,
  cstring1, cfloat as c9 from alltypesorc order by cdouble asc  limit 30
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
-PREHOOK: Output: default@orc_llap
-POSTHOOK: query: insert into table orc_llap
+PREHOOK: Output: default@orc_llap_n2
+POSTHOOK: query: insert into table orc_llap_n2
 select cint, cbigint, cfloat, cdouble,
  cint as c1, cbigint as c2, cfloat as c3, cdouble as c4,
  cint as c8, cbigint as c7, cfloat as c6, cdouble as c5,
  cstring1, cfloat as c9 from alltypesorc order by cdouble asc  limit 30
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
-POSTHOOK: Output: default@orc_llap
-POSTHOOK: Lineage: orc_llap.cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_llap.cbigint0 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_llap.cbigint1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_llap.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_llap.cdouble0 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_llap.cdouble1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_llap.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
-POSTHOOK: Lineage: orc_llap.cfloat0 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
-POSTHOOK: Lineage: orc_llap.cfloat1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
-POSTHOOK: Lineage: orc_llap.cfloat2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
-POSTHOOK: Lineage: orc_llap.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: orc_llap.cint0 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: orc_llap.cint1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: orc_llap.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Output: default@orc_llap_n2
+POSTHOOK: Lineage: orc_llap_n2.cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n2.cbigint0 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n2.cbigint1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n2.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n2.cdouble0 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n2.cdouble1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n2.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n2.cfloat0 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n2.cfloat1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n2.cfloat2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n2.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n2.cint0 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n2.cint1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n2.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
 PREHOOK: query: CREATE TABLE orc_llap2 (
     cint INT,
     cbigint BIGINT,
@@ -154,13 +154,13 @@ POSTHOOK: query: update orc_llap2 set cstring1 = 'testvalue' where cstring1 = 'N
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_llap2
 POSTHOOK: Output: default@orc_llap2
-PREHOOK: query: select cstring1 from orc_llap
+PREHOOK: query: select cstring1 from orc_llap_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_llap
+PREHOOK: Input: default@orc_llap_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select cstring1 from orc_llap
+POSTHOOK: query: select cstring1 from orc_llap_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_llap
+POSTHOOK: Input: default@orc_llap_n2
 #### A masked pattern was here ####
 N016jPED08o
 Q1JAdUlCVORmR0Q5X5Vf5u6
@@ -192,13 +192,13 @@ xTlDv24JYv4s
 7wH3hBKdO55Xq3gEEe0
 5QLs0LVK1g
 ET3d4F2I4lV
-PREHOOK: query: select cfloat2, cint from orc_llap
+PREHOOK: query: select cfloat2, cint from orc_llap_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_llap
+PREHOOK: Input: default@orc_llap_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select cfloat2, cint from orc_llap
+POSTHOOK: query: select cfloat2, cint from orc_llap_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_llap
+POSTHOOK: Input: default@orc_llap_n2
 #### A masked pattern was here ####
 NULL	-838810013
 NULL	246423894
@@ -230,13 +230,13 @@ NULL	-899422227
 11.0	385623629
 11.0	681126962
 11.0	25892751
-PREHOOK: query: select * from orc_llap
+PREHOOK: query: select * from orc_llap_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_llap
+PREHOOK: Input: default@orc_llap_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select * from orc_llap
+POSTHOOK: query: select * from orc_llap_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_llap
+POSTHOOK: Input: default@orc_llap_n2
 #### A masked pattern was here ####
 -838810013	1864027286	NULL	NULL	-838810013	1864027286	NULL	NULL	-838810013	1864027286	NULL	NULL	N016jPED08o	NULL
 246423894	-1645852809	NULL	NULL	246423894	-1645852809	NULL	NULL	246423894	-1645852809	NULL	NULL	Q1JAdUlCVORmR0Q5X5Vf5u6	NULL
@@ -382,11 +382,11 @@ NULL	-1083386085	11.0	NULL	NULL	-1083386085	11.0	NULL	NULL	-1083386085	11.0	NULL
 681126962	993392163	11.0	NULL	681126962	993392163	11.0	NULL	681126962	993392163	11.0	NULL	5QLs0LVK1g	11.0
 25892751	-1978674520	11.0	NULL	25892751	-1978674520	11.0	NULL	25892751	-1978674520	11.0	NULL	ET3d4F2I4lV	11.0
 -838810013	1864027286	NULL	NULL	-838810013	1864027286	NULL	NULL	-838810013	1864027286	NULL	NULL	testvalue	NULL
-PREHOOK: query: DROP TABLE orc_llap
+PREHOOK: query: DROP TABLE orc_llap_n2
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@orc_llap
-PREHOOK: Output: default@orc_llap
-POSTHOOK: query: DROP TABLE orc_llap
+PREHOOK: Input: default@orc_llap_n2
+PREHOOK: Output: default@orc_llap_n2
+POSTHOOK: query: DROP TABLE orc_llap_n2
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@orc_llap
-POSTHOOK: Output: default@orc_llap
+POSTHOOK: Input: default@orc_llap_n2
+POSTHOOK: Output: default@orc_llap_n2

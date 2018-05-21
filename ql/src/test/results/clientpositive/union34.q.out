@@ -1,77 +1,77 @@
-PREHOOK: query: create table src10_1 (key string, value string)
+PREHOOK: query: create table src10_1_n0 (key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src10_1
-POSTHOOK: query: create table src10_1 (key string, value string)
+PREHOOK: Output: default@src10_1_n0
+POSTHOOK: query: create table src10_1_n0 (key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src10_1
-PREHOOK: query: create table src10_2 (key string, value string)
+POSTHOOK: Output: default@src10_1_n0
+PREHOOK: query: create table src10_2_n0 (key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src10_2
-POSTHOOK: query: create table src10_2 (key string, value string)
+PREHOOK: Output: default@src10_2_n0
+POSTHOOK: query: create table src10_2_n0 (key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src10_2
-PREHOOK: query: create table src10_3 (key string, value string)
+POSTHOOK: Output: default@src10_2_n0
+PREHOOK: query: create table src10_3_n0 (key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src10_3
-POSTHOOK: query: create table src10_3 (key string, value string)
+PREHOOK: Output: default@src10_3_n0
+POSTHOOK: query: create table src10_3_n0 (key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src10_3
-PREHOOK: query: create table src10_4 (key string, value string)
+POSTHOOK: Output: default@src10_3_n0
+PREHOOK: query: create table src10_4_n0 (key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src10_4
-POSTHOOK: query: create table src10_4 (key string, value string)
+PREHOOK: Output: default@src10_4_n0
+POSTHOOK: query: create table src10_4_n0 (key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src10_4
+POSTHOOK: Output: default@src10_4_n0
 PREHOOK: query: from (select * from src tablesample (10 rows)) a
-insert overwrite table src10_1 select *
-insert overwrite table src10_2 select *
-insert overwrite table src10_3 select *
-insert overwrite table src10_4 select *
+insert overwrite table src10_1_n0 select *
+insert overwrite table src10_2_n0 select *
+insert overwrite table src10_3_n0 select *
+insert overwrite table src10_4_n0 select *
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@src10_1
-PREHOOK: Output: default@src10_2
-PREHOOK: Output: default@src10_3
-PREHOOK: Output: default@src10_4
+PREHOOK: Output: default@src10_1_n0
+PREHOOK: Output: default@src10_2_n0
+PREHOOK: Output: default@src10_3_n0
+PREHOOK: Output: default@src10_4_n0
 POSTHOOK: query: from (select * from src tablesample (10 rows)) a
-insert overwrite table src10_1 select *
-insert overwrite table src10_2 select *
-insert overwrite table src10_3 select *
-insert overwrite table src10_4 select *
+insert overwrite table src10_1_n0 select *
+insert overwrite table src10_2_n0 select *
+insert overwrite table src10_3_n0 select *
+insert overwrite table src10_4_n0 select *
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@src10_1
-POSTHOOK: Output: default@src10_2
-POSTHOOK: Output: default@src10_3
-POSTHOOK: Output: default@src10_4
-POSTHOOK: Lineage: src10_1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src10_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: src10_2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src10_2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: src10_3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src10_3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: src10_4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src10_4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@src10_1_n0
+POSTHOOK: Output: default@src10_2_n0
+POSTHOOK: Output: default@src10_3_n0
+POSTHOOK: Output: default@src10_4_n0
+POSTHOOK: Lineage: src10_1_n0.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src10_1_n0.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src10_2_n0.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src10_2_n0.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src10_3_n0.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src10_3_n0.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src10_4_n0.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src10_4_n0.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain
 SELECT * FROM (
-  SELECT sub1.key,sub1.value FROM (SELECT * FROM src10_1) sub1 JOIN (SELECT * FROM src10_2) sub0 ON (sub0.key = sub1.key)
+  SELECT sub1.key,sub1.value FROM (SELECT * FROM src10_1_n0) sub1 JOIN (SELECT * FROM src10_2_n0) sub0 ON (sub0.key = sub1.key)
   UNION ALL
-  SELECT key,value FROM (SELECT * FROM (SELECT * FROM src10_3) sub2 UNION ALL SELECT * FROM src10_4 ) alias0
+  SELECT key,value FROM (SELECT * FROM (SELECT * FROM src10_3_n0) sub2 UNION ALL SELECT * FROM src10_4_n0 ) alias0
 ) alias1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 SELECT * FROM (
-  SELECT sub1.key,sub1.value FROM (SELECT * FROM src10_1) sub1 JOIN (SELECT * FROM src10_2) sub0 ON (sub0.key = sub1.key)
+  SELECT sub1.key,sub1.value FROM (SELECT * FROM src10_1_n0) sub1 JOIN (SELECT * FROM src10_2_n0) sub0 ON (sub0.key = sub1.key)
   UNION ALL
-  SELECT key,value FROM (SELECT * FROM (SELECT * FROM src10_3) sub2 UNION ALL SELECT * FROM src10_4 ) alias0
+  SELECT key,value FROM (SELECT * FROM (SELECT * FROM src10_3_n0) sub2 UNION ALL SELECT * FROM src10_4_n0 ) alias0
 ) alias1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -83,13 +83,13 @@ STAGE PLANS:
   Stage: Stage-7
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        null-subquery1-subquery1:$hdt$_1-subquery1-subquery1:$hdt$_0:src10_1 
+        null-subquery1-subquery1:$hdt$_1-subquery1-subquery1:$hdt$_0:src10_1_n0 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        null-subquery1-subquery1:$hdt$_1-subquery1-subquery1:$hdt$_0:src10_1 
+        null-subquery1-subquery1:$hdt$_1-subquery1-subquery1:$hdt$_0:src10_1_n0 
           TableScan
-            alias: src10_1
+            alias: src10_1_n0
             Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -107,7 +107,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: src10_3
+            alias: src10_3_n0
             Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), value (type: string)
@@ -123,7 +123,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
-            alias: src10_4
+            alias: src10_4_n0
             Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), value (type: string)
@@ -139,7 +139,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
-            alias: src10_2
+            alias: src10_2_n0
             Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -175,26 +175,26 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT * FROM (
-  SELECT sub1.key,sub1.value FROM (SELECT * FROM src10_1) sub1 JOIN (SELECT * FROM src10_2) sub0 ON (sub0.key = sub1.key)
+  SELECT sub1.key,sub1.value FROM (SELECT * FROM src10_1_n0) sub1 JOIN (SELECT * FROM src10_2_n0) sub0 ON (sub0.key = sub1.key)
   UNION ALL
-  SELECT key,value FROM (SELECT * FROM (SELECT * FROM src10_3) sub2 UNION ALL SELECT * FROM src10_4 ) alias0
+  SELECT key,value FROM (SELECT * FROM (SELECT * FROM src10_3_n0) sub2 UNION ALL SELECT * FROM src10_4_n0 ) alias0
 ) alias1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src10_1
-PREHOOK: Input: default@src10_2
-PREHOOK: Input: default@src10_3
-PREHOOK: Input: default@src10_4
+PREHOOK: Input: default@src10_1_n0
+PREHOOK: Input: default@src10_2_n0
+PREHOOK: Input: default@src10_3_n0
+PREHOOK: Input: default@src10_4_n0
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM (
-  SELECT sub1.key,sub1.value FROM (SELECT * FROM src10_1) sub1 JOIN (SELECT * FROM src10_2) sub0 ON (sub0.key = sub1.key)
+  SELECT sub1.key,sub1.value FROM (SELECT * FROM src10_1_n0) sub1 JOIN (SELECT * FROM src10_2_n0) sub0 ON (sub0.key = sub1.key)
   UNION ALL
-  SELECT key,value FROM (SELECT * FROM (SELECT * FROM src10_3) sub2 UNION ALL SELECT * FROM src10_4 ) alias0
+  SELECT key,value FROM (SELECT * FROM (SELECT * FROM src10_3_n0) sub2 UNION ALL SELECT * FROM src10_4_n0 ) alias0
 ) alias1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src10_1
-POSTHOOK: Input: default@src10_2
-POSTHOOK: Input: default@src10_3
-POSTHOOK: Input: default@src10_4
+POSTHOOK: Input: default@src10_1_n0
+POSTHOOK: Input: default@src10_2_n0
+POSTHOOK: Input: default@src10_3_n0
+POSTHOOK: Input: default@src10_4_n0
 #### A masked pattern was here ####
 165	val_165
 165	val_165
@@ -228,16 +228,16 @@ POSTHOOK: Input: default@src10_4
 98	val_98
 PREHOOK: query: explain
 SELECT * FROM (
-  SELECT sub1.key,sub1.value FROM (SELECT * FROM src10_1) sub1 JOIN (SELECT * FROM src10_2) sub0 ON (sub0.key = sub1.key)
+  SELECT sub1.key,sub1.value FROM (SELECT * FROM src10_1_n0) sub1 JOIN (SELECT * FROM src10_2_n0) sub0 ON (sub0.key = sub1.key)
   UNION ALL
-  SELECT key,value FROM (SELECT * FROM (SELECT * FROM src10_3) sub2 UNION ALL SELECT * FROM src10_4 ) alias0
+  SELECT key,value FROM (SELECT * FROM (SELECT * FROM src10_3_n0) sub2 UNION ALL SELECT * FROM src10_4_n0 ) alias0
 ) alias1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 SELECT * FROM (
-  SELECT sub1.key,sub1.value FROM (SELECT * FROM src10_1) sub1 JOIN (SELECT * FROM src10_2) sub0 ON (sub0.key = sub1.key)
+  SELECT sub1.key,sub1.value FROM (SELECT * FROM src10_1_n0) sub1 JOIN (SELECT * FROM src10_2_n0) sub0 ON (sub0.key = sub1.key)
   UNION ALL
-  SELECT key,value FROM (SELECT * FROM (SELECT * FROM src10_3) sub2 UNION ALL SELECT * FROM src10_4 ) alias0
+  SELECT key,value FROM (SELECT * FROM (SELECT * FROM src10_3_n0) sub2 UNION ALL SELECT * FROM src10_4_n0 ) alias0
 ) alias1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -250,7 +250,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: src10_1
+            alias: src10_1_n0
             Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -266,7 +266,7 @@ STAGE PLANS:
                   Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: string)
           TableScan
-            alias: src10_2
+            alias: src10_2_n0
             Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: key is not null (type: boolean)
@@ -310,7 +310,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
-            alias: src10_3
+            alias: src10_3_n0
             Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), value (type: string)
@@ -326,7 +326,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
-            alias: src10_4
+            alias: src10_4_n0
             Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), value (type: string)
@@ -349,26 +349,26 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT * FROM (
-  SELECT sub1.key,sub1.value FROM (SELECT * FROM src10_1) sub1 JOIN (SELECT * FROM src10_2) sub0 ON (sub0.key = sub1.key)
+  SELECT sub1.key,sub1.value FROM (SELECT * FROM src10_1_n0) sub1 JOIN (SELECT * FROM src10_2_n0) sub0 ON (sub0.key = sub1.key)
   UNION ALL
-  SELECT key,value FROM (SELECT * FROM (SELECT * FROM src10_3) sub2 UNION ALL SELECT * FROM src10_4 ) alias0
+  SELECT key,value FROM (SELECT * FROM (SELECT * FROM src10_3_n0) sub2 UNION ALL SELECT * FROM src10_4_n0 ) alias0
 ) alias1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src10_1
-PREHOOK: Input: default@src10_2
-PREHOOK: Input: default@src10_3
-PREHOOK: Input: default@src10_4
+PREHOOK: Input: default@src10_1_n0
+PREHOOK: Input: default@src10_2_n0
+PREHOOK: Input: default@src10_3_n0
+PREHOOK: Input: default@src10_4_n0
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM (
-  SELECT sub1.key,sub1.value FROM (SELECT * FROM src10_1) sub1 JOIN (SELECT * FROM src10_2) sub0 ON (sub0.key = sub1.key)
+  SELECT sub1.key,sub1.value FROM (SELECT * FROM src10_1_n0) sub1 JOIN (SELECT * FROM src10_2_n0) sub0 ON (sub0.key = sub1.key)
   UNION ALL
-  SELECT key,value FROM (SELECT * FROM (SELECT * FROM src10_3) sub2 UNION ALL SELECT * FROM src10_4 ) alias0
+  SELECT key,value FROM (SELECT * FROM (SELECT * FROM src10_3_n0) sub2 UNION ALL SELECT * FROM src10_4_n0 ) alias0
 ) alias1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src10_1
-POSTHOOK: Input: default@src10_2
-POSTHOOK: Input: default@src10_3
-POSTHOOK: Input: default@src10_4
+POSTHOOK: Input: default@src10_1_n0
+POSTHOOK: Input: default@src10_2_n0
+POSTHOOK: Input: default@src10_3_n0
+POSTHOOK: Input: default@src10_4_n0
 #### A masked pattern was here ####
 165	val_165
 165	val_165

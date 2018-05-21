@@ -1,86 +1,86 @@
-PREHOOK: query: create table exim_employee ( emp_id int comment "employee id") 	
+PREHOOK: query: create table exim_employee_n14 ( emp_id int comment "employee id") 	
 	comment "employee table"
 	partitioned by (emp_country string comment "two char iso code", emp_state string comment "free text")
 	stored as textfile	
 	tblproperties("creator"="krishna")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@exim_employee
-POSTHOOK: query: create table exim_employee ( emp_id int comment "employee id") 	
+PREHOOK: Output: default@exim_employee_n14
+POSTHOOK: query: create table exim_employee_n14 ( emp_id int comment "employee id") 	
 	comment "employee table"
 	partitioned by (emp_country string comment "two char iso code", emp_state string comment "free text")
 	stored as textfile	
 	tblproperties("creator"="krishna")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@exim_employee
+POSTHOOK: Output: default@exim_employee_n14
 PREHOOK: query: load data local inpath "../../data/files/test.dat" 
-	into table exim_employee partition (emp_country="in", emp_state="tn")
+	into table exim_employee_n14 partition (emp_country="in", emp_state="tn")
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@exim_employee
+PREHOOK: Output: default@exim_employee_n14
 POSTHOOK: query: load data local inpath "../../data/files/test.dat" 
-	into table exim_employee partition (emp_country="in", emp_state="tn")
+	into table exim_employee_n14 partition (emp_country="in", emp_state="tn")
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@exim_employee
-POSTHOOK: Output: default@exim_employee@emp_country=in/emp_state=tn
+POSTHOOK: Output: default@exim_employee_n14
+POSTHOOK: Output: default@exim_employee_n14@emp_country=in/emp_state=tn
 PREHOOK: query: load data local inpath "../../data/files/test.dat" 
-	into table exim_employee partition (emp_country="in", emp_state="ka")
+	into table exim_employee_n14 partition (emp_country="in", emp_state="ka")
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@exim_employee
+PREHOOK: Output: default@exim_employee_n14
 POSTHOOK: query: load data local inpath "../../data/files/test.dat" 
-	into table exim_employee partition (emp_country="in", emp_state="ka")
+	into table exim_employee_n14 partition (emp_country="in", emp_state="ka")
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@exim_employee
-POSTHOOK: Output: default@exim_employee@emp_country=in/emp_state=ka
+POSTHOOK: Output: default@exim_employee_n14
+POSTHOOK: Output: default@exim_employee_n14@emp_country=in/emp_state=ka
 PREHOOK: query: load data local inpath "../../data/files/test.dat" 
-	into table exim_employee partition (emp_country="us", emp_state="tn")
+	into table exim_employee_n14 partition (emp_country="us", emp_state="tn")
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@exim_employee
+PREHOOK: Output: default@exim_employee_n14
 POSTHOOK: query: load data local inpath "../../data/files/test.dat" 
-	into table exim_employee partition (emp_country="us", emp_state="tn")
+	into table exim_employee_n14 partition (emp_country="us", emp_state="tn")
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@exim_employee
-POSTHOOK: Output: default@exim_employee@emp_country=us/emp_state=tn
+POSTHOOK: Output: default@exim_employee_n14
+POSTHOOK: Output: default@exim_employee_n14@emp_country=us/emp_state=tn
 PREHOOK: query: load data local inpath "../../data/files/test.dat" 
-	into table exim_employee partition (emp_country="us", emp_state="ka")
+	into table exim_employee_n14 partition (emp_country="us", emp_state="ka")
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@exim_employee
+PREHOOK: Output: default@exim_employee_n14
 POSTHOOK: query: load data local inpath "../../data/files/test.dat" 
-	into table exim_employee partition (emp_country="us", emp_state="ka")
+	into table exim_employee_n14 partition (emp_country="us", emp_state="ka")
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@exim_employee
-POSTHOOK: Output: default@exim_employee@emp_country=us/emp_state=ka
+POSTHOOK: Output: default@exim_employee_n14
+POSTHOOK: Output: default@exim_employee_n14@emp_country=us/emp_state=ka
 #### A masked pattern was here ####
-PREHOOK: query: export table exim_employee to 'ql/test/data/exports/exim_employee'
+PREHOOK: query: export table exim_employee_n14 to 'ql/test/data/exports/exim_employee'
 PREHOOK: type: EXPORT
-PREHOOK: Input: default@exim_employee@emp_country=in/emp_state=ka
-PREHOOK: Input: default@exim_employee@emp_country=in/emp_state=tn
-PREHOOK: Input: default@exim_employee@emp_country=us/emp_state=ka
-PREHOOK: Input: default@exim_employee@emp_country=us/emp_state=tn
+PREHOOK: Input: default@exim_employee_n14@emp_country=in/emp_state=ka
+PREHOOK: Input: default@exim_employee_n14@emp_country=in/emp_state=tn
+PREHOOK: Input: default@exim_employee_n14@emp_country=us/emp_state=ka
+PREHOOK: Input: default@exim_employee_n14@emp_country=us/emp_state=tn
 #### A masked pattern was here ####
-POSTHOOK: query: export table exim_employee to 'ql/test/data/exports/exim_employee'
+POSTHOOK: query: export table exim_employee_n14 to 'ql/test/data/exports/exim_employee'
 POSTHOOK: type: EXPORT
-POSTHOOK: Input: default@exim_employee@emp_country=in/emp_state=ka
-POSTHOOK: Input: default@exim_employee@emp_country=in/emp_state=tn
-POSTHOOK: Input: default@exim_employee@emp_country=us/emp_state=ka
-POSTHOOK: Input: default@exim_employee@emp_country=us/emp_state=tn
+POSTHOOK: Input: default@exim_employee_n14@emp_country=in/emp_state=ka
+POSTHOOK: Input: default@exim_employee_n14@emp_country=in/emp_state=tn
+POSTHOOK: Input: default@exim_employee_n14@emp_country=us/emp_state=ka
+POSTHOOK: Input: default@exim_employee_n14@emp_country=us/emp_state=tn
 #### A masked pattern was here ####
-PREHOOK: query: drop table exim_employee
+PREHOOK: query: drop table exim_employee_n14
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@exim_employee
-PREHOOK: Output: default@exim_employee
-POSTHOOK: query: drop table exim_employee
+PREHOOK: Input: default@exim_employee_n14
+PREHOOK: Output: default@exim_employee_n14
+POSTHOOK: query: drop table exim_employee_n14
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@exim_employee
-POSTHOOK: Output: default@exim_employee
+POSTHOOK: Input: default@exim_employee_n14
+POSTHOOK: Output: default@exim_employee_n14
 PREHOOK: query: create database importer
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:importer
@@ -93,24 +93,24 @@ PREHOOK: Input: database:importer
 POSTHOOK: query: use importer
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:importer
-PREHOOK: query: import external table exim_employee partition (emp_country="us", emp_state="tn") 
+PREHOOK: query: import external table exim_employee_n14 partition (emp_country="us", emp_state="tn") 
 	from 'ql/test/data/exports/exim_employee'
 PREHOOK: type: IMPORT
 #### A masked pattern was here ####
 PREHOOK: Output: database:importer
-POSTHOOK: query: import external table exim_employee partition (emp_country="us", emp_state="tn") 
+POSTHOOK: query: import external table exim_employee_n14 partition (emp_country="us", emp_state="tn") 
 	from 'ql/test/data/exports/exim_employee'
 POSTHOOK: type: IMPORT
 #### A masked pattern was here ####
 POSTHOOK: Output: database:importer
-POSTHOOK: Output: importer@exim_employee
-POSTHOOK: Output: importer@exim_employee@emp_country=us/emp_state=tn
-PREHOOK: query: describe extended exim_employee
+POSTHOOK: Output: importer@exim_employee_n14
+POSTHOOK: Output: importer@exim_employee_n14@emp_country=us/emp_state=tn
+PREHOOK: query: describe extended exim_employee_n14
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: importer@exim_employee
-POSTHOOK: query: describe extended exim_employee
+PREHOOK: Input: importer@exim_employee_n14
+POSTHOOK: query: describe extended exim_employee_n14
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: importer@exim_employee
+POSTHOOK: Input: importer@exim_employee_n14
 emp_id              	int                 	employee id         
 emp_country         	string              	two char iso code   
 emp_state           	string              	free text           
@@ -121,11 +121,11 @@ emp_country         	string              	two char iso code
 emp_state           	string              	free text           
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: show table extended like exim_employee
+PREHOOK: query: show table extended like exim_employee_n14
 PREHOOK: type: SHOW_TABLESTATUS
-POSTHOOK: query: show table extended like exim_employee
+POSTHOOK: query: show table extended like exim_employee_n14
 POSTHOOK: type: SHOW_TABLESTATUS
-tableName:exim_employee
+tableName:exim_employee_n14
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -138,11 +138,11 @@ maxFileSize:11
 minFileSize:11
 #### A masked pattern was here ####
 
-PREHOOK: query: show table extended like exim_employee partition (emp_country="us", emp_state="tn")
+PREHOOK: query: show table extended like exim_employee_n14 partition (emp_country="us", emp_state="tn")
 PREHOOK: type: SHOW_TABLESTATUS
-POSTHOOK: query: show table extended like exim_employee partition (emp_country="us", emp_state="tn")
+POSTHOOK: query: show table extended like exim_employee_n14 partition (emp_country="us", emp_state="tn")
 POSTHOOK: type: SHOW_TABLESTATUS
-tableName:exim_employee
+tableName:exim_employee_n14
 #### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -155,15 +155,15 @@ maxFileSize:11
 minFileSize:11
 #### A masked pattern was here ####
 
-PREHOOK: query: select * from exim_employee
+PREHOOK: query: select * from exim_employee_n14
 PREHOOK: type: QUERY
-PREHOOK: Input: importer@exim_employee
-PREHOOK: Input: importer@exim_employee@emp_country=us/emp_state=tn
+PREHOOK: Input: importer@exim_employee_n14
+PREHOOK: Input: importer@exim_employee_n14@emp_country=us/emp_state=tn
 #### A masked pattern was here ####
-POSTHOOK: query: select * from exim_employee
+POSTHOOK: query: select * from exim_employee_n14
 POSTHOOK: type: QUERY
-POSTHOOK: Input: importer@exim_employee
-POSTHOOK: Input: importer@exim_employee@emp_country=us/emp_state=tn
+POSTHOOK: Input: importer@exim_employee_n14
+POSTHOOK: Input: importer@exim_employee_n14@emp_country=us/emp_state=tn
 #### A masked pattern was here ####
 1	us	tn
 2	us	tn
@@ -172,24 +172,24 @@ POSTHOOK: Input: importer@exim_employee@emp_country=us/emp_state=tn
 5	us	tn
 6	us	tn
 #### A masked pattern was here ####
-PREHOOK: query: select * from exim_employee
+PREHOOK: query: select * from exim_employee_n14
 PREHOOK: type: QUERY
-PREHOOK: Input: importer@exim_employee
-PREHOOK: Input: importer@exim_employee@emp_country=us/emp_state=tn
+PREHOOK: Input: importer@exim_employee_n14
+PREHOOK: Input: importer@exim_employee_n14@emp_country=us/emp_state=tn
 #### A masked pattern was here ####
-POSTHOOK: query: select * from exim_employee
+POSTHOOK: query: select * from exim_employee_n14
 POSTHOOK: type: QUERY
-POSTHOOK: Input: importer@exim_employee
-POSTHOOK: Input: importer@exim_employee@emp_country=us/emp_state=tn
+POSTHOOK: Input: importer@exim_employee_n14
+POSTHOOK: Input: importer@exim_employee_n14@emp_country=us/emp_state=tn
 #### A masked pattern was here ####
-PREHOOK: query: drop table exim_employee
+PREHOOK: query: drop table exim_employee_n14
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: importer@exim_employee
-PREHOOK: Output: importer@exim_employee
-POSTHOOK: query: drop table exim_employee
+PREHOOK: Input: importer@exim_employee_n14
+PREHOOK: Output: importer@exim_employee_n14
+POSTHOOK: query: drop table exim_employee_n14
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: importer@exim_employee
-POSTHOOK: Output: importer@exim_employee
+POSTHOOK: Input: importer@exim_employee_n14
+POSTHOOK: Output: importer@exim_employee_n14
 PREHOOK: query: drop database importer
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:importer

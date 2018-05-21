@@ -1,52 +1,52 @@
-PREHOOK: query: drop table table_desc1
+PREHOOK: query: drop table table_desc1_n3
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table table_desc1
+POSTHOOK: query: drop table table_desc1_n3
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: drop table table_desc2
+PREHOOK: query: drop table table_desc2_n3
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table table_desc2
+POSTHOOK: query: drop table table_desc2_n3
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table table_desc1(key string, value string) clustered by (key) sorted by (key DESC) into 1 BUCKETS
+PREHOOK: query: create table table_desc1_n3(key string, value string) clustered by (key) sorted by (key DESC) into 1 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@table_desc1
-POSTHOOK: query: create table table_desc1(key string, value string) clustered by (key) sorted by (key DESC) into 1 BUCKETS
+PREHOOK: Output: default@table_desc1_n3
+POSTHOOK: query: create table table_desc1_n3(key string, value string) clustered by (key) sorted by (key DESC) into 1 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@table_desc1
-PREHOOK: query: create table table_desc2(key string, value string) clustered by (key) sorted by (key DESC) into 1 BUCKETS
+POSTHOOK: Output: default@table_desc1_n3
+PREHOOK: query: create table table_desc2_n3(key string, value string) clustered by (key) sorted by (key DESC) into 1 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@table_desc2
-POSTHOOK: query: create table table_desc2(key string, value string) clustered by (key) sorted by (key DESC) into 1 BUCKETS
+PREHOOK: Output: default@table_desc2_n3
+POSTHOOK: query: create table table_desc2_n3(key string, value string) clustered by (key) sorted by (key DESC) into 1 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@table_desc2
-PREHOOK: query: insert overwrite table table_desc1 select key, value from src
+POSTHOOK: Output: default@table_desc2_n3
+PREHOOK: query: insert overwrite table table_desc1_n3 select key, value from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@table_desc1
-POSTHOOK: query: insert overwrite table table_desc1 select key, value from src
+PREHOOK: Output: default@table_desc1_n3
+POSTHOOK: query: insert overwrite table table_desc1_n3 select key, value from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@table_desc1
-POSTHOOK: Lineage: table_desc1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: table_desc1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: insert overwrite table table_desc2 select key, value from src
+POSTHOOK: Output: default@table_desc1_n3
+POSTHOOK: Lineage: table_desc1_n3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: table_desc1_n3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table table_desc2_n3 select key, value from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@table_desc2
-POSTHOOK: query: insert overwrite table table_desc2 select key, value from src
+PREHOOK: Output: default@table_desc2_n3
+POSTHOOK: query: insert overwrite table table_desc2_n3 select key, value from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@table_desc2
-POSTHOOK: Lineage: table_desc2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: table_desc2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@table_desc2_n3
+POSTHOOK: Lineage: table_desc2_n3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: table_desc2_n3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain
-select /*+ mapjoin(b) */ count(*) from table_desc1 a join table_desc2 b on a.key=b.key where a.key < 10
+select /*+ mapjoin(b) */ count(*) from table_desc1_n3 a join table_desc2_n3 b on a.key=b.key where a.key < 10
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select /*+ mapjoin(b) */ count(*) from table_desc1 a join table_desc2 b on a.key=b.key where a.key < 10
+select /*+ mapjoin(b) */ count(*) from table_desc1_n3 a join table_desc2_n3 b on a.key=b.key where a.key < 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -93,14 +93,14 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select /*+ mapjoin(b) */ count(*) from table_desc1 a join table_desc2 b on a.key=b.key where a.key < 10
+PREHOOK: query: select /*+ mapjoin(b) */ count(*) from table_desc1_n3 a join table_desc2_n3 b on a.key=b.key where a.key < 10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table_desc1
-PREHOOK: Input: default@table_desc2
+PREHOOK: Input: default@table_desc1_n3
+PREHOOK: Input: default@table_desc2_n3
 #### A masked pattern was here ####
-POSTHOOK: query: select /*+ mapjoin(b) */ count(*) from table_desc1 a join table_desc2 b on a.key=b.key where a.key < 10
+POSTHOOK: query: select /*+ mapjoin(b) */ count(*) from table_desc1_n3 a join table_desc2_n3 b on a.key=b.key where a.key < 10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table_desc1
-POSTHOOK: Input: default@table_desc2
+POSTHOOK: Input: default@table_desc1_n3
+POSTHOOK: Input: default@table_desc2_n3
 #### A masked pattern was here ####
 22

@@ -1,30 +1,30 @@
-PREHOOK: query: CREATE TABLE srcorc STORED AS ORC AS SELECT * FROM src
+PREHOOK: query: CREATE TABLE srcorc_n0 STORED AS ORC AS SELECT * FROM src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@srcorc
-POSTHOOK: query: CREATE TABLE srcorc STORED AS ORC AS SELECT * FROM src
+PREHOOK: Output: default@srcorc_n0
+POSTHOOK: query: CREATE TABLE srcorc_n0 STORED AS ORC AS SELECT * FROM src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcorc
-POSTHOOK: Lineage: srcorc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: srcorc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: CREATE TABLE dest1(c1 STRING) STORED AS ORC
+POSTHOOK: Output: default@srcorc_n0
+POSTHOOK: Lineage: srcorc_n0.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcorc_n0.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: CREATE TABLE dest1_n73(c1 STRING) STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest1
-POSTHOOK: query: CREATE TABLE dest1(c1 STRING) STORED AS ORC
+PREHOOK: Output: default@dest1_n73
+POSTHOOK: query: CREATE TABLE dest1_n73(c1 STRING) STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest1
+POSTHOOK: Output: default@dest1_n73
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
-FROM srcorc
-INSERT OVERWRITE TABLE dest1 SELECT DISTINCT substr(srcorc.value,5,1)
+FROM srcorc_n0
+INSERT OVERWRITE TABLE dest1_n73 SELECT DISTINCT substr(srcorc_n0.value,5,1)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
-FROM srcorc
-INSERT OVERWRITE TABLE dest1 SELECT DISTINCT substr(srcorc.value,5,1)
+FROM srcorc_n0
+INSERT OVERWRITE TABLE dest1_n73 SELECT DISTINCT substr(srcorc_n0.value,5,1)
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -50,7 +50,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: srcorc
+                  alias: srcorc_n0
                   Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -144,7 +144,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      name: default.dest1
+                      name: default.dest1_n73
                 Select Operator
                   expressions: _col0 (type: string)
                   outputColumnNames: c1
@@ -211,7 +211,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.dest1
+              name: default.dest1_n73
 
   Stage: Stage-3
     Stats Work
@@ -219,26 +219,26 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: c1
           Column Types: string
-          Table: default.dest1
+          Table: default.dest1_n73
 
-PREHOOK: query: FROM srcorc
-INSERT OVERWRITE TABLE dest1 SELECT DISTINCT substr(srcorc.value,5,1)
+PREHOOK: query: FROM srcorc_n0
+INSERT OVERWRITE TABLE dest1_n73 SELECT DISTINCT substr(srcorc_n0.value,5,1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcorc
-PREHOOK: Output: default@dest1
-POSTHOOK: query: FROM srcorc
-INSERT OVERWRITE TABLE dest1 SELECT DISTINCT substr(srcorc.value,5,1)
+PREHOOK: Input: default@srcorc_n0
+PREHOOK: Output: default@dest1_n73
+POSTHOOK: query: FROM srcorc_n0
+INSERT OVERWRITE TABLE dest1_n73 SELECT DISTINCT substr(srcorc_n0.value,5,1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcorc
-POSTHOOK: Output: default@dest1
-POSTHOOK: Lineage: dest1.c1 EXPRESSION [(srcorc)srcorc.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: Input: default@srcorc_n0
+POSTHOOK: Output: default@dest1_n73
+POSTHOOK: Lineage: dest1_n73.c1 EXPRESSION [(srcorc_n0)srcorc_n0.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: SELECT dest1_n73.* FROM dest1_n73
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n73
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: query: SELECT dest1_n73.* FROM dest1_n73
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n73
 #### A masked pattern was here ####
 0
 1

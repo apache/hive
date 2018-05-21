@@ -1,4 +1,4 @@
-create table over1k(
+create table over1k_n4(
 t tinyint,
 si smallint,
 i int,
@@ -13,15 +13,15 @@ bin binary)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE;
 
-load data local inpath '../../data/files/over1k' overwrite into table over1k;
-load data local inpath '../../data/files/over1k' into table over1k;
+load data local inpath '../../data/files/over1k' overwrite into table over1k_n4;
+load data local inpath '../../data/files/over1k' into table over1k_n4;
 
-analyze table over1k compute statistics;
-analyze table over1k compute statistics for columns;
+analyze table over1k_n4 compute statistics;
+analyze table over1k_n4 compute statistics for columns;
 
 set hive.stats.fetch.column.stats=true;
 set hive.optimize.point.lookup=false;
-explain select count(*) from over1k where (
+explain select count(*) from over1k_n4 where (
 (t=1 and si=2)
 or (t=2 and si=3)
 or (t=3 and si=4) 
@@ -44,7 +44,7 @@ or (t=47 and si=48)
 or (t=52 and si=53));
 
 set hive.stats.fetch.column.stats=false;
-explain select count(*) from over1k where (
+explain select count(*) from over1k_n4 where (
 (t=1 and si=2)
 or (t=2 and si=3)
 or (t=3 and si=4) 

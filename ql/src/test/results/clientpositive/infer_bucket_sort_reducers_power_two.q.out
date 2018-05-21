@@ -1,29 +1,29 @@
-PREHOOK: query: CREATE TABLE test_table (key STRING, value STRING) PARTITIONED BY (part STRING)
+PREHOOK: query: CREATE TABLE test_table_n14 (key STRING, value STRING) PARTITIONED BY (part STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_table
-POSTHOOK: query: CREATE TABLE test_table (key STRING, value STRING) PARTITIONED BY (part STRING)
+PREHOOK: Output: default@test_table_n14
+POSTHOOK: query: CREATE TABLE test_table_n14 (key STRING, value STRING) PARTITIONED BY (part STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_table
-PREHOOK: query: INSERT OVERWRITE TABLE test_table PARTITION (part = '1') 
+POSTHOOK: Output: default@test_table_n14
+PREHOOK: query: INSERT OVERWRITE TABLE test_table_n14 PARTITION (part = '1') 
 SELECT key, count(*) FROM src GROUP BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@test_table@part=1
-POSTHOOK: query: INSERT OVERWRITE TABLE test_table PARTITION (part = '1') 
+PREHOOK: Output: default@test_table_n14@part=1
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table_n14 PARTITION (part = '1') 
 SELECT key, count(*) FROM src GROUP BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@test_table@part=1
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-PREHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
+POSTHOOK: Output: default@test_table_n14@part=1
+POSTHOOK: Lineage: test_table_n14 PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table_n14 PARTITION(part=1).value EXPRESSION [(src)src.null, ]
+PREHOOK: query: DESCRIBE FORMATTED test_table_n14 PARTITION (part = '1')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@test_table
-POSTHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
+PREHOOK: Input: default@test_table_n14
+POSTHOOK: query: DESCRIBE FORMATTED test_table_n14 PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@test_table
+POSTHOOK: Input: default@test_table_n14
 # col_name            	data_type           	comment             
 key                 	string              	                    
 value               	string              	                    
@@ -35,7 +35,7 @@ part                	string
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
 Database:           	default             	 
-Table:              	test_table          	 
+Table:              	test_table_n14      	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
@@ -55,24 +55,24 @@ Bucket Columns:     	[key]
 Sort Columns:       	[Order(col:key, order:1)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: INSERT OVERWRITE TABLE test_table PARTITION (part = '1') 
+PREHOOK: query: INSERT OVERWRITE TABLE test_table_n14 PARTITION (part = '1') 
 SELECT a.key, a.value FROM src a JOIN src b ON a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@test_table@part=1
-POSTHOOK: query: INSERT OVERWRITE TABLE test_table PARTITION (part = '1') 
+PREHOOK: Output: default@test_table_n14@part=1
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table_n14 PARTITION (part = '1') 
 SELECT a.key, a.value FROM src a JOIN src b ON a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@test_table@part=1
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
+POSTHOOK: Output: default@test_table_n14@part=1
+POSTHOOK: Lineage: test_table_n14 PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table_n14 PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: DESCRIBE FORMATTED test_table_n14 PARTITION (part = '1')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@test_table
-POSTHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
+PREHOOK: Input: default@test_table_n14
+POSTHOOK: query: DESCRIBE FORMATTED test_table_n14 PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@test_table
+POSTHOOK: Input: default@test_table_n14
 # col_name            	data_type           	comment             
 key                 	string              	                    
 value               	string              	                    
@@ -84,7 +84,7 @@ part                	string
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
 Database:           	default             	 
-Table:              	test_table          	 
+Table:              	test_table_n14      	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
@@ -104,24 +104,24 @@ Bucket Columns:     	[key]
 Sort Columns:       	[Order(col:key, order:1)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: INSERT OVERWRITE TABLE test_table PARTITION (part = '1') 
+PREHOOK: query: INSERT OVERWRITE TABLE test_table_n14 PARTITION (part = '1') 
 SELECT a.key, a.value FROM src a JOIN src b ON a.key = b.key AND a.value = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@test_table@part=1
-POSTHOOK: query: INSERT OVERWRITE TABLE test_table PARTITION (part = '1') 
+PREHOOK: Output: default@test_table_n14@part=1
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table_n14 PARTITION (part = '1') 
 SELECT a.key, a.value FROM src a JOIN src b ON a.key = b.key AND a.value = b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@test_table@part=1
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
+POSTHOOK: Output: default@test_table_n14@part=1
+POSTHOOK: Lineage: test_table_n14 PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table_n14 PARTITION(part=1).value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: DESCRIBE FORMATTED test_table_n14 PARTITION (part = '1')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@test_table
-POSTHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
+PREHOOK: Input: default@test_table_n14
+POSTHOOK: query: DESCRIBE FORMATTED test_table_n14 PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@test_table
+POSTHOOK: Input: default@test_table_n14
 # col_name            	data_type           	comment             
 key                 	string              	                    
 value               	string              	                    
@@ -133,7 +133,7 @@ part                	string
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
 Database:           	default             	 
-Table:              	test_table          	 
+Table:              	test_table_n14      	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
@@ -153,24 +153,24 @@ Bucket Columns:     	[key, value]
 Sort Columns:       	[Order(col:key, order:1), Order(col:value, order:1)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: INSERT OVERWRITE TABLE test_table PARTITION (part = '1') 
+PREHOOK: query: INSERT OVERWRITE TABLE test_table_n14 PARTITION (part = '1') 
 SELECT a.key, c.value FROM src a JOIN src b ON (a.key = b.key) JOIN src c ON (b.key = c.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@test_table@part=1
-POSTHOOK: query: INSERT OVERWRITE TABLE test_table PARTITION (part = '1') 
+PREHOOK: Output: default@test_table_n14@part=1
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table_n14 PARTITION (part = '1') 
 SELECT a.key, c.value FROM src a JOIN src b ON (a.key = b.key) JOIN src c ON (b.key = c.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@test_table@part=1
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
+POSTHOOK: Output: default@test_table_n14@part=1
+POSTHOOK: Lineage: test_table_n14 PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table_n14 PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: DESCRIBE FORMATTED test_table_n14 PARTITION (part = '1')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@test_table
-POSTHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
+PREHOOK: Input: default@test_table_n14
+POSTHOOK: query: DESCRIBE FORMATTED test_table_n14 PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@test_table
+POSTHOOK: Input: default@test_table_n14
 # col_name            	data_type           	comment             
 key                 	string              	                    
 value               	string              	                    
@@ -182,7 +182,7 @@ part                	string
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
 Database:           	default             	 
-Table:              	test_table          	 
+Table:              	test_table_n14      	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
@@ -202,24 +202,24 @@ Bucket Columns:     	[key]
 Sort Columns:       	[Order(col:key, order:1)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: INSERT OVERWRITE TABLE test_table PARTITION (part = '1') 
+PREHOOK: query: INSERT OVERWRITE TABLE test_table_n14 PARTITION (part = '1') 
 SELECT a.key, c.value FROM src a JOIN src b ON (a.key = b.key) JOIN src c ON (b.value = c.value)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@test_table@part=1
-POSTHOOK: query: INSERT OVERWRITE TABLE test_table PARTITION (part = '1') 
+PREHOOK: Output: default@test_table_n14@part=1
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table_n14 PARTITION (part = '1') 
 SELECT a.key, c.value FROM src a JOIN src b ON (a.key = b.key) JOIN src c ON (b.value = c.value)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@test_table@part=1
-POSTHOOK: Lineage: test_table PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
+POSTHOOK: Output: default@test_table_n14@part=1
+POSTHOOK: Lineage: test_table_n14 PARTITION(part=1).key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table_n14 PARTITION(part=1).value SIMPLE [(src)c.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: DESCRIBE FORMATTED test_table_n14 PARTITION (part = '1')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@test_table
-POSTHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
+PREHOOK: Input: default@test_table_n14
+POSTHOOK: query: DESCRIBE FORMATTED test_table_n14 PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@test_table
+POSTHOOK: Input: default@test_table_n14
 # col_name            	data_type           	comment             
 key                 	string              	                    
 value               	string              	                    
@@ -231,7 +231,7 @@ part                	string
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
 Database:           	default             	 
-Table:              	test_table          	 
+Table:              	test_table_n14      	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
@@ -251,24 +251,24 @@ Bucket Columns:     	[value]
 Sort Columns:       	[Order(col:value, order:1)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: INSERT OVERWRITE TABLE test_table PARTITION (part = '1')
+PREHOOK: query: INSERT OVERWRITE TABLE test_table_n14 PARTITION (part = '1')
 SELECT count(1), value FROM (SELECT key, count(1) as value FROM src group by key) a group by value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@test_table@part=1
-POSTHOOK: query: INSERT OVERWRITE TABLE test_table PARTITION (part = '1')
+PREHOOK: Output: default@test_table_n14@part=1
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table_n14 PARTITION (part = '1')
 SELECT count(1), value FROM (SELECT key, count(1) as value FROM src group by key) a group by value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@test_table@part=1
-POSTHOOK: Lineage: test_table PARTITION(part=1).key EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_table PARTITION(part=1).value EXPRESSION [(src)src.null, ]
-PREHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
+POSTHOOK: Output: default@test_table_n14@part=1
+POSTHOOK: Lineage: test_table_n14 PARTITION(part=1).key EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: test_table_n14 PARTITION(part=1).value EXPRESSION [(src)src.null, ]
+PREHOOK: query: DESCRIBE FORMATTED test_table_n14 PARTITION (part = '1')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@test_table
-POSTHOOK: query: DESCRIBE FORMATTED test_table PARTITION (part = '1')
+PREHOOK: Input: default@test_table_n14
+POSTHOOK: query: DESCRIBE FORMATTED test_table_n14 PARTITION (part = '1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@test_table
+POSTHOOK: Input: default@test_table_n14
 # col_name            	data_type           	comment             
 key                 	string              	                    
 value               	string              	                    
@@ -280,7 +280,7 @@ part                	string
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
 Database:           	default             	 
-Table:              	test_table          	 
+Table:              	test_table_n14      	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}

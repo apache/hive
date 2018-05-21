@@ -1,4 +1,4 @@
-PREHOOK: query: CREATE TABLE flights_tiny (
+PREHOOK: query: CREATE TABLE flights_tiny_n1 (
   origin_city_name STRING,
   dest_city_name STRING,
   fl_date DATE,
@@ -7,8 +7,8 @@ PREHOOK: query: CREATE TABLE flights_tiny (
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@flights_tiny
-POSTHOOK: query: CREATE TABLE flights_tiny (
+PREHOOK: Output: default@flights_tiny_n1
+POSTHOOK: query: CREATE TABLE flights_tiny_n1 (
   origin_city_name STRING,
   dest_city_name STRING,
   fl_date DATE,
@@ -17,35 +17,35 @@ POSTHOOK: query: CREATE TABLE flights_tiny (
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@flights_tiny
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/flights_tiny.txt.1' OVERWRITE INTO TABLE flights_tiny
+POSTHOOK: Output: default@flights_tiny_n1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/flights_tiny.txt.1' OVERWRITE INTO TABLE flights_tiny_n1
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@flights_tiny
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/flights_tiny.txt.1' OVERWRITE INTO TABLE flights_tiny
+PREHOOK: Output: default@flights_tiny_n1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/flights_tiny.txt.1' OVERWRITE INTO TABLE flights_tiny_n1
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@flights_tiny
+POSTHOOK: Output: default@flights_tiny_n1
 PREHOOK: query: CREATE TABLE flights_tiny_orc STORED AS ORC AS
 SELECT origin_city_name, dest_city_name, fl_date, to_utc_timestamp(fl_date, 'America/Los_Angeles') as fl_time, arr_delay, fl_num
-FROM flights_tiny
+FROM flights_tiny_n1
 PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: default@flights_tiny
+PREHOOK: Input: default@flights_tiny_n1
 PREHOOK: Output: database:default
 PREHOOK: Output: default@flights_tiny_orc
 POSTHOOK: query: CREATE TABLE flights_tiny_orc STORED AS ORC AS
 SELECT origin_city_name, dest_city_name, fl_date, to_utc_timestamp(fl_date, 'America/Los_Angeles') as fl_time, arr_delay, fl_num
-FROM flights_tiny
+FROM flights_tiny_n1
 POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: default@flights_tiny
+POSTHOOK: Input: default@flights_tiny_n1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@flights_tiny_orc
-POSTHOOK: Lineage: flights_tiny_orc.arr_delay SIMPLE [(flights_tiny)flights_tiny.FieldSchema(name:arr_delay, type:float, comment:null), ]
-POSTHOOK: Lineage: flights_tiny_orc.dest_city_name SIMPLE [(flights_tiny)flights_tiny.FieldSchema(name:dest_city_name, type:string, comment:null), ]
-POSTHOOK: Lineage: flights_tiny_orc.fl_date SIMPLE [(flights_tiny)flights_tiny.FieldSchema(name:fl_date, type:date, comment:null), ]
-POSTHOOK: Lineage: flights_tiny_orc.fl_num SIMPLE [(flights_tiny)flights_tiny.FieldSchema(name:fl_num, type:int, comment:null), ]
-POSTHOOK: Lineage: flights_tiny_orc.fl_time EXPRESSION [(flights_tiny)flights_tiny.FieldSchema(name:fl_date, type:date, comment:null), ]
-POSTHOOK: Lineage: flights_tiny_orc.origin_city_name SIMPLE [(flights_tiny)flights_tiny.FieldSchema(name:origin_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc.arr_delay SIMPLE [(flights_tiny_n1)flights_tiny_n1.FieldSchema(name:arr_delay, type:float, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc.dest_city_name SIMPLE [(flights_tiny_n1)flights_tiny_n1.FieldSchema(name:dest_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc.fl_date SIMPLE [(flights_tiny_n1)flights_tiny_n1.FieldSchema(name:fl_date, type:date, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc.fl_num SIMPLE [(flights_tiny_n1)flights_tiny_n1.FieldSchema(name:fl_num, type:int, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc.fl_time EXPRESSION [(flights_tiny_n1)flights_tiny_n1.FieldSchema(name:fl_date, type:date, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_orc.origin_city_name SIMPLE [(flights_tiny_n1)flights_tiny_n1.FieldSchema(name:origin_city_name, type:string, comment:null), ]
 PREHOOK: query: SELECT * FROM flights_tiny_orc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@flights_tiny_orc
@@ -2453,24 +2453,24 @@ POSTHOOK: Input: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-
 2010-10-27 07:00:00	11
 PREHOOK: query: CREATE TABLE flights_tiny_parquet STORED AS PARQUET AS
 SELECT origin_city_name, dest_city_name, fl_date, to_utc_timestamp(fl_date, 'America/Los_Angeles') as fl_time, arr_delay, fl_num
-FROM flights_tiny
+FROM flights_tiny_n1
 PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: default@flights_tiny
+PREHOOK: Input: default@flights_tiny_n1
 PREHOOK: Output: database:default
 PREHOOK: Output: default@flights_tiny_parquet
 POSTHOOK: query: CREATE TABLE flights_tiny_parquet STORED AS PARQUET AS
 SELECT origin_city_name, dest_city_name, fl_date, to_utc_timestamp(fl_date, 'America/Los_Angeles') as fl_time, arr_delay, fl_num
-FROM flights_tiny
+FROM flights_tiny_n1
 POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: default@flights_tiny
+POSTHOOK: Input: default@flights_tiny_n1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@flights_tiny_parquet
-POSTHOOK: Lineage: flights_tiny_parquet.arr_delay SIMPLE [(flights_tiny)flights_tiny.FieldSchema(name:arr_delay, type:float, comment:null), ]
-POSTHOOK: Lineage: flights_tiny_parquet.dest_city_name SIMPLE [(flights_tiny)flights_tiny.FieldSchema(name:dest_city_name, type:string, comment:null), ]
-POSTHOOK: Lineage: flights_tiny_parquet.fl_date SIMPLE [(flights_tiny)flights_tiny.FieldSchema(name:fl_date, type:date, comment:null), ]
-POSTHOOK: Lineage: flights_tiny_parquet.fl_num SIMPLE [(flights_tiny)flights_tiny.FieldSchema(name:fl_num, type:int, comment:null), ]
-POSTHOOK: Lineage: flights_tiny_parquet.fl_time EXPRESSION [(flights_tiny)flights_tiny.FieldSchema(name:fl_date, type:date, comment:null), ]
-POSTHOOK: Lineage: flights_tiny_parquet.origin_city_name SIMPLE [(flights_tiny)flights_tiny.FieldSchema(name:origin_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_parquet.arr_delay SIMPLE [(flights_tiny_n1)flights_tiny_n1.FieldSchema(name:arr_delay, type:float, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_parquet.dest_city_name SIMPLE [(flights_tiny_n1)flights_tiny_n1.FieldSchema(name:dest_city_name, type:string, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_parquet.fl_date SIMPLE [(flights_tiny_n1)flights_tiny_n1.FieldSchema(name:fl_date, type:date, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_parquet.fl_num SIMPLE [(flights_tiny_n1)flights_tiny_n1.FieldSchema(name:fl_num, type:int, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_parquet.fl_time EXPRESSION [(flights_tiny_n1)flights_tiny_n1.FieldSchema(name:fl_date, type:date, comment:null), ]
+POSTHOOK: Lineage: flights_tiny_parquet.origin_city_name SIMPLE [(flights_tiny_n1)flights_tiny_n1.FieldSchema(name:origin_city_name, type:string, comment:null), ]
 PREHOOK: query: SELECT * FROM flights_tiny_parquet
 PREHOOK: type: QUERY
 PREHOOK: Input: default@flights_tiny_parquet

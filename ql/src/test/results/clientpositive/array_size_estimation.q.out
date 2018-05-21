@@ -1,25 +1,25 @@
-PREHOOK: query: create table t (col string)
+PREHOOK: query: create table t_n19 (col string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t
-POSTHOOK: query: create table t (col string)
+PREHOOK: Output: default@t_n19
+POSTHOOK: query: create table t_n19 (col string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t
-PREHOOK: query: insert into t values ('x')
+POSTHOOK: Output: default@t_n19
+PREHOOK: query: insert into t_n19 values ('x')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values ('x')
+PREHOOK: Output: default@t_n19
+POSTHOOK: query: insert into t_n19 values ('x')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.col SCRIPT []
+POSTHOOK: Output: default@t_n19
+POSTHOOK: Lineage: t_n19.col SCRIPT []
 PREHOOK: query: explain
-select array("b", "d", "c", "a") FROM t
+select array("b", "d", "c", "a") FROM t_n19
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select array("b", "d", "c", "a") FROM t
+select array("b", "d", "c", "a") FROM t_n19
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -30,7 +30,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t
+            alias: t_n19
             Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: array('b','d','c','a') (type: array<string>)
@@ -52,10 +52,10 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain
-select array("b", "d", "c", col) FROM t
+select array("b", "d", "c", col) FROM t_n19
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select array("b", "d", "c", col) FROM t
+select array("b", "d", "c", col) FROM t_n19
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -66,7 +66,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t
+            alias: t_n19
             Statistics: Num rows: 1 Data size: 85 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: array('b','d','c',col) (type: array<string>)
@@ -88,10 +88,10 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain
-select sort_array(array("b", "d", "c", "a")),array("1","2") FROM t
+select sort_array(array("b", "d", "c", "a")),array("1","2") FROM t_n19
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select sort_array(array("b", "d", "c", "a")),array("1","2") FROM t
+select sort_array(array("b", "d", "c", "a")),array("1","2") FROM t_n19
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -102,7 +102,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t
+            alias: t_n19
             Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: sort_array(array('b','d','c','a')) (type: array<string>), array('1','2') (type: array<string>)
@@ -124,10 +124,10 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain
-select sort_array(array("b", "d", "c", col)),array("1","2") FROM t
+select sort_array(array("b", "d", "c", col)),array("1","2") FROM t_n19
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select sort_array(array("b", "d", "c", col)),array("1","2") FROM t
+select sort_array(array("b", "d", "c", col)),array("1","2") FROM t_n19
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -138,7 +138,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t
+            alias: t_n19
             Statistics: Num rows: 1 Data size: 85 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: sort_array(array('b','d','c',col)) (type: array<string>), array('1','2') (type: array<string>)

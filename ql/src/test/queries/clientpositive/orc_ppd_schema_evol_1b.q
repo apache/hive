@@ -7,7 +7,7 @@ set hive.input.format=org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 SET hive.map.aggr=false;
 -- disabling map side aggregation as that can lead to different intermediate record counts
 
-create table unique_1( 
+create table unique_1_n0( 
 i int, 
 d double, 
 s string) 
@@ -15,7 +15,7 @@ row format delimited
 fields terminated by '|' 
 stored as textfile;
 
-load data local inpath '../../data/files/unique_1.txt' into table unique_1;
+load data local inpath '../../data/files/unique_1.txt' into table unique_1_n0;
 
 create table unique_2( 
 i int, 
@@ -33,7 +33,7 @@ d double,
 s string)
 stored as orc;
 
-insert into table test_two_files select * from unique_1 where i <= 0;
+insert into table test_two_files select * from unique_1_n0 where i <= 0;
 insert into table test_two_files select * from unique_2 where i > 0;
 
 SET hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecTezSummaryPrinter;

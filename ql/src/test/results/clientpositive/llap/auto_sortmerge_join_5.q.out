@@ -1,70 +1,70 @@
-PREHOOK: query: CREATE TABLE bucket_small (key string, value string) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE bucket_small_n0 (key string, value string) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@bucket_small
-POSTHOOK: query: CREATE TABLE bucket_small (key string, value string) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+PREHOOK: Output: default@bucket_small_n0
+POSTHOOK: query: CREATE TABLE bucket_small_n0 (key string, value string) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@bucket_small
-PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/small/000000_0' INTO TABLE bucket_small
+POSTHOOK: Output: default@bucket_small_n0
+PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/small/000000_0' INTO TABLE bucket_small_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@bucket_small
-POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/small/000000_0' INTO TABLE bucket_small
+PREHOOK: Output: default@bucket_small_n0
+POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/small/000000_0' INTO TABLE bucket_small_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@bucket_small
-PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/small/000001_0' INTO TABLE bucket_small
+POSTHOOK: Output: default@bucket_small_n0
+PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/small/000001_0' INTO TABLE bucket_small_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@bucket_small
-POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/small/000001_0' INTO TABLE bucket_small
+PREHOOK: Output: default@bucket_small_n0
+POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/small/000001_0' INTO TABLE bucket_small_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@bucket_small
-PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/small/000002_0' INTO TABLE bucket_small
+POSTHOOK: Output: default@bucket_small_n0
+PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/small/000002_0' INTO TABLE bucket_small_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@bucket_small
-POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/small/000002_0' INTO TABLE bucket_small
+PREHOOK: Output: default@bucket_small_n0
+POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/small/000002_0' INTO TABLE bucket_small_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@bucket_small
-PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/small/000003_0' INTO TABLE bucket_small
+POSTHOOK: Output: default@bucket_small_n0
+PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/small/000003_0' INTO TABLE bucket_small_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@bucket_small
-POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/small/000003_0' INTO TABLE bucket_small
+PREHOOK: Output: default@bucket_small_n0
+POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/small/000003_0' INTO TABLE bucket_small_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@bucket_small
-PREHOOK: query: CREATE TABLE bucket_big (key string, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+POSTHOOK: Output: default@bucket_small_n0
+PREHOOK: query: CREATE TABLE bucket_big_n0 (key string, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@bucket_big
-POSTHOOK: query: CREATE TABLE bucket_big (key string, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+PREHOOK: Output: default@bucket_big_n0
+POSTHOOK: query: CREATE TABLE bucket_big_n0 (key string, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@bucket_big
-PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000000_0' INTO TABLE bucket_big
+POSTHOOK: Output: default@bucket_big_n0
+PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000000_0' INTO TABLE bucket_big_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@bucket_big
-POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000000_0' INTO TABLE bucket_big
+PREHOOK: Output: default@bucket_big_n0
+POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000000_0' INTO TABLE bucket_big_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@bucket_big
-PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000001_0' INTO TABLE bucket_big
+POSTHOOK: Output: default@bucket_big_n0
+PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000001_0' INTO TABLE bucket_big_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@bucket_big
-POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000001_0' INTO TABLE bucket_big
+PREHOOK: Output: default@bucket_big_n0
+POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000001_0' INTO TABLE bucket_big_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@bucket_big
-PREHOOK: query: explain extended select count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key
+POSTHOOK: Output: default@bucket_big_n0
+PREHOOK: query: explain extended select count(*) FROM bucket_small_n0 a JOIN bucket_big_n0 b ON a.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended select count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key
+POSTHOOK: query: explain extended select count(*) FROM bucket_small_n0 a JOIN bucket_big_n0 b ON a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -109,11 +109,11 @@ STAGE PLANS:
                     columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
-                    name default.bucket_small
+                    name default.bucket_small_n0
                     numFiles 4
                     numRows 0
                     rawDataSize 0
-                    serialization.ddl struct bucket_small { string key, string value}
+                    serialization.ddl struct bucket_small_n0 { string key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 226
@@ -132,20 +132,20 @@ STAGE PLANS:
                       columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
-                      name default.bucket_small
+                      name default.bucket_small_n0
                       numFiles 4
                       numRows 0
                       rawDataSize 0
-                      serialization.ddl struct bucket_small { string key, string value}
+                      serialization.ddl struct bucket_small_n0 { string key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       totalSize 226
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.bucket_small
-                  name: default.bucket_small
+                    name: default.bucket_small_n0
+                  name: default.bucket_small_n0
             Truncated Path -> Alias:
-              /bucket_small [a]
+              /bucket_small_n0 [a]
             Map Operator Tree:
                 TableScan
                   alias: b
@@ -197,11 +197,11 @@ STAGE PLANS:
                     columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
-                    name default.bucket_big
+                    name default.bucket_big_n0
                     numFiles 2
                     numRows 0
                     rawDataSize 0
-                    serialization.ddl struct bucket_big { string key, string value}
+                    serialization.ddl struct bucket_big_n0 { string key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 2750
@@ -220,20 +220,20 @@ STAGE PLANS:
                       columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
-                      name default.bucket_big
+                      name default.bucket_big_n0
                       numFiles 2
                       numRows 0
                       rawDataSize 0
-                      serialization.ddl struct bucket_big { string key, string value}
+                      serialization.ddl struct bucket_big_n0 { string key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       totalSize 2750
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.bucket_big
-                  name: default.bucket_big
+                    name: default.bucket_big_n0
+                  name: default.bucket_big_n0
             Truncated Path -> Alias:
-              /bucket_big [b]
+              /bucket_big_n0 [b]
         Reducer 3 
             Execution mode: vectorized, llap
             Needs Tagging: false
@@ -272,20 +272,20 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key
+PREHOOK: query: select count(*) FROM bucket_small_n0 a JOIN bucket_big_n0 b ON a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@bucket_big
-PREHOOK: Input: default@bucket_small
+PREHOOK: Input: default@bucket_big_n0
+PREHOOK: Input: default@bucket_small_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key
+POSTHOOK: query: select count(*) FROM bucket_small_n0 a JOIN bucket_big_n0 b ON a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@bucket_big
-POSTHOOK: Input: default@bucket_small
+POSTHOOK: Input: default@bucket_big_n0
+POSTHOOK: Input: default@bucket_small_n0
 #### A masked pattern was here ####
 19
-PREHOOK: query: explain extended select count(*) FROM bucket_big a JOIN bucket_small b ON a.key = b.key
+PREHOOK: query: explain extended select count(*) FROM bucket_big_n0 a JOIN bucket_small_n0 b ON a.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended select count(*) FROM bucket_big a JOIN bucket_small b ON a.key = b.key
+POSTHOOK: query: explain extended select count(*) FROM bucket_big_n0 a JOIN bucket_small_n0 b ON a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -330,11 +330,11 @@ STAGE PLANS:
                     columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
-                    name default.bucket_small
+                    name default.bucket_small_n0
                     numFiles 4
                     numRows 0
                     rawDataSize 0
-                    serialization.ddl struct bucket_small { string key, string value}
+                    serialization.ddl struct bucket_small_n0 { string key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 226
@@ -353,20 +353,20 @@ STAGE PLANS:
                       columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
-                      name default.bucket_small
+                      name default.bucket_small_n0
                       numFiles 4
                       numRows 0
                       rawDataSize 0
-                      serialization.ddl struct bucket_small { string key, string value}
+                      serialization.ddl struct bucket_small_n0 { string key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       totalSize 226
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.bucket_small
-                  name: default.bucket_small
+                    name: default.bucket_small_n0
+                  name: default.bucket_small_n0
             Truncated Path -> Alias:
-              /bucket_small [b]
+              /bucket_small_n0 [b]
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -418,11 +418,11 @@ STAGE PLANS:
                     columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
-                    name default.bucket_big
+                    name default.bucket_big_n0
                     numFiles 2
                     numRows 0
                     rawDataSize 0
-                    serialization.ddl struct bucket_big { string key, string value}
+                    serialization.ddl struct bucket_big_n0 { string key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 2750
@@ -441,20 +441,20 @@ STAGE PLANS:
                       columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
-                      name default.bucket_big
+                      name default.bucket_big_n0
                       numFiles 2
                       numRows 0
                       rawDataSize 0
-                      serialization.ddl struct bucket_big { string key, string value}
+                      serialization.ddl struct bucket_big_n0 { string key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       totalSize 2750
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.bucket_big
-                  name: default.bucket_big
+                    name: default.bucket_big_n0
+                  name: default.bucket_big_n0
             Truncated Path -> Alias:
-              /bucket_big [a]
+              /bucket_big_n0 [a]
         Reducer 2 
             Execution mode: vectorized, llap
             Needs Tagging: false
@@ -493,20 +493,20 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) FROM bucket_big a JOIN bucket_small b ON a.key = b.key
+PREHOOK: query: select count(*) FROM bucket_big_n0 a JOIN bucket_small_n0 b ON a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@bucket_big
-PREHOOK: Input: default@bucket_small
+PREHOOK: Input: default@bucket_big_n0
+PREHOOK: Input: default@bucket_small_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) FROM bucket_big a JOIN bucket_small b ON a.key = b.key
+POSTHOOK: query: select count(*) FROM bucket_big_n0 a JOIN bucket_small_n0 b ON a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@bucket_big
-POSTHOOK: Input: default@bucket_small
+POSTHOOK: Input: default@bucket_big_n0
+POSTHOOK: Input: default@bucket_small_n0
 #### A masked pattern was here ####
 19
-PREHOOK: query: explain extended select count(*) FROM bucket_big a JOIN bucket_small b ON a.key = b.key
+PREHOOK: query: explain extended select count(*) FROM bucket_big_n0 a JOIN bucket_small_n0 b ON a.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended select count(*) FROM bucket_big a JOIN bucket_small b ON a.key = b.key
+POSTHOOK: query: explain extended select count(*) FROM bucket_big_n0 a JOIN bucket_small_n0 b ON a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -551,11 +551,11 @@ STAGE PLANS:
                     columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
-                    name default.bucket_small
+                    name default.bucket_small_n0
                     numFiles 4
                     numRows 0
                     rawDataSize 0
-                    serialization.ddl struct bucket_small { string key, string value}
+                    serialization.ddl struct bucket_small_n0 { string key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 226
@@ -574,20 +574,20 @@ STAGE PLANS:
                       columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
-                      name default.bucket_small
+                      name default.bucket_small_n0
                       numFiles 4
                       numRows 0
                       rawDataSize 0
-                      serialization.ddl struct bucket_small { string key, string value}
+                      serialization.ddl struct bucket_small_n0 { string key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       totalSize 226
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.bucket_small
-                  name: default.bucket_small
+                    name: default.bucket_small_n0
+                  name: default.bucket_small_n0
             Truncated Path -> Alias:
-              /bucket_small [b]
+              /bucket_small_n0 [b]
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -639,11 +639,11 @@ STAGE PLANS:
                     columns.comments 
                     columns.types string:string
 #### A masked pattern was here ####
-                    name default.bucket_big
+                    name default.bucket_big_n0
                     numFiles 2
                     numRows 0
                     rawDataSize 0
-                    serialization.ddl struct bucket_big { string key, string value}
+                    serialization.ddl struct bucket_big_n0 { string key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 2750
@@ -662,20 +662,20 @@ STAGE PLANS:
                       columns.comments 
                       columns.types string:string
 #### A masked pattern was here ####
-                      name default.bucket_big
+                      name default.bucket_big_n0
                       numFiles 2
                       numRows 0
                       rawDataSize 0
-                      serialization.ddl struct bucket_big { string key, string value}
+                      serialization.ddl struct bucket_big_n0 { string key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       totalSize 2750
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.bucket_big
-                  name: default.bucket_big
+                    name: default.bucket_big_n0
+                  name: default.bucket_big_n0
             Truncated Path -> Alias:
-              /bucket_big [a]
+              /bucket_big_n0 [a]
         Reducer 2 
             Execution mode: vectorized, llap
             Needs Tagging: false
@@ -714,14 +714,14 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) FROM bucket_big a JOIN bucket_small b ON a.key = b.key
+PREHOOK: query: select count(*) FROM bucket_big_n0 a JOIN bucket_small_n0 b ON a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@bucket_big
-PREHOOK: Input: default@bucket_small
+PREHOOK: Input: default@bucket_big_n0
+PREHOOK: Input: default@bucket_small_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) FROM bucket_big a JOIN bucket_small b ON a.key = b.key
+POSTHOOK: query: select count(*) FROM bucket_big_n0 a JOIN bucket_small_n0 b ON a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@bucket_big
-POSTHOOK: Input: default@bucket_small
+POSTHOOK: Input: default@bucket_big_n0
+POSTHOOK: Input: default@bucket_small_n0
 #### A masked pattern was here ####
 19

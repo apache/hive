@@ -1,43 +1,43 @@
-PREHOOK: query: create table inputTbl1(key string, ds string) stored as textfile
+PREHOOK: query: create table inputTbl1_n22(key string, ds string) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@inputTbl1
-POSTHOOK: query: create table inputTbl1(key string, ds string) stored as textfile
+PREHOOK: Output: default@inputTbl1_n22
+POSTHOOK: query: create table inputTbl1_n22(key string, ds string) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@inputTbl1
-PREHOOK: query: create table outputTbl1(key string, `values` bigint) partitioned by (ds string) stored as textfile
+POSTHOOK: Output: default@inputTbl1_n22
+PREHOOK: query: create table outputTbl1_n30(key string, `values` bigint) partitioned by (ds string) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@outputTbl1
-POSTHOOK: query: create table outputTbl1(key string, `values` bigint) partitioned by (ds string) stored as textfile
+PREHOOK: Output: default@outputTbl1_n30
+POSTHOOK: query: create table outputTbl1_n30(key string, `values` bigint) partitioned by (ds string) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@outputTbl1
-PREHOOK: query: load data local inpath '../../data/files/T1.txt' into table inputTbl1
+POSTHOOK: Output: default@outputTbl1_n30
+PREHOOK: query: load data local inpath '../../data/files/T1.txt' into table inputTbl1_n22
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@inputtbl1
-POSTHOOK: query: load data local inpath '../../data/files/T1.txt' into table inputTbl1
+PREHOOK: Output: default@inputtbl1_n22
+POSTHOOK: query: load data local inpath '../../data/files/T1.txt' into table inputTbl1_n22
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@inputtbl1
+POSTHOOK: Output: default@inputtbl1_n22
 PREHOOK: query: explain
-insert overwrite table outputTbl1 partition (ds)
+insert overwrite table outputTbl1_n30 partition (ds)
 SELECT *
 FROM (
-  SELECT key, count(1) as `values`, ds from inputTbl1 group by key, ds
+  SELECT key, count(1) as `values`, ds from inputTbl1_n22 group by key, ds
   UNION ALL
-  SELECT key, count(1) as `values`, ds from inputTbl1 group by key, ds
+  SELECT key, count(1) as `values`, ds from inputTbl1_n22 group by key, ds
 ) a
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-insert overwrite table outputTbl1 partition (ds)
+insert overwrite table outputTbl1_n30 partition (ds)
 SELECT *
 FROM (
-  SELECT key, count(1) as `values`, ds from inputTbl1 group by key, ds
+  SELECT key, count(1) as `values`, ds from inputTbl1_n22 group by key, ds
   UNION ALL
-  SELECT key, count(1) as `values`, ds from inputTbl1 group by key, ds
+  SELECT key, count(1) as `values`, ds from inputTbl1_n22 group by key, ds
 ) a
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -55,7 +55,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: inputtbl1
+                  alias: inputtbl1_n22
                   Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), ds (type: string)
@@ -94,7 +94,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.outputtbl1
+                        name: default.outputtbl1_n30
         Reducer 4 
             Execution mode: vectorized
             Reduce Operator Tree:
@@ -115,7 +115,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.outputtbl1
+                        name: default.outputtbl1_n30
 
   Stage: Stage-0
     Move Operator
@@ -127,51 +127,51 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.outputtbl1
+              name: default.outputtbl1_n30
 
-PREHOOK: query: insert overwrite table outputTbl1 partition (ds)
+PREHOOK: query: insert overwrite table outputTbl1_n30 partition (ds)
 SELECT *
 FROM (
-  SELECT key, count(1) as `values`, ds from inputTbl1 group by key, ds
+  SELECT key, count(1) as `values`, ds from inputTbl1_n22 group by key, ds
   UNION ALL
-  SELECT key, count(1) as `values`, ds from inputTbl1 group by key, ds
+  SELECT key, count(1) as `values`, ds from inputTbl1_n22 group by key, ds
 ) a
 PREHOOK: type: QUERY
-PREHOOK: Input: default@inputtbl1
-PREHOOK: Output: default@outputtbl1
-POSTHOOK: query: insert overwrite table outputTbl1 partition (ds)
+PREHOOK: Input: default@inputtbl1_n22
+PREHOOK: Output: default@outputtbl1_n30
+POSTHOOK: query: insert overwrite table outputTbl1_n30 partition (ds)
 SELECT *
 FROM (
-  SELECT key, count(1) as `values`, ds from inputTbl1 group by key, ds
+  SELECT key, count(1) as `values`, ds from inputTbl1_n22 group by key, ds
   UNION ALL
-  SELECT key, count(1) as `values`, ds from inputTbl1 group by key, ds
+  SELECT key, count(1) as `values`, ds from inputTbl1_n22 group by key, ds
 ) a
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@inputtbl1
-POSTHOOK: Output: default@outputtbl1@ds=11
-POSTHOOK: Output: default@outputtbl1@ds=12
-POSTHOOK: Output: default@outputtbl1@ds=13
-POSTHOOK: Output: default@outputtbl1@ds=17
-POSTHOOK: Output: default@outputtbl1@ds=18
-POSTHOOK: Output: default@outputtbl1@ds=28
-POSTHOOK: Lineage: outputtbl1 PARTITION(ds=11).key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1 PARTITION(ds=11).values EXPRESSION [(inputtbl1)inputtbl1.null, ]
-POSTHOOK: Lineage: outputtbl1 PARTITION(ds=12).key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1 PARTITION(ds=12).values EXPRESSION [(inputtbl1)inputtbl1.null, ]
-POSTHOOK: Lineage: outputtbl1 PARTITION(ds=13).key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1 PARTITION(ds=13).values EXPRESSION [(inputtbl1)inputtbl1.null, ]
-POSTHOOK: Lineage: outputtbl1 PARTITION(ds=17).key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1 PARTITION(ds=17).values EXPRESSION [(inputtbl1)inputtbl1.null, ]
-POSTHOOK: Lineage: outputtbl1 PARTITION(ds=18).key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1 PARTITION(ds=18).values EXPRESSION [(inputtbl1)inputtbl1.null, ]
-POSTHOOK: Lineage: outputtbl1 PARTITION(ds=28).key EXPRESSION [(inputtbl1)inputtbl1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl1 PARTITION(ds=28).values EXPRESSION [(inputtbl1)inputtbl1.null, ]
-PREHOOK: query: desc formatted outputTbl1
+POSTHOOK: Input: default@inputtbl1_n22
+POSTHOOK: Output: default@outputtbl1_n30@ds=11
+POSTHOOK: Output: default@outputtbl1_n30@ds=12
+POSTHOOK: Output: default@outputtbl1_n30@ds=13
+POSTHOOK: Output: default@outputtbl1_n30@ds=17
+POSTHOOK: Output: default@outputtbl1_n30@ds=18
+POSTHOOK: Output: default@outputtbl1_n30@ds=28
+POSTHOOK: Lineage: outputtbl1_n30 PARTITION(ds=11).key EXPRESSION [(inputtbl1_n22)inputtbl1_n22.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl1_n30 PARTITION(ds=11).values EXPRESSION [(inputtbl1_n22)inputtbl1_n22.null, ]
+POSTHOOK: Lineage: outputtbl1_n30 PARTITION(ds=12).key EXPRESSION [(inputtbl1_n22)inputtbl1_n22.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl1_n30 PARTITION(ds=12).values EXPRESSION [(inputtbl1_n22)inputtbl1_n22.null, ]
+POSTHOOK: Lineage: outputtbl1_n30 PARTITION(ds=13).key EXPRESSION [(inputtbl1_n22)inputtbl1_n22.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl1_n30 PARTITION(ds=13).values EXPRESSION [(inputtbl1_n22)inputtbl1_n22.null, ]
+POSTHOOK: Lineage: outputtbl1_n30 PARTITION(ds=17).key EXPRESSION [(inputtbl1_n22)inputtbl1_n22.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl1_n30 PARTITION(ds=17).values EXPRESSION [(inputtbl1_n22)inputtbl1_n22.null, ]
+POSTHOOK: Lineage: outputtbl1_n30 PARTITION(ds=18).key EXPRESSION [(inputtbl1_n22)inputtbl1_n22.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl1_n30 PARTITION(ds=18).values EXPRESSION [(inputtbl1_n22)inputtbl1_n22.null, ]
+POSTHOOK: Lineage: outputtbl1_n30 PARTITION(ds=28).key EXPRESSION [(inputtbl1_n22)inputtbl1_n22.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl1_n30 PARTITION(ds=28).values EXPRESSION [(inputtbl1_n22)inputtbl1_n22.null, ]
+PREHOOK: query: desc formatted outputTbl1_n30
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@outputtbl1
-POSTHOOK: query: desc formatted outputTbl1
+PREHOOK: Input: default@outputtbl1_n30
+POSTHOOK: query: desc formatted outputTbl1_n30
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@outputtbl1
+POSTHOOK: Input: default@outputtbl1_n30
 # col_name            	data_type           	comment             
 key                 	string              	                    
 values              	bigint              	                    
@@ -205,61 +205,61 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: show partitions outputTbl1
+PREHOOK: query: show partitions outputTbl1_n30
 PREHOOK: type: SHOWPARTITIONS
-PREHOOK: Input: default@outputtbl1
-POSTHOOK: query: show partitions outputTbl1
+PREHOOK: Input: default@outputtbl1_n30
+POSTHOOK: query: show partitions outputTbl1_n30
 POSTHOOK: type: SHOWPARTITIONS
-POSTHOOK: Input: default@outputtbl1
+POSTHOOK: Input: default@outputtbl1_n30
 ds=11
 ds=12
 ds=13
 ds=17
 ds=18
 ds=28
-PREHOOK: query: select * from outputTbl1 where ds = '11'
+PREHOOK: query: select * from outputTbl1_n30 where ds = '11'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@outputtbl1
-PREHOOK: Input: default@outputtbl1@ds=11
+PREHOOK: Input: default@outputtbl1_n30
+PREHOOK: Input: default@outputtbl1_n30@ds=11
 #### A masked pattern was here ####
-POSTHOOK: query: select * from outputTbl1 where ds = '11'
+POSTHOOK: query: select * from outputTbl1_n30 where ds = '11'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@outputtbl1
-POSTHOOK: Input: default@outputtbl1@ds=11
+POSTHOOK: Input: default@outputtbl1_n30
+POSTHOOK: Input: default@outputtbl1_n30@ds=11
 #### A masked pattern was here ####
 1	1	11
 1	1	11
-PREHOOK: query: select * from outputTbl1 where ds = '18'
+PREHOOK: query: select * from outputTbl1_n30 where ds = '18'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@outputtbl1
-PREHOOK: Input: default@outputtbl1@ds=18
+PREHOOK: Input: default@outputtbl1_n30
+PREHOOK: Input: default@outputtbl1_n30@ds=18
 #### A masked pattern was here ####
-POSTHOOK: query: select * from outputTbl1 where ds = '18'
+POSTHOOK: query: select * from outputTbl1_n30 where ds = '18'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@outputtbl1
-POSTHOOK: Input: default@outputtbl1@ds=18
+POSTHOOK: Input: default@outputtbl1_n30
+POSTHOOK: Input: default@outputtbl1_n30@ds=18
 #### A masked pattern was here ####
 8	1	18
 8	1	18
-PREHOOK: query: select * from outputTbl1 where ds is not null
+PREHOOK: query: select * from outputTbl1_n30 where ds is not null
 PREHOOK: type: QUERY
-PREHOOK: Input: default@outputtbl1
-PREHOOK: Input: default@outputtbl1@ds=11
-PREHOOK: Input: default@outputtbl1@ds=12
-PREHOOK: Input: default@outputtbl1@ds=13
-PREHOOK: Input: default@outputtbl1@ds=17
-PREHOOK: Input: default@outputtbl1@ds=18
-PREHOOK: Input: default@outputtbl1@ds=28
+PREHOOK: Input: default@outputtbl1_n30
+PREHOOK: Input: default@outputtbl1_n30@ds=11
+PREHOOK: Input: default@outputtbl1_n30@ds=12
+PREHOOK: Input: default@outputtbl1_n30@ds=13
+PREHOOK: Input: default@outputtbl1_n30@ds=17
+PREHOOK: Input: default@outputtbl1_n30@ds=18
+PREHOOK: Input: default@outputtbl1_n30@ds=28
 #### A masked pattern was here ####
-POSTHOOK: query: select * from outputTbl1 where ds is not null
+POSTHOOK: query: select * from outputTbl1_n30 where ds is not null
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@outputtbl1
-POSTHOOK: Input: default@outputtbl1@ds=11
-POSTHOOK: Input: default@outputtbl1@ds=12
-POSTHOOK: Input: default@outputtbl1@ds=13
-POSTHOOK: Input: default@outputtbl1@ds=17
-POSTHOOK: Input: default@outputtbl1@ds=18
-POSTHOOK: Input: default@outputtbl1@ds=28
+POSTHOOK: Input: default@outputtbl1_n30
+POSTHOOK: Input: default@outputtbl1_n30@ds=11
+POSTHOOK: Input: default@outputtbl1_n30@ds=12
+POSTHOOK: Input: default@outputtbl1_n30@ds=13
+POSTHOOK: Input: default@outputtbl1_n30@ds=17
+POSTHOOK: Input: default@outputtbl1_n30@ds=18
+POSTHOOK: Input: default@outputtbl1_n30@ds=28
 #### A masked pattern was here ####
 1	1	11
 1	1	11

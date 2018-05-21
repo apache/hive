@@ -1,15 +1,15 @@
-PREHOOK: query: create table src_10 as select * from src limit 10
+PREHOOK: query: create table src_10_n0 as select * from src limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src_10
-POSTHOOK: query: create table src_10 as select * from src limit 10
+PREHOOK: Output: default@src_10_n0
+POSTHOOK: query: create table src_10_n0 as select * from src limit 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src_10
-POSTHOOK: Lineage: src_10.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_10.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@src_10_n0
+POSTHOOK: Lineage: src_10_n0.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_10_n0.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: create table src_lv1 (key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -35,12 +35,12 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_lv3
 PREHOOK: query: explain
-from src_10
+from src_10_n0
 insert overwrite table src_lv1 select key, C lateral view explode(array(key+1, key+2)) A as C
 insert overwrite table src_lv2 select key, C lateral view explode(array(key+3, key+4)) A as C
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-from src_10
+from src_10_n0
 insert overwrite table src_lv1 select key, C lateral view explode(array(key+1, key+2)) A as C
 insert overwrite table src_lv2 select key, C lateral view explode(array(key+3, key+4)) A as C
 POSTHOOK: type: QUERY
@@ -59,7 +59,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: src_10
+                  alias: src_10_n0
                   Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
                   Lateral View Forward
                     Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
@@ -176,24 +176,24 @@ STAGE PLANS:
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: from src_10
+PREHOOK: query: from src_10_n0
 insert overwrite table src_lv1 select key, C lateral view explode(array(key+1, key+2)) A as C
 insert overwrite table src_lv2 select key, C lateral view explode(array(key+3, key+4)) A as C
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_10
+PREHOOK: Input: default@src_10_n0
 PREHOOK: Output: default@src_lv1
 PREHOOK: Output: default@src_lv2
-POSTHOOK: query: from src_10
+POSTHOOK: query: from src_10_n0
 insert overwrite table src_lv1 select key, C lateral view explode(array(key+1, key+2)) A as C
 insert overwrite table src_lv2 select key, C lateral view explode(array(key+3, key+4)) A as C
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_10
+POSTHOOK: Input: default@src_10_n0
 POSTHOOK: Output: default@src_lv1
 POSTHOOK: Output: default@src_lv2
-POSTHOOK: Lineage: src_lv1.key SIMPLE [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv1.key SIMPLE [(src_10_n0)src_10_n0.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv1.value SCRIPT [(src_10_n0)src_10_n0.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10_n0)src_10_n0.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.value SCRIPT [(src_10_n0)src_10_n0.FieldSchema(name:key, type:string, comment:null), ]
 PREHOOK: query: select * from src_lv1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_lv1
@@ -251,12 +251,12 @@ POSTHOOK: Input: default@src_lv2
 98	101.0
 98	102.0
 PREHOOK: query: explain
-from src_10
+from src_10_n0
 insert overwrite table src_lv1 select key, sum(C) lateral view explode(array(key+1, key+2)) A as C group by key
 insert overwrite table src_lv2 select key, sum(C) lateral view explode(array(key+3, key+4)) A as C group by key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-from src_10
+from src_10_n0
 insert overwrite table src_lv1 select key, sum(C) lateral view explode(array(key+1, key+2)) A as C group by key
 insert overwrite table src_lv2 select key, sum(C) lateral view explode(array(key+3, key+4)) A as C group by key
 POSTHOOK: type: QUERY
@@ -278,7 +278,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: src_10
+                  alias: src_10_n0
                   Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
                   Lateral View Forward
                     Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
@@ -326,7 +326,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: src_10
+                  alias: src_10_n0
                   Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
                   Lateral View Forward
                     Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
@@ -442,24 +442,24 @@ STAGE PLANS:
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: from src_10
+PREHOOK: query: from src_10_n0
 insert overwrite table src_lv1 select key, sum(C) lateral view explode(array(key+1, key+2)) A as C group by key
 insert overwrite table src_lv2 select key, sum(C) lateral view explode(array(key+3, key+4)) A as C group by key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_10
+PREHOOK: Input: default@src_10_n0
 PREHOOK: Output: default@src_lv1
 PREHOOK: Output: default@src_lv2
-POSTHOOK: query: from src_10
+POSTHOOK: query: from src_10_n0
 insert overwrite table src_lv1 select key, sum(C) lateral view explode(array(key+1, key+2)) A as C group by key
 insert overwrite table src_lv2 select key, sum(C) lateral view explode(array(key+3, key+4)) A as C group by key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_10
+POSTHOOK: Input: default@src_10_n0
 POSTHOOK: Output: default@src_lv1
 POSTHOOK: Output: default@src_lv2
-POSTHOOK: Lineage: src_lv1.key SIMPLE [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv1.key SIMPLE [(src_10_n0)src_10_n0.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv1.value SCRIPT [(src_10_n0)src_10_n0.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10_n0)src_10_n0.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.value SCRIPT [(src_10_n0)src_10_n0.FieldSchema(name:key, type:string, comment:null), ]
 PREHOOK: query: select * from src_lv1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_lv1
@@ -497,13 +497,13 @@ POSTHOOK: Input: default@src_lv2
 86	179.0
 98	203.0
 PREHOOK: query: explain
-from src_10
+from src_10_n0
 insert overwrite table src_lv1 select key, sum(C) lateral view explode(array(key+1, key+2)) A as C group by key
 insert overwrite table src_lv2 select key, count(value) where key > 200 group by key
 insert overwrite table src_lv3 select key, count(value) where key < 200 group by key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-from src_10
+from src_10_n0
 insert overwrite table src_lv1 select key, sum(C) lateral view explode(array(key+1, key+2)) A as C group by key
 insert overwrite table src_lv2 select key, count(value) where key > 200 group by key
 insert overwrite table src_lv3 select key, count(value) where key < 200 group by key
@@ -528,7 +528,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: src_10
+                  alias: src_10_n0
                   Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
                   Lateral View Forward
                     Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
@@ -576,7 +576,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: src_10
+                  alias: src_10_n0
                   Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((key < 200) or (key > 200)) (type: boolean)
@@ -698,30 +698,30 @@ STAGE PLANS:
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: from src_10
+PREHOOK: query: from src_10_n0
 insert overwrite table src_lv1 select key, sum(C) lateral view explode(array(key+1, key+2)) A as C group by key
 insert overwrite table src_lv2 select key, count(value) where key > 200 group by key
 insert overwrite table src_lv3 select key, count(value) where key < 200 group by key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_10
+PREHOOK: Input: default@src_10_n0
 PREHOOK: Output: default@src_lv1
 PREHOOK: Output: default@src_lv2
 PREHOOK: Output: default@src_lv3
-POSTHOOK: query: from src_10
+POSTHOOK: query: from src_10_n0
 insert overwrite table src_lv1 select key, sum(C) lateral view explode(array(key+1, key+2)) A as C group by key
 insert overwrite table src_lv2 select key, count(value) where key > 200 group by key
 insert overwrite table src_lv3 select key, count(value) where key < 200 group by key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_10
+POSTHOOK: Input: default@src_10_n0
 POSTHOOK: Output: default@src_lv1
 POSTHOOK: Output: default@src_lv2
 POSTHOOK: Output: default@src_lv3
-POSTHOOK: Lineage: src_lv1.key SIMPLE [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv3.key SIMPLE [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv3.value EXPRESSION [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv1.key SIMPLE [(src_10_n0)src_10_n0.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv1.value SCRIPT [(src_10_n0)src_10_n0.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10_n0)src_10_n0.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10_n0)src_10_n0.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv3.key SIMPLE [(src_10_n0)src_10_n0.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv3.value EXPRESSION [(src_10_n0)src_10_n0.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: select * from src_lv1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_lv1
@@ -767,13 +767,13 @@ POSTHOOK: Input: default@src_lv3
 86	1
 98	1
 PREHOOK: query: explain
-from src_10
+from src_10_n0
 insert overwrite table src_lv1 select C, sum(distinct key) lateral view explode(array(key+1, key+2)) A as C group by C
 insert overwrite table src_lv2 select C, sum(distinct key) lateral view explode(array(key+3, key+4)) A as C group by C
 insert overwrite table src_lv3 select value, sum(distinct key) group by value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-from src_10
+from src_10_n0
 insert overwrite table src_lv1 select C, sum(distinct key) lateral view explode(array(key+1, key+2)) A as C group by C
 insert overwrite table src_lv2 select C, sum(distinct key) lateral view explode(array(key+3, key+4)) A as C group by C
 insert overwrite table src_lv3 select value, sum(distinct key) group by value
@@ -799,7 +799,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: src_10
+                  alias: src_10_n0
                   Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
                   Lateral View Forward
                     Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
@@ -845,7 +845,7 @@ STAGE PLANS:
         Map 6 
             Map Operator Tree:
                 TableScan
-                  alias: src_10
+                  alias: src_10_n0
                   Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
                   Lateral View Forward
                     Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
@@ -891,7 +891,7 @@ STAGE PLANS:
         Map 7 
             Map Operator Tree:
                 TableScan
-                  alias: src_10
+                  alias: src_10_n0
                   Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string)
@@ -1011,30 +1011,30 @@ STAGE PLANS:
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: from src_10
+PREHOOK: query: from src_10_n0
 insert overwrite table src_lv1 select C, sum(distinct key) lateral view explode(array(key+1, key+2)) A as C group by C
 insert overwrite table src_lv2 select C, sum(distinct key) lateral view explode(array(key+3, key+4)) A as C group by C
 insert overwrite table src_lv3 select value, sum(distinct key) group by value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_10
+PREHOOK: Input: default@src_10_n0
 PREHOOK: Output: default@src_lv1
 PREHOOK: Output: default@src_lv2
 PREHOOK: Output: default@src_lv3
-POSTHOOK: query: from src_10
+POSTHOOK: query: from src_10_n0
 insert overwrite table src_lv1 select C, sum(distinct key) lateral view explode(array(key+1, key+2)) A as C group by C
 insert overwrite table src_lv2 select C, sum(distinct key) lateral view explode(array(key+3, key+4)) A as C group by C
 insert overwrite table src_lv3 select value, sum(distinct key) group by value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_10
+POSTHOOK: Input: default@src_10_n0
 POSTHOOK: Output: default@src_lv1
 POSTHOOK: Output: default@src_lv2
 POSTHOOK: Output: default@src_lv3
-POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv3.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv3.value EXPRESSION [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv1.key SCRIPT [(src_10_n0)src_10_n0.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv1.value EXPRESSION [(src_10_n0)src_10_n0.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.key SCRIPT [(src_10_n0)src_10_n0.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.value EXPRESSION [(src_10_n0)src_10_n0.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv3.key SIMPLE [(src_10_n0)src_10_n0.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv3.value EXPRESSION [(src_10_n0)src_10_n0.FieldSchema(name:key, type:string, comment:null), ]
 PREHOOK: query: select * from src_lv1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_lv1
@@ -1118,14 +1118,14 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_lv4
 PREHOOK: query: explain
-from src_10
+from src_10_n0
 insert overwrite table src_lv1 select key, sum(distinct C) lateral view explode(array(key+1, key+2)) A as C group by key
 insert overwrite table src_lv2 select key, sum(distinct C) lateral view explode(array(key+3, key+4)) A as C group by key
 insert overwrite table src_lv3 select value, sum(distinct key) where key > 200 group by value
 insert overwrite table src_lv4 select value, sum(distinct key) where key < 200 group by value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-from src_10
+from src_10_n0
 insert overwrite table src_lv1 select key, sum(distinct C) lateral view explode(array(key+1, key+2)) A as C group by key
 insert overwrite table src_lv2 select key, sum(distinct C) lateral view explode(array(key+3, key+4)) A as C group by key
 insert overwrite table src_lv3 select value, sum(distinct key) where key > 200 group by value
@@ -1154,7 +1154,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: src_10
+                  alias: src_10_n0
                   Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
                   Lateral View Forward
                     Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
@@ -1200,7 +1200,7 @@ STAGE PLANS:
         Map 6 
             Map Operator Tree:
                 TableScan
-                  alias: src_10
+                  alias: src_10_n0
                   Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
                   Lateral View Forward
                     Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
@@ -1246,7 +1246,7 @@ STAGE PLANS:
         Map 7 
             Map Operator Tree:
                 TableScan
-                  alias: src_10
+                  alias: src_10_n0
                   Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((key < 200) or (key > 200)) (type: boolean)
@@ -1400,36 +1400,36 @@ STAGE PLANS:
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: from src_10
+PREHOOK: query: from src_10_n0
 insert overwrite table src_lv1 select key, sum(distinct C) lateral view explode(array(key+1, key+2)) A as C group by key
 insert overwrite table src_lv2 select key, sum(distinct C) lateral view explode(array(key+3, key+4)) A as C group by key
 insert overwrite table src_lv3 select value, sum(distinct key) where key > 200 group by value
 insert overwrite table src_lv4 select value, sum(distinct key) where key < 200 group by value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_10
+PREHOOK: Input: default@src_10_n0
 PREHOOK: Output: default@src_lv1
 PREHOOK: Output: default@src_lv2
 PREHOOK: Output: default@src_lv3
 PREHOOK: Output: default@src_lv4
-POSTHOOK: query: from src_10
+POSTHOOK: query: from src_10_n0
 insert overwrite table src_lv1 select key, sum(distinct C) lateral view explode(array(key+1, key+2)) A as C group by key
 insert overwrite table src_lv2 select key, sum(distinct C) lateral view explode(array(key+3, key+4)) A as C group by key
 insert overwrite table src_lv3 select value, sum(distinct key) where key > 200 group by value
 insert overwrite table src_lv4 select value, sum(distinct key) where key < 200 group by value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_10
+POSTHOOK: Input: default@src_10_n0
 POSTHOOK: Output: default@src_lv1
 POSTHOOK: Output: default@src_lv2
 POSTHOOK: Output: default@src_lv3
 POSTHOOK: Output: default@src_lv4
-POSTHOOK: Lineage: src_lv1.key SIMPLE [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv1.value SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv2.value SCRIPT [(src_10)src_10.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv3.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv3.value EXPRESSION [(src_10)src_10.null, ]
-POSTHOOK: Lineage: src_lv4.key SIMPLE [(src_10)src_10.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: src_lv4.value EXPRESSION [(src_10)src_10.null, ]
+POSTHOOK: Lineage: src_lv1.key SIMPLE [(src_10_n0)src_10_n0.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv1.value SCRIPT [(src_10_n0)src_10_n0.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.key SIMPLE [(src_10_n0)src_10_n0.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv2.value SCRIPT [(src_10_n0)src_10_n0.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv3.key SIMPLE [(src_10_n0)src_10_n0.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv3.value EXPRESSION [(src_10_n0)src_10_n0.null, ]
+POSTHOOK: Lineage: src_lv4.key SIMPLE [(src_10_n0)src_10_n0.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: src_lv4.value EXPRESSION [(src_10_n0)src_10_n0.null, ]
 PREHOOK: query: select * from src_lv1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_lv1

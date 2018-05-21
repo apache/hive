@@ -1,18 +1,18 @@
-PREHOOK: query: CREATE TABLE dest_j1(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE dest_j1_n20(key INT, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest_j1
-POSTHOOK: query: CREATE TABLE dest_j1(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@dest_j1_n20
+POSTHOOK: query: CREATE TABLE dest_j1_n20(key INT, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest_j1
+POSTHOOK: Output: default@dest_j1_n20
 PREHOOK: query: EXPLAIN
 FROM src src1 INNER JOIN src src2 ON (src1.key = src2.key)
-INSERT OVERWRITE TABLE dest_j1 SELECT src1.key, src2.value
+INSERT OVERWRITE TABLE dest_j1_n20 SELECT src1.key, src2.value
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 FROM src src1 INNER JOIN src src2 ON (src1.key = src2.key)
-INSERT OVERWRITE TABLE dest_j1 SELECT src1.key, src2.value
+INSERT OVERWRITE TABLE dest_j1_n20 SELECT src1.key, src2.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -75,7 +75,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.dest_j1
+                  name: default.dest_j1_n20
             Select Operator
               expressions: _col0 (type: int), _col1 (type: string)
               outputColumnNames: key, value
@@ -100,7 +100,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest_j1
+              name: default.dest_j1_n20
 
   Stage: Stage-2
     Stats Work
@@ -108,7 +108,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: int, string
-          Table: default.dest_j1
+          Table: default.dest_j1_n20
 
   Stage: Stage-3
     Map Reduce
@@ -134,24 +134,24 @@ STAGE PLANS:
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
 PREHOOK: query: FROM src src1 INNER JOIN src src2 ON (src1.key = src2.key)
-INSERT OVERWRITE TABLE dest_j1 SELECT src1.key, src2.value
+INSERT OVERWRITE TABLE dest_j1_n20 SELECT src1.key, src2.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@dest_j1
+PREHOOK: Output: default@dest_j1_n20
 POSTHOOK: query: FROM src src1 INNER JOIN src src2 ON (src1.key = src2.key)
-INSERT OVERWRITE TABLE dest_j1 SELECT src1.key, src2.value
+INSERT OVERWRITE TABLE dest_j1_n20 SELECT src1.key, src2.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@dest_j1
-POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: SELECT dest_j1.* FROM dest_j1
+POSTHOOK: Output: default@dest_j1_n20
+POSTHOOK: Lineage: dest_j1_n20.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest_j1_n20.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT dest_j1_n20.* FROM dest_j1_n20
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest_j1
+PREHOOK: Input: default@dest_j1_n20
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT dest_j1.* FROM dest_j1
+POSTHOOK: query: SELECT dest_j1_n20.* FROM dest_j1_n20
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest_j1
+POSTHOOK: Input: default@dest_j1_n20
 #### A masked pattern was here ####
 0	val_0
 0	val_0
@@ -1181,37 +1181,37 @@ POSTHOOK: Input: default@dest_j1
 98	val_98
 98	val_98
 98	val_98
-PREHOOK: query: create table `inner`(i int)
+PREHOOK: query: create table `inner`(i_n2 int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@inner
-POSTHOOK: query: create table `inner`(i int)
+POSTHOOK: query: create table `inner`(i_n2 int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@inner
-PREHOOK: query: select i from `inner`
+PREHOOK: query: select i_n2 from `inner`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@inner
 #### A masked pattern was here ####
-POSTHOOK: query: select i from `inner`
+POSTHOOK: query: select i_n2 from `inner`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@inner
 #### A masked pattern was here ####
-PREHOOK: query: create table i(`inner` int)
+PREHOOK: query: create table i_n2(`inner` int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@i
-POSTHOOK: query: create table i(`inner` int)
+PREHOOK: Output: default@i_n2
+POSTHOOK: query: create table i_n2(`inner` int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@i
-PREHOOK: query: select `inner` from i
+POSTHOOK: Output: default@i_n2
+PREHOOK: query: select `inner` from i_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@i
+PREHOOK: Input: default@i_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select `inner` from i
+POSTHOOK: query: select `inner` from i_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@i
+POSTHOOK: Input: default@i_n2
 #### A masked pattern was here ####
 PREHOOK: query: explain select * from (select * from src) `inner` left outer join src
 on `inner`.key=src.key

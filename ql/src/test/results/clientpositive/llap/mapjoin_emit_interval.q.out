@@ -1,24 +1,24 @@
-PREHOOK: query: CREATE TABLE test1 (key INT, value INT, col_1 STRING)
+PREHOOK: query: CREATE TABLE test1_n0 (key INT, value INT, col_1 STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test1
-POSTHOOK: query: CREATE TABLE test1 (key INT, value INT, col_1 STRING)
+PREHOOK: Output: default@test1_n0
+POSTHOOK: query: CREATE TABLE test1_n0 (key INT, value INT, col_1 STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test1
-PREHOOK: query: INSERT INTO test1 VALUES (NULL, NULL, 'None'), (98, NULL, 'None'),
+POSTHOOK: Output: default@test1_n0
+PREHOOK: query: INSERT INTO test1_n0 VALUES (NULL, NULL, 'None'), (98, NULL, 'None'),
     (99, 0, 'Alice'), (99, 2, 'Mat'), (100, 1, 'Bob'), (101, 2, 'Car')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@test1
-POSTHOOK: query: INSERT INTO test1 VALUES (NULL, NULL, 'None'), (98, NULL, 'None'),
+PREHOOK: Output: default@test1_n0
+POSTHOOK: query: INSERT INTO test1_n0 VALUES (NULL, NULL, 'None'), (98, NULL, 'None'),
     (99, 0, 'Alice'), (99, 2, 'Mat'), (100, 1, 'Bob'), (101, 2, 'Car')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@test1
-POSTHOOK: Lineage: test1.col_1 SCRIPT []
-POSTHOOK: Lineage: test1.key SCRIPT []
-POSTHOOK: Lineage: test1.value SCRIPT []
+POSTHOOK: Output: default@test1_n0
+POSTHOOK: Lineage: test1_n0.col_1 SCRIPT []
+POSTHOOK: Lineage: test1_n0.key SCRIPT []
+POSTHOOK: Lineage: test1_n0.value SCRIPT []
 PREHOOK: query: CREATE TABLE test2 (key INT, value INT, col_2 STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -42,13 +42,13 @@ POSTHOOK: Lineage: test2.key SCRIPT []
 POSTHOOK: Lineage: test2.value SCRIPT []
 PREHOOK: query: EXPLAIN
 SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.value=test2.value AND test1.key between 100 and 102)
+FROM test1_n0 LEFT OUTER JOIN test2
+ON (test1_n0.value=test2.value AND test1_n0.key between 100 and 102)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.value=test2.value AND test1.key between 100 and 102)
+FROM test1_n0 LEFT OUTER JOIN test2
+ON (test1_n0.value=test2.value AND test1_n0.key between 100 and 102)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -65,7 +65,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: test1
+                  alias: test1_n0
                   Statistics: Num rows: 6 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: int), value (type: int), col_1 (type: string)
@@ -118,17 +118,17 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.value=test2.value AND test1.key between 100 and 102)
+FROM test1_n0 LEFT OUTER JOIN test2
+ON (test1_n0.value=test2.value AND test1_n0.key between 100 and 102)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test1
+PREHOOK: Input: default@test1_n0
 PREHOOK: Input: default@test2
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.value=test2.value AND test1.key between 100 and 102)
+FROM test1_n0 LEFT OUTER JOIN test2
+ON (test1_n0.value=test2.value AND test1_n0.key between 100 and 102)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test1_n0
 POSTHOOK: Input: default@test2
 #### A masked pattern was here ####
 NULL	NULL	None	NULL	NULL	NULL
@@ -141,13 +141,13 @@ NULL	NULL	None	NULL	NULL	NULL
 Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: EXPLAIN
 SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.key between 100 and 102)
+FROM test1_n0 LEFT OUTER JOIN test2
+ON (test1_n0.key between 100 and 102)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.key between 100 and 102)
+FROM test1_n0 LEFT OUTER JOIN test2
+ON (test1_n0.key between 100 and 102)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -164,7 +164,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: test1
+                  alias: test1_n0
                   Statistics: Num rows: 6 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: int), value (type: int), col_1 (type: string)
@@ -216,17 +216,17 @@ STAGE PLANS:
 
 Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.key between 100 and 102)
+FROM test1_n0 LEFT OUTER JOIN test2
+ON (test1_n0.key between 100 and 102)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test1
+PREHOOK: Input: default@test1_n0
 PREHOOK: Input: default@test2
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT *
-FROM test1 LEFT OUTER JOIN test2
-ON (test1.key between 100 and 102)
+FROM test1_n0 LEFT OUTER JOIN test2
+ON (test1_n0.key between 100 and 102)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test1_n0
 POSTHOOK: Input: default@test2
 #### A masked pattern was here ####
 NULL	NULL	None	NULL	NULL	NULL

@@ -1,24 +1,24 @@
-PREHOOK: query: DROP TABLE IF EXISTS dummy
+PREHOOK: query: DROP TABLE IF EXISTS dummy_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE IF EXISTS dummy
+POSTHOOK: query: DROP TABLE IF EXISTS dummy_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE dummy (i int)
+PREHOOK: query: CREATE TABLE dummy_n0 (i int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dummy
-POSTHOOK: query: CREATE TABLE dummy (i int)
+PREHOOK: Output: default@dummy_n0
+POSTHOOK: query: CREATE TABLE dummy_n0 (i int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dummy
-PREHOOK: query: INSERT INTO TABLE dummy VALUES (42)
+POSTHOOK: Output: default@dummy_n0
+PREHOOK: query: INSERT INTO TABLE dummy_n0 VALUES (42)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@dummy
-POSTHOOK: query: INSERT INTO TABLE dummy VALUES (42)
+PREHOOK: Output: default@dummy_n0
+POSTHOOK: query: INSERT INTO TABLE dummy_n0 VALUES (42)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@dummy
-POSTHOOK: Lineage: dummy.i SCRIPT []
+POSTHOOK: Output: default@dummy_n0
+POSTHOOK: Lineage: dummy_n0.i SCRIPT []
 PREHOOK: query: DROP TABLE IF EXISTS nested_tbl_1
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE IF EXISTS nested_tbl_1
@@ -55,9 +55,9 @@ PREHOOK: query: INSERT INTO TABLE nested_tbl_1 SELECT
   named_struct('f16', array(named_struct('f17', 'foo', 'f18', named_struct('f19', 14)), named_struct('f17', 'bar', 'f18', named_struct('f19', 28)))),
   map('key1', named_struct('f20', array(named_struct('f21', named_struct('f22', 1)))),
       'key2', named_struct('f20', array(named_struct('f21', named_struct('f22', 2)))))
-FROM dummy
+FROM dummy_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dummy
+PREHOOK: Input: default@dummy_n0
 PREHOOK: Output: default@nested_tbl_1
 POSTHOOK: query: INSERT INTO TABLE nested_tbl_1 SELECT
   1, named_struct('f1', false, 'f2', 'foo', 'f3', named_struct('f4', 4, 'f5', cast(5.0 as double)), 'f6', 4),
@@ -67,9 +67,9 @@ POSTHOOK: query: INSERT INTO TABLE nested_tbl_1 SELECT
   named_struct('f16', array(named_struct('f17', 'foo', 'f18', named_struct('f19', 14)), named_struct('f17', 'bar', 'f18', named_struct('f19', 28)))),
   map('key1', named_struct('f20', array(named_struct('f21', named_struct('f22', 1)))),
       'key2', named_struct('f20', array(named_struct('f21', named_struct('f22', 2)))))
-FROM dummy
+FROM dummy_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dummy
+POSTHOOK: Input: default@dummy_n0
 POSTHOOK: Output: default@nested_tbl_1
 POSTHOOK: Lineage: nested_tbl_1.a SIMPLE []
 POSTHOOK: Lineage: nested_tbl_1.s1 EXPRESSION []
@@ -98,9 +98,9 @@ PREHOOK: query: INSERT INTO TABLE nested_tbl_2 SELECT
   named_struct('f16', array(named_struct('f17', 'bar', 'f18', named_struct('f19', 28)), named_struct('f17', 'foo', 'f18', named_struct('f19', 56)))),
   map('key3', named_struct('f20', array(named_struct('f21', named_struct('f22', 3)))),
       'key4', named_struct('f20', array(named_struct('f21', named_struct('f22', 4)))))
-FROM dummy
+FROM dummy_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dummy
+PREHOOK: Input: default@dummy_n0
 PREHOOK: Output: default@nested_tbl_2
 POSTHOOK: query: INSERT INTO TABLE nested_tbl_2 SELECT
   2, named_struct('f1', true, 'f2', 'bar', 'f3', named_struct('f4', 4, 'f5', cast(6.5 as double)), 'f6', 4),
@@ -110,9 +110,9 @@ POSTHOOK: query: INSERT INTO TABLE nested_tbl_2 SELECT
   named_struct('f16', array(named_struct('f17', 'bar', 'f18', named_struct('f19', 28)), named_struct('f17', 'foo', 'f18', named_struct('f19', 56)))),
   map('key3', named_struct('f20', array(named_struct('f21', named_struct('f22', 3)))),
       'key4', named_struct('f20', array(named_struct('f21', named_struct('f22', 4)))))
-FROM dummy
+FROM dummy_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dummy
+POSTHOOK: Input: default@dummy_n0
 POSTHOOK: Output: default@nested_tbl_2
 POSTHOOK: Lineage: nested_tbl_2.a SIMPLE []
 POSTHOOK: Lineage: nested_tbl_2.s1 EXPRESSION []

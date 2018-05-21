@@ -1,17 +1,17 @@
-PREHOOK: query: create table tmptable(key string, value string, hr string, ds string)
+PREHOOK: query: create table tmptable_n1(key string, value string, hr string, ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tmptable
-POSTHOOK: query: create table tmptable(key string, value string, hr string, ds string)
+PREHOOK: Output: default@tmptable_n1
+POSTHOOK: query: create table tmptable_n1(key string, value string, hr string, ds string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tmptable
+POSTHOOK: Output: default@tmptable_n1
 PREHOOK: query: explain extended 
-insert overwrite table tmptable
+insert overwrite table tmptable_n1
 select a.* from srcpart a where rand(1) < 0.1 and a.ds = '2008-04-08'
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended 
-insert overwrite table tmptable
+insert overwrite table tmptable_n1
 select a.* from srcpart a where rand(1) < 0.1 and a.ds = '2008-04-08'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -59,17 +59,17 @@ STAGE PLANS:
                         columns.comments 
                         columns.types string:string:string:string
 #### A masked pattern was here ####
-                        name default.tmptable
+                        name default.tmptable_n1
                         numFiles 0
                         numRows 0
                         rawDataSize 0
-                        serialization.ddl struct tmptable { string key, string value, string hr, string ds}
+                        serialization.ddl struct tmptable_n1 { string key, string value, string hr, string ds}
                         serialization.format 1
                         serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         totalSize 0
 #### A masked pattern was here ####
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.tmptable
+                      name: default.tmptable_n1
                   TotalFiles: 1
                   GatherStats: true
                   MultiFileSpray: false
@@ -249,17 +249,17 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:string:string:string
 #### A masked pattern was here ####
-                name default.tmptable
+                name default.tmptable_n1
                 numFiles 0
                 numRows 0
                 rawDataSize 0
-                serialization.ddl struct tmptable { string key, string value, string hr, string ds}
+                serialization.ddl struct tmptable_n1 { string key, string value, string hr, string ds}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.tmptable
+              name: default.tmptable_n1
 
   Stage: Stage-2
     Stats Work
@@ -268,7 +268,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value, hr, ds
           Column Types: string, string, string, string
-          Table: default.tmptable
+          Table: default.tmptable_n1
           Is Table Level Stats: true
 
   Stage: Stage-3
@@ -293,17 +293,17 @@ STAGE PLANS:
                     columns.comments 
                     columns.types string:string:string:string
 #### A masked pattern was here ####
-                    name default.tmptable
+                    name default.tmptable_n1
                     numFiles 0
                     numRows 0
                     rawDataSize 0
-                    serialization.ddl struct tmptable { string key, string value, string hr, string ds}
+                    serialization.ddl struct tmptable_n1 { string key, string value, string hr, string ds}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 0
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.tmptable
+                  name: default.tmptable_n1
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
@@ -324,11 +324,11 @@ STAGE PLANS:
               columns.comments 
               columns.types string:string:string:string
 #### A masked pattern was here ####
-              name default.tmptable
+              name default.tmptable_n1
               numFiles 0
               numRows 0
               rawDataSize 0
-              serialization.ddl struct tmptable { string key, string value, string hr, string ds}
+              serialization.ddl struct tmptable_n1 { string key, string value, string hr, string ds}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 0
@@ -346,18 +346,18 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:string:string:string
 #### A masked pattern was here ####
-                name default.tmptable
+                name default.tmptable_n1
                 numFiles 0
                 numRows 0
                 rawDataSize 0
-                serialization.ddl struct tmptable { string key, string value, string hr, string ds}
+                serialization.ddl struct tmptable_n1 { string key, string value, string hr, string ds}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.tmptable
-            name: default.tmptable
+              name: default.tmptable_n1
+            name: default.tmptable_n1
       Truncated Path -> Alias:
 #### A masked pattern was here ####
 
@@ -383,17 +383,17 @@ STAGE PLANS:
                     columns.comments 
                     columns.types string:string:string:string
 #### A masked pattern was here ####
-                    name default.tmptable
+                    name default.tmptable_n1
                     numFiles 0
                     numRows 0
                     rawDataSize 0
-                    serialization.ddl struct tmptable { string key, string value, string hr, string ds}
+                    serialization.ddl struct tmptable_n1 { string key, string value, string hr, string ds}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 0
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.tmptable
+                  name: default.tmptable_n1
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
@@ -414,11 +414,11 @@ STAGE PLANS:
               columns.comments 
               columns.types string:string:string:string
 #### A masked pattern was here ####
-              name default.tmptable
+              name default.tmptable_n1
               numFiles 0
               numRows 0
               rawDataSize 0
-              serialization.ddl struct tmptable { string key, string value, string hr, string ds}
+              serialization.ddl struct tmptable_n1 { string key, string value, string hr, string ds}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 0
@@ -436,18 +436,18 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:string:string:string
 #### A masked pattern was here ####
-                name default.tmptable
+                name default.tmptable_n1
                 numFiles 0
                 numRows 0
                 rawDataSize 0
-                serialization.ddl struct tmptable { string key, string value, string hr, string ds}
+                serialization.ddl struct tmptable_n1 { string key, string value, string hr, string ds}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.tmptable
-            name: default.tmptable
+              name: default.tmptable_n1
+            name: default.tmptable_n1
       Truncated Path -> Alias:
 #### A masked pattern was here ####
 
@@ -457,31 +457,31 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-PREHOOK: query: insert overwrite table tmptable
+PREHOOK: query: insert overwrite table tmptable_n1
 select a.* from srcpart a where rand(1) < 0.1 and a.ds = '2008-04-08'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-PREHOOK: Output: default@tmptable
-POSTHOOK: query: insert overwrite table tmptable
+PREHOOK: Output: default@tmptable_n1
+POSTHOOK: query: insert overwrite table tmptable_n1
 select a.* from srcpart a where rand(1) < 0.1 and a.ds = '2008-04-08'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-POSTHOOK: Output: default@tmptable
-POSTHOOK: Lineage: tmptable.ds SIMPLE [(srcpart)a.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: tmptable.hr SIMPLE []
-POSTHOOK: Lineage: tmptable.key SIMPLE [(srcpart)a.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmptable.value SIMPLE [(srcpart)a.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from tmptable x sort by x.key,x.value,x.ds,x.hr
+POSTHOOK: Output: default@tmptable_n1
+POSTHOOK: Lineage: tmptable_n1.ds SIMPLE [(srcpart)a.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: tmptable_n1.hr SIMPLE []
+POSTHOOK: Lineage: tmptable_n1.key SIMPLE [(srcpart)a.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmptable_n1.value SIMPLE [(srcpart)a.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from tmptable_n1 x sort by x.key,x.value,x.ds,x.hr
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tmptable
+PREHOOK: Input: default@tmptable_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from tmptable x sort by x.key,x.value,x.ds,x.hr
+POSTHOOK: query: select * from tmptable_n1 x sort by x.key,x.value,x.ds,x.hr
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tmptable
+POSTHOOK: Input: default@tmptable_n1
 #### A masked pattern was here ####
 103	val_103	2008-04-08	11
 118	val_118	2008-04-08	12

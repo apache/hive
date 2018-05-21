@@ -1,8 +1,8 @@
-PREHOOK: query: drop table if exists src_orc
+PREHOOK: query: drop table if exists src_orc_n1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table if exists src_orc
+POSTHOOK: query: drop table if exists src_orc_n1
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table src_orc stored as orc as select * from srcpart limit 10
+PREHOOK: query: create table src_orc_n1 stored as orc as select * from srcpart limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -10,8 +10,8 @@ PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src_orc
-POSTHOOK: query: create table src_orc stored as orc as select * from srcpart limit 10
+PREHOOK: Output: default@src_orc_n1
+POSTHOOK: query: create table src_orc_n1 stored as orc as select * from srcpart limit 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -19,16 +19,16 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src_orc
-POSTHOOK: Lineage: src_orc.ds SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
-POSTHOOK: Lineage: src_orc.hr SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
-POSTHOOK: Lineage: src_orc.key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_orc.value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@src_orc_n1
+POSTHOOK: Lineage: src_orc_n1.ds SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: src_orc_n1.hr SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: src_orc_n1.key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_orc_n1.value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain extended
-select * from src_orc where 1=2
+select * from src_orc_n1 where 1=2
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
-select * from src_orc where 1=2
+select * from src_orc_n1 where 1=2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -42,7 +42,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: src_orc
+                  alias: src_orc_n1
                   Statistics: Num rows: 10 Data size: 7360 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -78,9 +78,9 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
-              nullscan://null/default.src_orc/part_ [src_orc]
+              nullscan://null/default.src_orc_n1/part_ [src_orc_n1]
             Path -> Partition:
-              nullscan://null/default.src_orc/part_ 
+              nullscan://null/default.src_orc_n1/part_ 
                 Partition
                   input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -94,11 +94,11 @@ STAGE PLANS:
                     columns.types string:string:string:string
 #### A masked pattern was here ####
                     location hdfs://### HDFS PATH ###
-                    name default.src_orc
+                    name default.src_orc_n1
                     numFiles 1
                     numRows 10
                     rawDataSize 3560
-                    serialization.ddl struct src_orc { string key, string value, string ds, string hr}
+                    serialization.ddl struct src_orc_n1 { string key, string value, string ds, string hr}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
                     totalSize 626
@@ -117,20 +117,20 @@ STAGE PLANS:
                       columns.types string:string:string:string
 #### A masked pattern was here ####
                       location hdfs://### HDFS PATH ###
-                      name default.src_orc
+                      name default.src_orc_n1
                       numFiles 1
                       numRows 10
                       rawDataSize 3560
-                      serialization.ddl struct src_orc { string key, string value, string ds, string hr}
+                      serialization.ddl struct src_orc_n1 { string key, string value, string ds, string hr}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
                       totalSize 626
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    name: default.src_orc
-                  name: default.src_orc
+                    name: default.src_orc_n1
+                  name: default.src_orc_n1
             Truncated Path -> Alias:
-              nullscan://null/default.src_orc/part_ [src_orc]
+              nullscan://null/default.src_orc_n1/part_ [src_orc_n1]
 
   Stage: Stage-0
     Fetch Operator
@@ -138,19 +138,19 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from src_orc where 1=2
+PREHOOK: query: select * from src_orc_n1 where 1=2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_orc
+PREHOOK: Input: default@src_orc_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from src_orc where 1=2
+POSTHOOK: query: select * from src_orc_n1 where 1=2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_orc
+POSTHOOK: Input: default@src_orc_n1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain
-select * from (select key from src_orc where false) a left outer join (select key from src_orc limit 0) b on a.key=b.key
+select * from (select key from src_orc_n1 where false) a left outer join (select key from src_orc_n1 limit 0) b on a.key=b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select * from (select key from src_orc where false) a left outer join (select key from src_orc limit 0) b on a.key=b.key
+select * from (select key from src_orc_n1 where false) a left outer join (select key from src_orc_n1 limit 0) b on a.key=b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -168,7 +168,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: src_orc
+                  alias: src_orc_n1
                   Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: false (type: boolean)
@@ -235,19 +235,19 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from (select key from src_orc where false) a left outer join (select key from src_orc limit 0) b on a.key=b.key
+PREHOOK: query: select * from (select key from src_orc_n1 where false) a left outer join (select key from src_orc_n1 limit 0) b on a.key=b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_orc
+PREHOOK: Input: default@src_orc_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from (select key from src_orc where false) a left outer join (select key from src_orc limit 0) b on a.key=b.key
+POSTHOOK: query: select * from (select key from src_orc_n1 where false) a left outer join (select key from src_orc_n1 limit 0) b on a.key=b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_orc
+POSTHOOK: Input: default@src_orc_n1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain
-select count(key) from src_orc where false union all select count(key) from src_orc
+select count(key) from src_orc_n1 where false union all select count(key) from src_orc_n1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select count(key) from src_orc where false union all select count(key) from src_orc
+select count(key) from src_orc_n1 where false union all select count(key) from src_orc_n1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -265,7 +265,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: src_orc
+                  alias: src_orc_n1
                   Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: false (type: boolean)
@@ -284,7 +284,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: src_orc
+                  alias: src_orc_n1
                   Statistics: Num rows: 10 Data size: 1840 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string)
@@ -340,21 +340,21 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(key) from src_orc where false union all select count(key) from src_orc
+PREHOOK: query: select count(key) from src_orc_n1 where false union all select count(key) from src_orc_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_orc
+PREHOOK: Input: default@src_orc_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select count(key) from src_orc where false union all select count(key) from src_orc
+POSTHOOK: query: select count(key) from src_orc_n1 where false union all select count(key) from src_orc_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_orc
+POSTHOOK: Input: default@src_orc_n1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 10
 PREHOOK: query: explain 
-select * from src_orc s1, src_orc s2 where false and s1.value = s2.value
+select * from src_orc_n1 s1, src_orc_n1 s2 where false and s1.value = s2.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain 
-select * from src_orc s1, src_orc s2 where false and s1.value = s2.value
+select * from src_orc_n1 s1, src_orc_n1 s2 where false and s1.value = s2.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -429,19 +429,19 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from src_orc s1, src_orc s2 where false and s1.value = s2.value
+PREHOOK: query: select * from src_orc_n1 s1, src_orc_n1 s2 where false and s1.value = s2.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_orc
+PREHOOK: Input: default@src_orc_n1
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from src_orc s1, src_orc s2 where false and s1.value = s2.value
+POSTHOOK: query: select * from src_orc_n1 s1, src_orc_n1 s2 where false and s1.value = s2.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_orc
+POSTHOOK: Input: default@src_orc_n1
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-PREHOOK: query: drop table if exists src_orc
+PREHOOK: query: drop table if exists src_orc_n1
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@src_orc
-PREHOOK: Output: default@src_orc
-POSTHOOK: query: drop table if exists src_orc
+PREHOOK: Input: default@src_orc_n1
+PREHOOK: Output: default@src_orc_n1
+POSTHOOK: query: drop table if exists src_orc_n1
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@src_orc
-POSTHOOK: Output: default@src_orc
+POSTHOOK: Input: default@src_orc_n1
+POSTHOOK: Output: default@src_orc_n1

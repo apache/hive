@@ -1,32 +1,32 @@
-PREHOOK: query: create table t(category int, live int, comments int)
+PREHOOK: query: create table t_n33(category int, live int, comments int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t
-POSTHOOK: query: create table t(category int, live int, comments int)
+PREHOOK: Output: default@t_n33
+POSTHOOK: query: create table t_n33(category int, live int, comments int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t
-PREHOOK: query: insert into table t select key, 0, 2 from src tablesample(3 rows)
+POSTHOOK: Output: default@t_n33
+PREHOOK: query: insert into table t_n33 select key, 0, 2 from src tablesample(3 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into table t select key, 0, 2 from src tablesample(3 rows)
+PREHOOK: Output: default@t_n33
+POSTHOOK: query: insert into table t_n33 select key, 0, 2 from src tablesample(3 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.category EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: t.comments SIMPLE []
-POSTHOOK: Lineage: t.live SIMPLE []
+POSTHOOK: Output: default@t_n33
+POSTHOOK: Lineage: t_n33.category EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t_n33.comments SIMPLE []
+POSTHOOK: Lineage: t_n33.live SIMPLE []
 PREHOOK: query: explain
 select category, max(live) live, max(comments) comments, rank() OVER (PARTITION BY category ORDER BY comments) rank1
-FROM t
+FROM t_n33
 GROUP BY category
 GROUPING SETS ((), (category))
 HAVING max(comments) > 0
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select category, max(live) live, max(comments) comments, rank() OVER (PARTITION BY category ORDER BY comments) rank1
-FROM t
+FROM t_n33
 GROUP BY category
 GROUPING SETS ((), (category))
 HAVING max(comments) > 0
@@ -41,7 +41,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t
+            alias: t_n33
             Statistics: Num rows: 3 Data size: 20 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: category (type: int), live (type: int), comments (type: int)
@@ -134,69 +134,69 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select category, max(live) live, max(comments) comments, rank() OVER (PARTITION BY category ORDER BY comments) rank1
-FROM t
+FROM t_n33
 GROUP BY category
 GROUPING SETS ((), (category))
 HAVING max(comments) > 0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t
+PREHOOK: Input: default@t_n33
 #### A masked pattern was here ####
 POSTHOOK: query: select category, max(live) live, max(comments) comments, rank() OVER (PARTITION BY category ORDER BY comments) rank1
-FROM t
+FROM t_n33
 GROUP BY category
 GROUPING SETS ((), (category))
 HAVING max(comments) > 0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n33
 #### A masked pattern was here ####
 NULL	0	2	1
 86	0	2	1
 238	0	2	1
 311	0	2	1
 PREHOOK: query: SELECT grouping(category), lead(live) over(partition by grouping(category))
-FROM t
+FROM t_n33
 GROUP BY category, live
 GROUPING SETS ((), (category))
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t
+PREHOOK: Input: default@t_n33
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT grouping(category), lead(live) over(partition by grouping(category))
-FROM t
+FROM t_n33
 GROUP BY category, live
 GROUPING SETS ((), (category))
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n33
 #### A masked pattern was here ####
 0	NULL
 0	NULL
 0	NULL
 1	NULL
 PREHOOK: query: SELECT grouping(category), lead(live) over(partition by grouping(category))
-FROM t
+FROM t_n33
 GROUP BY category, live
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t
+PREHOOK: Input: default@t_n33
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT grouping(category), lead(live) over(partition by grouping(category))
-FROM t
+FROM t_n33
 GROUP BY category, live
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n33
 #### A masked pattern was here ####
 0	0
 0	0
 0	NULL
 PREHOOK: query: SELECT grouping(category), lag(live) over(partition by grouping(category))
-FROM t
+FROM t_n33
 GROUP BY category, live
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t
+PREHOOK: Input: default@t_n33
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT grouping(category), lag(live) over(partition by grouping(category))
-FROM t
+FROM t_n33
 GROUP BY category, live
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n33
 #### A masked pattern was here ####
 0	NULL
 0	0

@@ -80,57 +80,57 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/store_200' OVERWRITE I
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@store_txt
-PREHOOK: query: create table store
+PREHOOK: query: create table store_n1
 stored as orc as
 select * from store_txt
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@store_txt
 PREHOOK: Output: database:default
-PREHOOK: Output: default@store
-POSTHOOK: query: create table store
+PREHOOK: Output: default@store_n1
+POSTHOOK: query: create table store_n1
 stored as orc as
 select * from store_txt
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@store_txt
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@store
-POSTHOOK: Lineage: store.s_city SIMPLE [(store_txt)store_txt.FieldSchema(name:s_city, type:string, comment:null), ]
-POSTHOOK: Lineage: store.s_closed_date_sk SIMPLE [(store_txt)store_txt.FieldSchema(name:s_closed_date_sk, type:int, comment:null), ]
-POSTHOOK: Lineage: store.s_company_id SIMPLE [(store_txt)store_txt.FieldSchema(name:s_company_id, type:int, comment:null), ]
-POSTHOOK: Lineage: store.s_company_name SIMPLE [(store_txt)store_txt.FieldSchema(name:s_company_name, type:string, comment:null), ]
-POSTHOOK: Lineage: store.s_country SIMPLE [(store_txt)store_txt.FieldSchema(name:s_country, type:string, comment:null), ]
-POSTHOOK: Lineage: store.s_county SIMPLE [(store_txt)store_txt.FieldSchema(name:s_county, type:string, comment:null), ]
-POSTHOOK: Lineage: store.s_division_id SIMPLE [(store_txt)store_txt.FieldSchema(name:s_division_id, type:int, comment:null), ]
-POSTHOOK: Lineage: store.s_division_name SIMPLE [(store_txt)store_txt.FieldSchema(name:s_division_name, type:string, comment:null), ]
-POSTHOOK: Lineage: store.s_floor_space SIMPLE [(store_txt)store_txt.FieldSchema(name:s_floor_space, type:int, comment:null), ]
-POSTHOOK: Lineage: store.s_geography_class SIMPLE [(store_txt)store_txt.FieldSchema(name:s_geography_class, type:string, comment:null), ]
-POSTHOOK: Lineage: store.s_gmt_offset SIMPLE [(store_txt)store_txt.FieldSchema(name:s_gmt_offset, type:decimal(5,2), comment:null), ]
-POSTHOOK: Lineage: store.s_hours SIMPLE [(store_txt)store_txt.FieldSchema(name:s_hours, type:string, comment:null), ]
-POSTHOOK: Lineage: store.s_manager SIMPLE [(store_txt)store_txt.FieldSchema(name:s_manager, type:string, comment:null), ]
-POSTHOOK: Lineage: store.s_market_desc SIMPLE [(store_txt)store_txt.FieldSchema(name:s_market_desc, type:string, comment:null), ]
-POSTHOOK: Lineage: store.s_market_id SIMPLE [(store_txt)store_txt.FieldSchema(name:s_market_id, type:int, comment:null), ]
-POSTHOOK: Lineage: store.s_market_manager SIMPLE [(store_txt)store_txt.FieldSchema(name:s_market_manager, type:string, comment:null), ]
-POSTHOOK: Lineage: store.s_number_employees SIMPLE [(store_txt)store_txt.FieldSchema(name:s_number_employees, type:int, comment:null), ]
-POSTHOOK: Lineage: store.s_rec_end_date SIMPLE [(store_txt)store_txt.FieldSchema(name:s_rec_end_date, type:string, comment:null), ]
-POSTHOOK: Lineage: store.s_rec_start_date SIMPLE [(store_txt)store_txt.FieldSchema(name:s_rec_start_date, type:string, comment:null), ]
-POSTHOOK: Lineage: store.s_state SIMPLE [(store_txt)store_txt.FieldSchema(name:s_state, type:string, comment:null), ]
-POSTHOOK: Lineage: store.s_store_id SIMPLE [(store_txt)store_txt.FieldSchema(name:s_store_id, type:string, comment:null), ]
-POSTHOOK: Lineage: store.s_store_name SIMPLE [(store_txt)store_txt.FieldSchema(name:s_store_name, type:string, comment:null), ]
-POSTHOOK: Lineage: store.s_store_sk SIMPLE [(store_txt)store_txt.FieldSchema(name:s_store_sk, type:int, comment:null), ]
-POSTHOOK: Lineage: store.s_street_name SIMPLE [(store_txt)store_txt.FieldSchema(name:s_street_name, type:string, comment:null), ]
-POSTHOOK: Lineage: store.s_street_number SIMPLE [(store_txt)store_txt.FieldSchema(name:s_street_number, type:string, comment:null), ]
-POSTHOOK: Lineage: store.s_street_type SIMPLE [(store_txt)store_txt.FieldSchema(name:s_street_type, type:string, comment:null), ]
-POSTHOOK: Lineage: store.s_suite_number SIMPLE [(store_txt)store_txt.FieldSchema(name:s_suite_number, type:string, comment:null), ]
-POSTHOOK: Lineage: store.s_tax_precentage SIMPLE [(store_txt)store_txt.FieldSchema(name:s_tax_precentage, type:decimal(5,2), comment:null), ]
-POSTHOOK: Lineage: store.s_zip SIMPLE [(store_txt)store_txt.FieldSchema(name:s_zip, type:string, comment:null), ]
+POSTHOOK: Output: default@store_n1
+POSTHOOK: Lineage: store_n1.s_city SIMPLE [(store_txt)store_txt.FieldSchema(name:s_city, type:string, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_closed_date_sk SIMPLE [(store_txt)store_txt.FieldSchema(name:s_closed_date_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_company_id SIMPLE [(store_txt)store_txt.FieldSchema(name:s_company_id, type:int, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_company_name SIMPLE [(store_txt)store_txt.FieldSchema(name:s_company_name, type:string, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_country SIMPLE [(store_txt)store_txt.FieldSchema(name:s_country, type:string, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_county SIMPLE [(store_txt)store_txt.FieldSchema(name:s_county, type:string, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_division_id SIMPLE [(store_txt)store_txt.FieldSchema(name:s_division_id, type:int, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_division_name SIMPLE [(store_txt)store_txt.FieldSchema(name:s_division_name, type:string, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_floor_space SIMPLE [(store_txt)store_txt.FieldSchema(name:s_floor_space, type:int, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_geography_class SIMPLE [(store_txt)store_txt.FieldSchema(name:s_geography_class, type:string, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_gmt_offset SIMPLE [(store_txt)store_txt.FieldSchema(name:s_gmt_offset, type:decimal(5,2), comment:null), ]
+POSTHOOK: Lineage: store_n1.s_hours SIMPLE [(store_txt)store_txt.FieldSchema(name:s_hours, type:string, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_manager SIMPLE [(store_txt)store_txt.FieldSchema(name:s_manager, type:string, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_market_desc SIMPLE [(store_txt)store_txt.FieldSchema(name:s_market_desc, type:string, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_market_id SIMPLE [(store_txt)store_txt.FieldSchema(name:s_market_id, type:int, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_market_manager SIMPLE [(store_txt)store_txt.FieldSchema(name:s_market_manager, type:string, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_number_employees SIMPLE [(store_txt)store_txt.FieldSchema(name:s_number_employees, type:int, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_rec_end_date SIMPLE [(store_txt)store_txt.FieldSchema(name:s_rec_end_date, type:string, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_rec_start_date SIMPLE [(store_txt)store_txt.FieldSchema(name:s_rec_start_date, type:string, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_state SIMPLE [(store_txt)store_txt.FieldSchema(name:s_state, type:string, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_store_id SIMPLE [(store_txt)store_txt.FieldSchema(name:s_store_id, type:string, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_store_name SIMPLE [(store_txt)store_txt.FieldSchema(name:s_store_name, type:string, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_store_sk SIMPLE [(store_txt)store_txt.FieldSchema(name:s_store_sk, type:int, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_street_name SIMPLE [(store_txt)store_txt.FieldSchema(name:s_street_name, type:string, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_street_number SIMPLE [(store_txt)store_txt.FieldSchema(name:s_street_number, type:string, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_street_type SIMPLE [(store_txt)store_txt.FieldSchema(name:s_street_type, type:string, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_suite_number SIMPLE [(store_txt)store_txt.FieldSchema(name:s_suite_number, type:string, comment:null), ]
+POSTHOOK: Lineage: store_n1.s_tax_precentage SIMPLE [(store_txt)store_txt.FieldSchema(name:s_tax_precentage, type:decimal(5,2), comment:null), ]
+POSTHOOK: Lineage: store_n1.s_zip SIMPLE [(store_txt)store_txt.FieldSchema(name:s_zip, type:string, comment:null), ]
 PREHOOK: query: explain vectorization expression
 select s_store_id
- from store
+ from store_n1
  group by s_store_id with rollup
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
 select s_store_id
- from store
+ from store_n1
  group by s_store_id with rollup
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
@@ -146,7 +146,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: store
+            alias: store_n1
             Statistics: Num rows: 12 Data size: 25632 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -216,16 +216,16 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select s_store_id
- from store
+ from store_n1
  group by s_store_id with rollup
 PREHOOK: type: QUERY
-PREHOOK: Input: default@store
+PREHOOK: Input: default@store_n1
 #### A masked pattern was here ####
 POSTHOOK: query: select s_store_id
- from store
+ from store_n1
  group by s_store_id with rollup
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@store
+POSTHOOK: Input: default@store_n1
 #### A masked pattern was here ####
 NULL
 AAAAAAAABAAAAAAA
@@ -236,12 +236,12 @@ AAAAAAAAIAAAAAAA
 AAAAAAAAKAAAAAAA
 PREHOOK: query: explain vectorization expression
 select s_store_id, GROUPING__ID
- from store
+ from store_n1
  group by s_store_id with rollup
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
 select s_store_id, GROUPING__ID
- from store
+ from store_n1
  group by s_store_id with rollup
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
@@ -257,7 +257,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: store
+            alias: store_n1
             Statistics: Num rows: 12 Data size: 25632 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -330,16 +330,16 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select s_store_id, GROUPING__ID
- from store
+ from store_n1
  group by s_store_id with rollup
 PREHOOK: type: QUERY
-PREHOOK: Input: default@store
+PREHOOK: Input: default@store_n1
 #### A masked pattern was here ####
 POSTHOOK: query: select s_store_id, GROUPING__ID
- from store
+ from store_n1
  group by s_store_id with rollup
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@store
+POSTHOOK: Input: default@store_n1
 #### A masked pattern was here ####
 NULL	1
 AAAAAAAABAAAAAAA	0
@@ -350,12 +350,12 @@ AAAAAAAAIAAAAAAA	0
 AAAAAAAAKAAAAAAA	0
 PREHOOK: query: explain
 select s_store_id, GROUPING__ID
- from store
+ from store_n1
  group by rollup(s_store_id)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select s_store_id, GROUPING__ID
- from store
+ from store_n1
  group by rollup(s_store_id)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -367,7 +367,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: store
+            alias: store_n1
             Statistics: Num rows: 12 Data size: 25632 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: s_store_id (type: string)

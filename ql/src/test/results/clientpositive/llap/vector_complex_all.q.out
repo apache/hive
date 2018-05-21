@@ -1,4 +1,4 @@
-PREHOOK: query: CREATE TABLE orc_create_staging (
+PREHOOK: query: CREATE TABLE orc_create_staging_n0 (
   str STRING,
   mp  MAP<STRING,STRING>,
   lst ARRAY<STRING>,
@@ -9,8 +9,8 @@ PREHOOK: query: CREATE TABLE orc_create_staging (
     MAP KEYS TERMINATED BY ':'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@orc_create_staging
-POSTHOOK: query: CREATE TABLE orc_create_staging (
+PREHOOK: Output: default@orc_create_staging_n0
+POSTHOOK: query: CREATE TABLE orc_create_staging_n0 (
   str STRING,
   mp  MAP<STRING,STRING>,
   lst ARRAY<STRING>,
@@ -21,16 +21,16 @@ POSTHOOK: query: CREATE TABLE orc_create_staging (
     MAP KEYS TERMINATED BY ':'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@orc_create_staging
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/orc_create.txt' OVERWRITE INTO TABLE orc_create_staging
+POSTHOOK: Output: default@orc_create_staging_n0
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/orc_create.txt' OVERWRITE INTO TABLE orc_create_staging_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@orc_create_staging
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/orc_create.txt' OVERWRITE INTO TABLE orc_create_staging
+PREHOOK: Output: default@orc_create_staging_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/orc_create.txt' OVERWRITE INTO TABLE orc_create_staging_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@orc_create_staging
-PREHOOK: query: CREATE TABLE orc_create_complex (
+POSTHOOK: Output: default@orc_create_staging_n0
+PREHOOK: query: CREATE TABLE orc_create_complex_n0 (
   str STRING,
   mp  MAP<STRING,STRING>,
   lst ARRAY<STRING>,
@@ -39,8 +39,8 @@ PREHOOK: query: CREATE TABLE orc_create_complex (
 ) STORED AS ORC tblproperties("orc.row.index.stride"="1000", "orc.stripe.size"="1000", "orc.compress.size"="10000")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@orc_create_complex
-POSTHOOK: query: CREATE TABLE orc_create_complex (
+PREHOOK: Output: default@orc_create_complex_n0
+POSTHOOK: query: CREATE TABLE orc_create_complex_n0 (
   str STRING,
   mp  MAP<STRING,STRING>,
   lst ARRAY<STRING>,
@@ -49,28 +49,28 @@ POSTHOOK: query: CREATE TABLE orc_create_complex (
 ) STORED AS ORC tblproperties("orc.row.index.stride"="1000", "orc.stripe.size"="1000", "orc.compress.size"="10000")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@orc_create_complex
-PREHOOK: query: INSERT OVERWRITE TABLE orc_create_complex
-SELECT orc_create_staging.*, '0' FROM orc_create_staging
+POSTHOOK: Output: default@orc_create_complex_n0
+PREHOOK: query: INSERT OVERWRITE TABLE orc_create_complex_n0
+SELECT orc_create_staging_n0.*, '0' FROM orc_create_staging_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_create_staging
-PREHOOK: Output: default@orc_create_complex
-POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_complex
-SELECT orc_create_staging.*, '0' FROM orc_create_staging
+PREHOOK: Input: default@orc_create_staging_n0
+PREHOOK: Output: default@orc_create_complex_n0
+POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_complex_n0
+SELECT orc_create_staging_n0.*, '0' FROM orc_create_staging_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_create_staging
-POSTHOOK: Output: default@orc_create_complex
-POSTHOOK: Lineage: orc_create_complex.lst SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:lst, type:array<string>, comment:null), ]
-POSTHOOK: Lineage: orc_create_complex.mp SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:mp, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: orc_create_complex.str SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:str, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_create_complex.strct SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:strct, type:struct<A:string,B:string>, comment:null), ]
-POSTHOOK: Lineage: orc_create_complex.val SIMPLE []
-orc_create_staging.str	orc_create_staging.mp	orc_create_staging.lst	orc_create_staging.strct	_c1
+POSTHOOK: Input: default@orc_create_staging_n0
+POSTHOOK: Output: default@orc_create_complex_n0
+POSTHOOK: Lineage: orc_create_complex_n0.lst SIMPLE [(orc_create_staging_n0)orc_create_staging_n0.FieldSchema(name:lst, type:array<string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex_n0.mp SIMPLE [(orc_create_staging_n0)orc_create_staging_n0.FieldSchema(name:mp, type:map<string,string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex_n0.str SIMPLE [(orc_create_staging_n0)orc_create_staging_n0.FieldSchema(name:str, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex_n0.strct SIMPLE [(orc_create_staging_n0)orc_create_staging_n0.FieldSchema(name:strct, type:struct<A:string,B:string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex_n0.val SIMPLE []
+orc_create_staging_n0.str	orc_create_staging_n0.mp	orc_create_staging_n0.lst	orc_create_staging_n0.strct	_c1
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT * FROM orc_create_complex
+SELECT * FROM orc_create_complex_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT * FROM orc_create_complex
+SELECT * FROM orc_create_complex_n0
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -89,7 +89,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: orc_create_complex
+                  alias: orc_create_complex_n0
                   Statistics: Num rows: 3 Data size: 10872 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -136,23 +136,23 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT * FROM orc_create_complex
+PREHOOK: query: SELECT * FROM orc_create_complex_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_create_complex
+PREHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM orc_create_complex
+POSTHOOK: query: SELECT * FROM orc_create_complex_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_create_complex
+POSTHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
-orc_create_complex.str	orc_create_complex.mp	orc_create_complex.lst	orc_create_complex.strct	orc_create_complex.val
+orc_create_complex_n0.str	orc_create_complex_n0.mp	orc_create_complex_n0.lst	orc_create_complex_n0.strct	orc_create_complex_n0.val
 line1	{"key11":"value11","key12":"value12","key13":"value13"}	["a","b","c"]	{"a":"one","b":"two"}	0
 line2	{"key21":"value21","key22":"value22","key23":"value23"}	["d","e","f"]	{"a":"three","b":"four"}	0
 line3	{"key31":"value31","key32":"value32","key33":"value33"}	["g","h","i"]	{"a":"five","b":"six"}	0
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT str FROM orc_create_complex
+SELECT str FROM orc_create_complex_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT str FROM orc_create_complex
+SELECT str FROM orc_create_complex_n0
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -171,7 +171,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: orc_create_complex
+                  alias: orc_create_complex_n0
                   Statistics: Num rows: 3 Data size: 552 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -218,23 +218,23 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT str FROM orc_create_complex
+PREHOOK: query: SELECT str FROM orc_create_complex_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_create_complex
+PREHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT str FROM orc_create_complex
+POSTHOOK: query: SELECT str FROM orc_create_complex_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_create_complex
+POSTHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
 str
 line1
 line2
 line3
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT strct, mp, lst FROM orc_create_complex
+SELECT strct, mp, lst FROM orc_create_complex_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT strct, mp, lst FROM orc_create_complex
+SELECT strct, mp, lst FROM orc_create_complex_n0
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -253,7 +253,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: orc_create_complex
+                  alias: orc_create_complex_n0
                   Statistics: Num rows: 3 Data size: 9768 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -300,23 +300,23 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT strct, mp, lst FROM orc_create_complex
+PREHOOK: query: SELECT strct, mp, lst FROM orc_create_complex_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_create_complex
+PREHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT strct, mp, lst FROM orc_create_complex
+POSTHOOK: query: SELECT strct, mp, lst FROM orc_create_complex_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_create_complex
+POSTHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
 strct	mp	lst
 {"a":"one","b":"two"}	{"key11":"value11","key12":"value12","key13":"value13"}	["a","b","c"]
 {"a":"three","b":"four"}	{"key21":"value21","key22":"value22","key23":"value23"}	["d","e","f"]
 {"a":"five","b":"six"}	{"key31":"value31","key32":"value32","key33":"value33"}	["g","h","i"]
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT lst, str FROM orc_create_complex
+SELECT lst, str FROM orc_create_complex_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT lst, str FROM orc_create_complex
+SELECT lst, str FROM orc_create_complex_n0
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -335,7 +335,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: orc_create_complex
+                  alias: orc_create_complex_n0
                   Statistics: Num rows: 3 Data size: 6312 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -382,23 +382,23 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT lst, str FROM orc_create_complex
+PREHOOK: query: SELECT lst, str FROM orc_create_complex_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_create_complex
+PREHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT lst, str FROM orc_create_complex
+POSTHOOK: query: SELECT lst, str FROM orc_create_complex_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_create_complex
+POSTHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
 lst	str
 ["a","b","c"]	line1
 ["d","e","f"]	line2
 ["g","h","i"]	line3
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT mp, str FROM orc_create_complex
+SELECT mp, str FROM orc_create_complex_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT mp, str FROM orc_create_complex
+SELECT mp, str FROM orc_create_complex_n0
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -417,7 +417,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: orc_create_complex
+                  alias: orc_create_complex_n0
                   Statistics: Num rows: 3 Data size: 3312 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -464,23 +464,23 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT mp, str FROM orc_create_complex
+PREHOOK: query: SELECT mp, str FROM orc_create_complex_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_create_complex
+PREHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT mp, str FROM orc_create_complex
+POSTHOOK: query: SELECT mp, str FROM orc_create_complex_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_create_complex
+POSTHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
 mp	str
 {"key11":"value11","key12":"value12","key13":"value13"}	line1
 {"key21":"value21","key22":"value22","key23":"value23"}	line2
 {"key31":"value31","key32":"value32","key33":"value33"}	line3
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT strct, str FROM orc_create_complex
+SELECT strct, str FROM orc_create_complex_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT strct, str FROM orc_create_complex
+SELECT strct, str FROM orc_create_complex_n0
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -499,7 +499,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: orc_create_complex
+                  alias: orc_create_complex_n0
                   Statistics: Num rows: 3 Data size: 1800 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -546,23 +546,23 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT strct, str FROM orc_create_complex
+PREHOOK: query: SELECT strct, str FROM orc_create_complex_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_create_complex
+PREHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT strct, str FROM orc_create_complex
+POSTHOOK: query: SELECT strct, str FROM orc_create_complex_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_create_complex
+POSTHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
 strct	str
 {"a":"one","b":"two"}	line1
 {"a":"three","b":"four"}	line2
 {"a":"five","b":"six"}	line3
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT strct.B, str FROM orc_create_complex
+SELECT strct.B, str FROM orc_create_complex_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT strct.B, str FROM orc_create_complex
+SELECT strct.B, str FROM orc_create_complex_n0
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -581,7 +581,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: orc_create_complex
+                  alias: orc_create_complex_n0
                   Pruned Column Paths: strct.b
                   Statistics: Num rows: 3 Data size: 1800 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
@@ -630,13 +630,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT strct.B, str FROM orc_create_complex
+PREHOOK: query: SELECT strct.B, str FROM orc_create_complex_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_create_complex
+PREHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT strct.B, str FROM orc_create_complex
+POSTHOOK: query: SELECT strct.B, str FROM orc_create_complex_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_create_complex
+POSTHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
 b	str
 two	line1
@@ -644,12 +644,12 @@ four	line2
 six	line3
 Warning: Shuffle Join MERGEJOIN[15][tables = [$hdt$_1, $hdt$_2, $hdt$_3, $hdt$_0]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-INSERT INTO TABLE orc_create_complex
-SELECT orc_create_staging.*, src1.key FROM orc_create_staging cross join src src1 cross join orc_create_staging spam1 cross join orc_create_staging spam2
+INSERT INTO TABLE orc_create_complex_n0
+SELECT orc_create_staging_n0.*, src1.key FROM orc_create_staging_n0 cross join src src1 cross join orc_create_staging_n0 spam1 cross join orc_create_staging_n0 spam2
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-INSERT INTO TABLE orc_create_complex
-SELECT orc_create_staging.*, src1.key FROM orc_create_staging cross join src src1 cross join orc_create_staging spam1 cross join orc_create_staging spam2
+INSERT INTO TABLE orc_create_complex_n0
+SELECT orc_create_staging_n0.*, src1.key FROM orc_create_staging_n0 cross join src src1 cross join orc_create_staging_n0 spam1 cross join orc_create_staging_n0 spam2
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -673,7 +673,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: orc_create_staging
+                  alias: orc_create_staging_n0
                   Statistics: Num rows: 1 Data size: 3440 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -858,7 +858,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                         output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                         serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                        name: default.orc_create_complex
+                        name: default.orc_create_complex_n0
 
   Stage: Stage-2
     Dependency Collection
@@ -871,36 +871,36 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.orc_create_complex
+              name: default.orc_create_complex_n0
 
   Stage: Stage-3
     Stats Work
       Basic Stats Work:
 
 Warning: Shuffle Join MERGEJOIN[15][tables = [$hdt$_1, $hdt$_2, $hdt$_3, $hdt$_0]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: INSERT INTO TABLE orc_create_complex
-SELECT orc_create_staging.*, src1.key FROM orc_create_staging cross join src src1 cross join orc_create_staging spam1 cross join orc_create_staging spam2
+PREHOOK: query: INSERT INTO TABLE orc_create_complex_n0
+SELECT orc_create_staging_n0.*, src1.key FROM orc_create_staging_n0 cross join src src1 cross join orc_create_staging_n0 spam1 cross join orc_create_staging_n0 spam2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_create_staging
+PREHOOK: Input: default@orc_create_staging_n0
 PREHOOK: Input: default@src
-PREHOOK: Output: default@orc_create_complex
-POSTHOOK: query: INSERT INTO TABLE orc_create_complex
-SELECT orc_create_staging.*, src1.key FROM orc_create_staging cross join src src1 cross join orc_create_staging spam1 cross join orc_create_staging spam2
+PREHOOK: Output: default@orc_create_complex_n0
+POSTHOOK: query: INSERT INTO TABLE orc_create_complex_n0
+SELECT orc_create_staging_n0.*, src1.key FROM orc_create_staging_n0 cross join src src1 cross join orc_create_staging_n0 spam1 cross join orc_create_staging_n0 spam2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_create_staging
+POSTHOOK: Input: default@orc_create_staging_n0
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@orc_create_complex
-POSTHOOK: Lineage: orc_create_complex.lst SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:lst, type:array<string>, comment:null), ]
-POSTHOOK: Lineage: orc_create_complex.mp SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:mp, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: orc_create_complex.str SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:str, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_create_complex.strct SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:strct, type:struct<A:string,B:string>, comment:null), ]
-POSTHOOK: Lineage: orc_create_complex.val SIMPLE [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
-orc_create_staging.str	orc_create_staging.mp	orc_create_staging.lst	orc_create_staging.strct	src1.key
+POSTHOOK: Output: default@orc_create_complex_n0
+POSTHOOK: Lineage: orc_create_complex_n0.lst SIMPLE [(orc_create_staging_n0)orc_create_staging_n0.FieldSchema(name:lst, type:array<string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex_n0.mp SIMPLE [(orc_create_staging_n0)orc_create_staging_n0.FieldSchema(name:mp, type:map<string,string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex_n0.str SIMPLE [(orc_create_staging_n0)orc_create_staging_n0.FieldSchema(name:str, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex_n0.strct SIMPLE [(orc_create_staging_n0)orc_create_staging_n0.FieldSchema(name:strct, type:struct<A:string,B:string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex_n0.val SIMPLE [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
+orc_create_staging_n0.str	orc_create_staging_n0.mp	orc_create_staging_n0.lst	orc_create_staging_n0.strct	src1.key
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-select count(*) from orc_create_complex
+select count(*) from orc_create_complex_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-select count(*) from orc_create_complex
+select count(*) from orc_create_complex_n0
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -922,7 +922,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: orc_create_complex
+                  alias: orc_create_complex_n0
                   Statistics: Num rows: 13503 Data size: 15460932 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -1016,21 +1016,21 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from orc_create_complex
+PREHOOK: query: select count(*) from orc_create_complex_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_create_complex
+PREHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from orc_create_complex
+POSTHOOK: query: select count(*) from orc_create_complex_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_create_complex
+POSTHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
 _c0
 13503
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT distinct lst, strct FROM orc_create_complex
+SELECT distinct lst, strct FROM orc_create_complex_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT distinct lst, strct FROM orc_create_complex
+SELECT distinct lst, strct FROM orc_create_complex_n0
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -1052,7 +1052,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: orc_create_complex
+                  alias: orc_create_complex_n0
                   Statistics: Num rows: 13503 Data size: 29968544 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: lst (type: array<string>), strct (type: struct<a:string,b:string>)
@@ -1103,23 +1103,23 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT distinct lst, strct FROM orc_create_complex
+PREHOOK: query: SELECT distinct lst, strct FROM orc_create_complex_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_create_complex
+PREHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT distinct lst, strct FROM orc_create_complex
+POSTHOOK: query: SELECT distinct lst, strct FROM orc_create_complex_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_create_complex
+POSTHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
 lst	strct
 ["g","h","i"]	{"a":"five","b":"six"}
 ["a","b","c"]	{"a":"one","b":"two"}
 ["d","e","f"]	{"a":"three","b":"four"}
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT str, count(val)  FROM orc_create_complex GROUP BY str
+SELECT str, count(val)  FROM orc_create_complex_n0 GROUP BY str
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT str, count(val)  FROM orc_create_complex GROUP BY str
+SELECT str, count(val)  FROM orc_create_complex_n0 GROUP BY str
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -1141,7 +1141,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: orc_create_complex
+                  alias: orc_create_complex_n0
                   Statistics: Num rows: 13503 Data size: 4721072 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1244,23 +1244,23 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT str, count(val)  FROM orc_create_complex GROUP BY str
+PREHOOK: query: SELECT str, count(val)  FROM orc_create_complex_n0 GROUP BY str
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_create_complex
+PREHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT str, count(val)  FROM orc_create_complex GROUP BY str
+POSTHOOK: query: SELECT str, count(val)  FROM orc_create_complex_n0 GROUP BY str
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_create_complex
+POSTHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
 str	_c1
 line2	4501
 line3	4501
 line1	4501
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT strct.B, count(val) FROM orc_create_complex GROUP BY strct.B
+SELECT strct.B, count(val) FROM orc_create_complex_n0 GROUP BY strct.B
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT strct.B, count(val) FROM orc_create_complex GROUP BY strct.B
+SELECT strct.B, count(val) FROM orc_create_complex_n0 GROUP BY strct.B
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -1282,7 +1282,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: orc_create_complex
+                  alias: orc_create_complex_n0
                   Pruned Column Paths: strct.b
                   Statistics: Num rows: 13503 Data size: 7697400 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
@@ -1387,23 +1387,23 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT strct.B, count(val) FROM orc_create_complex GROUP BY strct.B
+PREHOOK: query: SELECT strct.B, count(val) FROM orc_create_complex_n0 GROUP BY strct.B
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_create_complex
+PREHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT strct.B, count(val) FROM orc_create_complex GROUP BY strct.B
+POSTHOOK: query: SELECT strct.B, count(val) FROM orc_create_complex_n0 GROUP BY strct.B
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_create_complex
+POSTHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
 strct.b	_c1
 six	4501
 two	4501
 four	4501
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT strct, mp, lst, str, count(val) FROM orc_create_complex GROUP BY strct, mp, lst, str
+SELECT strct, mp, lst, str, count(val) FROM orc_create_complex_n0 GROUP BY strct, mp, lst, str
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT strct, mp, lst, str, count(val) FROM orc_create_complex GROUP BY strct, mp, lst, str
+SELECT strct, mp, lst, str, count(val) FROM orc_create_complex_n0 GROUP BY strct, mp, lst, str
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -1425,7 +1425,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: orc_create_complex
+                  alias: orc_create_complex_n0
                   Statistics: Num rows: 13503 Data size: 46492296 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: str (type: string), mp (type: map<string,string>), lst (type: array<string>), strct (type: struct<a:string,b:string>), val (type: string)
@@ -1483,13 +1483,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT strct, mp, lst, str, count(val) FROM orc_create_complex GROUP BY strct, mp, lst, str
+PREHOOK: query: SELECT strct, mp, lst, str, count(val) FROM orc_create_complex_n0 GROUP BY strct, mp, lst, str
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_create_complex
+PREHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT strct, mp, lst, str, count(val) FROM orc_create_complex GROUP BY strct, mp, lst, str
+POSTHOOK: query: SELECT strct, mp, lst, str, count(val) FROM orc_create_complex_n0 GROUP BY strct, mp, lst, str
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_create_complex
+POSTHOOK: Input: default@orc_create_complex_n0
 #### A masked pattern was here ####
 strct	mp	lst	str	_c4
 {"a":"one","b":"two"}	{"key11":"value11","key12":"value12","key13":"value13"}	["a","b","c"]	line1	4501

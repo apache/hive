@@ -1,76 +1,76 @@
-PREHOOK: query: CREATE TABLE schema_evolution_data(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
+PREHOOK: query: CREATE TABLE schema_evolution_data_n45(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
 row format delimited fields terminated by '|' stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@schema_evolution_data
-POSTHOOK: query: CREATE TABLE schema_evolution_data(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
+PREHOOK: Output: default@schema_evolution_data_n45
+POSTHOOK: query: CREATE TABLE schema_evolution_data_n45(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
 row format delimited fields terminated by '|' stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@schema_evolution_data
-PREHOOK: query: load data local inpath '../../data/files/schema_evolution/schema_evolution_data.txt' overwrite into table schema_evolution_data
+POSTHOOK: Output: default@schema_evolution_data_n45
+PREHOOK: query: load data local inpath '../../data/files/schema_evolution/schema_evolution_data.txt' overwrite into table schema_evolution_data_n45
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@schema_evolution_data
-POSTHOOK: query: load data local inpath '../../data/files/schema_evolution/schema_evolution_data.txt' overwrite into table schema_evolution_data
+PREHOOK: Output: default@schema_evolution_data_n45
+POSTHOOK: query: load data local inpath '../../data/files/schema_evolution/schema_evolution_data.txt' overwrite into table schema_evolution_data_n45
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@schema_evolution_data
-PREHOOK: query: CREATE TABLE table_change_numeric_group_string_group_floating_string_group(insert_num int,
+POSTHOOK: Output: default@schema_evolution_data_n45
+PREHOOK: query: CREATE TABLE table_change_numeric_group_string_group_floating_string_group_n13(insert_num int,
               c1 decimal(38,18), c2 float, c3 double,
               c4 decimal(38,18), c5 float, c6 double, c7 decimal(38,18), c8 float, c9 double,
               c10 decimal(38,18), c11 float, c12 double, c13 decimal(38,18), c14 float, c15 double,
               b STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@table_change_numeric_group_string_group_floating_string_group
-POSTHOOK: query: CREATE TABLE table_change_numeric_group_string_group_floating_string_group(insert_num int,
+PREHOOK: Output: default@table_change_numeric_group_string_group_floating_string_group_n13
+POSTHOOK: query: CREATE TABLE table_change_numeric_group_string_group_floating_string_group_n13(insert_num int,
               c1 decimal(38,18), c2 float, c3 double,
               c4 decimal(38,18), c5 float, c6 double, c7 decimal(38,18), c8 float, c9 double,
               c10 decimal(38,18), c11 float, c12 double, c13 decimal(38,18), c14 float, c15 double,
               b STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@table_change_numeric_group_string_group_floating_string_group
-PREHOOK: query: insert into table table_change_numeric_group_string_group_floating_string_group SELECT insert_num,
+POSTHOOK: Output: default@table_change_numeric_group_string_group_floating_string_group_n13
+PREHOOK: query: insert into table table_change_numeric_group_string_group_floating_string_group_n13 SELECT insert_num,
               decimal1, float1, double1,
               decimal1, float1, double1, decimal1, float1, double1,
               decimal1, float1, double1, decimal1, float1, double1,
-             'original' FROM schema_evolution_data
+             'original' FROM schema_evolution_data_n45
 PREHOOK: type: QUERY
-PREHOOK: Input: default@schema_evolution_data
-PREHOOK: Output: default@table_change_numeric_group_string_group_floating_string_group
-POSTHOOK: query: insert into table table_change_numeric_group_string_group_floating_string_group SELECT insert_num,
+PREHOOK: Input: default@schema_evolution_data_n45
+PREHOOK: Output: default@table_change_numeric_group_string_group_floating_string_group_n13
+POSTHOOK: query: insert into table table_change_numeric_group_string_group_floating_string_group_n13 SELECT insert_num,
               decimal1, float1, double1,
               decimal1, float1, double1, decimal1, float1, double1,
               decimal1, float1, double1, decimal1, float1, double1,
-             'original' FROM schema_evolution_data
+             'original' FROM schema_evolution_data_n45
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@schema_evolution_data
-POSTHOOK: Output: default@table_change_numeric_group_string_group_floating_string_group
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.b SIMPLE []
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c1 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c10 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c11 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:float1, type:float, comment:null), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c12 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:double1, type:double, comment:null), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c13 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c14 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:float1, type:float, comment:null), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c15 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:double1, type:double, comment:null), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c2 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:float1, type:float, comment:null), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c3 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:double1, type:double, comment:null), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c4 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c5 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:float1, type:float, comment:null), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c6 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:double1, type:double, comment:null), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c7 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c8 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:float1, type:float, comment:null), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c9 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:double1, type:double, comment:null), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.insert_num SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:insert_num, type:int, comment:null), ]
-PREHOOK: query: desc formatted table_change_numeric_group_string_group_floating_string_group
+POSTHOOK: Input: default@schema_evolution_data_n45
+POSTHOOK: Output: default@table_change_numeric_group_string_group_floating_string_group_n13
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group_n13.b SIMPLE []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group_n13.c1 SIMPLE [(schema_evolution_data_n45)schema_evolution_data_n45.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group_n13.c10 SIMPLE [(schema_evolution_data_n45)schema_evolution_data_n45.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group_n13.c11 SIMPLE [(schema_evolution_data_n45)schema_evolution_data_n45.FieldSchema(name:float1, type:float, comment:null), ]
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group_n13.c12 SIMPLE [(schema_evolution_data_n45)schema_evolution_data_n45.FieldSchema(name:double1, type:double, comment:null), ]
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group_n13.c13 SIMPLE [(schema_evolution_data_n45)schema_evolution_data_n45.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group_n13.c14 SIMPLE [(schema_evolution_data_n45)schema_evolution_data_n45.FieldSchema(name:float1, type:float, comment:null), ]
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group_n13.c15 SIMPLE [(schema_evolution_data_n45)schema_evolution_data_n45.FieldSchema(name:double1, type:double, comment:null), ]
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group_n13.c2 SIMPLE [(schema_evolution_data_n45)schema_evolution_data_n45.FieldSchema(name:float1, type:float, comment:null), ]
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group_n13.c3 SIMPLE [(schema_evolution_data_n45)schema_evolution_data_n45.FieldSchema(name:double1, type:double, comment:null), ]
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group_n13.c4 SIMPLE [(schema_evolution_data_n45)schema_evolution_data_n45.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group_n13.c5 SIMPLE [(schema_evolution_data_n45)schema_evolution_data_n45.FieldSchema(name:float1, type:float, comment:null), ]
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group_n13.c6 SIMPLE [(schema_evolution_data_n45)schema_evolution_data_n45.FieldSchema(name:double1, type:double, comment:null), ]
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group_n13.c7 SIMPLE [(schema_evolution_data_n45)schema_evolution_data_n45.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group_n13.c8 SIMPLE [(schema_evolution_data_n45)schema_evolution_data_n45.FieldSchema(name:float1, type:float, comment:null), ]
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group_n13.c9 SIMPLE [(schema_evolution_data_n45)schema_evolution_data_n45.FieldSchema(name:double1, type:double, comment:null), ]
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group_n13.insert_num SIMPLE [(schema_evolution_data_n45)schema_evolution_data_n45.FieldSchema(name:insert_num, type:int, comment:null), ]
+PREHOOK: query: desc formatted table_change_numeric_group_string_group_floating_string_group_n13
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table_change_numeric_group_string_group_floating_string_group
-POSTHOOK: query: desc formatted table_change_numeric_group_string_group_floating_string_group
+PREHOOK: Input: default@table_change_numeric_group_string_group_floating_string_group_n13
+POSTHOOK: query: desc formatted table_change_numeric_group_string_group_floating_string_group_n13
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_string_group
+POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_string_group_n13
 # col_name            	data_type           	comment             
 insert_num          	int                 	                    
 c1                  	decimal(38,18)      	                    
@@ -115,22 +115,22 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: analyze table table_change_numeric_group_string_group_floating_string_group compute statistics for columns
+PREHOOK: query: analyze table table_change_numeric_group_string_group_floating_string_group_n13 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@table_change_numeric_group_string_group_floating_string_group
-PREHOOK: Output: default@table_change_numeric_group_string_group_floating_string_group
+PREHOOK: Input: default@table_change_numeric_group_string_group_floating_string_group_n13
+PREHOOK: Output: default@table_change_numeric_group_string_group_floating_string_group_n13
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table table_change_numeric_group_string_group_floating_string_group compute statistics for columns
+POSTHOOK: query: analyze table table_change_numeric_group_string_group_floating_string_group_n13 compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_string_group
-POSTHOOK: Output: default@table_change_numeric_group_string_group_floating_string_group
+POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_string_group_n13
+POSTHOOK: Output: default@table_change_numeric_group_string_group_floating_string_group_n13
 #### A masked pattern was here ####
-PREHOOK: query: desc formatted table_change_numeric_group_string_group_floating_string_group
+PREHOOK: query: desc formatted table_change_numeric_group_string_group_floating_string_group_n13
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table_change_numeric_group_string_group_floating_string_group
-POSTHOOK: query: desc formatted table_change_numeric_group_string_group_floating_string_group
+PREHOOK: Input: default@table_change_numeric_group_string_group_floating_string_group_n13
+POSTHOOK: query: desc formatted table_change_numeric_group_string_group_floating_string_group_n13
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_string_group
+POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_string_group_n13
 # col_name            	data_type           	comment             
 insert_num          	int                 	                    
 c1                  	decimal(38,18)      	                    
@@ -175,82 +175,82 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,b from table_change_numeric_group_string_group_floating_string_group
+PREHOOK: query: select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,b from table_change_numeric_group_string_group_floating_string_group_n13
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table_change_numeric_group_string_group_floating_string_group
+PREHOOK: Input: default@table_change_numeric_group_string_group_floating_string_group_n13
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,b from table_change_numeric_group_string_group_floating_string_group
+POSTHOOK: query: select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,b from table_change_numeric_group_string_group_floating_string_group_n13
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_string_group
+POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_string_group_n13
 #### A masked pattern was here ####
 101	99999999999999999999.999999999999999999	Infinity	1.7976931348623157E308	99999999999999999999.999999999999999999	Infinity	1.7976931348623157E308	99999999999999999999.999999999999999999	Infinity	1.7976931348623157E308	99999999999999999999.999999999999999999	Infinity	1.7976931348623157E308	99999999999999999999.999999999999999999	Infinity	1.7976931348623157E308	original
 102	-99999999999999999999.999999999999999999	-Infinity	-1.7976931348623157E308	-99999999999999999999.999999999999999999	-Infinity	-1.7976931348623157E308	-99999999999999999999.999999999999999999	-Infinity	-1.7976931348623157E308	-99999999999999999999.999999999999999999	-Infinity	-1.7976931348623157E308	-99999999999999999999.999999999999999999	-Infinity	-1.7976931348623157E308	original
 103	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	original
 104	66475.561431000000000000	-100.35978	30.774	66475.561431000000000000	-100.35978	30.774	66475.561431000000000000	-100.35978	30.774	66475.561431000000000000	-100.35978	30.774	66475.561431000000000000	-100.35978	30.774	original
 105	9250340.750000000000000000	NULL	46114.28	9250340.750000000000000000	NULL	46114.28	9250340.750000000000000000	NULL	46114.28	9250340.750000000000000000	NULL	46114.28	9250340.750000000000000000	NULL	46114.28	original
-PREHOOK: query: drop table table_change_numeric_group_string_group_floating_string_group
+PREHOOK: query: drop table table_change_numeric_group_string_group_floating_string_group_n13
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@table_change_numeric_group_string_group_floating_string_group
-PREHOOK: Output: default@table_change_numeric_group_string_group_floating_string_group
-POSTHOOK: query: drop table table_change_numeric_group_string_group_floating_string_group
+PREHOOK: Input: default@table_change_numeric_group_string_group_floating_string_group_n13
+PREHOOK: Output: default@table_change_numeric_group_string_group_floating_string_group_n13
+POSTHOOK: query: drop table table_change_numeric_group_string_group_floating_string_group_n13
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_string_group
-POSTHOOK: Output: default@table_change_numeric_group_string_group_floating_string_group
-PREHOOK: query: CREATE TABLE table_change_numeric_group_string_group_floating_string_group(insert_num int,
+POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_string_group_n13
+POSTHOOK: Output: default@table_change_numeric_group_string_group_floating_string_group_n13
+PREHOOK: query: CREATE TABLE table_change_numeric_group_string_group_floating_string_group_n13(insert_num int,
               c1 decimal(38,18), c2 float, c3 double,
               c4 decimal(38,18), c5 float, c6 double, c7 decimal(38,18), c8 float, c9 double,
               c10 decimal(38,18), c11 float, c12 double, c13 decimal(38,18), c14 float, c15 double,
               b STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@table_change_numeric_group_string_group_floating_string_group
-POSTHOOK: query: CREATE TABLE table_change_numeric_group_string_group_floating_string_group(insert_num int,
+PREHOOK: Output: default@table_change_numeric_group_string_group_floating_string_group_n13
+POSTHOOK: query: CREATE TABLE table_change_numeric_group_string_group_floating_string_group_n13(insert_num int,
               c1 decimal(38,18), c2 float, c3 double,
               c4 decimal(38,18), c5 float, c6 double, c7 decimal(38,18), c8 float, c9 double,
               c10 decimal(38,18), c11 float, c12 double, c13 decimal(38,18), c14 float, c15 double,
               b STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@table_change_numeric_group_string_group_floating_string_group
-PREHOOK: query: insert into table table_change_numeric_group_string_group_floating_string_group SELECT insert_num,
+POSTHOOK: Output: default@table_change_numeric_group_string_group_floating_string_group_n13
+PREHOOK: query: insert into table table_change_numeric_group_string_group_floating_string_group_n13 SELECT insert_num,
               decimal1, float1, double1,
               decimal1, float1, double1, decimal1, float1, double1,
               decimal1, float1, double1, decimal1, float1, double1,
-             'original' FROM schema_evolution_data
+             'original' FROM schema_evolution_data_n45
 PREHOOK: type: QUERY
-PREHOOK: Input: default@schema_evolution_data
-PREHOOK: Output: default@table_change_numeric_group_string_group_floating_string_group
-POSTHOOK: query: insert into table table_change_numeric_group_string_group_floating_string_group SELECT insert_num,
+PREHOOK: Input: default@schema_evolution_data_n45
+PREHOOK: Output: default@table_change_numeric_group_string_group_floating_string_group_n13
+POSTHOOK: query: insert into table table_change_numeric_group_string_group_floating_string_group_n13 SELECT insert_num,
               decimal1, float1, double1,
               decimal1, float1, double1, decimal1, float1, double1,
               decimal1, float1, double1, decimal1, float1, double1,
-             'original' FROM schema_evolution_data
+             'original' FROM schema_evolution_data_n45
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@schema_evolution_data
-POSTHOOK: Output: default@table_change_numeric_group_string_group_floating_string_group
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.b SIMPLE []
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c1 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c10 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c11 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:float1, type:float, comment:null), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c12 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:double1, type:double, comment:null), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c13 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c14 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:float1, type:float, comment:null), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c15 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:double1, type:double, comment:null), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c2 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:float1, type:float, comment:null), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c3 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:double1, type:double, comment:null), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c4 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c5 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:float1, type:float, comment:null), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c6 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:double1, type:double, comment:null), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c7 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c8 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:float1, type:float, comment:null), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c9 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:double1, type:double, comment:null), ]
-POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.insert_num SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:insert_num, type:int, comment:null), ]
-PREHOOK: query: desc formatted table_change_numeric_group_string_group_floating_string_group
+POSTHOOK: Input: default@schema_evolution_data_n45
+POSTHOOK: Output: default@table_change_numeric_group_string_group_floating_string_group_n13
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group_n13.b SIMPLE []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group_n13.c1 SIMPLE [(schema_evolution_data_n45)schema_evolution_data_n45.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group_n13.c10 SIMPLE [(schema_evolution_data_n45)schema_evolution_data_n45.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group_n13.c11 SIMPLE [(schema_evolution_data_n45)schema_evolution_data_n45.FieldSchema(name:float1, type:float, comment:null), ]
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group_n13.c12 SIMPLE [(schema_evolution_data_n45)schema_evolution_data_n45.FieldSchema(name:double1, type:double, comment:null), ]
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group_n13.c13 SIMPLE [(schema_evolution_data_n45)schema_evolution_data_n45.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group_n13.c14 SIMPLE [(schema_evolution_data_n45)schema_evolution_data_n45.FieldSchema(name:float1, type:float, comment:null), ]
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group_n13.c15 SIMPLE [(schema_evolution_data_n45)schema_evolution_data_n45.FieldSchema(name:double1, type:double, comment:null), ]
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group_n13.c2 SIMPLE [(schema_evolution_data_n45)schema_evolution_data_n45.FieldSchema(name:float1, type:float, comment:null), ]
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group_n13.c3 SIMPLE [(schema_evolution_data_n45)schema_evolution_data_n45.FieldSchema(name:double1, type:double, comment:null), ]
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group_n13.c4 SIMPLE [(schema_evolution_data_n45)schema_evolution_data_n45.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group_n13.c5 SIMPLE [(schema_evolution_data_n45)schema_evolution_data_n45.FieldSchema(name:float1, type:float, comment:null), ]
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group_n13.c6 SIMPLE [(schema_evolution_data_n45)schema_evolution_data_n45.FieldSchema(name:double1, type:double, comment:null), ]
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group_n13.c7 SIMPLE [(schema_evolution_data_n45)schema_evolution_data_n45.FieldSchema(name:decimal1, type:decimal(38,18), comment:null), ]
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group_n13.c8 SIMPLE [(schema_evolution_data_n45)schema_evolution_data_n45.FieldSchema(name:float1, type:float, comment:null), ]
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group_n13.c9 SIMPLE [(schema_evolution_data_n45)schema_evolution_data_n45.FieldSchema(name:double1, type:double, comment:null), ]
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group_n13.insert_num SIMPLE [(schema_evolution_data_n45)schema_evolution_data_n45.FieldSchema(name:insert_num, type:int, comment:null), ]
+PREHOOK: query: desc formatted table_change_numeric_group_string_group_floating_string_group_n13
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table_change_numeric_group_string_group_floating_string_group
-POSTHOOK: query: desc formatted table_change_numeric_group_string_group_floating_string_group
+PREHOOK: Input: default@table_change_numeric_group_string_group_floating_string_group_n13
+POSTHOOK: query: desc formatted table_change_numeric_group_string_group_floating_string_group_n13
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_string_group
+POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_string_group_n13
 # col_name            	data_type           	comment             
 insert_num          	int                 	                    
 c1                  	decimal(38,18)      	                    

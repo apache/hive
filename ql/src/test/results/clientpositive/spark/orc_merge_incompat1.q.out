@@ -1,11 +1,11 @@
-PREHOOK: query: create table orc_merge5 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc
+PREHOOK: query: create table orc_merge5_n3 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@orc_merge5
-POSTHOOK: query: create table orc_merge5 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc
+PREHOOK: Output: default@orc_merge5_n3
+POSTHOOK: query: create table orc_merge5_n3 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@orc_merge5
+POSTHOOK: Output: default@orc_merge5_n3
 PREHOOK: query: create table orc_merge5b (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -14,17 +14,17 @@ POSTHOOK: query: create table orc_merge5b (userid bigint, string1 string, subtyp
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_merge5b
-PREHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' into table orc_merge5
+PREHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' into table orc_merge5_n3
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@orc_merge5
-POSTHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' into table orc_merge5
+PREHOOK: Output: default@orc_merge5_n3
+POSTHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' into table orc_merge5_n3
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@orc_merge5
-PREHOOK: query: explain insert overwrite table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
+POSTHOOK: Output: default@orc_merge5_n3
+PREHOOK: query: explain insert overwrite table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5_n3 where userid<=13
 PREHOOK: type: QUERY
-POSTHOOK: query: explain insert overwrite table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
+POSTHOOK: query: explain insert overwrite table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5_n3 where userid<=13
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -39,7 +39,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: orc_merge5
+                  alias: orc_merge5_n3
                   Statistics: Num rows: 1 Data size: 2464020 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (userid <= 13L) (type: boolean)
@@ -71,84 +71,84 @@ STAGE PLANS:
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: insert overwrite table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
+PREHOOK: query: insert overwrite table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5_n3 where userid<=13
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5
+PREHOOK: Input: default@orc_merge5_n3
 PREHOOK: Output: default@orc_merge5b
-POSTHOOK: query: insert overwrite table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
+POSTHOOK: query: insert overwrite table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5_n3 where userid<=13
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5
+POSTHOOK: Input: default@orc_merge5_n3
 POSTHOOK: Output: default@orc_merge5b
-POSTHOOK: Lineage: orc_merge5b.decimal1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_merge5b.string1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_merge5b.subtype SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:subtype, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_merge5b.ts SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:ts, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orc_merge5b.userid SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:userid, type:bigint, comment:null), ]
-PREHOOK: query: insert into table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
+POSTHOOK: Lineage: orc_merge5b.decimal1 SIMPLE [(orc_merge5_n3)orc_merge5_n3.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_merge5b.string1 SIMPLE [(orc_merge5_n3)orc_merge5_n3.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_merge5b.subtype SIMPLE [(orc_merge5_n3)orc_merge5_n3.FieldSchema(name:subtype, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_merge5b.ts SIMPLE [(orc_merge5_n3)orc_merge5_n3.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_merge5b.userid SIMPLE [(orc_merge5_n3)orc_merge5_n3.FieldSchema(name:userid, type:bigint, comment:null), ]
+PREHOOK: query: insert into table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5_n3 where userid<=13
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5
+PREHOOK: Input: default@orc_merge5_n3
 PREHOOK: Output: default@orc_merge5b
-POSTHOOK: query: insert into table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
+POSTHOOK: query: insert into table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5_n3 where userid<=13
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5
+POSTHOOK: Input: default@orc_merge5_n3
 POSTHOOK: Output: default@orc_merge5b
-POSTHOOK: Lineage: orc_merge5b.decimal1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_merge5b.string1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_merge5b.subtype SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:subtype, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_merge5b.ts SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:ts, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orc_merge5b.userid SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:userid, type:bigint, comment:null), ]
-PREHOOK: query: insert into table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
+POSTHOOK: Lineage: orc_merge5b.decimal1 SIMPLE [(orc_merge5_n3)orc_merge5_n3.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_merge5b.string1 SIMPLE [(orc_merge5_n3)orc_merge5_n3.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_merge5b.subtype SIMPLE [(orc_merge5_n3)orc_merge5_n3.FieldSchema(name:subtype, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_merge5b.ts SIMPLE [(orc_merge5_n3)orc_merge5_n3.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_merge5b.userid SIMPLE [(orc_merge5_n3)orc_merge5_n3.FieldSchema(name:userid, type:bigint, comment:null), ]
+PREHOOK: query: insert into table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5_n3 where userid<=13
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5
+PREHOOK: Input: default@orc_merge5_n3
 PREHOOK: Output: default@orc_merge5b
-POSTHOOK: query: insert into table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
+POSTHOOK: query: insert into table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5_n3 where userid<=13
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5
+POSTHOOK: Input: default@orc_merge5_n3
 POSTHOOK: Output: default@orc_merge5b
-POSTHOOK: Lineage: orc_merge5b.decimal1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_merge5b.string1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_merge5b.subtype SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:subtype, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_merge5b.ts SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:ts, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orc_merge5b.userid SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:userid, type:bigint, comment:null), ]
-PREHOOK: query: insert into table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
+POSTHOOK: Lineage: orc_merge5b.decimal1 SIMPLE [(orc_merge5_n3)orc_merge5_n3.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_merge5b.string1 SIMPLE [(orc_merge5_n3)orc_merge5_n3.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_merge5b.subtype SIMPLE [(orc_merge5_n3)orc_merge5_n3.FieldSchema(name:subtype, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_merge5b.ts SIMPLE [(orc_merge5_n3)orc_merge5_n3.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_merge5b.userid SIMPLE [(orc_merge5_n3)orc_merge5_n3.FieldSchema(name:userid, type:bigint, comment:null), ]
+PREHOOK: query: insert into table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5_n3 where userid<=13
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5
+PREHOOK: Input: default@orc_merge5_n3
 PREHOOK: Output: default@orc_merge5b
-POSTHOOK: query: insert into table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
+POSTHOOK: query: insert into table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5_n3 where userid<=13
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5
+POSTHOOK: Input: default@orc_merge5_n3
 POSTHOOK: Output: default@orc_merge5b
-POSTHOOK: Lineage: orc_merge5b.decimal1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_merge5b.string1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_merge5b.subtype SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:subtype, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_merge5b.ts SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:ts, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orc_merge5b.userid SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:userid, type:bigint, comment:null), ]
-PREHOOK: query: insert into table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
+POSTHOOK: Lineage: orc_merge5b.decimal1 SIMPLE [(orc_merge5_n3)orc_merge5_n3.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_merge5b.string1 SIMPLE [(orc_merge5_n3)orc_merge5_n3.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_merge5b.subtype SIMPLE [(orc_merge5_n3)orc_merge5_n3.FieldSchema(name:subtype, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_merge5b.ts SIMPLE [(orc_merge5_n3)orc_merge5_n3.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_merge5b.userid SIMPLE [(orc_merge5_n3)orc_merge5_n3.FieldSchema(name:userid, type:bigint, comment:null), ]
+PREHOOK: query: insert into table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5_n3 where userid<=13
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5
+PREHOOK: Input: default@orc_merge5_n3
 PREHOOK: Output: default@orc_merge5b
-POSTHOOK: query: insert into table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
+POSTHOOK: query: insert into table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5_n3 where userid<=13
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5
+POSTHOOK: Input: default@orc_merge5_n3
 POSTHOOK: Output: default@orc_merge5b
-POSTHOOK: Lineage: orc_merge5b.decimal1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_merge5b.string1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_merge5b.subtype SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:subtype, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_merge5b.ts SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:ts, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orc_merge5b.userid SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:userid, type:bigint, comment:null), ]
-PREHOOK: query: insert into table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
+POSTHOOK: Lineage: orc_merge5b.decimal1 SIMPLE [(orc_merge5_n3)orc_merge5_n3.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_merge5b.string1 SIMPLE [(orc_merge5_n3)orc_merge5_n3.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_merge5b.subtype SIMPLE [(orc_merge5_n3)orc_merge5_n3.FieldSchema(name:subtype, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_merge5b.ts SIMPLE [(orc_merge5_n3)orc_merge5_n3.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_merge5b.userid SIMPLE [(orc_merge5_n3)orc_merge5_n3.FieldSchema(name:userid, type:bigint, comment:null), ]
+PREHOOK: query: insert into table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5_n3 where userid<=13
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5
+PREHOOK: Input: default@orc_merge5_n3
 PREHOOK: Output: default@orc_merge5b
-POSTHOOK: query: insert into table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
+POSTHOOK: query: insert into table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5_n3 where userid<=13
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5
+POSTHOOK: Input: default@orc_merge5_n3
 POSTHOOK: Output: default@orc_merge5b
-POSTHOOK: Lineage: orc_merge5b.decimal1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_merge5b.string1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_merge5b.subtype SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:subtype, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_merge5b.ts SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:ts, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orc_merge5b.userid SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:userid, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_merge5b.decimal1 SIMPLE [(orc_merge5_n3)orc_merge5_n3.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_merge5b.string1 SIMPLE [(orc_merge5_n3)orc_merge5_n3.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_merge5b.subtype SIMPLE [(orc_merge5_n3)orc_merge5_n3.FieldSchema(name:subtype, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_merge5b.ts SIMPLE [(orc_merge5_n3)orc_merge5_n3.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_merge5b.userid SIMPLE [(orc_merge5_n3)orc_merge5_n3.FieldSchema(name:userid, type:bigint, comment:null), ]
 PREHOOK: query: analyze table orc_merge5b compute statistics noscan
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_merge5b

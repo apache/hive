@@ -1,25 +1,25 @@
-PREHOOK: query: create table acidTbl(a int, b int) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: query: create table acidTbl_n0(a int, b int) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@acidTbl
-POSTHOOK: query: create table acidTbl(a int, b int) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: Output: default@acidTbl_n0
+POSTHOOK: query: create table acidTbl_n0(a int, b int) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@acidTbl
-PREHOOK: query: create table nonAcidOrcTbl(a int, b int) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='false')
+POSTHOOK: Output: default@acidTbl_n0
+PREHOOK: query: create table nonAcidOrcTbl_n0(a int, b int) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='false')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@nonAcidOrcTbl
-POSTHOOK: query: create table nonAcidOrcTbl(a int, b int) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='false')
+PREHOOK: Output: default@nonAcidOrcTbl_n0
+POSTHOOK: query: create table nonAcidOrcTbl_n0(a int, b int) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='false')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@nonAcidOrcTbl
-PREHOOK: query: explain merge into acidTbl as t using nonAcidOrcTbl s ON t.a = s.a 
+POSTHOOK: Output: default@nonAcidOrcTbl_n0
+PREHOOK: query: explain merge into acidTbl_n0 as t using nonAcidOrcTbl_n0 s ON t.a = s.a 
 WHEN MATCHED AND s.a > 8 THEN DELETE
 WHEN MATCHED THEN UPDATE SET b = 7
 WHEN NOT MATCHED THEN INSERT VALUES(s.a, s.b)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain merge into acidTbl as t using nonAcidOrcTbl s ON t.a = s.a 
+POSTHOOK: query: explain merge into acidTbl_n0 as t using nonAcidOrcTbl_n0 s ON t.a = s.a 
 WHEN MATCHED AND s.a > 8 THEN DELETE
 WHEN MATCHED THEN UPDATE SET b = 7
 WHEN NOT MATCHED THEN INSERT VALUES(s.a, s.b)
@@ -156,7 +156,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      name: default.acidtbl
+                      name: default.acidtbl_n0
                   Write Type: DELETE
         Reducer 4 
             Execution mode: vectorized, llap
@@ -172,7 +172,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      name: default.acidtbl
+                      name: default.acidtbl_n0
                   Write Type: UPDATE
         Reducer 5 
             Execution mode: llap
@@ -232,7 +232,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      name: default.acidtbl
+                      name: default.acidtbl_n0
                   Write Type: INSERT
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: int)
@@ -274,7 +274,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.acidtbl
+              name: default.acidtbl_n0
           Write Type: DELETE
 
   Stage: Stage-6
@@ -289,7 +289,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.acidtbl
+              name: default.acidtbl_n0
           Write Type: UPDATE
 
   Stage: Stage-7
@@ -322,7 +322,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.acidtbl
+              name: default.acidtbl_n0
           Write Type: INSERT
 
   Stage: Stage-9
@@ -331,12 +331,12 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: a, b
           Column Types: int, int
-          Table: default.acidtbl
+          Table: default.acidtbl_n0
 
-PREHOOK: query: explain merge into acidTbl as t using nonAcidOrcTbl s ON t.a = s.a
+PREHOOK: query: explain merge into acidTbl_n0 as t using nonAcidOrcTbl_n0 s ON t.a = s.a
 WHEN NOT MATCHED THEN INSERT VALUES(s.a, s.b)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain merge into acidTbl as t using nonAcidOrcTbl s ON t.a = s.a
+POSTHOOK: query: explain merge into acidTbl_n0 as t using nonAcidOrcTbl_n0 s ON t.a = s.a
 WHEN NOT MATCHED THEN INSERT VALUES(s.a, s.b)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -417,7 +417,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      name: default.acidtbl
+                      name: default.acidtbl_n0
                   Write Type: INSERT
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: int)
@@ -459,7 +459,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.acidtbl
+              name: default.acidtbl_n0
           Write Type: INSERT
 
   Stage: Stage-3
@@ -468,5 +468,5 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: a, b
           Column Types: int, int
-          Table: default.acidtbl
+          Table: default.acidtbl_n0
 

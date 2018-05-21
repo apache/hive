@@ -1,8 +1,8 @@
-PREHOOK: query: DROP TABLE orc_llap
+PREHOOK: query: DROP TABLE orc_llap_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE orc_llap
+POSTHOOK: query: DROP TABLE orc_llap_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE orc_llap(
+PREHOOK: query: CREATE TABLE orc_llap_n0(
     ctinyint TINYINT,
     csmallint SMALLINT,
     cint INT,
@@ -18,8 +18,8 @@ PREHOOK: query: CREATE TABLE orc_llap(
     STORED AS ORC tblproperties ("orc.compress"="NONE")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@orc_llap
-POSTHOOK: query: CREATE TABLE orc_llap(
+PREHOOK: Output: default@orc_llap_n0
+POSTHOOK: query: CREATE TABLE orc_llap_n0(
     ctinyint TINYINT,
     csmallint SMALLINT,
     cint INT,
@@ -35,40 +35,40 @@ POSTHOOK: query: CREATE TABLE orc_llap(
     STORED AS ORC tblproperties ("orc.compress"="NONE")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@orc_llap
-PREHOOK: query: insert into table orc_llap
+POSTHOOK: Output: default@orc_llap_n0
+PREHOOK: query: insert into table orc_llap_n0
 select ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2
 from alltypesorc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
-PREHOOK: Output: default@orc_llap
-POSTHOOK: query: insert into table orc_llap
+PREHOOK: Output: default@orc_llap_n0
+POSTHOOK: query: insert into table orc_llap_n0
 select ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2
 from alltypesorc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
-POSTHOOK: Output: default@orc_llap
-POSTHOOK: Lineage: orc_llap.cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_llap.cboolean1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: orc_llap.cboolean2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
-POSTHOOK: Lineage: orc_llap.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_llap.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
-POSTHOOK: Lineage: orc_llap.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: orc_llap.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
-POSTHOOK: Lineage: orc_llap.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_llap.cstring2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_llap.ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orc_llap.ctimestamp2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orc_llap.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+POSTHOOK: Output: default@orc_llap_n0
+POSTHOOK: Lineage: orc_llap_n0.cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n0.cboolean1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n0.cboolean2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n0.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n0.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n0.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n0.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n0.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n0.cstring2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n0.ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n0.ctimestamp2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n0.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
 PREHOOK: query: drop table llap_temp_table
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table llap_temp_table
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: explain
-select * from orc_llap where cint > 10 and cbigint is not null
+select * from orc_llap_n0 where cint > 10 and cbigint is not null
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select * from orc_llap where cint > 10 and cbigint is not null
+select * from orc_llap_n0 where cint > 10 and cbigint is not null
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -79,7 +79,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: orc_llap
+            alias: orc_llap_n0
             filterExpr: ((cint > 10) and cbigint is not null) (type: boolean)
             Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
@@ -106,29 +106,29 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: create table llap_temp_table as
-select * from orc_llap where cint > 10 and cbigint is not null
+select * from orc_llap_n0 where cint > 10 and cbigint is not null
 PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: default@orc_llap
+PREHOOK: Input: default@orc_llap_n0
 PREHOOK: Output: database:default
 PREHOOK: Output: default@llap_temp_table
 POSTHOOK: query: create table llap_temp_table as
-select * from orc_llap where cint > 10 and cbigint is not null
+select * from orc_llap_n0 where cint > 10 and cbigint is not null
 POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: default@orc_llap
+POSTHOOK: Input: default@orc_llap_n0
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@llap_temp_table
-POSTHOOK: Lineage: llap_temp_table.cbigint SIMPLE [(orc_llap)orc_llap.FieldSchema(name:cbigint, type:bigint, comment:null), ]
-POSTHOOK: Lineage: llap_temp_table.cboolean1 SIMPLE [(orc_llap)orc_llap.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: llap_temp_table.cboolean2 SIMPLE [(orc_llap)orc_llap.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
-POSTHOOK: Lineage: llap_temp_table.cdouble SIMPLE [(orc_llap)orc_llap.FieldSchema(name:cdouble, type:double, comment:null), ]
-POSTHOOK: Lineage: llap_temp_table.cfloat SIMPLE [(orc_llap)orc_llap.FieldSchema(name:cfloat, type:float, comment:null), ]
-POSTHOOK: Lineage: llap_temp_table.cint SIMPLE [(orc_llap)orc_llap.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: llap_temp_table.csmallint SIMPLE [(orc_llap)orc_llap.FieldSchema(name:csmallint, type:smallint, comment:null), ]
-POSTHOOK: Lineage: llap_temp_table.cstring1 SIMPLE [(orc_llap)orc_llap.FieldSchema(name:cstring1, type:string, comment:null), ]
-POSTHOOK: Lineage: llap_temp_table.cstring2 SIMPLE [(orc_llap)orc_llap.FieldSchema(name:cstring2, type:string, comment:null), ]
-POSTHOOK: Lineage: llap_temp_table.ctimestamp1 SIMPLE [(orc_llap)orc_llap.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: llap_temp_table.ctimestamp2 SIMPLE [(orc_llap)orc_llap.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: llap_temp_table.ctinyint SIMPLE [(orc_llap)orc_llap.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: llap_temp_table.cbigint SIMPLE [(orc_llap_n0)orc_llap_n0.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: llap_temp_table.cboolean1 SIMPLE [(orc_llap_n0)orc_llap_n0.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: llap_temp_table.cboolean2 SIMPLE [(orc_llap_n0)orc_llap_n0.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
+POSTHOOK: Lineage: llap_temp_table.cdouble SIMPLE [(orc_llap_n0)orc_llap_n0.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: llap_temp_table.cfloat SIMPLE [(orc_llap_n0)orc_llap_n0.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: llap_temp_table.cint SIMPLE [(orc_llap_n0)orc_llap_n0.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: llap_temp_table.csmallint SIMPLE [(orc_llap_n0)orc_llap_n0.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: llap_temp_table.cstring1 SIMPLE [(orc_llap_n0)orc_llap_n0.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: llap_temp_table.cstring2 SIMPLE [(orc_llap_n0)orc_llap_n0.FieldSchema(name:cstring2, type:string, comment:null), ]
+POSTHOOK: Lineage: llap_temp_table.ctimestamp1 SIMPLE [(orc_llap_n0)orc_llap_n0.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: llap_temp_table.ctimestamp2 SIMPLE [(orc_llap_n0)orc_llap_n0.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: llap_temp_table.ctinyint SIMPLE [(orc_llap_n0)orc_llap_n0.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
 PREHOOK: query: select sum(hash(*)) from llap_temp_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@llap_temp_table
@@ -139,10 +139,10 @@ POSTHOOK: Input: default@llap_temp_table
 #### A masked pattern was here ####
 -42787391908
 PREHOOK: query: explain
-select * from orc_llap where cint > 10 and cint < 5000000
+select * from orc_llap_n0 where cint > 10 and cint < 5000000
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select * from orc_llap where cint > 10 and cint < 5000000
+select * from orc_llap_n0 where cint > 10 and cint < 5000000
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -153,7 +153,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: orc_llap
+            alias: orc_llap_n0
             filterExpr: ((cint > 10) and (cint < 5000000)) (type: boolean)
             Statistics: Num rows: 12288 Data size: 2907994 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
@@ -179,13 +179,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from orc_llap where cint > 10 and cint < 5000000
+PREHOOK: query: select * from orc_llap_n0 where cint > 10 and cint < 5000000
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_llap
+PREHOOK: Input: default@orc_llap_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from orc_llap where cint > 10 and cint < 5000000
+POSTHOOK: query: select * from orc_llap_n0 where cint > 10 and cint < 5000000
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_llap
+POSTHOOK: Input: default@orc_llap_n0
 #### A masked pattern was here ####
 -51	NULL	6981	707684071	-51.0	NULL	YdG61y00526u5	G71l66F25	1969-12-31 16:00:08.451	NULL	false	true
 -51	NULL	762	1587111633	-51.0	NULL	q5y2Vy1	UbUx5	1969-12-31 16:00:08.451	NULL	true	false
@@ -222,14 +222,14 @@ NULL	359	762	-1645852809	NULL	9763215.5639	40ks5556SV	xH7445Rals48VOulSyR5F	NULL
 NULL	-75	6981	-1645852809	NULL	-863.257	o5mb0QP5Y48Qd4vdB0	xH7445Rals48VOulSyR5F	NULL	1969-12-31 15:59:44.062	true	false
 NULL	-75	6981	-1645852809	NULL	-863.257	1FNNhmiFLGw425NA13g	xH7445Rals48VOulSyR5F	NULL	1969-12-31 15:59:58.463	false	false
 NULL	-13036	1288927	-1645852809	NULL	-13036.0	yinBY725P7V2	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:00.763	true	false
-PREHOOK: query: DROP TABLE orc_llap
+PREHOOK: query: DROP TABLE orc_llap_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@orc_llap
-PREHOOK: Output: default@orc_llap
-POSTHOOK: query: DROP TABLE orc_llap
+PREHOOK: Input: default@orc_llap_n0
+PREHOOK: Output: default@orc_llap_n0
+POSTHOOK: query: DROP TABLE orc_llap_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@orc_llap
-POSTHOOK: Output: default@orc_llap
+POSTHOOK: Input: default@orc_llap_n0
+POSTHOOK: Output: default@orc_llap_n0
 PREHOOK: query: drop table llap_temp_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@llap_temp_table

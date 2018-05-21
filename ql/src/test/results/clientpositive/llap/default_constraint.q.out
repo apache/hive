@@ -1,21 +1,21 @@
-PREHOOK: query: CREATE TABLE numericDataType(a TINYINT CONSTRAINT tinyint_constraint DEFAULT 127Y ENABLE, b SMALLINT DEFAULT 32767S, c INT DEFAULT 2147483647,
+PREHOOK: query: CREATE TABLE numericDataType_n1(a TINYINT CONSTRAINT tinyint_constraint DEFAULT 127Y ENABLE, b SMALLINT DEFAULT 32767S, c INT DEFAULT 2147483647,
     d BIGINT DEFAULT  9223372036854775807L, e DOUBLE DEFAULT 3.4E38, f DECIMAL(9,2) DEFAULT 1234567.89)
     clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@numericDataType
-POSTHOOK: query: CREATE TABLE numericDataType(a TINYINT CONSTRAINT tinyint_constraint DEFAULT 127Y ENABLE, b SMALLINT DEFAULT 32767S, c INT DEFAULT 2147483647,
+PREHOOK: Output: default@numericDataType_n1
+POSTHOOK: query: CREATE TABLE numericDataType_n1(a TINYINT CONSTRAINT tinyint_constraint DEFAULT 127Y ENABLE, b SMALLINT DEFAULT 32767S, c INT DEFAULT 2147483647,
     d BIGINT DEFAULT  9223372036854775807L, e DOUBLE DEFAULT 3.4E38, f DECIMAL(9,2) DEFAULT 1234567.89)
     clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@numericDataType
-PREHOOK: query: DESC FORMATTED numericDataType
+POSTHOOK: Output: default@numericDataType_n1
+PREHOOK: query: DESC FORMATTED numericDataType_n1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@numericdatatype
-POSTHOOK: query: DESC FORMATTED numericDataType
+PREHOOK: Input: default@numericdatatype_n1
+POSTHOOK: query: DESC FORMATTED numericDataType_n1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@numericdatatype
+POSTHOOK: Input: default@numericdatatype_n1
 # col_name            	data_type           	comment             
 a                   	tinyint             	                    
 b                   	smallint            	                    
@@ -50,7 +50,7 @@ Storage Desc Params:
 # Constraints	 	 
 	 	 
 # Default Constraints	 	 
-Table:              	default.numericdatatype	 
+Table:              	default.numericdatatype_n1	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:b       	Default Value:32767S	 
 	 	 
@@ -69,9 +69,9 @@ Column Name:f       	Default Value:1234567.89
 Constraint Name:    	tinyint_constraint  	 
 Column Name:a       	Default Value:127Y  	 
 	 	 
-PREHOOK: query: EXPLAIN INSERT INTO numericDataType(a) values(3Y)
+PREHOOK: query: EXPLAIN INSERT INTO numericDataType_n1(a) values(3Y)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN INSERT INTO numericDataType(a) values(3Y)
+POSTHOOK: query: EXPLAIN INSERT INTO numericDataType_n1(a) values(3Y)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -124,7 +124,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      name: default.numericdatatype
+                      name: default.numericdatatype_n1
                   Write Type: INSERT
 
   Stage: Stage-2
@@ -138,35 +138,35 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.numericdatatype
+              name: default.numericdatatype_n1
           Write Type: INSERT
 
-PREHOOK: query: INSERT INTO numericDataType(a) values(3Y)
+PREHOOK: query: INSERT INTO numericDataType_n1(a) values(3Y)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@numericdatatype
-POSTHOOK: query: INSERT INTO numericDataType(a) values(3Y)
+PREHOOK: Output: default@numericdatatype_n1
+POSTHOOK: query: INSERT INTO numericDataType_n1(a) values(3Y)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@numericdatatype
-POSTHOOK: Lineage: numericdatatype.a SCRIPT []
-POSTHOOK: Lineage: numericdatatype.b SIMPLE []
-POSTHOOK: Lineage: numericdatatype.c SIMPLE []
-POSTHOOK: Lineage: numericdatatype.d SIMPLE []
-POSTHOOK: Lineage: numericdatatype.e SIMPLE []
-POSTHOOK: Lineage: numericdatatype.f SIMPLE []
-PREHOOK: query: SELECT * FROM numericDataType
+POSTHOOK: Output: default@numericdatatype_n1
+POSTHOOK: Lineage: numericdatatype_n1.a SCRIPT []
+POSTHOOK: Lineage: numericdatatype_n1.b SIMPLE []
+POSTHOOK: Lineage: numericdatatype_n1.c SIMPLE []
+POSTHOOK: Lineage: numericdatatype_n1.d SIMPLE []
+POSTHOOK: Lineage: numericdatatype_n1.e SIMPLE []
+POSTHOOK: Lineage: numericdatatype_n1.f SIMPLE []
+PREHOOK: query: SELECT * FROM numericDataType_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@numericdatatype
+PREHOOK: Input: default@numericdatatype_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM numericDataType
+POSTHOOK: query: SELECT * FROM numericDataType_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@numericdatatype
+POSTHOOK: Input: default@numericdatatype_n1
 #### A masked pattern was here ####
 3	32767	2147483647	9223372036854775807	3.4E38	1234567.89
-PREHOOK: query: EXPLAIN INSERT INTO numericDataType(e,f) values(4.5, 678.4)
+PREHOOK: query: EXPLAIN INSERT INTO numericDataType_n1(e,f) values(4.5, 678.4)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN INSERT INTO numericDataType(e,f) values(4.5, 678.4)
+POSTHOOK: query: EXPLAIN INSERT INTO numericDataType_n1(e,f) values(4.5, 678.4)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -219,7 +219,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      name: default.numericdatatype
+                      name: default.numericdatatype_n1
                   Write Type: INSERT
 
   Stage: Stage-2
@@ -233,61 +233,61 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.numericdatatype
+              name: default.numericdatatype_n1
           Write Type: INSERT
 
-PREHOOK: query: INSERT INTO numericDataType(e,f) values(4.5, 678.4)
+PREHOOK: query: INSERT INTO numericDataType_n1(e,f) values(4.5, 678.4)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@numericdatatype
-POSTHOOK: query: INSERT INTO numericDataType(e,f) values(4.5, 678.4)
+PREHOOK: Output: default@numericdatatype_n1
+POSTHOOK: query: INSERT INTO numericDataType_n1(e,f) values(4.5, 678.4)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@numericdatatype
-POSTHOOK: Lineage: numericdatatype.a SIMPLE []
-POSTHOOK: Lineage: numericdatatype.b SIMPLE []
-POSTHOOK: Lineage: numericdatatype.c SIMPLE []
-POSTHOOK: Lineage: numericdatatype.d SIMPLE []
-POSTHOOK: Lineage: numericdatatype.e SCRIPT []
-POSTHOOK: Lineage: numericdatatype.f SCRIPT []
-PREHOOK: query: SELECT * FROM numericDataType
+POSTHOOK: Output: default@numericdatatype_n1
+POSTHOOK: Lineage: numericdatatype_n1.a SIMPLE []
+POSTHOOK: Lineage: numericdatatype_n1.b SIMPLE []
+POSTHOOK: Lineage: numericdatatype_n1.c SIMPLE []
+POSTHOOK: Lineage: numericdatatype_n1.d SIMPLE []
+POSTHOOK: Lineage: numericdatatype_n1.e SCRIPT []
+POSTHOOK: Lineage: numericdatatype_n1.f SCRIPT []
+PREHOOK: query: SELECT * FROM numericDataType_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@numericdatatype
+PREHOOK: Input: default@numericdatatype_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM numericDataType
+POSTHOOK: query: SELECT * FROM numericDataType_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@numericdatatype
+POSTHOOK: Input: default@numericdatatype_n1
 #### A masked pattern was here ####
 3	32767	2147483647	9223372036854775807	3.4E38	1234567.89
 127	32767	2147483647	9223372036854775807	4.5	678.40
-PREHOOK: query: DROP TABLE numericDataType
+PREHOOK: query: DROP TABLE numericDataType_n1
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@numericdatatype
-PREHOOK: Output: default@numericdatatype
-POSTHOOK: query: DROP TABLE numericDataType
+PREHOOK: Input: default@numericdatatype_n1
+PREHOOK: Output: default@numericdatatype_n1
+POSTHOOK: query: DROP TABLE numericDataType_n1
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@numericdatatype
-POSTHOOK: Output: default@numericdatatype
+POSTHOOK: Input: default@numericdatatype_n1
+POSTHOOK: Output: default@numericdatatype_n1
 PREHOOK: query: -- Date/time
-CREATE TABLE table1(d DATE DEFAULT DATE'2018-02-14', t TIMESTAMP DEFAULT TIMESTAMP'2016-02-22 12:45:07.000000000',
+CREATE TABLE table1_n16(d DATE DEFAULT DATE'2018-02-14', t TIMESTAMP DEFAULT TIMESTAMP'2016-02-22 12:45:07.000000000',
     tz timestamp with local time zone DEFAULT TIMESTAMPLOCALTZ'2016-01-03 12:26:34 America/Los_Angeles',
     d1 DATE DEFAULT current_date() ENABLE, t1 TIMESTAMP DEFAULT current_timestamp() DISABLE)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@table1
+PREHOOK: Output: default@table1_n16
 POSTHOOK: query: -- Date/time
-CREATE TABLE table1(d DATE DEFAULT DATE'2018-02-14', t TIMESTAMP DEFAULT TIMESTAMP'2016-02-22 12:45:07.000000000',
+CREATE TABLE table1_n16(d DATE DEFAULT DATE'2018-02-14', t TIMESTAMP DEFAULT TIMESTAMP'2016-02-22 12:45:07.000000000',
     tz timestamp with local time zone DEFAULT TIMESTAMPLOCALTZ'2016-01-03 12:26:34 America/Los_Angeles',
     d1 DATE DEFAULT current_date() ENABLE, t1 TIMESTAMP DEFAULT current_timestamp() DISABLE)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@table1
-PREHOOK: query: DESC FORMATTED table1
+POSTHOOK: Output: default@table1_n16
+PREHOOK: query: DESC FORMATTED table1_n16
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table1
-POSTHOOK: query: DESC FORMATTED table1
+PREHOOK: Input: default@table1_n16
+POSTHOOK: query: DESC FORMATTED table1_n16
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1_n16
 # col_name            	data_type           	comment             
 d                   	date                	                    
 t                   	timestamp           	                    
@@ -319,7 +319,13 @@ Storage Desc Params:
 # Constraints	 	 
 	 	 
 # Default Constraints	 	 
-Table:              	default.table1      	 
+Table:              	default.table1_n16  	 
+Constraint Name:    	#### A masked pattern was here ####	 
+Column Name:t1      	Default Value:current_timestamp()	 
+	 	 
+Constraint Name:    	#### A masked pattern was here ####	 
+Column Name:tz      	Default Value:TIMESTAMPLOCALTZ'2016-01-03 12:26:34 America/Los_Angeles'	 
+	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:d1      	Default Value:current_date()	 
 	 	 
@@ -329,15 +335,9 @@ Column Name:d       	Default Value:DATE'2018-02-14'
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:t       	Default Value:TIMESTAMP'2016-02-22 12:45:07.000000000'	 
 	 	 
-Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:t1      	Default Value:current_timestamp()	 
-	 	 
-Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:tz      	Default Value:TIMESTAMPLOCALTZ'2016-01-03 12:26:34 America/Los_Angeles'	 
-	 	 
-PREHOOK: query: EXPLAIN INSERT INTO table1(t) values ("1985-12-31 12:45:07")
+PREHOOK: query: EXPLAIN INSERT INTO table1_n16(t) values ("1985-12-31 12:45:07")
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN INSERT INTO table1(t) values ("1985-12-31 12:45:07")
+POSTHOOK: query: EXPLAIN INSERT INTO table1_n16(t) values ("1985-12-31 12:45:07")
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -373,7 +373,7 @@ STAGE PLANS:
                               input format: org.apache.hadoop.mapred.TextInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                              name: default.table1
+                              name: default.table1_n16
             Execution mode: llap
             LLAP IO: no inputs
 
@@ -388,33 +388,33 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.table1
+              name: default.table1_n16
 
-PREHOOK: query: INSERT INTO table1(t) values ("1985-12-31 12:45:07")
+PREHOOK: query: INSERT INTO table1_n16(t) values ("1985-12-31 12:45:07")
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@table1
-POSTHOOK: query: INSERT INTO table1(t) values ("1985-12-31 12:45:07")
+PREHOOK: Output: default@table1_n16
+POSTHOOK: query: INSERT INTO table1_n16(t) values ("1985-12-31 12:45:07")
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@table1
-POSTHOOK: Lineage: table1.d SIMPLE []
-POSTHOOK: Lineage: table1.d1 EXPRESSION []
-POSTHOOK: Lineage: table1.t SCRIPT []
-POSTHOOK: Lineage: table1.t1 SIMPLE []
-POSTHOOK: Lineage: table1.tz SIMPLE []
-PREHOOK: query: SELECT d, t, tz,d1=current_date(), t1 from table1
+POSTHOOK: Output: default@table1_n16
+POSTHOOK: Lineage: table1_n16.d SIMPLE []
+POSTHOOK: Lineage: table1_n16.d1 EXPRESSION []
+POSTHOOK: Lineage: table1_n16.t SCRIPT []
+POSTHOOK: Lineage: table1_n16.t1 SIMPLE []
+POSTHOOK: Lineage: table1_n16.tz SIMPLE []
+PREHOOK: query: SELECT d, t, tz,d1=current_date(), t1 from table1_n16
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table1
+PREHOOK: Input: default@table1_n16
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT d, t, tz,d1=current_date(), t1 from table1
+POSTHOOK: query: SELECT d, t, tz,d1=current_date(), t1 from table1_n16
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1_n16
 #### A masked pattern was here ####
 2018-02-14	1985-12-31 12:45:07	2016-01-03 12:26:34.0 US/Pacific	true	NULL
-PREHOOK: query: EXPLAIN INSERT INTO table1(d, t1) values ("1985-12-31", '2018-02-27 17:32:14.259')
+PREHOOK: query: EXPLAIN INSERT INTO table1_n16(d, t1) values ("1985-12-31", '2018-02-27 17:32:14.259')
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN INSERT INTO table1(d, t1) values ("1985-12-31", '2018-02-27 17:32:14.259')
+POSTHOOK: query: EXPLAIN INSERT INTO table1_n16(d, t1) values ("1985-12-31", '2018-02-27 17:32:14.259')
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -450,7 +450,7 @@ STAGE PLANS:
                               input format: org.apache.hadoop.mapred.TextInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                              name: default.table1
+                              name: default.table1_n16
             Execution mode: llap
             LLAP IO: no inputs
 
@@ -465,59 +465,59 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.table1
+              name: default.table1_n16
 
-PREHOOK: query: INSERT INTO table1(d, t1) values ("1985-12-31", '2018-02-27 17:32:14.259')
+PREHOOK: query: INSERT INTO table1_n16(d, t1) values ("1985-12-31", '2018-02-27 17:32:14.259')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@table1
-POSTHOOK: query: INSERT INTO table1(d, t1) values ("1985-12-31", '2018-02-27 17:32:14.259')
+PREHOOK: Output: default@table1_n16
+POSTHOOK: query: INSERT INTO table1_n16(d, t1) values ("1985-12-31", '2018-02-27 17:32:14.259')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@table1
-POSTHOOK: Lineage: table1.d SCRIPT []
-POSTHOOK: Lineage: table1.d1 EXPRESSION []
-POSTHOOK: Lineage: table1.t SIMPLE []
-POSTHOOK: Lineage: table1.t1 SCRIPT []
-POSTHOOK: Lineage: table1.tz SIMPLE []
-PREHOOK: query: SELECT d, t, tz,d1=current_date(), t1=current_timestamp() from table1
+POSTHOOK: Output: default@table1_n16
+POSTHOOK: Lineage: table1_n16.d SCRIPT []
+POSTHOOK: Lineage: table1_n16.d1 EXPRESSION []
+POSTHOOK: Lineage: table1_n16.t SIMPLE []
+POSTHOOK: Lineage: table1_n16.t1 SCRIPT []
+POSTHOOK: Lineage: table1_n16.tz SIMPLE []
+PREHOOK: query: SELECT d, t, tz,d1=current_date(), t1=current_timestamp() from table1_n16
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table1
+PREHOOK: Input: default@table1_n16
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT d, t, tz,d1=current_date(), t1=current_timestamp() from table1
+POSTHOOK: query: SELECT d, t, tz,d1=current_date(), t1=current_timestamp() from table1_n16
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1_n16
 #### A masked pattern was here ####
 2018-02-14	1985-12-31 12:45:07	2016-01-03 12:26:34.0 US/Pacific	true	NULL
 1985-12-31	2016-02-22 12:45:07	2016-01-03 12:26:34.0 US/Pacific	true	false
-PREHOOK: query: DROP TABLE table1
+PREHOOK: query: DROP TABLE table1_n16
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@table1
-PREHOOK: Output: default@table1
-POSTHOOK: query: DROP TABLE table1
+PREHOOK: Input: default@table1_n16
+PREHOOK: Output: default@table1_n16
+POSTHOOK: query: DROP TABLE table1_n16
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@table1
-POSTHOOK: Output: default@table1
-PREHOOK: query: CREATE TABLE table2(i STRING DEFAULT 'current_database()', j STRING DEFAULT current_user(),
+POSTHOOK: Input: default@table1_n16
+POSTHOOK: Output: default@table1_n16
+PREHOOK: query: CREATE TABLE table2_n11(i STRING DEFAULT 'current_database()', j STRING DEFAULT current_user(),
     k STRING DEFAULT 'Current_User()', v varchar(350) DEFAULT cast('varchar_default_value' as varchar(350)),
     c char(20) DEFAULT cast('char_value' as char(20)))
     clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@table2
-POSTHOOK: query: CREATE TABLE table2(i STRING DEFAULT 'current_database()', j STRING DEFAULT current_user(),
+PREHOOK: Output: default@table2_n11
+POSTHOOK: query: CREATE TABLE table2_n11(i STRING DEFAULT 'current_database()', j STRING DEFAULT current_user(),
     k STRING DEFAULT 'Current_User()', v varchar(350) DEFAULT cast('varchar_default_value' as varchar(350)),
     c char(20) DEFAULT cast('char_value' as char(20)))
     clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@table2
-PREHOOK: query: DESC FORMATTED table2
+POSTHOOK: Output: default@table2_n11
+PREHOOK: query: DESC FORMATTED table2_n11
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table2
-POSTHOOK: query: DESC FORMATTED table2
+PREHOOK: Input: default@table2_n11
+POSTHOOK: query: DESC FORMATTED table2_n11
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table2
+POSTHOOK: Input: default@table2_n11
 # col_name            	data_type           	comment             
 i                   	string              	                    
 j                   	string              	                    
@@ -551,7 +551,13 @@ Storage Desc Params:
 # Constraints	 	 
 	 	 
 # Default Constraints	 	 
-Table:              	default.table2      	 
+Table:              	default.table2_n11  	 
+Constraint Name:    	#### A masked pattern was here ####	 
+Column Name:c       	Default Value:cast('char_value' as char(20))	 
+	 	 
+Constraint Name:    	#### A masked pattern was here ####	 
+Column Name:i       	Default Value:'current_database()'	 
+	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:j       	Default Value:current_user()	 
 	 	 
@@ -561,15 +567,9 @@ Column Name:k       	Default Value:'Current_User()'
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:v       	Default Value:cast('varchar_default_value' as varchar(350))	 
 	 	 
-Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:c       	Default Value:cast('char_value' as char(20))	 
-	 	 
-Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:i       	Default Value:'current_database()'	 
-	 	 
-PREHOOK: query: EXPLAIN INSERT INTO table2(i) values('default')
+PREHOOK: query: EXPLAIN INSERT INTO table2_n11(i) values('default')
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN INSERT INTO table2(i) values('default')
+POSTHOOK: query: EXPLAIN INSERT INTO table2_n11(i) values('default')
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -622,7 +622,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      name: default.table2
+                      name: default.table2_n11
                   Write Type: INSERT
 
   Stage: Stage-2
@@ -636,34 +636,34 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.table2
+              name: default.table2_n11
           Write Type: INSERT
 
-PREHOOK: query: INSERT INTO table2(i) values('default')
+PREHOOK: query: INSERT INTO table2_n11(i) values('default')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@table2
-POSTHOOK: query: INSERT INTO table2(i) values('default')
+PREHOOK: Output: default@table2_n11
+POSTHOOK: query: INSERT INTO table2_n11(i) values('default')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@table2
-POSTHOOK: Lineage: table2.c EXPRESSION []
-POSTHOOK: Lineage: table2.i SCRIPT []
-POSTHOOK: Lineage: table2.j EXPRESSION []
-POSTHOOK: Lineage: table2.k SIMPLE []
-POSTHOOK: Lineage: table2.v EXPRESSION []
-PREHOOK: query: SELECT i,j=current_user(),k,v,c FROM table2
+POSTHOOK: Output: default@table2_n11
+POSTHOOK: Lineage: table2_n11.c EXPRESSION []
+POSTHOOK: Lineage: table2_n11.i SCRIPT []
+POSTHOOK: Lineage: table2_n11.j EXPRESSION []
+POSTHOOK: Lineage: table2_n11.k SIMPLE []
+POSTHOOK: Lineage: table2_n11.v EXPRESSION []
+PREHOOK: query: SELECT i,j=current_user(),k,v,c FROM table2_n11
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table2
+PREHOOK: Input: default@table2_n11
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT i,j=current_user(),k,v,c FROM table2
+POSTHOOK: query: SELECT i,j=current_user(),k,v,c FROM table2_n11
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table2
+POSTHOOK: Input: default@table2_n11
 #### A masked pattern was here ####
 default	true	Current_User()	varchar_default_value	char_value          
-PREHOOK: query: EXPLAIN INSERT INTO table2(v, c) values('varchar_default2', 'char')
+PREHOOK: query: EXPLAIN INSERT INTO table2_n11(v, c) values('varchar_default2', 'char')
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN INSERT INTO table2(v, c) values('varchar_default2', 'char')
+POSTHOOK: query: EXPLAIN INSERT INTO table2_n11(v, c) values('varchar_default2', 'char')
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -716,7 +716,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      name: default.table2
+                      name: default.table2_n11
                   Write Type: INSERT
 
   Stage: Stage-2
@@ -730,40 +730,40 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.table2
+              name: default.table2_n11
           Write Type: INSERT
 
-PREHOOK: query: INSERT INTO table2(v, c) values('varchar_default2', 'char')
+PREHOOK: query: INSERT INTO table2_n11(v, c) values('varchar_default2', 'char')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@table2
-POSTHOOK: query: INSERT INTO table2(v, c) values('varchar_default2', 'char')
+PREHOOK: Output: default@table2_n11
+POSTHOOK: query: INSERT INTO table2_n11(v, c) values('varchar_default2', 'char')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@table2
-POSTHOOK: Lineage: table2.c SCRIPT []
-POSTHOOK: Lineage: table2.i SIMPLE []
-POSTHOOK: Lineage: table2.j EXPRESSION []
-POSTHOOK: Lineage: table2.k SIMPLE []
-POSTHOOK: Lineage: table2.v SCRIPT []
-PREHOOK: query: SELECT i,j=current_user(),k,v,c FROM table2
+POSTHOOK: Output: default@table2_n11
+POSTHOOK: Lineage: table2_n11.c SCRIPT []
+POSTHOOK: Lineage: table2_n11.i SIMPLE []
+POSTHOOK: Lineage: table2_n11.j EXPRESSION []
+POSTHOOK: Lineage: table2_n11.k SIMPLE []
+POSTHOOK: Lineage: table2_n11.v SCRIPT []
+PREHOOK: query: SELECT i,j=current_user(),k,v,c FROM table2_n11
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table2
+PREHOOK: Input: default@table2_n11
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT i,j=current_user(),k,v,c FROM table2
+POSTHOOK: query: SELECT i,j=current_user(),k,v,c FROM table2_n11
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table2
+POSTHOOK: Input: default@table2_n11
 #### A masked pattern was here ####
 default	true	Current_User()	varchar_default_value	char_value          
 current_database()	true	Current_User()	varchar_default2	char                
-PREHOOK: query: DROP TABLE table2
+PREHOOK: query: DROP TABLE table2_n11
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@table2
-PREHOOK: Output: default@table2
-POSTHOOK: query: DROP TABLE table2
+PREHOOK: Input: default@table2_n11
+PREHOOK: Output: default@table2_n11
+POSTHOOK: query: DROP TABLE table2_n11
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@table2
-POSTHOOK: Output: default@table2
+POSTHOOK: Input: default@table2_n11
+POSTHOOK: Output: default@table2_n11
 PREHOOK: query: CREATE TABLE misc(b BOOLEAN DEFAULT true, b1 BINARY DEFAULT cast('bin' as binary))
     clustered by (b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
@@ -1008,7 +1008,7 @@ POSTHOOK: query: DROP TABLE misc
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@misc
 POSTHOOK: Output: default@misc
-PREHOOK: query: CREATE table t11(i int default cast(cast(4 as double) as int),
+PREHOOK: query: CREATE table t11_n2(i int default cast(cast(4 as double) as int),
     b1 boolean default cast ('true' as boolean), b2 int default cast (5.67 as int),
     b3 tinyint default cast (45 as tinyint), b4 float default cast (45.4 as float),
     b5 bigint default cast (567 as bigint), b6 smallint default cast (88 as smallint),
@@ -1020,8 +1020,8 @@ PREHOOK: query: CREATE table t11(i int default cast(cast(4 as double) as int),
      c2 double default cast(5 as double), c4 char(2) default cast(cast(cast('ab' as string) as varchar(2)) as char(2)))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t11
-POSTHOOK: query: CREATE table t11(i int default cast(cast(4 as double) as int),
+PREHOOK: Output: default@t11_n2
+POSTHOOK: query: CREATE table t11_n2(i int default cast(cast(4 as double) as int),
     b1 boolean default cast ('true' as boolean), b2 int default cast (5.67 as int),
     b3 tinyint default cast (45 as tinyint), b4 float default cast (45.4 as float),
     b5 bigint default cast (567 as bigint), b6 smallint default cast (88 as smallint),
@@ -1033,13 +1033,13 @@ POSTHOOK: query: CREATE table t11(i int default cast(cast(4 as double) as int),
      c2 double default cast(5 as double), c4 char(2) default cast(cast(cast('ab' as string) as varchar(2)) as char(2)))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t11
-PREHOOK: query: DESC FORMATTED t11
+POSTHOOK: Output: default@t11_n2
+PREHOOK: query: DESC FORMATTED t11_n2
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@t11
-POSTHOOK: query: DESC FORMATTED t11
+PREHOOK: Input: default@t11_n2
+POSTHOOK: query: DESC FORMATTED t11_n2
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@t11
+POSTHOOK: Input: default@t11_n2
 # col_name            	data_type           	comment             
 i                   	int                 	                    
 b1                  	boolean             	                    
@@ -1080,27 +1080,27 @@ Storage Desc Params:
 # Constraints	 	 
 	 	 
 # Default Constraints	 	 
-Table:              	default.t11         	 
+Table:              	default.t11_n2      	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:tz1     	Default Value:cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone)	 
-	 	 
-Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:b1      	Default Value:cast ('true' as boolean)	 
+Column Name:dc      	Default Value:cast(4.5 as decimal(8,2))	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:i       	Default Value:cast(cast(4 as double) as int)	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:b2      	Default Value:cast (5.67 as int)	 
+Column Name:b1      	Default Value:cast ('true' as boolean)	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:j       	Default Value:cast(current_timestamp() as varchar(50))	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:b3      	Default Value:cast (45 as tinyint)	 
+Column Name:b2      	Default Value:cast (5.67 as int)	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:k       	Default Value:cast(cast(current_user() as varchar(50)) as string)	 
+	 	 
+Constraint Name:    	#### A masked pattern was here ####	 
+Column Name:b3      	Default Value:cast (45 as tinyint)	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:b4      	Default Value:cast (45.4 as float)	 
@@ -1115,17 +1115,17 @@ Constraint Name:    	#### A masked pattern was here ####
 Column Name:c2      	Default Value:cast(5 as double)	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
+Column Name:tz1     	Default Value:cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone)	 
+	 	 
+Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:c4      	Default Value:cast(cast(cast('ab' as string) as varchar(2)) as char(2))	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:ts      	Default Value:cast('2016-01-01 12:01:01' as timestamp)	 
 	 	 
-Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:dc      	Default Value:cast(4.5 as decimal(8,2))	 
-	 	 
-PREHOOK: query: EXPLAIN INSERT INTO t11(c4) values('vi')
+PREHOOK: query: EXPLAIN INSERT INTO t11_n2(c4) values('vi')
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN INSERT INTO t11(c4) values('vi')
+POSTHOOK: query: EXPLAIN INSERT INTO t11_n2(c4) values('vi')
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1161,7 +1161,7 @@ STAGE PLANS:
                               input format: org.apache.hadoop.mapred.TextInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                              name: default.t11
+                              name: default.t11_n2
             Execution mode: llap
             LLAP IO: no inputs
 
@@ -1176,42 +1176,42 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.t11
+              name: default.t11_n2
 
-PREHOOK: query: INSERT INTO t11(c4) values('vi')
+PREHOOK: query: INSERT INTO t11_n2(c4) values('vi')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t11
-POSTHOOK: query: INSERT INTO t11(c4) values('vi')
+PREHOOK: Output: default@t11_n2
+POSTHOOK: query: INSERT INTO t11_n2(c4) values('vi')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t11
-POSTHOOK: Lineage: t11.b1 EXPRESSION []
-POSTHOOK: Lineage: t11.b2 EXPRESSION []
-POSTHOOK: Lineage: t11.b3 EXPRESSION []
-POSTHOOK: Lineage: t11.b4 EXPRESSION []
-POSTHOOK: Lineage: t11.b5 EXPRESSION []
-POSTHOOK: Lineage: t11.b6 EXPRESSION []
-POSTHOOK: Lineage: t11.c2 EXPRESSION []
-POSTHOOK: Lineage: t11.c4 SCRIPT []
-POSTHOOK: Lineage: t11.dc EXPRESSION []
-POSTHOOK: Lineage: t11.i EXPRESSION []
-POSTHOOK: Lineage: t11.j EXPRESSION []
-POSTHOOK: Lineage: t11.k EXPRESSION []
-POSTHOOK: Lineage: t11.ts EXPRESSION []
-POSTHOOK: Lineage: t11.tz1 EXPRESSION []
-PREHOOK: query: SELECT ts, tz1, dc, b1,b2,b3,b4,b5,b6,j=cast(current_timestamp() as varchar(50)), k=cast(current_user() as string), c2, c4 from t11
+POSTHOOK: Output: default@t11_n2
+POSTHOOK: Lineage: t11_n2.b1 EXPRESSION []
+POSTHOOK: Lineage: t11_n2.b2 EXPRESSION []
+POSTHOOK: Lineage: t11_n2.b3 EXPRESSION []
+POSTHOOK: Lineage: t11_n2.b4 EXPRESSION []
+POSTHOOK: Lineage: t11_n2.b5 EXPRESSION []
+POSTHOOK: Lineage: t11_n2.b6 EXPRESSION []
+POSTHOOK: Lineage: t11_n2.c2 EXPRESSION []
+POSTHOOK: Lineage: t11_n2.c4 SCRIPT []
+POSTHOOK: Lineage: t11_n2.dc EXPRESSION []
+POSTHOOK: Lineage: t11_n2.i EXPRESSION []
+POSTHOOK: Lineage: t11_n2.j EXPRESSION []
+POSTHOOK: Lineage: t11_n2.k EXPRESSION []
+POSTHOOK: Lineage: t11_n2.ts EXPRESSION []
+POSTHOOK: Lineage: t11_n2.tz1 EXPRESSION []
+PREHOOK: query: SELECT ts, tz1, dc, b1,b2,b3,b4,b5,b6,j=cast(current_timestamp() as varchar(50)), k=cast(current_user() as string), c2, c4 from t11_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t11
+PREHOOK: Input: default@t11_n2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT ts, tz1, dc, b1,b2,b3,b4,b5,b6,j=cast(current_timestamp() as varchar(50)), k=cast(current_user() as string), c2, c4 from t11
+POSTHOOK: query: SELECT ts, tz1, dc, b1,b2,b3,b4,b5,b6,j=cast(current_timestamp() as varchar(50)), k=cast(current_user() as string), c2, c4 from t11_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t11
+POSTHOOK: Input: default@t11_n2
 #### A masked pattern was here ####
 2016-01-01 12:01:01	2016-01-03 12:26:34.0 US/Pacific	4.50	true	5	45	45.4	567	88	false	true	5.0	vi
-PREHOOK: query: EXPLAIN INSERT INTO t11(b1,c4) values(true,'ga')
+PREHOOK: query: EXPLAIN INSERT INTO t11_n2(b1,c4) values(true,'ga')
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN INSERT INTO t11(b1,c4) values(true,'ga')
+POSTHOOK: query: EXPLAIN INSERT INTO t11_n2(b1,c4) values(true,'ga')
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1247,7 +1247,7 @@ STAGE PLANS:
                               input format: org.apache.hadoop.mapred.TextInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                              name: default.t11
+                              name: default.t11_n2
             Execution mode: llap
             LLAP IO: no inputs
 
@@ -1262,70 +1262,70 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.t11
+              name: default.t11_n2
 
-PREHOOK: query: INSERT INTO t11(c4) values('vi')
+PREHOOK: query: INSERT INTO t11_n2(c4) values('vi')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t11
-POSTHOOK: query: INSERT INTO t11(c4) values('vi')
+PREHOOK: Output: default@t11_n2
+POSTHOOK: query: INSERT INTO t11_n2(c4) values('vi')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t11
-POSTHOOK: Lineage: t11.b1 EXPRESSION []
-POSTHOOK: Lineage: t11.b2 EXPRESSION []
-POSTHOOK: Lineage: t11.b3 EXPRESSION []
-POSTHOOK: Lineage: t11.b4 EXPRESSION []
-POSTHOOK: Lineage: t11.b5 EXPRESSION []
-POSTHOOK: Lineage: t11.b6 EXPRESSION []
-POSTHOOK: Lineage: t11.c2 EXPRESSION []
-POSTHOOK: Lineage: t11.c4 SCRIPT []
-POSTHOOK: Lineage: t11.dc EXPRESSION []
-POSTHOOK: Lineage: t11.i EXPRESSION []
-POSTHOOK: Lineage: t11.j EXPRESSION []
-POSTHOOK: Lineage: t11.k EXPRESSION []
-POSTHOOK: Lineage: t11.ts EXPRESSION []
-POSTHOOK: Lineage: t11.tz1 EXPRESSION []
-PREHOOK: query: SELECT ts, tz1, dc, b1,b2,b3,b4,b5,b6,j=cast(current_timestamp() as varchar(50)), k=cast(current_user() as string), c2, c4 from t11
+POSTHOOK: Output: default@t11_n2
+POSTHOOK: Lineage: t11_n2.b1 EXPRESSION []
+POSTHOOK: Lineage: t11_n2.b2 EXPRESSION []
+POSTHOOK: Lineage: t11_n2.b3 EXPRESSION []
+POSTHOOK: Lineage: t11_n2.b4 EXPRESSION []
+POSTHOOK: Lineage: t11_n2.b5 EXPRESSION []
+POSTHOOK: Lineage: t11_n2.b6 EXPRESSION []
+POSTHOOK: Lineage: t11_n2.c2 EXPRESSION []
+POSTHOOK: Lineage: t11_n2.c4 SCRIPT []
+POSTHOOK: Lineage: t11_n2.dc EXPRESSION []
+POSTHOOK: Lineage: t11_n2.i EXPRESSION []
+POSTHOOK: Lineage: t11_n2.j EXPRESSION []
+POSTHOOK: Lineage: t11_n2.k EXPRESSION []
+POSTHOOK: Lineage: t11_n2.ts EXPRESSION []
+POSTHOOK: Lineage: t11_n2.tz1 EXPRESSION []
+PREHOOK: query: SELECT ts, tz1, dc, b1,b2,b3,b4,b5,b6,j=cast(current_timestamp() as varchar(50)), k=cast(current_user() as string), c2, c4 from t11_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t11
+PREHOOK: Input: default@t11_n2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT ts, tz1, dc, b1,b2,b3,b4,b5,b6,j=cast(current_timestamp() as varchar(50)), k=cast(current_user() as string), c2, c4 from t11
+POSTHOOK: query: SELECT ts, tz1, dc, b1,b2,b3,b4,b5,b6,j=cast(current_timestamp() as varchar(50)), k=cast(current_user() as string), c2, c4 from t11_n2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t11
+POSTHOOK: Input: default@t11_n2
 #### A masked pattern was here ####
 2016-01-01 12:01:01	2016-01-03 12:26:34.0 US/Pacific	4.50	true	5	45	45.4	567	88	false	true	5.0	vi
 2016-01-01 12:01:01	2016-01-03 12:26:34.0 US/Pacific	4.50	true	5	45	45.4	567	88	false	true	5.0	vi
-PREHOOK: query: DROP TABLE t11
+PREHOOK: query: DROP TABLE t11_n2
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@t11
-PREHOOK: Output: default@t11
-POSTHOOK: query: DROP TABLE t11
+PREHOOK: Input: default@t11_n2
+PREHOOK: Output: default@t11_n2
+POSTHOOK: query: DROP TABLE t11_n2
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@t11
-POSTHOOK: Output: default@t11
-PREHOOK: query: CREATE TABLE numericDataType(a TINYINT CONSTRAINT tinyint_constraint DEFAULT 127Y ENABLE, b SMALLINT DEFAULT 32767S, c INT DEFAULT 2147483647,
+POSTHOOK: Input: default@t11_n2
+POSTHOOK: Output: default@t11_n2
+PREHOOK: query: CREATE TABLE numericDataType_n1(a TINYINT CONSTRAINT tinyint_constraint DEFAULT 127Y ENABLE, b SMALLINT DEFAULT 32767S, c INT DEFAULT 2147483647,
     d BIGINT DEFAULT  9223372036854775807L, e DOUBLE DEFAULT 3.4E38, f DECIMAL(9,2) DEFAULT 1234567.89)
     clustered by (b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@numericDataType
-POSTHOOK: query: CREATE TABLE numericDataType(a TINYINT CONSTRAINT tinyint_constraint DEFAULT 127Y ENABLE, b SMALLINT DEFAULT 32767S, c INT DEFAULT 2147483647,
+PREHOOK: Output: default@numericDataType_n1
+POSTHOOK: query: CREATE TABLE numericDataType_n1(a TINYINT CONSTRAINT tinyint_constraint DEFAULT 127Y ENABLE, b SMALLINT DEFAULT 32767S, c INT DEFAULT 2147483647,
     d BIGINT DEFAULT  9223372036854775807L, e DOUBLE DEFAULT 3.4E38, f DECIMAL(9,2) DEFAULT 1234567.89)
     clustered by (b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@numericDataType
-PREHOOK: query: ALTER TABLE numericDataType DROP CONSTRAINT tinyint_constraint
+POSTHOOK: Output: default@numericDataType_n1
+PREHOOK: query: ALTER TABLE numericDataType_n1 DROP CONSTRAINT tinyint_constraint
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
-POSTHOOK: query: ALTER TABLE numericDataType DROP CONSTRAINT tinyint_constraint
+POSTHOOK: query: ALTER TABLE numericDataType_n1 DROP CONSTRAINT tinyint_constraint
 POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
-PREHOOK: query: DESC FORMATTED numericDataType
+PREHOOK: query: DESC FORMATTED numericDataType_n1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@numericdatatype
-POSTHOOK: query: DESC FORMATTED numericDataType
+PREHOOK: Input: default@numericdatatype_n1
+POSTHOOK: query: DESC FORMATTED numericDataType_n1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@numericdatatype
+POSTHOOK: Input: default@numericdatatype_n1
 # col_name            	data_type           	comment             
 a                   	tinyint             	                    
 b                   	smallint            	                    
@@ -1360,7 +1360,7 @@ Storage Desc Params:
 # Constraints	 	 
 	 	 
 # Default Constraints	 	 
-Table:              	default.numericdatatype	 
+Table:              	default.numericdatatype_n1	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:b       	Default Value:32767S	 
 	 	 
@@ -1376,9 +1376,9 @@ Column Name:e       	Default Value:3.4E38
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:f       	Default Value:1234567.89	 
 	 	 
-PREHOOK: query: EXPLAIN INSERT INTO numericDataType(b) values(456)
+PREHOOK: query: EXPLAIN INSERT INTO numericDataType_n1(b) values(456)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN INSERT INTO numericDataType(b) values(456)
+POSTHOOK: query: EXPLAIN INSERT INTO numericDataType_n1(b) values(456)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1431,7 +1431,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      name: default.numericdatatype
+                      name: default.numericdatatype_n1
                   Write Type: INSERT
 
   Stage: Stage-2
@@ -1445,42 +1445,42 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.numericdatatype
+              name: default.numericdatatype_n1
           Write Type: INSERT
 
-PREHOOK: query: INSERT INTO numericDataType(b) values(456)
+PREHOOK: query: INSERT INTO numericDataType_n1(b) values(456)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@numericdatatype
-POSTHOOK: query: INSERT INTO numericDataType(b) values(456)
+PREHOOK: Output: default@numericdatatype_n1
+POSTHOOK: query: INSERT INTO numericDataType_n1(b) values(456)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@numericdatatype
-POSTHOOK: Lineage: numericdatatype.a SIMPLE []
-POSTHOOK: Lineage: numericdatatype.b SCRIPT []
-POSTHOOK: Lineage: numericdatatype.c SIMPLE []
-POSTHOOK: Lineage: numericdatatype.d SIMPLE []
-POSTHOOK: Lineage: numericdatatype.e SIMPLE []
-POSTHOOK: Lineage: numericdatatype.f SIMPLE []
-PREHOOK: query: SELECT * from numericDataType
+POSTHOOK: Output: default@numericdatatype_n1
+POSTHOOK: Lineage: numericdatatype_n1.a SIMPLE []
+POSTHOOK: Lineage: numericdatatype_n1.b SCRIPT []
+POSTHOOK: Lineage: numericdatatype_n1.c SIMPLE []
+POSTHOOK: Lineage: numericdatatype_n1.d SIMPLE []
+POSTHOOK: Lineage: numericdatatype_n1.e SIMPLE []
+POSTHOOK: Lineage: numericdatatype_n1.f SIMPLE []
+PREHOOK: query: SELECT * from numericDataType_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@numericdatatype
+PREHOOK: Input: default@numericdatatype_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * from numericDataType
+POSTHOOK: query: SELECT * from numericDataType_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@numericdatatype
+POSTHOOK: Input: default@numericdatatype_n1
 #### A masked pattern was here ####
 NULL	456	2147483647	9223372036854775807	3.4E38	1234567.89
-PREHOOK: query: ALTER TABLE numericDataType ADD CONSTRAINT uk1 UNIQUE(a,b) DISABLE NOVALIDATE
+PREHOOK: query: ALTER TABLE numericDataType_n1 ADD CONSTRAINT uk1 UNIQUE(a,b) DISABLE NOVALIDATE
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
-POSTHOOK: query: ALTER TABLE numericDataType ADD CONSTRAINT uk1 UNIQUE(a,b) DISABLE NOVALIDATE
+POSTHOOK: query: ALTER TABLE numericDataType_n1 ADD CONSTRAINT uk1 UNIQUE(a,b) DISABLE NOVALIDATE
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
-PREHOOK: query: DESC FORMATTED numericDataType
+PREHOOK: query: DESC FORMATTED numericDataType_n1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@numericdatatype
-POSTHOOK: query: DESC FORMATTED numericDataType
+PREHOOK: Input: default@numericdatatype_n1
+POSTHOOK: query: DESC FORMATTED numericDataType_n1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@numericdatatype
+POSTHOOK: Input: default@numericdatatype_n1
 # col_name            	data_type           	comment             
 a                   	tinyint             	                    
 b                   	smallint            	                    
@@ -1517,14 +1517,14 @@ Storage Desc Params:
 # Constraints	 	 
 	 	 
 # Unique Constraints	 	 
-Table:              	default.numericdatatype	 
+Table:              	default.numericdatatype_n1	 
 Constraint Name:    	uk1                 	 
 Column Name:a       	Key Sequence:1      	 
 Column Name:b       	Key Sequence:2      	 
 	 	 
 	 	 
 # Default Constraints	 	 
-Table:              	default.numericdatatype	 
+Table:              	default.numericdatatype_n1	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:b       	Default Value:32767S	 
 	 	 
@@ -1540,9 +1540,9 @@ Column Name:e       	Default Value:3.4E38
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:f       	Default Value:1234567.89	 
 	 	 
-PREHOOK: query: EXPLAIN INSERT INTO numericDataType(b) values(56)
+PREHOOK: query: EXPLAIN INSERT INTO numericDataType_n1(b) values(56)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN INSERT INTO numericDataType(b) values(56)
+POSTHOOK: query: EXPLAIN INSERT INTO numericDataType_n1(b) values(56)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1595,7 +1595,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      name: default.numericdatatype
+                      name: default.numericdatatype_n1
                   Write Type: INSERT
 
   Stage: Stage-2
@@ -1609,47 +1609,47 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.numericdatatype
+              name: default.numericdatatype_n1
           Write Type: INSERT
 
-PREHOOK: query: INSERT INTO numericDataType(b) values(456)
+PREHOOK: query: INSERT INTO numericDataType_n1(b) values(456)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@numericdatatype
-POSTHOOK: query: INSERT INTO numericDataType(b) values(456)
+PREHOOK: Output: default@numericdatatype_n1
+POSTHOOK: query: INSERT INTO numericDataType_n1(b) values(456)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@numericdatatype
-POSTHOOK: Lineage: numericdatatype.a SIMPLE []
-POSTHOOK: Lineage: numericdatatype.b SCRIPT []
-POSTHOOK: Lineage: numericdatatype.c SIMPLE []
-POSTHOOK: Lineage: numericdatatype.d SIMPLE []
-POSTHOOK: Lineage: numericdatatype.e SIMPLE []
-POSTHOOK: Lineage: numericdatatype.f SIMPLE []
-PREHOOK: query: SELECT * from numericDataType
+POSTHOOK: Output: default@numericdatatype_n1
+POSTHOOK: Lineage: numericdatatype_n1.a SIMPLE []
+POSTHOOK: Lineage: numericdatatype_n1.b SCRIPT []
+POSTHOOK: Lineage: numericdatatype_n1.c SIMPLE []
+POSTHOOK: Lineage: numericdatatype_n1.d SIMPLE []
+POSTHOOK: Lineage: numericdatatype_n1.e SIMPLE []
+POSTHOOK: Lineage: numericdatatype_n1.f SIMPLE []
+PREHOOK: query: SELECT * from numericDataType_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@numericdatatype
+PREHOOK: Input: default@numericdatatype_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * from numericDataType
+POSTHOOK: query: SELECT * from numericDataType_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@numericdatatype
+POSTHOOK: Input: default@numericdatatype_n1
 #### A masked pattern was here ####
 NULL	456	2147483647	9223372036854775807	3.4E38	1234567.89
 NULL	456	2147483647	9223372036854775807	3.4E38	1234567.89
-PREHOOK: query: ALTER TABLE numericDataType CHANGE a a TINYINT CONSTRAINT second_null_constraint NOT NULL ENABLE
+PREHOOK: query: ALTER TABLE numericDataType_n1 CHANGE a a TINYINT CONSTRAINT second_null_constraint NOT NULL ENABLE
 PREHOOK: type: ALTERTABLE_RENAMECOL
-PREHOOK: Input: default@numericdatatype
-PREHOOK: Output: default@numericdatatype
-POSTHOOK: query: ALTER TABLE numericDataType CHANGE a a TINYINT CONSTRAINT second_null_constraint NOT NULL ENABLE
+PREHOOK: Input: default@numericdatatype_n1
+PREHOOK: Output: default@numericdatatype_n1
+POSTHOOK: query: ALTER TABLE numericDataType_n1 CHANGE a a TINYINT CONSTRAINT second_null_constraint NOT NULL ENABLE
 POSTHOOK: type: ALTERTABLE_RENAMECOL
-POSTHOOK: Input: default@numericdatatype
-POSTHOOK: Output: default@numericdatatype
-PREHOOK: query: DESC FORMATTED numericDataType
+POSTHOOK: Input: default@numericdatatype_n1
+POSTHOOK: Output: default@numericdatatype_n1
+PREHOOK: query: DESC FORMATTED numericDataType_n1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@numericdatatype
-POSTHOOK: query: DESC FORMATTED numericDataType
+PREHOOK: Input: default@numericdatatype_n1
+POSTHOOK: query: DESC FORMATTED numericDataType_n1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@numericdatatype
+POSTHOOK: Input: default@numericdatatype_n1
 # col_name            	data_type           	comment             
 a                   	tinyint             	                    
 b                   	smallint            	                    
@@ -1687,20 +1687,20 @@ Storage Desc Params:
 # Constraints	 	 
 	 	 
 # Unique Constraints	 	 
-Table:              	default.numericdatatype	 
+Table:              	default.numericdatatype_n1	 
 Constraint Name:    	uk1                 	 
 Column Name:a       	Key Sequence:1      	 
 Column Name:b       	Key Sequence:2      	 
 	 	 
 	 	 
 # Not Null Constraints	 	 
-Table:              	default.numericdatatype	 
+Table:              	default.numericdatatype_n1	 
 Constraint Name:    	second_null_constraint	 
 Column Name:        	a                   	 
 	 	 
 	 	 
 # Default Constraints	 	 
-Table:              	default.numericdatatype	 
+Table:              	default.numericdatatype_n1	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:b       	Default Value:32767S	 
 	 	 
@@ -1716,20 +1716,20 @@ Column Name:e       	Default Value:3.4E38
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:f       	Default Value:1234567.89	 
 	 	 
-PREHOOK: query: ALTER TABLE numericDataType CHANGE a a TINYINT CONSTRAINT default_constraint DEFAULT 127Y ENABLE
+PREHOOK: query: ALTER TABLE numericDataType_n1 CHANGE a a TINYINT CONSTRAINT default_constraint DEFAULT 127Y ENABLE
 PREHOOK: type: ALTERTABLE_RENAMECOL
-PREHOOK: Input: default@numericdatatype
-PREHOOK: Output: default@numericdatatype
-POSTHOOK: query: ALTER TABLE numericDataType CHANGE a a TINYINT CONSTRAINT default_constraint DEFAULT 127Y ENABLE
+PREHOOK: Input: default@numericdatatype_n1
+PREHOOK: Output: default@numericdatatype_n1
+POSTHOOK: query: ALTER TABLE numericDataType_n1 CHANGE a a TINYINT CONSTRAINT default_constraint DEFAULT 127Y ENABLE
 POSTHOOK: type: ALTERTABLE_RENAMECOL
-POSTHOOK: Input: default@numericdatatype
-POSTHOOK: Output: default@numericdatatype
-PREHOOK: query: DESC FORMATTED numericDataType
+POSTHOOK: Input: default@numericdatatype_n1
+POSTHOOK: Output: default@numericdatatype_n1
+PREHOOK: query: DESC FORMATTED numericDataType_n1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@numericdatatype
-POSTHOOK: query: DESC FORMATTED numericDataType
+PREHOOK: Input: default@numericdatatype_n1
+POSTHOOK: query: DESC FORMATTED numericDataType_n1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@numericdatatype
+POSTHOOK: Input: default@numericdatatype_n1
 # col_name            	data_type           	comment             
 a                   	tinyint             	                    
 b                   	smallint            	                    
@@ -1767,20 +1767,20 @@ Storage Desc Params:
 # Constraints	 	 
 	 	 
 # Unique Constraints	 	 
-Table:              	default.numericdatatype	 
+Table:              	default.numericdatatype_n1	 
 Constraint Name:    	uk1                 	 
 Column Name:a       	Key Sequence:1      	 
 Column Name:b       	Key Sequence:2      	 
 	 	 
 	 	 
 # Not Null Constraints	 	 
-Table:              	default.numericdatatype	 
+Table:              	default.numericdatatype_n1	 
 Constraint Name:    	second_null_constraint	 
 Column Name:        	a                   	 
 	 	 
 	 	 
 # Default Constraints	 	 
-Table:              	default.numericdatatype	 
+Table:              	default.numericdatatype_n1	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:b       	Default Value:32767S	 
 	 	 
@@ -1799,9 +1799,9 @@ Column Name:f       	Default Value:1234567.89
 Constraint Name:    	default_constraint  	 
 Column Name:a       	Default Value:127Y  	 
 	 	 
-PREHOOK: query: EXPLAIN INSERT INTO numericDataType(f) values(847.45)
+PREHOOK: query: EXPLAIN INSERT INTO numericDataType_n1(f) values(847.45)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN INSERT INTO numericDataType(f) values(847.45)
+POSTHOOK: query: EXPLAIN INSERT INTO numericDataType_n1(f) values(847.45)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1857,7 +1857,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      name: default.numericdatatype
+                      name: default.numericdatatype_n1
                   Write Type: INSERT
 
   Stage: Stage-2
@@ -1871,42 +1871,42 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.numericdatatype
+              name: default.numericdatatype_n1
           Write Type: INSERT
 
 PREHOOK: query: --plan should have both DEFAULT and NOT NULL
-INSERT INTO numericDataType(f) values(847.45)
+INSERT INTO numericDataType_n1(f) values(847.45)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@numericdatatype
+PREHOOK: Output: default@numericdatatype_n1
 POSTHOOK: query: --plan should have both DEFAULT and NOT NULL
-INSERT INTO numericDataType(f) values(847.45)
+INSERT INTO numericDataType_n1(f) values(847.45)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@numericdatatype
-POSTHOOK: Lineage: numericdatatype.a SIMPLE []
-POSTHOOK: Lineage: numericdatatype.b SIMPLE []
-POSTHOOK: Lineage: numericdatatype.c SIMPLE []
-POSTHOOK: Lineage: numericdatatype.d SIMPLE []
-POSTHOOK: Lineage: numericdatatype.e SIMPLE []
-POSTHOOK: Lineage: numericdatatype.f SCRIPT []
-PREHOOK: query: Select * from numericDataType
+POSTHOOK: Output: default@numericdatatype_n1
+POSTHOOK: Lineage: numericdatatype_n1.a SIMPLE []
+POSTHOOK: Lineage: numericdatatype_n1.b SIMPLE []
+POSTHOOK: Lineage: numericdatatype_n1.c SIMPLE []
+POSTHOOK: Lineage: numericdatatype_n1.d SIMPLE []
+POSTHOOK: Lineage: numericdatatype_n1.e SIMPLE []
+POSTHOOK: Lineage: numericdatatype_n1.f SCRIPT []
+PREHOOK: query: Select * from numericDataType_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@numericdatatype
+PREHOOK: Input: default@numericdatatype_n1
 #### A masked pattern was here ####
-POSTHOOK: query: Select * from numericDataType
+POSTHOOK: query: Select * from numericDataType_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@numericdatatype
+POSTHOOK: Input: default@numericdatatype_n1
 #### A masked pattern was here ####
 NULL	456	2147483647	9223372036854775807	3.4E38	1234567.89
 NULL	456	2147483647	9223372036854775807	3.4E38	1234567.89
 127	32767	2147483647	9223372036854775807	3.4E38	847.45
-PREHOOK: query: DESC FORMATTED numericDataType
+PREHOOK: query: DESC FORMATTED numericDataType_n1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@numericdatatype
-POSTHOOK: query: DESC FORMATTED numericDataType
+PREHOOK: Input: default@numericdatatype_n1
+POSTHOOK: query: DESC FORMATTED numericDataType_n1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@numericdatatype
+POSTHOOK: Input: default@numericdatatype_n1
 # col_name            	data_type           	comment             
 a                   	tinyint             	                    
 b                   	smallint            	                    
@@ -1944,20 +1944,20 @@ Storage Desc Params:
 # Constraints	 	 
 	 	 
 # Unique Constraints	 	 
-Table:              	default.numericdatatype	 
+Table:              	default.numericdatatype_n1	 
 Constraint Name:    	uk1                 	 
 Column Name:a       	Key Sequence:1      	 
 Column Name:b       	Key Sequence:2      	 
 	 	 
 	 	 
 # Not Null Constraints	 	 
-Table:              	default.numericdatatype	 
+Table:              	default.numericdatatype_n1	 
 Constraint Name:    	second_null_constraint	 
 Column Name:        	a                   	 
 	 	 
 	 	 
 # Default Constraints	 	 
-Table:              	default.numericdatatype	 
+Table:              	default.numericdatatype_n1	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:b       	Default Value:32767S	 
 	 	 
@@ -1976,16 +1976,16 @@ Column Name:f       	Default Value:1234567.89
 Constraint Name:    	default_constraint  	 
 Column Name:a       	Default Value:127Y  	 
 	 	 
-PREHOOK: query: ALTER TABLE numericDataType DROP CONSTRAINT default_constraint
+PREHOOK: query: ALTER TABLE numericDataType_n1 DROP CONSTRAINT default_constraint
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
-POSTHOOK: query: ALTER TABLE numericDataType DROP CONSTRAINT default_constraint
+POSTHOOK: query: ALTER TABLE numericDataType_n1 DROP CONSTRAINT default_constraint
 POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
-PREHOOK: query: DESC FORMATTED numericDataType
+PREHOOK: query: DESC FORMATTED numericDataType_n1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@numericdatatype
-POSTHOOK: query: DESC FORMATTED numericDataType
+PREHOOK: Input: default@numericdatatype_n1
+POSTHOOK: query: DESC FORMATTED numericDataType_n1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@numericdatatype
+POSTHOOK: Input: default@numericdatatype_n1
 # col_name            	data_type           	comment             
 a                   	tinyint             	                    
 b                   	smallint            	                    
@@ -2023,20 +2023,20 @@ Storage Desc Params:
 # Constraints	 	 
 	 	 
 # Unique Constraints	 	 
-Table:              	default.numericdatatype	 
+Table:              	default.numericdatatype_n1	 
 Constraint Name:    	uk1                 	 
 Column Name:a       	Key Sequence:1      	 
 Column Name:b       	Key Sequence:2      	 
 	 	 
 	 	 
 # Not Null Constraints	 	 
-Table:              	default.numericdatatype	 
+Table:              	default.numericdatatype_n1	 
 Constraint Name:    	second_null_constraint	 
 Column Name:        	a                   	 
 	 	 
 	 	 
 # Default Constraints	 	 
-Table:              	default.numericdatatype	 
+Table:              	default.numericdatatype_n1	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:b       	Default Value:32767S	 
 	 	 
@@ -2052,20 +2052,20 @@ Column Name:e       	Default Value:3.4E38
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:f       	Default Value:1234567.89	 
 	 	 
-PREHOOK: query: ALTER TABLE numericDataType CHANGE a a TINYINT CONSTRAINT default_constraint DEFAULT 108Y ENABLE
+PREHOOK: query: ALTER TABLE numericDataType_n1 CHANGE a a TINYINT CONSTRAINT default_constraint DEFAULT 108Y ENABLE
 PREHOOK: type: ALTERTABLE_RENAMECOL
-PREHOOK: Input: default@numericdatatype
-PREHOOK: Output: default@numericdatatype
-POSTHOOK: query: ALTER TABLE numericDataType CHANGE a a TINYINT CONSTRAINT default_constraint DEFAULT 108Y ENABLE
+PREHOOK: Input: default@numericdatatype_n1
+PREHOOK: Output: default@numericdatatype_n1
+POSTHOOK: query: ALTER TABLE numericDataType_n1 CHANGE a a TINYINT CONSTRAINT default_constraint DEFAULT 108Y ENABLE
 POSTHOOK: type: ALTERTABLE_RENAMECOL
-POSTHOOK: Input: default@numericdatatype
-POSTHOOK: Output: default@numericdatatype
-PREHOOK: query: DESC FORMATTED numericDataType
+POSTHOOK: Input: default@numericdatatype_n1
+POSTHOOK: Output: default@numericdatatype_n1
+PREHOOK: query: DESC FORMATTED numericDataType_n1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@numericdatatype
-POSTHOOK: query: DESC FORMATTED numericDataType
+PREHOOK: Input: default@numericdatatype_n1
+POSTHOOK: query: DESC FORMATTED numericDataType_n1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@numericdatatype
+POSTHOOK: Input: default@numericdatatype_n1
 # col_name            	data_type           	comment             
 a                   	tinyint             	                    
 b                   	smallint            	                    
@@ -2103,20 +2103,20 @@ Storage Desc Params:
 # Constraints	 	 
 	 	 
 # Unique Constraints	 	 
-Table:              	default.numericdatatype	 
+Table:              	default.numericdatatype_n1	 
 Constraint Name:    	uk1                 	 
 Column Name:a       	Key Sequence:1      	 
 Column Name:b       	Key Sequence:2      	 
 	 	 
 	 	 
 # Not Null Constraints	 	 
-Table:              	default.numericdatatype	 
+Table:              	default.numericdatatype_n1	 
 Constraint Name:    	second_null_constraint	 
 Column Name:        	a                   	 
 	 	 
 	 	 
 # Default Constraints	 	 
-Table:              	default.numericdatatype	 
+Table:              	default.numericdatatype_n1	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:b       	Default Value:32767S	 
 	 	 
@@ -2135,9 +2135,9 @@ Column Name:f       	Default Value:1234567.89
 Constraint Name:    	default_constraint  	 
 Column Name:a       	Default Value:108Y  	 
 	 	 
-PREHOOK: query: EXPLAIN INSERT INTO numericDataType(f) values(847.45)
+PREHOOK: query: EXPLAIN INSERT INTO numericDataType_n1(f) values(847.45)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN INSERT INTO numericDataType(f) values(847.45)
+POSTHOOK: query: EXPLAIN INSERT INTO numericDataType_n1(f) values(847.45)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2193,7 +2193,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      name: default.numericdatatype
+                      name: default.numericdatatype_n1
                   Write Type: INSERT
 
   Stage: Stage-2
@@ -2207,43 +2207,43 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.numericdatatype
+              name: default.numericdatatype_n1
           Write Type: INSERT
 
-PREHOOK: query: INSERT INTO numericDataType(f) values(847.45)
+PREHOOK: query: INSERT INTO numericDataType_n1(f) values(847.45)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@numericdatatype
-POSTHOOK: query: INSERT INTO numericDataType(f) values(847.45)
+PREHOOK: Output: default@numericdatatype_n1
+POSTHOOK: query: INSERT INTO numericDataType_n1(f) values(847.45)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@numericdatatype
-POSTHOOK: Lineage: numericdatatype.a SIMPLE []
-POSTHOOK: Lineage: numericdatatype.b SIMPLE []
-POSTHOOK: Lineage: numericdatatype.c SIMPLE []
-POSTHOOK: Lineage: numericdatatype.d SIMPLE []
-POSTHOOK: Lineage: numericdatatype.e SIMPLE []
-POSTHOOK: Lineage: numericdatatype.f SCRIPT []
-PREHOOK: query: Select * from numericDataType
+POSTHOOK: Output: default@numericdatatype_n1
+POSTHOOK: Lineage: numericdatatype_n1.a SIMPLE []
+POSTHOOK: Lineage: numericdatatype_n1.b SIMPLE []
+POSTHOOK: Lineage: numericdatatype_n1.c SIMPLE []
+POSTHOOK: Lineage: numericdatatype_n1.d SIMPLE []
+POSTHOOK: Lineage: numericdatatype_n1.e SIMPLE []
+POSTHOOK: Lineage: numericdatatype_n1.f SCRIPT []
+PREHOOK: query: Select * from numericDataType_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@numericdatatype
+PREHOOK: Input: default@numericdatatype_n1
 #### A masked pattern was here ####
-POSTHOOK: query: Select * from numericDataType
+POSTHOOK: query: Select * from numericDataType_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@numericdatatype
+POSTHOOK: Input: default@numericdatatype_n1
 #### A masked pattern was here ####
 NULL	456	2147483647	9223372036854775807	3.4E38	1234567.89
 NULL	456	2147483647	9223372036854775807	3.4E38	1234567.89
 127	32767	2147483647	9223372036854775807	3.4E38	847.45
 108	32767	2147483647	9223372036854775807	3.4E38	847.45
-PREHOOK: query: DROP TABLE numericDataType
+PREHOOK: query: DROP TABLE numericDataType_n1
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@numericdatatype
-PREHOOK: Output: default@numericdatatype
-POSTHOOK: query: DROP TABLE numericDataType
+PREHOOK: Input: default@numericdatatype_n1
+PREHOOK: Output: default@numericdatatype_n1
+POSTHOOK: query: DROP TABLE numericDataType_n1
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@numericdatatype
-POSTHOOK: Output: default@numericdatatype
+POSTHOOK: Input: default@numericdatatype_n1
+POSTHOOK: Output: default@numericdatatype_n1
 PREHOOK: query: create table t (i int, j string default
 	'1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123')
 PREHOOK: type: CREATETABLE
@@ -2374,21 +2374,21 @@ POSTHOOK: query: drop table t
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t
 POSTHOOK: Output: default@t
-PREHOOK: query: CREATE TABLE tablePartitioned (a STRING NOT NULL ENFORCED, url STRING constraint bdc1 default 'http://localhost',
+PREHOOK: query: CREATE TABLE tablePartitioned_n0 (a STRING NOT NULL ENFORCED, url STRING constraint bdc1 default 'http://localhost',
     c STRING NOT NULL ENFORCED)
     PARTITIONED BY (p1 STRING, p2 INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tablePartitioned
-POSTHOOK: query: CREATE TABLE tablePartitioned (a STRING NOT NULL ENFORCED, url STRING constraint bdc1 default 'http://localhost',
+PREHOOK: Output: default@tablePartitioned_n0
+POSTHOOK: query: CREATE TABLE tablePartitioned_n0 (a STRING NOT NULL ENFORCED, url STRING constraint bdc1 default 'http://localhost',
     c STRING NOT NULL ENFORCED)
     PARTITIONED BY (p1 STRING, p2 INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tablePartitioned
-PREHOOK: query: explain INSERT INTO tablePartitioned partition(p1='today', p2=10) values('not', 'null', 'constraint')
+POSTHOOK: Output: default@tablePartitioned_n0
+PREHOOK: query: explain INSERT INTO tablePartitioned_n0 partition(p1='today', p2=10) values('not', 'null', 'constraint')
 PREHOOK: type: QUERY
-POSTHOOK: query: explain INSERT INTO tablePartitioned partition(p1='today', p2=10) values('not', 'null', 'constraint')
+POSTHOOK: query: explain INSERT INTO tablePartitioned_n0 partition(p1='today', p2=10) values('not', 'null', 'constraint')
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2427,7 +2427,7 @@ STAGE PLANS:
                                 input format: org.apache.hadoop.mapred.TextInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                                name: default.tablepartitioned
+                                name: default.tablepartitioned_n0
             Execution mode: llap
             LLAP IO: no inputs
 
@@ -2445,49 +2445,49 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.tablepartitioned
+              name: default.tablepartitioned_n0
 
-PREHOOK: query: INSERT INTO tablePartitioned partition(p1='today', p2=10) values('not', 'null', 'constraint')
+PREHOOK: query: INSERT INTO tablePartitioned_n0 partition(p1='today', p2=10) values('not', 'null', 'constraint')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@tablepartitioned@p1=today/p2=10
-POSTHOOK: query: INSERT INTO tablePartitioned partition(p1='today', p2=10) values('not', 'null', 'constraint')
+PREHOOK: Output: default@tablepartitioned_n0@p1=today/p2=10
+POSTHOOK: query: INSERT INTO tablePartitioned_n0 partition(p1='today', p2=10) values('not', 'null', 'constraint')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@tablepartitioned@p1=today/p2=10
-POSTHOOK: Lineage: tablepartitioned PARTITION(p1=today,p2=10).a SCRIPT []
-POSTHOOK: Lineage: tablepartitioned PARTITION(p1=today,p2=10).c SCRIPT []
-POSTHOOK: Lineage: tablepartitioned PARTITION(p1=today,p2=10).url SCRIPT []
-PREHOOK: query: DROP TABLE tablePartitioned
+POSTHOOK: Output: default@tablepartitioned_n0@p1=today/p2=10
+POSTHOOK: Lineage: tablepartitioned_n0 PARTITION(p1=today,p2=10).a SCRIPT []
+POSTHOOK: Lineage: tablepartitioned_n0 PARTITION(p1=today,p2=10).c SCRIPT []
+POSTHOOK: Lineage: tablepartitioned_n0 PARTITION(p1=today,p2=10).url SCRIPT []
+PREHOOK: query: DROP TABLE tablePartitioned_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@tablepartitioned
-PREHOOK: Output: default@tablepartitioned
-POSTHOOK: query: DROP TABLE tablePartitioned
+PREHOOK: Input: default@tablepartitioned_n0
+PREHOOK: Output: default@tablepartitioned_n0
+POSTHOOK: query: DROP TABLE tablePartitioned_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@tablepartitioned
-POSTHOOK: Output: default@tablepartitioned
-PREHOOK: query: CREATE TABLE numericDataType(a TINYINT CONSTRAINT tinyint_constraint DEFAULT 127Y ENABLE, b SMALLINT DEFAULT 32767S, c INT DEFAULT 2147483647,
+POSTHOOK: Input: default@tablepartitioned_n0
+POSTHOOK: Output: default@tablepartitioned_n0
+PREHOOK: query: CREATE TABLE numericDataType_n1(a TINYINT CONSTRAINT tinyint_constraint DEFAULT 127Y ENABLE, b SMALLINT DEFAULT 32767S, c INT DEFAULT 2147483647,
     d BIGINT DEFAULT  9223372036854775807L, e DOUBLE DEFAULT 3.4E38, f DECIMAL(9,2) DEFAULT 1234567.89)
     clustered by (b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@numericDataType
-POSTHOOK: query: CREATE TABLE numericDataType(a TINYINT CONSTRAINT tinyint_constraint DEFAULT 127Y ENABLE, b SMALLINT DEFAULT 32767S, c INT DEFAULT 2147483647,
+PREHOOK: Output: default@numericDataType_n1
+POSTHOOK: query: CREATE TABLE numericDataType_n1(a TINYINT CONSTRAINT tinyint_constraint DEFAULT 127Y ENABLE, b SMALLINT DEFAULT 32767S, c INT DEFAULT 2147483647,
     d BIGINT DEFAULT  9223372036854775807L, e DOUBLE DEFAULT 3.4E38, f DECIMAL(9,2) DEFAULT 1234567.89)
     clustered by (b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@numericDataType
-PREHOOK: query: ALTER TABLE numericDataType DROP CONSTRAINT tinyint_constraint
+POSTHOOK: Output: default@numericDataType_n1
+PREHOOK: query: ALTER TABLE numericDataType_n1 DROP CONSTRAINT tinyint_constraint
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
-POSTHOOK: query: ALTER TABLE numericDataType DROP CONSTRAINT tinyint_constraint
+POSTHOOK: query: ALTER TABLE numericDataType_n1 DROP CONSTRAINT tinyint_constraint
 POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
-PREHOOK: query: DESC FORMATTED numericDataType
+PREHOOK: query: DESC FORMATTED numericDataType_n1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@numericdatatype
-POSTHOOK: query: DESC FORMATTED numericDataType
+PREHOOK: Input: default@numericdatatype_n1
+POSTHOOK: query: DESC FORMATTED numericDataType_n1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@numericdatatype
+POSTHOOK: Input: default@numericdatatype_n1
 # col_name            	data_type           	comment             
 a                   	tinyint             	                    
 b                   	smallint            	                    
@@ -2522,7 +2522,7 @@ Storage Desc Params:
 # Constraints	 	 
 	 	 
 # Default Constraints	 	 
-Table:              	default.numericdatatype	 
+Table:              	default.numericdatatype_n1	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:b       	Default Value:32767S	 
 	 	 
@@ -2538,9 +2538,9 @@ Column Name:e       	Default Value:3.4E38
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:f       	Default Value:1234567.89	 
 	 	 
-PREHOOK: query: EXPLAIN INSERT INTO numericDataType(b) values(456)
+PREHOOK: query: EXPLAIN INSERT INTO numericDataType_n1(b) values(456)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN INSERT INTO numericDataType(b) values(456)
+POSTHOOK: query: EXPLAIN INSERT INTO numericDataType_n1(b) values(456)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2593,7 +2593,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      name: default.numericdatatype
+                      name: default.numericdatatype_n1
                   Write Type: INSERT
 
   Stage: Stage-2
@@ -2607,42 +2607,42 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.numericdatatype
+              name: default.numericdatatype_n1
           Write Type: INSERT
 
-PREHOOK: query: INSERT INTO numericDataType(b) values(456)
+PREHOOK: query: INSERT INTO numericDataType_n1(b) values(456)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@numericdatatype
-POSTHOOK: query: INSERT INTO numericDataType(b) values(456)
+PREHOOK: Output: default@numericdatatype_n1
+POSTHOOK: query: INSERT INTO numericDataType_n1(b) values(456)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@numericdatatype
-POSTHOOK: Lineage: numericdatatype.a SIMPLE []
-POSTHOOK: Lineage: numericdatatype.b SCRIPT []
-POSTHOOK: Lineage: numericdatatype.c SIMPLE []
-POSTHOOK: Lineage: numericdatatype.d SIMPLE []
-POSTHOOK: Lineage: numericdatatype.e SIMPLE []
-POSTHOOK: Lineage: numericdatatype.f SIMPLE []
-PREHOOK: query: SELECT * from numericDataType
+POSTHOOK: Output: default@numericdatatype_n1
+POSTHOOK: Lineage: numericdatatype_n1.a SIMPLE []
+POSTHOOK: Lineage: numericdatatype_n1.b SCRIPT []
+POSTHOOK: Lineage: numericdatatype_n1.c SIMPLE []
+POSTHOOK: Lineage: numericdatatype_n1.d SIMPLE []
+POSTHOOK: Lineage: numericdatatype_n1.e SIMPLE []
+POSTHOOK: Lineage: numericdatatype_n1.f SIMPLE []
+PREHOOK: query: SELECT * from numericDataType_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@numericdatatype
+PREHOOK: Input: default@numericdatatype_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * from numericDataType
+POSTHOOK: query: SELECT * from numericDataType_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@numericdatatype
+POSTHOOK: Input: default@numericdatatype_n1
 #### A masked pattern was here ####
 NULL	456	2147483647	9223372036854775807	3.4E38	1234567.89
-PREHOOK: query: ALTER TABLE numericDataType ADD CONSTRAINT uk1 UNIQUE(a,b) DISABLE NOVALIDATE
+PREHOOK: query: ALTER TABLE numericDataType_n1 ADD CONSTRAINT uk1 UNIQUE(a,b) DISABLE NOVALIDATE
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
-POSTHOOK: query: ALTER TABLE numericDataType ADD CONSTRAINT uk1 UNIQUE(a,b) DISABLE NOVALIDATE
+POSTHOOK: query: ALTER TABLE numericDataType_n1 ADD CONSTRAINT uk1 UNIQUE(a,b) DISABLE NOVALIDATE
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
-PREHOOK: query: DESC FORMATTED numericDataType
+PREHOOK: query: DESC FORMATTED numericDataType_n1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@numericdatatype
-POSTHOOK: query: DESC FORMATTED numericDataType
+PREHOOK: Input: default@numericdatatype_n1
+POSTHOOK: query: DESC FORMATTED numericDataType_n1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@numericdatatype
+POSTHOOK: Input: default@numericdatatype_n1
 # col_name            	data_type           	comment             
 a                   	tinyint             	                    
 b                   	smallint            	                    
@@ -2679,14 +2679,14 @@ Storage Desc Params:
 # Constraints	 	 
 	 	 
 # Unique Constraints	 	 
-Table:              	default.numericdatatype	 
+Table:              	default.numericdatatype_n1	 
 Constraint Name:    	uk1                 	 
 Column Name:a       	Key Sequence:1      	 
 Column Name:b       	Key Sequence:2      	 
 	 	 
 	 	 
 # Default Constraints	 	 
-Table:              	default.numericdatatype	 
+Table:              	default.numericdatatype_n1	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:b       	Default Value:32767S	 
 	 	 
@@ -2702,9 +2702,9 @@ Column Name:e       	Default Value:3.4E38
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:f       	Default Value:1234567.89	 
 	 	 
-PREHOOK: query: EXPLAIN INSERT INTO numericDataType(b) values(56)
+PREHOOK: query: EXPLAIN INSERT INTO numericDataType_n1(b) values(56)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN INSERT INTO numericDataType(b) values(56)
+POSTHOOK: query: EXPLAIN INSERT INTO numericDataType_n1(b) values(56)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2757,7 +2757,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      name: default.numericdatatype
+                      name: default.numericdatatype_n1
                   Write Type: INSERT
 
   Stage: Stage-2
@@ -2771,38 +2771,38 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.numericdatatype
+              name: default.numericdatatype_n1
           Write Type: INSERT
 
-PREHOOK: query: INSERT INTO numericDataType(b) values(456)
+PREHOOK: query: INSERT INTO numericDataType_n1(b) values(456)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@numericdatatype
-POSTHOOK: query: INSERT INTO numericDataType(b) values(456)
+PREHOOK: Output: default@numericdatatype_n1
+POSTHOOK: query: INSERT INTO numericDataType_n1(b) values(456)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@numericdatatype
-POSTHOOK: Lineage: numericdatatype.a SIMPLE []
-POSTHOOK: Lineage: numericdatatype.b SCRIPT []
-POSTHOOK: Lineage: numericdatatype.c SIMPLE []
-POSTHOOK: Lineage: numericdatatype.d SIMPLE []
-POSTHOOK: Lineage: numericdatatype.e SIMPLE []
-POSTHOOK: Lineage: numericdatatype.f SIMPLE []
-PREHOOK: query: SELECT * from numericDataType
+POSTHOOK: Output: default@numericdatatype_n1
+POSTHOOK: Lineage: numericdatatype_n1.a SIMPLE []
+POSTHOOK: Lineage: numericdatatype_n1.b SCRIPT []
+POSTHOOK: Lineage: numericdatatype_n1.c SIMPLE []
+POSTHOOK: Lineage: numericdatatype_n1.d SIMPLE []
+POSTHOOK: Lineage: numericdatatype_n1.e SIMPLE []
+POSTHOOK: Lineage: numericdatatype_n1.f SIMPLE []
+PREHOOK: query: SELECT * from numericDataType_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@numericdatatype
+PREHOOK: Input: default@numericdatatype_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * from numericDataType
+POSTHOOK: query: SELECT * from numericDataType_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@numericdatatype
+POSTHOOK: Input: default@numericdatatype_n1
 #### A masked pattern was here ####
 NULL	456	2147483647	9223372036854775807	3.4E38	1234567.89
 NULL	456	2147483647	9223372036854775807	3.4E38	1234567.89
-PREHOOK: query: DROP TABLE numericDataType
+PREHOOK: query: DROP TABLE numericDataType_n1
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@numericdatatype
-PREHOOK: Output: default@numericdatatype
-POSTHOOK: query: DROP TABLE numericDataType
+PREHOOK: Input: default@numericdatatype_n1
+PREHOOK: Output: default@numericdatatype_n1
+POSTHOOK: query: DROP TABLE numericDataType_n1
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@numericdatatype
-POSTHOOK: Output: default@numericdatatype
+POSTHOOK: Input: default@numericdatatype_n1
+POSTHOOK: Output: default@numericdatatype_n1

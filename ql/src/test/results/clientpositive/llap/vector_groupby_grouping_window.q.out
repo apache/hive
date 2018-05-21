@@ -1,33 +1,33 @@
-PREHOOK: query: create table t(category int, live int, comments int) stored as orc
+PREHOOK: query: create table t_n15(category int, live int, comments int) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t
-POSTHOOK: query: create table t(category int, live int, comments int) stored as orc
+PREHOOK: Output: default@t_n15
+POSTHOOK: query: create table t_n15(category int, live int, comments int) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t
-PREHOOK: query: insert into table t select key, 0, 2 from src tablesample(3 rows)
+POSTHOOK: Output: default@t_n15
+PREHOOK: query: insert into table t_n15 select key, 0, 2 from src tablesample(3 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into table t select key, 0, 2 from src tablesample(3 rows)
+PREHOOK: Output: default@t_n15
+POSTHOOK: query: insert into table t_n15 select key, 0, 2 from src tablesample(3 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.category EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: t.comments SIMPLE []
-POSTHOOK: Lineage: t.live SIMPLE []
+POSTHOOK: Output: default@t_n15
+POSTHOOK: Lineage: t_n15.category EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t_n15.comments SIMPLE []
+POSTHOOK: Lineage: t_n15.live SIMPLE []
 _col0	_col1	_col2
 PREHOOK: query: explain vectorization detail
 select category, max(live) live, max(comments) comments, rank() OVER (PARTITION BY category ORDER BY comments) rank1
-FROM t
+FROM t_n15
 GROUP BY category
 GROUPING SETS ((), (category))
 HAVING max(comments) > 0
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select category, max(live) live, max(comments) comments, rank() OVER (PARTITION BY category ORDER BY comments) rank1
-FROM t
+FROM t_n15
 GROUP BY category
 GROUPING SETS ((), (category))
 HAVING max(comments) > 0
@@ -53,7 +53,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t
+                  alias: t_n15
                   Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -244,20 +244,20 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select category, max(live) live, max(comments) comments, rank() OVER (PARTITION BY category ORDER BY comments) rank1
-FROM t
+FROM t_n15
 GROUP BY category
 GROUPING SETS ((), (category))
 HAVING max(comments) > 0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t
+PREHOOK: Input: default@t_n15
 #### A masked pattern was here ####
 POSTHOOK: query: select category, max(live) live, max(comments) comments, rank() OVER (PARTITION BY category ORDER BY comments) rank1
-FROM t
+FROM t_n15
 GROUP BY category
 GROUPING SETS ((), (category))
 HAVING max(comments) > 0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n15
 #### A masked pattern was here ####
 category	live	comments	rank1
 NULL	0	2	1

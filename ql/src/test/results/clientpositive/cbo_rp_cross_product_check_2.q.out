@@ -1,37 +1,37 @@
-PREHOOK: query: create table A as
+PREHOOK: query: create table A_n18 as
 select * from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@A
-POSTHOOK: query: create table A as
+PREHOOK: Output: default@A_n18
+POSTHOOK: query: create table A_n18 as
 select * from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@A
-POSTHOOK: Lineage: a.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: a.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: create table B as
+POSTHOOK: Output: default@A_n18
+POSTHOOK: Lineage: a_n18.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: a_n18.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create table B_n14 as
 select * from src order by key
 limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@B
-POSTHOOK: query: create table B as
+PREHOOK: Output: default@B_n14
+POSTHOOK: query: create table B_n14 as
 select * from src order by key
 limit 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@B
-POSTHOOK: Lineage: b.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: b.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@B_n14
+POSTHOOK: Lineage: b_n14.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: b_n14.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 Warning: Map Join MAPJOIN[8][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
-PREHOOK: query: explain select * from A join B
+PREHOOK: query: explain select * from A_n18 join B_n14
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from A join B
+POSTHOOK: query: explain select * from A_n18 join B_n14
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
@@ -42,13 +42,13 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        b 
+        b_n14 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        b 
+        b_n14 
           TableScan
-            alias: b
+            alias: b_n14
             Statistics: Num rows: 10 Data size: 96 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), value (type: string)
@@ -63,7 +63,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: a
+            alias: a_n18
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), value (type: string)
@@ -95,9 +95,9 @@ STAGE PLANS:
         ListSink
 
 Warning: Map Join MAPJOIN[19][bigTable=?] in task 'Stage-5:MAPRED' is a cross product
-PREHOOK: query: explain select * from B d1 join B d2 on d1.key = d2.key join A
+PREHOOK: query: explain select * from B_n14 d1 join B_n14 d2 on d1.key = d2.key join A_n18
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from B d1 join B d2 on d1.key = d2.key join A
+POSTHOOK: query: explain select * from B_n14 d1 join B_n14 d2 on d1.key = d2.key join A_n18
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-7 is a root stage
@@ -108,16 +108,16 @@ STAGE PLANS:
   Stage: Stage-7
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        a 
+        a_n18 
           Fetch Operator
             limit: -1
         d1 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        a 
+        a_n18 
           TableScan
-            alias: a
+            alias: a_n18
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), value (type: string)
@@ -190,14 +190,14 @@ STAGE PLANS:
         ListSink
 
 Warning: Map Join MAPJOIN[25][bigTable=?] in task 'Stage-5:MAPRED' is a cross product
-PREHOOK: query: explain select * from A join 
+PREHOOK: query: explain select * from A_n18 join 
          (select d1.key 
-          from B d1 join B d2 on d1.key = d2.key 
+          from B_n14 d1 join B_n14 d2 on d1.key = d2.key 
           where 1 = 1 group by d1.key) od1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from A join 
+POSTHOOK: query: explain select * from A_n18 join 
          (select d1.key 
-          from B d1 join B d2 on d1.key = d2.key 
+          from B_n14 d1 join B_n14 d2 on d1.key = d2.key 
           where 1 = 1 group by d1.key) od1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -285,13 +285,13 @@ STAGE PLANS:
   Stage: Stage-7
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        a 
+        a_n18 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        a 
+        a_n18 
           TableScan
-            alias: a
+            alias: a_n18
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), value (type: string)
@@ -333,9 +333,9 @@ STAGE PLANS:
 
 Warning: Map Join MAPJOIN[21][bigTable=?] in task 'Stage-5:MAPRED' is a cross product
 Warning: Map Join MAPJOIN[22][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
-PREHOOK: query: explain select * from A join (select d1.key from B d1 join B d2 where 1 = 1 group by d1.key) od1
+PREHOOK: query: explain select * from A_n18 join (select d1.key from B_n14 d1 join B_n14 d2 where 1 = 1 group by d1.key) od1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from A join (select d1.key from B d1 join B d2 where 1 = 1 group by d1.key) od1
+POSTHOOK: query: explain select * from A_n18 join (select d1.key from B_n14 d1 join B_n14 d2 where 1 = 1 group by d1.key) od1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-8 is a root stage
@@ -414,13 +414,13 @@ STAGE PLANS:
   Stage: Stage-7
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        a 
+        a_n18 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        a 
+        a_n18 
           TableScan
-            alias: a
+            alias: a_n18
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), value (type: string)
@@ -464,12 +464,12 @@ Warning: Map Join MAPJOIN[31][bigTable=?] in task 'Stage-7:MAPRED' is a cross pr
 Warning: Map Join MAPJOIN[30][bigTable=?] in task 'Stage-6:MAPRED' is a cross product
 Warning: Shuffle Join JOIN[20][tables = [, ]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: explain select * from 
-(select A.key from A group by key) ss join 
-(select d1.key from B d1 join B d2 on d1.key = d2.key where 1 = 1 group by d1.key) od1
+(select A_n18.key from A_n18 group by key) ss join 
+(select d1.key from B_n14 d1 join B_n14 d2 on d1.key = d2.key where 1 = 1 group by d1.key) od1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from 
-(select A.key from A group by key) ss join 
-(select d1.key from B d1 join B d2 on d1.key = d2.key where 1 = 1 group by d1.key) od1
+(select A_n18.key from A_n18 group by key) ss join 
+(select d1.key from B_n14 d1 join B_n14 d2 on d1.key = d2.key where 1 = 1 group by d1.key) od1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -488,7 +488,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: ss:a
+            alias: ss:a_n18
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string)

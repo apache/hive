@@ -1,22 +1,22 @@
-PREHOOK: query: CREATE TABLE myinput1(key int, value int)
+PREHOOK: query: CREATE TABLE myinput1_n9(key int, value int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@myinput1
-POSTHOOK: query: CREATE TABLE myinput1(key int, value int)
+PREHOOK: Output: default@myinput1_n9
+POSTHOOK: query: CREATE TABLE myinput1_n9(key int, value int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@myinput1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in8.txt' INTO TABLE myinput1
+POSTHOOK: Output: default@myinput1_n9
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in8.txt' INTO TABLE myinput1_n9
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@myinput1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in8.txt' INTO TABLE myinput1
+PREHOOK: Output: default@myinput1_n9
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in8.txt' INTO TABLE myinput1_n9
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@myinput1
-PREHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value
+POSTHOOK: Output: default@myinput1_n9
+PREHOOK: query: explain select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value
+POSTHOOK: query: explain select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -86,13 +86,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value
+PREHOOK: query: select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n9
 #### A masked pattern was here ####
-POSTHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value
+POSTHOOK: query: select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n9
 #### A masked pattern was here ####
 10	NULL	NULL	10
 100	100	100	100
@@ -105,9 +105,9 @@ NULL	35	NULL	NULL
 NULL	NULL	10	NULL
 NULL	NULL	48	NULL
 NULL	NULL	NULL	NULL
-PREHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key=c.key
+PREHOOK: query: explain select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value join myinput1_n9 c on a.key=c.key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key=c.key
+POSTHOOK: query: explain select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value join myinput1_n9 c on a.key=c.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -200,19 +200,19 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key=c.key
+PREHOOK: query: select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value join myinput1_n9 c on a.key=c.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n9
 #### A masked pattern was here ####
-POSTHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key=c.key
+POSTHOOK: query: select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value join myinput1_n9 c on a.key=c.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n9
 #### A masked pattern was here ####
 10	NULL	NULL	10	10	NULL
 100	100	100	100	100	100
-PREHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key<=>c.key
+PREHOOK: query: explain select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value join myinput1_n9 c on a.key<=>c.key
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key<=>c.key
+POSTHOOK: query: explain select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value join myinput1_n9 c on a.key<=>c.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -297,13 +297,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key<=>c.key
+PREHOOK: query: select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value join myinput1_n9 c on a.key<=>c.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n9
 #### A masked pattern was here ####
-POSTHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key<=>c.key
+POSTHOOK: query: select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value join myinput1_n9 c on a.key<=>c.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n9
 #### A masked pattern was here ####
 10	NULL	NULL	10	10	NULL
 100	100	100	100	100	100
@@ -334,9 +334,9 @@ NULL	NULL	48	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	10
 NULL	NULL	NULL	NULL	NULL	35
 NULL	NULL	NULL	NULL	NULL	NULL
-PREHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value=b.key join myinput1 c on a.key<=>c.key AND a.value=c.value
+PREHOOK: query: explain select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value AND a.value=b.key join myinput1_n9 c on a.key<=>c.key AND a.value=c.value
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value=b.key join myinput1 c on a.key<=>c.key AND a.value=c.value
+POSTHOOK: query: explain select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value AND a.value=b.key join myinput1_n9 c on a.key<=>c.key AND a.value=c.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -427,19 +427,19 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value=b.key join myinput1 c on a.key<=>c.key AND a.value=c.value
+PREHOOK: query: select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value AND a.value=b.key join myinput1_n9 c on a.key<=>c.key AND a.value=c.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n9
 #### A masked pattern was here ####
-POSTHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value=b.key join myinput1 c on a.key<=>c.key AND a.value=c.value
+POSTHOOK: query: select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value AND a.value=b.key join myinput1_n9 c on a.key<=>c.key AND a.value=c.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n9
 #### A masked pattern was here ####
 100	100	100	100	100	100
 NULL	10	10	NULL	NULL	10
-PREHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value<=>b.key join myinput1 c on a.key<=>c.key AND a.value<=>c.value
+PREHOOK: query: explain select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value AND a.value<=>b.key join myinput1_n9 c on a.key<=>c.key AND a.value<=>c.value
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value<=>b.key join myinput1 c on a.key<=>c.key AND a.value<=>c.value
+POSTHOOK: query: explain select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value AND a.value<=>b.key join myinput1_n9 c on a.key<=>c.key AND a.value<=>c.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -521,25 +521,25 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value<=>b.key join myinput1 c on a.key<=>c.key AND a.value<=>c.value
+PREHOOK: query: select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value AND a.value<=>b.key join myinput1_n9 c on a.key<=>c.key AND a.value<=>c.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n9
 #### A masked pattern was here ####
-POSTHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value<=>b.key join myinput1 c on a.key<=>c.key AND a.value<=>c.value
+POSTHOOK: query: select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value AND a.value<=>b.key join myinput1_n9 c on a.key<=>c.key AND a.value<=>c.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n9
 #### A masked pattern was here ####
 10	NULL	NULL	10	10	NULL
 100	100	100	100	100	100
 NULL	10	10	NULL	NULL	10
 NULL	NULL	NULL	NULL	NULL	NULL
-PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key<=>b.value
+PREHOOK: query: SELECT * FROM myinput1_n9 a LEFT OUTER JOIN myinput1_n9 b ON a.key<=>b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n9
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key<=>b.value
+POSTHOOK: query: SELECT * FROM myinput1_n9 a LEFT OUTER JOIN myinput1_n9 b ON a.key<=>b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n9
 #### A masked pattern was here ####
 10	NULL	NULL	10
 100	100	100	100
@@ -553,13 +553,13 @@ NULL	35	NULL	NULL
 NULL	NULL	10	NULL
 NULL	NULL	48	NULL
 NULL	NULL	NULL	NULL
-PREHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key<=>b.value
+PREHOOK: query: SELECT * FROM myinput1_n9 a RIGHT OUTER JOIN myinput1_n9 b ON a.key<=>b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n9
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key<=>b.value
+POSTHOOK: query: SELECT * FROM myinput1_n9 a RIGHT OUTER JOIN myinput1_n9 b ON a.key<=>b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n9
 #### A masked pattern was here ####
 10	NULL	NULL	10
 100	100	100	100
@@ -573,13 +573,13 @@ NULL	NULL	10	NULL
 NULL	NULL	48	NULL
 NULL	NULL	NULL	35
 NULL	NULL	NULL	NULL
-PREHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key<=>b.value
+PREHOOK: query: SELECT * FROM myinput1_n9 a FULL OUTER JOIN myinput1_n9 b ON a.key<=>b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n9
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key<=>b.value
+POSTHOOK: query: SELECT * FROM myinput1_n9 a FULL OUTER JOIN myinput1_n9 b ON a.key<=>b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n9
 #### A masked pattern was here ####
 10	NULL	NULL	10
 100	100	100	100
@@ -594,13 +594,13 @@ NULL	NULL	10	NULL
 NULL	NULL	48	NULL
 NULL	NULL	NULL	35
 NULL	NULL	NULL	NULL
-PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.key<=>b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1_n9 a JOIN myinput1_n9 b ON a.key<=>b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n9
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.key<=>b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1_n9 a JOIN myinput1_n9 b ON a.key<=>b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n9
 #### A masked pattern was here ####
 10	NULL	NULL	10
 100	100	100	100
@@ -613,13 +613,13 @@ NULL	35	NULL	NULL
 NULL	NULL	10	NULL
 NULL	NULL	48	NULL
 NULL	NULL	NULL	NULL
-PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.key<=>b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1_n9 a JOIN myinput1_n9 b ON a.key<=>b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n9
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.key<=>b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1_n9 a JOIN myinput1_n9 b ON a.key<=>b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n9
 #### A masked pattern was here ####
 10	NULL	NULL	10
 100	100	100	100
@@ -632,71 +632,71 @@ NULL	35	NULL	NULL
 NULL	NULL	10	NULL
 NULL	NULL	48	NULL
 NULL	NULL	NULL	NULL
-PREHOOK: query: CREATE TABLE smb_input(key int, value int)
+PREHOOK: query: CREATE TABLE smb_input_n1(key int, value int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@smb_input
-POSTHOOK: query: CREATE TABLE smb_input(key int, value int)
+PREHOOK: Output: default@smb_input_n1
+POSTHOOK: query: CREATE TABLE smb_input_n1(key int, value int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@smb_input
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in4.txt' into table smb_input
+POSTHOOK: Output: default@smb_input_n1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in4.txt' into table smb_input_n1
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@smb_input
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in4.txt' into table smb_input
+PREHOOK: Output: default@smb_input_n1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in4.txt' into table smb_input_n1
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@smb_input
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in5.txt' into table smb_input
+POSTHOOK: Output: default@smb_input_n1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in5.txt' into table smb_input_n1
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@smb_input
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in5.txt' into table smb_input
+PREHOOK: Output: default@smb_input_n1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in5.txt' into table smb_input_n1
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@smb_input
-PREHOOK: query: CREATE TABLE smb_input1(key int, value int) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+POSTHOOK: Output: default@smb_input_n1
+PREHOOK: query: CREATE TABLE smb_input1_n4(key int, value int) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@smb_input1
-POSTHOOK: query: CREATE TABLE smb_input1(key int, value int) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: Output: default@smb_input1_n4
+POSTHOOK: query: CREATE TABLE smb_input1_n4(key int, value int) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@smb_input1
-PREHOOK: query: CREATE TABLE smb_input2(key int, value int) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS
+POSTHOOK: Output: default@smb_input1_n4
+PREHOOK: query: CREATE TABLE smb_input2_n4(key int, value int) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@smb_input2
-POSTHOOK: query: CREATE TABLE smb_input2(key int, value int) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS
+PREHOOK: Output: default@smb_input2_n4
+POSTHOOK: query: CREATE TABLE smb_input2_n4(key int, value int) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@smb_input2
-PREHOOK: query: from smb_input
-insert overwrite table smb_input1 select *
-insert overwrite table smb_input2 select *
+POSTHOOK: Output: default@smb_input2_n4
+PREHOOK: query: from smb_input_n1
+insert overwrite table smb_input1_n4 select *
+insert overwrite table smb_input2_n4 select *
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_input
-PREHOOK: Output: default@smb_input1
-PREHOOK: Output: default@smb_input2
-POSTHOOK: query: from smb_input
-insert overwrite table smb_input1 select *
-insert overwrite table smb_input2 select *
+PREHOOK: Input: default@smb_input_n1
+PREHOOK: Output: default@smb_input1_n4
+PREHOOK: Output: default@smb_input2_n4
+POSTHOOK: query: from smb_input_n1
+insert overwrite table smb_input1_n4 select *
+insert overwrite table smb_input2_n4 select *
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_input
-POSTHOOK: Output: default@smb_input1
-POSTHOOK: Output: default@smb_input2
-POSTHOOK: Lineage: smb_input1.key SIMPLE [(smb_input)smb_input.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: smb_input1.value SIMPLE [(smb_input)smb_input.FieldSchema(name:value, type:int, comment:null), ]
-POSTHOOK: Lineage: smb_input2.key SIMPLE [(smb_input)smb_input.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: smb_input2.value SIMPLE [(smb_input)smb_input.FieldSchema(name:value, type:int, comment:null), ]
-PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key <=> b.key
+POSTHOOK: Input: default@smb_input_n1
+POSTHOOK: Output: default@smb_input1_n4
+POSTHOOK: Output: default@smb_input2_n4
+POSTHOOK: Lineage: smb_input1_n4.key SIMPLE [(smb_input_n1)smb_input_n1.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_input1_n4.value SIMPLE [(smb_input_n1)smb_input_n1.FieldSchema(name:value, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_input2_n4.key SIMPLE [(smb_input_n1)smb_input_n1.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smb_input2_n4.value SIMPLE [(smb_input_n1)smb_input_n1.FieldSchema(name:value, type:int, comment:null), ]
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1_n4 a JOIN smb_input1_n4 b ON a.key <=> b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_input1
+PREHOOK: Input: default@smb_input1_n4
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key <=> b.key
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1_n4 a JOIN smb_input1_n4 b ON a.key <=> b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_input1
+POSTHOOK: Input: default@smb_input1_n4
 #### A masked pattern was here ####
 10	100	10	100
 10	100	10	100
@@ -752,13 +752,13 @@ NULL	35	NULL	NULL
 NULL	NULL	NULL	10050
 NULL	NULL	NULL	35
 NULL	NULL	NULL	NULL
-PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key <=> b.key AND a.value <=> b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1_n4 a JOIN smb_input1_n4 b ON a.key <=> b.key AND a.value <=> b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_input1
+PREHOOK: Input: default@smb_input1_n4
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key <=> b.key AND a.value <=> b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1_n4 a JOIN smb_input1_n4 b ON a.key <=> b.key AND a.value <=> b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_input1
+POSTHOOK: Input: default@smb_input1_n4
 #### A masked pattern was here ####
 10	100	10	100
 10	100	10	100
@@ -802,75 +802,13 @@ POSTHOOK: Input: default@smb_input1
 NULL	10050	NULL	10050
 NULL	35	NULL	35
 NULL	NULL	NULL	NULL
-PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a RIGHT OUTER JOIN smb_input1 b ON a.key <=> b.key
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1_n4 a RIGHT OUTER JOIN smb_input1_n4 b ON a.key <=> b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_input1
+PREHOOK: Input: default@smb_input1_n4
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a RIGHT OUTER JOIN smb_input1 b ON a.key <=> b.key
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1_n4 a RIGHT OUTER JOIN smb_input1_n4 b ON a.key <=> b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_input1
-#### A masked pattern was here ####
-10	100	10	100
-10	100	10	100
-10	100	10	100
-10	100	10	100
-10	100	10	1000
-10	100	10	1000
-10	1000	10	100
-10	1000	10	100
-10	1000	10	1000
-100	100	100	100
-12	100	12	100
-12	100	12	NULL
-12	NULL	12	100
-12	NULL	12	NULL
-15	10015	15	10015
-20	10020	20	10020
-25	10025	25	10025
-30	10030	30	10030
-35	10035	35	10035
-40	10040	40	10040
-40	10040	40	10040
-40	10040	40	10040
-40	10040	40	10040
-5	10005	5	10005
-50	10050	50	10050
-50	10050	50	10050
-50	10050	50	10050
-50	10050	50	10050
-50	10050	50	10050
-50	10050	50	10050
-50	10050	50	10050
-50	10050	50	10050
-50	10050	50	10050
-60	10040	60	10040
-60	10040	60	10040
-60	10040	60	10040
-60	10040	60	10040
-70	10040	70	10040
-70	10040	70	10040
-70	10040	70	10040
-70	10040	70	10040
-80	10040	80	10040
-80	10040	80	10040
-80	10040	80	10040
-80	10040	80	10040
-NULL	10050	NULL	10050
-NULL	10050	NULL	35
-NULL	10050	NULL	NULL
-NULL	35	NULL	10050
-NULL	35	NULL	35
-NULL	35	NULL	NULL
-NULL	NULL	NULL	10050
-NULL	NULL	NULL	35
-NULL	NULL	NULL	NULL
-PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key <=> b.key
-PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_input1
-#### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key <=> b.key
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_input1
+POSTHOOK: Input: default@smb_input1_n4
 #### A masked pattern was here ####
 10	100	10	100
 10	100	10	100
@@ -926,13 +864,13 @@ NULL	35	NULL	NULL
 NULL	NULL	NULL	10050
 NULL	NULL	NULL	35
 NULL	NULL	NULL	NULL
-PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a LEFT OUTER JOIN smb_input1 b ON a.key <=> b.key
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1_n4 a JOIN smb_input1_n4 b ON a.key <=> b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_input1
+PREHOOK: Input: default@smb_input1_n4
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a LEFT OUTER JOIN smb_input1 b ON a.key <=> b.key
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1_n4 a JOIN smb_input1_n4 b ON a.key <=> b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_input1
+POSTHOOK: Input: default@smb_input1_n4
 #### A masked pattern was here ####
 10	100	10	100
 10	100	10	100
@@ -988,15 +926,77 @@ NULL	35	NULL	NULL
 NULL	NULL	NULL	10050
 NULL	NULL	NULL	35
 NULL	NULL	NULL	NULL
-PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input2 b ON a.key <=> b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1_n4 a LEFT OUTER JOIN smb_input1_n4 b ON a.key <=> b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_input1
-PREHOOK: Input: default@smb_input2
+PREHOOK: Input: default@smb_input1_n4
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input2 b ON a.key <=> b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1_n4 a LEFT OUTER JOIN smb_input1_n4 b ON a.key <=> b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_input1
-POSTHOOK: Input: default@smb_input2
+POSTHOOK: Input: default@smb_input1_n4
+#### A masked pattern was here ####
+10	100	10	100
+10	100	10	100
+10	100	10	100
+10	100	10	100
+10	100	10	1000
+10	100	10	1000
+10	1000	10	100
+10	1000	10	100
+10	1000	10	1000
+100	100	100	100
+12	100	12	100
+12	100	12	NULL
+12	NULL	12	100
+12	NULL	12	NULL
+15	10015	15	10015
+20	10020	20	10020
+25	10025	25	10025
+30	10030	30	10030
+35	10035	35	10035
+40	10040	40	10040
+40	10040	40	10040
+40	10040	40	10040
+40	10040	40	10040
+5	10005	5	10005
+50	10050	50	10050
+50	10050	50	10050
+50	10050	50	10050
+50	10050	50	10050
+50	10050	50	10050
+50	10050	50	10050
+50	10050	50	10050
+50	10050	50	10050
+50	10050	50	10050
+60	10040	60	10040
+60	10040	60	10040
+60	10040	60	10040
+60	10040	60	10040
+70	10040	70	10040
+70	10040	70	10040
+70	10040	70	10040
+70	10040	70	10040
+80	10040	80	10040
+80	10040	80	10040
+80	10040	80	10040
+80	10040	80	10040
+NULL	10050	NULL	10050
+NULL	10050	NULL	35
+NULL	10050	NULL	NULL
+NULL	35	NULL	10050
+NULL	35	NULL	35
+NULL	35	NULL	NULL
+NULL	NULL	NULL	10050
+NULL	NULL	NULL	35
+NULL	NULL	NULL	NULL
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1_n4 a JOIN smb_input2_n4 b ON a.key <=> b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_input1_n4
+PREHOOK: Input: default@smb_input2_n4
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1_n4 a JOIN smb_input2_n4 b ON a.key <=> b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_input1_n4
+POSTHOOK: Input: default@smb_input2_n4
 #### A masked pattern was here ####
 100	100	10	100
 100	100	10	100
@@ -1009,15 +1009,15 @@ NULL	35	12	NULL
 NULL	35	NULL	NULL
 NULL	NULL	12	NULL
 NULL	NULL	NULL	NULL
-PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a JOIN smb_input2 b ON a.key <=> b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1_n4 a JOIN smb_input2_n4 b ON a.key <=> b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_input1
-PREHOOK: Input: default@smb_input2
+PREHOOK: Input: default@smb_input1_n4
+PREHOOK: Input: default@smb_input2_n4
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a JOIN smb_input2 b ON a.key <=> b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1_n4 a JOIN smb_input2_n4 b ON a.key <=> b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_input1
-POSTHOOK: Input: default@smb_input2
+POSTHOOK: Input: default@smb_input1_n4
+POSTHOOK: Input: default@smb_input2_n4
 #### A masked pattern was here ####
 100	100	10	100
 100	100	10	100
@@ -1030,15 +1030,15 @@ NULL	35	12	NULL
 NULL	35	NULL	NULL
 NULL	NULL	12	NULL
 NULL	NULL	NULL	NULL
-PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a LEFT OUTER JOIN smb_input2 b ON a.key <=> b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1_n4 a LEFT OUTER JOIN smb_input2_n4 b ON a.key <=> b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_input1
-PREHOOK: Input: default@smb_input2
+PREHOOK: Input: default@smb_input1_n4
+PREHOOK: Input: default@smb_input2_n4
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a LEFT OUTER JOIN smb_input2 b ON a.key <=> b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1_n4 a LEFT OUTER JOIN smb_input2_n4 b ON a.key <=> b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_input1
-POSTHOOK: Input: default@smb_input2
+POSTHOOK: Input: default@smb_input1_n4
+POSTHOOK: Input: default@smb_input2_n4
 #### A masked pattern was here ####
 10	100	NULL	NULL
 10	100	NULL	NULL
@@ -1072,15 +1072,15 @@ NULL	35	12	NULL
 NULL	35	NULL	NULL
 NULL	NULL	12	NULL
 NULL	NULL	NULL	NULL
-PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a RIGHT OUTER JOIN smb_input2 b ON a.key <=> b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1_n4 a RIGHT OUTER JOIN smb_input2_n4 b ON a.key <=> b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_input1
-PREHOOK: Input: default@smb_input2
+PREHOOK: Input: default@smb_input1_n4
+PREHOOK: Input: default@smb_input2_n4
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a RIGHT OUTER JOIN smb_input2 b ON a.key <=> b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1_n4 a RIGHT OUTER JOIN smb_input2_n4 b ON a.key <=> b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_input1
-POSTHOOK: Input: default@smb_input2
+POSTHOOK: Input: default@smb_input1_n4
+POSTHOOK: Input: default@smb_input2_n4
 #### A masked pattern was here ####
 100	100	10	100
 100	100	10	100
@@ -1112,13 +1112,13 @@ NULL	NULL	80	10040
 NULL	NULL	80	10040
 NULL	NULL	NULL	10050
 NULL	NULL	NULL	NULL
-PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2 a JOIN smb_input2 b ON a.value <=> b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2_n4 a JOIN smb_input2_n4 b ON a.value <=> b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_input2
+PREHOOK: Input: default@smb_input2_n4
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2 a JOIN smb_input2 b ON a.value <=> b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2_n4 a JOIN smb_input2_n4 b ON a.value <=> b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_input2
+POSTHOOK: Input: default@smb_input2_n4
 #### A masked pattern was here ####
 10	100	10	100
 10	100	10	100
@@ -1228,13 +1228,13 @@ NULL	10050	NULL	10050
 NULL	35	NULL	35
 NULL	NULL	12	NULL
 NULL	NULL	NULL	NULL
-PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2 a RIGHT OUTER JOIN smb_input2 b ON a.value <=> b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2_n4 a RIGHT OUTER JOIN smb_input2_n4 b ON a.value <=> b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_input2
+PREHOOK: Input: default@smb_input2_n4
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2 a RIGHT OUTER JOIN smb_input2 b ON a.value <=> b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2_n4 a RIGHT OUTER JOIN smb_input2_n4 b ON a.value <=> b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_input2
+POSTHOOK: Input: default@smb_input2_n4
 #### A masked pattern was here ####
 10	100	10	100
 10	100	10	100
@@ -1344,13 +1344,13 @@ NULL	10050	NULL	10050
 NULL	35	NULL	35
 NULL	NULL	12	NULL
 NULL	NULL	NULL	NULL
-PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a JOIN smb_input2 b ON a.value <=> b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2_n4 a JOIN smb_input2_n4 b ON a.value <=> b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_input2
+PREHOOK: Input: default@smb_input2_n4
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a JOIN smb_input2 b ON a.value <=> b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2_n4 a JOIN smb_input2_n4 b ON a.value <=> b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_input2
+POSTHOOK: Input: default@smb_input2_n4
 #### A masked pattern was here ####
 10	100	10	100
 10	100	10	100
@@ -1460,13 +1460,13 @@ NULL	10050	NULL	10050
 NULL	35	NULL	35
 NULL	NULL	12	NULL
 NULL	NULL	NULL	NULL
-PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a LEFT OUTER JOIN smb_input2 b ON a.value <=> b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2_n4 a LEFT OUTER JOIN smb_input2_n4 b ON a.value <=> b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smb_input2
+PREHOOK: Input: default@smb_input2_n4
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a LEFT OUTER JOIN smb_input2 b ON a.value <=> b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2_n4 a LEFT OUTER JOIN smb_input2_n4 b ON a.value <=> b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smb_input2
+POSTHOOK: Input: default@smb_input2_n4
 #### A masked pattern was here ####
 10	100	10	100
 10	100	10	100
@@ -1576,9 +1576,9 @@ NULL	10050	NULL	10050
 NULL	35	NULL	35
 NULL	NULL	12	NULL
 NULL	NULL	NULL	NULL
-PREHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.key is NULL
+PREHOOK: query: explain select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value AND a.key is NULL
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.key is NULL
+POSTHOOK: query: explain select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value AND a.key is NULL
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1654,13 +1654,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.key is NULL
+PREHOOK: query: select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value AND a.key is NULL
 PREHOOK: type: QUERY
-PREHOOK: Input: default@myinput1
+PREHOOK: Input: default@myinput1_n9
 #### A masked pattern was here ####
-POSTHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.key is NULL
+POSTHOOK: query: select * from myinput1_n9 a join myinput1_n9 b on a.key<=>b.value AND a.key is NULL
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@myinput1
+POSTHOOK: Input: default@myinput1_n9
 #### A masked pattern was here ####
 NULL	10	10	NULL
 NULL	10	48	NULL

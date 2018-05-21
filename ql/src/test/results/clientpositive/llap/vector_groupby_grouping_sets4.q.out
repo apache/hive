@@ -1,45 +1,45 @@
-PREHOOK: query: CREATE TABLE T1_text(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE T1_text_n11(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1_text
-POSTHOOK: query: CREATE TABLE T1_text(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
+PREHOOK: Output: default@T1_text_n11
+POSTHOOK: query: CREATE TABLE T1_text_n11(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1_text
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/grouping_sets.txt' INTO TABLE T1_text
+POSTHOOK: Output: default@T1_text_n11
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/grouping_sets.txt' INTO TABLE T1_text_n11
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t1_text
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/grouping_sets.txt' INTO TABLE T1_text
+PREHOOK: Output: default@t1_text_n11
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/grouping_sets.txt' INTO TABLE T1_text_n11
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t1_text
-PREHOOK: query: CREATE TABLE T1 STORED AS ORC AS SELECT * FROM T1_text
+POSTHOOK: Output: default@t1_text_n11
+PREHOOK: query: CREATE TABLE T1_n161 STORED AS ORC AS SELECT * FROM T1_text_n11
 PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: default@t1_text
+PREHOOK: Input: default@t1_text_n11
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1
-POSTHOOK: query: CREATE TABLE T1 STORED AS ORC AS SELECT * FROM T1_text
+PREHOOK: Output: default@T1_n161
+POSTHOOK: query: CREATE TABLE T1_n161 STORED AS ORC AS SELECT * FROM T1_text_n11
 POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: default@t1_text
+POSTHOOK: Input: default@t1_text_n11
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1
-POSTHOOK: Lineage: t1.a SIMPLE [(t1_text)t1_text.FieldSchema(name:a, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.b SIMPLE [(t1_text)t1_text.FieldSchema(name:b, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.c SIMPLE [(t1_text)t1_text.FieldSchema(name:c, type:string, comment:null), ]
-t1_text.a	t1_text.b	t1_text.c
+POSTHOOK: Output: default@T1_n161
+POSTHOOK: Lineage: t1_n161.a SIMPLE [(t1_text_n11)t1_text_n11.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: t1_n161.b SIMPLE [(t1_text_n11)t1_text_n11.FieldSchema(name:b, type:string, comment:null), ]
+POSTHOOK: Lineage: t1_n161.c SIMPLE [(t1_text_n11)t1_text_n11.FieldSchema(name:c, type:string, comment:null), ]
+t1_text_n11.a	t1_text_n11.b	t1_text_n11.c
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT * FROM
-(SELECT a, b, count(*) from T1 where a < 3 group by a, b with cube) subq1
+(SELECT a, b, count(*) from T1_n161 where a < 3 group by a, b with cube) subq1
 join
-(SELECT a, b, count(*) from T1 where a < 3 group by a, b with cube) subq2
+(SELECT a, b, count(*) from T1_n161 where a < 3 group by a, b with cube) subq2
 on subq1.a = subq2.a
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT * FROM
-(SELECT a, b, count(*) from T1 where a < 3 group by a, b with cube) subq1
+(SELECT a, b, count(*) from T1_n161 where a < 3 group by a, b with cube) subq1
 join
-(SELECT a, b, count(*) from T1 where a < 3 group by a, b with cube) subq2
+(SELECT a, b, count(*) from T1_n161 where a < 3 group by a, b with cube) subq2
 on subq1.a = subq2.a
 POSTHOOK: type: QUERY
 Explain
@@ -64,7 +64,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n161
                   Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -274,16 +274,16 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT * FROM
-(SELECT a, b, count(*) from T1 where a < 3 group by cube(a, b) ) subq1
+(SELECT a, b, count(*) from T1_n161 where a < 3 group by cube(a, b) ) subq1
 join
-(SELECT a, b, count(*) from T1 where a < 3 group by cube(a, b) ) subq2
+(SELECT a, b, count(*) from T1_n161 where a < 3 group by cube(a, b) ) subq2
 on subq1.a = subq2.a
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT * FROM
-(SELECT a, b, count(*) from T1 where a < 3 group by cube(a, b) ) subq1
+(SELECT a, b, count(*) from T1_n161 where a < 3 group by cube(a, b) ) subq1
 join
-(SELECT a, b, count(*) from T1 where a < 3 group by cube(a, b) ) subq2
+(SELECT a, b, count(*) from T1_n161 where a < 3 group by cube(a, b) ) subq2
 on subq1.a = subq2.a
 POSTHOOK: type: QUERY
 Explain
@@ -308,7 +308,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n161
                   Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -517,20 +517,20 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT * FROM
-(SELECT a, b, count(*) from T1 where a < 3 group by a, b with cube) subq1
+(SELECT a, b, count(*) from T1_n161 where a < 3 group by a, b with cube) subq1
 join
-(SELECT a, b, count(*) from T1 where a < 3 group by a, b with cube) subq2
+(SELECT a, b, count(*) from T1_n161 where a < 3 group by a, b with cube) subq2
 on subq1.a = subq2.a
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n161
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM
-(SELECT a, b, count(*) from T1 where a < 3 group by a, b with cube) subq1
+(SELECT a, b, count(*) from T1_n161 where a < 3 group by a, b with cube) subq1
 join
-(SELECT a, b, count(*) from T1 where a < 3 group by a, b with cube) subq2
+(SELECT a, b, count(*) from T1_n161 where a < 3 group by a, b with cube) subq2
 on subq1.a = subq2.a
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n161
 #### A masked pattern was here ####
 subq1.a	subq1.b	subq1._c2	subq2.a	subq2.b	subq2._c2
 1	1	1	1	1	1
@@ -548,16 +548,16 @@ subq1.a	subq1.b	subq1._c2	subq2.a	subq2.b	subq2._c2
 2	NULL	2	2	NULL	2
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT * FROM
-(SELECT a, b, count(*) from T1 where a < 3 group by a, b with cube) subq1
+(SELECT a, b, count(*) from T1_n161 where a < 3 group by a, b with cube) subq1
 join
-(SELECT a, b, count(*) from T1 where a < 3 group by a, b with cube) subq2
+(SELECT a, b, count(*) from T1_n161 where a < 3 group by a, b with cube) subq2
 on subq1.a = subq2.a
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT * FROM
-(SELECT a, b, count(*) from T1 where a < 3 group by a, b with cube) subq1
+(SELECT a, b, count(*) from T1_n161 where a < 3 group by a, b with cube) subq1
 join
-(SELECT a, b, count(*) from T1 where a < 3 group by a, b with cube) subq2
+(SELECT a, b, count(*) from T1_n161 where a < 3 group by a, b with cube) subq2
 on subq1.a = subq2.a
 POSTHOOK: type: QUERY
 Explain
@@ -583,7 +583,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n161
                   Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -834,20 +834,20 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT * FROM
-(SELECT a, b, count(*) from T1 where a < 3 group by a, b with cube) subq1
+(SELECT a, b, count(*) from T1_n161 where a < 3 group by a, b with cube) subq1
 join
-(SELECT a, b, count(*) from T1 where a < 3 group by a, b with cube) subq2
+(SELECT a, b, count(*) from T1_n161 where a < 3 group by a, b with cube) subq2
 on subq1.a = subq2.a
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n161
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM
-(SELECT a, b, count(*) from T1 where a < 3 group by a, b with cube) subq1
+(SELECT a, b, count(*) from T1_n161 where a < 3 group by a, b with cube) subq1
 join
-(SELECT a, b, count(*) from T1 where a < 3 group by a, b with cube) subq2
+(SELECT a, b, count(*) from T1_n161 where a < 3 group by a, b with cube) subq2
 on subq1.a = subq2.a
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n161
 #### A masked pattern was here ####
 subq1.a	subq1.b	subq1._c2	subq2.a	subq2.b	subq2._c2
 1	1	1	1	1	1

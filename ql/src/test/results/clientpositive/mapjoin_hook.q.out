@@ -1,34 +1,34 @@
-PREHOOK: query: drop table dest1
+PREHOOK: query: drop table dest1_n171
 PREHOOK: type: DROPTABLE
 RUN: Stage-0:DDL
-PREHOOK: query: CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE dest1_n171(key INT, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest1
+PREHOOK: Output: default@dest1_n171
 RUN: Stage-0:DDL
-PREHOOK: query: INSERT OVERWRITE TABLE dest1 
+PREHOOK: query: INSERT OVERWRITE TABLE dest1_n171 
 SELECT /*+ MAPJOIN(x) */ x.key, count(1) FROM src1 x JOIN src y ON (x.key = y.key) group by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
-PREHOOK: Output: default@dest1
+PREHOOK: Output: default@dest1_n171
 [MapJoinCounter PostHook] COMMON_JOIN: 0 HINTED_MAPJOIN: 1 HINTED_MAPJOIN_LOCAL: 1 CONVERTED_MAPJOIN: 0 CONVERTED_MAPJOIN_LOCAL: 0 BACKUP_COMMON_JOIN: 0
 RUN: Stage-6:MAPREDLOCAL
 RUN: Stage-2:MAPRED
 RUN: Stage-0:MOVE
 RUN: Stage-3:STATS
 PREHOOK: query: FROM src src1 JOIN src src2 ON (src1.key = src2.key) JOIN src src3 ON (src1.key = src3.key)
-INSERT OVERWRITE TABLE dest1 SELECT src1.key, src3.value
+INSERT OVERWRITE TABLE dest1_n171 SELECT src1.key, src3.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@dest1
+PREHOOK: Output: default@dest1_n171
 [MapJoinCounter PostHook] COMMON_JOIN: 0 HINTED_MAPJOIN: 1 HINTED_MAPJOIN_LOCAL: 1 CONVERTED_MAPJOIN: 0 CONVERTED_MAPJOIN_LOCAL: 0 BACKUP_COMMON_JOIN: 0
 RUN: Stage-6:MAPREDLOCAL
 RUN: Stage-5:MAPRED
 RUN: Stage-0:MOVE
 RUN: Stage-2:STATS
 PREHOOK: query: FROM srcpart src1 JOIN src src2 ON (src1.key = src2.key)
-INSERT OVERWRITE TABLE dest1 SELECT src1.key, src2.value 
+INSERT OVERWRITE TABLE dest1_n171 SELECT src1.key, src2.value 
 where (src1.ds = '2008-04-08' or src1.ds = '2008-04-09' )and (src1.hr = '12' or src1.hr = '11')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -37,7 +37,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Output: default@dest1
+PREHOOK: Output: default@dest1_n171
 Hive Runtime Error: Map local work exhausted memory
 FAILED: Execution Error, return code 3 from org.apache.hadoop.hive.ql.exec.mr.MapredLocalTask
 ATTEMPT: Execute BackupTask: org.apache.hadoop.hive.ql.exec.mr.MapRedTask
@@ -48,10 +48,10 @@ RUN: Stage-1:MAPRED
 RUN: Stage-0:MOVE
 RUN: Stage-2:STATS
 PREHOOK: query: FROM src src1 JOIN src src2 ON (src1.key = src2.key) JOIN src src3 ON (src1.key + src2.key = src3.key)
-INSERT OVERWRITE TABLE dest1 SELECT src1.key, src3.value
+INSERT OVERWRITE TABLE dest1_n171 SELECT src1.key, src3.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@dest1
+PREHOOK: Output: default@dest1_n171
 Hive Runtime Error: Map local work exhausted memory
 FAILED: Execution Error, return code 3 from org.apache.hadoop.hive.ql.exec.mr.MapredLocalTask
 ATTEMPT: Execute BackupTask: org.apache.hadoop.hive.ql.exec.mr.MapRedTask

@@ -90,7 +90,7 @@ width_bucket(0.25, 0, cdouble, 10)
 from alldecimaltypes;
 
 -- Test with all numeric types
-create table alltypes(
+create table alltypes_n3(
     ctinyint TINYINT,
     csmallint SMALLINT,
     cint INT,
@@ -98,7 +98,7 @@ create table alltypes(
     cfloat FLOAT,
     cdouble DOUBLE);
 
-insert into table alltypes values
+insert into table alltypes_n3 values
 (0, 0, 0, 0, 0.0, 0.0),
 (1, 1, 1, 1, 1.0, 1.0),
 (25, 25, 25, 25, 25.0, 25.0),
@@ -114,11 +114,11 @@ width_bucket(cint, 0, 100, 10),
 width_bucket(cbigint, 0, 100, 10),
 width_bucket(cfloat, 0, 100, 10),
 width_bucket(cdouble, 0, 100, 10)
-from alltypes;
+from alltypes_n3;
 
-truncate table alltypes;
+truncate table alltypes_n3;
 
-insert into table alltypes values (5, 5, 5, 10, 4.5, 7.25);
+insert into table alltypes_n3 values (5, 5, 5, 10, 4.5, 7.25);
 
 -- Test different numeric types in a single query
 select
@@ -126,7 +126,7 @@ width_bucket(cdouble, ctinyint, cbigint, 10),
 width_bucket(cdouble, csmallint, cbigint, 10),
 width_bucket(cdouble, cint, cbigint, 10),
 width_bucket(cdouble, cfloat, cbigint, 10)
-from alltypes;
+from alltypes_n3;
 
 -- Test all tinyints
 create table alltinyints (
@@ -194,7 +194,7 @@ insert into table testgroupingsets values (1, 1), (2, 2);
 select c1, c2, width_bucket(5, c1, 10, case when grouping(c2) = 0 then 10 else 5 end) from testgroupingsets group by cube(c1, c2);
 
 drop table alldecimaltype;
-drop table alltypes;
+drop table alltypes_n3;
 drop table alltinyints;
 drop table allsmallints;
 drop table allints;

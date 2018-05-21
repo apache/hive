@@ -1,46 +1,46 @@
-PREHOOK: query: CREATE TABLE T1(key STRING, val STRING)
+PREHOOK: query: CREATE TABLE T1_n56(key STRING, val STRING)
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1
-POSTHOOK: query: CREATE TABLE T1(key STRING, val STRING)
+PREHOOK: Output: default@T1_n56
+POSTHOOK: query: CREATE TABLE T1_n56(key STRING, val STRING)
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bucket_files/000000_0' INTO TABLE T1
+POSTHOOK: Output: default@T1_n56
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bucket_files/000000_0' INTO TABLE T1_n56
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bucket_files/000000_0' INTO TABLE T1
+PREHOOK: Output: default@t1_n56
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bucket_files/000000_0' INTO TABLE T1_n56
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t1
-PREHOOK: query: INSERT OVERWRITE TABLE T1 select key, val from T1
+POSTHOOK: Output: default@t1_n56
+PREHOOK: query: INSERT OVERWRITE TABLE T1_n56 select key, val from T1_n56
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@t1
-POSTHOOK: query: INSERT OVERWRITE TABLE T1 select key, val from T1
+PREHOOK: Input: default@t1_n56
+PREHOOK: Output: default@t1_n56
+POSTHOOK: query: INSERT OVERWRITE TABLE T1_n56 select key, val from T1_n56
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@t1
-POSTHOOK: Lineage: t1.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-PREHOOK: query: CREATE TABLE outputTbl1(key int, cnt int)
+POSTHOOK: Input: default@t1_n56
+POSTHOOK: Output: default@t1_n56
+POSTHOOK: Lineage: t1_n56.key SIMPLE [(t1_n56)t1_n56.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t1_n56.val SIMPLE [(t1_n56)t1_n56.FieldSchema(name:val, type:string, comment:null), ]
+PREHOOK: query: CREATE TABLE outputTbl1_n13(key int, cnt int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@outputTbl1
-POSTHOOK: query: CREATE TABLE outputTbl1(key int, cnt int)
+PREHOOK: Output: default@outputTbl1_n13
+POSTHOOK: query: CREATE TABLE outputTbl1_n13(key int, cnt int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@outputTbl1
+POSTHOOK: Output: default@outputTbl1_n13
 PREHOOK: query: EXPLAIN EXTENDED
-INSERT OVERWRITE TABLE outputTbl1
-SELECT key, count(1) FROM T1 GROUP BY key
+INSERT OVERWRITE TABLE outputTbl1_n13
+SELECT key, count(1) FROM T1_n56 GROUP BY key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED
-INSERT OVERWRITE TABLE outputTbl1
-SELECT key, count(1) FROM T1 GROUP BY key
+INSERT OVERWRITE TABLE outputTbl1_n13
+SELECT key, count(1) FROM T1_n56 GROUP BY key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -57,7 +57,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
+            alias: t1_n56
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Select Operator
@@ -93,17 +93,17 @@ STAGE PLANS:
                           columns.comments 
                           columns.types int:int
 #### A masked pattern was here ####
-                          name default.outputtbl1
+                          name default.outputtbl1_n13
                           numFiles 0
                           numRows 0
                           rawDataSize 0
-                          serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+                          serialization.ddl struct outputtbl1_n13 { i32 key, i32 cnt}
                           serialization.format 1
                           serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           totalSize 0
 #### A masked pattern was here ####
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.outputtbl1
+                        name: default.outputtbl1_n13
                     TotalFiles: 1
                     GatherStats: true
                     MultiFileSpray: false
@@ -128,7 +128,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: t1
+            base file name: t1_n56
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -142,11 +142,11 @@ STAGE PLANS:
               columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
-              name default.t1
+              name default.t1_n56
               numFiles 2
               numRows 6
               rawDataSize 24
-              serialization.ddl struct t1 { string key, string val}
+              serialization.ddl struct t1_n56 { string key, string val}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 30
@@ -166,20 +166,20 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
-                name default.t1
+                name default.t1_n56
                 numFiles 2
                 numRows 6
                 rawDataSize 24
-                serialization.ddl struct t1 { string key, string val}
+                serialization.ddl struct t1_n56 { string key, string val}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 30
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.t1
-            name: default.t1
+              name: default.t1_n56
+            name: default.t1_n56
       Truncated Path -> Alias:
-        /t1 [t1]
+        /t1_n56 [t1_n56]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -236,17 +236,17 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:int
 #### A masked pattern was here ####
-                name default.outputtbl1
+                name default.outputtbl1_n13
                 numFiles 0
                 numRows 0
                 rawDataSize 0
-                serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+                serialization.ddl struct outputtbl1_n13 { i32 key, i32 cnt}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.outputtbl1
+              name: default.outputtbl1_n13
 
   Stage: Stage-2
     Stats Work
@@ -255,7 +255,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, cnt
           Column Types: int, int
-          Table: default.outputtbl1
+          Table: default.outputtbl1_n13
           Is Table Level Stats: true
 
   Stage: Stage-3
@@ -280,17 +280,17 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:int
 #### A masked pattern was here ####
-                    name default.outputtbl1
+                    name default.outputtbl1_n13
                     numFiles 0
                     numRows 0
                     rawDataSize 0
-                    serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+                    serialization.ddl struct outputtbl1_n13 { i32 key, i32 cnt}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 0
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.outputtbl1
+                  name: default.outputtbl1_n13
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
@@ -311,11 +311,11 @@ STAGE PLANS:
               columns.comments 
               columns.types int:int
 #### A masked pattern was here ####
-              name default.outputtbl1
+              name default.outputtbl1_n13
               numFiles 0
               numRows 0
               rawDataSize 0
-              serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+              serialization.ddl struct outputtbl1_n13 { i32 key, i32 cnt}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 0
@@ -333,18 +333,18 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:int
 #### A masked pattern was here ####
-                name default.outputtbl1
+                name default.outputtbl1_n13
                 numFiles 0
                 numRows 0
                 rawDataSize 0
-                serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+                serialization.ddl struct outputtbl1_n13 { i32 key, i32 cnt}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.outputtbl1
-            name: default.outputtbl1
+              name: default.outputtbl1_n13
+            name: default.outputtbl1_n13
       Truncated Path -> Alias:
 #### A masked pattern was here ####
 
@@ -370,17 +370,17 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:int
 #### A masked pattern was here ####
-                    name default.outputtbl1
+                    name default.outputtbl1_n13
                     numFiles 0
                     numRows 0
                     rawDataSize 0
-                    serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+                    serialization.ddl struct outputtbl1_n13 { i32 key, i32 cnt}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 0
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.outputtbl1
+                  name: default.outputtbl1_n13
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
@@ -401,11 +401,11 @@ STAGE PLANS:
               columns.comments 
               columns.types int:int
 #### A masked pattern was here ####
-              name default.outputtbl1
+              name default.outputtbl1_n13
               numFiles 0
               numRows 0
               rawDataSize 0
-              serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+              serialization.ddl struct outputtbl1_n13 { i32 key, i32 cnt}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 0
@@ -423,18 +423,18 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:int
 #### A masked pattern was here ####
-                name default.outputtbl1
+                name default.outputtbl1_n13
                 numFiles 0
                 numRows 0
                 rawDataSize 0
-                serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+                serialization.ddl struct outputtbl1_n13 { i32 key, i32 cnt}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.outputtbl1
-            name: default.outputtbl1
+              name: default.outputtbl1_n13
+            name: default.outputtbl1_n13
       Truncated Path -> Alias:
 #### A masked pattern was here ####
 
@@ -444,46 +444,46 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-PREHOOK: query: INSERT OVERWRITE TABLE outputTbl1
-SELECT key, count(1) FROM T1 GROUP BY key
+PREHOOK: query: INSERT OVERWRITE TABLE outputTbl1_n13
+SELECT key, count(1) FROM T1_n56 GROUP BY key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@outputtbl1
-POSTHOOK: query: INSERT OVERWRITE TABLE outputTbl1
-SELECT key, count(1) FROM T1 GROUP BY key
+PREHOOK: Input: default@t1_n56
+PREHOOK: Output: default@outputtbl1_n13
+POSTHOOK: query: INSERT OVERWRITE TABLE outputTbl1_n13
+SELECT key, count(1) FROM T1_n56 GROUP BY key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@outputtbl1
-POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
-POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-PREHOOK: query: SELECT * FROM outputTbl1
+POSTHOOK: Input: default@t1_n56
+POSTHOOK: Output: default@outputtbl1_n13
+POSTHOOK: Lineage: outputtbl1_n13.cnt EXPRESSION [(t1_n56)t1_n56.null, ]
+POSTHOOK: Lineage: outputtbl1_n13.key EXPRESSION [(t1_n56)t1_n56.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM outputTbl1_n13
 PREHOOK: type: QUERY
-PREHOOK: Input: default@outputtbl1
+PREHOOK: Input: default@outputtbl1_n13
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM outputTbl1
+POSTHOOK: query: SELECT * FROM outputTbl1_n13
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@outputtbl1
+POSTHOOK: Input: default@outputtbl1_n13
 #### A masked pattern was here ####
 1	1
 2	1
 3	1
 7	1
 8	2
-PREHOOK: query: CREATE TABLE outputTbl2(key1 int, key2 string, cnt int)
+PREHOOK: query: CREATE TABLE outputTbl2_n3(key1 int, key2 string, cnt int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@outputTbl2
-POSTHOOK: query: CREATE TABLE outputTbl2(key1 int, key2 string, cnt int)
+PREHOOK: Output: default@outputTbl2_n3
+POSTHOOK: query: CREATE TABLE outputTbl2_n3(key1 int, key2 string, cnt int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@outputTbl2
+POSTHOOK: Output: default@outputTbl2_n3
 PREHOOK: query: EXPLAIN EXTENDED
-INSERT OVERWRITE TABLE outputTbl2
-SELECT key, val, count(1) FROM T1 GROUP BY key, val
+INSERT OVERWRITE TABLE outputTbl2_n3
+SELECT key, val, count(1) FROM T1_n56 GROUP BY key, val
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED
-INSERT OVERWRITE TABLE outputTbl2
-SELECT key, val, count(1) FROM T1 GROUP BY key, val
+INSERT OVERWRITE TABLE outputTbl2_n3
+SELECT key, val, count(1) FROM T1_n56 GROUP BY key, val
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -497,7 +497,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
+            alias: t1_n56
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Select Operator
@@ -525,7 +525,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: t1
+            base file name: t1_n56
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -539,11 +539,11 @@ STAGE PLANS:
               columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
-              name default.t1
+              name default.t1_n56
               numFiles 2
               numRows 6
               rawDataSize 24
-              serialization.ddl struct t1 { string key, string val}
+              serialization.ddl struct t1_n56 { string key, string val}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 30
@@ -563,20 +563,20 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
-                name default.t1
+                name default.t1_n56
                 numFiles 2
                 numRows 6
                 rawDataSize 24
-                serialization.ddl struct t1 { string key, string val}
+                serialization.ddl struct t1_n56 { string key, string val}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 30
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.t1
-            name: default.t1
+              name: default.t1_n56
+            name: default.t1_n56
       Truncated Path -> Alias:
-        /t1 [t1]
+        /t1_n56 [t1_n56]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -677,17 +677,17 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:string:int
 #### A masked pattern was here ####
-                    name default.outputtbl2
+                    name default.outputtbl2_n3
                     numFiles 0
                     numRows 0
                     rawDataSize 0
-                    serialization.ddl struct outputtbl2 { i32 key1, string key2, i32 cnt}
+                    serialization.ddl struct outputtbl2_n3 { i32 key1, string key2, i32 cnt}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 0
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.outputtbl2
+                  name: default.outputtbl2_n3
               TotalFiles: 1
               GatherStats: true
               MultiFileSpray: false
@@ -736,17 +736,17 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:string:int
 #### A masked pattern was here ####
-                name default.outputtbl2
+                name default.outputtbl2_n3
                 numFiles 0
                 numRows 0
                 rawDataSize 0
-                serialization.ddl struct outputtbl2 { i32 key1, string key2, i32 cnt}
+                serialization.ddl struct outputtbl2_n3 { i32 key1, string key2, i32 cnt}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.outputtbl2
+              name: default.outputtbl2_n3
 
   Stage: Stage-3
     Stats Work
@@ -755,7 +755,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key1, key2, cnt
           Column Types: int, string, int
-          Table: default.outputtbl2
+          Table: default.outputtbl2_n3
           Is Table Level Stats: true
 
   Stage: Stage-4
@@ -828,26 +828,26 @@ STAGE PLANS:
             GatherStats: false
             MultiFileSpray: false
 
-PREHOOK: query: INSERT OVERWRITE TABLE outputTbl2
-SELECT key, val, count(1) FROM T1 GROUP BY key, val
+PREHOOK: query: INSERT OVERWRITE TABLE outputTbl2_n3
+SELECT key, val, count(1) FROM T1_n56 GROUP BY key, val
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@outputtbl2
-POSTHOOK: query: INSERT OVERWRITE TABLE outputTbl2
-SELECT key, val, count(1) FROM T1 GROUP BY key, val
+PREHOOK: Input: default@t1_n56
+PREHOOK: Output: default@outputtbl2_n3
+POSTHOOK: query: INSERT OVERWRITE TABLE outputTbl2_n3
+SELECT key, val, count(1) FROM T1_n56 GROUP BY key, val
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@outputtbl2
-POSTHOOK: Lineage: outputtbl2.cnt EXPRESSION [(t1)t1.null, ]
-POSTHOOK: Lineage: outputtbl2.key1 EXPRESSION [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl2.key2 SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-PREHOOK: query: SELECT * FROM outputTbl2
+POSTHOOK: Input: default@t1_n56
+POSTHOOK: Output: default@outputtbl2_n3
+POSTHOOK: Lineage: outputtbl2_n3.cnt EXPRESSION [(t1_n56)t1_n56.null, ]
+POSTHOOK: Lineage: outputtbl2_n3.key1 EXPRESSION [(t1_n56)t1_n56.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl2_n3.key2 SIMPLE [(t1_n56)t1_n56.FieldSchema(name:val, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM outputTbl2_n3
 PREHOOK: type: QUERY
-PREHOOK: Input: default@outputtbl2
+PREHOOK: Input: default@outputtbl2_n3
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM outputTbl2
+POSTHOOK: query: SELECT * FROM outputTbl2_n3
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@outputtbl2
+POSTHOOK: Input: default@outputtbl2_n3
 #### A masked pattern was here ####
 1	11	1
 2	12	1
@@ -856,12 +856,12 @@ POSTHOOK: Input: default@outputtbl2
 8	18	1
 8	28	1
 PREHOOK: query: EXPLAIN EXTENDED 
-INSERT OVERWRITE TABLE outputTbl1
-SELECT key, count(1) FROM (SELECT key, val FROM T1) subq1 GROUP BY key
+INSERT OVERWRITE TABLE outputTbl1_n13
+SELECT key, count(1) FROM (SELECT key, val FROM T1_n56) subq1 GROUP BY key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED 
-INSERT OVERWRITE TABLE outputTbl1
-SELECT key, count(1) FROM (SELECT key, val FROM T1) subq1 GROUP BY key
+INSERT OVERWRITE TABLE outputTbl1_n13
+SELECT key, count(1) FROM (SELECT key, val FROM T1_n56) subq1 GROUP BY key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -878,7 +878,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
+            alias: t1_n56
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Select Operator
@@ -914,17 +914,17 @@ STAGE PLANS:
                           columns.comments 
                           columns.types int:int
 #### A masked pattern was here ####
-                          name default.outputtbl1
+                          name default.outputtbl1_n13
                           numFiles 1
                           numRows 5
                           rawDataSize 15
-                          serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+                          serialization.ddl struct outputtbl1_n13 { i32 key, i32 cnt}
                           serialization.format 1
                           serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           totalSize 20
 #### A masked pattern was here ####
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.outputtbl1
+                        name: default.outputtbl1_n13
                     TotalFiles: 1
                     GatherStats: true
                     MultiFileSpray: false
@@ -949,7 +949,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: t1
+            base file name: t1_n56
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -963,11 +963,11 @@ STAGE PLANS:
               columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
-              name default.t1
+              name default.t1_n56
               numFiles 2
               numRows 6
               rawDataSize 24
-              serialization.ddl struct t1 { string key, string val}
+              serialization.ddl struct t1_n56 { string key, string val}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 30
@@ -987,20 +987,20 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
-                name default.t1
+                name default.t1_n56
                 numFiles 2
                 numRows 6
                 rawDataSize 24
-                serialization.ddl struct t1 { string key, string val}
+                serialization.ddl struct t1_n56 { string key, string val}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 30
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.t1
-            name: default.t1
+              name: default.t1_n56
+            name: default.t1_n56
       Truncated Path -> Alias:
-        /t1 [t1]
+        /t1_n56 [t1_n56]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -1057,17 +1057,17 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:int
 #### A masked pattern was here ####
-                name default.outputtbl1
+                name default.outputtbl1_n13
                 numFiles 1
                 numRows 5
                 rawDataSize 15
-                serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+                serialization.ddl struct outputtbl1_n13 { i32 key, i32 cnt}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 20
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.outputtbl1
+              name: default.outputtbl1_n13
 
   Stage: Stage-2
     Stats Work
@@ -1076,7 +1076,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, cnt
           Column Types: int, int
-          Table: default.outputtbl1
+          Table: default.outputtbl1_n13
           Is Table Level Stats: true
 
   Stage: Stage-3
@@ -1101,17 +1101,17 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:int
 #### A masked pattern was here ####
-                    name default.outputtbl1
+                    name default.outputtbl1_n13
                     numFiles 1
                     numRows 5
                     rawDataSize 15
-                    serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+                    serialization.ddl struct outputtbl1_n13 { i32 key, i32 cnt}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 20
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.outputtbl1
+                  name: default.outputtbl1_n13
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
@@ -1132,11 +1132,11 @@ STAGE PLANS:
               columns.comments 
               columns.types int:int
 #### A masked pattern was here ####
-              name default.outputtbl1
+              name default.outputtbl1_n13
               numFiles 1
               numRows 5
               rawDataSize 15
-              serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+              serialization.ddl struct outputtbl1_n13 { i32 key, i32 cnt}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 20
@@ -1154,18 +1154,18 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:int
 #### A masked pattern was here ####
-                name default.outputtbl1
+                name default.outputtbl1_n13
                 numFiles 1
                 numRows 5
                 rawDataSize 15
-                serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+                serialization.ddl struct outputtbl1_n13 { i32 key, i32 cnt}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 20
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.outputtbl1
-            name: default.outputtbl1
+              name: default.outputtbl1_n13
+            name: default.outputtbl1_n13
       Truncated Path -> Alias:
 #### A masked pattern was here ####
 
@@ -1191,17 +1191,17 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:int
 #### A masked pattern was here ####
-                    name default.outputtbl1
+                    name default.outputtbl1_n13
                     numFiles 1
                     numRows 5
                     rawDataSize 15
-                    serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+                    serialization.ddl struct outputtbl1_n13 { i32 key, i32 cnt}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 20
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.outputtbl1
+                  name: default.outputtbl1_n13
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
@@ -1222,11 +1222,11 @@ STAGE PLANS:
               columns.comments 
               columns.types int:int
 #### A masked pattern was here ####
-              name default.outputtbl1
+              name default.outputtbl1_n13
               numFiles 1
               numRows 5
               rawDataSize 15
-              serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+              serialization.ddl struct outputtbl1_n13 { i32 key, i32 cnt}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 20
@@ -1244,18 +1244,18 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:int
 #### A masked pattern was here ####
-                name default.outputtbl1
+                name default.outputtbl1_n13
                 numFiles 1
                 numRows 5
                 rawDataSize 15
-                serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+                serialization.ddl struct outputtbl1_n13 { i32 key, i32 cnt}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 20
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.outputtbl1
-            name: default.outputtbl1
+              name: default.outputtbl1_n13
+            name: default.outputtbl1_n13
       Truncated Path -> Alias:
 #### A masked pattern was here ####
 
@@ -1265,25 +1265,25 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-PREHOOK: query: INSERT OVERWRITE TABLE outputTbl1
-SELECT key, count(1) FROM (SELECT key, val FROM T1) subq1 GROUP BY key
+PREHOOK: query: INSERT OVERWRITE TABLE outputTbl1_n13
+SELECT key, count(1) FROM (SELECT key, val FROM T1_n56) subq1 GROUP BY key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@outputtbl1
-POSTHOOK: query: INSERT OVERWRITE TABLE outputTbl1
-SELECT key, count(1) FROM (SELECT key, val FROM T1) subq1 GROUP BY key
+PREHOOK: Input: default@t1_n56
+PREHOOK: Output: default@outputtbl1_n13
+POSTHOOK: query: INSERT OVERWRITE TABLE outputTbl1_n13
+SELECT key, count(1) FROM (SELECT key, val FROM T1_n56) subq1 GROUP BY key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@outputtbl1
-POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
-POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-PREHOOK: query: SELECT * FROM outputTbl1
+POSTHOOK: Input: default@t1_n56
+POSTHOOK: Output: default@outputtbl1_n13
+POSTHOOK: Lineage: outputtbl1_n13.cnt EXPRESSION [(t1_n56)t1_n56.null, ]
+POSTHOOK: Lineage: outputtbl1_n13.key EXPRESSION [(t1_n56)t1_n56.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM outputTbl1_n13
 PREHOOK: type: QUERY
-PREHOOK: Input: default@outputtbl1
+PREHOOK: Input: default@outputtbl1_n13
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM outputTbl1
+POSTHOOK: query: SELECT * FROM outputTbl1_n13
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@outputtbl1
+POSTHOOK: Input: default@outputtbl1_n13
 #### A masked pattern was here ####
 1	1
 2	1
@@ -1291,12 +1291,12 @@ POSTHOOK: Input: default@outputtbl1
 7	1
 8	2
 PREHOOK: query: EXPLAIN EXTENDED
-INSERT OVERWRITE TABLE outputTbl1
-SELECT k, count(1) FROM (SELECT key as k, val as v FROM T1) subq1 GROUP BY k
+INSERT OVERWRITE TABLE outputTbl1_n13
+SELECT k, count(1) FROM (SELECT key as k, val as v FROM T1_n56) subq1 GROUP BY k
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED
-INSERT OVERWRITE TABLE outputTbl1
-SELECT k, count(1) FROM (SELECT key as k, val as v FROM T1) subq1 GROUP BY k
+INSERT OVERWRITE TABLE outputTbl1_n13
+SELECT k, count(1) FROM (SELECT key as k, val as v FROM T1_n56) subq1 GROUP BY k
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1313,7 +1313,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
+            alias: t1_n56
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Select Operator
@@ -1349,17 +1349,17 @@ STAGE PLANS:
                           columns.comments 
                           columns.types int:int
 #### A masked pattern was here ####
-                          name default.outputtbl1
+                          name default.outputtbl1_n13
                           numFiles 1
                           numRows 5
                           rawDataSize 15
-                          serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+                          serialization.ddl struct outputtbl1_n13 { i32 key, i32 cnt}
                           serialization.format 1
                           serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           totalSize 20
 #### A masked pattern was here ####
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.outputtbl1
+                        name: default.outputtbl1_n13
                     TotalFiles: 1
                     GatherStats: true
                     MultiFileSpray: false
@@ -1384,7 +1384,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: t1
+            base file name: t1_n56
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -1398,11 +1398,11 @@ STAGE PLANS:
               columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
-              name default.t1
+              name default.t1_n56
               numFiles 2
               numRows 6
               rawDataSize 24
-              serialization.ddl struct t1 { string key, string val}
+              serialization.ddl struct t1_n56 { string key, string val}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 30
@@ -1422,20 +1422,20 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
-                name default.t1
+                name default.t1_n56
                 numFiles 2
                 numRows 6
                 rawDataSize 24
-                serialization.ddl struct t1 { string key, string val}
+                serialization.ddl struct t1_n56 { string key, string val}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 30
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.t1
-            name: default.t1
+              name: default.t1_n56
+            name: default.t1_n56
       Truncated Path -> Alias:
-        /t1 [t1]
+        /t1_n56 [t1_n56]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -1492,17 +1492,17 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:int
 #### A masked pattern was here ####
-                name default.outputtbl1
+                name default.outputtbl1_n13
                 numFiles 1
                 numRows 5
                 rawDataSize 15
-                serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+                serialization.ddl struct outputtbl1_n13 { i32 key, i32 cnt}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 20
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.outputtbl1
+              name: default.outputtbl1_n13
 
   Stage: Stage-2
     Stats Work
@@ -1511,7 +1511,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, cnt
           Column Types: int, int
-          Table: default.outputtbl1
+          Table: default.outputtbl1_n13
           Is Table Level Stats: true
 
   Stage: Stage-3
@@ -1536,17 +1536,17 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:int
 #### A masked pattern was here ####
-                    name default.outputtbl1
+                    name default.outputtbl1_n13
                     numFiles 1
                     numRows 5
                     rawDataSize 15
-                    serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+                    serialization.ddl struct outputtbl1_n13 { i32 key, i32 cnt}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 20
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.outputtbl1
+                  name: default.outputtbl1_n13
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
@@ -1567,11 +1567,11 @@ STAGE PLANS:
               columns.comments 
               columns.types int:int
 #### A masked pattern was here ####
-              name default.outputtbl1
+              name default.outputtbl1_n13
               numFiles 1
               numRows 5
               rawDataSize 15
-              serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+              serialization.ddl struct outputtbl1_n13 { i32 key, i32 cnt}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 20
@@ -1589,18 +1589,18 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:int
 #### A masked pattern was here ####
-                name default.outputtbl1
+                name default.outputtbl1_n13
                 numFiles 1
                 numRows 5
                 rawDataSize 15
-                serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+                serialization.ddl struct outputtbl1_n13 { i32 key, i32 cnt}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 20
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.outputtbl1
-            name: default.outputtbl1
+              name: default.outputtbl1_n13
+            name: default.outputtbl1_n13
       Truncated Path -> Alias:
 #### A masked pattern was here ####
 
@@ -1626,17 +1626,17 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:int
 #### A masked pattern was here ####
-                    name default.outputtbl1
+                    name default.outputtbl1_n13
                     numFiles 1
                     numRows 5
                     rawDataSize 15
-                    serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+                    serialization.ddl struct outputtbl1_n13 { i32 key, i32 cnt}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 20
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.outputtbl1
+                  name: default.outputtbl1_n13
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
@@ -1657,11 +1657,11 @@ STAGE PLANS:
               columns.comments 
               columns.types int:int
 #### A masked pattern was here ####
-              name default.outputtbl1
+              name default.outputtbl1_n13
               numFiles 1
               numRows 5
               rawDataSize 15
-              serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+              serialization.ddl struct outputtbl1_n13 { i32 key, i32 cnt}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 20
@@ -1679,18 +1679,18 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:int
 #### A masked pattern was here ####
-                name default.outputtbl1
+                name default.outputtbl1_n13
                 numFiles 1
                 numRows 5
                 rawDataSize 15
-                serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+                serialization.ddl struct outputtbl1_n13 { i32 key, i32 cnt}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 20
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.outputtbl1
-            name: default.outputtbl1
+              name: default.outputtbl1_n13
+            name: default.outputtbl1_n13
       Truncated Path -> Alias:
 #### A masked pattern was here ####
 
@@ -1700,46 +1700,46 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-PREHOOK: query: INSERT OVERWRITE TABLE outputTbl1
-SELECT k, count(1) FROM (SELECT key as k, val as v FROM T1) subq1 GROUP BY k
+PREHOOK: query: INSERT OVERWRITE TABLE outputTbl1_n13
+SELECT k, count(1) FROM (SELECT key as k, val as v FROM T1_n56) subq1 GROUP BY k
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@outputtbl1
-POSTHOOK: query: INSERT OVERWRITE TABLE outputTbl1
-SELECT k, count(1) FROM (SELECT key as k, val as v FROM T1) subq1 GROUP BY k
+PREHOOK: Input: default@t1_n56
+PREHOOK: Output: default@outputtbl1_n13
+POSTHOOK: query: INSERT OVERWRITE TABLE outputTbl1_n13
+SELECT k, count(1) FROM (SELECT key as k, val as v FROM T1_n56) subq1 GROUP BY k
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@outputtbl1
-POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
-POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-PREHOOK: query: SELECT * FROM outputTbl1
+POSTHOOK: Input: default@t1_n56
+POSTHOOK: Output: default@outputtbl1_n13
+POSTHOOK: Lineage: outputtbl1_n13.cnt EXPRESSION [(t1_n56)t1_n56.null, ]
+POSTHOOK: Lineage: outputtbl1_n13.key EXPRESSION [(t1_n56)t1_n56.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM outputTbl1_n13
 PREHOOK: type: QUERY
-PREHOOK: Input: default@outputtbl1
+PREHOOK: Input: default@outputtbl1_n13
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM outputTbl1
+POSTHOOK: query: SELECT * FROM outputTbl1_n13
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@outputtbl1
+POSTHOOK: Input: default@outputtbl1_n13
 #### A masked pattern was here ####
 1	1
 2	1
 3	1
 7	1
 8	2
-PREHOOK: query: CREATE TABLE outputTbl3(key1 int, key2 int, cnt int)
+PREHOOK: query: CREATE TABLE outputTbl3_n1(key1 int, key2 int, cnt int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@outputTbl3
-POSTHOOK: query: CREATE TABLE outputTbl3(key1 int, key2 int, cnt int)
+PREHOOK: Output: default@outputTbl3_n1
+POSTHOOK: query: CREATE TABLE outputTbl3_n1(key1 int, key2 int, cnt int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@outputTbl3
+POSTHOOK: Output: default@outputTbl3_n1
 PREHOOK: query: EXPLAIN EXTENDED 
-INSERT OVERWRITE TABLE outputTbl3
-SELECT 1, key, count(1) FROM T1 GROUP BY 1, key
+INSERT OVERWRITE TABLE outputTbl3_n1
+SELECT 1, key, count(1) FROM T1_n56 GROUP BY 1, key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED 
-INSERT OVERWRITE TABLE outputTbl3
-SELECT 1, key, count(1) FROM T1 GROUP BY 1, key
+INSERT OVERWRITE TABLE outputTbl3_n1
+SELECT 1, key, count(1) FROM T1_n56 GROUP BY 1, key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1756,7 +1756,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
+            alias: t1_n56
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Select Operator
@@ -1792,17 +1792,17 @@ STAGE PLANS:
                           columns.comments 
                           columns.types int:int:int
 #### A masked pattern was here ####
-                          name default.outputtbl3
+                          name default.outputtbl3_n1
                           numFiles 0
                           numRows 0
                           rawDataSize 0
-                          serialization.ddl struct outputtbl3 { i32 key1, i32 key2, i32 cnt}
+                          serialization.ddl struct outputtbl3_n1 { i32 key1, i32 key2, i32 cnt}
                           serialization.format 1
                           serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           totalSize 0
 #### A masked pattern was here ####
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.outputtbl3
+                        name: default.outputtbl3_n1
                     TotalFiles: 1
                     GatherStats: true
                     MultiFileSpray: false
@@ -1827,7 +1827,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: t1
+            base file name: t1_n56
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -1841,11 +1841,11 @@ STAGE PLANS:
               columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
-              name default.t1
+              name default.t1_n56
               numFiles 2
               numRows 6
               rawDataSize 24
-              serialization.ddl struct t1 { string key, string val}
+              serialization.ddl struct t1_n56 { string key, string val}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 30
@@ -1865,20 +1865,20 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
-                name default.t1
+                name default.t1_n56
                 numFiles 2
                 numRows 6
                 rawDataSize 24
-                serialization.ddl struct t1 { string key, string val}
+                serialization.ddl struct t1_n56 { string key, string val}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 30
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.t1
-            name: default.t1
+              name: default.t1_n56
+            name: default.t1_n56
       Truncated Path -> Alias:
-        /t1 [t1]
+        /t1_n56 [t1_n56]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -1935,17 +1935,17 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:int:int
 #### A masked pattern was here ####
-                name default.outputtbl3
+                name default.outputtbl3_n1
                 numFiles 0
                 numRows 0
                 rawDataSize 0
-                serialization.ddl struct outputtbl3 { i32 key1, i32 key2, i32 cnt}
+                serialization.ddl struct outputtbl3_n1 { i32 key1, i32 key2, i32 cnt}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.outputtbl3
+              name: default.outputtbl3_n1
 
   Stage: Stage-2
     Stats Work
@@ -1954,7 +1954,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key1, key2, cnt
           Column Types: int, int, int
-          Table: default.outputtbl3
+          Table: default.outputtbl3_n1
           Is Table Level Stats: true
 
   Stage: Stage-3
@@ -1979,17 +1979,17 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:int:int
 #### A masked pattern was here ####
-                    name default.outputtbl3
+                    name default.outputtbl3_n1
                     numFiles 0
                     numRows 0
                     rawDataSize 0
-                    serialization.ddl struct outputtbl3 { i32 key1, i32 key2, i32 cnt}
+                    serialization.ddl struct outputtbl3_n1 { i32 key1, i32 key2, i32 cnt}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 0
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.outputtbl3
+                  name: default.outputtbl3_n1
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
@@ -2010,11 +2010,11 @@ STAGE PLANS:
               columns.comments 
               columns.types int:int:int
 #### A masked pattern was here ####
-              name default.outputtbl3
+              name default.outputtbl3_n1
               numFiles 0
               numRows 0
               rawDataSize 0
-              serialization.ddl struct outputtbl3 { i32 key1, i32 key2, i32 cnt}
+              serialization.ddl struct outputtbl3_n1 { i32 key1, i32 key2, i32 cnt}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 0
@@ -2032,18 +2032,18 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:int:int
 #### A masked pattern was here ####
-                name default.outputtbl3
+                name default.outputtbl3_n1
                 numFiles 0
                 numRows 0
                 rawDataSize 0
-                serialization.ddl struct outputtbl3 { i32 key1, i32 key2, i32 cnt}
+                serialization.ddl struct outputtbl3_n1 { i32 key1, i32 key2, i32 cnt}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.outputtbl3
-            name: default.outputtbl3
+              name: default.outputtbl3_n1
+            name: default.outputtbl3_n1
       Truncated Path -> Alias:
 #### A masked pattern was here ####
 
@@ -2069,17 +2069,17 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:int:int
 #### A masked pattern was here ####
-                    name default.outputtbl3
+                    name default.outputtbl3_n1
                     numFiles 0
                     numRows 0
                     rawDataSize 0
-                    serialization.ddl struct outputtbl3 { i32 key1, i32 key2, i32 cnt}
+                    serialization.ddl struct outputtbl3_n1 { i32 key1, i32 key2, i32 cnt}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 0
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.outputtbl3
+                  name: default.outputtbl3_n1
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
@@ -2100,11 +2100,11 @@ STAGE PLANS:
               columns.comments 
               columns.types int:int:int
 #### A masked pattern was here ####
-              name default.outputtbl3
+              name default.outputtbl3_n1
               numFiles 0
               numRows 0
               rawDataSize 0
-              serialization.ddl struct outputtbl3 { i32 key1, i32 key2, i32 cnt}
+              serialization.ddl struct outputtbl3_n1 { i32 key1, i32 key2, i32 cnt}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 0
@@ -2122,18 +2122,18 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:int:int
 #### A masked pattern was here ####
-                name default.outputtbl3
+                name default.outputtbl3_n1
                 numFiles 0
                 numRows 0
                 rawDataSize 0
-                serialization.ddl struct outputtbl3 { i32 key1, i32 key2, i32 cnt}
+                serialization.ddl struct outputtbl3_n1 { i32 key1, i32 key2, i32 cnt}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.outputtbl3
-            name: default.outputtbl3
+              name: default.outputtbl3_n1
+            name: default.outputtbl3_n1
       Truncated Path -> Alias:
 #### A masked pattern was here ####
 
@@ -2143,47 +2143,47 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-PREHOOK: query: INSERT OVERWRITE TABLE outputTbl3
-SELECT 1, key, count(1) FROM T1 GROUP BY 1, key
+PREHOOK: query: INSERT OVERWRITE TABLE outputTbl3_n1
+SELECT 1, key, count(1) FROM T1_n56 GROUP BY 1, key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@outputtbl3
-POSTHOOK: query: INSERT OVERWRITE TABLE outputTbl3
-SELECT 1, key, count(1) FROM T1 GROUP BY 1, key
+PREHOOK: Input: default@t1_n56
+PREHOOK: Output: default@outputtbl3_n1
+POSTHOOK: query: INSERT OVERWRITE TABLE outputTbl3_n1
+SELECT 1, key, count(1) FROM T1_n56 GROUP BY 1, key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@outputtbl3
-POSTHOOK: Lineage: outputtbl3.cnt EXPRESSION [(t1)t1.null, ]
-POSTHOOK: Lineage: outputtbl3.key1 SIMPLE []
-POSTHOOK: Lineage: outputtbl3.key2 EXPRESSION [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-PREHOOK: query: SELECT * FROM outputTbl3
+POSTHOOK: Input: default@t1_n56
+POSTHOOK: Output: default@outputtbl3_n1
+POSTHOOK: Lineage: outputtbl3_n1.cnt EXPRESSION [(t1_n56)t1_n56.null, ]
+POSTHOOK: Lineage: outputtbl3_n1.key1 SIMPLE []
+POSTHOOK: Lineage: outputtbl3_n1.key2 EXPRESSION [(t1_n56)t1_n56.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM outputTbl3_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@outputtbl3
+PREHOOK: Input: default@outputtbl3_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM outputTbl3
+POSTHOOK: query: SELECT * FROM outputTbl3_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@outputtbl3
+POSTHOOK: Input: default@outputtbl3_n1
 #### A masked pattern was here ####
 1	1	1
 1	2	1
 1	3	1
 1	7	1
 1	8	2
-PREHOOK: query: CREATE TABLE outputTbl4(key1 int, key2 int, key3 string, cnt int)
+PREHOOK: query: CREATE TABLE outputTbl4_n1(key1 int, key2 int, key3 string, cnt int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@outputTbl4
-POSTHOOK: query: CREATE TABLE outputTbl4(key1 int, key2 int, key3 string, cnt int)
+PREHOOK: Output: default@outputTbl4_n1
+POSTHOOK: query: CREATE TABLE outputTbl4_n1(key1 int, key2 int, key3 string, cnt int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@outputTbl4
+POSTHOOK: Output: default@outputTbl4_n1
 PREHOOK: query: EXPLAIN EXTENDED 
-INSERT OVERWRITE TABLE outputTbl4
-SELECT key, 1, val, count(1) FROM T1 GROUP BY key, 1, val
+INSERT OVERWRITE TABLE outputTbl4_n1
+SELECT key, 1, val, count(1) FROM T1_n56 GROUP BY key, 1, val
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED 
-INSERT OVERWRITE TABLE outputTbl4
-SELECT key, 1, val, count(1) FROM T1 GROUP BY key, 1, val
+INSERT OVERWRITE TABLE outputTbl4_n1
+SELECT key, 1, val, count(1) FROM T1_n56 GROUP BY key, 1, val
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2197,7 +2197,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
+            alias: t1_n56
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Select Operator
@@ -2225,7 +2225,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: t1
+            base file name: t1_n56
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -2239,11 +2239,11 @@ STAGE PLANS:
               columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
-              name default.t1
+              name default.t1_n56
               numFiles 2
               numRows 6
               rawDataSize 24
-              serialization.ddl struct t1 { string key, string val}
+              serialization.ddl struct t1_n56 { string key, string val}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 30
@@ -2263,20 +2263,20 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
-                name default.t1
+                name default.t1_n56
                 numFiles 2
                 numRows 6
                 rawDataSize 24
-                serialization.ddl struct t1 { string key, string val}
+                serialization.ddl struct t1_n56 { string key, string val}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 30
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.t1
-            name: default.t1
+              name: default.t1_n56
+            name: default.t1_n56
       Truncated Path -> Alias:
-        /t1 [t1]
+        /t1_n56 [t1_n56]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -2377,17 +2377,17 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:int:string:int
 #### A masked pattern was here ####
-                    name default.outputtbl4
+                    name default.outputtbl4_n1
                     numFiles 0
                     numRows 0
                     rawDataSize 0
-                    serialization.ddl struct outputtbl4 { i32 key1, i32 key2, string key3, i32 cnt}
+                    serialization.ddl struct outputtbl4_n1 { i32 key1, i32 key2, string key3, i32 cnt}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 0
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.outputtbl4
+                  name: default.outputtbl4_n1
               TotalFiles: 1
               GatherStats: true
               MultiFileSpray: false
@@ -2436,17 +2436,17 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:int:string:int
 #### A masked pattern was here ####
-                name default.outputtbl4
+                name default.outputtbl4_n1
                 numFiles 0
                 numRows 0
                 rawDataSize 0
-                serialization.ddl struct outputtbl4 { i32 key1, i32 key2, string key3, i32 cnt}
+                serialization.ddl struct outputtbl4_n1 { i32 key1, i32 key2, string key3, i32 cnt}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.outputtbl4
+              name: default.outputtbl4_n1
 
   Stage: Stage-3
     Stats Work
@@ -2455,7 +2455,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key1, key2, key3, cnt
           Column Types: int, int, string, int
-          Table: default.outputtbl4
+          Table: default.outputtbl4_n1
           Is Table Level Stats: true
 
   Stage: Stage-4
@@ -2528,27 +2528,27 @@ STAGE PLANS:
             GatherStats: false
             MultiFileSpray: false
 
-PREHOOK: query: INSERT OVERWRITE TABLE outputTbl4
-SELECT key, 1, val, count(1) FROM T1 GROUP BY key, 1, val
+PREHOOK: query: INSERT OVERWRITE TABLE outputTbl4_n1
+SELECT key, 1, val, count(1) FROM T1_n56 GROUP BY key, 1, val
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@outputtbl4
-POSTHOOK: query: INSERT OVERWRITE TABLE outputTbl4
-SELECT key, 1, val, count(1) FROM T1 GROUP BY key, 1, val
+PREHOOK: Input: default@t1_n56
+PREHOOK: Output: default@outputtbl4_n1
+POSTHOOK: query: INSERT OVERWRITE TABLE outputTbl4_n1
+SELECT key, 1, val, count(1) FROM T1_n56 GROUP BY key, 1, val
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@outputtbl4
-POSTHOOK: Lineage: outputtbl4.cnt EXPRESSION [(t1)t1.null, ]
-POSTHOOK: Lineage: outputtbl4.key1 EXPRESSION [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl4.key2 SIMPLE []
-POSTHOOK: Lineage: outputtbl4.key3 SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-PREHOOK: query: SELECT * FROM outputTbl4
+POSTHOOK: Input: default@t1_n56
+POSTHOOK: Output: default@outputtbl4_n1
+POSTHOOK: Lineage: outputtbl4_n1.cnt EXPRESSION [(t1_n56)t1_n56.null, ]
+POSTHOOK: Lineage: outputtbl4_n1.key1 EXPRESSION [(t1_n56)t1_n56.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl4_n1.key2 SIMPLE []
+POSTHOOK: Lineage: outputtbl4_n1.key3 SIMPLE [(t1_n56)t1_n56.FieldSchema(name:val, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM outputTbl4_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@outputtbl4
+PREHOOK: Input: default@outputtbl4_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM outputTbl4
+POSTHOOK: query: SELECT * FROM outputTbl4_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@outputtbl4
+POSTHOOK: Input: default@outputtbl4_n1
 #### A masked pattern was here ####
 1	1	11	1
 2	1	12	1
@@ -2557,12 +2557,12 @@ POSTHOOK: Input: default@outputtbl4
 8	1	18	1
 8	1	28	1
 PREHOOK: query: EXPLAIN EXTENDED 
-INSERT OVERWRITE TABLE outputTbl3
-SELECT key, key + 1, count(1) FROM T1 GROUP BY key, key + 1
+INSERT OVERWRITE TABLE outputTbl3_n1
+SELECT key, key + 1, count(1) FROM T1_n56 GROUP BY key, key + 1
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED 
-INSERT OVERWRITE TABLE outputTbl3
-SELECT key, key + 1, count(1) FROM T1 GROUP BY key, key + 1
+INSERT OVERWRITE TABLE outputTbl3_n1
+SELECT key, key + 1, count(1) FROM T1_n56 GROUP BY key, key + 1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2576,7 +2576,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
+            alias: t1_n56
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Select Operator
@@ -2604,7 +2604,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: t1
+            base file name: t1_n56
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -2618,11 +2618,11 @@ STAGE PLANS:
               columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
-              name default.t1
+              name default.t1_n56
               numFiles 2
               numRows 6
               rawDataSize 24
-              serialization.ddl struct t1 { string key, string val}
+              serialization.ddl struct t1_n56 { string key, string val}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 30
@@ -2642,20 +2642,20 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
-                name default.t1
+                name default.t1_n56
                 numFiles 2
                 numRows 6
                 rawDataSize 24
-                serialization.ddl struct t1 { string key, string val}
+                serialization.ddl struct t1_n56 { string key, string val}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 30
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.t1
-            name: default.t1
+              name: default.t1_n56
+            name: default.t1_n56
       Truncated Path -> Alias:
-        /t1 [$hdt$_0:t1]
+        /t1_n56 [$hdt$_0:t1_n56]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -2756,17 +2756,17 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:int:int
 #### A masked pattern was here ####
-                    name default.outputtbl3
+                    name default.outputtbl3_n1
                     numFiles 1
                     numRows 5
                     rawDataSize 25
-                    serialization.ddl struct outputtbl3 { i32 key1, i32 key2, i32 cnt}
+                    serialization.ddl struct outputtbl3_n1 { i32 key1, i32 key2, i32 cnt}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 30
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.outputtbl3
+                  name: default.outputtbl3_n1
               TotalFiles: 1
               GatherStats: true
               MultiFileSpray: false
@@ -2815,17 +2815,17 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:int:int
 #### A masked pattern was here ####
-                name default.outputtbl3
+                name default.outputtbl3_n1
                 numFiles 1
                 numRows 5
                 rawDataSize 25
-                serialization.ddl struct outputtbl3 { i32 key1, i32 key2, i32 cnt}
+                serialization.ddl struct outputtbl3_n1 { i32 key1, i32 key2, i32 cnt}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 30
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.outputtbl3
+              name: default.outputtbl3_n1
 
   Stage: Stage-3
     Stats Work
@@ -2834,7 +2834,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key1, key2, cnt
           Column Types: int, int, int
-          Table: default.outputtbl3
+          Table: default.outputtbl3_n1
           Is Table Level Stats: true
 
   Stage: Stage-4
@@ -2907,26 +2907,26 @@ STAGE PLANS:
             GatherStats: false
             MultiFileSpray: false
 
-PREHOOK: query: INSERT OVERWRITE TABLE outputTbl3
-SELECT key, key + 1, count(1) FROM T1 GROUP BY key, key + 1
+PREHOOK: query: INSERT OVERWRITE TABLE outputTbl3_n1
+SELECT key, key + 1, count(1) FROM T1_n56 GROUP BY key, key + 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@outputtbl3
-POSTHOOK: query: INSERT OVERWRITE TABLE outputTbl3
-SELECT key, key + 1, count(1) FROM T1 GROUP BY key, key + 1
+PREHOOK: Input: default@t1_n56
+PREHOOK: Output: default@outputtbl3_n1
+POSTHOOK: query: INSERT OVERWRITE TABLE outputTbl3_n1
+SELECT key, key + 1, count(1) FROM T1_n56 GROUP BY key, key + 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@outputtbl3
-POSTHOOK: Lineage: outputtbl3.cnt EXPRESSION [(t1)t1.null, ]
-POSTHOOK: Lineage: outputtbl3.key1 EXPRESSION [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl3.key2 EXPRESSION [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-PREHOOK: query: SELECT * FROM outputTbl3
+POSTHOOK: Input: default@t1_n56
+POSTHOOK: Output: default@outputtbl3_n1
+POSTHOOK: Lineage: outputtbl3_n1.cnt EXPRESSION [(t1_n56)t1_n56.null, ]
+POSTHOOK: Lineage: outputtbl3_n1.key1 EXPRESSION [(t1_n56)t1_n56.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl3_n1.key2 EXPRESSION [(t1_n56)t1_n56.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM outputTbl3_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@outputtbl3
+PREHOOK: Input: default@outputtbl3_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM outputTbl3
+POSTHOOK: query: SELECT * FROM outputTbl3_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@outputtbl3
+POSTHOOK: Input: default@outputtbl3_n1
 #### A masked pattern was here ####
 1	2	1
 2	3	1
@@ -2934,15 +2934,15 @@ POSTHOOK: Input: default@outputtbl3
 7	8	1
 8	9	2
 PREHOOK: query: EXPLAIN EXTENDED 
-INSERT OVERWRITE TABLE outputTbl1
+INSERT OVERWRITE TABLE outputTbl1_n13
 SELECT cast(key + key as string), sum(cnt) from
-(SELECT key, count(1) as cnt FROM T1 GROUP BY key) subq1
+(SELECT key, count(1) as cnt FROM T1_n56 GROUP BY key) subq1
 group by key + key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED 
-INSERT OVERWRITE TABLE outputTbl1
+INSERT OVERWRITE TABLE outputTbl1_n13
 SELECT cast(key + key as string), sum(cnt) from
-(SELECT key, count(1) as cnt FROM T1 GROUP BY key) subq1
+(SELECT key, count(1) as cnt FROM T1_n56 GROUP BY key) subq1
 group by key + key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -2957,7 +2957,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
+            alias: t1_n56
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Select Operator
@@ -2995,7 +2995,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: t1
+            base file name: t1_n56
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -3009,11 +3009,11 @@ STAGE PLANS:
               columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
-              name default.t1
+              name default.t1_n56
               numFiles 2
               numRows 6
               rawDataSize 24
-              serialization.ddl struct t1 { string key, string val}
+              serialization.ddl struct t1_n56 { string key, string val}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 30
@@ -3033,20 +3033,20 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
-                name default.t1
+                name default.t1_n56
                 numFiles 2
                 numRows 6
                 rawDataSize 24
-                serialization.ddl struct t1 { string key, string val}
+                serialization.ddl struct t1_n56 { string key, string val}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 30
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.t1
-            name: default.t1
+              name: default.t1_n56
+            name: default.t1_n56
       Truncated Path -> Alias:
-        /t1 [$hdt$_0:t1]
+        /t1_n56 [$hdt$_0:t1_n56]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -3147,17 +3147,17 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:int
 #### A masked pattern was here ####
-                    name default.outputtbl1
+                    name default.outputtbl1_n13
                     numFiles 1
                     numRows 5
                     rawDataSize 15
-                    serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+                    serialization.ddl struct outputtbl1_n13 { i32 key, i32 cnt}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 20
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.outputtbl1
+                  name: default.outputtbl1_n13
               TotalFiles: 1
               GatherStats: true
               MultiFileSpray: false
@@ -3206,17 +3206,17 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:int
 #### A masked pattern was here ####
-                name default.outputtbl1
+                name default.outputtbl1_n13
                 numFiles 1
                 numRows 5
                 rawDataSize 15
-                serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+                serialization.ddl struct outputtbl1_n13 { i32 key, i32 cnt}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 20
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.outputtbl1
+              name: default.outputtbl1_n13
 
   Stage: Stage-3
     Stats Work
@@ -3225,7 +3225,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, cnt
           Column Types: int, int
-          Table: default.outputtbl1
+          Table: default.outputtbl1_n13
           Is Table Level Stats: true
 
   Stage: Stage-4
@@ -3298,29 +3298,29 @@ STAGE PLANS:
             GatherStats: false
             MultiFileSpray: false
 
-PREHOOK: query: INSERT OVERWRITE TABLE outputTbl1
+PREHOOK: query: INSERT OVERWRITE TABLE outputTbl1_n13
 SELECT cast(key + key as string), sum(cnt) from
-(SELECT key, count(1) as cnt FROM T1 GROUP BY key) subq1
+(SELECT key, count(1) as cnt FROM T1_n56 GROUP BY key) subq1
 group by key + key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@outputtbl1
-POSTHOOK: query: INSERT OVERWRITE TABLE outputTbl1
+PREHOOK: Input: default@t1_n56
+PREHOOK: Output: default@outputtbl1_n13
+POSTHOOK: query: INSERT OVERWRITE TABLE outputTbl1_n13
 SELECT cast(key + key as string), sum(cnt) from
-(SELECT key, count(1) as cnt FROM T1 GROUP BY key) subq1
+(SELECT key, count(1) as cnt FROM T1_n56 GROUP BY key) subq1
 group by key + key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@outputtbl1
-POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
-POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-PREHOOK: query: SELECT * FROM outputTbl1
+POSTHOOK: Input: default@t1_n56
+POSTHOOK: Output: default@outputtbl1_n13
+POSTHOOK: Lineage: outputtbl1_n13.cnt EXPRESSION [(t1_n56)t1_n56.null, ]
+POSTHOOK: Lineage: outputtbl1_n13.key EXPRESSION [(t1_n56)t1_n56.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM outputTbl1_n13
 PREHOOK: type: QUERY
-PREHOOK: Input: default@outputtbl1
+PREHOOK: Input: default@outputtbl1_n13
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM outputTbl1
+POSTHOOK: query: SELECT * FROM outputTbl1_n13
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@outputtbl1
+POSTHOOK: Input: default@outputtbl1_n13
 #### A masked pattern was here ####
 14	1
 16	2
@@ -3328,19 +3328,19 @@ POSTHOOK: Input: default@outputtbl1
 4	1
 6	1
 PREHOOK: query: EXPLAIN EXTENDED 
-INSERT OVERWRITE TABLE outputTbl1
+INSERT OVERWRITE TABLE outputTbl1_n13
 SELECT * FROM (
-SELECT key, count(1) FROM T1 GROUP BY key
+SELECT key, count(1) FROM T1_n56 GROUP BY key
   UNION ALL
-SELECT key, count(1) FROM T1 GROUP BY key
+SELECT key, count(1) FROM T1_n56 GROUP BY key
 ) subq1
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED 
-INSERT OVERWRITE TABLE outputTbl1
+INSERT OVERWRITE TABLE outputTbl1_n13
 SELECT * FROM (
-SELECT key, count(1) FROM T1 GROUP BY key
+SELECT key, count(1) FROM T1_n56 GROUP BY key
   UNION ALL
-SELECT key, count(1) FROM T1 GROUP BY key
+SELECT key, count(1) FROM T1_n56 GROUP BY key
 ) subq1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -3358,7 +3358,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
+            alias: t1_n56
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Select Operator
@@ -3396,17 +3396,17 @@ STAGE PLANS:
                             columns.comments 
                             columns.types int:int
 #### A masked pattern was here ####
-                            name default.outputtbl1
+                            name default.outputtbl1_n13
                             numFiles 1
                             numRows 5
                             rawDataSize 17
-                            serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+                            serialization.ddl struct outputtbl1_n13 { i32 key, i32 cnt}
                             serialization.format 1
                             serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             totalSize 22
 #### A masked pattern was here ####
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.outputtbl1
+                          name: default.outputtbl1_n13
                       TotalFiles: 1
                       GatherStats: true
                       MultiFileSpray: false
@@ -3427,7 +3427,7 @@ STAGE PLANS:
                           value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>)
                           auto parallelism: false
           TableScan
-            alias: t1
+            alias: t1_n56
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Select Operator
@@ -3465,17 +3465,17 @@ STAGE PLANS:
                             columns.comments 
                             columns.types int:int
 #### A masked pattern was here ####
-                            name default.outputtbl1
+                            name default.outputtbl1_n13
                             numFiles 1
                             numRows 5
                             rawDataSize 17
-                            serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+                            serialization.ddl struct outputtbl1_n13 { i32 key, i32 cnt}
                             serialization.format 1
                             serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             totalSize 22
 #### A masked pattern was here ####
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.outputtbl1
+                          name: default.outputtbl1_n13
                       TotalFiles: 1
                       GatherStats: true
                       MultiFileSpray: false
@@ -3500,7 +3500,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: t1
+            base file name: t1_n56
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -3514,11 +3514,11 @@ STAGE PLANS:
               columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
-              name default.t1
+              name default.t1_n56
               numFiles 2
               numRows 6
               rawDataSize 24
-              serialization.ddl struct t1 { string key, string val}
+              serialization.ddl struct t1_n56 { string key, string val}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 30
@@ -3538,20 +3538,20 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
-                name default.t1
+                name default.t1_n56
                 numFiles 2
                 numRows 6
                 rawDataSize 24
-                serialization.ddl struct t1 { string key, string val}
+                serialization.ddl struct t1_n56 { string key, string val}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 30
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.t1
-            name: default.t1
+              name: default.t1_n56
+            name: default.t1_n56
       Truncated Path -> Alias:
-        /t1 [null-subquery1:$hdt$_0-subquery1:t1, null-subquery2:$hdt$_0-subquery2:t1]
+        /t1_n56 [null-subquery1:$hdt$_0-subquery1:t1_n56, null-subquery2:$hdt$_0-subquery2:t1_n56]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -3608,17 +3608,17 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:int
 #### A masked pattern was here ####
-                name default.outputtbl1
+                name default.outputtbl1_n13
                 numFiles 1
                 numRows 5
                 rawDataSize 17
-                serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+                serialization.ddl struct outputtbl1_n13 { i32 key, i32 cnt}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 22
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.outputtbl1
+              name: default.outputtbl1_n13
 
   Stage: Stage-2
     Stats Work
@@ -3627,7 +3627,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, cnt
           Column Types: int, int
-          Table: default.outputtbl1
+          Table: default.outputtbl1_n13
           Is Table Level Stats: true
 
   Stage: Stage-3
@@ -3652,17 +3652,17 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:int
 #### A masked pattern was here ####
-                    name default.outputtbl1
+                    name default.outputtbl1_n13
                     numFiles 1
                     numRows 5
                     rawDataSize 17
-                    serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+                    serialization.ddl struct outputtbl1_n13 { i32 key, i32 cnt}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 22
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.outputtbl1
+                  name: default.outputtbl1_n13
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
@@ -3683,11 +3683,11 @@ STAGE PLANS:
               columns.comments 
               columns.types int:int
 #### A masked pattern was here ####
-              name default.outputtbl1
+              name default.outputtbl1_n13
               numFiles 1
               numRows 5
               rawDataSize 17
-              serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+              serialization.ddl struct outputtbl1_n13 { i32 key, i32 cnt}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 22
@@ -3705,18 +3705,18 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:int
 #### A masked pattern was here ####
-                name default.outputtbl1
+                name default.outputtbl1_n13
                 numFiles 1
                 numRows 5
                 rawDataSize 17
-                serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+                serialization.ddl struct outputtbl1_n13 { i32 key, i32 cnt}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 22
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.outputtbl1
-            name: default.outputtbl1
+              name: default.outputtbl1_n13
+            name: default.outputtbl1_n13
       Truncated Path -> Alias:
 #### A masked pattern was here ####
 
@@ -3742,17 +3742,17 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:int
 #### A masked pattern was here ####
-                    name default.outputtbl1
+                    name default.outputtbl1_n13
                     numFiles 1
                     numRows 5
                     rawDataSize 17
-                    serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+                    serialization.ddl struct outputtbl1_n13 { i32 key, i32 cnt}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 22
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.outputtbl1
+                  name: default.outputtbl1_n13
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
@@ -3773,11 +3773,11 @@ STAGE PLANS:
               columns.comments 
               columns.types int:int
 #### A masked pattern was here ####
-              name default.outputtbl1
+              name default.outputtbl1_n13
               numFiles 1
               numRows 5
               rawDataSize 17
-              serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+              serialization.ddl struct outputtbl1_n13 { i32 key, i32 cnt}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 22
@@ -3795,18 +3795,18 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:int
 #### A masked pattern was here ####
-                name default.outputtbl1
+                name default.outputtbl1_n13
                 numFiles 1
                 numRows 5
                 rawDataSize 17
-                serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+                serialization.ddl struct outputtbl1_n13 { i32 key, i32 cnt}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 22
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.outputtbl1
-            name: default.outputtbl1
+              name: default.outputtbl1_n13
+            name: default.outputtbl1_n13
       Truncated Path -> Alias:
 #### A masked pattern was here ####
 
@@ -3816,33 +3816,33 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-PREHOOK: query: INSERT OVERWRITE TABLE outputTbl1
+PREHOOK: query: INSERT OVERWRITE TABLE outputTbl1_n13
 SELECT * FROM (
-SELECT key, count(1) FROM T1 GROUP BY key
+SELECT key, count(1) FROM T1_n56 GROUP BY key
   UNION ALL
-SELECT key, count(1) FROM T1 GROUP BY key
+SELECT key, count(1) FROM T1_n56 GROUP BY key
 ) subq1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@outputtbl1
-POSTHOOK: query: INSERT OVERWRITE TABLE outputTbl1
+PREHOOK: Input: default@t1_n56
+PREHOOK: Output: default@outputtbl1_n13
+POSTHOOK: query: INSERT OVERWRITE TABLE outputTbl1_n13
 SELECT * FROM (
-SELECT key, count(1) FROM T1 GROUP BY key
+SELECT key, count(1) FROM T1_n56 GROUP BY key
   UNION ALL
-SELECT key, count(1) FROM T1 GROUP BY key
+SELECT key, count(1) FROM T1_n56 GROUP BY key
 ) subq1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@outputtbl1
-POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
-POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-PREHOOK: query: SELECT * FROM outputTbl1
+POSTHOOK: Input: default@t1_n56
+POSTHOOK: Output: default@outputtbl1_n13
+POSTHOOK: Lineage: outputtbl1_n13.cnt EXPRESSION [(t1_n56)t1_n56.null, ]
+POSTHOOK: Lineage: outputtbl1_n13.key EXPRESSION [(t1_n56)t1_n56.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM outputTbl1_n13
 PREHOOK: type: QUERY
-PREHOOK: Input: default@outputtbl1
+PREHOOK: Input: default@outputtbl1_n13
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM outputTbl1
+POSTHOOK: query: SELECT * FROM outputTbl1_n13
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@outputtbl1
+POSTHOOK: Input: default@outputtbl1_n13
 #### A masked pattern was here ####
 1	1
 1	1
@@ -3855,19 +3855,19 @@ POSTHOOK: Input: default@outputtbl1
 8	2
 8	2
 PREHOOK: query: EXPLAIN EXTENDED
-INSERT OVERWRITE TABLE outputTbl1
+INSERT OVERWRITE TABLE outputTbl1_n13
 SELECT * FROM (
-SELECT key, count(1) FROM T1 GROUP BY key
+SELECT key, count(1) FROM T1_n56 GROUP BY key
   UNION ALL
-SELECT cast(key + key as string) as key, count(1) FROM T1 GROUP BY key + key
+SELECT cast(key + key as string) as key, count(1) FROM T1_n56 GROUP BY key + key
 ) subq1
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED
-INSERT OVERWRITE TABLE outputTbl1
+INSERT OVERWRITE TABLE outputTbl1_n13
 SELECT * FROM (
-SELECT key, count(1) FROM T1 GROUP BY key
+SELECT key, count(1) FROM T1_n56 GROUP BY key
   UNION ALL
-SELECT cast(key + key as string) as key, count(1) FROM T1 GROUP BY key + key
+SELECT cast(key + key as string) as key, count(1) FROM T1_n56 GROUP BY key + key
 ) subq1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -3887,7 +3887,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
+            alias: t1_n56
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Select Operator
@@ -3915,7 +3915,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: t1
+            base file name: t1_n56
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -3929,11 +3929,11 @@ STAGE PLANS:
               columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
-              name default.t1
+              name default.t1_n56
               numFiles 2
               numRows 6
               rawDataSize 24
-              serialization.ddl struct t1 { string key, string val}
+              serialization.ddl struct t1_n56 { string key, string val}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 30
@@ -3953,20 +3953,20 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
-                name default.t1
+                name default.t1_n56
                 numFiles 2
                 numRows 6
                 rawDataSize 24
-                serialization.ddl struct t1 { string key, string val}
+                serialization.ddl struct t1_n56 { string key, string val}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 30
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.t1
-            name: default.t1
+              name: default.t1_n56
+            name: default.t1_n56
       Truncated Path -> Alias:
-        /t1 [null-subquery2:$hdt$_0-subquery2:$hdt$_0:t1]
+        /t1_n56 [null-subquery2:$hdt$_0-subquery2:$hdt$_0:t1_n56]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -4071,7 +4071,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
+            alias: t1_n56
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Select Operator
@@ -4109,17 +4109,17 @@ STAGE PLANS:
                             columns.comments 
                             columns.types int:int
 #### A masked pattern was here ####
-                            name default.outputtbl1
+                            name default.outputtbl1_n13
                             numFiles 1
                             numRows 10
                             rawDataSize 30
-                            serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+                            serialization.ddl struct outputtbl1_n13 { i32 key, i32 cnt}
                             serialization.format 1
                             serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             totalSize 40
 #### A masked pattern was here ####
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.outputtbl1
+                          name: default.outputtbl1_n13
                       TotalFiles: 1
                       GatherStats: true
                       MultiFileSpray: false
@@ -4166,17 +4166,17 @@ STAGE PLANS:
                         columns.comments 
                         columns.types int:int
 #### A masked pattern was here ####
-                        name default.outputtbl1
+                        name default.outputtbl1_n13
                         numFiles 1
                         numRows 10
                         rawDataSize 30
-                        serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+                        serialization.ddl struct outputtbl1_n13 { i32 key, i32 cnt}
                         serialization.format 1
                         serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         totalSize 40
 #### A masked pattern was here ####
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.outputtbl1
+                      name: default.outputtbl1_n13
                   TotalFiles: 1
                   GatherStats: true
                   MultiFileSpray: false
@@ -4223,7 +4223,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 #### A masked pattern was here ####
           Partition
-            base file name: t1
+            base file name: t1_n56
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -4237,11 +4237,11 @@ STAGE PLANS:
               columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
-              name default.t1
+              name default.t1_n56
               numFiles 2
               numRows 6
               rawDataSize 24
-              serialization.ddl struct t1 { string key, string val}
+              serialization.ddl struct t1_n56 { string key, string val}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 30
@@ -4261,20 +4261,20 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
-                name default.t1
+                name default.t1_n56
                 numFiles 2
                 numRows 6
                 rawDataSize 24
-                serialization.ddl struct t1 { string key, string val}
+                serialization.ddl struct t1_n56 { string key, string val}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 30
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.t1
-            name: default.t1
+              name: default.t1_n56
+            name: default.t1_n56
       Truncated Path -> Alias:
-        /t1 [null-subquery1:$hdt$_0-subquery1:t1]
+        /t1_n56 [null-subquery1:$hdt$_0-subquery1:t1_n56]
 #### A masked pattern was here ####
       Needs Tagging: false
       Reduce Operator Tree:
@@ -4332,17 +4332,17 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:int
 #### A masked pattern was here ####
-                name default.outputtbl1
+                name default.outputtbl1_n13
                 numFiles 1
                 numRows 10
                 rawDataSize 30
-                serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+                serialization.ddl struct outputtbl1_n13 { i32 key, i32 cnt}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 40
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.outputtbl1
+              name: default.outputtbl1_n13
 
   Stage: Stage-3
     Stats Work
@@ -4351,7 +4351,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, cnt
           Column Types: int, int
-          Table: default.outputtbl1
+          Table: default.outputtbl1_n13
           Is Table Level Stats: true
 
   Stage: Stage-4
@@ -4376,17 +4376,17 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:int
 #### A masked pattern was here ####
-                    name default.outputtbl1
+                    name default.outputtbl1_n13
                     numFiles 1
                     numRows 10
                     rawDataSize 30
-                    serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+                    serialization.ddl struct outputtbl1_n13 { i32 key, i32 cnt}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 40
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.outputtbl1
+                  name: default.outputtbl1_n13
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
@@ -4407,11 +4407,11 @@ STAGE PLANS:
               columns.comments 
               columns.types int:int
 #### A masked pattern was here ####
-              name default.outputtbl1
+              name default.outputtbl1_n13
               numFiles 1
               numRows 10
               rawDataSize 30
-              serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+              serialization.ddl struct outputtbl1_n13 { i32 key, i32 cnt}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 40
@@ -4429,18 +4429,18 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:int
 #### A masked pattern was here ####
-                name default.outputtbl1
+                name default.outputtbl1_n13
                 numFiles 1
                 numRows 10
                 rawDataSize 30
-                serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+                serialization.ddl struct outputtbl1_n13 { i32 key, i32 cnt}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 40
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.outputtbl1
-            name: default.outputtbl1
+              name: default.outputtbl1_n13
+            name: default.outputtbl1_n13
       Truncated Path -> Alias:
 #### A masked pattern was here ####
 
@@ -4466,17 +4466,17 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:int
 #### A masked pattern was here ####
-                    name default.outputtbl1
+                    name default.outputtbl1_n13
                     numFiles 1
                     numRows 10
                     rawDataSize 30
-                    serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+                    serialization.ddl struct outputtbl1_n13 { i32 key, i32 cnt}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 40
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.outputtbl1
+                  name: default.outputtbl1_n13
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
@@ -4497,11 +4497,11 @@ STAGE PLANS:
               columns.comments 
               columns.types int:int
 #### A masked pattern was here ####
-              name default.outputtbl1
+              name default.outputtbl1_n13
               numFiles 1
               numRows 10
               rawDataSize 30
-              serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+              serialization.ddl struct outputtbl1_n13 { i32 key, i32 cnt}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 40
@@ -4519,18 +4519,18 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:int
 #### A masked pattern was here ####
-                name default.outputtbl1
+                name default.outputtbl1_n13
                 numFiles 1
                 numRows 10
                 rawDataSize 30
-                serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+                serialization.ddl struct outputtbl1_n13 { i32 key, i32 cnt}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 40
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.outputtbl1
-            name: default.outputtbl1
+              name: default.outputtbl1_n13
+            name: default.outputtbl1_n13
       Truncated Path -> Alias:
 #### A masked pattern was here ####
 
@@ -4540,33 +4540,33 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-PREHOOK: query: INSERT OVERWRITE TABLE outputTbl1
+PREHOOK: query: INSERT OVERWRITE TABLE outputTbl1_n13
 SELECT * FROM (
-SELECT key, count(1) as cnt FROM T1 GROUP BY key
+SELECT key, count(1) as cnt FROM T1_n56 GROUP BY key
   UNION ALL
-SELECT cast(key + key as string) as key, count(1) as cnt FROM T1 GROUP BY key + key
+SELECT cast(key + key as string) as key, count(1) as cnt FROM T1_n56 GROUP BY key + key
 ) subq1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@outputtbl1
-POSTHOOK: query: INSERT OVERWRITE TABLE outputTbl1
+PREHOOK: Input: default@t1_n56
+PREHOOK: Output: default@outputtbl1_n13
+POSTHOOK: query: INSERT OVERWRITE TABLE outputTbl1_n13
 SELECT * FROM (
-SELECT key, count(1) as cnt FROM T1 GROUP BY key
+SELECT key, count(1) as cnt FROM T1_n56 GROUP BY key
   UNION ALL
-SELECT cast(key + key as string) as key, count(1) as cnt FROM T1 GROUP BY key + key
+SELECT cast(key + key as string) as key, count(1) as cnt FROM T1_n56 GROUP BY key + key
 ) subq1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@outputtbl1
-POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
-POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-PREHOOK: query: SELECT * FROM outputTbl1
+POSTHOOK: Input: default@t1_n56
+POSTHOOK: Output: default@outputtbl1_n13
+POSTHOOK: Lineage: outputtbl1_n13.cnt EXPRESSION [(t1_n56)t1_n56.null, ]
+POSTHOOK: Lineage: outputtbl1_n13.key EXPRESSION [(t1_n56)t1_n56.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM outputTbl1_n13
 PREHOOK: type: QUERY
-PREHOOK: Input: default@outputtbl1
+PREHOOK: Input: default@outputtbl1_n13
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM outputTbl1
+POSTHOOK: query: SELECT * FROM outputTbl1_n13
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@outputtbl1
+POSTHOOK: Input: default@outputtbl1_n13
 #### A masked pattern was here ####
 1	1
 14	1
@@ -4579,19 +4579,19 @@ POSTHOOK: Input: default@outputtbl1
 7	1
 8	2
 PREHOOK: query: EXPLAIN EXTENDED 
-INSERT OVERWRITE TABLE outputTbl1
+INSERT OVERWRITE TABLE outputTbl1_n13
 SELECT subq1.key, subq1.cnt+subq2.cnt FROM 
-(SELECT key, count(1) as cnt FROM T1 GROUP BY key) subq1
+(SELECT key, count(1) as cnt FROM T1_n56 GROUP BY key) subq1
 JOIN
-(SELECT key, count(1) as cnt FROM T1 GROUP BY key) subq2
+(SELECT key, count(1) as cnt FROM T1_n56 GROUP BY key) subq2
 ON subq1.key = subq2.key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED 
-INSERT OVERWRITE TABLE outputTbl1
+INSERT OVERWRITE TABLE outputTbl1_n13
 SELECT subq1.key, subq1.cnt+subq2.cnt FROM 
-(SELECT key, count(1) as cnt FROM T1 GROUP BY key) subq1
+(SELECT key, count(1) as cnt FROM T1_n56 GROUP BY key) subq1
 JOIN
-(SELECT key, count(1) as cnt FROM T1 GROUP BY key) subq2
+(SELECT key, count(1) as cnt FROM T1_n56 GROUP BY key) subq2
 ON subq1.key = subq2.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -4605,7 +4605,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
+            alias: t1_n56
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -4628,7 +4628,7 @@ STAGE PLANS:
                   value expressions: _col1 (type: bigint)
                   auto parallelism: false
           TableScan
-            alias: t1
+            alias: t1_n56
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -4655,7 +4655,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: t1
+            base file name: t1_n56
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -4669,11 +4669,11 @@ STAGE PLANS:
               columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
-              name default.t1
+              name default.t1_n56
               numFiles 2
               numRows 6
               rawDataSize 24
-              serialization.ddl struct t1 { string key, string val}
+              serialization.ddl struct t1_n56 { string key, string val}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 30
@@ -4693,20 +4693,20 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
-                name default.t1
+                name default.t1_n56
                 numFiles 2
                 numRows 6
                 rawDataSize 24
-                serialization.ddl struct t1 { string key, string val}
+                serialization.ddl struct t1_n56 { string key, string val}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 30
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.t1
-            name: default.t1
+              name: default.t1_n56
+            name: default.t1_n56
       Truncated Path -> Alias:
-        /t1 [$hdt$_0:t1, $hdt$_1:t1]
+        /t1_n56 [$hdt$_0:t1_n56, $hdt$_1:t1_n56]
       Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
@@ -4740,17 +4740,17 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:int
 #### A masked pattern was here ####
-                    name default.outputtbl1
+                    name default.outputtbl1_n13
                     numFiles 1
                     numRows 10
                     rawDataSize 32
-                    serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+                    serialization.ddl struct outputtbl1_n13 { i32 key, i32 cnt}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 42
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.outputtbl1
+                  name: default.outputtbl1_n13
               TotalFiles: 1
               GatherStats: true
               MultiFileSpray: false
@@ -4799,17 +4799,17 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:int
 #### A masked pattern was here ####
-                name default.outputtbl1
+                name default.outputtbl1_n13
                 numFiles 1
                 numRows 10
                 rawDataSize 32
-                serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+                serialization.ddl struct outputtbl1_n13 { i32 key, i32 cnt}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 42
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.outputtbl1
+              name: default.outputtbl1_n13
 
   Stage: Stage-2
     Stats Work
@@ -4818,7 +4818,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, cnt
           Column Types: int, int
-          Table: default.outputtbl1
+          Table: default.outputtbl1_n13
           Is Table Level Stats: true
 
   Stage: Stage-3
@@ -4891,33 +4891,33 @@ STAGE PLANS:
             GatherStats: false
             MultiFileSpray: false
 
-PREHOOK: query: INSERT OVERWRITE TABLE outputTbl1
+PREHOOK: query: INSERT OVERWRITE TABLE outputTbl1_n13
 SELECT subq1.key, subq1.cnt+subq2.cnt FROM 
-(SELECT key, count(1) as cnt FROM T1 GROUP BY key) subq1
+(SELECT key, count(1) as cnt FROM T1_n56 GROUP BY key) subq1
 JOIN
-(SELECT key, count(1) as cnt FROM T1 GROUP BY key) subq2
+(SELECT key, count(1) as cnt FROM T1_n56 GROUP BY key) subq2
 ON subq1.key = subq2.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@outputtbl1
-POSTHOOK: query: INSERT OVERWRITE TABLE outputTbl1
+PREHOOK: Input: default@t1_n56
+PREHOOK: Output: default@outputtbl1_n13
+POSTHOOK: query: INSERT OVERWRITE TABLE outputTbl1_n13
 SELECT subq1.key, subq1.cnt+subq2.cnt FROM 
-(SELECT key, count(1) as cnt FROM T1 GROUP BY key) subq1
+(SELECT key, count(1) as cnt FROM T1_n56 GROUP BY key) subq1
 JOIN
-(SELECT key, count(1) as cnt FROM T1 GROUP BY key) subq2
+(SELECT key, count(1) as cnt FROM T1_n56 GROUP BY key) subq2
 ON subq1.key = subq2.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@outputtbl1
-POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
-POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-PREHOOK: query: SELECT * FROM outputTbl1
+POSTHOOK: Input: default@t1_n56
+POSTHOOK: Output: default@outputtbl1_n13
+POSTHOOK: Lineage: outputtbl1_n13.cnt EXPRESSION [(t1_n56)t1_n56.null, ]
+POSTHOOK: Lineage: outputtbl1_n13.key EXPRESSION [(t1_n56)t1_n56.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM outputTbl1_n13
 PREHOOK: type: QUERY
-PREHOOK: Input: default@outputtbl1
+PREHOOK: Input: default@outputtbl1_n13
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM outputTbl1
+POSTHOOK: query: SELECT * FROM outputTbl1_n13
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@outputtbl1
+POSTHOOK: Input: default@outputtbl1_n13
 #### A masked pattern was here ####
 1	2
 2	2
@@ -4926,16 +4926,16 @@ POSTHOOK: Input: default@outputtbl1
 8	4
 PREHOOK: query: EXPLAIN EXTENDED 
 SELECT * FROM 
-(SELECT key, count(1) FROM T1 GROUP BY key) subq1
+(SELECT key, count(1) FROM T1_n56 GROUP BY key) subq1
 JOIN
-(SELECT key, val, count(1) FROM T1 GROUP BY key, val) subq2
+(SELECT key, val, count(1) FROM T1_n56 GROUP BY key, val) subq2
 ON subq1.key = subq2.key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED 
 SELECT * FROM 
-(SELECT key, count(1) FROM T1 GROUP BY key) subq1
+(SELECT key, count(1) FROM T1_n56 GROUP BY key) subq1
 JOIN
-(SELECT key, val, count(1) FROM T1 GROUP BY key, val) subq2
+(SELECT key, val, count(1) FROM T1_n56 GROUP BY key, val) subq2
 ON subq1.key = subq2.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -4949,7 +4949,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
+            alias: t1_n56
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -4977,7 +4977,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: t1
+            base file name: t1_n56
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -4991,11 +4991,11 @@ STAGE PLANS:
               columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
-              name default.t1
+              name default.t1_n56
               numFiles 2
               numRows 6
               rawDataSize 24
-              serialization.ddl struct t1 { string key, string val}
+              serialization.ddl struct t1_n56 { string key, string val}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 30
@@ -5015,20 +5015,20 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
-                name default.t1
+                name default.t1_n56
                 numFiles 2
                 numRows 6
                 rawDataSize 24
-                serialization.ddl struct t1 { string key, string val}
+                serialization.ddl struct t1_n56 { string key, string val}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 30
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.t1
-            name: default.t1
+              name: default.t1_n56
+            name: default.t1_n56
       Truncated Path -> Alias:
-        /t1 [$hdt$_1:t1]
+        /t1_n56 [$hdt$_1:t1_n56]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -5129,7 +5129,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
+            alias: t1_n56
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -5189,7 +5189,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 #### A masked pattern was here ####
           Partition
-            base file name: t1
+            base file name: t1_n56
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -5203,11 +5203,11 @@ STAGE PLANS:
               columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
-              name default.t1
+              name default.t1_n56
               numFiles 2
               numRows 6
               rawDataSize 24
-              serialization.ddl struct t1 { string key, string val}
+              serialization.ddl struct t1_n56 { string key, string val}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 30
@@ -5227,20 +5227,20 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
-                name default.t1
+                name default.t1_n56
                 numFiles 2
                 numRows 6
                 rawDataSize 24
-                serialization.ddl struct t1 { string key, string val}
+                serialization.ddl struct t1_n56 { string key, string val}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 30
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.t1
-            name: default.t1
+              name: default.t1_n56
+            name: default.t1_n56
       Truncated Path -> Alias:
-        /t1 [$hdt$_0:t1]
+        /t1_n56 [$hdt$_0:t1_n56]
 #### A masked pattern was here ####
       Needs Tagging: true
       Reduce Operator Tree:
@@ -5281,33 +5281,33 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: CREATE TABLE T2(key STRING, val STRING)
+PREHOOK: query: CREATE TABLE T2_n34(key STRING, val STRING)
 CLUSTERED BY (key, val) SORTED BY (key, val) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T2
-POSTHOOK: query: CREATE TABLE T2(key STRING, val STRING)
+PREHOOK: Output: default@T2_n34
+POSTHOOK: query: CREATE TABLE T2_n34(key STRING, val STRING)
 CLUSTERED BY (key, val) SORTED BY (key, val) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T2
-PREHOOK: query: INSERT OVERWRITE TABLE T2 select key, val from T1
+POSTHOOK: Output: default@T2_n34
+PREHOOK: query: INSERT OVERWRITE TABLE T2_n34 select key, val from T1_n56
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@t2
-POSTHOOK: query: INSERT OVERWRITE TABLE T2 select key, val from T1
+PREHOOK: Input: default@t1_n56
+PREHOOK: Output: default@t2_n34
+POSTHOOK: query: INSERT OVERWRITE TABLE T2_n34 select key, val from T1_n56
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@t2
-POSTHOOK: Lineage: t2.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t2.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Input: default@t1_n56
+POSTHOOK: Output: default@t2_n34
+POSTHOOK: Lineage: t2_n34.key SIMPLE [(t1_n56)t1_n56.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t2_n34.val SIMPLE [(t1_n56)t1_n56.FieldSchema(name:val, type:string, comment:null), ]
 PREHOOK: query: EXPLAIN EXTENDED 
-INSERT OVERWRITE TABLE outputTbl1
-SELECT key, count(1) FROM T2 GROUP BY key
+INSERT OVERWRITE TABLE outputTbl1_n13
+SELECT key, count(1) FROM T2_n34 GROUP BY key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED 
-INSERT OVERWRITE TABLE outputTbl1
-SELECT key, count(1) FROM T2 GROUP BY key
+INSERT OVERWRITE TABLE outputTbl1_n13
+SELECT key, count(1) FROM T2_n34 GROUP BY key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -5321,7 +5321,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t2
+            alias: t2_n34
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Select Operator
@@ -5350,7 +5350,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: t2
+            base file name: t2_n34
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -5364,11 +5364,11 @@ STAGE PLANS:
               columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
-              name default.t2
+              name default.t2_n34
               numFiles 2
               numRows 6
               rawDataSize 24
-              serialization.ddl struct t2 { string key, string val}
+              serialization.ddl struct t2_n34 { string key, string val}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 30
@@ -5388,20 +5388,20 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
-                name default.t2
+                name default.t2_n34
                 numFiles 2
                 numRows 6
                 rawDataSize 24
-                serialization.ddl struct t2 { string key, string val}
+                serialization.ddl struct t2_n34 { string key, string val}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 30
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.t2
-            name: default.t2
+              name: default.t2_n34
+            name: default.t2_n34
       Truncated Path -> Alias:
-        /t2 [t2]
+        /t2_n34 [t2_n34]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -5502,17 +5502,17 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:int
 #### A masked pattern was here ####
-                    name default.outputtbl1
+                    name default.outputtbl1_n13
                     numFiles 1
                     numRows 5
                     rawDataSize 15
-                    serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+                    serialization.ddl struct outputtbl1_n13 { i32 key, i32 cnt}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 20
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.outputtbl1
+                  name: default.outputtbl1_n13
               TotalFiles: 1
               GatherStats: true
               MultiFileSpray: false
@@ -5561,17 +5561,17 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:int
 #### A masked pattern was here ####
-                name default.outputtbl1
+                name default.outputtbl1_n13
                 numFiles 1
                 numRows 5
                 rawDataSize 15
-                serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
+                serialization.ddl struct outputtbl1_n13 { i32 key, i32 cnt}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 20
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.outputtbl1
+              name: default.outputtbl1_n13
 
   Stage: Stage-3
     Stats Work
@@ -5580,7 +5580,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, cnt
           Column Types: int, int
-          Table: default.outputtbl1
+          Table: default.outputtbl1_n13
           Is Table Level Stats: true
 
   Stage: Stage-4
@@ -5653,25 +5653,25 @@ STAGE PLANS:
             GatherStats: false
             MultiFileSpray: false
 
-PREHOOK: query: INSERT OVERWRITE TABLE outputTbl1
-SELECT key, count(1) FROM T2 GROUP BY key
+PREHOOK: query: INSERT OVERWRITE TABLE outputTbl1_n13
+SELECT key, count(1) FROM T2_n34 GROUP BY key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t2
-PREHOOK: Output: default@outputtbl1
-POSTHOOK: query: INSERT OVERWRITE TABLE outputTbl1
-SELECT key, count(1) FROM T2 GROUP BY key
+PREHOOK: Input: default@t2_n34
+PREHOOK: Output: default@outputtbl1_n13
+POSTHOOK: query: INSERT OVERWRITE TABLE outputTbl1_n13
+SELECT key, count(1) FROM T2_n34 GROUP BY key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t2
-POSTHOOK: Output: default@outputtbl1
-POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t2)t2.null, ]
-POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(t2)t2.FieldSchema(name:key, type:string, comment:null), ]
-PREHOOK: query: SELECT * FROM outputTbl1
+POSTHOOK: Input: default@t2_n34
+POSTHOOK: Output: default@outputtbl1_n13
+POSTHOOK: Lineage: outputtbl1_n13.cnt EXPRESSION [(t2_n34)t2_n34.null, ]
+POSTHOOK: Lineage: outputtbl1_n13.key EXPRESSION [(t2_n34)t2_n34.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM outputTbl1_n13
 PREHOOK: type: QUERY
-PREHOOK: Input: default@outputtbl1
+PREHOOK: Input: default@outputtbl1_n13
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM outputTbl1
+POSTHOOK: query: SELECT * FROM outputTbl1_n13
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@outputtbl1
+POSTHOOK: Input: default@outputtbl1_n13
 #### A masked pattern was here ####
 1	1
 2	1
@@ -5679,12 +5679,12 @@ POSTHOOK: Input: default@outputtbl1
 7	1
 8	2
 PREHOOK: query: EXPLAIN EXTENDED 
-INSERT OVERWRITE TABLE outputTbl4
-SELECT key, 1, val, count(1) FROM T2 GROUP BY key, 1, val
+INSERT OVERWRITE TABLE outputTbl4_n1
+SELECT key, 1, val, count(1) FROM T2_n34 GROUP BY key, 1, val
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED 
-INSERT OVERWRITE TABLE outputTbl4
-SELECT key, 1, val, count(1) FROM T2 GROUP BY key, 1, val
+INSERT OVERWRITE TABLE outputTbl4_n1
+SELECT key, 1, val, count(1) FROM T2_n34 GROUP BY key, 1, val
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -5701,7 +5701,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t2
+            alias: t2_n34
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Select Operator
@@ -5737,17 +5737,17 @@ STAGE PLANS:
                           columns.comments 
                           columns.types int:int:string:int
 #### A masked pattern was here ####
-                          name default.outputtbl4
+                          name default.outputtbl4_n1
                           numFiles 1
                           numRows 6
                           rawDataSize 48
-                          serialization.ddl struct outputtbl4 { i32 key1, i32 key2, string key3, i32 cnt}
+                          serialization.ddl struct outputtbl4_n1 { i32 key1, i32 key2, string key3, i32 cnt}
                           serialization.format 1
                           serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           totalSize 54
 #### A masked pattern was here ####
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.outputtbl4
+                        name: default.outputtbl4_n1
                     TotalFiles: 1
                     GatherStats: true
                     MultiFileSpray: false
@@ -5772,7 +5772,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: t2
+            base file name: t2_n34
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -5786,11 +5786,11 @@ STAGE PLANS:
               columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
-              name default.t2
+              name default.t2_n34
               numFiles 2
               numRows 6
               rawDataSize 24
-              serialization.ddl struct t2 { string key, string val}
+              serialization.ddl struct t2_n34 { string key, string val}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 30
@@ -5810,20 +5810,20 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
-                name default.t2
+                name default.t2_n34
                 numFiles 2
                 numRows 6
                 rawDataSize 24
-                serialization.ddl struct t2 { string key, string val}
+                serialization.ddl struct t2_n34 { string key, string val}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 30
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.t2
-            name: default.t2
+              name: default.t2_n34
+            name: default.t2_n34
       Truncated Path -> Alias:
-        /t2 [t2]
+        /t2_n34 [t2_n34]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -5880,17 +5880,17 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:int:string:int
 #### A masked pattern was here ####
-                name default.outputtbl4
+                name default.outputtbl4_n1
                 numFiles 1
                 numRows 6
                 rawDataSize 48
-                serialization.ddl struct outputtbl4 { i32 key1, i32 key2, string key3, i32 cnt}
+                serialization.ddl struct outputtbl4_n1 { i32 key1, i32 key2, string key3, i32 cnt}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 54
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.outputtbl4
+              name: default.outputtbl4_n1
 
   Stage: Stage-2
     Stats Work
@@ -5899,7 +5899,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key1, key2, key3, cnt
           Column Types: int, int, string, int
-          Table: default.outputtbl4
+          Table: default.outputtbl4_n1
           Is Table Level Stats: true
 
   Stage: Stage-3
@@ -5924,17 +5924,17 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:int:string:int
 #### A masked pattern was here ####
-                    name default.outputtbl4
+                    name default.outputtbl4_n1
                     numFiles 1
                     numRows 6
                     rawDataSize 48
-                    serialization.ddl struct outputtbl4 { i32 key1, i32 key2, string key3, i32 cnt}
+                    serialization.ddl struct outputtbl4_n1 { i32 key1, i32 key2, string key3, i32 cnt}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 54
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.outputtbl4
+                  name: default.outputtbl4_n1
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
@@ -5955,11 +5955,11 @@ STAGE PLANS:
               columns.comments 
               columns.types int:int:string:int
 #### A masked pattern was here ####
-              name default.outputtbl4
+              name default.outputtbl4_n1
               numFiles 1
               numRows 6
               rawDataSize 48
-              serialization.ddl struct outputtbl4 { i32 key1, i32 key2, string key3, i32 cnt}
+              serialization.ddl struct outputtbl4_n1 { i32 key1, i32 key2, string key3, i32 cnt}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 54
@@ -5977,18 +5977,18 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:int:string:int
 #### A masked pattern was here ####
-                name default.outputtbl4
+                name default.outputtbl4_n1
                 numFiles 1
                 numRows 6
                 rawDataSize 48
-                serialization.ddl struct outputtbl4 { i32 key1, i32 key2, string key3, i32 cnt}
+                serialization.ddl struct outputtbl4_n1 { i32 key1, i32 key2, string key3, i32 cnt}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 54
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.outputtbl4
-            name: default.outputtbl4
+              name: default.outputtbl4_n1
+            name: default.outputtbl4_n1
       Truncated Path -> Alias:
 #### A masked pattern was here ####
 
@@ -6014,17 +6014,17 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:int:string:int
 #### A masked pattern was here ####
-                    name default.outputtbl4
+                    name default.outputtbl4_n1
                     numFiles 1
                     numRows 6
                     rawDataSize 48
-                    serialization.ddl struct outputtbl4 { i32 key1, i32 key2, string key3, i32 cnt}
+                    serialization.ddl struct outputtbl4_n1 { i32 key1, i32 key2, string key3, i32 cnt}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 54
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.outputtbl4
+                  name: default.outputtbl4_n1
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
@@ -6045,11 +6045,11 @@ STAGE PLANS:
               columns.comments 
               columns.types int:int:string:int
 #### A masked pattern was here ####
-              name default.outputtbl4
+              name default.outputtbl4_n1
               numFiles 1
               numRows 6
               rawDataSize 48
-              serialization.ddl struct outputtbl4 { i32 key1, i32 key2, string key3, i32 cnt}
+              serialization.ddl struct outputtbl4_n1 { i32 key1, i32 key2, string key3, i32 cnt}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 54
@@ -6067,18 +6067,18 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:int:string:int
 #### A masked pattern was here ####
-                name default.outputtbl4
+                name default.outputtbl4_n1
                 numFiles 1
                 numRows 6
                 rawDataSize 48
-                serialization.ddl struct outputtbl4 { i32 key1, i32 key2, string key3, i32 cnt}
+                serialization.ddl struct outputtbl4_n1 { i32 key1, i32 key2, string key3, i32 cnt}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 54
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.outputtbl4
-            name: default.outputtbl4
+              name: default.outputtbl4_n1
+            name: default.outputtbl4_n1
       Truncated Path -> Alias:
 #### A masked pattern was here ####
 
@@ -6088,27 +6088,27 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-PREHOOK: query: INSERT OVERWRITE TABLE outputTbl4
-SELECT key, 1, val, count(1) FROM T2 GROUP BY key, 1, val
+PREHOOK: query: INSERT OVERWRITE TABLE outputTbl4_n1
+SELECT key, 1, val, count(1) FROM T2_n34 GROUP BY key, 1, val
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t2
-PREHOOK: Output: default@outputtbl4
-POSTHOOK: query: INSERT OVERWRITE TABLE outputTbl4
-SELECT key, 1, val, count(1) FROM T2 GROUP BY key, 1, val
+PREHOOK: Input: default@t2_n34
+PREHOOK: Output: default@outputtbl4_n1
+POSTHOOK: query: INSERT OVERWRITE TABLE outputTbl4_n1
+SELECT key, 1, val, count(1) FROM T2_n34 GROUP BY key, 1, val
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t2
-POSTHOOK: Output: default@outputtbl4
-POSTHOOK: Lineage: outputtbl4.cnt EXPRESSION [(t2)t2.null, ]
-POSTHOOK: Lineage: outputtbl4.key1 EXPRESSION [(t2)t2.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl4.key2 SIMPLE []
-POSTHOOK: Lineage: outputtbl4.key3 SIMPLE [(t2)t2.FieldSchema(name:val, type:string, comment:null), ]
-PREHOOK: query: SELECT * FROM outputTbl4
+POSTHOOK: Input: default@t2_n34
+POSTHOOK: Output: default@outputtbl4_n1
+POSTHOOK: Lineage: outputtbl4_n1.cnt EXPRESSION [(t2_n34)t2_n34.null, ]
+POSTHOOK: Lineage: outputtbl4_n1.key1 EXPRESSION [(t2_n34)t2_n34.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl4_n1.key2 SIMPLE []
+POSTHOOK: Lineage: outputtbl4_n1.key3 SIMPLE [(t2_n34)t2_n34.FieldSchema(name:val, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM outputTbl4_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@outputtbl4
+PREHOOK: Input: default@outputtbl4_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM outputTbl4
+POSTHOOK: query: SELECT * FROM outputTbl4_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@outputtbl4
+POSTHOOK: Input: default@outputtbl4_n1
 #### A masked pattern was here ####
 1	1	11	1
 2	1	12	1
@@ -6116,21 +6116,21 @@ POSTHOOK: Input: default@outputtbl4
 7	1	17	1
 8	1	18	1
 8	1	28	1
-PREHOOK: query: CREATE TABLE outputTbl5(key1 int, key2 int, key3 string, key4 int, cnt int)
+PREHOOK: query: CREATE TABLE outputTbl5_n1(key1 int, key2 int, key3 string, key4 int, cnt int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@outputTbl5
-POSTHOOK: query: CREATE TABLE outputTbl5(key1 int, key2 int, key3 string, key4 int, cnt int)
+PREHOOK: Output: default@outputTbl5_n1
+POSTHOOK: query: CREATE TABLE outputTbl5_n1(key1 int, key2 int, key3 string, key4 int, cnt int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@outputTbl5
+POSTHOOK: Output: default@outputTbl5_n1
 PREHOOK: query: EXPLAIN EXTENDED 
-INSERT OVERWRITE TABLE outputTbl5
-SELECT key, 1, val, 2, count(1) FROM T2 GROUP BY key, 1, val, 2
+INSERT OVERWRITE TABLE outputTbl5_n1
+SELECT key, 1, val, 2, count(1) FROM T2_n34 GROUP BY key, 1, val, 2
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED 
-INSERT OVERWRITE TABLE outputTbl5
-SELECT key, 1, val, 2, count(1) FROM T2 GROUP BY key, 1, val, 2
+INSERT OVERWRITE TABLE outputTbl5_n1
+SELECT key, 1, val, 2, count(1) FROM T2_n34 GROUP BY key, 1, val, 2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -6147,7 +6147,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t2
+            alias: t2_n34
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Select Operator
@@ -6183,17 +6183,17 @@ STAGE PLANS:
                           columns.comments 
                           columns.types int:int:string:int:int
 #### A masked pattern was here ####
-                          name default.outputtbl5
+                          name default.outputtbl5_n1
                           numFiles 0
                           numRows 0
                           rawDataSize 0
-                          serialization.ddl struct outputtbl5 { i32 key1, i32 key2, string key3, i32 key4, i32 cnt}
+                          serialization.ddl struct outputtbl5_n1 { i32 key1, i32 key2, string key3, i32 key4, i32 cnt}
                           serialization.format 1
                           serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           totalSize 0
 #### A masked pattern was here ####
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.outputtbl5
+                        name: default.outputtbl5_n1
                     TotalFiles: 1
                     GatherStats: true
                     MultiFileSpray: false
@@ -6218,7 +6218,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: t2
+            base file name: t2_n34
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -6232,11 +6232,11 @@ STAGE PLANS:
               columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
-              name default.t2
+              name default.t2_n34
               numFiles 2
               numRows 6
               rawDataSize 24
-              serialization.ddl struct t2 { string key, string val}
+              serialization.ddl struct t2_n34 { string key, string val}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 30
@@ -6256,20 +6256,20 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
-                name default.t2
+                name default.t2_n34
                 numFiles 2
                 numRows 6
                 rawDataSize 24
-                serialization.ddl struct t2 { string key, string val}
+                serialization.ddl struct t2_n34 { string key, string val}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 30
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.t2
-            name: default.t2
+              name: default.t2_n34
+            name: default.t2_n34
       Truncated Path -> Alias:
-        /t2 [t2]
+        /t2_n34 [t2_n34]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -6326,17 +6326,17 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:int:string:int:int
 #### A masked pattern was here ####
-                name default.outputtbl5
+                name default.outputtbl5_n1
                 numFiles 0
                 numRows 0
                 rawDataSize 0
-                serialization.ddl struct outputtbl5 { i32 key1, i32 key2, string key3, i32 key4, i32 cnt}
+                serialization.ddl struct outputtbl5_n1 { i32 key1, i32 key2, string key3, i32 key4, i32 cnt}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.outputtbl5
+              name: default.outputtbl5_n1
 
   Stage: Stage-2
     Stats Work
@@ -6345,7 +6345,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key1, key2, key3, key4, cnt
           Column Types: int, int, string, int, int
-          Table: default.outputtbl5
+          Table: default.outputtbl5_n1
           Is Table Level Stats: true
 
   Stage: Stage-3
@@ -6370,17 +6370,17 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:int:string:int:int
 #### A masked pattern was here ####
-                    name default.outputtbl5
+                    name default.outputtbl5_n1
                     numFiles 0
                     numRows 0
                     rawDataSize 0
-                    serialization.ddl struct outputtbl5 { i32 key1, i32 key2, string key3, i32 key4, i32 cnt}
+                    serialization.ddl struct outputtbl5_n1 { i32 key1, i32 key2, string key3, i32 key4, i32 cnt}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 0
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.outputtbl5
+                  name: default.outputtbl5_n1
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
@@ -6401,11 +6401,11 @@ STAGE PLANS:
               columns.comments 
               columns.types int:int:string:int:int
 #### A masked pattern was here ####
-              name default.outputtbl5
+              name default.outputtbl5_n1
               numFiles 0
               numRows 0
               rawDataSize 0
-              serialization.ddl struct outputtbl5 { i32 key1, i32 key2, string key3, i32 key4, i32 cnt}
+              serialization.ddl struct outputtbl5_n1 { i32 key1, i32 key2, string key3, i32 key4, i32 cnt}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 0
@@ -6423,18 +6423,18 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:int:string:int:int
 #### A masked pattern was here ####
-                name default.outputtbl5
+                name default.outputtbl5_n1
                 numFiles 0
                 numRows 0
                 rawDataSize 0
-                serialization.ddl struct outputtbl5 { i32 key1, i32 key2, string key3, i32 key4, i32 cnt}
+                serialization.ddl struct outputtbl5_n1 { i32 key1, i32 key2, string key3, i32 key4, i32 cnt}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.outputtbl5
-            name: default.outputtbl5
+              name: default.outputtbl5_n1
+            name: default.outputtbl5_n1
       Truncated Path -> Alias:
 #### A masked pattern was here ####
 
@@ -6460,17 +6460,17 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:int:string:int:int
 #### A masked pattern was here ####
-                    name default.outputtbl5
+                    name default.outputtbl5_n1
                     numFiles 0
                     numRows 0
                     rawDataSize 0
-                    serialization.ddl struct outputtbl5 { i32 key1, i32 key2, string key3, i32 key4, i32 cnt}
+                    serialization.ddl struct outputtbl5_n1 { i32 key1, i32 key2, string key3, i32 key4, i32 cnt}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 0
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.outputtbl5
+                  name: default.outputtbl5_n1
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
@@ -6491,11 +6491,11 @@ STAGE PLANS:
               columns.comments 
               columns.types int:int:string:int:int
 #### A masked pattern was here ####
-              name default.outputtbl5
+              name default.outputtbl5_n1
               numFiles 0
               numRows 0
               rawDataSize 0
-              serialization.ddl struct outputtbl5 { i32 key1, i32 key2, string key3, i32 key4, i32 cnt}
+              serialization.ddl struct outputtbl5_n1 { i32 key1, i32 key2, string key3, i32 key4, i32 cnt}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 0
@@ -6513,18 +6513,18 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:int:string:int:int
 #### A masked pattern was here ####
-                name default.outputtbl5
+                name default.outputtbl5_n1
                 numFiles 0
                 numRows 0
                 rawDataSize 0
-                serialization.ddl struct outputtbl5 { i32 key1, i32 key2, string key3, i32 key4, i32 cnt}
+                serialization.ddl struct outputtbl5_n1 { i32 key1, i32 key2, string key3, i32 key4, i32 cnt}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.outputtbl5
-            name: default.outputtbl5
+              name: default.outputtbl5_n1
+            name: default.outputtbl5_n1
       Truncated Path -> Alias:
 #### A masked pattern was here ####
 
@@ -6534,30 +6534,30 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-PREHOOK: query: INSERT OVERWRITE TABLE outputTbl5
-SELECT key, 1, val, 2, count(1) FROM T2 GROUP BY key, 1, val, 2
+PREHOOK: query: INSERT OVERWRITE TABLE outputTbl5_n1
+SELECT key, 1, val, 2, count(1) FROM T2_n34 GROUP BY key, 1, val, 2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t2
-PREHOOK: Output: default@outputtbl5
-POSTHOOK: query: INSERT OVERWRITE TABLE outputTbl5
-SELECT key, 1, val, 2, count(1) FROM T2 GROUP BY key, 1, val, 2
+PREHOOK: Input: default@t2_n34
+PREHOOK: Output: default@outputtbl5_n1
+POSTHOOK: query: INSERT OVERWRITE TABLE outputTbl5_n1
+SELECT key, 1, val, 2, count(1) FROM T2_n34 GROUP BY key, 1, val, 2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t2
-POSTHOOK: Output: default@outputtbl5
-POSTHOOK: Lineage: outputtbl5.cnt EXPRESSION [(t2)t2.null, ]
-POSTHOOK: Lineage: outputtbl5.key1 EXPRESSION [(t2)t2.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl5.key2 SIMPLE []
-POSTHOOK: Lineage: outputtbl5.key3 SIMPLE [(t2)t2.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl5.key4 SIMPLE []
-PREHOOK: query: SELECT * FROM outputTbl5 
+POSTHOOK: Input: default@t2_n34
+POSTHOOK: Output: default@outputtbl5_n1
+POSTHOOK: Lineage: outputtbl5_n1.cnt EXPRESSION [(t2_n34)t2_n34.null, ]
+POSTHOOK: Lineage: outputtbl5_n1.key1 EXPRESSION [(t2_n34)t2_n34.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl5_n1.key2 SIMPLE []
+POSTHOOK: Lineage: outputtbl5_n1.key3 SIMPLE [(t2_n34)t2_n34.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl5_n1.key4 SIMPLE []
+PREHOOK: query: SELECT * FROM outputTbl5_n1 
 ORDER BY key1, key2, key3, key4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@outputtbl5
+PREHOOK: Input: default@outputtbl5_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM outputTbl5 
+POSTHOOK: query: SELECT * FROM outputTbl5_n1 
 ORDER BY key1, key2, key3, key4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@outputtbl5
+POSTHOOK: Input: default@outputtbl5_n1
 #### A masked pattern was here ####
 1	1	11	2	1
 2	1	12	2	1
@@ -6566,15 +6566,15 @@ POSTHOOK: Input: default@outputtbl5
 8	1	18	2	1
 8	1	28	2	1
 PREHOOK: query: EXPLAIN EXTENDED
-INSERT OVERWRITE TABLE outputTbl4
+INSERT OVERWRITE TABLE outputTbl4_n1
 SELECT key, constant, val, count(1) from 
-(SELECT key, 1 as constant, val from T2)subq
+(SELECT key, 1 as constant, val from T2_n34)subq
 group by key, constant, val
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED
-INSERT OVERWRITE TABLE outputTbl4
+INSERT OVERWRITE TABLE outputTbl4_n1
 SELECT key, constant, val, count(1) from 
-(SELECT key, 1 as constant, val from T2)subq
+(SELECT key, 1 as constant, val from T2_n34)subq
 group by key, constant, val
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -6592,7 +6592,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t2
+            alias: t2_n34
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Select Operator
@@ -6628,17 +6628,17 @@ STAGE PLANS:
                           columns.comments 
                           columns.types int:int:string:int
 #### A masked pattern was here ####
-                          name default.outputtbl4
+                          name default.outputtbl4_n1
                           numFiles 1
                           numRows 6
                           rawDataSize 48
-                          serialization.ddl struct outputtbl4 { i32 key1, i32 key2, string key3, i32 cnt}
+                          serialization.ddl struct outputtbl4_n1 { i32 key1, i32 key2, string key3, i32 cnt}
                           serialization.format 1
                           serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           totalSize 54
 #### A masked pattern was here ####
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.outputtbl4
+                        name: default.outputtbl4_n1
                     TotalFiles: 1
                     GatherStats: true
                     MultiFileSpray: false
@@ -6663,7 +6663,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: t2
+            base file name: t2_n34
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -6677,11 +6677,11 @@ STAGE PLANS:
               columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
-              name default.t2
+              name default.t2_n34
               numFiles 2
               numRows 6
               rawDataSize 24
-              serialization.ddl struct t2 { string key, string val}
+              serialization.ddl struct t2_n34 { string key, string val}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 30
@@ -6701,20 +6701,20 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
-                name default.t2
+                name default.t2_n34
                 numFiles 2
                 numRows 6
                 rawDataSize 24
-                serialization.ddl struct t2 { string key, string val}
+                serialization.ddl struct t2_n34 { string key, string val}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 30
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.t2
-            name: default.t2
+              name: default.t2_n34
+            name: default.t2_n34
       Truncated Path -> Alias:
-        /t2 [t2]
+        /t2_n34 [t2_n34]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -6771,17 +6771,17 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:int:string:int
 #### A masked pattern was here ####
-                name default.outputtbl4
+                name default.outputtbl4_n1
                 numFiles 1
                 numRows 6
                 rawDataSize 48
-                serialization.ddl struct outputtbl4 { i32 key1, i32 key2, string key3, i32 cnt}
+                serialization.ddl struct outputtbl4_n1 { i32 key1, i32 key2, string key3, i32 cnt}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 54
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.outputtbl4
+              name: default.outputtbl4_n1
 
   Stage: Stage-2
     Stats Work
@@ -6790,7 +6790,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key1, key2, key3, cnt
           Column Types: int, int, string, int
-          Table: default.outputtbl4
+          Table: default.outputtbl4_n1
           Is Table Level Stats: true
 
   Stage: Stage-3
@@ -6815,17 +6815,17 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:int:string:int
 #### A masked pattern was here ####
-                    name default.outputtbl4
+                    name default.outputtbl4_n1
                     numFiles 1
                     numRows 6
                     rawDataSize 48
-                    serialization.ddl struct outputtbl4 { i32 key1, i32 key2, string key3, i32 cnt}
+                    serialization.ddl struct outputtbl4_n1 { i32 key1, i32 key2, string key3, i32 cnt}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 54
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.outputtbl4
+                  name: default.outputtbl4_n1
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
@@ -6846,11 +6846,11 @@ STAGE PLANS:
               columns.comments 
               columns.types int:int:string:int
 #### A masked pattern was here ####
-              name default.outputtbl4
+              name default.outputtbl4_n1
               numFiles 1
               numRows 6
               rawDataSize 48
-              serialization.ddl struct outputtbl4 { i32 key1, i32 key2, string key3, i32 cnt}
+              serialization.ddl struct outputtbl4_n1 { i32 key1, i32 key2, string key3, i32 cnt}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 54
@@ -6868,18 +6868,18 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:int:string:int
 #### A masked pattern was here ####
-                name default.outputtbl4
+                name default.outputtbl4_n1
                 numFiles 1
                 numRows 6
                 rawDataSize 48
-                serialization.ddl struct outputtbl4 { i32 key1, i32 key2, string key3, i32 cnt}
+                serialization.ddl struct outputtbl4_n1 { i32 key1, i32 key2, string key3, i32 cnt}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 54
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.outputtbl4
-            name: default.outputtbl4
+              name: default.outputtbl4_n1
+            name: default.outputtbl4_n1
       Truncated Path -> Alias:
 #### A masked pattern was here ####
 
@@ -6905,17 +6905,17 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:int:string:int
 #### A masked pattern was here ####
-                    name default.outputtbl4
+                    name default.outputtbl4_n1
                     numFiles 1
                     numRows 6
                     rawDataSize 48
-                    serialization.ddl struct outputtbl4 { i32 key1, i32 key2, string key3, i32 cnt}
+                    serialization.ddl struct outputtbl4_n1 { i32 key1, i32 key2, string key3, i32 cnt}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 54
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.outputtbl4
+                  name: default.outputtbl4_n1
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
@@ -6936,11 +6936,11 @@ STAGE PLANS:
               columns.comments 
               columns.types int:int:string:int
 #### A masked pattern was here ####
-              name default.outputtbl4
+              name default.outputtbl4_n1
               numFiles 1
               numRows 6
               rawDataSize 48
-              serialization.ddl struct outputtbl4 { i32 key1, i32 key2, string key3, i32 cnt}
+              serialization.ddl struct outputtbl4_n1 { i32 key1, i32 key2, string key3, i32 cnt}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 54
@@ -6958,18 +6958,18 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:int:string:int
 #### A masked pattern was here ####
-                name default.outputtbl4
+                name default.outputtbl4_n1
                 numFiles 1
                 numRows 6
                 rawDataSize 48
-                serialization.ddl struct outputtbl4 { i32 key1, i32 key2, string key3, i32 cnt}
+                serialization.ddl struct outputtbl4_n1 { i32 key1, i32 key2, string key3, i32 cnt}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 54
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.outputtbl4
-            name: default.outputtbl4
+              name: default.outputtbl4_n1
+            name: default.outputtbl4_n1
       Truncated Path -> Alias:
 #### A masked pattern was here ####
 
@@ -6979,31 +6979,31 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-PREHOOK: query: INSERT OVERWRITE TABLE outputTbl4
+PREHOOK: query: INSERT OVERWRITE TABLE outputTbl4_n1
 SELECT key, constant, val, count(1) from 
-(SELECT key, 1 as constant, val from T2)subq
+(SELECT key, 1 as constant, val from T2_n34)subq
 group by key, constant, val
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t2
-PREHOOK: Output: default@outputtbl4
-POSTHOOK: query: INSERT OVERWRITE TABLE outputTbl4
+PREHOOK: Input: default@t2_n34
+PREHOOK: Output: default@outputtbl4_n1
+POSTHOOK: query: INSERT OVERWRITE TABLE outputTbl4_n1
 SELECT key, constant, val, count(1) from 
-(SELECT key, 1 as constant, val from T2)subq
+(SELECT key, 1 as constant, val from T2_n34)subq
 group by key, constant, val
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t2
-POSTHOOK: Output: default@outputtbl4
-POSTHOOK: Lineage: outputtbl4.cnt EXPRESSION [(t2)t2.null, ]
-POSTHOOK: Lineage: outputtbl4.key1 EXPRESSION [(t2)t2.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl4.key2 SIMPLE []
-POSTHOOK: Lineage: outputtbl4.key3 SIMPLE [(t2)t2.FieldSchema(name:val, type:string, comment:null), ]
-PREHOOK: query: SELECT * FROM outputTbl4
+POSTHOOK: Input: default@t2_n34
+POSTHOOK: Output: default@outputtbl4_n1
+POSTHOOK: Lineage: outputtbl4_n1.cnt EXPRESSION [(t2_n34)t2_n34.null, ]
+POSTHOOK: Lineage: outputtbl4_n1.key1 EXPRESSION [(t2_n34)t2_n34.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl4_n1.key2 SIMPLE []
+POSTHOOK: Lineage: outputtbl4_n1.key3 SIMPLE [(t2_n34)t2_n34.FieldSchema(name:val, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM outputTbl4_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@outputtbl4
+PREHOOK: Input: default@outputtbl4_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM outputTbl4
+POSTHOOK: query: SELECT * FROM outputTbl4_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@outputtbl4
+POSTHOOK: Input: default@outputtbl4_n1
 #### A masked pattern was here ####
 1	1	11	1
 2	1	12	1
@@ -7012,20 +7012,20 @@ POSTHOOK: Input: default@outputtbl4
 8	1	18	1
 8	1	28	1
 PREHOOK: query: EXPLAIN EXTENDED
-INSERT OVERWRITE TABLE outputTbl4
+INSERT OVERWRITE TABLE outputTbl4_n1
 select key, constant3, val, count(1) from
 (
 SELECT key, constant as constant2, val, 2 as constant3 from 
-(SELECT key, 1 as constant, val from T2)subq
+(SELECT key, 1 as constant, val from T2_n34)subq
 )subq2
 group by key, constant3, val
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED
-INSERT OVERWRITE TABLE outputTbl4
+INSERT OVERWRITE TABLE outputTbl4_n1
 select key, constant3, val, count(1) from
 (
 SELECT key, constant as constant2, val, 2 as constant3 from 
-(SELECT key, 1 as constant, val from T2)subq
+(SELECT key, 1 as constant, val from T2_n34)subq
 )subq2
 group by key, constant3, val
 POSTHOOK: type: QUERY
@@ -7044,7 +7044,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t2
+            alias: t2_n34
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Select Operator
@@ -7080,17 +7080,17 @@ STAGE PLANS:
                           columns.comments 
                           columns.types int:int:string:int
 #### A masked pattern was here ####
-                          name default.outputtbl4
+                          name default.outputtbl4_n1
                           numFiles 1
                           numRows 6
                           rawDataSize 48
-                          serialization.ddl struct outputtbl4 { i32 key1, i32 key2, string key3, i32 cnt}
+                          serialization.ddl struct outputtbl4_n1 { i32 key1, i32 key2, string key3, i32 cnt}
                           serialization.format 1
                           serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           totalSize 54
 #### A masked pattern was here ####
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.outputtbl4
+                        name: default.outputtbl4_n1
                     TotalFiles: 1
                     GatherStats: true
                     MultiFileSpray: false
@@ -7115,7 +7115,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: t2
+            base file name: t2_n34
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -7129,11 +7129,11 @@ STAGE PLANS:
               columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
-              name default.t2
+              name default.t2_n34
               numFiles 2
               numRows 6
               rawDataSize 24
-              serialization.ddl struct t2 { string key, string val}
+              serialization.ddl struct t2_n34 { string key, string val}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 30
@@ -7153,20 +7153,20 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
-                name default.t2
+                name default.t2_n34
                 numFiles 2
                 numRows 6
                 rawDataSize 24
-                serialization.ddl struct t2 { string key, string val}
+                serialization.ddl struct t2_n34 { string key, string val}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 30
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.t2
-            name: default.t2
+              name: default.t2_n34
+            name: default.t2_n34
       Truncated Path -> Alias:
-        /t2 [t2]
+        /t2_n34 [t2_n34]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -7223,17 +7223,17 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:int:string:int
 #### A masked pattern was here ####
-                name default.outputtbl4
+                name default.outputtbl4_n1
                 numFiles 1
                 numRows 6
                 rawDataSize 48
-                serialization.ddl struct outputtbl4 { i32 key1, i32 key2, string key3, i32 cnt}
+                serialization.ddl struct outputtbl4_n1 { i32 key1, i32 key2, string key3, i32 cnt}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 54
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.outputtbl4
+              name: default.outputtbl4_n1
 
   Stage: Stage-2
     Stats Work
@@ -7242,7 +7242,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key1, key2, key3, cnt
           Column Types: int, int, string, int
-          Table: default.outputtbl4
+          Table: default.outputtbl4_n1
           Is Table Level Stats: true
 
   Stage: Stage-3
@@ -7267,17 +7267,17 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:int:string:int
 #### A masked pattern was here ####
-                    name default.outputtbl4
+                    name default.outputtbl4_n1
                     numFiles 1
                     numRows 6
                     rawDataSize 48
-                    serialization.ddl struct outputtbl4 { i32 key1, i32 key2, string key3, i32 cnt}
+                    serialization.ddl struct outputtbl4_n1 { i32 key1, i32 key2, string key3, i32 cnt}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 54
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.outputtbl4
+                  name: default.outputtbl4_n1
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
@@ -7298,11 +7298,11 @@ STAGE PLANS:
               columns.comments 
               columns.types int:int:string:int
 #### A masked pattern was here ####
-              name default.outputtbl4
+              name default.outputtbl4_n1
               numFiles 1
               numRows 6
               rawDataSize 48
-              serialization.ddl struct outputtbl4 { i32 key1, i32 key2, string key3, i32 cnt}
+              serialization.ddl struct outputtbl4_n1 { i32 key1, i32 key2, string key3, i32 cnt}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 54
@@ -7320,18 +7320,18 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:int:string:int
 #### A masked pattern was here ####
-                name default.outputtbl4
+                name default.outputtbl4_n1
                 numFiles 1
                 numRows 6
                 rawDataSize 48
-                serialization.ddl struct outputtbl4 { i32 key1, i32 key2, string key3, i32 cnt}
+                serialization.ddl struct outputtbl4_n1 { i32 key1, i32 key2, string key3, i32 cnt}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 54
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.outputtbl4
-            name: default.outputtbl4
+              name: default.outputtbl4_n1
+            name: default.outputtbl4_n1
       Truncated Path -> Alias:
 #### A masked pattern was here ####
 
@@ -7357,17 +7357,17 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:int:string:int
 #### A masked pattern was here ####
-                    name default.outputtbl4
+                    name default.outputtbl4_n1
                     numFiles 1
                     numRows 6
                     rawDataSize 48
-                    serialization.ddl struct outputtbl4 { i32 key1, i32 key2, string key3, i32 cnt}
+                    serialization.ddl struct outputtbl4_n1 { i32 key1, i32 key2, string key3, i32 cnt}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 54
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.outputtbl4
+                  name: default.outputtbl4_n1
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
@@ -7388,11 +7388,11 @@ STAGE PLANS:
               columns.comments 
               columns.types int:int:string:int
 #### A masked pattern was here ####
-              name default.outputtbl4
+              name default.outputtbl4_n1
               numFiles 1
               numRows 6
               rawDataSize 48
-              serialization.ddl struct outputtbl4 { i32 key1, i32 key2, string key3, i32 cnt}
+              serialization.ddl struct outputtbl4_n1 { i32 key1, i32 key2, string key3, i32 cnt}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 54
@@ -7410,18 +7410,18 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:int:string:int
 #### A masked pattern was here ####
-                name default.outputtbl4
+                name default.outputtbl4_n1
                 numFiles 1
                 numRows 6
                 rawDataSize 48
-                serialization.ddl struct outputtbl4 { i32 key1, i32 key2, string key3, i32 cnt}
+                serialization.ddl struct outputtbl4_n1 { i32 key1, i32 key2, string key3, i32 cnt}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 54
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.outputtbl4
-            name: default.outputtbl4
+              name: default.outputtbl4_n1
+            name: default.outputtbl4_n1
       Truncated Path -> Alias:
 #### A masked pattern was here ####
 
@@ -7431,37 +7431,37 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-PREHOOK: query: INSERT OVERWRITE TABLE outputTbl4
+PREHOOK: query: INSERT OVERWRITE TABLE outputTbl4_n1
 select key, constant3, val, count(1) from
 (
 SELECT key, constant as constant2, val, 2 as constant3 from 
-(SELECT key, 1 as constant, val from T2)subq
+(SELECT key, 1 as constant, val from T2_n34)subq
 )subq2
 group by key, constant3, val
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t2
-PREHOOK: Output: default@outputtbl4
-POSTHOOK: query: INSERT OVERWRITE TABLE outputTbl4
+PREHOOK: Input: default@t2_n34
+PREHOOK: Output: default@outputtbl4_n1
+POSTHOOK: query: INSERT OVERWRITE TABLE outputTbl4_n1
 select key, constant3, val, count(1) from
 (
 SELECT key, constant as constant2, val, 2 as constant3 from 
-(SELECT key, 1 as constant, val from T2)subq
+(SELECT key, 1 as constant, val from T2_n34)subq
 )subq2
 group by key, constant3, val
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t2
-POSTHOOK: Output: default@outputtbl4
-POSTHOOK: Lineage: outputtbl4.cnt EXPRESSION [(t2)t2.null, ]
-POSTHOOK: Lineage: outputtbl4.key1 EXPRESSION [(t2)t2.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: outputtbl4.key2 SIMPLE []
-POSTHOOK: Lineage: outputtbl4.key3 SIMPLE [(t2)t2.FieldSchema(name:val, type:string, comment:null), ]
-PREHOOK: query: SELECT * FROM outputTbl4
+POSTHOOK: Input: default@t2_n34
+POSTHOOK: Output: default@outputtbl4_n1
+POSTHOOK: Lineage: outputtbl4_n1.cnt EXPRESSION [(t2_n34)t2_n34.null, ]
+POSTHOOK: Lineage: outputtbl4_n1.key1 EXPRESSION [(t2_n34)t2_n34.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: outputtbl4_n1.key2 SIMPLE []
+POSTHOOK: Lineage: outputtbl4_n1.key3 SIMPLE [(t2_n34)t2_n34.FieldSchema(name:val, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM outputTbl4_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@outputtbl4
+PREHOOK: Input: default@outputtbl4_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM outputTbl4
+POSTHOOK: query: SELECT * FROM outputTbl4_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@outputtbl4
+POSTHOOK: Input: default@outputtbl4_n1
 #### A masked pattern was here ####
 1	2	11	1
 2	2	12	1
@@ -7469,31 +7469,31 @@ POSTHOOK: Input: default@outputtbl4
 7	2	17	1
 8	2	18	1
 8	2	28	1
-PREHOOK: query: CREATE TABLE DEST1(key INT, cnt INT)
+PREHOOK: query: CREATE TABLE DEST1_n57(key INT, cnt INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEST1
-POSTHOOK: query: CREATE TABLE DEST1(key INT, cnt INT)
+PREHOOK: Output: default@DEST1_n57
+POSTHOOK: query: CREATE TABLE DEST1_n57(key INT, cnt INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEST1
-PREHOOK: query: CREATE TABLE DEST2(key INT, val STRING, cnt INT)
+POSTHOOK: Output: default@DEST1_n57
+PREHOOK: query: CREATE TABLE DEST2_n12(key INT, val STRING, cnt INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DEST2
-POSTHOOK: query: CREATE TABLE DEST2(key INT, val STRING, cnt INT)
+PREHOOK: Output: default@DEST2_n12
+POSTHOOK: query: CREATE TABLE DEST2_n12(key INT, val STRING, cnt INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DEST2
+POSTHOOK: Output: default@DEST2_n12
 PREHOOK: query: EXPLAIN
-FROM T2
-INSERT OVERWRITE TABLE DEST1 SELECT key, count(1) GROUP BY key
-INSERT OVERWRITE TABLE DEST2 SELECT key, val, count(1) GROUP BY key, val
+FROM T2_n34
+INSERT OVERWRITE TABLE DEST1_n57 SELECT key, count(1) GROUP BY key
+INSERT OVERWRITE TABLE DEST2_n12 SELECT key, val, count(1) GROUP BY key, val
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-FROM T2
-INSERT OVERWRITE TABLE DEST1 SELECT key, count(1) GROUP BY key
-INSERT OVERWRITE TABLE DEST2 SELECT key, val, count(1) GROUP BY key, val
+FROM T2_n34
+INSERT OVERWRITE TABLE DEST1_n57 SELECT key, count(1) GROUP BY key
+INSERT OVERWRITE TABLE DEST2_n12 SELECT key, val, count(1) GROUP BY key, val
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -7510,7 +7510,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t2
+            alias: t2_n34
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string)
@@ -7550,7 +7550,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.dest2
+                        name: default.dest2_n12
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: string), _col2 (type: int)
                     outputColumnNames: key, val, cnt
@@ -7609,7 +7609,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.dest1
+                  name: default.dest1_n57
             Select Operator
               expressions: _col0 (type: int), _col1 (type: int)
               outputColumnNames: key, cnt
@@ -7634,7 +7634,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n57
 
   Stage: Stage-4
     Stats Work
@@ -7642,7 +7642,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, cnt
           Column Types: int, int
-          Table: default.dest1
+          Table: default.dest1_n57
 
   Stage: Stage-5
     Map Reduce
@@ -7673,7 +7673,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, val, cnt
           Column Types: int, string, int
-          Table: default.dest2
+          Table: default.dest2_n12
 
   Stage: Stage-1
     Move Operator
@@ -7683,7 +7683,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest2
+              name: default.dest2_n12
 
   Stage: Stage-7
     Map Reduce
@@ -7708,45 +7708,45 @@ STAGE PLANS:
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
-PREHOOK: query: FROM T2
-INSERT OVERWRITE TABLE DEST1 SELECT key, count(1) GROUP BY key
-INSERT OVERWRITE TABLE DEST2 SELECT key, val, count(1) GROUP BY key, val
+PREHOOK: query: FROM T2_n34
+INSERT OVERWRITE TABLE DEST1_n57 SELECT key, count(1) GROUP BY key
+INSERT OVERWRITE TABLE DEST2_n12 SELECT key, val, count(1) GROUP BY key, val
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t2
-PREHOOK: Output: default@dest1
-PREHOOK: Output: default@dest2
-POSTHOOK: query: FROM T2
-INSERT OVERWRITE TABLE DEST1 SELECT key, count(1) GROUP BY key
-INSERT OVERWRITE TABLE DEST2 SELECT key, val, count(1) GROUP BY key, val
+PREHOOK: Input: default@t2_n34
+PREHOOK: Output: default@dest1_n57
+PREHOOK: Output: default@dest2_n12
+POSTHOOK: query: FROM T2_n34
+INSERT OVERWRITE TABLE DEST1_n57 SELECT key, count(1) GROUP BY key
+INSERT OVERWRITE TABLE DEST2_n12 SELECT key, val, count(1) GROUP BY key, val
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t2
-POSTHOOK: Output: default@dest1
-POSTHOOK: Output: default@dest2
-POSTHOOK: Lineage: dest1.cnt EXPRESSION [(t2)t2.null, ]
-POSTHOOK: Lineage: dest1.key EXPRESSION [(t2)t2.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.cnt EXPRESSION [(t2)t2.null, ]
-POSTHOOK: Lineage: dest2.key EXPRESSION [(t2)t2.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.val SIMPLE [(t2)t2.FieldSchema(name:val, type:string, comment:null), ]
-PREHOOK: query: select * from DEST1
+POSTHOOK: Input: default@t2_n34
+POSTHOOK: Output: default@dest1_n57
+POSTHOOK: Output: default@dest2_n12
+POSTHOOK: Lineage: dest1_n57.cnt EXPRESSION [(t2_n34)t2_n34.null, ]
+POSTHOOK: Lineage: dest1_n57.key EXPRESSION [(t2_n34)t2_n34.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: dest2_n12.cnt EXPRESSION [(t2_n34)t2_n34.null, ]
+POSTHOOK: Lineage: dest2_n12.key EXPRESSION [(t2_n34)t2_n34.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: dest2_n12.val SIMPLE [(t2_n34)t2_n34.FieldSchema(name:val, type:string, comment:null), ]
+PREHOOK: query: select * from DEST1_n57
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n57
 #### A masked pattern was here ####
-POSTHOOK: query: select * from DEST1
+POSTHOOK: query: select * from DEST1_n57
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n57
 #### A masked pattern was here ####
 1	1
 2	1
 3	1
 7	1
 8	2
-PREHOOK: query: select * from DEST2
+PREHOOK: query: select * from DEST2_n12
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest2
+PREHOOK: Input: default@dest2_n12
 #### A masked pattern was here ####
-POSTHOOK: query: select * from DEST2
+POSTHOOK: query: select * from DEST2_n12
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest2
+POSTHOOK: Input: default@dest2_n12
 #### A masked pattern was here ####
 1	11	1
 2	12	1
@@ -7755,14 +7755,14 @@ POSTHOOK: Input: default@dest2
 8	18	1
 8	28	1
 PREHOOK: query: EXPLAIN
-FROM (select key, val from T2 where key = 8) x
-INSERT OVERWRITE TABLE DEST1 SELECT key, count(1) GROUP BY key
-INSERT OVERWRITE TABLE DEST2 SELECT key, val, count(1) GROUP BY key, val
+FROM (select key, val from T2_n34 where key = 8) x
+INSERT OVERWRITE TABLE DEST1_n57 SELECT key, count(1) GROUP BY key
+INSERT OVERWRITE TABLE DEST2_n12 SELECT key, val, count(1) GROUP BY key, val
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-FROM (select key, val from T2 where key = 8) x
-INSERT OVERWRITE TABLE DEST1 SELECT key, count(1) GROUP BY key
-INSERT OVERWRITE TABLE DEST2 SELECT key, val, count(1) GROUP BY key, val
+FROM (select key, val from T2_n34 where key = 8) x
+INSERT OVERWRITE TABLE DEST1_n57 SELECT key, count(1) GROUP BY key
+INSERT OVERWRITE TABLE DEST2_n12 SELECT key, val, count(1) GROUP BY key, val
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -7779,7 +7779,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t2
+            alias: t2_n34
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (UDFToDouble(key) = 8.0D) (type: boolean)
@@ -7822,7 +7822,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.dest2
+                          name: default.dest2_n12
                     Select Operator
                       expressions: _col0 (type: int), _col1 (type: string), _col2 (type: int)
                       outputColumnNames: key, val, cnt
@@ -7881,7 +7881,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.dest1
+                  name: default.dest1_n57
             Select Operator
               expressions: _col0 (type: int), _col1 (type: int)
               outputColumnNames: key, cnt
@@ -7906,7 +7906,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n57
 
   Stage: Stage-4
     Stats Work
@@ -7914,7 +7914,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, cnt
           Column Types: int, int
-          Table: default.dest1
+          Table: default.dest1_n57
 
   Stage: Stage-5
     Map Reduce
@@ -7945,7 +7945,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, val, cnt
           Column Types: int, string, int
-          Table: default.dest2
+          Table: default.dest2_n12
 
   Stage: Stage-1
     Move Operator
@@ -7955,7 +7955,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest2
+              name: default.dest2_n12
 
   Stage: Stage-7
     Map Reduce
@@ -7980,41 +7980,41 @@ STAGE PLANS:
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
-PREHOOK: query: FROM (select key, val from T2 where key = 8) x
-INSERT OVERWRITE TABLE DEST1 SELECT key, count(1) GROUP BY key
-INSERT OVERWRITE TABLE DEST2 SELECT key, val, count(1) GROUP BY key, val
+PREHOOK: query: FROM (select key, val from T2_n34 where key = 8) x
+INSERT OVERWRITE TABLE DEST1_n57 SELECT key, count(1) GROUP BY key
+INSERT OVERWRITE TABLE DEST2_n12 SELECT key, val, count(1) GROUP BY key, val
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t2
-PREHOOK: Output: default@dest1
-PREHOOK: Output: default@dest2
-POSTHOOK: query: FROM (select key, val from T2 where key = 8) x
-INSERT OVERWRITE TABLE DEST1 SELECT key, count(1) GROUP BY key
-INSERT OVERWRITE TABLE DEST2 SELECT key, val, count(1) GROUP BY key, val
+PREHOOK: Input: default@t2_n34
+PREHOOK: Output: default@dest1_n57
+PREHOOK: Output: default@dest2_n12
+POSTHOOK: query: FROM (select key, val from T2_n34 where key = 8) x
+INSERT OVERWRITE TABLE DEST1_n57 SELECT key, count(1) GROUP BY key
+INSERT OVERWRITE TABLE DEST2_n12 SELECT key, val, count(1) GROUP BY key, val
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t2
-POSTHOOK: Output: default@dest1
-POSTHOOK: Output: default@dest2
-POSTHOOK: Lineage: dest1.cnt EXPRESSION [(t2)t2.null, ]
-POSTHOOK: Lineage: dest1.key EXPRESSION [(t2)t2.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.cnt EXPRESSION [(t2)t2.null, ]
-POSTHOOK: Lineage: dest2.key EXPRESSION [(t2)t2.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: dest2.val SIMPLE [(t2)t2.FieldSchema(name:val, type:string, comment:null), ]
-PREHOOK: query: select * from DEST1
+POSTHOOK: Input: default@t2_n34
+POSTHOOK: Output: default@dest1_n57
+POSTHOOK: Output: default@dest2_n12
+POSTHOOK: Lineage: dest1_n57.cnt EXPRESSION [(t2_n34)t2_n34.null, ]
+POSTHOOK: Lineage: dest1_n57.key EXPRESSION [(t2_n34)t2_n34.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: dest2_n12.cnt EXPRESSION [(t2_n34)t2_n34.null, ]
+POSTHOOK: Lineage: dest2_n12.key EXPRESSION [(t2_n34)t2_n34.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: dest2_n12.val SIMPLE [(t2_n34)t2_n34.FieldSchema(name:val, type:string, comment:null), ]
+PREHOOK: query: select * from DEST1_n57
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n57
 #### A masked pattern was here ####
-POSTHOOK: query: select * from DEST1
+POSTHOOK: query: select * from DEST1_n57
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n57
 #### A masked pattern was here ####
 8	2
-PREHOOK: query: select * from DEST2
+PREHOOK: query: select * from DEST2_n12
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest2
+PREHOOK: Input: default@dest2_n12
 #### A masked pattern was here ####
-POSTHOOK: query: select * from DEST2
+POSTHOOK: query: select * from DEST2_n12
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest2
+POSTHOOK: Input: default@dest2_n12
 #### A masked pattern was here ####
 8	18	1
 8	28	1

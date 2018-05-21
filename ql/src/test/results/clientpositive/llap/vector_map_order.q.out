@@ -1,4 +1,4 @@
-PREHOOK: query: create table map_table (foo STRING , bar MAP<STRING, STRING>)
+PREHOOK: query: create table map_table_n0 (foo STRING , bar MAP<STRING, STRING>)
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '\t'
 COLLECTION ITEMS TERMINATED BY ','
@@ -6,8 +6,8 @@ MAP KEYS TERMINATED BY ':'
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@map_table
-POSTHOOK: query: create table map_table (foo STRING , bar MAP<STRING, STRING>)
+PREHOOK: Output: default@map_table_n0
+POSTHOOK: query: create table map_table_n0 (foo STRING , bar MAP<STRING, STRING>)
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '\t'
 COLLECTION ITEMS TERMINATED BY ','
@@ -15,20 +15,20 @@ MAP KEYS TERMINATED BY ':'
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@map_table
-PREHOOK: query: load data local inpath "../../data/files/map_table.txt" overwrite into table map_table
+POSTHOOK: Output: default@map_table_n0
+PREHOOK: query: load data local inpath "../../data/files/map_table.txt" overwrite into table map_table_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@map_table
-POSTHOOK: query: load data local inpath "../../data/files/map_table.txt" overwrite into table map_table
+PREHOOK: Output: default@map_table_n0
+POSTHOOK: query: load data local inpath "../../data/files/map_table.txt" overwrite into table map_table_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@map_table
+POSTHOOK: Output: default@map_table_n0
 PREHOOK: query: explain vectorization detail
-select * from map_table
+select * from map_table_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select * from map_table
+select * from map_table_n0
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -46,7 +46,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: map_table
+                  alias: map_table_n0
                   Statistics: Num rows: 1 Data size: 1104 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -94,13 +94,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from map_table
+PREHOOK: query: select * from map_table_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@map_table
+PREHOOK: Input: default@map_table_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from map_table
+POSTHOOK: query: select * from map_table_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@map_table
+POSTHOOK: Input: default@map_table_n0
 #### A masked pattern was here ####
 foo1	{"k1":"v1","k2":"v2","k3":"v3"}
 foo2	{"k21":"v21","k22":"v22","k31":"v31"}

@@ -1,17 +1,17 @@
-PREHOOK: query: CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE dest1_n29(key INT, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest1
-POSTHOOK: query: CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@dest1_n29
+POSTHOOK: query: CREATE TABLE dest1_n29(key INT, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest1
+POSTHOOK: Output: default@dest1_n29
 PREHOOK: query: EXPLAIN EXTENDED
-INSERT OVERWRITE TABLE dest1 SELECT s.* 
+INSERT OVERWRITE TABLE dest1_n29 SELECT s.* 
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 2) s
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED
-INSERT OVERWRITE TABLE dest1 SELECT s.* 
+INSERT OVERWRITE TABLE dest1_n29 SELECT s.* 
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 2) s
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -58,17 +58,17 @@ STAGE PLANS:
                               columns.comments 
                               columns.types int:string
 #### A masked pattern was here ####
-                              name default.dest1
+                              name default.dest1_n29
                               numFiles 0
                               numRows 0
                               rawDataSize 0
-                              serialization.ddl struct dest1 { i32 key, string value}
+                              serialization.ddl struct dest1_n29 { i32 key, string value}
                               serialization.format 1
                               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                               totalSize 0
 #### A masked pattern was here ####
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.dest1
+                            name: default.dest1_n29
                         TotalFiles: 1
                         GatherStats: true
                         MultiFileSpray: false
@@ -146,44 +146,44 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
-                name default.dest1
+                name default.dest1_n29
                 numFiles 0
                 numRows 0
                 rawDataSize 0
-                serialization.ddl struct dest1 { i32 key, string value}
+                serialization.ddl struct dest1_n29 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n29
 
   Stage: Stage-2
     Stats Work
       Basic Stats Work:
 #### A masked pattern was here ####
 
-PREHOOK: query: INSERT OVERWRITE TABLE dest1 SELECT s.* 
+PREHOOK: query: INSERT OVERWRITE TABLE dest1_n29 SELECT s.* 
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 2) s
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcbucket
-PREHOOK: Output: default@dest1
-POSTHOOK: query: INSERT OVERWRITE TABLE dest1 SELECT s.* 
+PREHOOK: Output: default@dest1_n29
+POSTHOOK: query: INSERT OVERWRITE TABLE dest1_n29 SELECT s.* 
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 2) s
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket
-POSTHOOK: Output: default@dest1
-POSTHOOK: Lineage: dest1.key SIMPLE [(srcbucket)s.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.value SIMPLE [(srcbucket)s.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: Output: default@dest1_n29
+POSTHOOK: Lineage: dest1_n29.key SIMPLE [(srcbucket)s.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest1_n29.value SIMPLE [(srcbucket)s.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: SELECT dest1_n29.* FROM dest1_n29
 order by key, value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n29
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: query: SELECT dest1_n29.* FROM dest1_n29
 order by key, value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n29
 #### A masked pattern was here ####
 2	val_2
 2	val_3

@@ -1,17 +1,17 @@
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 
-create table T1(key string, val string) stored as textfile;
+create table T1_n20(key string, val string) stored as textfile;
 
-LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1;
+LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_n20;
 
-select * from T1;
+select * from T1_n20;
 
-create table T2(key string, val string) stored as textfile;
+create table T2_n12(key string, val string) stored as textfile;
 
-insert into table T2 select * from T1;
+insert into table T2_n12 select * from T1_n20;
 
-select * from T2;
+select * from T2_n12;
 
-drop table T1;
-drop table T2;
+drop table T1_n20;
+drop table T2_n12;

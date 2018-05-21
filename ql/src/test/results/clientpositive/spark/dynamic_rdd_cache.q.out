@@ -129,31 +129,31 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: CREATE TABLE dest1(key INT, value STRING)
+PREHOOK: query: CREATE TABLE dest1_n90(key INT, value STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest1
-POSTHOOK: query: CREATE TABLE dest1(key INT, value STRING)
+PREHOOK: Output: default@dest1_n90
+POSTHOOK: query: CREATE TABLE dest1_n90(key INT, value STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest1
-PREHOOK: query: CREATE TABLE dest2(key INT, value STRING)
+POSTHOOK: Output: default@dest1_n90
+PREHOOK: query: CREATE TABLE dest2_n24(key INT, value STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest2
-POSTHOOK: query: CREATE TABLE dest2(key INT, value STRING)
+PREHOOK: Output: default@dest2_n24
+POSTHOOK: query: CREATE TABLE dest2_n24(key INT, value STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest2
+POSTHOOK: Output: default@dest2_n24
 PREHOOK: query: EXPLAIN
 FROM src
-INSERT OVERWRITE TABLE dest1 SELECT src.key, sum(SUBSTR(src.value,5)) GROUP BY src.key
-INSERT OVERWRITE TABLE dest2 SELECT src.key, sum(SUBSTR(src.value,5)) GROUP BY src.key
+INSERT OVERWRITE TABLE dest1_n90 SELECT src.key, sum(SUBSTR(src.value,5)) GROUP BY src.key
+INSERT OVERWRITE TABLE dest2_n24 SELECT src.key, sum(SUBSTR(src.value,5)) GROUP BY src.key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 FROM src
-INSERT OVERWRITE TABLE dest1 SELECT src.key, sum(SUBSTR(src.value,5)) GROUP BY src.key
-INSERT OVERWRITE TABLE dest2 SELECT src.key, sum(SUBSTR(src.value,5)) GROUP BY src.key
+INSERT OVERWRITE TABLE dest1_n90 SELECT src.key, sum(SUBSTR(src.value,5)) GROUP BY src.key
+INSERT OVERWRITE TABLE dest2_n24 SELECT src.key, sum(SUBSTR(src.value,5)) GROUP BY src.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -211,7 +211,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.dest1
+                        name: default.dest1_n90
         Reducer 3 
             Execution mode: vectorized
             Reduce Operator Tree:
@@ -232,7 +232,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.dest2
+                        name: default.dest2_n24
 
   Stage: Stage-0
     Move Operator
@@ -242,7 +242,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n90
 
   Stage: Stage-3
     Stats Work
@@ -256,54 +256,54 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest2
+              name: default.dest2_n24
 
   Stage: Stage-4
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: SELECT dest1.* FROM dest1
+PREHOOK: query: SELECT dest1_n90.* FROM dest1_n90
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n90
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: query: SELECT dest1_n90.* FROM dest1_n90
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n90
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-PREHOOK: query: SELECT dest2.* FROM dest2
+PREHOOK: query: SELECT dest2_n24.* FROM dest2_n24
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest2
+PREHOOK: Input: default@dest2_n24
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: SELECT dest2.* FROM dest2
+POSTHOOK: query: SELECT dest2_n24.* FROM dest2_n24
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest2
+POSTHOOK: Input: default@dest2_n24
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-PREHOOK: query: DROP TABLE dest1
+PREHOOK: query: DROP TABLE dest1_n90
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@dest1
-PREHOOK: Output: default@dest1
-POSTHOOK: query: DROP TABLE dest1
+PREHOOK: Input: default@dest1_n90
+PREHOOK: Output: default@dest1_n90
+POSTHOOK: query: DROP TABLE dest1_n90
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@dest1
-POSTHOOK: Output: default@dest1
-PREHOOK: query: DROP TABLE dest2
+POSTHOOK: Input: default@dest1_n90
+POSTHOOK: Output: default@dest1_n90
+PREHOOK: query: DROP TABLE dest2_n24
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@dest2
-PREHOOK: Output: default@dest2
-POSTHOOK: query: DROP TABLE dest2
+PREHOOK: Input: default@dest2_n24
+PREHOOK: Output: default@dest2_n24
+POSTHOOK: query: DROP TABLE dest2_n24
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@dest2
-POSTHOOK: Output: default@dest2
-PREHOOK: query: CREATE TABLE tmptable(key STRING, value INT)
+POSTHOOK: Input: default@dest2_n24
+POSTHOOK: Output: default@dest2_n24
+PREHOOK: query: CREATE TABLE tmptable_n8(key STRING, value INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tmptable
-POSTHOOK: query: CREATE TABLE tmptable(key STRING, value INT)
+PREHOOK: Output: default@tmptable_n8
+POSTHOOK: query: CREATE TABLE tmptable_n8(key STRING, value INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tmptable
+POSTHOOK: Output: default@tmptable_n8
 PREHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE tmptable
+INSERT OVERWRITE TABLE tmptable_n8
   SELECT unionsrc.key, unionsrc.value FROM (SELECT 'tst1' AS key, count(1) AS value FROM src s1
                                         UNION  ALL
                                             SELECT 'tst2' AS key, count(1) AS value FROM src s2
@@ -311,7 +311,7 @@ INSERT OVERWRITE TABLE tmptable
                                             SELECT 'tst3' AS key, count(1) AS value FROM src s3) unionsrc
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE tmptable
+INSERT OVERWRITE TABLE tmptable_n8
   SELECT unionsrc.key, unionsrc.value FROM (SELECT 'tst1' AS key, count(1) AS value FROM src s1
                                         UNION  ALL
                                             SELECT 'tst2' AS key, count(1) AS value FROM src s2
@@ -406,7 +406,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.tmptable
+                          name: default.tmptable_n8
         Reducer 4 
             Execution mode: vectorized
             Reduce Operator Tree:
@@ -430,7 +430,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.tmptable
+                          name: default.tmptable_n8
         Reducer 6 
             Execution mode: vectorized
             Reduce Operator Tree:
@@ -454,7 +454,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.tmptable
+                          name: default.tmptable_n8
 
   Stage: Stage-0
     Move Operator
@@ -464,19 +464,19 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.tmptable
+              name: default.tmptable_n8
 
   Stage: Stage-2
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: SELECT * FROM tmptable x SORT BY x.key
+PREHOOK: query: SELECT * FROM tmptable_n8 x SORT BY x.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tmptable
+PREHOOK: Input: default@tmptable_n8
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: SELECT * FROM tmptable x SORT BY x.key
+POSTHOOK: query: SELECT * FROM tmptable_n8 x SORT BY x.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tmptable
+POSTHOOK: Input: default@tmptable_n8
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: DROP TABLE tmtable
 PREHOOK: type: DROPTABLE

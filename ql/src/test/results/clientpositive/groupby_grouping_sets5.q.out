@@ -1,26 +1,26 @@
-PREHOOK: query: CREATE TABLE T1(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE T1_n24(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1
-POSTHOOK: query: CREATE TABLE T1(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
+PREHOOK: Output: default@T1_n24
+POSTHOOK: query: CREATE TABLE T1_n24(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/grouping_sets.txt' INTO TABLE T1
+POSTHOOK: Output: default@T1_n24
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/grouping_sets.txt' INTO TABLE T1_n24
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/grouping_sets.txt' INTO TABLE T1
+PREHOOK: Output: default@t1_n24
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/grouping_sets.txt' INTO TABLE T1_n24
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t1
+POSTHOOK: Output: default@t1_n24
 PREHOOK: query: EXPLAIN
 SELECT a, b, count(*) FROM
-(SELECT a, b, count(1) from T1 group by a, b) subq1 group by a, b with cube
+(SELECT a, b, count(1) from T1_n24 group by a, b) subq1 group by a, b with cube
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT a, b, count(*) FROM
-(SELECT a, b, count(1) from T1 group by a, b) subq1 group by a, b with cube
+(SELECT a, b, count(1) from T1_n24 group by a, b) subq1 group by a, b with cube
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -32,7 +32,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
+            alias: t1_n24
             Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: a (type: string), b (type: string)
@@ -105,11 +105,11 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN
 SELECT a, b, count(*) FROM
-(SELECT a, b, count(1) from T1 group by a, b) subq1 group by cube(a, b)
+(SELECT a, b, count(1) from T1_n24 group by a, b) subq1 group by cube(a, b)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT a, b, count(*) FROM
-(SELECT a, b, count(1) from T1 group by a, b) subq1 group by cube(a, b)
+(SELECT a, b, count(1) from T1_n24 group by a, b) subq1 group by cube(a, b)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -121,7 +121,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
+            alias: t1_n24
             Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: a (type: string), b (type: string)
@@ -193,14 +193,14 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT a, b, count(*) FROM
-(SELECT a, b, count(1) from T1 group by a, b) subq1 group by a, b with cube
+(SELECT a, b, count(1) from T1_n24 group by a, b) subq1 group by a, b with cube
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n24
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT a, b, count(*) FROM
-(SELECT a, b, count(1) from T1 group by a, b) subq1 group by a, b with cube
+(SELECT a, b, count(1) from T1_n24 group by a, b) subq1 group by a, b with cube
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n24
 #### A masked pattern was here ####
 1	1	1
 1	NULL	1
@@ -219,11 +219,11 @@ NULL	3	1
 NULL	NULL	6
 PREHOOK: query: EXPLAIN
 SELECT a, b, count(*) FROM
-(SELECT a, b, count(1) from T1 group by a, b) subq1 group by a, b with cube
+(SELECT a, b, count(1) from T1_n24 group by a, b) subq1 group by a, b with cube
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT a, b, count(*) FROM
-(SELECT a, b, count(1) from T1 group by a, b) subq1 group by a, b with cube
+(SELECT a, b, count(1) from T1_n24 group by a, b) subq1 group by a, b with cube
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -236,7 +236,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
+            alias: t1_n24
             Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: a (type: string), b (type: string)
@@ -332,14 +332,14 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT a, b, count(*) FROM
-(SELECT a, b, count(1) from T1 group by a, b) subq1 group by a, b with cube
+(SELECT a, b, count(1) from T1_n24 group by a, b) subq1 group by a, b with cube
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n24
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT a, b, count(*) FROM
-(SELECT a, b, count(1) from T1 group by a, b) subq1 group by a, b with cube
+(SELECT a, b, count(1) from T1_n24 group by a, b) subq1 group by a, b with cube
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n24
 #### A masked pattern was here ####
 1	1	1
 1	NULL	1
