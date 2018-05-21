@@ -4166,7 +4166,7 @@ public class HiveConf extends Configuration {
             Constants.LLAP_LOGGER_NAME_RFA,
             Constants.LLAP_LOGGER_NAME_CONSOLE),
         "logger used for llap-daemons."),
-    LLAP_OUTPUT_FORMAT_ARROW("hive.llap.output.format.arrow", false,
+    LLAP_OUTPUT_FORMAT_ARROW("hive.llap.output.format.arrow", true,
       "Whether LLapOutputFormatService should output arrow batches"),
 
     HIVE_TRIGGER_VALIDATION_INTERVAL("hive.trigger.validation.interval", "500ms",
