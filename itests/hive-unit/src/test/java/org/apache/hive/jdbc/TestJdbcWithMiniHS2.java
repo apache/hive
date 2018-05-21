@@ -976,7 +976,7 @@ public class TestJdbcWithMiniHS2 {
       }
     }
 
-    // This should fail with given HTTP response code 413 in error message, since header is more
+    // This should fail with given HTTP response code 431 in error message, since header is more
     // than the configured the header size
     password = StringUtils.leftPad("*", 2000);
     Exception headerException = null;
@@ -992,7 +992,7 @@ public class TestJdbcWithMiniHS2 {
 
       assertTrue("Header exception should be thrown", headerException != null);
       assertTrue("Incorrect HTTP Response:" + headerException.getMessage(),
-          headerException.getMessage().contains("HTTP Response code: 413"));
+          headerException.getMessage().contains("HTTP Response code: 431"));
     }
 
     // Stop HiveServer2 to increase header size
