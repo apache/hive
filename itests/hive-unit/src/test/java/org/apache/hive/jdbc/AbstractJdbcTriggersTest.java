@@ -90,7 +90,7 @@ public abstract class AbstractJdbcTriggersTest {
 
   @Before
   public void setUp() throws Exception {
-    hs2Conn = TestJdbcWithMiniLlap.getConnection(miniHS2.getJdbcURL(), System.getProperty("user.name"), "bar");
+    hs2Conn = BaseJdbcWithMiniLlap.getConnection(miniHS2.getJdbcURL(), System.getProperty("user.name"), "bar");
   }
 
   @After
@@ -124,7 +124,7 @@ public abstract class AbstractJdbcTriggersTest {
     throws Exception {
 
     Connection con = hs2Conn;
-    TestJdbcWithMiniLlap.createTestTable(con, null, tableName, kvDataFilePath.toString());
+    BaseJdbcWithMiniLlap.createTestTable(con, null, tableName, kvDataFilePath.toString());
     createSleepUDF();
 
     final ByteArrayOutputStream baos = new ByteArrayOutputStream();
