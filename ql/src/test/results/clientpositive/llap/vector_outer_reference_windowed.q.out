@@ -1,53 +1,53 @@
-PREHOOK: query: DROP TABLE IF EXISTS e011_01
+PREHOOK: query: DROP TABLE IF EXISTS e011_01_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE IF EXISTS e011_01
+POSTHOOK: query: DROP TABLE IF EXISTS e011_01_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: DROP TABLE IF EXISTS e011_02
+PREHOOK: query: DROP TABLE IF EXISTS e011_02_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE IF EXISTS e011_02
+POSTHOOK: query: DROP TABLE IF EXISTS e011_02_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: DROP TABLE IF EXISTS e011_03
+PREHOOK: query: DROP TABLE IF EXISTS e011_03_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE IF EXISTS e011_03
+POSTHOOK: query: DROP TABLE IF EXISTS e011_03_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE e011_01 (
+PREHOOK: query: CREATE TABLE e011_01_n0 (
   c1 decimal(15,2),
   c2 decimal(15,2))
   STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@e011_01
-POSTHOOK: query: CREATE TABLE e011_01 (
+PREHOOK: Output: default@e011_01_n0
+POSTHOOK: query: CREATE TABLE e011_01_n0 (
   c1 decimal(15,2),
   c2 decimal(15,2))
   STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@e011_01
-PREHOOK: query: CREATE TABLE e011_02 (
+POSTHOOK: Output: default@e011_01_n0
+PREHOOK: query: CREATE TABLE e011_02_n0 (
   c1 decimal(15,2),
   c2 decimal(15,2))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@e011_02
-POSTHOOK: query: CREATE TABLE e011_02 (
+PREHOOK: Output: default@e011_02_n0
+POSTHOOK: query: CREATE TABLE e011_02_n0 (
   c1 decimal(15,2),
   c2 decimal(15,2))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@e011_02
-PREHOOK: query: CREATE TABLE e011_03 (
+POSTHOOK: Output: default@e011_02_n0
+PREHOOK: query: CREATE TABLE e011_03_n0 (
   c1 decimal(15,2),
   c2 decimal(15,2))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@e011_03
-POSTHOOK: query: CREATE TABLE e011_03 (
+PREHOOK: Output: default@e011_03_n0
+POSTHOOK: query: CREATE TABLE e011_03_n0 (
   c1 decimal(15,2),
   c2 decimal(15,2))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@e011_03
+POSTHOOK: Output: default@e011_03_n0
 PREHOOK: query: CREATE TABLE e011_01_small (
   c1 decimal(7,2),
   c2 decimal(7,2))
@@ -89,46 +89,46 @@ POSTHOOK: Output: default@e011_03_small
 PREHOOK: query: LOAD DATA
   LOCAL INPATH '../../data/files/e011_01.txt'
   OVERWRITE
-  INTO TABLE e011_01
+  INTO TABLE e011_01_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@e011_01
+PREHOOK: Output: default@e011_01_n0
 POSTHOOK: query: LOAD DATA
   LOCAL INPATH '../../data/files/e011_01.txt'
   OVERWRITE
-  INTO TABLE e011_01
+  INTO TABLE e011_01_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@e011_01
-PREHOOK: query: INSERT INTO TABLE e011_02
+POSTHOOK: Output: default@e011_01_n0
+PREHOOK: query: INSERT INTO TABLE e011_02_n0
   SELECT c1, c2
-  FROM e011_01
+  FROM e011_01_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@e011_01
-PREHOOK: Output: default@e011_02
-POSTHOOK: query: INSERT INTO TABLE e011_02
+PREHOOK: Input: default@e011_01_n0
+PREHOOK: Output: default@e011_02_n0
+POSTHOOK: query: INSERT INTO TABLE e011_02_n0
   SELECT c1, c2
-  FROM e011_01
+  FROM e011_01_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@e011_01
-POSTHOOK: Output: default@e011_02
-POSTHOOK: Lineage: e011_02.c1 SIMPLE [(e011_01)e011_01.FieldSchema(name:c1, type:decimal(15,2), comment:null), ]
-POSTHOOK: Lineage: e011_02.c2 SIMPLE [(e011_01)e011_01.FieldSchema(name:c2, type:decimal(15,2), comment:null), ]
+POSTHOOK: Input: default@e011_01_n0
+POSTHOOK: Output: default@e011_02_n0
+POSTHOOK: Lineage: e011_02_n0.c1 SIMPLE [(e011_01_n0)e011_01_n0.FieldSchema(name:c1, type:decimal(15,2), comment:null), ]
+POSTHOOK: Lineage: e011_02_n0.c2 SIMPLE [(e011_01_n0)e011_01_n0.FieldSchema(name:c2, type:decimal(15,2), comment:null), ]
 c1	c2
-PREHOOK: query: INSERT INTO TABLE e011_03
+PREHOOK: query: INSERT INTO TABLE e011_03_n0
   SELECT c1, c2
-  FROM e011_01
+  FROM e011_01_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@e011_01
-PREHOOK: Output: default@e011_03
-POSTHOOK: query: INSERT INTO TABLE e011_03
+PREHOOK: Input: default@e011_01_n0
+PREHOOK: Output: default@e011_03_n0
+POSTHOOK: query: INSERT INTO TABLE e011_03_n0
   SELECT c1, c2
-  FROM e011_01
+  FROM e011_01_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@e011_01
-POSTHOOK: Output: default@e011_03
-POSTHOOK: Lineage: e011_03.c1 SIMPLE [(e011_01)e011_01.FieldSchema(name:c1, type:decimal(15,2), comment:null), ]
-POSTHOOK: Lineage: e011_03.c2 SIMPLE [(e011_01)e011_01.FieldSchema(name:c2, type:decimal(15,2), comment:null), ]
+POSTHOOK: Input: default@e011_01_n0
+POSTHOOK: Output: default@e011_03_n0
+POSTHOOK: Lineage: e011_03_n0.c1 SIMPLE [(e011_01_n0)e011_01_n0.FieldSchema(name:c1, type:decimal(15,2), comment:null), ]
+POSTHOOK: Lineage: e011_03_n0.c2 SIMPLE [(e011_01_n0)e011_01_n0.FieldSchema(name:c2, type:decimal(15,2), comment:null), ]
 c1	c2
 PREHOOK: query: LOAD DATA
   LOCAL INPATH '../../data/files/e011_01.txt'
@@ -174,37 +174,37 @@ POSTHOOK: Output: default@e011_03_small
 POSTHOOK: Lineage: e011_03_small.c1 SIMPLE [(e011_01_small)e011_01_small.FieldSchema(name:c1, type:decimal(7,2), comment:null), ]
 POSTHOOK: Lineage: e011_03_small.c2 SIMPLE [(e011_01_small)e011_01_small.FieldSchema(name:c2, type:decimal(7,2), comment:null), ]
 c1	c2
-PREHOOK: query: ANALYZE TABLE e011_01 COMPUTE STATISTICS FOR COLUMNS
+PREHOOK: query: ANALYZE TABLE e011_01_n0 COMPUTE STATISTICS FOR COLUMNS
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@e011_01
-PREHOOK: Output: default@e011_01
+PREHOOK: Input: default@e011_01_n0
+PREHOOK: Output: default@e011_01_n0
 #### A masked pattern was here ####
-POSTHOOK: query: ANALYZE TABLE e011_01 COMPUTE STATISTICS FOR COLUMNS
+POSTHOOK: query: ANALYZE TABLE e011_01_n0 COMPUTE STATISTICS FOR COLUMNS
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@e011_01
-POSTHOOK: Output: default@e011_01
+POSTHOOK: Input: default@e011_01_n0
+POSTHOOK: Output: default@e011_01_n0
 #### A masked pattern was here ####
 _c0	_c1
-PREHOOK: query: ANALYZE TABLE e011_02 COMPUTE STATISTICS FOR COLUMNS
+PREHOOK: query: ANALYZE TABLE e011_02_n0 COMPUTE STATISTICS FOR COLUMNS
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@e011_02
-PREHOOK: Output: default@e011_02
+PREHOOK: Input: default@e011_02_n0
+PREHOOK: Output: default@e011_02_n0
 #### A masked pattern was here ####
-POSTHOOK: query: ANALYZE TABLE e011_02 COMPUTE STATISTICS FOR COLUMNS
+POSTHOOK: query: ANALYZE TABLE e011_02_n0 COMPUTE STATISTICS FOR COLUMNS
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@e011_02
-POSTHOOK: Output: default@e011_02
+POSTHOOK: Input: default@e011_02_n0
+POSTHOOK: Output: default@e011_02_n0
 #### A masked pattern was here ####
 _c0	_c1
-PREHOOK: query: ANALYZE TABLE e011_03 COMPUTE STATISTICS FOR COLUMNS
+PREHOOK: query: ANALYZE TABLE e011_03_n0 COMPUTE STATISTICS FOR COLUMNS
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@e011_03
-PREHOOK: Output: default@e011_03
+PREHOOK: Input: default@e011_03_n0
+PREHOOK: Output: default@e011_03_n0
 #### A masked pattern was here ####
-POSTHOOK: query: ANALYZE TABLE e011_03 COMPUTE STATISTICS FOR COLUMNS
+POSTHOOK: query: ANALYZE TABLE e011_03_n0 COMPUTE STATISTICS FOR COLUMNS
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@e011_03
-POSTHOOK: Output: default@e011_03
+POSTHOOK: Input: default@e011_03_n0
+POSTHOOK: Output: default@e011_03_n0
 #### A masked pattern was here ####
 _c0	_c1
 PREHOOK: query: ANALYZE TABLE e011_01_small COMPUTE STATISTICS FOR COLUMNS
@@ -241,10 +241,10 @@ POSTHOOK: Output: default@e011_03_small
 #### A masked pattern was here ####
 _c0	_c1
 PREHOOK: query: explain vectorization detail
-select sum(sum(c1)) over() from e011_01
+select sum(sum(c1)) over() from e011_01_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select sum(sum(c1)) over() from e011_01
+select sum(sum(c1)) over() from e011_01_n0
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -267,7 +267,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: e011_01
+                  alias: e011_01_n0
                   Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -442,27 +442,27 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select sum(sum(c1)) over() from e011_01
+PREHOOK: query: select sum(sum(c1)) over() from e011_01_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@e011_01
+PREHOOK: Input: default@e011_01_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(sum(c1)) over() from e011_01
+POSTHOOK: query: select sum(sum(c1)) over() from e011_01_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@e011_01
+POSTHOOK: Input: default@e011_01_n0
 #### A masked pattern was here ####
 _c0
 16.00
 PREHOOK: query: explain vectorization detail
 select sum(sum(c1)) over(
   partition by c2 order by c1)
-  from e011_01
-  group by e011_01.c1, e011_01.c2
+  from e011_01_n0
+  group by e011_01_n0.c1, e011_01_n0.c2
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select sum(sum(c1)) over(
   partition by c2 order by c1)
-  from e011_01
-  group by e011_01.c1, e011_01.c2
+  from e011_01_n0
+  group by e011_01_n0.c1, e011_01_n0.c2
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -485,7 +485,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: e011_01
+                  alias: e011_01_n0
                   Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -669,17 +669,17 @@ STAGE PLANS:
 
 PREHOOK: query: select sum(sum(c1)) over(
   partition by c2 order by c1)
-  from e011_01
-  group by e011_01.c1, e011_01.c2
+  from e011_01_n0
+  group by e011_01_n0.c1, e011_01_n0.c2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@e011_01
+PREHOOK: Input: default@e011_01_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select sum(sum(c1)) over(
   partition by c2 order by c1)
-  from e011_01
-  group by e011_01.c1, e011_01.c2
+  from e011_01_n0
+  group by e011_01_n0.c1, e011_01_n0.c2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@e011_01
+POSTHOOK: Input: default@e011_01_n0
 #### A masked pattern was here ####
 _c0
 1.00
@@ -687,18 +687,18 @@ _c0
 5.00
 7.00
 PREHOOK: query: explain vectorization detail
-select sum(sum(e011_01.c1)) over(
-  partition by e011_01.c2 order by e011_01.c1) 
-  from e011_01 
-  join e011_03 on e011_01.c1 = e011_03.c1
-  group by e011_01.c1, e011_01.c2
+select sum(sum(e011_01_n0.c1)) over(
+  partition by e011_01_n0.c2 order by e011_01_n0.c1) 
+  from e011_01_n0 
+  join e011_03_n0 on e011_01_n0.c1 = e011_03_n0.c1
+  group by e011_01_n0.c1, e011_01_n0.c2
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select sum(sum(e011_01.c1)) over(
-  partition by e011_01.c2 order by e011_01.c1) 
-  from e011_01 
-  join e011_03 on e011_01.c1 = e011_03.c1
-  group by e011_01.c1, e011_01.c2
+select sum(sum(e011_01_n0.c1)) over(
+  partition by e011_01_n0.c2 order by e011_01_n0.c1) 
+  from e011_01_n0 
+  join e011_03_n0 on e011_01_n0.c1 = e011_03_n0.c1
+  group by e011_01_n0.c1, e011_01_n0.c2
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -722,7 +722,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: e011_01
+                  alias: e011_01_n0
                   Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -775,7 +775,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: e011_03
+                  alias: e011_03_n0
                   Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -972,23 +972,23 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select sum(sum(e011_01.c1)) over(
-  partition by e011_01.c2 order by e011_01.c1) 
-  from e011_01 
-  join e011_03 on e011_01.c1 = e011_03.c1
-  group by e011_01.c1, e011_01.c2
+PREHOOK: query: select sum(sum(e011_01_n0.c1)) over(
+  partition by e011_01_n0.c2 order by e011_01_n0.c1) 
+  from e011_01_n0 
+  join e011_03_n0 on e011_01_n0.c1 = e011_03_n0.c1
+  group by e011_01_n0.c1, e011_01_n0.c2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@e011_01
-PREHOOK: Input: default@e011_03
+PREHOOK: Input: default@e011_01_n0
+PREHOOK: Input: default@e011_03_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(sum(e011_01.c1)) over(
-  partition by e011_01.c2 order by e011_01.c1) 
-  from e011_01 
-  join e011_03 on e011_01.c1 = e011_03.c1
-  group by e011_01.c1, e011_01.c2
+POSTHOOK: query: select sum(sum(e011_01_n0.c1)) over(
+  partition by e011_01_n0.c2 order by e011_01_n0.c1) 
+  from e011_01_n0 
+  join e011_03_n0 on e011_01_n0.c1 = e011_03_n0.c1
+  group by e011_01_n0.c1, e011_01_n0.c2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@e011_01
-POSTHOOK: Input: default@e011_03
+POSTHOOK: Input: default@e011_01_n0
+POSTHOOK: Input: default@e011_03_n0
 #### A masked pattern was here ####
 _c0
 1.00
@@ -996,18 +996,18 @@ _c0
 5.00
 7.00
 PREHOOK: query: explain vectorization detail
-select sum(sum(e011_01.c1)) over(
-  partition by e011_03.c2 order by e011_03.c1)
-  from e011_01 
-  join e011_03 on e011_01.c1 = e011_03.c1
-  group by e011_03.c1, e011_03.c2
+select sum(sum(e011_01_n0.c1)) over(
+  partition by e011_03_n0.c2 order by e011_03_n0.c1)
+  from e011_01_n0 
+  join e011_03_n0 on e011_01_n0.c1 = e011_03_n0.c1
+  group by e011_03_n0.c1, e011_03_n0.c2
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select sum(sum(e011_01.c1)) over(
-  partition by e011_03.c2 order by e011_03.c1)
-  from e011_01 
-  join e011_03 on e011_01.c1 = e011_03.c1
-  group by e011_03.c1, e011_03.c2
+select sum(sum(e011_01_n0.c1)) over(
+  partition by e011_03_n0.c2 order by e011_03_n0.c1)
+  from e011_01_n0 
+  join e011_03_n0 on e011_01_n0.c1 = e011_03_n0.c1
+  group by e011_03_n0.c1, e011_03_n0.c2
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -1031,7 +1031,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: e011_01
+                  alias: e011_01_n0
                   Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -1083,7 +1083,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: e011_03
+                  alias: e011_03_n0
                   Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -1281,23 +1281,23 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select sum(sum(e011_01.c1)) over(
-  partition by e011_03.c2 order by e011_03.c1)
-  from e011_01 
-  join e011_03 on e011_01.c1 = e011_03.c1
-  group by e011_03.c1, e011_03.c2
+PREHOOK: query: select sum(sum(e011_01_n0.c1)) over(
+  partition by e011_03_n0.c2 order by e011_03_n0.c1)
+  from e011_01_n0 
+  join e011_03_n0 on e011_01_n0.c1 = e011_03_n0.c1
+  group by e011_03_n0.c1, e011_03_n0.c2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@e011_01
-PREHOOK: Input: default@e011_03
+PREHOOK: Input: default@e011_01_n0
+PREHOOK: Input: default@e011_03_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(sum(e011_01.c1)) over(
-  partition by e011_03.c2 order by e011_03.c1)
-  from e011_01 
-  join e011_03 on e011_01.c1 = e011_03.c1
-  group by e011_03.c1, e011_03.c2
+POSTHOOK: query: select sum(sum(e011_01_n0.c1)) over(
+  partition by e011_03_n0.c2 order by e011_03_n0.c1)
+  from e011_01_n0 
+  join e011_03_n0 on e011_01_n0.c1 = e011_03_n0.c1
+  group by e011_03_n0.c1, e011_03_n0.c2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@e011_01
-POSTHOOK: Input: default@e011_03
+POSTHOOK: Input: default@e011_01_n0
+POSTHOOK: Input: default@e011_03_n0
 #### A masked pattern was here ####
 _c0
 1.00
@@ -1305,18 +1305,18 @@ _c0
 5.00
 7.00
 PREHOOK: query: explain vectorization detail
-select sum(corr(e011_01.c1, e011_03.c1))
-  over(partition by e011_01.c2 order by e011_03.c2)
-  from e011_01
-  join e011_03 on e011_01.c1 = e011_03.c1
-  group by e011_03.c2, e011_01.c2
+select sum(corr(e011_01_n0.c1, e011_03_n0.c1))
+  over(partition by e011_01_n0.c2 order by e011_03_n0.c2)
+  from e011_01_n0
+  join e011_03_n0 on e011_01_n0.c1 = e011_03_n0.c1
+  group by e011_03_n0.c2, e011_01_n0.c2
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select sum(corr(e011_01.c1, e011_03.c1))
-  over(partition by e011_01.c2 order by e011_03.c2)
-  from e011_01
-  join e011_03 on e011_01.c1 = e011_03.c1
-  group by e011_03.c2, e011_01.c2
+select sum(corr(e011_01_n0.c1, e011_03_n0.c1))
+  over(partition by e011_01_n0.c2 order by e011_03_n0.c2)
+  from e011_01_n0
+  join e011_03_n0 on e011_01_n0.c1 = e011_03_n0.c1
+  group by e011_03_n0.c2, e011_01_n0.c2
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -1339,7 +1339,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: e011_01
+                  alias: e011_01_n0
                   Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -1392,7 +1392,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: e011_03
+                  alias: e011_03_n0
                   Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -1517,23 +1517,23 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select sum(corr(e011_01.c1, e011_03.c1))
-  over(partition by e011_01.c2 order by e011_03.c2)
-  from e011_01
-  join e011_03 on e011_01.c1 = e011_03.c1
-  group by e011_03.c2, e011_01.c2
+PREHOOK: query: select sum(corr(e011_01_n0.c1, e011_03_n0.c1))
+  over(partition by e011_01_n0.c2 order by e011_03_n0.c2)
+  from e011_01_n0
+  join e011_03_n0 on e011_01_n0.c1 = e011_03_n0.c1
+  group by e011_03_n0.c2, e011_01_n0.c2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@e011_01
-PREHOOK: Input: default@e011_03
+PREHOOK: Input: default@e011_01_n0
+PREHOOK: Input: default@e011_03_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(corr(e011_01.c1, e011_03.c1))
-  over(partition by e011_01.c2 order by e011_03.c2)
-  from e011_01
-  join e011_03 on e011_01.c1 = e011_03.c1
-  group by e011_03.c2, e011_01.c2
+POSTHOOK: query: select sum(corr(e011_01_n0.c1, e011_03_n0.c1))
+  over(partition by e011_01_n0.c2 order by e011_03_n0.c2)
+  from e011_01_n0
+  join e011_03_n0 on e011_01_n0.c1 = e011_03_n0.c1
+  group by e011_03_n0.c2, e011_01_n0.c2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@e011_01
-POSTHOOK: Input: default@e011_03
+POSTHOOK: Input: default@e011_01_n0
+POSTHOOK: Input: default@e011_03_n0
 #### A masked pattern was here ####
 _c0
 NULL

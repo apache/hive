@@ -127,7 +127,7 @@ POSTHOOK: Input: default@src
 97	val_97
 98	val_98
 98	val_98
-PREHOOK: query: create view cv1 as 
+PREHOOK: query: create view cv1_n1 as 
 select * 
 from src b 
 where exists
@@ -137,8 +137,8 @@ where exists
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@cv1
-POSTHOOK: query: create view cv1 as 
+PREHOOK: Output: default@cv1_n1
+POSTHOOK: query: create view cv1_n1 as 
 select * 
 from src b 
 where exists
@@ -148,17 +148,17 @@ where exists
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@cv1
-POSTHOOK: Lineage: cv1.key SIMPLE [(src)b.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: cv1.value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from cv1
+POSTHOOK: Output: default@cv1_n1
+POSTHOOK: Lineage: cv1_n1.key SIMPLE [(src)b.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: cv1_n1.value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from cv1_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@cv1
+PREHOOK: Input: default@cv1_n1
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: select * from cv1
+POSTHOOK: query: select * from cv1_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@cv1
+POSTHOOK: Input: default@cv1_n1
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 90	val_90
@@ -932,36 +932,36 @@ POSTHOOK: Input: default@src
 97	val_97
 98	val_98
 98	val_98
-PREHOOK: query: create table t(i int)
+PREHOOK: query: create table t_n12(i int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t
-POSTHOOK: query: create table t(i int)
+PREHOOK: Output: default@t_n12
+POSTHOOK: query: create table t_n12(i int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t
-PREHOOK: query: insert into t values(1)
+POSTHOOK: Output: default@t_n12
+PREHOOK: query: insert into t_n12 values(1)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values(1)
+PREHOOK: Output: default@t_n12
+POSTHOOK: query: insert into t_n12 values(1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.i SCRIPT []
-PREHOOK: query: insert into t values(0)
+POSTHOOK: Output: default@t_n12
+POSTHOOK: Lineage: t_n12.i SCRIPT []
+PREHOOK: query: insert into t_n12 values(0)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values(0)
+PREHOOK: Output: default@t_n12
+POSTHOOK: query: insert into t_n12 values(0)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.i SCRIPT []
+POSTHOOK: Output: default@t_n12
+POSTHOOK: Lineage: t_n12.i SCRIPT []
 Warning: Shuffle Join MERGEJOIN[16][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: explain select * from t where exists (select count(*) from src where 1=2)
+PREHOOK: query: explain select * from t_n12 where exists (select count(*) from src where 1=2)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from t where exists (select count(*) from src where 1=2)
+POSTHOOK: query: explain select * from t_n12 where exists (select count(*) from src where 1=2)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -979,7 +979,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t
+                  alias: t_n12
                   Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: i (type: int)
@@ -1051,68 +1051,68 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join MERGEJOIN[16][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: select * from t where exists (select count(*) from src where 1=2)
+PREHOOK: query: select * from t_n12 where exists (select count(*) from src where 1=2)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Input: default@t
+PREHOOK: Input: default@t_n12
 #### A masked pattern was here ####
-POSTHOOK: query: select * from t where exists (select count(*) from src where 1=2)
+POSTHOOK: query: select * from t_n12 where exists (select count(*) from src where 1=2)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@t_n12
 #### A masked pattern was here ####
 0
 1
-PREHOOK: query: drop table t
+PREHOOK: query: drop table t_n12
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@t
-PREHOOK: Output: default@t
-POSTHOOK: query: drop table t
+PREHOOK: Input: default@t_n12
+PREHOOK: Output: default@t_n12
+POSTHOOK: query: drop table t_n12
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@t
-POSTHOOK: Output: default@t
-PREHOOK: query: drop table if exists tx1
+POSTHOOK: Input: default@t_n12
+POSTHOOK: Output: default@t_n12
+PREHOOK: query: drop table if exists tx1_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table if exists tx1
+POSTHOOK: query: drop table if exists tx1_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table tx1 (a integer,b integer)
+PREHOOK: query: create table tx1_n0 (a integer,b integer)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tx1
-POSTHOOK: query: create table tx1 (a integer,b integer)
+PREHOOK: Output: default@tx1_n0
+POSTHOOK: query: create table tx1_n0 (a integer,b integer)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tx1
-PREHOOK: query: insert into tx1	values  (1, 1),
+POSTHOOK: Output: default@tx1_n0
+PREHOOK: query: insert into tx1_n0	values  (1, 1),
                          (1, 2),
                          (1, 3)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@tx1
-POSTHOOK: query: insert into tx1	values  (1, 1),
+PREHOOK: Output: default@tx1_n0
+POSTHOOK: query: insert into tx1_n0	values  (1, 1),
                          (1, 2),
                          (1, 3)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@tx1
-POSTHOOK: Lineage: tx1.a SCRIPT []
-POSTHOOK: Lineage: tx1.b SCRIPT []
-PREHOOK: query: select count(*) as result,3 as expected from tx1 u
-    where exists (select * from tx1 v where u.a=v.a and u.b <> v.b)
+POSTHOOK: Output: default@tx1_n0
+POSTHOOK: Lineage: tx1_n0.a SCRIPT []
+POSTHOOK: Lineage: tx1_n0.b SCRIPT []
+PREHOOK: query: select count(*) as result,3 as expected from tx1_n0 u
+    where exists (select * from tx1_n0 v where u.a=v.a and u.b <> v.b)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tx1
+PREHOOK: Input: default@tx1_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) as result,3 as expected from tx1 u
-    where exists (select * from tx1 v where u.a=v.a and u.b <> v.b)
+POSTHOOK: query: select count(*) as result,3 as expected from tx1_n0 u
+    where exists (select * from tx1_n0 v where u.a=v.a and u.b <> v.b)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tx1
+POSTHOOK: Input: default@tx1_n0
 #### A masked pattern was here ####
 3	3
-PREHOOK: query: explain select count(*) as result,3 as expected from tx1 u
-    where exists (select * from tx1 v where u.a=v.a and u.b <> v.b)
+PREHOOK: query: explain select count(*) as result,3 as expected from tx1_n0 u
+    where exists (select * from tx1_n0 v where u.a=v.a and u.b <> v.b)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select count(*) as result,3 as expected from tx1 u
-    where exists (select * from tx1 v where u.a=v.a and u.b <> v.b)
+POSTHOOK: query: explain select count(*) as result,3 as expected from tx1_n0 u
+    where exists (select * from tx1_n0 v where u.a=v.a and u.b <> v.b)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1221,53 +1221,53 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: drop table tx1
+PREHOOK: query: drop table tx1_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@tx1
-PREHOOK: Output: default@tx1
-POSTHOOK: query: drop table tx1
+PREHOOK: Input: default@tx1_n0
+PREHOOK: Output: default@tx1_n0
+POSTHOOK: query: drop table tx1_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@tx1
-POSTHOOK: Output: default@tx1
-PREHOOK: query: create table t1(i int, j int)
+POSTHOOK: Input: default@tx1_n0
+POSTHOOK: Output: default@tx1_n0
+PREHOOK: query: create table t1_n68(i int, j int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t1
-POSTHOOK: query: create table t1(i int, j int)
+PREHOOK: Output: default@t1_n68
+POSTHOOK: query: create table t1_n68(i int, j int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t1
-PREHOOK: query: insert into t1 values(4,1)
+POSTHOOK: Output: default@t1_n68
+PREHOOK: query: insert into t1_n68 values(4,1)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t1
-POSTHOOK: query: insert into t1 values(4,1)
+PREHOOK: Output: default@t1_n68
+POSTHOOK: query: insert into t1_n68 values(4,1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t1
-POSTHOOK: Lineage: t1.i SCRIPT []
-POSTHOOK: Lineage: t1.j SCRIPT []
-PREHOOK: query: create table t2(i int, j int)
+POSTHOOK: Output: default@t1_n68
+POSTHOOK: Lineage: t1_n68.i SCRIPT []
+POSTHOOK: Lineage: t1_n68.j SCRIPT []
+PREHOOK: query: create table t2_n41(i int, j int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t2
-POSTHOOK: query: create table t2(i int, j int)
+PREHOOK: Output: default@t2_n41
+POSTHOOK: query: create table t2_n41(i int, j int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t2
-PREHOOK: query: insert into t2 values(4,2),(4,3),(4,5)
+POSTHOOK: Output: default@t2_n41
+PREHOOK: query: insert into t2_n41 values(4,2),(4,3),(4,5)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t2
-POSTHOOK: query: insert into t2 values(4,2),(4,3),(4,5)
+PREHOOK: Output: default@t2_n41
+POSTHOOK: query: insert into t2_n41 values(4,2),(4,3),(4,5)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t2
-POSTHOOK: Lineage: t2.i SCRIPT []
-POSTHOOK: Lineage: t2.j SCRIPT []
-PREHOOK: query: explain select * from t1 where t1.i in (select t2.i from t2 where t2.j <> t1.j)
+POSTHOOK: Output: default@t2_n41
+POSTHOOK: Lineage: t2_n41.i SCRIPT []
+POSTHOOK: Lineage: t2_n41.j SCRIPT []
+PREHOOK: query: explain select * from t1_n68 where t1_n68.i in (select t2_n41.i from t2_n41 where t2_n41.j <> t1_n68.j)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from t1 where t1.i in (select t2.i from t2 where t2.j <> t1.j)
+POSTHOOK: query: explain select * from t1_n68 where t1_n68.i in (select t2_n41.i from t2_n41 where t2_n41.j <> t1_n68.j)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1284,7 +1284,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n68
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: i is not null (type: boolean)
@@ -1304,7 +1304,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: t2
+                  alias: t2_n41
                   Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (i is not null and j is not null) (type: boolean)
@@ -1356,30 +1356,30 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from t1 where t1.i in (select t2.i from t2 where t2.j <> t1.j)
+PREHOOK: query: select * from t1_n68 where t1_n68.i in (select t2_n41.i from t2_n41 where t2_n41.j <> t1_n68.j)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
+PREHOOK: Input: default@t1_n68
+PREHOOK: Input: default@t2_n41
 #### A masked pattern was here ####
-POSTHOOK: query: select * from t1 where t1.i in (select t2.i from t2 where t2.j <> t1.j)
+POSTHOOK: query: select * from t1_n68 where t1_n68.i in (select t2_n41.i from t2_n41 where t2_n41.j <> t1_n68.j)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t1_n68
+POSTHOOK: Input: default@t2_n41
 #### A masked pattern was here ####
 4	1
-PREHOOK: query: drop table t1
+PREHOOK: query: drop table t1_n68
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@t1
-POSTHOOK: query: drop table t1
+PREHOOK: Input: default@t1_n68
+PREHOOK: Output: default@t1_n68
+POSTHOOK: query: drop table t1_n68
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@t1
-PREHOOK: query: drop table t2
+POSTHOOK: Input: default@t1_n68
+POSTHOOK: Output: default@t1_n68
+PREHOOK: query: drop table t2_n41
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@t2
-PREHOOK: Output: default@t2
-POSTHOOK: query: drop table t2
+PREHOOK: Input: default@t2_n41
+PREHOOK: Output: default@t2_n41
+POSTHOOK: query: drop table t2_n41
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@t2
-POSTHOOK: Output: default@t2
+POSTHOOK: Input: default@t2_n41
+POSTHOOK: Output: default@t2_n41

@@ -1,14 +1,14 @@
-PREHOOK: query: CREATE TABLE dest1(c1 DOUBLE, c2 DOUBLE, c3 DOUBLE, c4 DOUBLE, c5 DOUBLE, c6 DOUBLE, c7 DOUBLE, c8 DOUBLE, c9 DOUBLE, c10 DOUBLE, c11 DOUBLE) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE dest1_n24(c1 DOUBLE, c2 DOUBLE, c3 DOUBLE, c4 DOUBLE, c5 DOUBLE, c6 DOUBLE, c7 DOUBLE, c8 DOUBLE, c9 DOUBLE, c10 DOUBLE, c11 DOUBLE) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest1
-POSTHOOK: query: CREATE TABLE dest1(c1 DOUBLE, c2 DOUBLE, c3 DOUBLE, c4 DOUBLE, c5 DOUBLE, c6 DOUBLE, c7 DOUBLE, c8 DOUBLE, c9 DOUBLE, c10 DOUBLE, c11 DOUBLE) STORED AS TEXTFILE
+PREHOOK: Output: default@dest1_n24
+POSTHOOK: query: CREATE TABLE dest1_n24(c1 DOUBLE, c2 DOUBLE, c3 DOUBLE, c4 DOUBLE, c5 DOUBLE, c6 DOUBLE, c7 DOUBLE, c8 DOUBLE, c9 DOUBLE, c10 DOUBLE, c11 DOUBLE) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest1
+POSTHOOK: Output: default@dest1_n24
 PREHOOK: query: EXPLAIN
 FROM src
-INSERT OVERWRITE TABLE dest1 SELECT
+INSERT OVERWRITE TABLE dest1_n24 SELECT
   sum(substr(src.value,5)),
   avg(substr(src.value,5)),
   avg(DISTINCT substr(src.value,5)),
@@ -23,7 +23,7 @@ INSERT OVERWRITE TABLE dest1 SELECT
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 FROM src
-INSERT OVERWRITE TABLE dest1 SELECT
+INSERT OVERWRITE TABLE dest1_n24 SELECT
   sum(substr(src.value,5)),
   avg(substr(src.value,5)),
   avg(DISTINCT substr(src.value,5)),
@@ -81,7 +81,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.dest1
+                        name: default.dest1_n24
 
   Stage: Stage-0
     Move Operator
@@ -91,14 +91,14 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n24
 
   Stage: Stage-2
     Stats Work
       Basic Stats Work:
 
 PREHOOK: query: FROM src
-INSERT OVERWRITE TABLE dest1 SELECT
+INSERT OVERWRITE TABLE dest1_n24 SELECT
   sum(substr(src.value,5)),
   avg(substr(src.value,5)),
   avg(DISTINCT substr(src.value,5)),
@@ -112,9 +112,9 @@ INSERT OVERWRITE TABLE dest1 SELECT
   count(DISTINCT substr(src.value, 5))
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@dest1
+PREHOOK: Output: default@dest1_n24
 POSTHOOK: query: FROM src
-INSERT OVERWRITE TABLE dest1 SELECT
+INSERT OVERWRITE TABLE dest1_n24 SELECT
   sum(substr(src.value,5)),
   avg(substr(src.value,5)),
   avg(DISTINCT substr(src.value,5)),
@@ -128,24 +128,24 @@ INSERT OVERWRITE TABLE dest1 SELECT
   count(DISTINCT substr(src.value, 5))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@dest1
-POSTHOOK: Lineage: dest1.c1 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.c10 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.c11 EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: dest1.c2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.c3 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.null, ]
-POSTHOOK: Lineage: dest1.c4 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.c5 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.c6 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.c7 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.c8 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.c9 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: Output: default@dest1_n24
+POSTHOOK: Lineage: dest1_n24.c1 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n24.c10 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n24.c11 EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: dest1_n24.c2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n24.c3 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.null, ]
+POSTHOOK: Lineage: dest1_n24.c4 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n24.c5 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n24.c6 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n24.c7 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n24.c8 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n24.c9 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT dest1_n24.* FROM dest1_n24
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n24
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: query: SELECT dest1_n24.* FROM dest1_n24
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n24
 #### A masked pattern was here ####
 130091.0	260.182	256.10355987055016	98.0	0.0	142.9268095075238	143.06995106518906	20428.072876000002	20469.010897795593	79136.0	309.0

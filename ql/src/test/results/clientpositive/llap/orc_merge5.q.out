@@ -1,30 +1,30 @@
-PREHOOK: query: create table orc_merge5 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc
+PREHOOK: query: create table orc_merge5_n5 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@orc_merge5
-POSTHOOK: query: create table orc_merge5 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc
+PREHOOK: Output: default@orc_merge5_n5
+POSTHOOK: query: create table orc_merge5_n5 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@orc_merge5
-PREHOOK: query: create table orc_merge5b (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc
+POSTHOOK: Output: default@orc_merge5_n5
+PREHOOK: query: create table orc_merge5b_n0 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@orc_merge5b
-POSTHOOK: query: create table orc_merge5b (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc
+PREHOOK: Output: default@orc_merge5b_n0
+POSTHOOK: query: create table orc_merge5b_n0 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@orc_merge5b
-PREHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' into table orc_merge5
+POSTHOOK: Output: default@orc_merge5b_n0
+PREHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' into table orc_merge5_n5
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@orc_merge5
-POSTHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' into table orc_merge5
+PREHOOK: Output: default@orc_merge5_n5
+POSTHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' into table orc_merge5_n5
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@orc_merge5
-PREHOOK: query: explain insert overwrite table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
+POSTHOOK: Output: default@orc_merge5_n5
+PREHOOK: query: explain insert overwrite table orc_merge5b_n0 select userid,string1,subtype,decimal1,ts from orc_merge5_n5 where userid<=13
 PREHOOK: type: QUERY
-POSTHOOK: query: explain insert overwrite table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
+POSTHOOK: query: explain insert overwrite table orc_merge5b_n0 select userid,string1,subtype,decimal1,ts from orc_merge5_n5 where userid<=13
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -43,7 +43,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: orc_merge5
+                  alias: orc_merge5_n5
                   filterExpr: (userid <= 13L) (type: boolean)
                   Statistics: Num rows: 1 Data size: 352 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -60,7 +60,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                             output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                            name: default.orc_merge5b
+                            name: default.orc_merge5b_n0
                       Select Operator
                         expressions: _col0 (type: bigint), _col1 (type: string), _col2 (type: double), _col3 (type: decimal(10,0)), _col4 (type: timestamp)
                         outputColumnNames: userid, string1, subtype, decimal1, ts
@@ -103,7 +103,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.orc_merge5b
+              name: default.orc_merge5b_n0
 
   Stage: Stage-3
     Stats Work
@@ -111,45 +111,45 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: userid, string1, subtype, decimal1, ts
           Column Types: bigint, string, double, decimal(10,0), timestamp
-          Table: default.orc_merge5b
+          Table: default.orc_merge5b_n0
 
-PREHOOK: query: insert overwrite table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
+PREHOOK: query: insert overwrite table orc_merge5b_n0 select userid,string1,subtype,decimal1,ts from orc_merge5_n5 where userid<=13
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5
-PREHOOK: Output: default@orc_merge5b
-POSTHOOK: query: insert overwrite table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
+PREHOOK: Input: default@orc_merge5_n5
+PREHOOK: Output: default@orc_merge5b_n0
+POSTHOOK: query: insert overwrite table orc_merge5b_n0 select userid,string1,subtype,decimal1,ts from orc_merge5_n5 where userid<=13
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5
-POSTHOOK: Output: default@orc_merge5b
-POSTHOOK: Lineage: orc_merge5b.decimal1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_merge5b.string1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_merge5b.subtype SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:subtype, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_merge5b.ts SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:ts, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orc_merge5b.userid SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:userid, type:bigint, comment:null), ]
-PREHOOK: query: analyze table orc_merge5b compute statistics noscan
+POSTHOOK: Input: default@orc_merge5_n5
+POSTHOOK: Output: default@orc_merge5b_n0
+POSTHOOK: Lineage: orc_merge5b_n0.decimal1 SIMPLE [(orc_merge5_n5)orc_merge5_n5.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_merge5b_n0.string1 SIMPLE [(orc_merge5_n5)orc_merge5_n5.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_merge5b_n0.subtype SIMPLE [(orc_merge5_n5)orc_merge5_n5.FieldSchema(name:subtype, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_merge5b_n0.ts SIMPLE [(orc_merge5_n5)orc_merge5_n5.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_merge5b_n0.userid SIMPLE [(orc_merge5_n5)orc_merge5_n5.FieldSchema(name:userid, type:bigint, comment:null), ]
+PREHOOK: query: analyze table orc_merge5b_n0 compute statistics noscan
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5b
-PREHOOK: Output: default@orc_merge5b
-POSTHOOK: query: analyze table orc_merge5b compute statistics noscan
+PREHOOK: Input: default@orc_merge5b_n0
+PREHOOK: Output: default@orc_merge5b_n0
+POSTHOOK: query: analyze table orc_merge5b_n0 compute statistics noscan
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5b
-POSTHOOK: Output: default@orc_merge5b
+POSTHOOK: Input: default@orc_merge5b_n0
+POSTHOOK: Output: default@orc_merge5b_n0
 Found 2 items
 #### A masked pattern was here ####
-PREHOOK: query: select * from orc_merge5b
+PREHOOK: query: select * from orc_merge5b_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5b
+PREHOOK: Input: default@orc_merge5b_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from orc_merge5b
+POSTHOOK: query: select * from orc_merge5b_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5b
+POSTHOOK: Input: default@orc_merge5b_n0
 #### A masked pattern was here ####
 13	bar	80.0	2	1969-12-31 16:00:05
 2	foo	0.8	1	1969-12-31 16:00:00
 5	eat	0.8	6	1969-12-31 16:00:20
-PREHOOK: query: explain insert overwrite table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
+PREHOOK: query: explain insert overwrite table orc_merge5b_n0 select userid,string1,subtype,decimal1,ts from orc_merge5_n5 where userid<=13
 PREHOOK: type: QUERY
-POSTHOOK: query: explain insert overwrite table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
+POSTHOOK: query: explain insert overwrite table orc_merge5b_n0 select userid,string1,subtype,decimal1,ts from orc_merge5_n5 where userid<=13
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -173,7 +173,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: orc_merge5
+                  alias: orc_merge5_n5
                   filterExpr: (userid <= 13L) (type: boolean)
                   Statistics: Num rows: 1 Data size: 352 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -190,7 +190,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                             output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                            name: default.orc_merge5b
+                            name: default.orc_merge5b_n0
                       Select Operator
                         expressions: _col0 (type: bigint), _col1 (type: string), _col2 (type: double), _col3 (type: decimal(10,0)), _col4 (type: timestamp)
                         outputColumnNames: userid, string1, subtype, decimal1, ts
@@ -242,7 +242,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.orc_merge5b
+              name: default.orc_merge5b_n0
 
   Stage: Stage-3
     Stats Work
@@ -250,7 +250,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: userid, string1, subtype, decimal1, ts
           Column Types: bigint, string, double, decimal(10,0), timestamp
-          Table: default.orc_merge5b
+          Table: default.orc_merge5b_n0
 
   Stage: Stage-4
     Tez
@@ -280,77 +280,77 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-PREHOOK: query: insert overwrite table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
+PREHOOK: query: insert overwrite table orc_merge5b_n0 select userid,string1,subtype,decimal1,ts from orc_merge5_n5 where userid<=13
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5
-PREHOOK: Output: default@orc_merge5b
-POSTHOOK: query: insert overwrite table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
+PREHOOK: Input: default@orc_merge5_n5
+PREHOOK: Output: default@orc_merge5b_n0
+POSTHOOK: query: insert overwrite table orc_merge5b_n0 select userid,string1,subtype,decimal1,ts from orc_merge5_n5 where userid<=13
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5
-POSTHOOK: Output: default@orc_merge5b
-POSTHOOK: Lineage: orc_merge5b.decimal1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_merge5b.string1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_merge5b.subtype SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:subtype, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_merge5b.ts SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:ts, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orc_merge5b.userid SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:userid, type:bigint, comment:null), ]
-PREHOOK: query: analyze table orc_merge5b compute statistics noscan
+POSTHOOK: Input: default@orc_merge5_n5
+POSTHOOK: Output: default@orc_merge5b_n0
+POSTHOOK: Lineage: orc_merge5b_n0.decimal1 SIMPLE [(orc_merge5_n5)orc_merge5_n5.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_merge5b_n0.string1 SIMPLE [(orc_merge5_n5)orc_merge5_n5.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_merge5b_n0.subtype SIMPLE [(orc_merge5_n5)orc_merge5_n5.FieldSchema(name:subtype, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_merge5b_n0.ts SIMPLE [(orc_merge5_n5)orc_merge5_n5.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_merge5b_n0.userid SIMPLE [(orc_merge5_n5)orc_merge5_n5.FieldSchema(name:userid, type:bigint, comment:null), ]
+PREHOOK: query: analyze table orc_merge5b_n0 compute statistics noscan
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5b
-PREHOOK: Output: default@orc_merge5b
-POSTHOOK: query: analyze table orc_merge5b compute statistics noscan
+PREHOOK: Input: default@orc_merge5b_n0
+PREHOOK: Output: default@orc_merge5b_n0
+POSTHOOK: query: analyze table orc_merge5b_n0 compute statistics noscan
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5b
-POSTHOOK: Output: default@orc_merge5b
+POSTHOOK: Input: default@orc_merge5b_n0
+POSTHOOK: Output: default@orc_merge5b_n0
 Found 1 items
 #### A masked pattern was here ####
-PREHOOK: query: select * from orc_merge5b
+PREHOOK: query: select * from orc_merge5b_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5b
+PREHOOK: Input: default@orc_merge5b_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from orc_merge5b
+POSTHOOK: query: select * from orc_merge5b_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5b
+POSTHOOK: Input: default@orc_merge5b_n0
 #### A masked pattern was here ####
 13	bar	80.0	2	1969-12-31 16:00:05
 2	foo	0.8	1	1969-12-31 16:00:00
 5	eat	0.8	6	1969-12-31 16:00:20
-PREHOOK: query: insert overwrite table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
+PREHOOK: query: insert overwrite table orc_merge5b_n0 select userid,string1,subtype,decimal1,ts from orc_merge5_n5 where userid<=13
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5
-PREHOOK: Output: default@orc_merge5b
-POSTHOOK: query: insert overwrite table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
+PREHOOK: Input: default@orc_merge5_n5
+PREHOOK: Output: default@orc_merge5b_n0
+POSTHOOK: query: insert overwrite table orc_merge5b_n0 select userid,string1,subtype,decimal1,ts from orc_merge5_n5 where userid<=13
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5
-POSTHOOK: Output: default@orc_merge5b
-POSTHOOK: Lineage: orc_merge5b.decimal1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_merge5b.string1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_merge5b.subtype SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:subtype, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_merge5b.ts SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:ts, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orc_merge5b.userid SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:userid, type:bigint, comment:null), ]
-PREHOOK: query: analyze table orc_merge5b compute statistics noscan
+POSTHOOK: Input: default@orc_merge5_n5
+POSTHOOK: Output: default@orc_merge5b_n0
+POSTHOOK: Lineage: orc_merge5b_n0.decimal1 SIMPLE [(orc_merge5_n5)orc_merge5_n5.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_merge5b_n0.string1 SIMPLE [(orc_merge5_n5)orc_merge5_n5.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_merge5b_n0.subtype SIMPLE [(orc_merge5_n5)orc_merge5_n5.FieldSchema(name:subtype, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_merge5b_n0.ts SIMPLE [(orc_merge5_n5)orc_merge5_n5.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_merge5b_n0.userid SIMPLE [(orc_merge5_n5)orc_merge5_n5.FieldSchema(name:userid, type:bigint, comment:null), ]
+PREHOOK: query: analyze table orc_merge5b_n0 compute statistics noscan
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5b
-PREHOOK: Output: default@orc_merge5b
-POSTHOOK: query: analyze table orc_merge5b compute statistics noscan
+PREHOOK: Input: default@orc_merge5b_n0
+PREHOOK: Output: default@orc_merge5b_n0
+POSTHOOK: query: analyze table orc_merge5b_n0 compute statistics noscan
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5b
-POSTHOOK: Output: default@orc_merge5b
+POSTHOOK: Input: default@orc_merge5b_n0
+POSTHOOK: Output: default@orc_merge5b_n0
 Found 2 items
 #### A masked pattern was here ####
-PREHOOK: query: select * from orc_merge5b
+PREHOOK: query: select * from orc_merge5b_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5b
+PREHOOK: Input: default@orc_merge5b_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from orc_merge5b
+POSTHOOK: query: select * from orc_merge5b_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5b
+POSTHOOK: Input: default@orc_merge5b_n0
 #### A masked pattern was here ####
 13	bar	80.0	2	1969-12-31 16:00:05
 2	foo	0.8	1	1969-12-31 16:00:00
 5	eat	0.8	6	1969-12-31 16:00:20
-PREHOOK: query: explain alter table orc_merge5b concatenate
+PREHOOK: query: explain alter table orc_merge5b_n0 concatenate
 PREHOOK: type: ALTER_TABLE_MERGE
-POSTHOOK: query: explain alter table orc_merge5b concatenate
+POSTHOOK: query: explain alter table orc_merge5b_n0 concatenate
 POSTHOOK: type: ALTER_TABLE_MERGE
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -368,37 +368,37 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.orc_merge5b
+              name: default.orc_merge5b_n0
 
   Stage: Stage-2
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: alter table orc_merge5b concatenate
+PREHOOK: query: alter table orc_merge5b_n0 concatenate
 PREHOOK: type: ALTER_TABLE_MERGE
-PREHOOK: Input: default@orc_merge5b
-PREHOOK: Output: default@orc_merge5b
-POSTHOOK: query: alter table orc_merge5b concatenate
+PREHOOK: Input: default@orc_merge5b_n0
+PREHOOK: Output: default@orc_merge5b_n0
+POSTHOOK: query: alter table orc_merge5b_n0 concatenate
 POSTHOOK: type: ALTER_TABLE_MERGE
-POSTHOOK: Input: default@orc_merge5b
-POSTHOOK: Output: default@orc_merge5b
-PREHOOK: query: analyze table orc_merge5b compute statistics noscan
+POSTHOOK: Input: default@orc_merge5b_n0
+POSTHOOK: Output: default@orc_merge5b_n0
+PREHOOK: query: analyze table orc_merge5b_n0 compute statistics noscan
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5b
-PREHOOK: Output: default@orc_merge5b
-POSTHOOK: query: analyze table orc_merge5b compute statistics noscan
+PREHOOK: Input: default@orc_merge5b_n0
+PREHOOK: Output: default@orc_merge5b_n0
+POSTHOOK: query: analyze table orc_merge5b_n0 compute statistics noscan
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5b
-POSTHOOK: Output: default@orc_merge5b
+POSTHOOK: Input: default@orc_merge5b_n0
+POSTHOOK: Output: default@orc_merge5b_n0
 Found 1 items
 #### A masked pattern was here ####
-PREHOOK: query: select * from orc_merge5b
+PREHOOK: query: select * from orc_merge5b_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5b
+PREHOOK: Input: default@orc_merge5b_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from orc_merge5b
+POSTHOOK: query: select * from orc_merge5b_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5b
+POSTHOOK: Input: default@orc_merge5b_n0
 #### A masked pattern was here ####
 13	bar	80.0	2	1969-12-31 16:00:05
 2	foo	0.8	1	1969-12-31 16:00:00

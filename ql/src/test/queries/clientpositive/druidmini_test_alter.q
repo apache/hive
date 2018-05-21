@@ -1,4 +1,4 @@
-CREATE TABLE druid_alltypesorc
+CREATE TABLE druid_alltypesorc_n0
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "HOUR", "druid.query.granularity" = "MINUTE")
 AS
@@ -13,21 +13,21 @@ cbigint,
 cboolean1
 FROM alltypesorc where ctimestamp2 IS NOT NULL;
 
-DESCRIBE druid_alltypesorc;
+DESCRIBE druid_alltypesorc_n0;
 
-DESCRIBE extended druid_alltypesorc;
+DESCRIBE extended druid_alltypesorc_n0;
 
-SELECT COUNT(*) FROM druid_alltypesorc;
+SELECT COUNT(*) FROM druid_alltypesorc_n0;
 
-ALTER TABLE druid_alltypesorc ADD COLUMNS (cstring2 string, cboolean2 boolean, cint2 int);
+ALTER TABLE druid_alltypesorc_n0 ADD COLUMNS (cstring2 string, cboolean2 boolean, cint2 int);
 
-DESCRIBE druid_alltypesorc;
+DESCRIBE druid_alltypesorc_n0;
 
-DESCRIBE extended druid_alltypesorc;
+DESCRIBE extended druid_alltypesorc_n0;
 
-SELECT COUNT(*) FROM druid_alltypesorc WHERE cstring2 IS NOT NULL;
+SELECT COUNT(*) FROM druid_alltypesorc_n0 WHERE cstring2 IS NOT NULL;
 
-INSERT INTO TABLE druid_alltypesorc
+INSERT INTO TABLE druid_alltypesorc_n0
   SELECT cast (`ctimestamp1` as timestamp with local time zone) as `__time`,
 cstring1,
 cdouble,
@@ -43,10 +43,10 @@ cint
 FROM alltypesorc where ctimestamp1 IS NOT NULL;
 
 
-SELECT COUNT(*) FROM druid_alltypesorc;
+SELECT COUNT(*) FROM druid_alltypesorc_n0;
 
-SELECT COUNT(*) FROM druid_alltypesorc WHERE cstring2 IS NULL;
+SELECT COUNT(*) FROM druid_alltypesorc_n0 WHERE cstring2 IS NULL;
 
-SELECT COUNT(*) FROM druid_alltypesorc WHERE cstring2 IS NOT NULL;
+SELECT COUNT(*) FROM druid_alltypesorc_n0 WHERE cstring2 IS NOT NULL;
 
-DROP TABLE druid_alltypesorc;
+DROP TABLE druid_alltypesorc_n0;

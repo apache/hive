@@ -1,88 +1,88 @@
-PREHOOK: query: CREATE TABLE schema_evolution_data(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
+PREHOOK: query: CREATE TABLE schema_evolution_data_n12(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
 row format delimited fields terminated by '|' stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@schema_evolution_data
-POSTHOOK: query: CREATE TABLE schema_evolution_data(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
+PREHOOK: Output: default@schema_evolution_data_n12
+POSTHOOK: query: CREATE TABLE schema_evolution_data_n12(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
 row format delimited fields terminated by '|' stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@schema_evolution_data
-PREHOOK: query: load data local inpath '../../data/files/schema_evolution/schema_evolution_data.txt' overwrite into table schema_evolution_data
+POSTHOOK: Output: default@schema_evolution_data_n12
+PREHOOK: query: load data local inpath '../../data/files/schema_evolution/schema_evolution_data.txt' overwrite into table schema_evolution_data_n12
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@schema_evolution_data
-POSTHOOK: query: load data local inpath '../../data/files/schema_evolution/schema_evolution_data.txt' overwrite into table schema_evolution_data
+PREHOOK: Output: default@schema_evolution_data_n12
+POSTHOOK: query: load data local inpath '../../data/files/schema_evolution/schema_evolution_data.txt' overwrite into table schema_evolution_data_n12
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@schema_evolution_data
-PREHOOK: query: CREATE TABLE schema_evolution_data_2(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
+POSTHOOK: Output: default@schema_evolution_data_n12
+PREHOOK: query: CREATE TABLE schema_evolution_data_2_n4(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
 row format delimited fields terminated by '|' stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@schema_evolution_data_2
-POSTHOOK: query: CREATE TABLE schema_evolution_data_2(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
+PREHOOK: Output: default@schema_evolution_data_2_n4
+POSTHOOK: query: CREATE TABLE schema_evolution_data_2_n4(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
 row format delimited fields terminated by '|' stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@schema_evolution_data_2
-PREHOOK: query: load data local inpath '../../data/files/schema_evolution/schema_evolution_data_2.txt' overwrite into table schema_evolution_data_2
+POSTHOOK: Output: default@schema_evolution_data_2_n4
+PREHOOK: query: load data local inpath '../../data/files/schema_evolution/schema_evolution_data_2.txt' overwrite into table schema_evolution_data_2_n4
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@schema_evolution_data_2
-POSTHOOK: query: load data local inpath '../../data/files/schema_evolution/schema_evolution_data_2.txt' overwrite into table schema_evolution_data_2
+PREHOOK: Output: default@schema_evolution_data_2_n4
+POSTHOOK: query: load data local inpath '../../data/files/schema_evolution/schema_evolution_data_2.txt' overwrite into table schema_evolution_data_2_n4
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@schema_evolution_data_2
-PREHOOK: query: CREATE TABLE table5(insert_num int, a INT, b STRING) clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
+POSTHOOK: Output: default@schema_evolution_data_2_n4
+PREHOOK: query: CREATE TABLE table5_n0(insert_num int, a INT, b STRING) clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@table5
-POSTHOOK: query: CREATE TABLE table5(insert_num int, a INT, b STRING) clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
+PREHOOK: Output: default@table5_n0
+POSTHOOK: query: CREATE TABLE table5_n0(insert_num int, a INT, b STRING) clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@table5
-PREHOOK: query: insert into table table5 SELECT insert_num, int1, 'original' FROM schema_evolution_data
+POSTHOOK: Output: default@table5_n0
+PREHOOK: query: insert into table table5_n0 SELECT insert_num, int1, 'original' FROM schema_evolution_data_n12
 PREHOOK: type: QUERY
-PREHOOK: Input: default@schema_evolution_data
-PREHOOK: Output: default@table5
-POSTHOOK: query: insert into table table5 SELECT insert_num, int1, 'original' FROM schema_evolution_data
+PREHOOK: Input: default@schema_evolution_data_n12
+PREHOOK: Output: default@table5_n0
+POSTHOOK: query: insert into table table5_n0 SELECT insert_num, int1, 'original' FROM schema_evolution_data_n12
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@schema_evolution_data
-POSTHOOK: Output: default@table5
-POSTHOOK: Lineage: table5.a SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:int1, type:int, comment:null), ]
-POSTHOOK: Lineage: table5.b SIMPLE []
-POSTHOOK: Lineage: table5.insert_num SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:insert_num, type:int, comment:null), ]
+POSTHOOK: Input: default@schema_evolution_data_n12
+POSTHOOK: Output: default@table5_n0
+POSTHOOK: Lineage: table5_n0.a SIMPLE [(schema_evolution_data_n12)schema_evolution_data_n12.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: table5_n0.b SIMPLE []
+POSTHOOK: Lineage: table5_n0.insert_num SIMPLE [(schema_evolution_data_n12)schema_evolution_data_n12.FieldSchema(name:insert_num, type:int, comment:null), ]
 insert_num	int1	_c2
-PREHOOK: query: alter table table5 add columns(c int, d string)
+PREHOOK: query: alter table table5_n0 add columns(c int, d string)
 PREHOOK: type: ALTERTABLE_ADDCOLS
-PREHOOK: Input: default@table5
-PREHOOK: Output: default@table5
-POSTHOOK: query: alter table table5 add columns(c int, d string)
+PREHOOK: Input: default@table5_n0
+PREHOOK: Output: default@table5_n0
+POSTHOOK: query: alter table table5_n0 add columns(c int, d string)
 POSTHOOK: type: ALTERTABLE_ADDCOLS
-POSTHOOK: Input: default@table5
-POSTHOOK: Output: default@table5
-PREHOOK: query: insert into table table5 SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2
+POSTHOOK: Input: default@table5_n0
+POSTHOOK: Output: default@table5_n0
+PREHOOK: query: insert into table table5_n0 SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@schema_evolution_data_2
-PREHOOK: Output: default@table5
-POSTHOOK: query: insert into table table5 SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2
+PREHOOK: Input: default@schema_evolution_data_2_n4
+PREHOOK: Output: default@table5_n0
+POSTHOOK: query: insert into table table5_n0 SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@schema_evolution_data_2
-POSTHOOK: Output: default@table5
-POSTHOOK: Lineage: table5.a SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:int1, type:int, comment:null), ]
-POSTHOOK: Lineage: table5.b SIMPLE []
-POSTHOOK: Lineage: table5.c SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:int1, type:int, comment:null), ]
-POSTHOOK: Lineage: table5.d SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: table5.insert_num SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:insert_num, type:int, comment:null), ]
+POSTHOOK: Input: default@schema_evolution_data_2_n4
+POSTHOOK: Output: default@table5_n0
+POSTHOOK: Lineage: table5_n0.a SIMPLE [(schema_evolution_data_2_n4)schema_evolution_data_2_n4.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: table5_n0.b SIMPLE []
+POSTHOOK: Lineage: table5_n0.c SIMPLE [(schema_evolution_data_2_n4)schema_evolution_data_2_n4.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: table5_n0.d SIMPLE [(schema_evolution_data_2_n4)schema_evolution_data_2_n4.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: table5_n0.insert_num SIMPLE [(schema_evolution_data_2_n4)schema_evolution_data_2_n4.FieldSchema(name:insert_num, type:int, comment:null), ]
 insert_num	int1	_c2	int1	string1
-PREHOOK: query: select a,b,c,d from table5
+PREHOOK: query: select a,b,c,d from table5_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table5
+PREHOOK: Input: default@table5_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select a,b,c,d from table5
+POSTHOOK: query: select a,b,c,d from table5_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table5
+POSTHOOK: Input: default@table5_n0
 #### A masked pattern was here ####
 a	b	c	d
 -128	new	-128	smaller than Scotland
@@ -100,50 +100,22 @@ a	b	c	d
 82153733	new	82153733	Antarctic peninsula
 NULL	new	NULL	baffling
 NULL	original	NULL	NULL
-PREHOOK: query: update table5 set c=99
+PREHOOK: query: update table5_n0 set c=99
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table5
-PREHOOK: Output: default@table5
-POSTHOOK: query: update table5 set c=99
+PREHOOK: Input: default@table5_n0
+PREHOOK: Output: default@table5_n0
+POSTHOOK: query: update table5_n0 set c=99
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table5
-POSTHOOK: Output: default@table5
+POSTHOOK: Input: default@table5_n0
+POSTHOOK: Output: default@table5_n0
 row__id	insert_num	a	b	_c4	d
-PREHOOK: query: select a,b,c,d from table5
+PREHOOK: query: select a,b,c,d from table5_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table5
+PREHOOK: Input: default@table5_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select a,b,c,d from table5
+POSTHOOK: query: select a,b,c,d from table5_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table5
-#### A masked pattern was here ####
-a	b	c	d
--128	new	99	smaller than Scotland
--2147483648	original	99	NULL
--57923222	new	99	astonishing
--999992	original	99	NULL
-0	new	99	hangar paralysed companion
-127	new	99	bottom
-17	new	99	feather weight
-203332	original	99	NULL
-2147483647	original	99	NULL
-32768	new	99	major glaciation
-400	new	99	window  
-40000	new	99	Delaware
-82153733	new	99	Antarctic peninsula
-NULL	new	99	baffling
-NULL	original	99	NULL
-PREHOOK: query: alter table table5 compact 'major'
-PREHOOK: type: ALTERTABLE_COMPACT
-POSTHOOK: query: alter table table5 compact 'major'
-POSTHOOK: type: ALTERTABLE_COMPACT
-PREHOOK: query: select a,b,c,d from table5
-PREHOOK: type: QUERY
-PREHOOK: Input: default@table5
-#### A masked pattern was here ####
-POSTHOOK: query: select a,b,c,d from table5
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table5
+POSTHOOK: Input: default@table5_n0
 #### A masked pattern was here ####
 a	b	c	d
 -128	new	99	smaller than Scotland
@@ -161,77 +133,105 @@ a	b	c	d
 82153733	new	99	Antarctic peninsula
 NULL	new	99	baffling
 NULL	original	99	NULL
-PREHOOK: query: DROP TABLE table5
+PREHOOK: query: alter table table5_n0 compact 'major'
+PREHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: query: alter table table5_n0 compact 'major'
+POSTHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: query: select a,b,c,d from table5_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table5_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select a,b,c,d from table5_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table5_n0
+#### A masked pattern was here ####
+a	b	c	d
+-128	new	99	smaller than Scotland
+-2147483648	original	99	NULL
+-57923222	new	99	astonishing
+-999992	original	99	NULL
+0	new	99	hangar paralysed companion
+127	new	99	bottom
+17	new	99	feather weight
+203332	original	99	NULL
+2147483647	original	99	NULL
+32768	new	99	major glaciation
+400	new	99	window  
+40000	new	99	Delaware
+82153733	new	99	Antarctic peninsula
+NULL	new	99	baffling
+NULL	original	99	NULL
+PREHOOK: query: DROP TABLE table5_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@table5
-PREHOOK: Output: default@table5
-POSTHOOK: query: DROP TABLE table5
+PREHOOK: Input: default@table5_n0
+PREHOOK: Output: default@table5_n0
+POSTHOOK: query: DROP TABLE table5_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@table5
-POSTHOOK: Output: default@table5
-PREHOOK: query: CREATE TABLE table6(insert_num int, a INT, b STRING) clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
+POSTHOOK: Input: default@table5_n0
+POSTHOOK: Output: default@table5_n0
+PREHOOK: query: CREATE TABLE table6_n0(insert_num int, a INT, b STRING) clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@table6
-POSTHOOK: query: CREATE TABLE table6(insert_num int, a INT, b STRING) clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
+PREHOOK: Output: default@table6_n0
+POSTHOOK: query: CREATE TABLE table6_n0(insert_num int, a INT, b STRING) clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@table6
-PREHOOK: query: insert into table table6 SELECT insert_num, int1, 'original' FROM schema_evolution_data
+POSTHOOK: Output: default@table6_n0
+PREHOOK: query: insert into table table6_n0 SELECT insert_num, int1, 'original' FROM schema_evolution_data_n12
 PREHOOK: type: QUERY
-PREHOOK: Input: default@schema_evolution_data
-PREHOOK: Output: default@table6
-POSTHOOK: query: insert into table table6 SELECT insert_num, int1, 'original' FROM schema_evolution_data
+PREHOOK: Input: default@schema_evolution_data_n12
+PREHOOK: Output: default@table6_n0
+POSTHOOK: query: insert into table table6_n0 SELECT insert_num, int1, 'original' FROM schema_evolution_data_n12
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@schema_evolution_data
-POSTHOOK: Output: default@table6
-POSTHOOK: Lineage: table6.a SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:int1, type:int, comment:null), ]
-POSTHOOK: Lineage: table6.b SIMPLE []
-POSTHOOK: Lineage: table6.insert_num SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:insert_num, type:int, comment:null), ]
+POSTHOOK: Input: default@schema_evolution_data_n12
+POSTHOOK: Output: default@table6_n0
+POSTHOOK: Lineage: table6_n0.a SIMPLE [(schema_evolution_data_n12)schema_evolution_data_n12.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: table6_n0.b SIMPLE []
+POSTHOOK: Lineage: table6_n0.insert_num SIMPLE [(schema_evolution_data_n12)schema_evolution_data_n12.FieldSchema(name:insert_num, type:int, comment:null), ]
 insert_num	int1	_c2
-PREHOOK: query: alter table table6 add columns(c int, d string)
+PREHOOK: query: alter table table6_n0 add columns(c int, d string)
 PREHOOK: type: ALTERTABLE_ADDCOLS
-PREHOOK: Input: default@table6
-PREHOOK: Output: default@table6
-POSTHOOK: query: alter table table6 add columns(c int, d string)
+PREHOOK: Input: default@table6_n0
+PREHOOK: Output: default@table6_n0
+POSTHOOK: query: alter table table6_n0 add columns(c int, d string)
 POSTHOOK: type: ALTERTABLE_ADDCOLS
-POSTHOOK: Input: default@table6
-POSTHOOK: Output: default@table6
-PREHOOK: query: insert into table table6 SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2 WHERE insert_num <= 110
+POSTHOOK: Input: default@table6_n0
+POSTHOOK: Output: default@table6_n0
+PREHOOK: query: insert into table table6_n0 SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2_n4 WHERE insert_num <= 110
 PREHOOK: type: QUERY
-PREHOOK: Input: default@schema_evolution_data_2
-PREHOOK: Output: default@table6
-POSTHOOK: query: insert into table table6 SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2 WHERE insert_num <= 110
+PREHOOK: Input: default@schema_evolution_data_2_n4
+PREHOOK: Output: default@table6_n0
+POSTHOOK: query: insert into table table6_n0 SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2_n4 WHERE insert_num <= 110
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@schema_evolution_data_2
-POSTHOOK: Output: default@table6
-POSTHOOK: Lineage: table6.a SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:int1, type:int, comment:null), ]
-POSTHOOK: Lineage: table6.b SIMPLE []
-POSTHOOK: Lineage: table6.c SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:int1, type:int, comment:null), ]
-POSTHOOK: Lineage: table6.d SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: table6.insert_num SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:insert_num, type:int, comment:null), ]
+POSTHOOK: Input: default@schema_evolution_data_2_n4
+POSTHOOK: Output: default@table6_n0
+POSTHOOK: Lineage: table6_n0.a SIMPLE [(schema_evolution_data_2_n4)schema_evolution_data_2_n4.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: table6_n0.b SIMPLE []
+POSTHOOK: Lineage: table6_n0.c SIMPLE [(schema_evolution_data_2_n4)schema_evolution_data_2_n4.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: table6_n0.d SIMPLE [(schema_evolution_data_2_n4)schema_evolution_data_2_n4.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: table6_n0.insert_num SIMPLE [(schema_evolution_data_2_n4)schema_evolution_data_2_n4.FieldSchema(name:insert_num, type:int, comment:null), ]
 insert_num	int1	_c2	int1	string1
-PREHOOK: query: insert into table table6 SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2 WHERE insert_num > 110
+PREHOOK: query: insert into table table6_n0 SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2_n4 WHERE insert_num > 110
 PREHOOK: type: QUERY
-PREHOOK: Input: default@schema_evolution_data_2
-PREHOOK: Output: default@table6
-POSTHOOK: query: insert into table table6 SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2 WHERE insert_num > 110
+PREHOOK: Input: default@schema_evolution_data_2_n4
+PREHOOK: Output: default@table6_n0
+POSTHOOK: query: insert into table table6_n0 SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2_n4 WHERE insert_num > 110
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@schema_evolution_data_2
-POSTHOOK: Output: default@table6
-POSTHOOK: Lineage: table6.a SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:int1, type:int, comment:null), ]
-POSTHOOK: Lineage: table6.b SIMPLE []
-POSTHOOK: Lineage: table6.c SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:int1, type:int, comment:null), ]
-POSTHOOK: Lineage: table6.d SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: table6.insert_num SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:insert_num, type:int, comment:null), ]
+POSTHOOK: Input: default@schema_evolution_data_2_n4
+POSTHOOK: Output: default@table6_n0
+POSTHOOK: Lineage: table6_n0.a SIMPLE [(schema_evolution_data_2_n4)schema_evolution_data_2_n4.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: table6_n0.b SIMPLE []
+POSTHOOK: Lineage: table6_n0.c SIMPLE [(schema_evolution_data_2_n4)schema_evolution_data_2_n4.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: table6_n0.d SIMPLE [(schema_evolution_data_2_n4)schema_evolution_data_2_n4.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: table6_n0.insert_num SIMPLE [(schema_evolution_data_2_n4)schema_evolution_data_2_n4.FieldSchema(name:insert_num, type:int, comment:null), ]
 insert_num	int1	_c2	int1	string1
-PREHOOK: query: select a,b,c,d from table6
+PREHOOK: query: select a,b,c,d from table6_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table6
+PREHOOK: Input: default@table6_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select a,b,c,d from table6
+POSTHOOK: query: select a,b,c,d from table6_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table6
+POSTHOOK: Input: default@table6_n0
 #### A masked pattern was here ####
 a	b	c	d
 -128	new	-128	smaller than Scotland
@@ -249,22 +249,22 @@ a	b	c	d
 82153733	new	82153733	Antarctic peninsula
 NULL	new	NULL	baffling
 NULL	original	NULL	NULL
-PREHOOK: query: delete from table6 where insert_num = 102 or insert_num = 104 or insert_num = 106
+PREHOOK: query: delete from table6_n0 where insert_num = 102 or insert_num = 104 or insert_num = 106
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table6
-PREHOOK: Output: default@table6
-POSTHOOK: query: delete from table6 where insert_num = 102 or insert_num = 104 or insert_num = 106
+PREHOOK: Input: default@table6_n0
+PREHOOK: Output: default@table6_n0
+POSTHOOK: query: delete from table6_n0 where insert_num = 102 or insert_num = 104 or insert_num = 106
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table6
-POSTHOOK: Output: default@table6
+POSTHOOK: Input: default@table6_n0
+POSTHOOK: Output: default@table6_n0
 row__id
-PREHOOK: query: select a,b,c,d from table6
+PREHOOK: query: select a,b,c,d from table6_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table6
+PREHOOK: Input: default@table6_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select a,b,c,d from table6
+POSTHOOK: query: select a,b,c,d from table6_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table6
+POSTHOOK: Input: default@table6_n0
 #### A masked pattern was here ####
 a	b	c	d
 -128	new	-128	smaller than Scotland
@@ -279,17 +279,17 @@ a	b	c	d
 82153733	new	82153733	Antarctic peninsula
 NULL	new	NULL	baffling
 NULL	original	NULL	NULL
-PREHOOK: query: alter table table6 compact 'major'
+PREHOOK: query: alter table table6_n0 compact 'major'
 PREHOOK: type: ALTERTABLE_COMPACT
-POSTHOOK: query: alter table table6 compact 'major'
+POSTHOOK: query: alter table table6_n0 compact 'major'
 POSTHOOK: type: ALTERTABLE_COMPACT
-PREHOOK: query: select a,b,c,d from table6
+PREHOOK: query: select a,b,c,d from table6_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table6
+PREHOOK: Input: default@table6_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select a,b,c,d from table6
+POSTHOOK: query: select a,b,c,d from table6_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table6
+POSTHOOK: Input: default@table6_n0
 #### A masked pattern was here ####
 a	b	c	d
 -128	new	-128	smaller than Scotland
@@ -304,77 +304,77 @@ a	b	c	d
 82153733	new	82153733	Antarctic peninsula
 NULL	new	NULL	baffling
 NULL	original	NULL	NULL
-PREHOOK: query: DROP TABLE table6
+PREHOOK: query: DROP TABLE table6_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@table6
-PREHOOK: Output: default@table6
-POSTHOOK: query: DROP TABLE table6
+PREHOOK: Input: default@table6_n0
+PREHOOK: Output: default@table6_n0
+POSTHOOK: query: DROP TABLE table6_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@table6
-POSTHOOK: Output: default@table6
-PREHOOK: query: CREATE TABLE table7(insert_num int, a INT, b STRING) clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
+POSTHOOK: Input: default@table6_n0
+POSTHOOK: Output: default@table6_n0
+PREHOOK: query: CREATE TABLE table7_n0(insert_num int, a INT, b STRING) clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@table7
-POSTHOOK: query: CREATE TABLE table7(insert_num int, a INT, b STRING) clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
+PREHOOK: Output: default@table7_n0
+POSTHOOK: query: CREATE TABLE table7_n0(insert_num int, a INT, b STRING) clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@table7
-PREHOOK: query: insert into table table7 SELECT insert_num, int1, 'original' FROM schema_evolution_data
+POSTHOOK: Output: default@table7_n0
+PREHOOK: query: insert into table table7_n0 SELECT insert_num, int1, 'original' FROM schema_evolution_data_n12
 PREHOOK: type: QUERY
-PREHOOK: Input: default@schema_evolution_data
-PREHOOK: Output: default@table7
-POSTHOOK: query: insert into table table7 SELECT insert_num, int1, 'original' FROM schema_evolution_data
+PREHOOK: Input: default@schema_evolution_data_n12
+PREHOOK: Output: default@table7_n0
+POSTHOOK: query: insert into table table7_n0 SELECT insert_num, int1, 'original' FROM schema_evolution_data_n12
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@schema_evolution_data
-POSTHOOK: Output: default@table7
-POSTHOOK: Lineage: table7.a SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:int1, type:int, comment:null), ]
-POSTHOOK: Lineage: table7.b SIMPLE []
-POSTHOOK: Lineage: table7.insert_num SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:insert_num, type:int, comment:null), ]
+POSTHOOK: Input: default@schema_evolution_data_n12
+POSTHOOK: Output: default@table7_n0
+POSTHOOK: Lineage: table7_n0.a SIMPLE [(schema_evolution_data_n12)schema_evolution_data_n12.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: table7_n0.b SIMPLE []
+POSTHOOK: Lineage: table7_n0.insert_num SIMPLE [(schema_evolution_data_n12)schema_evolution_data_n12.FieldSchema(name:insert_num, type:int, comment:null), ]
 insert_num	int1	_c2
-PREHOOK: query: alter table table7 add columns(c int, d string)
+PREHOOK: query: alter table table7_n0 add columns(c int, d string)
 PREHOOK: type: ALTERTABLE_ADDCOLS
-PREHOOK: Input: default@table7
-PREHOOK: Output: default@table7
-POSTHOOK: query: alter table table7 add columns(c int, d string)
+PREHOOK: Input: default@table7_n0
+PREHOOK: Output: default@table7_n0
+POSTHOOK: query: alter table table7_n0 add columns(c int, d string)
 POSTHOOK: type: ALTERTABLE_ADDCOLS
-POSTHOOK: Input: default@table7
-POSTHOOK: Output: default@table7
-PREHOOK: query: insert into table table7 SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2 WHERE insert_num <= 110
+POSTHOOK: Input: default@table7_n0
+POSTHOOK: Output: default@table7_n0
+PREHOOK: query: insert into table table7_n0 SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2_n4 WHERE insert_num <= 110
 PREHOOK: type: QUERY
-PREHOOK: Input: default@schema_evolution_data_2
-PREHOOK: Output: default@table7
-POSTHOOK: query: insert into table table7 SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2 WHERE insert_num <= 110
+PREHOOK: Input: default@schema_evolution_data_2_n4
+PREHOOK: Output: default@table7_n0
+POSTHOOK: query: insert into table table7_n0 SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2_n4 WHERE insert_num <= 110
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@schema_evolution_data_2
-POSTHOOK: Output: default@table7
-POSTHOOK: Lineage: table7.a SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:int1, type:int, comment:null), ]
-POSTHOOK: Lineage: table7.b SIMPLE []
-POSTHOOK: Lineage: table7.c SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:int1, type:int, comment:null), ]
-POSTHOOK: Lineage: table7.d SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: table7.insert_num SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:insert_num, type:int, comment:null), ]
+POSTHOOK: Input: default@schema_evolution_data_2_n4
+POSTHOOK: Output: default@table7_n0
+POSTHOOK: Lineage: table7_n0.a SIMPLE [(schema_evolution_data_2_n4)schema_evolution_data_2_n4.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: table7_n0.b SIMPLE []
+POSTHOOK: Lineage: table7_n0.c SIMPLE [(schema_evolution_data_2_n4)schema_evolution_data_2_n4.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: table7_n0.d SIMPLE [(schema_evolution_data_2_n4)schema_evolution_data_2_n4.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: table7_n0.insert_num SIMPLE [(schema_evolution_data_2_n4)schema_evolution_data_2_n4.FieldSchema(name:insert_num, type:int, comment:null), ]
 insert_num	int1	_c2	int1	string1
-PREHOOK: query: insert into table table7 SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2 WHERE insert_num > 110
+PREHOOK: query: insert into table table7_n0 SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2_n4 WHERE insert_num > 110
 PREHOOK: type: QUERY
-PREHOOK: Input: default@schema_evolution_data_2
-PREHOOK: Output: default@table7
-POSTHOOK: query: insert into table table7 SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2 WHERE insert_num > 110
+PREHOOK: Input: default@schema_evolution_data_2_n4
+PREHOOK: Output: default@table7_n0
+POSTHOOK: query: insert into table table7_n0 SELECT insert_num, int1, 'new', int1, string1 FROM schema_evolution_data_2_n4 WHERE insert_num > 110
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@schema_evolution_data_2
-POSTHOOK: Output: default@table7
-POSTHOOK: Lineage: table7.a SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:int1, type:int, comment:null), ]
-POSTHOOK: Lineage: table7.b SIMPLE []
-POSTHOOK: Lineage: table7.c SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:int1, type:int, comment:null), ]
-POSTHOOK: Lineage: table7.d SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: table7.insert_num SIMPLE [(schema_evolution_data_2)schema_evolution_data_2.FieldSchema(name:insert_num, type:int, comment:null), ]
+POSTHOOK: Input: default@schema_evolution_data_2_n4
+POSTHOOK: Output: default@table7_n0
+POSTHOOK: Lineage: table7_n0.a SIMPLE [(schema_evolution_data_2_n4)schema_evolution_data_2_n4.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: table7_n0.b SIMPLE []
+POSTHOOK: Lineage: table7_n0.c SIMPLE [(schema_evolution_data_2_n4)schema_evolution_data_2_n4.FieldSchema(name:int1, type:int, comment:null), ]
+POSTHOOK: Lineage: table7_n0.d SIMPLE [(schema_evolution_data_2_n4)schema_evolution_data_2_n4.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: table7_n0.insert_num SIMPLE [(schema_evolution_data_2_n4)schema_evolution_data_2_n4.FieldSchema(name:insert_num, type:int, comment:null), ]
 insert_num	int1	_c2	int1	string1
-PREHOOK: query: select a,b,c,d from table7
+PREHOOK: query: select a,b,c,d from table7_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table7
+PREHOOK: Input: default@table7_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select a,b,c,d from table7
+POSTHOOK: query: select a,b,c,d from table7_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table7
+POSTHOOK: Input: default@table7_n0
 #### A masked pattern was here ####
 a	b	c	d
 -128	new	-128	smaller than Scotland
@@ -392,22 +392,22 @@ a	b	c	d
 82153733	new	82153733	Antarctic peninsula
 NULL	new	NULL	baffling
 NULL	original	NULL	NULL
-PREHOOK: query: delete from table7 where insert_num = 107 or insert_num >= 110
+PREHOOK: query: delete from table7_n0 where insert_num = 107 or insert_num >= 110
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table7
-PREHOOK: Output: default@table7
-POSTHOOK: query: delete from table7 where insert_num = 107 or insert_num >= 110
+PREHOOK: Input: default@table7_n0
+PREHOOK: Output: default@table7_n0
+POSTHOOK: query: delete from table7_n0 where insert_num = 107 or insert_num >= 110
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table7
-POSTHOOK: Output: default@table7
+POSTHOOK: Input: default@table7_n0
+POSTHOOK: Output: default@table7_n0
 row__id
-PREHOOK: query: select a,b,c,d from table7
+PREHOOK: query: select a,b,c,d from table7_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table7
+PREHOOK: Input: default@table7_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select a,b,c,d from table7
+POSTHOOK: query: select a,b,c,d from table7_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table7
+POSTHOOK: Input: default@table7_n0
 #### A masked pattern was here ####
 a	b	c	d
 -2147483648	original	NULL	NULL
@@ -418,17 +418,17 @@ a	b	c	d
 2147483647	original	NULL	NULL
 NULL	new	NULL	baffling
 NULL	original	NULL	NULL
-PREHOOK: query: alter table table7 compact 'major'
+PREHOOK: query: alter table table7_n0 compact 'major'
 PREHOOK: type: ALTERTABLE_COMPACT
-POSTHOOK: query: alter table table7 compact 'major'
+POSTHOOK: query: alter table table7_n0 compact 'major'
 POSTHOOK: type: ALTERTABLE_COMPACT
-PREHOOK: query: select a,b,c,d from table7
+PREHOOK: query: select a,b,c,d from table7_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table7
+PREHOOK: Input: default@table7_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select a,b,c,d from table7
+POSTHOOK: query: select a,b,c,d from table7_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table7
+POSTHOOK: Input: default@table7_n0
 #### A masked pattern was here ####
 a	b	c	d
 -2147483648	original	NULL	NULL
@@ -439,11 +439,11 @@ a	b	c	d
 2147483647	original	NULL	NULL
 NULL	new	NULL	baffling
 NULL	original	NULL	NULL
-PREHOOK: query: DROP TABLE table7
+PREHOOK: query: DROP TABLE table7_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@table7
-PREHOOK: Output: default@table7
-POSTHOOK: query: DROP TABLE table7
+PREHOOK: Input: default@table7_n0
+PREHOOK: Output: default@table7_n0
+POSTHOOK: query: DROP TABLE table7_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@table7
-POSTHOOK: Output: default@table7
+POSTHOOK: Input: default@table7_n0
+POSTHOOK: Output: default@table7_n0

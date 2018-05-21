@@ -1,54 +1,54 @@
-PREHOOK: query: drop table pcr_t1
+PREHOOK: query: drop table pcr_t1_n1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table pcr_t1
+POSTHOOK: query: drop table pcr_t1_n1
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table pcr_t1 (key int, value string) partitioned by (ds1 string, ds2 string)
+PREHOOK: query: create table pcr_t1_n1 (key int, value string) partitioned by (ds1 string, ds2 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@pcr_t1
-POSTHOOK: query: create table pcr_t1 (key int, value string) partitioned by (ds1 string, ds2 string)
+PREHOOK: Output: default@pcr_t1_n1
+POSTHOOK: query: create table pcr_t1_n1 (key int, value string) partitioned by (ds1 string, ds2 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@pcr_t1
-PREHOOK: query: insert overwrite table pcr_t1 partition (ds1='2000-04-08', ds2='2001-04-08') select * from src where key < 20 order by key
+POSTHOOK: Output: default@pcr_t1_n1
+PREHOOK: query: insert overwrite table pcr_t1_n1 partition (ds1='2000-04-08', ds2='2001-04-08') select * from src where key < 20 order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@pcr_t1@ds1=2000-04-08/ds2=2001-04-08
-POSTHOOK: query: insert overwrite table pcr_t1 partition (ds1='2000-04-08', ds2='2001-04-08') select * from src where key < 20 order by key
+PREHOOK: Output: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
+POSTHOOK: query: insert overwrite table pcr_t1_n1 partition (ds1='2000-04-08', ds2='2001-04-08') select * from src where key < 20 order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@pcr_t1@ds1=2000-04-08/ds2=2001-04-08
-POSTHOOK: Lineage: pcr_t1 PARTITION(ds1=2000-04-08,ds2=2001-04-08).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: pcr_t1 PARTITION(ds1=2000-04-08,ds2=2001-04-08).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: insert overwrite table pcr_t1 partition (ds1='2000-04-09', ds2='2001-04-09') select * from src where key < 20 order by key
+POSTHOOK: Output: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
+POSTHOOK: Lineage: pcr_t1_n1 PARTITION(ds1=2000-04-08,ds2=2001-04-08).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: pcr_t1_n1 PARTITION(ds1=2000-04-08,ds2=2001-04-08).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table pcr_t1_n1 partition (ds1='2000-04-09', ds2='2001-04-09') select * from src where key < 20 order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@pcr_t1@ds1=2000-04-09/ds2=2001-04-09
-POSTHOOK: query: insert overwrite table pcr_t1 partition (ds1='2000-04-09', ds2='2001-04-09') select * from src where key < 20 order by key
+PREHOOK: Output: default@pcr_t1_n1@ds1=2000-04-09/ds2=2001-04-09
+POSTHOOK: query: insert overwrite table pcr_t1_n1 partition (ds1='2000-04-09', ds2='2001-04-09') select * from src where key < 20 order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@pcr_t1@ds1=2000-04-09/ds2=2001-04-09
-POSTHOOK: Lineage: pcr_t1 PARTITION(ds1=2000-04-09,ds2=2001-04-09).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: pcr_t1 PARTITION(ds1=2000-04-09,ds2=2001-04-09).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: insert overwrite table pcr_t1 partition (ds1='2000-04-10', ds2='2001-04-10') select * from src where key < 20 order by key
+POSTHOOK: Output: default@pcr_t1_n1@ds1=2000-04-09/ds2=2001-04-09
+POSTHOOK: Lineage: pcr_t1_n1 PARTITION(ds1=2000-04-09,ds2=2001-04-09).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: pcr_t1_n1 PARTITION(ds1=2000-04-09,ds2=2001-04-09).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table pcr_t1_n1 partition (ds1='2000-04-10', ds2='2001-04-10') select * from src where key < 20 order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@pcr_t1@ds1=2000-04-10/ds2=2001-04-10
-POSTHOOK: query: insert overwrite table pcr_t1 partition (ds1='2000-04-10', ds2='2001-04-10') select * from src where key < 20 order by key
+PREHOOK: Output: default@pcr_t1_n1@ds1=2000-04-10/ds2=2001-04-10
+POSTHOOK: query: insert overwrite table pcr_t1_n1 partition (ds1='2000-04-10', ds2='2001-04-10') select * from src where key < 20 order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@pcr_t1@ds1=2000-04-10/ds2=2001-04-10
-POSTHOOK: Lineage: pcr_t1 PARTITION(ds1=2000-04-10,ds2=2001-04-10).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: pcr_t1 PARTITION(ds1=2000-04-10,ds2=2001-04-10).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@pcr_t1_n1@ds1=2000-04-10/ds2=2001-04-10
+POSTHOOK: Lineage: pcr_t1_n1 PARTITION(ds1=2000-04-10,ds2=2001-04-10).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: pcr_t1_n1 PARTITION(ds1=2000-04-10,ds2=2001-04-10).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain extended
 select key, value, ds1, ds2
-from pcr_t1
+from pcr_t1_n1
 where (ds1='2000-04-08' and key=1) or (ds1='2000-04-09' and key=2)
 order by key, value, ds1, ds2
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select key, value, ds1, ds2
-from pcr_t1
+from pcr_t1_n1
 where (ds1='2000-04-08' and key=1) or (ds1='2000-04-09' and key=2)
 order by key, value, ds1, ds2
 POSTHOOK: type: QUERY
@@ -61,7 +61,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: pcr_t1
+            alias: pcr_t1_n1
             Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -99,13 +99,13 @@ STAGE PLANS:
               columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
-              name default.pcr_t1
+              name default.pcr_t1_n1
               numFiles 1
               numRows 20
               partition_columns ds1/ds2
               partition_columns.types string:string
               rawDataSize 160
-              serialization.ddl struct pcr_t1 { i32 key, string value}
+              serialization.ddl struct pcr_t1_n1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
@@ -122,16 +122,16 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
-                name default.pcr_t1
+                name default.pcr_t1_n1
                 partition_columns ds1/ds2
                 partition_columns.types string:string
-                serialization.ddl struct pcr_t1 { i32 key, string value}
+                serialization.ddl struct pcr_t1_n1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.pcr_t1
-            name: default.pcr_t1
+              name: default.pcr_t1_n1
+            name: default.pcr_t1_n1
 #### A masked pattern was here ####
           Partition
             base file name: ds2=2001-04-09
@@ -148,13 +148,13 @@ STAGE PLANS:
               columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
-              name default.pcr_t1
+              name default.pcr_t1_n1
               numFiles 1
               numRows 20
               partition_columns ds1/ds2
               partition_columns.types string:string
               rawDataSize 160
-              serialization.ddl struct pcr_t1 { i32 key, string value}
+              serialization.ddl struct pcr_t1_n1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
@@ -171,19 +171,19 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
-                name default.pcr_t1
+                name default.pcr_t1_n1
                 partition_columns ds1/ds2
                 partition_columns.types string:string
-                serialization.ddl struct pcr_t1 { i32 key, string value}
+                serialization.ddl struct pcr_t1_n1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.pcr_t1
-            name: default.pcr_t1
+              name: default.pcr_t1_n1
+            name: default.pcr_t1_n1
       Truncated Path -> Alias:
-        /pcr_t1/ds1=2000-04-08/ds2=2001-04-08 [pcr_t1]
-        /pcr_t1/ds1=2000-04-09/ds2=2001-04-09 [pcr_t1]
+        /pcr_t1_n1/ds1=2000-04-08/ds2=2001-04-08 [pcr_t1_n1]
+        /pcr_t1_n1/ds1=2000-04-09/ds2=2001-04-09 [pcr_t1_n1]
       Needs Tagging: false
       Reduce Operator Tree:
         Select Operator
@@ -221,13 +221,13 @@ STAGE PLANS:
 
 PREHOOK: query: explain extended
 select key, value, ds1, ds2
-from pcr_t1
+from pcr_t1_n1
 where (ds1='2000-04-08' and ds2='2001-04-08' and key=1) or (ds1='2000-04-09' and ds2='2001-04-08' and key=2)
 order by key, value, ds1, ds2
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select key, value, ds1, ds2
-from pcr_t1
+from pcr_t1_n1
 where (ds1='2000-04-08' and ds2='2001-04-08' and key=1) or (ds1='2000-04-09' and ds2='2001-04-08' and key=2)
 order by key, value, ds1, ds2
 POSTHOOK: type: QUERY
@@ -240,7 +240,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: pcr_t1
+            alias: pcr_t1_n1
             Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -278,13 +278,13 @@ STAGE PLANS:
               columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
-              name default.pcr_t1
+              name default.pcr_t1_n1
               numFiles 1
               numRows 20
               partition_columns ds1/ds2
               partition_columns.types string:string
               rawDataSize 160
-              serialization.ddl struct pcr_t1 { i32 key, string value}
+              serialization.ddl struct pcr_t1_n1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
@@ -301,18 +301,18 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
-                name default.pcr_t1
+                name default.pcr_t1_n1
                 partition_columns ds1/ds2
                 partition_columns.types string:string
-                serialization.ddl struct pcr_t1 { i32 key, string value}
+                serialization.ddl struct pcr_t1_n1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.pcr_t1
-            name: default.pcr_t1
+              name: default.pcr_t1_n1
+            name: default.pcr_t1_n1
       Truncated Path -> Alias:
-        /pcr_t1/ds1=2000-04-08/ds2=2001-04-08 [$hdt$_0:pcr_t1]
+        /pcr_t1_n1/ds1=2000-04-08/ds2=2001-04-08 [$hdt$_0:pcr_t1_n1]
       Needs Tagging: false
       Reduce Operator Tree:
         Select Operator
@@ -350,13 +350,13 @@ STAGE PLANS:
 
 PREHOOK: query: explain extended
 select *
-from pcr_t1 t1 join pcr_t1 t2
+from pcr_t1_n1 t1 join pcr_t1_n1 t2
 on t1.key=t2.key and t1.ds1='2000-04-08' and t2.ds2='2001-04-08'
 order by t2.key, t2.value, t1.ds1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select *
-from pcr_t1 t1 join pcr_t1 t2
+from pcr_t1_n1 t1 join pcr_t1_n1 t2
 on t1.key=t2.key and t1.ds1='2000-04-08' and t2.ds2='2001-04-08'
 order by t2.key, t2.value, t1.ds1
 POSTHOOK: type: QUERY
@@ -430,13 +430,13 @@ STAGE PLANS:
               columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
-              name default.pcr_t1
+              name default.pcr_t1_n1
               numFiles 1
               numRows 20
               partition_columns ds1/ds2
               partition_columns.types string:string
               rawDataSize 160
-              serialization.ddl struct pcr_t1 { i32 key, string value}
+              serialization.ddl struct pcr_t1_n1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
@@ -453,18 +453,18 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
-                name default.pcr_t1
+                name default.pcr_t1_n1
                 partition_columns ds1/ds2
                 partition_columns.types string:string
-                serialization.ddl struct pcr_t1 { i32 key, string value}
+                serialization.ddl struct pcr_t1_n1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.pcr_t1
-            name: default.pcr_t1
+              name: default.pcr_t1_n1
+            name: default.pcr_t1_n1
       Truncated Path -> Alias:
-        /pcr_t1/ds1=2000-04-08/ds2=2001-04-08 [$hdt$_0:$hdt$_0:t1, $hdt$_0:$hdt$_1:t2]
+        /pcr_t1_n1/ds1=2000-04-08/ds2=2001-04-08 [$hdt$_0:$hdt$_0:t1, $hdt$_0:$hdt$_1:t2]
       Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
@@ -576,13 +576,13 @@ STAGE PLANS:
 
 PREHOOK: query: explain extended
 select *
-from pcr_t1 t1 join pcr_t1 t2
+from pcr_t1_n1 t1 join pcr_t1_n1 t2
 on t1.key=t2.key and t1.ds1='2000-04-08' and t2.ds1='2000-04-09'
 order by t2.key, t2.value, t1.ds1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select *
-from pcr_t1 t1 join pcr_t1 t2
+from pcr_t1_n1 t1 join pcr_t1_n1 t2
 on t1.key=t2.key and t1.ds1='2000-04-08' and t2.ds1='2000-04-09'
 order by t2.key, t2.value, t1.ds1
 POSTHOOK: type: QUERY
@@ -656,13 +656,13 @@ STAGE PLANS:
               columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
-              name default.pcr_t1
+              name default.pcr_t1_n1
               numFiles 1
               numRows 20
               partition_columns ds1/ds2
               partition_columns.types string:string
               rawDataSize 160
-              serialization.ddl struct pcr_t1 { i32 key, string value}
+              serialization.ddl struct pcr_t1_n1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
@@ -679,16 +679,16 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
-                name default.pcr_t1
+                name default.pcr_t1_n1
                 partition_columns ds1/ds2
                 partition_columns.types string:string
-                serialization.ddl struct pcr_t1 { i32 key, string value}
+                serialization.ddl struct pcr_t1_n1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.pcr_t1
-            name: default.pcr_t1
+              name: default.pcr_t1_n1
+            name: default.pcr_t1_n1
 #### A masked pattern was here ####
           Partition
             base file name: ds2=2001-04-09
@@ -705,13 +705,13 @@ STAGE PLANS:
               columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
-              name default.pcr_t1
+              name default.pcr_t1_n1
               numFiles 1
               numRows 20
               partition_columns ds1/ds2
               partition_columns.types string:string
               rawDataSize 160
-              serialization.ddl struct pcr_t1 { i32 key, string value}
+              serialization.ddl struct pcr_t1_n1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
@@ -728,19 +728,19 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
-                name default.pcr_t1
+                name default.pcr_t1_n1
                 partition_columns ds1/ds2
                 partition_columns.types string:string
-                serialization.ddl struct pcr_t1 { i32 key, string value}
+                serialization.ddl struct pcr_t1_n1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.pcr_t1
-            name: default.pcr_t1
+              name: default.pcr_t1_n1
+            name: default.pcr_t1_n1
       Truncated Path -> Alias:
-        /pcr_t1/ds1=2000-04-08/ds2=2001-04-08 [$hdt$_0:$hdt$_0:t1]
-        /pcr_t1/ds1=2000-04-09/ds2=2001-04-09 [$hdt$_0:$hdt$_1:t2]
+        /pcr_t1_n1/ds1=2000-04-08/ds2=2001-04-08 [$hdt$_0:$hdt$_0:t1]
+        /pcr_t1_n1/ds1=2000-04-09/ds2=2001-04-09 [$hdt$_0:$hdt$_1:t2]
       Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
@@ -853,13 +853,13 @@ STAGE PLANS:
 Warning: Shuffle Join JOIN[8][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: explain extended
 select *
-from pcr_t1 t1 join pcr_t1 t2
+from pcr_t1_n1 t1 join pcr_t1_n1 t2
 where (t1.ds1='2000-04-08' and t2.key=1) or (t1.ds1='2000-04-09' and t2.key=2)
 order by t2.key, t2.value, t1.ds1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select *
-from pcr_t1 t1 join pcr_t1 t2
+from pcr_t1_n1 t1 join pcr_t1_n1 t2
 where (t1.ds1='2000-04-08' and t2.key=1) or (t1.ds1='2000-04-09' and t2.key=2)
 order by t2.key, t2.value, t1.ds1
 POSTHOOK: type: QUERY
@@ -925,13 +925,13 @@ STAGE PLANS:
               columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
-              name default.pcr_t1
+              name default.pcr_t1_n1
               numFiles 1
               numRows 20
               partition_columns ds1/ds2
               partition_columns.types string:string
               rawDataSize 160
-              serialization.ddl struct pcr_t1 { i32 key, string value}
+              serialization.ddl struct pcr_t1_n1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
@@ -948,16 +948,16 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
-                name default.pcr_t1
+                name default.pcr_t1_n1
                 partition_columns ds1/ds2
                 partition_columns.types string:string
-                serialization.ddl struct pcr_t1 { i32 key, string value}
+                serialization.ddl struct pcr_t1_n1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.pcr_t1
-            name: default.pcr_t1
+              name: default.pcr_t1_n1
+            name: default.pcr_t1_n1
 #### A masked pattern was here ####
           Partition
             base file name: ds2=2001-04-09
@@ -974,13 +974,13 @@ STAGE PLANS:
               columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
-              name default.pcr_t1
+              name default.pcr_t1_n1
               numFiles 1
               numRows 20
               partition_columns ds1/ds2
               partition_columns.types string:string
               rawDataSize 160
-              serialization.ddl struct pcr_t1 { i32 key, string value}
+              serialization.ddl struct pcr_t1_n1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
@@ -997,16 +997,16 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
-                name default.pcr_t1
+                name default.pcr_t1_n1
                 partition_columns ds1/ds2
                 partition_columns.types string:string
-                serialization.ddl struct pcr_t1 { i32 key, string value}
+                serialization.ddl struct pcr_t1_n1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.pcr_t1
-            name: default.pcr_t1
+              name: default.pcr_t1_n1
+            name: default.pcr_t1_n1
 #### A masked pattern was here ####
           Partition
             base file name: ds2=2001-04-10
@@ -1023,13 +1023,13 @@ STAGE PLANS:
               columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
-              name default.pcr_t1
+              name default.pcr_t1_n1
               numFiles 1
               numRows 20
               partition_columns ds1/ds2
               partition_columns.types string:string
               rawDataSize 160
-              serialization.ddl struct pcr_t1 { i32 key, string value}
+              serialization.ddl struct pcr_t1_n1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
@@ -1046,20 +1046,20 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
-                name default.pcr_t1
+                name default.pcr_t1_n1
                 partition_columns ds1/ds2
                 partition_columns.types string:string
-                serialization.ddl struct pcr_t1 { i32 key, string value}
+                serialization.ddl struct pcr_t1_n1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.pcr_t1
-            name: default.pcr_t1
+              name: default.pcr_t1_n1
+            name: default.pcr_t1_n1
       Truncated Path -> Alias:
-        /pcr_t1/ds1=2000-04-08/ds2=2001-04-08 [$hdt$_0:t1, $hdt$_1:t2]
-        /pcr_t1/ds1=2000-04-09/ds2=2001-04-09 [$hdt$_0:t1, $hdt$_1:t2]
-        /pcr_t1/ds1=2000-04-10/ds2=2001-04-10 [$hdt$_1:t2]
+        /pcr_t1_n1/ds1=2000-04-08/ds2=2001-04-08 [$hdt$_0:t1, $hdt$_1:t2]
+        /pcr_t1_n1/ds1=2000-04-09/ds2=2001-04-09 [$hdt$_0:t1, $hdt$_1:t2]
+        /pcr_t1_n1/ds1=2000-04-10/ds2=2001-04-10 [$hdt$_1:t2]
       Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
@@ -1170,55 +1170,55 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select key, value, ds1, ds2
-from pcr_t1
+from pcr_t1_n1
 where (ds1='2000-04-08' and key=1) or (ds1='2000-04-09' and key=2)
 order by key, value, ds1, ds2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@pcr_t1
-PREHOOK: Input: default@pcr_t1@ds1=2000-04-08/ds2=2001-04-08
-PREHOOK: Input: default@pcr_t1@ds1=2000-04-09/ds2=2001-04-09
+PREHOOK: Input: default@pcr_t1_n1
+PREHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
+PREHOOK: Input: default@pcr_t1_n1@ds1=2000-04-09/ds2=2001-04-09
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value, ds1, ds2
-from pcr_t1
+from pcr_t1_n1
 where (ds1='2000-04-08' and key=1) or (ds1='2000-04-09' and key=2)
 order by key, value, ds1, ds2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@pcr_t1
-POSTHOOK: Input: default@pcr_t1@ds1=2000-04-08/ds2=2001-04-08
-POSTHOOK: Input: default@pcr_t1@ds1=2000-04-09/ds2=2001-04-09
+POSTHOOK: Input: default@pcr_t1_n1
+POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
+POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-09/ds2=2001-04-09
 #### A masked pattern was here ####
 2	val_2	2000-04-09	2001-04-09
 PREHOOK: query: select key, value, ds1, ds2
-from pcr_t1
+from pcr_t1_n1
 where (ds1='2000-04-08' and ds2='2001-04-08' and key=1) or (ds1='2000-04-09' and ds2='2001-04-08' and key=2)
 order by key, value, ds1, ds2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@pcr_t1
-PREHOOK: Input: default@pcr_t1@ds1=2000-04-08/ds2=2001-04-08
+PREHOOK: Input: default@pcr_t1_n1
+PREHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value, ds1, ds2
-from pcr_t1
+from pcr_t1_n1
 where (ds1='2000-04-08' and ds2='2001-04-08' and key=1) or (ds1='2000-04-09' and ds2='2001-04-08' and key=2)
 order by key, value, ds1, ds2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@pcr_t1
-POSTHOOK: Input: default@pcr_t1@ds1=2000-04-08/ds2=2001-04-08
+POSTHOOK: Input: default@pcr_t1_n1
+POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
 #### A masked pattern was here ####
 PREHOOK: query: select *
-from pcr_t1 t1 join pcr_t1 t2
+from pcr_t1_n1 t1 join pcr_t1_n1 t2
 on t1.key=t2.key and t1.ds1='2000-04-08' and t2.ds2='2001-04-08'
 order by t2.key, t2.value, t1.ds1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@pcr_t1
-PREHOOK: Input: default@pcr_t1@ds1=2000-04-08/ds2=2001-04-08
+PREHOOK: Input: default@pcr_t1_n1
+PREHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
 #### A masked pattern was here ####
 POSTHOOK: query: select *
-from pcr_t1 t1 join pcr_t1 t2
+from pcr_t1_n1 t1 join pcr_t1_n1 t2
 on t1.key=t2.key and t1.ds1='2000-04-08' and t2.ds2='2001-04-08'
 order by t2.key, t2.value, t1.ds1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@pcr_t1
-POSTHOOK: Input: default@pcr_t1@ds1=2000-04-08/ds2=2001-04-08
+POSTHOOK: Input: default@pcr_t1_n1
+POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
 #### A masked pattern was here ####
 0	val_0	2000-04-08	2001-04-08	0	val_0	2000-04-08	2001-04-08
 0	val_0	2000-04-08	2001-04-08	0	val_0	2000-04-08	2001-04-08
@@ -1259,22 +1259,22 @@ POSTHOOK: Input: default@pcr_t1@ds1=2000-04-08/ds2=2001-04-08
 18	val_18	2000-04-08	2001-04-08	18	val_18	2000-04-08	2001-04-08
 19	val_19	2000-04-08	2001-04-08	19	val_19	2000-04-08	2001-04-08
 PREHOOK: query: select *
-from pcr_t1 t1 join pcr_t1 t2
+from pcr_t1_n1 t1 join pcr_t1_n1 t2
 on t1.key=t2.key and t1.ds1='2000-04-08' and t2.ds1='2000-04-09'
 order by t2.key, t2.value, t1.ds1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@pcr_t1
-PREHOOK: Input: default@pcr_t1@ds1=2000-04-08/ds2=2001-04-08
-PREHOOK: Input: default@pcr_t1@ds1=2000-04-09/ds2=2001-04-09
+PREHOOK: Input: default@pcr_t1_n1
+PREHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
+PREHOOK: Input: default@pcr_t1_n1@ds1=2000-04-09/ds2=2001-04-09
 #### A masked pattern was here ####
 POSTHOOK: query: select *
-from pcr_t1 t1 join pcr_t1 t2
+from pcr_t1_n1 t1 join pcr_t1_n1 t2
 on t1.key=t2.key and t1.ds1='2000-04-08' and t2.ds1='2000-04-09'
 order by t2.key, t2.value, t1.ds1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@pcr_t1
-POSTHOOK: Input: default@pcr_t1@ds1=2000-04-08/ds2=2001-04-08
-POSTHOOK: Input: default@pcr_t1@ds1=2000-04-09/ds2=2001-04-09
+POSTHOOK: Input: default@pcr_t1_n1
+POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
+POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-09/ds2=2001-04-09
 #### A masked pattern was here ####
 0	val_0	2000-04-08	2001-04-08	0	val_0	2000-04-09	2001-04-09
 0	val_0	2000-04-08	2001-04-08	0	val_0	2000-04-09	2001-04-09
@@ -1316,24 +1316,24 @@ POSTHOOK: Input: default@pcr_t1@ds1=2000-04-09/ds2=2001-04-09
 19	val_19	2000-04-08	2001-04-08	19	val_19	2000-04-09	2001-04-09
 Warning: Shuffle Join JOIN[8][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: select *
-from pcr_t1 t1 join pcr_t1 t2
+from pcr_t1_n1 t1 join pcr_t1_n1 t2
 where (t1.ds1='2000-04-08' and t2.key=1) or (t1.ds1='2000-04-09' and t2.key=2)
 order by t2.key, t2.value, t1.ds1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@pcr_t1
-PREHOOK: Input: default@pcr_t1@ds1=2000-04-08/ds2=2001-04-08
-PREHOOK: Input: default@pcr_t1@ds1=2000-04-09/ds2=2001-04-09
-PREHOOK: Input: default@pcr_t1@ds1=2000-04-10/ds2=2001-04-10
+PREHOOK: Input: default@pcr_t1_n1
+PREHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
+PREHOOK: Input: default@pcr_t1_n1@ds1=2000-04-09/ds2=2001-04-09
+PREHOOK: Input: default@pcr_t1_n1@ds1=2000-04-10/ds2=2001-04-10
 #### A masked pattern was here ####
 POSTHOOK: query: select *
-from pcr_t1 t1 join pcr_t1 t2
+from pcr_t1_n1 t1 join pcr_t1_n1 t2
 where (t1.ds1='2000-04-08' and t2.key=1) or (t1.ds1='2000-04-09' and t2.key=2)
 order by t2.key, t2.value, t1.ds1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@pcr_t1
-POSTHOOK: Input: default@pcr_t1@ds1=2000-04-08/ds2=2001-04-08
-POSTHOOK: Input: default@pcr_t1@ds1=2000-04-09/ds2=2001-04-09
-POSTHOOK: Input: default@pcr_t1@ds1=2000-04-10/ds2=2001-04-10
+POSTHOOK: Input: default@pcr_t1_n1
+POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
+POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-09/ds2=2001-04-09
+POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-10/ds2=2001-04-10
 #### A masked pattern was here ####
 0	val_0	2000-04-09	2001-04-09	2	val_2	2000-04-10	2001-04-10
 0	val_0	2000-04-09	2001-04-09	2	val_2	2000-04-08	2001-04-08
@@ -1397,13 +1397,13 @@ POSTHOOK: Input: default@pcr_t1@ds1=2000-04-10/ds2=2001-04-10
 9	val_9	2000-04-09	2001-04-09	2	val_2	2000-04-09	2001-04-09
 PREHOOK: query: explain extended
 select key, value, ds1, ds2
-from pcr_t1
+from pcr_t1_n1
 where (ds1='2000-04-08' and key=1) or (ds1='2000-04-09' and key=2)
 order by key, value, ds1, ds2
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select key, value, ds1, ds2
-from pcr_t1
+from pcr_t1_n1
 where (ds1='2000-04-08' and key=1) or (ds1='2000-04-09' and key=2)
 order by key, value, ds1, ds2
 POSTHOOK: type: QUERY
@@ -1416,7 +1416,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: pcr_t1
+            alias: pcr_t1_n1
             Statistics: Num rows: 40 Data size: 320 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -1454,13 +1454,13 @@ STAGE PLANS:
               columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
-              name default.pcr_t1
+              name default.pcr_t1_n1
               numFiles 1
               numRows 20
               partition_columns ds1/ds2
               partition_columns.types string:string
               rawDataSize 160
-              serialization.ddl struct pcr_t1 { i32 key, string value}
+              serialization.ddl struct pcr_t1_n1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
@@ -1477,16 +1477,16 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
-                name default.pcr_t1
+                name default.pcr_t1_n1
                 partition_columns ds1/ds2
                 partition_columns.types string:string
-                serialization.ddl struct pcr_t1 { i32 key, string value}
+                serialization.ddl struct pcr_t1_n1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.pcr_t1
-            name: default.pcr_t1
+              name: default.pcr_t1_n1
+            name: default.pcr_t1_n1
 #### A masked pattern was here ####
           Partition
             base file name: ds2=2001-04-09
@@ -1503,13 +1503,13 @@ STAGE PLANS:
               columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
-              name default.pcr_t1
+              name default.pcr_t1_n1
               numFiles 1
               numRows 20
               partition_columns ds1/ds2
               partition_columns.types string:string
               rawDataSize 160
-              serialization.ddl struct pcr_t1 { i32 key, string value}
+              serialization.ddl struct pcr_t1_n1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
@@ -1526,19 +1526,19 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
-                name default.pcr_t1
+                name default.pcr_t1_n1
                 partition_columns ds1/ds2
                 partition_columns.types string:string
-                serialization.ddl struct pcr_t1 { i32 key, string value}
+                serialization.ddl struct pcr_t1_n1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.pcr_t1
-            name: default.pcr_t1
+              name: default.pcr_t1_n1
+            name: default.pcr_t1_n1
       Truncated Path -> Alias:
-        /pcr_t1/ds1=2000-04-08/ds2=2001-04-08 [pcr_t1]
-        /pcr_t1/ds1=2000-04-09/ds2=2001-04-09 [pcr_t1]
+        /pcr_t1_n1/ds1=2000-04-08/ds2=2001-04-08 [pcr_t1_n1]
+        /pcr_t1_n1/ds1=2000-04-09/ds2=2001-04-09 [pcr_t1_n1]
       Needs Tagging: false
       Reduce Operator Tree:
         Select Operator
@@ -1576,13 +1576,13 @@ STAGE PLANS:
 
 PREHOOK: query: explain extended
 select key, value, ds1, ds2
-from pcr_t1
+from pcr_t1_n1
 where (ds1='2000-04-08' and ds2='2001-04-08' and key=1) or (ds1='2000-04-09' and ds2='2001-04-08' and key=2)
 order by key, value, ds1, ds2
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select key, value, ds1, ds2
-from pcr_t1
+from pcr_t1_n1
 where (ds1='2000-04-08' and ds2='2001-04-08' and key=1) or (ds1='2000-04-09' and ds2='2001-04-08' and key=2)
 order by key, value, ds1, ds2
 POSTHOOK: type: QUERY
@@ -1595,7 +1595,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: pcr_t1
+            alias: pcr_t1_n1
             Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -1633,13 +1633,13 @@ STAGE PLANS:
               columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
-              name default.pcr_t1
+              name default.pcr_t1_n1
               numFiles 1
               numRows 20
               partition_columns ds1/ds2
               partition_columns.types string:string
               rawDataSize 160
-              serialization.ddl struct pcr_t1 { i32 key, string value}
+              serialization.ddl struct pcr_t1_n1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
@@ -1656,18 +1656,18 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
-                name default.pcr_t1
+                name default.pcr_t1_n1
                 partition_columns ds1/ds2
                 partition_columns.types string:string
-                serialization.ddl struct pcr_t1 { i32 key, string value}
+                serialization.ddl struct pcr_t1_n1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.pcr_t1
-            name: default.pcr_t1
+              name: default.pcr_t1_n1
+            name: default.pcr_t1_n1
       Truncated Path -> Alias:
-        /pcr_t1/ds1=2000-04-08/ds2=2001-04-08 [$hdt$_0:pcr_t1]
+        /pcr_t1_n1/ds1=2000-04-08/ds2=2001-04-08 [$hdt$_0:pcr_t1_n1]
       Needs Tagging: false
       Reduce Operator Tree:
         Select Operator
@@ -1705,13 +1705,13 @@ STAGE PLANS:
 
 PREHOOK: query: explain extended
 select *
-from pcr_t1 t1 join pcr_t1 t2
+from pcr_t1_n1 t1 join pcr_t1_n1 t2
 on t1.key=t2.key and t1.ds1='2000-04-08' and t2.ds2='2001-04-08'
 order by t2.key, t2.value, t1.ds1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select *
-from pcr_t1 t1 join pcr_t1 t2
+from pcr_t1_n1 t1 join pcr_t1_n1 t2
 on t1.key=t2.key and t1.ds1='2000-04-08' and t2.ds2='2001-04-08'
 order by t2.key, t2.value, t1.ds1
 POSTHOOK: type: QUERY
@@ -1785,13 +1785,13 @@ STAGE PLANS:
               columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
-              name default.pcr_t1
+              name default.pcr_t1_n1
               numFiles 1
               numRows 20
               partition_columns ds1/ds2
               partition_columns.types string:string
               rawDataSize 160
-              serialization.ddl struct pcr_t1 { i32 key, string value}
+              serialization.ddl struct pcr_t1_n1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
@@ -1808,18 +1808,18 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
-                name default.pcr_t1
+                name default.pcr_t1_n1
                 partition_columns ds1/ds2
                 partition_columns.types string:string
-                serialization.ddl struct pcr_t1 { i32 key, string value}
+                serialization.ddl struct pcr_t1_n1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.pcr_t1
-            name: default.pcr_t1
+              name: default.pcr_t1_n1
+            name: default.pcr_t1_n1
       Truncated Path -> Alias:
-        /pcr_t1/ds1=2000-04-08/ds2=2001-04-08 [$hdt$_0:$hdt$_0:t1, $hdt$_0:$hdt$_1:t2]
+        /pcr_t1_n1/ds1=2000-04-08/ds2=2001-04-08 [$hdt$_0:$hdt$_0:t1, $hdt$_0:$hdt$_1:t2]
       Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
@@ -1931,13 +1931,13 @@ STAGE PLANS:
 
 PREHOOK: query: explain extended
 select *
-from pcr_t1 t1 join pcr_t1 t2
+from pcr_t1_n1 t1 join pcr_t1_n1 t2
 on t1.key=t2.key and t1.ds1='2000-04-08' and t2.ds1='2000-04-09'
 order by t2.key, t2.value, t1.ds1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select *
-from pcr_t1 t1 join pcr_t1 t2
+from pcr_t1_n1 t1 join pcr_t1_n1 t2
 on t1.key=t2.key and t1.ds1='2000-04-08' and t2.ds1='2000-04-09'
 order by t2.key, t2.value, t1.ds1
 POSTHOOK: type: QUERY
@@ -2011,13 +2011,13 @@ STAGE PLANS:
               columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
-              name default.pcr_t1
+              name default.pcr_t1_n1
               numFiles 1
               numRows 20
               partition_columns ds1/ds2
               partition_columns.types string:string
               rawDataSize 160
-              serialization.ddl struct pcr_t1 { i32 key, string value}
+              serialization.ddl struct pcr_t1_n1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
@@ -2034,16 +2034,16 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
-                name default.pcr_t1
+                name default.pcr_t1_n1
                 partition_columns ds1/ds2
                 partition_columns.types string:string
-                serialization.ddl struct pcr_t1 { i32 key, string value}
+                serialization.ddl struct pcr_t1_n1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.pcr_t1
-            name: default.pcr_t1
+              name: default.pcr_t1_n1
+            name: default.pcr_t1_n1
 #### A masked pattern was here ####
           Partition
             base file name: ds2=2001-04-09
@@ -2060,13 +2060,13 @@ STAGE PLANS:
               columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
-              name default.pcr_t1
+              name default.pcr_t1_n1
               numFiles 1
               numRows 20
               partition_columns ds1/ds2
               partition_columns.types string:string
               rawDataSize 160
-              serialization.ddl struct pcr_t1 { i32 key, string value}
+              serialization.ddl struct pcr_t1_n1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
@@ -2083,19 +2083,19 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
-                name default.pcr_t1
+                name default.pcr_t1_n1
                 partition_columns ds1/ds2
                 partition_columns.types string:string
-                serialization.ddl struct pcr_t1 { i32 key, string value}
+                serialization.ddl struct pcr_t1_n1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.pcr_t1
-            name: default.pcr_t1
+              name: default.pcr_t1_n1
+            name: default.pcr_t1_n1
       Truncated Path -> Alias:
-        /pcr_t1/ds1=2000-04-08/ds2=2001-04-08 [$hdt$_0:$hdt$_0:t1]
-        /pcr_t1/ds1=2000-04-09/ds2=2001-04-09 [$hdt$_0:$hdt$_1:t2]
+        /pcr_t1_n1/ds1=2000-04-08/ds2=2001-04-08 [$hdt$_0:$hdt$_0:t1]
+        /pcr_t1_n1/ds1=2000-04-09/ds2=2001-04-09 [$hdt$_0:$hdt$_1:t2]
       Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
@@ -2208,13 +2208,13 @@ STAGE PLANS:
 Warning: Shuffle Join JOIN[8][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: explain extended
 select *
-from pcr_t1 t1 join pcr_t1 t2
+from pcr_t1_n1 t1 join pcr_t1_n1 t2
 where (t1.ds1='2000-04-08' and t2.key=1) or (t1.ds1='2000-04-09' and t2.key=2)
 order by t2.key, t2.value, t1.ds1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select *
-from pcr_t1 t1 join pcr_t1 t2
+from pcr_t1_n1 t1 join pcr_t1_n1 t2
 where (t1.ds1='2000-04-08' and t2.key=1) or (t1.ds1='2000-04-09' and t2.key=2)
 order by t2.key, t2.value, t1.ds1
 POSTHOOK: type: QUERY
@@ -2280,13 +2280,13 @@ STAGE PLANS:
               columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
-              name default.pcr_t1
+              name default.pcr_t1_n1
               numFiles 1
               numRows 20
               partition_columns ds1/ds2
               partition_columns.types string:string
               rawDataSize 160
-              serialization.ddl struct pcr_t1 { i32 key, string value}
+              serialization.ddl struct pcr_t1_n1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
@@ -2303,16 +2303,16 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
-                name default.pcr_t1
+                name default.pcr_t1_n1
                 partition_columns ds1/ds2
                 partition_columns.types string:string
-                serialization.ddl struct pcr_t1 { i32 key, string value}
+                serialization.ddl struct pcr_t1_n1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.pcr_t1
-            name: default.pcr_t1
+              name: default.pcr_t1_n1
+            name: default.pcr_t1_n1
 #### A masked pattern was here ####
           Partition
             base file name: ds2=2001-04-09
@@ -2329,13 +2329,13 @@ STAGE PLANS:
               columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
-              name default.pcr_t1
+              name default.pcr_t1_n1
               numFiles 1
               numRows 20
               partition_columns ds1/ds2
               partition_columns.types string:string
               rawDataSize 160
-              serialization.ddl struct pcr_t1 { i32 key, string value}
+              serialization.ddl struct pcr_t1_n1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
@@ -2352,16 +2352,16 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
-                name default.pcr_t1
+                name default.pcr_t1_n1
                 partition_columns ds1/ds2
                 partition_columns.types string:string
-                serialization.ddl struct pcr_t1 { i32 key, string value}
+                serialization.ddl struct pcr_t1_n1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.pcr_t1
-            name: default.pcr_t1
+              name: default.pcr_t1_n1
+            name: default.pcr_t1_n1
 #### A masked pattern was here ####
           Partition
             base file name: ds2=2001-04-10
@@ -2378,13 +2378,13 @@ STAGE PLANS:
               columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
-              name default.pcr_t1
+              name default.pcr_t1_n1
               numFiles 1
               numRows 20
               partition_columns ds1/ds2
               partition_columns.types string:string
               rawDataSize 160
-              serialization.ddl struct pcr_t1 { i32 key, string value}
+              serialization.ddl struct pcr_t1_n1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
@@ -2401,20 +2401,20 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
-                name default.pcr_t1
+                name default.pcr_t1_n1
                 partition_columns ds1/ds2
                 partition_columns.types string:string
-                serialization.ddl struct pcr_t1 { i32 key, string value}
+                serialization.ddl struct pcr_t1_n1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.pcr_t1
-            name: default.pcr_t1
+              name: default.pcr_t1_n1
+            name: default.pcr_t1_n1
       Truncated Path -> Alias:
-        /pcr_t1/ds1=2000-04-08/ds2=2001-04-08 [$hdt$_0:t1, $hdt$_1:t2]
-        /pcr_t1/ds1=2000-04-09/ds2=2001-04-09 [$hdt$_0:t1, $hdt$_1:t2]
-        /pcr_t1/ds1=2000-04-10/ds2=2001-04-10 [$hdt$_1:t2]
+        /pcr_t1_n1/ds1=2000-04-08/ds2=2001-04-08 [$hdt$_0:t1, $hdt$_1:t2]
+        /pcr_t1_n1/ds1=2000-04-09/ds2=2001-04-09 [$hdt$_0:t1, $hdt$_1:t2]
+        /pcr_t1_n1/ds1=2000-04-10/ds2=2001-04-10 [$hdt$_1:t2]
       Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
@@ -2525,55 +2525,55 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select key, value, ds1, ds2
-from pcr_t1
+from pcr_t1_n1
 where (ds1='2000-04-08' and key=1) or (ds1='2000-04-09' and key=2)
 order by key, value, ds1, ds2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@pcr_t1
-PREHOOK: Input: default@pcr_t1@ds1=2000-04-08/ds2=2001-04-08
-PREHOOK: Input: default@pcr_t1@ds1=2000-04-09/ds2=2001-04-09
+PREHOOK: Input: default@pcr_t1_n1
+PREHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
+PREHOOK: Input: default@pcr_t1_n1@ds1=2000-04-09/ds2=2001-04-09
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value, ds1, ds2
-from pcr_t1
+from pcr_t1_n1
 where (ds1='2000-04-08' and key=1) or (ds1='2000-04-09' and key=2)
 order by key, value, ds1, ds2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@pcr_t1
-POSTHOOK: Input: default@pcr_t1@ds1=2000-04-08/ds2=2001-04-08
-POSTHOOK: Input: default@pcr_t1@ds1=2000-04-09/ds2=2001-04-09
+POSTHOOK: Input: default@pcr_t1_n1
+POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
+POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-09/ds2=2001-04-09
 #### A masked pattern was here ####
 2	val_2	2000-04-09	2001-04-09
 PREHOOK: query: select key, value, ds1, ds2
-from pcr_t1
+from pcr_t1_n1
 where (ds1='2000-04-08' and ds2='2001-04-08' and key=1) or (ds1='2000-04-09' and ds2='2001-04-08' and key=2)
 order by key, value, ds1, ds2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@pcr_t1
-PREHOOK: Input: default@pcr_t1@ds1=2000-04-08/ds2=2001-04-08
+PREHOOK: Input: default@pcr_t1_n1
+PREHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value, ds1, ds2
-from pcr_t1
+from pcr_t1_n1
 where (ds1='2000-04-08' and ds2='2001-04-08' and key=1) or (ds1='2000-04-09' and ds2='2001-04-08' and key=2)
 order by key, value, ds1, ds2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@pcr_t1
-POSTHOOK: Input: default@pcr_t1@ds1=2000-04-08/ds2=2001-04-08
+POSTHOOK: Input: default@pcr_t1_n1
+POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
 #### A masked pattern was here ####
 PREHOOK: query: select *
-from pcr_t1 t1 join pcr_t1 t2
+from pcr_t1_n1 t1 join pcr_t1_n1 t2
 on t1.key=t2.key and t1.ds1='2000-04-08' and t2.ds2='2001-04-08'
 order by t2.key, t2.value, t1.ds1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@pcr_t1
-PREHOOK: Input: default@pcr_t1@ds1=2000-04-08/ds2=2001-04-08
+PREHOOK: Input: default@pcr_t1_n1
+PREHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
 #### A masked pattern was here ####
 POSTHOOK: query: select *
-from pcr_t1 t1 join pcr_t1 t2
+from pcr_t1_n1 t1 join pcr_t1_n1 t2
 on t1.key=t2.key and t1.ds1='2000-04-08' and t2.ds2='2001-04-08'
 order by t2.key, t2.value, t1.ds1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@pcr_t1
-POSTHOOK: Input: default@pcr_t1@ds1=2000-04-08/ds2=2001-04-08
+POSTHOOK: Input: default@pcr_t1_n1
+POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
 #### A masked pattern was here ####
 0	val_0	2000-04-08	2001-04-08	0	val_0	2000-04-08	2001-04-08
 0	val_0	2000-04-08	2001-04-08	0	val_0	2000-04-08	2001-04-08
@@ -2614,22 +2614,22 @@ POSTHOOK: Input: default@pcr_t1@ds1=2000-04-08/ds2=2001-04-08
 18	val_18	2000-04-08	2001-04-08	18	val_18	2000-04-08	2001-04-08
 19	val_19	2000-04-08	2001-04-08	19	val_19	2000-04-08	2001-04-08
 PREHOOK: query: select *
-from pcr_t1 t1 join pcr_t1 t2
+from pcr_t1_n1 t1 join pcr_t1_n1 t2
 on t1.key=t2.key and t1.ds1='2000-04-08' and t2.ds1='2000-04-09'
 order by t2.key, t2.value, t1.ds1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@pcr_t1
-PREHOOK: Input: default@pcr_t1@ds1=2000-04-08/ds2=2001-04-08
-PREHOOK: Input: default@pcr_t1@ds1=2000-04-09/ds2=2001-04-09
+PREHOOK: Input: default@pcr_t1_n1
+PREHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
+PREHOOK: Input: default@pcr_t1_n1@ds1=2000-04-09/ds2=2001-04-09
 #### A masked pattern was here ####
 POSTHOOK: query: select *
-from pcr_t1 t1 join pcr_t1 t2
+from pcr_t1_n1 t1 join pcr_t1_n1 t2
 on t1.key=t2.key and t1.ds1='2000-04-08' and t2.ds1='2000-04-09'
 order by t2.key, t2.value, t1.ds1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@pcr_t1
-POSTHOOK: Input: default@pcr_t1@ds1=2000-04-08/ds2=2001-04-08
-POSTHOOK: Input: default@pcr_t1@ds1=2000-04-09/ds2=2001-04-09
+POSTHOOK: Input: default@pcr_t1_n1
+POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
+POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-09/ds2=2001-04-09
 #### A masked pattern was here ####
 0	val_0	2000-04-08	2001-04-08	0	val_0	2000-04-09	2001-04-09
 0	val_0	2000-04-08	2001-04-08	0	val_0	2000-04-09	2001-04-09
@@ -2671,24 +2671,24 @@ POSTHOOK: Input: default@pcr_t1@ds1=2000-04-09/ds2=2001-04-09
 19	val_19	2000-04-08	2001-04-08	19	val_19	2000-04-09	2001-04-09
 Warning: Shuffle Join JOIN[8][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: select *
-from pcr_t1 t1 join pcr_t1 t2
+from pcr_t1_n1 t1 join pcr_t1_n1 t2
 where (t1.ds1='2000-04-08' and t2.key=1) or (t1.ds1='2000-04-09' and t2.key=2)
 order by t2.key, t2.value, t1.ds1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@pcr_t1
-PREHOOK: Input: default@pcr_t1@ds1=2000-04-08/ds2=2001-04-08
-PREHOOK: Input: default@pcr_t1@ds1=2000-04-09/ds2=2001-04-09
-PREHOOK: Input: default@pcr_t1@ds1=2000-04-10/ds2=2001-04-10
+PREHOOK: Input: default@pcr_t1_n1
+PREHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
+PREHOOK: Input: default@pcr_t1_n1@ds1=2000-04-09/ds2=2001-04-09
+PREHOOK: Input: default@pcr_t1_n1@ds1=2000-04-10/ds2=2001-04-10
 #### A masked pattern was here ####
 POSTHOOK: query: select *
-from pcr_t1 t1 join pcr_t1 t2
+from pcr_t1_n1 t1 join pcr_t1_n1 t2
 where (t1.ds1='2000-04-08' and t2.key=1) or (t1.ds1='2000-04-09' and t2.key=2)
 order by t2.key, t2.value, t1.ds1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@pcr_t1
-POSTHOOK: Input: default@pcr_t1@ds1=2000-04-08/ds2=2001-04-08
-POSTHOOK: Input: default@pcr_t1@ds1=2000-04-09/ds2=2001-04-09
-POSTHOOK: Input: default@pcr_t1@ds1=2000-04-10/ds2=2001-04-10
+POSTHOOK: Input: default@pcr_t1_n1
+POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-08/ds2=2001-04-08
+POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-09/ds2=2001-04-09
+POSTHOOK: Input: default@pcr_t1_n1@ds1=2000-04-10/ds2=2001-04-10
 #### A masked pattern was here ####
 0	val_0	2000-04-09	2001-04-09	2	val_2	2000-04-10	2001-04-10
 0	val_0	2000-04-09	2001-04-09	2	val_2	2000-04-08	2001-04-08
@@ -2750,11 +2750,11 @@ POSTHOOK: Input: default@pcr_t1@ds1=2000-04-10/ds2=2001-04-10
 9	val_9	2000-04-09	2001-04-09	2	val_2	2000-04-10	2001-04-10
 9	val_9	2000-04-09	2001-04-09	2	val_2	2000-04-08	2001-04-08
 9	val_9	2000-04-09	2001-04-09	2	val_2	2000-04-09	2001-04-09
-PREHOOK: query: drop table pcr_t1
+PREHOOK: query: drop table pcr_t1_n1
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@pcr_t1
-PREHOOK: Output: default@pcr_t1
-POSTHOOK: query: drop table pcr_t1
+PREHOOK: Input: default@pcr_t1_n1
+PREHOOK: Output: default@pcr_t1_n1
+POSTHOOK: query: drop table pcr_t1_n1
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@pcr_t1
-POSTHOOK: Output: default@pcr_t1
+POSTHOOK: Input: default@pcr_t1_n1
+POSTHOOK: Output: default@pcr_t1_n1

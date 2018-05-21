@@ -1,74 +1,74 @@
-PREHOOK: query: DROP TABLE orcfile_merge1
+PREHOOK: query: DROP TABLE orcfile_merge1_n2
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE orcfile_merge1
+POSTHOOK: query: DROP TABLE orcfile_merge1_n2
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: DROP TABLE orc_split_elim
+PREHOOK: query: DROP TABLE orc_split_elim_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE orc_split_elim
+POSTHOOK: query: DROP TABLE orc_split_elim_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table orc_split_elim (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc
+PREHOOK: query: create table orc_split_elim_n0 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@orc_split_elim
-POSTHOOK: query: create table orc_split_elim (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc
+PREHOOK: Output: default@orc_split_elim_n0
+POSTHOOK: query: create table orc_split_elim_n0 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@orc_split_elim
-PREHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' into table orc_split_elim
+POSTHOOK: Output: default@orc_split_elim_n0
+PREHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' into table orc_split_elim_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@orc_split_elim
-POSTHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' into table orc_split_elim
+PREHOOK: Output: default@orc_split_elim_n0
+POSTHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' into table orc_split_elim_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@orc_split_elim
-PREHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' into table orc_split_elim
+POSTHOOK: Output: default@orc_split_elim_n0
+PREHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' into table orc_split_elim_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@orc_split_elim
-POSTHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' into table orc_split_elim
+PREHOOK: Output: default@orc_split_elim_n0
+POSTHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' into table orc_split_elim_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@orc_split_elim
-PREHOOK: query: create table orcfile_merge1 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc tblproperties("orc.compress.size"="4096")
+POSTHOOK: Output: default@orc_split_elim_n0
+PREHOOK: query: create table orcfile_merge1_n2 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc tblproperties("orc.compress.size"="4096")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@orcfile_merge1
-POSTHOOK: query: create table orcfile_merge1 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc tblproperties("orc.compress.size"="4096")
+PREHOOK: Output: default@orcfile_merge1_n2
+POSTHOOK: query: create table orcfile_merge1_n2 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc tblproperties("orc.compress.size"="4096")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@orcfile_merge1
-PREHOOK: query: insert overwrite table orcfile_merge1 select * from orc_split_elim
+POSTHOOK: Output: default@orcfile_merge1_n2
+PREHOOK: query: insert overwrite table orcfile_merge1_n2 select * from orc_split_elim_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_split_elim
-PREHOOK: Output: default@orcfile_merge1
-POSTHOOK: query: insert overwrite table orcfile_merge1 select * from orc_split_elim
+PREHOOK: Input: default@orc_split_elim_n0
+PREHOOK: Output: default@orcfile_merge1_n2
+POSTHOOK: query: insert overwrite table orcfile_merge1_n2 select * from orc_split_elim_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_split_elim
-POSTHOOK: Output: default@orcfile_merge1
-POSTHOOK: Lineage: orcfile_merge1.decimal1 SIMPLE [(orc_split_elim)orc_split_elim.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orcfile_merge1.string1 SIMPLE [(orc_split_elim)orc_split_elim.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: orcfile_merge1.subtype SIMPLE [(orc_split_elim)orc_split_elim.FieldSchema(name:subtype, type:double, comment:null), ]
-POSTHOOK: Lineage: orcfile_merge1.ts SIMPLE [(orc_split_elim)orc_split_elim.FieldSchema(name:ts, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orcfile_merge1.userid SIMPLE [(orc_split_elim)orc_split_elim.FieldSchema(name:userid, type:bigint, comment:null), ]
-PREHOOK: query: insert into table orcfile_merge1 select * from orc_split_elim
+POSTHOOK: Input: default@orc_split_elim_n0
+POSTHOOK: Output: default@orcfile_merge1_n2
+POSTHOOK: Lineage: orcfile_merge1_n2.decimal1 SIMPLE [(orc_split_elim_n0)orc_split_elim_n0.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orcfile_merge1_n2.string1 SIMPLE [(orc_split_elim_n0)orc_split_elim_n0.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: orcfile_merge1_n2.subtype SIMPLE [(orc_split_elim_n0)orc_split_elim_n0.FieldSchema(name:subtype, type:double, comment:null), ]
+POSTHOOK: Lineage: orcfile_merge1_n2.ts SIMPLE [(orc_split_elim_n0)orc_split_elim_n0.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orcfile_merge1_n2.userid SIMPLE [(orc_split_elim_n0)orc_split_elim_n0.FieldSchema(name:userid, type:bigint, comment:null), ]
+PREHOOK: query: insert into table orcfile_merge1_n2 select * from orc_split_elim_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_split_elim
-PREHOOK: Output: default@orcfile_merge1
-POSTHOOK: query: insert into table orcfile_merge1 select * from orc_split_elim
+PREHOOK: Input: default@orc_split_elim_n0
+PREHOOK: Output: default@orcfile_merge1_n2
+POSTHOOK: query: insert into table orcfile_merge1_n2 select * from orc_split_elim_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_split_elim
-POSTHOOK: Output: default@orcfile_merge1
-POSTHOOK: Lineage: orcfile_merge1.decimal1 SIMPLE [(orc_split_elim)orc_split_elim.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orcfile_merge1.string1 SIMPLE [(orc_split_elim)orc_split_elim.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: orcfile_merge1.subtype SIMPLE [(orc_split_elim)orc_split_elim.FieldSchema(name:subtype, type:double, comment:null), ]
-POSTHOOK: Lineage: orcfile_merge1.ts SIMPLE [(orc_split_elim)orc_split_elim.FieldSchema(name:ts, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orcfile_merge1.userid SIMPLE [(orc_split_elim)orc_split_elim.FieldSchema(name:userid, type:bigint, comment:null), ]
+POSTHOOK: Input: default@orc_split_elim_n0
+POSTHOOK: Output: default@orcfile_merge1_n2
+POSTHOOK: Lineage: orcfile_merge1_n2.decimal1 SIMPLE [(orc_split_elim_n0)orc_split_elim_n0.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orcfile_merge1_n2.string1 SIMPLE [(orc_split_elim_n0)orc_split_elim_n0.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: orcfile_merge1_n2.subtype SIMPLE [(orc_split_elim_n0)orc_split_elim_n0.FieldSchema(name:subtype, type:double, comment:null), ]
+POSTHOOK: Lineage: orcfile_merge1_n2.ts SIMPLE [(orc_split_elim_n0)orc_split_elim_n0.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orcfile_merge1_n2.userid SIMPLE [(orc_split_elim_n0)orc_split_elim_n0.FieldSchema(name:userid, type:bigint, comment:null), ]
 Found 2 items
 #### A masked pattern was here ####
-PREHOOK: query: select * from orcfile_merge1 limit 1
+PREHOOK: query: select * from orcfile_merge1_n2 limit 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orcfile_merge1
+PREHOOK: Input: default@orcfile_merge1_n2
 #### A masked pattern was here ####
 -- BEGIN ORC FILE DUMP --
 #### A masked pattern was here ####
@@ -253,25 +253,25 @@ ________________________________________________________________________________
 
 -- END ORC FILE DUMP --
 2	foo	0.8	1	1969-12-31 16:00:00
-PREHOOK: query: ALTER TABLE  orcfile_merge1 CONCATENATE
+PREHOOK: query: ALTER TABLE  orcfile_merge1_n2 CONCATENATE
 PREHOOK: type: ALTER_TABLE_MERGE
-PREHOOK: Input: default@orcfile_merge1
-PREHOOK: Output: default@orcfile_merge1
+PREHOOK: Input: default@orcfile_merge1_n2
+PREHOOK: Output: default@orcfile_merge1_n2
 Found 1 items
 #### A masked pattern was here ####
-PREHOOK: query: select count(*) from orc_split_elim
+PREHOOK: query: select count(*) from orc_split_elim_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_split_elim
+PREHOOK: Input: default@orc_split_elim_n0
 #### A masked pattern was here ####
 50000
-PREHOOK: query: select count(*) from orcfile_merge1
+PREHOOK: query: select count(*) from orcfile_merge1_n2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orcfile_merge1
+PREHOOK: Input: default@orcfile_merge1_n2
 #### A masked pattern was here ####
 100000
-PREHOOK: query: select * from orcfile_merge1 limit 1
+PREHOOK: query: select * from orcfile_merge1_n2 limit 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orcfile_merge1
+PREHOOK: Input: default@orcfile_merge1_n2
 #### A masked pattern was here ####
 -- BEGIN ORC FILE DUMP --
 #### A masked pattern was here ####
@@ -430,15 +430,15 @@ ________________________________________________________________________________
 
 -- END ORC FILE DUMP --
 2	foo	0.8	1	1969-12-31 16:00:00
-PREHOOK: query: INSERT OVERWRITE DIRECTORY 'output' stored as orcfile select * from orc_split_elim
+PREHOOK: query: INSERT OVERWRITE DIRECTORY 'output' stored as orcfile select * from orc_split_elim_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_split_elim
+PREHOOK: Input: default@orc_split_elim_n0
 PREHOOK: Output: output
-PREHOOK: query: DROP TABLE orc_split_elim
+PREHOOK: query: DROP TABLE orc_split_elim_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@orc_split_elim
-PREHOOK: Output: default@orc_split_elim
-PREHOOK: query: DROP TABLE orcfile_merge1
+PREHOOK: Input: default@orc_split_elim_n0
+PREHOOK: Output: default@orc_split_elim_n0
+PREHOOK: query: DROP TABLE orcfile_merge1_n2
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@orcfile_merge1
-PREHOOK: Output: default@orcfile_merge1
+PREHOOK: Input: default@orcfile_merge1_n2
+PREHOOK: Output: default@orcfile_merge1_n2

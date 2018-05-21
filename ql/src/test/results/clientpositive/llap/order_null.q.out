@@ -1,78 +1,78 @@
-PREHOOK: query: create table src_null (a int, b string)
+PREHOOK: query: create table src_null_n1 (a int, b string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src_null
-POSTHOOK: query: create table src_null (a int, b string)
+PREHOOK: Output: default@src_null_n1
+POSTHOOK: query: create table src_null_n1 (a int, b string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src_null
-PREHOOK: query: insert into src_null values (1, 'A')
+POSTHOOK: Output: default@src_null_n1
+PREHOOK: query: insert into src_null_n1 values (1, 'A')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@src_null
-POSTHOOK: query: insert into src_null values (1, 'A')
+PREHOOK: Output: default@src_null_n1
+POSTHOOK: query: insert into src_null_n1 values (1, 'A')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@src_null
-POSTHOOK: Lineage: src_null.a SCRIPT []
-POSTHOOK: Lineage: src_null.b SCRIPT []
-PREHOOK: query: insert into src_null values (null, null)
+POSTHOOK: Output: default@src_null_n1
+POSTHOOK: Lineage: src_null_n1.a SCRIPT []
+POSTHOOK: Lineage: src_null_n1.b SCRIPT []
+PREHOOK: query: insert into src_null_n1 values (null, null)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@src_null
-POSTHOOK: query: insert into src_null values (null, null)
+PREHOOK: Output: default@src_null_n1
+POSTHOOK: query: insert into src_null_n1 values (null, null)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@src_null
-POSTHOOK: Lineage: src_null.a EXPRESSION []
-POSTHOOK: Lineage: src_null.b EXPRESSION []
-PREHOOK: query: insert into src_null values (3, null)
+POSTHOOK: Output: default@src_null_n1
+POSTHOOK: Lineage: src_null_n1.a EXPRESSION []
+POSTHOOK: Lineage: src_null_n1.b EXPRESSION []
+PREHOOK: query: insert into src_null_n1 values (3, null)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@src_null
-POSTHOOK: query: insert into src_null values (3, null)
+PREHOOK: Output: default@src_null_n1
+POSTHOOK: query: insert into src_null_n1 values (3, null)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@src_null
-POSTHOOK: Lineage: src_null.a SCRIPT []
-POSTHOOK: Lineage: src_null.b EXPRESSION []
-PREHOOK: query: insert into src_null values (2, null)
+POSTHOOK: Output: default@src_null_n1
+POSTHOOK: Lineage: src_null_n1.a SCRIPT []
+POSTHOOK: Lineage: src_null_n1.b EXPRESSION []
+PREHOOK: query: insert into src_null_n1 values (2, null)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@src_null
-POSTHOOK: query: insert into src_null values (2, null)
+PREHOOK: Output: default@src_null_n1
+POSTHOOK: query: insert into src_null_n1 values (2, null)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@src_null
-POSTHOOK: Lineage: src_null.a SCRIPT []
-POSTHOOK: Lineage: src_null.b EXPRESSION []
-PREHOOK: query: insert into src_null values (2, 'A')
+POSTHOOK: Output: default@src_null_n1
+POSTHOOK: Lineage: src_null_n1.a SCRIPT []
+POSTHOOK: Lineage: src_null_n1.b EXPRESSION []
+PREHOOK: query: insert into src_null_n1 values (2, 'A')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@src_null
-POSTHOOK: query: insert into src_null values (2, 'A')
+PREHOOK: Output: default@src_null_n1
+POSTHOOK: query: insert into src_null_n1 values (2, 'A')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@src_null
-POSTHOOK: Lineage: src_null.a SCRIPT []
-POSTHOOK: Lineage: src_null.b SCRIPT []
-PREHOOK: query: insert into src_null values (2, 'B')
+POSTHOOK: Output: default@src_null_n1
+POSTHOOK: Lineage: src_null_n1.a SCRIPT []
+POSTHOOK: Lineage: src_null_n1.b SCRIPT []
+PREHOOK: query: insert into src_null_n1 values (2, 'B')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@src_null
-POSTHOOK: query: insert into src_null values (2, 'B')
+PREHOOK: Output: default@src_null_n1
+POSTHOOK: query: insert into src_null_n1 values (2, 'B')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@src_null
-POSTHOOK: Lineage: src_null.a SCRIPT []
-POSTHOOK: Lineage: src_null.b SCRIPT []
-PREHOOK: query: SELECT x.* FROM src_null x ORDER BY a asc
+POSTHOOK: Output: default@src_null_n1
+POSTHOOK: Lineage: src_null_n1.a SCRIPT []
+POSTHOOK: Lineage: src_null_n1.b SCRIPT []
+PREHOOK: query: SELECT x.* FROM src_null_n1 x ORDER BY a asc
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_null
+PREHOOK: Input: default@src_null_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT x.* FROM src_null x ORDER BY a asc
+POSTHOOK: query: SELECT x.* FROM src_null_n1 x ORDER BY a asc
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_null
+POSTHOOK: Input: default@src_null_n1
 #### A masked pattern was here ####
 NULL	NULL
 1	A
@@ -80,13 +80,13 @@ NULL	NULL
 2	A
 2	B
 3	NULL
-PREHOOK: query: SELECT x.* FROM src_null x ORDER BY a desc
+PREHOOK: query: SELECT x.* FROM src_null_n1 x ORDER BY a desc
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_null
+PREHOOK: Input: default@src_null_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT x.* FROM src_null x ORDER BY a desc
+POSTHOOK: query: SELECT x.* FROM src_null_n1 x ORDER BY a desc
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_null
+POSTHOOK: Input: default@src_null_n1
 #### A masked pattern was here ####
 3	NULL
 2	NULL
@@ -94,13 +94,13 @@ POSTHOOK: Input: default@src_null
 2	B
 1	A
 NULL	NULL
-PREHOOK: query: SELECT x.* FROM src_null x ORDER BY b asc, a asc nulls last
+PREHOOK: query: SELECT x.* FROM src_null_n1 x ORDER BY b asc, a asc nulls last
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_null
+PREHOOK: Input: default@src_null_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT x.* FROM src_null x ORDER BY b asc, a asc nulls last
+POSTHOOK: query: SELECT x.* FROM src_null_n1 x ORDER BY b asc, a asc nulls last
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_null
+POSTHOOK: Input: default@src_null_n1
 #### A masked pattern was here ####
 2	NULL
 3	NULL
@@ -108,13 +108,13 @@ NULL	NULL
 1	A
 2	A
 2	B
-PREHOOK: query: SELECT x.* FROM src_null x ORDER BY b desc, a asc
+PREHOOK: query: SELECT x.* FROM src_null_n1 x ORDER BY b desc, a asc
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_null
+PREHOOK: Input: default@src_null_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT x.* FROM src_null x ORDER BY b desc, a asc
+POSTHOOK: query: SELECT x.* FROM src_null_n1 x ORDER BY b desc, a asc
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_null
+POSTHOOK: Input: default@src_null_n1
 #### A masked pattern was here ####
 2	B
 1	A
@@ -122,13 +122,13 @@ POSTHOOK: Input: default@src_null
 NULL	NULL
 2	NULL
 3	NULL
-PREHOOK: query: SELECT x.* FROM src_null x ORDER BY a asc nulls first
+PREHOOK: query: SELECT x.* FROM src_null_n1 x ORDER BY a asc nulls first
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_null
+PREHOOK: Input: default@src_null_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT x.* FROM src_null x ORDER BY a asc nulls first
+POSTHOOK: query: SELECT x.* FROM src_null_n1 x ORDER BY a asc nulls first
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_null
+POSTHOOK: Input: default@src_null_n1
 #### A masked pattern was here ####
 NULL	NULL
 1	A
@@ -136,13 +136,13 @@ NULL	NULL
 2	A
 2	B
 3	NULL
-PREHOOK: query: SELECT x.* FROM src_null x ORDER BY a desc nulls first
+PREHOOK: query: SELECT x.* FROM src_null_n1 x ORDER BY a desc nulls first
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_null
+PREHOOK: Input: default@src_null_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT x.* FROM src_null x ORDER BY a desc nulls first
+POSTHOOK: query: SELECT x.* FROM src_null_n1 x ORDER BY a desc nulls first
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_null
+POSTHOOK: Input: default@src_null_n1
 #### A masked pattern was here ####
 NULL	NULL
 3	NULL
@@ -150,13 +150,13 @@ NULL	NULL
 2	A
 2	B
 1	A
-PREHOOK: query: SELECT x.* FROM src_null x ORDER BY b asc nulls last, a
+PREHOOK: query: SELECT x.* FROM src_null_n1 x ORDER BY b asc nulls last, a
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_null
+PREHOOK: Input: default@src_null_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT x.* FROM src_null x ORDER BY b asc nulls last, a
+POSTHOOK: query: SELECT x.* FROM src_null_n1 x ORDER BY b asc nulls last, a
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_null
+POSTHOOK: Input: default@src_null_n1
 #### A masked pattern was here ####
 1	A
 2	A
@@ -164,13 +164,13 @@ POSTHOOK: Input: default@src_null
 NULL	NULL
 2	NULL
 3	NULL
-PREHOOK: query: SELECT x.* FROM src_null x ORDER BY b desc nulls last, a
+PREHOOK: query: SELECT x.* FROM src_null_n1 x ORDER BY b desc nulls last, a
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_null
+PREHOOK: Input: default@src_null_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT x.* FROM src_null x ORDER BY b desc nulls last, a
+POSTHOOK: query: SELECT x.* FROM src_null_n1 x ORDER BY b desc nulls last, a
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_null
+POSTHOOK: Input: default@src_null_n1
 #### A masked pattern was here ####
 2	B
 1	A
@@ -178,13 +178,13 @@ POSTHOOK: Input: default@src_null
 NULL	NULL
 2	NULL
 3	NULL
-PREHOOK: query: SELECT x.* FROM src_null x ORDER BY a asc nulls last, b desc
+PREHOOK: query: SELECT x.* FROM src_null_n1 x ORDER BY a asc nulls last, b desc
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_null
+PREHOOK: Input: default@src_null_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT x.* FROM src_null x ORDER BY a asc nulls last, b desc
+POSTHOOK: query: SELECT x.* FROM src_null_n1 x ORDER BY a asc nulls last, b desc
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_null
+POSTHOOK: Input: default@src_null_n1
 #### A masked pattern was here ####
 1	A
 2	B
@@ -192,13 +192,13 @@ POSTHOOK: Input: default@src_null
 2	NULL
 3	NULL
 NULL	NULL
-PREHOOK: query: SELECT x.* FROM src_null x ORDER BY b desc nulls last, a desc nulls last
+PREHOOK: query: SELECT x.* FROM src_null_n1 x ORDER BY b desc nulls last, a desc nulls last
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_null
+PREHOOK: Input: default@src_null_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT x.* FROM src_null x ORDER BY b desc nulls last, a desc nulls last
+POSTHOOK: query: SELECT x.* FROM src_null_n1 x ORDER BY b desc nulls last, a desc nulls last
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_null
+POSTHOOK: Input: default@src_null_n1
 #### A masked pattern was here ####
 2	B
 2	A
@@ -206,13 +206,13 @@ POSTHOOK: Input: default@src_null
 3	NULL
 2	NULL
 NULL	NULL
-PREHOOK: query: SELECT x.* FROM src_null x ORDER BY b asc nulls first, a asc nulls last
+PREHOOK: query: SELECT x.* FROM src_null_n1 x ORDER BY b asc nulls first, a asc nulls last
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_null
+PREHOOK: Input: default@src_null_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT x.* FROM src_null x ORDER BY b asc nulls first, a asc nulls last
+POSTHOOK: query: SELECT x.* FROM src_null_n1 x ORDER BY b asc nulls first, a asc nulls last
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_null
+POSTHOOK: Input: default@src_null_n1
 #### A masked pattern was here ####
 2	NULL
 3	NULL

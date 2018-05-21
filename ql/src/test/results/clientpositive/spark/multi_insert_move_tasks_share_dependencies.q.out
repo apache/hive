@@ -1,28 +1,28 @@
-PREHOOK: query: create table src_multi1 like src
+PREHOOK: query: create table src_multi1_n4 like src
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src_multi1
-POSTHOOK: query: create table src_multi1 like src
+PREHOOK: Output: default@src_multi1_n4
+POSTHOOK: query: create table src_multi1_n4 like src
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src_multi1
-PREHOOK: query: create table src_multi2 like src
+POSTHOOK: Output: default@src_multi1_n4
+PREHOOK: query: create table src_multi2_n5 like src
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src_multi2
-POSTHOOK: query: create table src_multi2 like src
+PREHOOK: Output: default@src_multi2_n5
+POSTHOOK: query: create table src_multi2_n5 like src
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src_multi2
+POSTHOOK: Output: default@src_multi2_n5
 PREHOOK: query: explain
 from src
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
+insert overwrite table src_multi1_n4 select * where key < 10
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 from src
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
+insert overwrite table src_multi1_n4 select * where key < 10
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -56,7 +56,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.src_multi1
+                            name: default.src_multi1_n4
                   Filter Operator
                     predicate: ((key < 20) and (key > 10)) (type: boolean)
                     Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
@@ -71,7 +71,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.src_multi2
+                            name: default.src_multi2_n5
             Execution mode: vectorized
 
   Stage: Stage-3
@@ -85,7 +85,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.src_multi1
+              name: default.src_multi1_n4
 
   Stage: Stage-4
     Stats Work
@@ -99,37 +99,37 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.src_multi2
+              name: default.src_multi2_n5
 
   Stage: Stage-5
     Stats Work
       Basic Stats Work:
 
 PREHOOK: query: from src
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
+insert overwrite table src_multi1_n4 select * where key < 10
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@src_multi1
-PREHOOK: Output: default@src_multi2
+PREHOOK: Output: default@src_multi1_n4
+PREHOOK: Output: default@src_multi2_n5
 POSTHOOK: query: from src
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
+insert overwrite table src_multi1_n4 select * where key < 10
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@src_multi1
-POSTHOOK: Output: default@src_multi2
-POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from src_multi1
+POSTHOOK: Output: default@src_multi1_n4
+POSTHOOK: Output: default@src_multi2_n5
+POSTHOOK: Lineage: src_multi1_n4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi1_n4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi2_n5.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi2_n5.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from src_multi1_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_multi1
+PREHOOK: Input: default@src_multi1_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_multi1
+POSTHOOK: query: select * from src_multi1_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_multi1
+POSTHOOK: Input: default@src_multi1_n4
 #### A masked pattern was here ####
 0	val_0
 0	val_0
@@ -141,13 +141,13 @@ POSTHOOK: Input: default@src_multi1
 5	val_5
 8	val_8
 9	val_9
-PREHOOK: query: select * from src_multi2
+PREHOOK: query: select * from src_multi2_n5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_multi2
+PREHOOK: Input: default@src_multi2_n5
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_multi2
+POSTHOOK: query: select * from src_multi2_n5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_multi2
+POSTHOOK: Input: default@src_multi2_n5
 #### A masked pattern was here ####
 11	val_11
 12	val_12
@@ -160,13 +160,13 @@ POSTHOOK: Input: default@src_multi2
 19	val_19
 PREHOOK: query: explain
 from src
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
+insert overwrite table src_multi1_n4 select * where key < 10
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 from src
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
+insert overwrite table src_multi1_n4 select * where key < 10
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -200,7 +200,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.src_multi1
+                            name: default.src_multi1_n4
                   Filter Operator
                     predicate: ((key < 20) and (key > 10)) (type: boolean)
                     Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
@@ -215,7 +215,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.src_multi2
+                            name: default.src_multi2_n5
             Execution mode: vectorized
 
   Stage: Stage-3
@@ -229,7 +229,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.src_multi1
+              name: default.src_multi1_n4
 
   Stage: Stage-4
     Stats Work
@@ -243,37 +243,37 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.src_multi2
+              name: default.src_multi2_n5
 
   Stage: Stage-5
     Stats Work
       Basic Stats Work:
 
 PREHOOK: query: from src
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
+insert overwrite table src_multi1_n4 select * where key < 10
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@src_multi1
-PREHOOK: Output: default@src_multi2
+PREHOOK: Output: default@src_multi1_n4
+PREHOOK: Output: default@src_multi2_n5
 POSTHOOK: query: from src
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
+insert overwrite table src_multi1_n4 select * where key < 10
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@src_multi1
-POSTHOOK: Output: default@src_multi2
-POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from src_multi1
+POSTHOOK: Output: default@src_multi1_n4
+POSTHOOK: Output: default@src_multi2_n5
+POSTHOOK: Lineage: src_multi1_n4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi1_n4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi2_n5.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi2_n5.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from src_multi1_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_multi1
+PREHOOK: Input: default@src_multi1_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_multi1
+POSTHOOK: query: select * from src_multi1_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_multi1
+POSTHOOK: Input: default@src_multi1_n4
 #### A masked pattern was here ####
 0	val_0
 0	val_0
@@ -285,13 +285,13 @@ POSTHOOK: Input: default@src_multi1
 5	val_5
 8	val_8
 9	val_9
-PREHOOK: query: select * from src_multi2
+PREHOOK: query: select * from src_multi2_n5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_multi2
+PREHOOK: Input: default@src_multi2_n5
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_multi2
+POSTHOOK: query: select * from src_multi2_n5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_multi2
+POSTHOOK: Input: default@src_multi2_n5
 #### A masked pattern was here ####
 11	val_11
 12	val_12
@@ -304,13 +304,13 @@ POSTHOOK: Input: default@src_multi2
 19	val_19
 PREHOOK: query: explain
 from src
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
+insert overwrite table src_multi1_n4 select * where key < 10
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 from src
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
+insert overwrite table src_multi1_n4 select * where key < 10
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -344,7 +344,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.src_multi1
+                            name: default.src_multi1_n4
                   Filter Operator
                     predicate: ((key < 20) and (key > 10)) (type: boolean)
                     Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
@@ -359,7 +359,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.src_multi2
+                            name: default.src_multi2_n5
             Execution mode: vectorized
 
   Stage: Stage-3
@@ -373,7 +373,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.src_multi1
+              name: default.src_multi1_n4
 
   Stage: Stage-4
     Stats Work
@@ -387,37 +387,37 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.src_multi2
+              name: default.src_multi2_n5
 
   Stage: Stage-5
     Stats Work
       Basic Stats Work:
 
 PREHOOK: query: from src
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
+insert overwrite table src_multi1_n4 select * where key < 10
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@src_multi1
-PREHOOK: Output: default@src_multi2
+PREHOOK: Output: default@src_multi1_n4
+PREHOOK: Output: default@src_multi2_n5
 POSTHOOK: query: from src
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
+insert overwrite table src_multi1_n4 select * where key < 10
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@src_multi1
-POSTHOOK: Output: default@src_multi2
-POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from src_multi1
+POSTHOOK: Output: default@src_multi1_n4
+POSTHOOK: Output: default@src_multi2_n5
+POSTHOOK: Lineage: src_multi1_n4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi1_n4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi2_n5.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi2_n5.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from src_multi1_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_multi1
+PREHOOK: Input: default@src_multi1_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_multi1
+POSTHOOK: query: select * from src_multi1_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_multi1
+POSTHOOK: Input: default@src_multi1_n4
 #### A masked pattern was here ####
 0	val_0
 0	val_0
@@ -429,13 +429,13 @@ POSTHOOK: Input: default@src_multi1
 5	val_5
 8	val_8
 9	val_9
-PREHOOK: query: select * from src_multi2
+PREHOOK: query: select * from src_multi2_n5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_multi2
+PREHOOK: Input: default@src_multi2_n5
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_multi2
+POSTHOOK: query: select * from src_multi2_n5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_multi2
+POSTHOOK: Input: default@src_multi2_n5
 #### A masked pattern was here ####
 11	val_11
 12	val_12
@@ -448,13 +448,13 @@ POSTHOOK: Input: default@src_multi2
 19	val_19
 PREHOOK: query: explain
 from src
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
+insert overwrite table src_multi1_n4 select * where key < 10
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 from src
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
+insert overwrite table src_multi1_n4 select * where key < 10
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -488,7 +488,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.src_multi1
+                            name: default.src_multi1_n4
                   Filter Operator
                     predicate: ((key < 20) and (key > 10)) (type: boolean)
                     Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
@@ -503,7 +503,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.src_multi2
+                            name: default.src_multi2_n5
             Execution mode: vectorized
 
   Stage: Stage-3
@@ -517,7 +517,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.src_multi1
+              name: default.src_multi1_n4
 
   Stage: Stage-4
     Stats Work
@@ -531,37 +531,37 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.src_multi2
+              name: default.src_multi2_n5
 
   Stage: Stage-5
     Stats Work
       Basic Stats Work:
 
 PREHOOK: query: from src
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
+insert overwrite table src_multi1_n4 select * where key < 10
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@src_multi1
-PREHOOK: Output: default@src_multi2
+PREHOOK: Output: default@src_multi1_n4
+PREHOOK: Output: default@src_multi2_n5
 POSTHOOK: query: from src
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
+insert overwrite table src_multi1_n4 select * where key < 10
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@src_multi1
-POSTHOOK: Output: default@src_multi2
-POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from src_multi1
+POSTHOOK: Output: default@src_multi1_n4
+POSTHOOK: Output: default@src_multi2_n5
+POSTHOOK: Lineage: src_multi1_n4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi1_n4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi2_n5.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi2_n5.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from src_multi1_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_multi1
+PREHOOK: Input: default@src_multi1_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_multi1
+POSTHOOK: query: select * from src_multi1_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_multi1
+POSTHOOK: Input: default@src_multi1_n4
 #### A masked pattern was here ####
 0	val_0
 0	val_0
@@ -573,13 +573,13 @@ POSTHOOK: Input: default@src_multi1
 5	val_5
 8	val_8
 9	val_9
-PREHOOK: query: select * from src_multi2
+PREHOOK: query: select * from src_multi2_n5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_multi2
+PREHOOK: Input: default@src_multi2_n5
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_multi2
+POSTHOOK: query: select * from src_multi2_n5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_multi2
+POSTHOOK: Input: default@src_multi2_n5
 #### A masked pattern was here ####
 11	val_11
 12	val_12
@@ -592,13 +592,13 @@ POSTHOOK: Input: default@src_multi2
 19	val_19
 PREHOOK: query: explain
 from src
-insert overwrite table src_multi1 select * where key < 10 group by key, value
-insert overwrite table src_multi2 select * where key > 10 and key < 20 group by key, value
+insert overwrite table src_multi1_n4 select * where key < 10 group by key, value
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20 group by key, value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 from src
-insert overwrite table src_multi1 select * where key < 10 group by key, value
-insert overwrite table src_multi2 select * where key > 10 and key < 20 group by key, value
+insert overwrite table src_multi1_n4 select * where key < 10 group by key, value
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20 group by key, value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -648,7 +648,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.src_multi1
+                          name: default.src_multi1_n4
                 Filter Operator
                   predicate: ((KEY._col0 < 20) and (KEY._col0 > 10)) (type: boolean)
                   Statistics: Num rows: 24 Data size: 254 Basic stats: COMPLETE Column stats: NONE
@@ -664,7 +664,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.src_multi2
+                          name: default.src_multi2_n5
 
   Stage: Stage-3
     Dependency Collection
@@ -677,7 +677,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.src_multi1
+              name: default.src_multi1_n4
 
   Stage: Stage-4
     Stats Work
@@ -691,37 +691,37 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.src_multi2
+              name: default.src_multi2_n5
 
   Stage: Stage-5
     Stats Work
       Basic Stats Work:
 
 PREHOOK: query: from src
-insert overwrite table src_multi1 select * where key < 10 group by key, value
-insert overwrite table src_multi2 select * where key > 10 and key < 20 group by key, value
+insert overwrite table src_multi1_n4 select * where key < 10 group by key, value
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20 group by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@src_multi1
-PREHOOK: Output: default@src_multi2
+PREHOOK: Output: default@src_multi1_n4
+PREHOOK: Output: default@src_multi2_n5
 POSTHOOK: query: from src
-insert overwrite table src_multi1 select * where key < 10 group by key, value
-insert overwrite table src_multi2 select * where key > 10 and key < 20 group by key, value
+insert overwrite table src_multi1_n4 select * where key < 10 group by key, value
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20 group by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@src_multi1
-POSTHOOK: Output: default@src_multi2
-POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from src_multi1
+POSTHOOK: Output: default@src_multi1_n4
+POSTHOOK: Output: default@src_multi2_n5
+POSTHOOK: Lineage: src_multi1_n4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi1_n4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi2_n5.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi2_n5.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from src_multi1_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_multi1
+PREHOOK: Input: default@src_multi1_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_multi1
+POSTHOOK: query: select * from src_multi1_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_multi1
+POSTHOOK: Input: default@src_multi1_n4
 #### A masked pattern was here ####
 0	val_0
 2	val_2
@@ -729,13 +729,13 @@ POSTHOOK: Input: default@src_multi1
 5	val_5
 8	val_8
 9	val_9
-PREHOOK: query: select * from src_multi2
+PREHOOK: query: select * from src_multi2_n5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_multi2
+PREHOOK: Input: default@src_multi2_n5
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_multi2
+POSTHOOK: query: select * from src_multi2_n5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_multi2
+POSTHOOK: Input: default@src_multi2_n5
 #### A masked pattern was here ####
 11	val_11
 12	val_12
@@ -745,13 +745,13 @@ POSTHOOK: Input: default@src_multi2
 19	val_19
 PREHOOK: query: explain
 from src
-insert overwrite table src_multi1 select * where key < 10 group by key, value
-insert overwrite table src_multi2 select * where key > 10 and key < 20 group by key, value
+insert overwrite table src_multi1_n4 select * where key < 10 group by key, value
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20 group by key, value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 from src
-insert overwrite table src_multi1 select * where key < 10 group by key, value
-insert overwrite table src_multi2 select * where key > 10 and key < 20 group by key, value
+insert overwrite table src_multi1_n4 select * where key < 10 group by key, value
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20 group by key, value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -801,7 +801,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.src_multi1
+                          name: default.src_multi1_n4
                 Filter Operator
                   predicate: ((KEY._col0 < 20) and (KEY._col0 > 10)) (type: boolean)
                   Statistics: Num rows: 24 Data size: 254 Basic stats: COMPLETE Column stats: NONE
@@ -817,7 +817,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.src_multi2
+                          name: default.src_multi2_n5
 
   Stage: Stage-3
     Dependency Collection
@@ -830,7 +830,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.src_multi1
+              name: default.src_multi1_n4
 
   Stage: Stage-4
     Stats Work
@@ -844,37 +844,37 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.src_multi2
+              name: default.src_multi2_n5
 
   Stage: Stage-5
     Stats Work
       Basic Stats Work:
 
 PREHOOK: query: from src
-insert overwrite table src_multi1 select * where key < 10 group by key, value
-insert overwrite table src_multi2 select * where key > 10 and key < 20 group by key, value
+insert overwrite table src_multi1_n4 select * where key < 10 group by key, value
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20 group by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@src_multi1
-PREHOOK: Output: default@src_multi2
+PREHOOK: Output: default@src_multi1_n4
+PREHOOK: Output: default@src_multi2_n5
 POSTHOOK: query: from src
-insert overwrite table src_multi1 select * where key < 10 group by key, value
-insert overwrite table src_multi2 select * where key > 10 and key < 20 group by key, value
+insert overwrite table src_multi1_n4 select * where key < 10 group by key, value
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20 group by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@src_multi1
-POSTHOOK: Output: default@src_multi2
-POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from src_multi1
+POSTHOOK: Output: default@src_multi1_n4
+POSTHOOK: Output: default@src_multi2_n5
+POSTHOOK: Lineage: src_multi1_n4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi1_n4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi2_n5.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi2_n5.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from src_multi1_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_multi1
+PREHOOK: Input: default@src_multi1_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_multi1
+POSTHOOK: query: select * from src_multi1_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_multi1
+POSTHOOK: Input: default@src_multi1_n4
 #### A masked pattern was here ####
 0	val_0
 2	val_2
@@ -882,13 +882,13 @@ POSTHOOK: Input: default@src_multi1
 5	val_5
 8	val_8
 9	val_9
-PREHOOK: query: select * from src_multi2
+PREHOOK: query: select * from src_multi2_n5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_multi2
+PREHOOK: Input: default@src_multi2_n5
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_multi2
+POSTHOOK: query: select * from src_multi2_n5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_multi2
+POSTHOOK: Input: default@src_multi2_n5
 #### A masked pattern was here ####
 11	val_11
 12	val_12
@@ -898,13 +898,13 @@ POSTHOOK: Input: default@src_multi2
 19	val_19
 PREHOOK: query: explain
 from src
-insert overwrite table src_multi1 select * where key < 10 group by key, value
-insert overwrite table src_multi2 select * where key > 10 and key < 20 group by key, value
+insert overwrite table src_multi1_n4 select * where key < 10 group by key, value
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20 group by key, value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 from src
-insert overwrite table src_multi1 select * where key < 10 group by key, value
-insert overwrite table src_multi2 select * where key > 10 and key < 20 group by key, value
+insert overwrite table src_multi1_n4 select * where key < 10 group by key, value
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20 group by key, value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -954,7 +954,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.src_multi1
+                          name: default.src_multi1_n4
                 Filter Operator
                   predicate: ((KEY._col0 < 20) and (KEY._col0 > 10)) (type: boolean)
                   Statistics: Num rows: 24 Data size: 254 Basic stats: COMPLETE Column stats: NONE
@@ -970,7 +970,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.src_multi2
+                          name: default.src_multi2_n5
 
   Stage: Stage-3
     Dependency Collection
@@ -983,7 +983,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.src_multi1
+              name: default.src_multi1_n4
 
   Stage: Stage-4
     Stats Work
@@ -997,37 +997,37 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.src_multi2
+              name: default.src_multi2_n5
 
   Stage: Stage-5
     Stats Work
       Basic Stats Work:
 
 PREHOOK: query: from src
-insert overwrite table src_multi1 select * where key < 10 group by key, value
-insert overwrite table src_multi2 select * where key > 10 and key < 20 group by key, value
+insert overwrite table src_multi1_n4 select * where key < 10 group by key, value
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20 group by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@src_multi1
-PREHOOK: Output: default@src_multi2
+PREHOOK: Output: default@src_multi1_n4
+PREHOOK: Output: default@src_multi2_n5
 POSTHOOK: query: from src
-insert overwrite table src_multi1 select * where key < 10 group by key, value
-insert overwrite table src_multi2 select * where key > 10 and key < 20 group by key, value
+insert overwrite table src_multi1_n4 select * where key < 10 group by key, value
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20 group by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@src_multi1
-POSTHOOK: Output: default@src_multi2
-POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from src_multi1
+POSTHOOK: Output: default@src_multi1_n4
+POSTHOOK: Output: default@src_multi2_n5
+POSTHOOK: Lineage: src_multi1_n4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi1_n4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi2_n5.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi2_n5.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from src_multi1_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_multi1
+PREHOOK: Input: default@src_multi1_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_multi1
+POSTHOOK: query: select * from src_multi1_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_multi1
+POSTHOOK: Input: default@src_multi1_n4
 #### A masked pattern was here ####
 0	val_0
 2	val_2
@@ -1035,13 +1035,13 @@ POSTHOOK: Input: default@src_multi1
 5	val_5
 8	val_8
 9	val_9
-PREHOOK: query: select * from src_multi2
+PREHOOK: query: select * from src_multi2_n5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_multi2
+PREHOOK: Input: default@src_multi2_n5
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_multi2
+POSTHOOK: query: select * from src_multi2_n5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_multi2
+POSTHOOK: Input: default@src_multi2_n5
 #### A masked pattern was here ####
 11	val_11
 12	val_12
@@ -1051,13 +1051,13 @@ POSTHOOK: Input: default@src_multi2
 19	val_19
 PREHOOK: query: explain
 from src
-insert overwrite table src_multi1 select * where key < 10 group by key, value
-insert overwrite table src_multi2 select * where key > 10 and key < 20 group by key, value
+insert overwrite table src_multi1_n4 select * where key < 10 group by key, value
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20 group by key, value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 from src
-insert overwrite table src_multi1 select * where key < 10 group by key, value
-insert overwrite table src_multi2 select * where key > 10 and key < 20 group by key, value
+insert overwrite table src_multi1_n4 select * where key < 10 group by key, value
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20 group by key, value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -1107,7 +1107,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.src_multi1
+                          name: default.src_multi1_n4
                 Filter Operator
                   predicate: ((KEY._col0 < 20) and (KEY._col0 > 10)) (type: boolean)
                   Statistics: Num rows: 24 Data size: 254 Basic stats: COMPLETE Column stats: NONE
@@ -1123,7 +1123,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.src_multi2
+                          name: default.src_multi2_n5
 
   Stage: Stage-3
     Dependency Collection
@@ -1136,7 +1136,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.src_multi1
+              name: default.src_multi1_n4
 
   Stage: Stage-4
     Stats Work
@@ -1150,37 +1150,37 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.src_multi2
+              name: default.src_multi2_n5
 
   Stage: Stage-5
     Stats Work
       Basic Stats Work:
 
 PREHOOK: query: from src
-insert overwrite table src_multi1 select * where key < 10 group by key, value
-insert overwrite table src_multi2 select * where key > 10 and key < 20 group by key, value
+insert overwrite table src_multi1_n4 select * where key < 10 group by key, value
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20 group by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@src_multi1
-PREHOOK: Output: default@src_multi2
+PREHOOK: Output: default@src_multi1_n4
+PREHOOK: Output: default@src_multi2_n5
 POSTHOOK: query: from src
-insert overwrite table src_multi1 select * where key < 10 group by key, value
-insert overwrite table src_multi2 select * where key > 10 and key < 20 group by key, value
+insert overwrite table src_multi1_n4 select * where key < 10 group by key, value
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20 group by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@src_multi1
-POSTHOOK: Output: default@src_multi2
-POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from src_multi1
+POSTHOOK: Output: default@src_multi1_n4
+POSTHOOK: Output: default@src_multi2_n5
+POSTHOOK: Lineage: src_multi1_n4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi1_n4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi2_n5.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi2_n5.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from src_multi1_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_multi1
+PREHOOK: Input: default@src_multi1_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_multi1
+POSTHOOK: query: select * from src_multi1_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_multi1
+POSTHOOK: Input: default@src_multi1_n4
 #### A masked pattern was here ####
 0	val_0
 2	val_2
@@ -1188,13 +1188,13 @@ POSTHOOK: Input: default@src_multi1
 5	val_5
 8	val_8
 9	val_9
-PREHOOK: query: select * from src_multi2
+PREHOOK: query: select * from src_multi2_n5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_multi2
+PREHOOK: Input: default@src_multi2_n5
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_multi2
+POSTHOOK: query: select * from src_multi2_n5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_multi2
+POSTHOOK: Input: default@src_multi2_n5
 #### A masked pattern was here ####
 11	val_11
 12	val_12
@@ -1204,13 +1204,13 @@ POSTHOOK: Input: default@src_multi2
 19	val_19
 PREHOOK: query: explain
 from (select * from src  union all select * from src) s
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
+insert overwrite table src_multi1_n4 select * where key < 10
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 from (select * from src  union all select * from src) s
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
+insert overwrite table src_multi1_n4 select * where key < 10
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -1244,7 +1244,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.src_multi1
+                            name: default.src_multi1_n4
                     Filter Operator
                       predicate: ((_col0 < 20) and (_col0 > 10)) (type: boolean)
                       Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
@@ -1255,7 +1255,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.src_multi2
+                            name: default.src_multi2_n5
             Execution mode: vectorized
         Map 2 
             Map Operator Tree:
@@ -1276,7 +1276,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.src_multi1
+                            name: default.src_multi1_n4
                     Filter Operator
                       predicate: ((_col0 < 20) and (_col0 > 10)) (type: boolean)
                       Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
@@ -1287,7 +1287,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.src_multi2
+                            name: default.src_multi2_n5
             Execution mode: vectorized
 
   Stage: Stage-3
@@ -1301,7 +1301,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.src_multi1
+              name: default.src_multi1_n4
 
   Stage: Stage-4
     Stats Work
@@ -1315,37 +1315,37 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.src_multi2
+              name: default.src_multi2_n5
 
   Stage: Stage-5
     Stats Work
       Basic Stats Work:
 
 PREHOOK: query: from (select * from src  union all select * from src) s
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
+insert overwrite table src_multi1_n4 select * where key < 10
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@src_multi1
-PREHOOK: Output: default@src_multi2
+PREHOOK: Output: default@src_multi1_n4
+PREHOOK: Output: default@src_multi2_n5
 POSTHOOK: query: from (select * from src  union all select * from src) s
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
+insert overwrite table src_multi1_n4 select * where key < 10
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@src_multi1
-POSTHOOK: Output: default@src_multi2
-POSTHOOK: Lineage: src_multi1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from src_multi1
+POSTHOOK: Output: default@src_multi1_n4
+POSTHOOK: Output: default@src_multi2_n5
+POSTHOOK: Lineage: src_multi1_n4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi1_n4.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi2_n5.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi2_n5.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from src_multi1_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_multi1
+PREHOOK: Input: default@src_multi1_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_multi1
+POSTHOOK: query: select * from src_multi1_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_multi1
+POSTHOOK: Input: default@src_multi1_n4
 #### A masked pattern was here ####
 0	val_0
 0	val_0
@@ -1367,13 +1367,13 @@ POSTHOOK: Input: default@src_multi1
 8	val_8
 9	val_9
 9	val_9
-PREHOOK: query: select * from src_multi2
+PREHOOK: query: select * from src_multi2_n5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_multi2
+PREHOOK: Input: default@src_multi2_n5
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_multi2
+POSTHOOK: query: select * from src_multi2_n5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_multi2
+POSTHOOK: Input: default@src_multi2_n5
 #### A masked pattern was here ####
 11	val_11
 11	val_11
@@ -1395,13 +1395,13 @@ POSTHOOK: Input: default@src_multi2
 19	val_19
 PREHOOK: query: explain
 from (select * from src  union all select * from src) s
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
+insert overwrite table src_multi1_n4 select * where key < 10
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 from (select * from src  union all select * from src) s
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
+insert overwrite table src_multi1_n4 select * where key < 10
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -1435,7 +1435,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.src_multi1
+                            name: default.src_multi1_n4
                     Filter Operator
                       predicate: ((_col0 < 20) and (_col0 > 10)) (type: boolean)
                       Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
@@ -1446,7 +1446,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.src_multi2
+                            name: default.src_multi2_n5
             Execution mode: vectorized
         Map 2 
             Map Operator Tree:
@@ -1467,7 +1467,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.src_multi1
+                            name: default.src_multi1_n4
                     Filter Operator
                       predicate: ((_col0 < 20) and (_col0 > 10)) (type: boolean)
                       Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
@@ -1478,7 +1478,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.src_multi2
+                            name: default.src_multi2_n5
             Execution mode: vectorized
 
   Stage: Stage-3
@@ -1492,7 +1492,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.src_multi1
+              name: default.src_multi1_n4
 
   Stage: Stage-4
     Stats Work
@@ -1506,37 +1506,37 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.src_multi2
+              name: default.src_multi2_n5
 
   Stage: Stage-5
     Stats Work
       Basic Stats Work:
 
 PREHOOK: query: from (select * from src  union all select * from src) s
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
+insert overwrite table src_multi1_n4 select * where key < 10
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@src_multi1
-PREHOOK: Output: default@src_multi2
+PREHOOK: Output: default@src_multi1_n4
+PREHOOK: Output: default@src_multi2_n5
 POSTHOOK: query: from (select * from src  union all select * from src) s
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
+insert overwrite table src_multi1_n4 select * where key < 10
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@src_multi1
-POSTHOOK: Output: default@src_multi2
-POSTHOOK: Lineage: src_multi1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from src_multi1
+POSTHOOK: Output: default@src_multi1_n4
+POSTHOOK: Output: default@src_multi2_n5
+POSTHOOK: Lineage: src_multi1_n4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi1_n4.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi2_n5.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi2_n5.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from src_multi1_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_multi1
+PREHOOK: Input: default@src_multi1_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_multi1
+POSTHOOK: query: select * from src_multi1_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_multi1
+POSTHOOK: Input: default@src_multi1_n4
 #### A masked pattern was here ####
 0	val_0
 0	val_0
@@ -1558,13 +1558,13 @@ POSTHOOK: Input: default@src_multi1
 8	val_8
 9	val_9
 9	val_9
-PREHOOK: query: select * from src_multi2
+PREHOOK: query: select * from src_multi2_n5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_multi2
+PREHOOK: Input: default@src_multi2_n5
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_multi2
+POSTHOOK: query: select * from src_multi2_n5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_multi2
+POSTHOOK: Input: default@src_multi2_n5
 #### A masked pattern was here ####
 11	val_11
 11	val_11
@@ -1586,13 +1586,13 @@ POSTHOOK: Input: default@src_multi2
 19	val_19
 PREHOOK: query: explain
 from (select * from src  union all select * from src) s
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
+insert overwrite table src_multi1_n4 select * where key < 10
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 from (select * from src  union all select * from src) s
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
+insert overwrite table src_multi1_n4 select * where key < 10
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -1626,7 +1626,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.src_multi1
+                            name: default.src_multi1_n4
                     Filter Operator
                       predicate: ((_col0 < 20) and (_col0 > 10)) (type: boolean)
                       Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
@@ -1637,7 +1637,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.src_multi2
+                            name: default.src_multi2_n5
             Execution mode: vectorized
         Map 2 
             Map Operator Tree:
@@ -1658,7 +1658,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.src_multi1
+                            name: default.src_multi1_n4
                     Filter Operator
                       predicate: ((_col0 < 20) and (_col0 > 10)) (type: boolean)
                       Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
@@ -1669,7 +1669,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.src_multi2
+                            name: default.src_multi2_n5
             Execution mode: vectorized
 
   Stage: Stage-3
@@ -1683,7 +1683,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.src_multi1
+              name: default.src_multi1_n4
 
   Stage: Stage-4
     Stats Work
@@ -1697,37 +1697,37 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.src_multi2
+              name: default.src_multi2_n5
 
   Stage: Stage-5
     Stats Work
       Basic Stats Work:
 
 PREHOOK: query: from (select * from src  union all select * from src) s
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
+insert overwrite table src_multi1_n4 select * where key < 10
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@src_multi1
-PREHOOK: Output: default@src_multi2
+PREHOOK: Output: default@src_multi1_n4
+PREHOOK: Output: default@src_multi2_n5
 POSTHOOK: query: from (select * from src  union all select * from src) s
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
+insert overwrite table src_multi1_n4 select * where key < 10
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@src_multi1
-POSTHOOK: Output: default@src_multi2
-POSTHOOK: Lineage: src_multi1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from src_multi1
+POSTHOOK: Output: default@src_multi1_n4
+POSTHOOK: Output: default@src_multi2_n5
+POSTHOOK: Lineage: src_multi1_n4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi1_n4.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi2_n5.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi2_n5.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from src_multi1_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_multi1
+PREHOOK: Input: default@src_multi1_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_multi1
+POSTHOOK: query: select * from src_multi1_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_multi1
+POSTHOOK: Input: default@src_multi1_n4
 #### A masked pattern was here ####
 0	val_0
 0	val_0
@@ -1749,13 +1749,13 @@ POSTHOOK: Input: default@src_multi1
 8	val_8
 9	val_9
 9	val_9
-PREHOOK: query: select * from src_multi2
+PREHOOK: query: select * from src_multi2_n5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_multi2
+PREHOOK: Input: default@src_multi2_n5
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_multi2
+POSTHOOK: query: select * from src_multi2_n5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_multi2
+POSTHOOK: Input: default@src_multi2_n5
 #### A masked pattern was here ####
 11	val_11
 11	val_11
@@ -1777,13 +1777,13 @@ POSTHOOK: Input: default@src_multi2
 19	val_19
 PREHOOK: query: explain
 from (select * from src  union all select * from src) s
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
+insert overwrite table src_multi1_n4 select * where key < 10
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 from (select * from src  union all select * from src) s
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
+insert overwrite table src_multi1_n4 select * where key < 10
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -1817,7 +1817,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.src_multi1
+                            name: default.src_multi1_n4
                     Filter Operator
                       predicate: ((_col0 < 20) and (_col0 > 10)) (type: boolean)
                       Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
@@ -1828,7 +1828,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.src_multi2
+                            name: default.src_multi2_n5
             Execution mode: vectorized
         Map 2 
             Map Operator Tree:
@@ -1849,7 +1849,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.src_multi1
+                            name: default.src_multi1_n4
                     Filter Operator
                       predicate: ((_col0 < 20) and (_col0 > 10)) (type: boolean)
                       Statistics: Num rows: 111 Data size: 1179 Basic stats: COMPLETE Column stats: NONE
@@ -1860,7 +1860,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.src_multi2
+                            name: default.src_multi2_n5
             Execution mode: vectorized
 
   Stage: Stage-3
@@ -1874,7 +1874,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.src_multi1
+              name: default.src_multi1_n4
 
   Stage: Stage-4
     Stats Work
@@ -1888,37 +1888,37 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.src_multi2
+              name: default.src_multi2_n5
 
   Stage: Stage-5
     Stats Work
       Basic Stats Work:
 
 PREHOOK: query: from (select * from src  union all select * from src) s
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
+insert overwrite table src_multi1_n4 select * where key < 10
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@src_multi1
-PREHOOK: Output: default@src_multi2
+PREHOOK: Output: default@src_multi1_n4
+PREHOOK: Output: default@src_multi2_n5
 POSTHOOK: query: from (select * from src  union all select * from src) s
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
+insert overwrite table src_multi1_n4 select * where key < 10
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@src_multi1
-POSTHOOK: Output: default@src_multi2
-POSTHOOK: Lineage: src_multi1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from src_multi1
+POSTHOOK: Output: default@src_multi1_n4
+POSTHOOK: Output: default@src_multi2_n5
+POSTHOOK: Lineage: src_multi1_n4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi1_n4.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi2_n5.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi2_n5.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from src_multi1_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_multi1
+PREHOOK: Input: default@src_multi1_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_multi1
+POSTHOOK: query: select * from src_multi1_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_multi1
+POSTHOOK: Input: default@src_multi1_n4
 #### A masked pattern was here ####
 0	val_0
 0	val_0
@@ -1940,13 +1940,13 @@ POSTHOOK: Input: default@src_multi1
 8	val_8
 9	val_9
 9	val_9
-PREHOOK: query: select * from src_multi2
+PREHOOK: query: select * from src_multi2_n5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_multi2
+PREHOOK: Input: default@src_multi2_n5
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_multi2
+POSTHOOK: query: select * from src_multi2_n5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_multi2
+POSTHOOK: Input: default@src_multi2_n5
 #### A masked pattern was here ####
 11	val_11
 11	val_11
@@ -2821,14 +2821,14 @@ Found 2 items
 #### A masked pattern was here ####
 PREHOOK: query: explain
 from src
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
+insert overwrite table src_multi1_n4 select * where key < 10
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20
 #### A masked pattern was here ####
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 from src
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
+insert overwrite table src_multi1_n4 select * where key < 10
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20
 #### A masked pattern was here ####
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -2868,7 +2868,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.src_multi1
+                            name: default.src_multi1_n4
                   Filter Operator
                     predicate: ((key < 20) and (key > 10)) (type: boolean)
                     Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
@@ -2883,7 +2883,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.src_multi2
+                            name: default.src_multi2_n5
                   Filter Operator
                     predicate: (((key > 10) and (key < 20)) or (key < 10)) (type: boolean)
                     Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
@@ -2952,7 +2952,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.src_multi1
+              name: default.src_multi1_n4
 
   Stage: Stage-6
     Stats Work
@@ -2966,7 +2966,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.src_multi2
+              name: default.src_multi2_n5
 
   Stage: Stage-7
     Stats Work
@@ -2985,34 +2985,34 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
 PREHOOK: query: from src
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
+insert overwrite table src_multi1_n4 select * where key < 10
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20
 #### A masked pattern was here ####
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-PREHOOK: Output: default@src_multi1
-PREHOOK: Output: default@src_multi2
+PREHOOK: Output: default@src_multi1_n4
+PREHOOK: Output: default@src_multi2_n5
 POSTHOOK: query: from src
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
+insert overwrite table src_multi1_n4 select * where key < 10
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20
 #### A masked pattern was here ####
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: Output: default@src_multi1
-POSTHOOK: Output: default@src_multi2
-POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from src_multi1
+POSTHOOK: Output: default@src_multi1_n4
+POSTHOOK: Output: default@src_multi2_n5
+POSTHOOK: Lineage: src_multi1_n4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi1_n4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi2_n5.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi2_n5.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from src_multi1_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_multi1
+PREHOOK: Input: default@src_multi1_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_multi1
+POSTHOOK: query: select * from src_multi1_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_multi1
+POSTHOOK: Input: default@src_multi1_n4
 #### A masked pattern was here ####
 0	val_0
 0	val_0
@@ -3024,13 +3024,13 @@ POSTHOOK: Input: default@src_multi1
 5	val_5
 8	val_8
 9	val_9
-PREHOOK: query: select * from src_multi2
+PREHOOK: query: select * from src_multi2_n5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_multi2
+PREHOOK: Input: default@src_multi2_n5
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_multi2
+POSTHOOK: query: select * from src_multi2_n5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_multi2
+POSTHOOK: Input: default@src_multi2_n5
 #### A masked pattern was here ####
 11	val_11
 12	val_12
@@ -3045,14 +3045,14 @@ Found 2 items
 #### A masked pattern was here ####
 PREHOOK: query: explain
 from src
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
+insert overwrite table src_multi1_n4 select * where key < 10
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20
 #### A masked pattern was here ####
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 from src
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
+insert overwrite table src_multi1_n4 select * where key < 10
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20
 #### A masked pattern was here ####
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -3092,7 +3092,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.src_multi1
+                            name: default.src_multi1_n4
                   Filter Operator
                     predicate: ((key < 20) and (key > 10)) (type: boolean)
                     Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
@@ -3107,7 +3107,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.src_multi2
+                            name: default.src_multi2_n5
                   Filter Operator
                     predicate: (((key > 10) and (key < 20)) or (key < 10)) (type: boolean)
                     Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
@@ -3176,7 +3176,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.src_multi1
+              name: default.src_multi1_n4
 
   Stage: Stage-6
     Stats Work
@@ -3190,7 +3190,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.src_multi2
+              name: default.src_multi2_n5
 
   Stage: Stage-7
     Stats Work
@@ -3209,34 +3209,34 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
 PREHOOK: query: from src
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
+insert overwrite table src_multi1_n4 select * where key < 10
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20
 #### A masked pattern was here ####
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-PREHOOK: Output: default@src_multi1
-PREHOOK: Output: default@src_multi2
+PREHOOK: Output: default@src_multi1_n4
+PREHOOK: Output: default@src_multi2_n5
 POSTHOOK: query: from src
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
+insert overwrite table src_multi1_n4 select * where key < 10
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20
 #### A masked pattern was here ####
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: Output: default@src_multi1
-POSTHOOK: Output: default@src_multi2
-POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from src_multi1
+POSTHOOK: Output: default@src_multi1_n4
+POSTHOOK: Output: default@src_multi2_n5
+POSTHOOK: Lineage: src_multi1_n4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi1_n4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi2_n5.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi2_n5.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from src_multi1_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_multi1
+PREHOOK: Input: default@src_multi1_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_multi1
+POSTHOOK: query: select * from src_multi1_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_multi1
+POSTHOOK: Input: default@src_multi1_n4
 #### A masked pattern was here ####
 0	val_0
 0	val_0
@@ -3248,13 +3248,13 @@ POSTHOOK: Input: default@src_multi1
 5	val_5
 8	val_8
 9	val_9
-PREHOOK: query: select * from src_multi2
+PREHOOK: query: select * from src_multi2_n5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_multi2
+PREHOOK: Input: default@src_multi2_n5
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_multi2
+POSTHOOK: query: select * from src_multi2_n5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_multi2
+POSTHOOK: Input: default@src_multi2_n5
 #### A masked pattern was here ####
 11	val_11
 12	val_12
@@ -3269,14 +3269,14 @@ Found 2 items
 #### A masked pattern was here ####
 PREHOOK: query: explain
 from src
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
+insert overwrite table src_multi1_n4 select * where key < 10
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20
 #### A masked pattern was here ####
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 from src
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
+insert overwrite table src_multi1_n4 select * where key < 10
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20
 #### A masked pattern was here ####
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -3316,7 +3316,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.src_multi1
+                            name: default.src_multi1_n4
                   Filter Operator
                     predicate: ((key < 20) and (key > 10)) (type: boolean)
                     Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
@@ -3331,7 +3331,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.src_multi2
+                            name: default.src_multi2_n5
                   Filter Operator
                     predicate: (((key > 10) and (key < 20)) or (key < 10)) (type: boolean)
                     Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
@@ -3400,7 +3400,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.src_multi1
+              name: default.src_multi1_n4
 
   Stage: Stage-6
     Stats Work
@@ -3414,7 +3414,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.src_multi2
+              name: default.src_multi2_n5
 
   Stage: Stage-7
     Stats Work
@@ -3433,34 +3433,34 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
 PREHOOK: query: from src
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
+insert overwrite table src_multi1_n4 select * where key < 10
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20
 #### A masked pattern was here ####
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-PREHOOK: Output: default@src_multi1
-PREHOOK: Output: default@src_multi2
+PREHOOK: Output: default@src_multi1_n4
+PREHOOK: Output: default@src_multi2_n5
 POSTHOOK: query: from src
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
+insert overwrite table src_multi1_n4 select * where key < 10
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20
 #### A masked pattern was here ####
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: Output: default@src_multi1
-POSTHOOK: Output: default@src_multi2
-POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from src_multi1
+POSTHOOK: Output: default@src_multi1_n4
+POSTHOOK: Output: default@src_multi2_n5
+POSTHOOK: Lineage: src_multi1_n4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi1_n4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi2_n5.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi2_n5.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from src_multi1_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_multi1
+PREHOOK: Input: default@src_multi1_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_multi1
+POSTHOOK: query: select * from src_multi1_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_multi1
+POSTHOOK: Input: default@src_multi1_n4
 #### A masked pattern was here ####
 0	val_0
 0	val_0
@@ -3472,13 +3472,13 @@ POSTHOOK: Input: default@src_multi1
 5	val_5
 8	val_8
 9	val_9
-PREHOOK: query: select * from src_multi2
+PREHOOK: query: select * from src_multi2_n5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_multi2
+PREHOOK: Input: default@src_multi2_n5
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_multi2
+POSTHOOK: query: select * from src_multi2_n5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_multi2
+POSTHOOK: Input: default@src_multi2_n5
 #### A masked pattern was here ####
 11	val_11
 12	val_12
@@ -3493,14 +3493,14 @@ Found 2 items
 #### A masked pattern was here ####
 PREHOOK: query: explain
 from src
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
+insert overwrite table src_multi1_n4 select * where key < 10
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20
 #### A masked pattern was here ####
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 from src
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
+insert overwrite table src_multi1_n4 select * where key < 10
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20
 #### A masked pattern was here ####
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -3540,7 +3540,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.src_multi1
+                            name: default.src_multi1_n4
                   Filter Operator
                     predicate: ((key < 20) and (key > 10)) (type: boolean)
                     Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
@@ -3555,7 +3555,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.src_multi2
+                            name: default.src_multi2_n5
                   Filter Operator
                     predicate: (((key > 10) and (key < 20)) or (key < 10)) (type: boolean)
                     Statistics: Num rows: 221 Data size: 2347 Basic stats: COMPLETE Column stats: NONE
@@ -3624,7 +3624,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.src_multi1
+              name: default.src_multi1_n4
 
   Stage: Stage-6
     Stats Work
@@ -3638,7 +3638,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.src_multi2
+              name: default.src_multi2_n5
 
   Stage: Stage-7
     Stats Work
@@ -3657,34 +3657,34 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
 PREHOOK: query: from src
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
+insert overwrite table src_multi1_n4 select * where key < 10
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20
 #### A masked pattern was here ####
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-PREHOOK: Output: default@src_multi1
-PREHOOK: Output: default@src_multi2
+PREHOOK: Output: default@src_multi1_n4
+PREHOOK: Output: default@src_multi2_n5
 POSTHOOK: query: from src
-insert overwrite table src_multi1 select * where key < 10
-insert overwrite table src_multi2 select * where key > 10 and key < 20
+insert overwrite table src_multi1_n4 select * where key < 10
+insert overwrite table src_multi2_n5 select * where key > 10 and key < 20
 #### A masked pattern was here ####
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: Output: default@src_multi1
-POSTHOOK: Output: default@src_multi2
-POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from src_multi1
+POSTHOOK: Output: default@src_multi1_n4
+POSTHOOK: Output: default@src_multi2_n5
+POSTHOOK: Lineage: src_multi1_n4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi1_n4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi2_n5.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_multi2_n5.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from src_multi1_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_multi1
+PREHOOK: Input: default@src_multi1_n4
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_multi1
+POSTHOOK: query: select * from src_multi1_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_multi1
+POSTHOOK: Input: default@src_multi1_n4
 #### A masked pattern was here ####
 0	val_0
 0	val_0
@@ -3696,13 +3696,13 @@ POSTHOOK: Input: default@src_multi1
 5	val_5
 8	val_8
 9	val_9
-PREHOOK: query: select * from src_multi2
+PREHOOK: query: select * from src_multi2_n5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src_multi2
+PREHOOK: Input: default@src_multi2_n5
 #### A masked pattern was here ####
-POSTHOOK: query: select * from src_multi2
+POSTHOOK: query: select * from src_multi2_n5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src_multi2
+POSTHOOK: Input: default@src_multi2_n5
 #### A masked pattern was here ####
 11	val_11
 12	val_12

@@ -1,44 +1,44 @@
-PREHOOK: query: create table tx(a int,u int)
+PREHOOK: query: create table tx_n3(a int,u int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tx
-POSTHOOK: query: create table tx(a int,u int)
+PREHOOK: Output: default@tx_n3
+POSTHOOK: query: create table tx_n3(a int,u int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tx
-PREHOOK: query: insert into tx values (1,1),(2,2),(3,3),(4,4),(5,5),(6,6),(7,7),(10,10)
+POSTHOOK: Output: default@tx_n3
+PREHOOK: query: insert into tx_n3 values (1,1),(2,2),(3,3),(4,4),(5,5),(6,6),(7,7),(10,10)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@tx
-POSTHOOK: query: insert into tx values (1,1),(2,2),(3,3),(4,4),(5,5),(6,6),(7,7),(10,10)
+PREHOOK: Output: default@tx_n3
+POSTHOOK: query: insert into tx_n3 values (1,1),(2,2),(3,3),(4,4),(5,5),(6,6),(7,7),(10,10)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@tx
-POSTHOOK: Lineage: tx.a SCRIPT []
-POSTHOOK: Lineage: tx.u SCRIPT []
-PREHOOK: query: create table px(a int,p int)
+POSTHOOK: Output: default@tx_n3
+POSTHOOK: Lineage: tx_n3.a SCRIPT []
+POSTHOOK: Lineage: tx_n3.u SCRIPT []
+PREHOOK: query: create table px_n0(a int,p int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@px
-POSTHOOK: query: create table px(a int,p int)
+PREHOOK: Output: default@px_n0
+POSTHOOK: query: create table px_n0(a int,p int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@px
-PREHOOK: query: insert into px values (2,2),(3,3),(5,5),(7,7),(11,11)
+POSTHOOK: Output: default@px_n0
+PREHOOK: query: insert into px_n0 values (2,2),(3,3),(5,5),(7,7),(11,11)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@px
-POSTHOOK: query: insert into px values (2,2),(3,3),(5,5),(7,7),(11,11)
+PREHOOK: Output: default@px_n0
+POSTHOOK: query: insert into px_n0 values (2,2),(3,3),(5,5),(7,7),(11,11)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@px
-POSTHOOK: Lineage: px.a SCRIPT []
-POSTHOOK: Lineage: px.p SCRIPT []
+POSTHOOK: Output: default@px_n0
+POSTHOOK: Lineage: px_n0.a SCRIPT []
+POSTHOOK: Lineage: px_n0.p SCRIPT []
 PREHOOK: query: explain
-select sum(u*p) from tx join px on (u=p) where u<10 and p>2
+select sum(u*p) from tx_n3 join px_n0 on (u=p) where u<10 and p>2
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select sum(u*p) from tx join px on (u=p) where u<10 and p>2
+select sum(u*p) from tx_n3 join px_n0 on (u=p) where u<10 and p>2
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -70,7 +70,7 @@ Stage-0
                       Filter Operator [FIL_21] (rows=1 width=4)
                         predicate:((u < 10) and (u > 2))
                         TableScan [TS_0] (rows=8 width=4)
-                          default@tx,tx,Tbl:COMPLETE,Col:COMPLETE,Output:["u"]
+                          default@tx_n3,tx_n3,Tbl:COMPLETE,Col:COMPLETE,Output:["u"]
                 <-Map 4 [SIMPLE_EDGE] vectorized, llap
                   SHUFFLE [RS_26]
                     PartitionCols:_col0
@@ -79,24 +79,24 @@ Stage-0
                       Filter Operator [FIL_24] (rows=1 width=4)
                         predicate:((p < 10) and (p > 2))
                         TableScan [TS_3] (rows=5 width=4)
-                          default@px,px,Tbl:COMPLETE,Col:COMPLETE,Output:["p"]
+                          default@px_n0,px_n0,Tbl:COMPLETE,Col:COMPLETE,Output:["p"]
 
-PREHOOK: query: select sum(u*p) from tx join px on (u=p) where u<10 and p>2
+PREHOOK: query: select sum(u*p) from tx_n3 join px_n0 on (u=p) where u<10 and p>2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@px
-PREHOOK: Input: default@tx
+PREHOOK: Input: default@px_n0
+PREHOOK: Input: default@tx_n3
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(u*p) from tx join px on (u=p) where u<10 and p>2
+POSTHOOK: query: select sum(u*p) from tx_n3 join px_n0 on (u=p) where u<10 and p>2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@px
-POSTHOOK: Input: default@tx
+POSTHOOK: Input: default@px_n0
+POSTHOOK: Input: default@tx_n3
 #### A masked pattern was here ####
 83
 PREHOOK: query: explain
-select sum(u*p) from tx join px on (u=p) where u<10 and p>2
+select sum(u*p) from tx_n3 join px_n0 on (u=p) where u<10 and p>2
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select sum(u*p) from tx join px on (u=p) where u<10 and p>2
+select sum(u*p) from tx_n3 join px_n0 on (u=p) where u<10 and p>2
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -128,7 +128,7 @@ Stage-0
                       Filter Operator [FIL_21] (runtime: rows=5 width=4)
                         predicate:((u < 10) and (u > 2))
                         TableScan [TS_0] (runtime: rows=8 width=4)
-                          default@tx,tx,Tbl:COMPLETE,Col:COMPLETE,Output:["u"]
+                          default@tx_n3,tx_n3,Tbl:COMPLETE,Col:COMPLETE,Output:["u"]
                 <-Map 4 [SIMPLE_EDGE] vectorized, llap
                   SHUFFLE [RS_26]
                     PartitionCols:_col0
@@ -137,5 +137,5 @@ Stage-0
                       Filter Operator [FIL_24] (runtime: rows=3 width=4)
                         predicate:((p < 10) and (p > 2))
                         TableScan [TS_3] (runtime: rows=5 width=4)
-                          default@px,px,Tbl:COMPLETE,Col:COMPLETE,Output:["p"]
+                          default@px_n0,px_n0,Tbl:COMPLETE,Col:COMPLETE,Output:["p"]
 

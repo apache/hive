@@ -1,29 +1,29 @@
-PREHOOK: query: drop table if exists smalltable_windowing
+PREHOOK: query: drop table if exists smalltable_windowing_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table if exists smalltable_windowing
+POSTHOOK: query: drop table if exists smalltable_windowing_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table smalltable_windowing(
+PREHOOK: query: create table smalltable_windowing_n0(
       i int,
       type string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@smalltable_windowing
-POSTHOOK: query: create table smalltable_windowing(
+PREHOOK: Output: default@smalltable_windowing_n0
+POSTHOOK: query: create table smalltable_windowing_n0(
       i int,
       type string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@smalltable_windowing
-PREHOOK: query: insert into smalltable_windowing values(3, 'a'), (1, 'a'), (2, 'a')
+POSTHOOK: Output: default@smalltable_windowing_n0
+PREHOOK: query: insert into smalltable_windowing_n0 values(3, 'a'), (1, 'a'), (2, 'a')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@smalltable_windowing
-POSTHOOK: query: insert into smalltable_windowing values(3, 'a'), (1, 'a'), (2, 'a')
+PREHOOK: Output: default@smalltable_windowing_n0
+POSTHOOK: query: insert into smalltable_windowing_n0 values(3, 'a'), (1, 'a'), (2, 'a')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@smalltable_windowing
-POSTHOOK: Lineage: smalltable_windowing.i SCRIPT []
-POSTHOOK: Lineage: smalltable_windowing.type SCRIPT []
+POSTHOOK: Output: default@smalltable_windowing_n0
+POSTHOOK: Lineage: smalltable_windowing_n0.i SCRIPT []
+POSTHOOK: Lineage: smalltable_windowing_n0.type SCRIPT []
 col1	col2
 PREHOOK: query: explain vectorization detail
 select type, i,
@@ -35,7 +35,7 @@ avg(i) over (partition by type order by i rows between 1 preceding and 7 followi
 sum(i) over (partition by type order by i rows between 1 preceding and 7 following),
 collect_set(i) over (partition by type order by i rows between 1 preceding and 7 following),
 count(i) over (partition by type order by i rows between 1 preceding and 7 following)
-from smalltable_windowing
+from smalltable_windowing_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select type, i,
@@ -47,7 +47,7 @@ avg(i) over (partition by type order by i rows between 1 preceding and 7 followi
 sum(i) over (partition by type order by i rows between 1 preceding and 7 following),
 collect_set(i) over (partition by type order by i rows between 1 preceding and 7 following),
 count(i) over (partition by type order by i rows between 1 preceding and 7 following)
-from smalltable_windowing
+from smalltable_windowing_n0
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -69,7 +69,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: smalltable_windowing
+                  alias: smalltable_windowing_n0
                   Statistics: Num rows: 3 Data size: 267 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -205,9 +205,9 @@ avg(i) over (partition by type order by i rows between 1 preceding and 7 followi
 sum(i) over (partition by type order by i rows between 1 preceding and 7 following),
 collect_set(i) over (partition by type order by i rows between 1 preceding and 7 following),
 count(i) over (partition by type order by i rows between 1 preceding and 7 following)
-from smalltable_windowing
+from smalltable_windowing_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@smalltable_windowing
+PREHOOK: Input: default@smalltable_windowing_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select type, i,
 max(i) over (partition by type order by i rows between 1 preceding and 7 following),
@@ -218,9 +218,9 @@ avg(i) over (partition by type order by i rows between 1 preceding and 7 followi
 sum(i) over (partition by type order by i rows between 1 preceding and 7 following),
 collect_set(i) over (partition by type order by i rows between 1 preceding and 7 following),
 count(i) over (partition by type order by i rows between 1 preceding and 7 following)
-from smalltable_windowing
+from smalltable_windowing_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@smalltable_windowing
+POSTHOOK: Input: default@smalltable_windowing_n0
 #### A masked pattern was here ####
 type	i	max_window_0	min_window_1	first_value_window_2	last_value_window_3	avg_window_4	sum_window_5	collect_set_window_6	count_window_7
 a	1	3	1	1	3	2.0	6	[1,2,3]	3

@@ -1,44 +1,44 @@
-PREHOOK: query: CREATE TABLE T1(key STRING, val STRING)
+PREHOOK: query: CREATE TABLE T1_n101(key STRING, val STRING)
 SKEWED BY (key) ON ((2)) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1
-POSTHOOK: query: CREATE TABLE T1(key STRING, val STRING)
+PREHOOK: Output: default@T1_n101
+POSTHOOK: query: CREATE TABLE T1_n101(key STRING, val STRING)
 SKEWED BY (key) ON ((2)) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1
+POSTHOOK: Output: default@T1_n101
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_n101
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1
+PREHOOK: Output: default@t1_n101
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_n101
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t1
-PREHOOK: query: CREATE TABLE T2(key STRING, val STRING)
+POSTHOOK: Output: default@t1_n101
+PREHOOK: query: CREATE TABLE T2_n64(key STRING, val STRING)
 SKEWED BY (key) ON ((3)) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T2
-POSTHOOK: query: CREATE TABLE T2(key STRING, val STRING)
+PREHOOK: Output: default@T2_n64
+POSTHOOK: query: CREATE TABLE T2_n64(key STRING, val STRING)
 SKEWED BY (key) ON ((3)) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T2
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2
+POSTHOOK: Output: default@T2_n64
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2_n64
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t2
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2
+PREHOOK: Output: default@t2_n64
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2_n64
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t2
+POSTHOOK: Output: default@t2_n64
 PREHOOK: query: EXPLAIN
-SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
+SELECT a.*, b.* FROM T1_n101 a JOIN T2_n64 b ON a.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
+SELECT a.*, b.* FROM T1_n101 a JOIN T2_n64 b ON a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -163,17 +163,17 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
+PREHOOK: query: SELECT a.*, b.* FROM T1_n101 a JOIN T2_n64 b ON a.key = b.key
 ORDER BY a.key, b.key, a.val, b.val
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
+PREHOOK: Input: default@t1_n101
+PREHOOK: Input: default@t2_n64
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
+POSTHOOK: query: SELECT a.*, b.* FROM T1_n101 a JOIN T2_n64 b ON a.key = b.key
 ORDER BY a.key, b.key, a.val, b.val
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t1_n101
+POSTHOOK: Input: default@t2_n64
 #### A masked pattern was here ####
 2	12	2	22
 3	13	3	13
@@ -182,10 +182,10 @@ POSTHOOK: Input: default@t2
 8	28	8	18
 8	28	8	18
 PREHOOK: query: EXPLAIN
-SELECT a.*, b.* FROM T1 a RIGHT OUTER JOIN T2 b ON a.key = b.key
+SELECT a.*, b.* FROM T1_n101 a RIGHT OUTER JOIN T2_n64 b ON a.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-SELECT a.*, b.* FROM T1 a RIGHT OUTER JOIN T2 b ON a.key = b.key
+SELECT a.*, b.* FROM T1_n101 a RIGHT OUTER JOIN T2_n64 b ON a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -310,17 +310,17 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT a.*, b.* FROM T1 a RIGHT OUTER JOIN T2 b ON a.key = b.key
+PREHOOK: query: SELECT a.*, b.* FROM T1_n101 a RIGHT OUTER JOIN T2_n64 b ON a.key = b.key
 ORDER BY a.key, b.key, a.val, b.val
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
+PREHOOK: Input: default@t1_n101
+PREHOOK: Input: default@t2_n64
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a.*, b.* FROM T1 a RIGHT OUTER JOIN T2 b ON a.key = b.key
+POSTHOOK: query: SELECT a.*, b.* FROM T1_n101 a RIGHT OUTER JOIN T2_n64 b ON a.key = b.key
 ORDER BY a.key, b.key, a.val, b.val
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t1_n101
+POSTHOOK: Input: default@t2_n64
 #### A masked pattern was here ####
 NULL	NULL	4	14
 NULL	NULL	5	15
@@ -331,10 +331,10 @@ NULL	NULL	5	15
 8	28	8	18
 8	28	8	18
 PREHOOK: query: EXPLAIN
-SELECT count(1) FROM T1 a JOIN T2 b ON a.key = b.key
+SELECT count(1) FROM T1_n101 a JOIN T2_n64 b ON a.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-SELECT count(1) FROM T1 a JOIN T2 b ON a.key = b.key
+SELECT count(1) FROM T1_n101 a JOIN T2_n64 b ON a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -473,22 +473,22 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT count(1) FROM T1 a JOIN T2 b ON a.key = b.key
+PREHOOK: query: SELECT count(1) FROM T1_n101 a JOIN T2_n64 b ON a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
+PREHOOK: Input: default@t1_n101
+PREHOOK: Input: default@t2_n64
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT count(1) FROM T1 a JOIN T2 b ON a.key = b.key
+POSTHOOK: query: SELECT count(1) FROM T1_n101 a JOIN T2_n64 b ON a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t1_n101
+POSTHOOK: Input: default@t2_n64
 #### A masked pattern was here ####
 6
 PREHOOK: query: EXPLAIN
-SELECT count(1) FROM T1 a RIGHT OUTER JOIN T2 b ON a.key = b.key
+SELECT count(1) FROM T1_n101 a RIGHT OUTER JOIN T2_n64 b ON a.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-SELECT count(1) FROM T1 a RIGHT OUTER JOIN T2 b ON a.key = b.key
+SELECT count(1) FROM T1_n101 a RIGHT OUTER JOIN T2_n64 b ON a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -627,14 +627,14 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT count(1) FROM T1 a RIGHT OUTER JOIN T2 b ON a.key = b.key
+PREHOOK: query: SELECT count(1) FROM T1_n101 a RIGHT OUTER JOIN T2_n64 b ON a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
+PREHOOK: Input: default@t1_n101
+PREHOOK: Input: default@t2_n64
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT count(1) FROM T1 a RIGHT OUTER JOIN T2 b ON a.key = b.key
+POSTHOOK: query: SELECT count(1) FROM T1_n101 a RIGHT OUTER JOIN T2_n64 b ON a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t1_n101
+POSTHOOK: Input: default@t2_n64
 #### A masked pattern was here ####
 8

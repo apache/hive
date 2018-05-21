@@ -201,27 +201,27 @@ PREHOOK: Input: database:database
 POSTHOOK: query: USE `database`
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:database
-PREHOOK: query: CREATE TABLE foo(a INT)
+PREHOOK: query: CREATE TABLE foo_n0(a INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:database
-PREHOOK: Output: database@foo
-POSTHOOK: query: CREATE TABLE foo(a INT)
+PREHOOK: Output: database@foo_n0
+POSTHOOK: query: CREATE TABLE foo_n0(a INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:database
-POSTHOOK: Output: database@foo
+POSTHOOK: Output: database@foo_n0
 PREHOOK: query: CREATE VIEW fooview AS
-SELECT * FROM foo
+SELECT * FROM foo_n0
 PREHOOK: type: CREATEVIEW
-PREHOOK: Input: database@foo
+PREHOOK: Input: database@foo_n0
 PREHOOK: Output: database:database
 PREHOOK: Output: database@fooview
 POSTHOOK: query: CREATE VIEW fooview AS
-SELECT * FROM foo
+SELECT * FROM foo_n0
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Input: database@foo
+POSTHOOK: Input: database@foo_n0
 POSTHOOK: Output: database:database
 POSTHOOK: Output: database@fooview
-POSTHOOK: Lineage: fooview.a SIMPLE [(foo)foo.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: fooview.a SIMPLE [(foo_n0)foo_n0.FieldSchema(name:a, type:int, comment:null), ]
 PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:default
@@ -236,9 +236,9 @@ PREHOOK: query: DROP MATERIALIZED VIEW fooview
 PREHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: query: DROP MATERIALIZED VIEW fooview
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
-PREHOOK: query: DROP TABLE foo
+PREHOOK: query: DROP TABLE foo_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE foo
+POSTHOOK: query: DROP TABLE foo_n0
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: USE test1
 PREHOOK: type: SWITCHDATABASE

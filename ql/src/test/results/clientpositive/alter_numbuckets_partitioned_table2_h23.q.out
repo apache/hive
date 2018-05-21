@@ -1,17 +1,17 @@
-PREHOOK: query: CREATE TABLE tst1(key STRING, value STRING) PARTITIONED BY (ds STRING)
+PREHOOK: query: CREATE TABLE tst1_n0(key STRING, value STRING) PARTITIONED BY (ds STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tst1
-POSTHOOK: query: CREATE TABLE tst1(key STRING, value STRING) PARTITIONED BY (ds STRING)
+PREHOOK: Output: default@tst1_n0
+POSTHOOK: query: CREATE TABLE tst1_n0(key STRING, value STRING) PARTITIONED BY (ds STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tst1
-PREHOOK: query: DESCRIBE FORMATTED tst1
+POSTHOOK: Output: default@tst1_n0
+PREHOOK: query: DESCRIBE FORMATTED tst1_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@tst1
-POSTHOOK: query: DESCRIBE FORMATTED tst1
+PREHOOK: Input: default@tst1_n0
+POSTHOOK: query: DESCRIBE FORMATTED tst1_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@tst1
+POSTHOOK: Input: default@tst1_n0
 # col_name            	data_type           	comment             
 key                 	string              	                    
 value               	string              	                    
@@ -46,22 +46,22 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: INSERT OVERWRITE TABLE tst1 PARTITION (ds = '1') SELECT key, value FROM src
+PREHOOK: query: INSERT OVERWRITE TABLE tst1_n0 PARTITION (ds = '1') SELECT key, value FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@tst1@ds=1
-POSTHOOK: query: INSERT OVERWRITE TABLE tst1 PARTITION (ds = '1') SELECT key, value FROM src
+PREHOOK: Output: default@tst1_n0@ds=1
+POSTHOOK: query: INSERT OVERWRITE TABLE tst1_n0 PARTITION (ds = '1') SELECT key, value FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@tst1@ds=1
-POSTHOOK: Lineage: tst1 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tst1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: DESCRIBE FORMATTED tst1 PARTITION (ds = '1')
+POSTHOOK: Output: default@tst1_n0@ds=1
+POSTHOOK: Lineage: tst1_n0 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tst1_n0 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: DESCRIBE FORMATTED tst1_n0 PARTITION (ds = '1')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@tst1
-POSTHOOK: query: DESCRIBE FORMATTED tst1 PARTITION (ds = '1')
+PREHOOK: Input: default@tst1_n0
+POSTHOOK: query: DESCRIBE FORMATTED tst1_n0 PARTITION (ds = '1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@tst1
+POSTHOOK: Input: default@tst1_n0
 # col_name            	data_type           	comment             
 key                 	string              	                    
 value               	string              	                    
@@ -73,7 +73,7 @@ ds                  	string
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
 Database:           	default             	 
-Table:              	tst1                	 
+Table:              	tst1_n0             	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
@@ -93,20 +93,20 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: ALTER TABLE tst1 CLUSTERED BY (key) INTO 8 BUCKETS
+PREHOOK: query: ALTER TABLE tst1_n0 CLUSTERED BY (key) INTO 8 BUCKETS
 PREHOOK: type: ALTERTABLE_CLUSTER_SORT
-PREHOOK: Input: default@tst1
-PREHOOK: Output: default@tst1
-POSTHOOK: query: ALTER TABLE tst1 CLUSTERED BY (key) INTO 8 BUCKETS
+PREHOOK: Input: default@tst1_n0
+PREHOOK: Output: default@tst1_n0
+POSTHOOK: query: ALTER TABLE tst1_n0 CLUSTERED BY (key) INTO 8 BUCKETS
 POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
-POSTHOOK: Input: default@tst1
-POSTHOOK: Output: default@tst1
-PREHOOK: query: DESCRIBE FORMATTED tst1
+POSTHOOK: Input: default@tst1_n0
+POSTHOOK: Output: default@tst1_n0
+PREHOOK: query: DESCRIBE FORMATTED tst1_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@tst1
-POSTHOOK: query: DESCRIBE FORMATTED tst1
+PREHOOK: Input: default@tst1_n0
+POSTHOOK: query: DESCRIBE FORMATTED tst1_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@tst1
+POSTHOOK: Input: default@tst1_n0
 # col_name            	data_type           	comment             
 key                 	string              	                    
 value               	string              	                    
@@ -142,22 +142,22 @@ Bucket Columns:     	[key]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: INSERT OVERWRITE TABLE tst1 PARTITION (ds = '1') SELECT key, value FROM src
+PREHOOK: query: INSERT OVERWRITE TABLE tst1_n0 PARTITION (ds = '1') SELECT key, value FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@tst1@ds=1
-POSTHOOK: query: INSERT OVERWRITE TABLE tst1 PARTITION (ds = '1') SELECT key, value FROM src
+PREHOOK: Output: default@tst1_n0@ds=1
+POSTHOOK: query: INSERT OVERWRITE TABLE tst1_n0 PARTITION (ds = '1') SELECT key, value FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@tst1@ds=1
-POSTHOOK: Lineage: tst1 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tst1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: DESCRIBE FORMATTED tst1 PARTITION (ds = '1')
+POSTHOOK: Output: default@tst1_n0@ds=1
+POSTHOOK: Lineage: tst1_n0 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tst1_n0 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: DESCRIBE FORMATTED tst1_n0 PARTITION (ds = '1')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@tst1
-POSTHOOK: query: DESCRIBE FORMATTED tst1 PARTITION (ds = '1')
+PREHOOK: Input: default@tst1_n0
+POSTHOOK: query: DESCRIBE FORMATTED tst1_n0 PARTITION (ds = '1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@tst1
+POSTHOOK: Input: default@tst1_n0
 # col_name            	data_type           	comment             
 key                 	string              	                    
 value               	string              	                    
@@ -169,7 +169,7 @@ ds                  	string
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
 Database:           	default             	 
-Table:              	tst1                	 
+Table:              	tst1_n0             	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
@@ -189,20 +189,20 @@ Bucket Columns:     	[key]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: ALTER TABLE tst1 CLUSTERED BY (key) SORTED BY (key DESC) INTO 8 BUCKETS
+PREHOOK: query: ALTER TABLE tst1_n0 CLUSTERED BY (key) SORTED BY (key DESC) INTO 8 BUCKETS
 PREHOOK: type: ALTERTABLE_CLUSTER_SORT
-PREHOOK: Input: default@tst1
-PREHOOK: Output: default@tst1
-POSTHOOK: query: ALTER TABLE tst1 CLUSTERED BY (key) SORTED BY (key DESC) INTO 8 BUCKETS
+PREHOOK: Input: default@tst1_n0
+PREHOOK: Output: default@tst1_n0
+POSTHOOK: query: ALTER TABLE tst1_n0 CLUSTERED BY (key) SORTED BY (key DESC) INTO 8 BUCKETS
 POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
-POSTHOOK: Input: default@tst1
-POSTHOOK: Output: default@tst1
-PREHOOK: query: DESCRIBE FORMATTED tst1
+POSTHOOK: Input: default@tst1_n0
+POSTHOOK: Output: default@tst1_n0
+PREHOOK: query: DESCRIBE FORMATTED tst1_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@tst1
-POSTHOOK: query: DESCRIBE FORMATTED tst1
+PREHOOK: Input: default@tst1_n0
+POSTHOOK: query: DESCRIBE FORMATTED tst1_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@tst1
+POSTHOOK: Input: default@tst1_n0
 # col_name            	data_type           	comment             
 key                 	string              	                    
 value               	string              	                    
@@ -238,22 +238,22 @@ Bucket Columns:     	[key]
 Sort Columns:       	[Order(col:key, order:0)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: INSERT OVERWRITE TABLE tst1 PARTITION (ds = '1') SELECT key, value FROM src
+PREHOOK: query: INSERT OVERWRITE TABLE tst1_n0 PARTITION (ds = '1') SELECT key, value FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@tst1@ds=1
-POSTHOOK: query: INSERT OVERWRITE TABLE tst1 PARTITION (ds = '1') SELECT key, value FROM src
+PREHOOK: Output: default@tst1_n0@ds=1
+POSTHOOK: query: INSERT OVERWRITE TABLE tst1_n0 PARTITION (ds = '1') SELECT key, value FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@tst1@ds=1
-POSTHOOK: Lineage: tst1 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tst1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: DESCRIBE FORMATTED tst1 PARTITION (ds = '1')
+POSTHOOK: Output: default@tst1_n0@ds=1
+POSTHOOK: Lineage: tst1_n0 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tst1_n0 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: DESCRIBE FORMATTED tst1_n0 PARTITION (ds = '1')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@tst1
-POSTHOOK: query: DESCRIBE FORMATTED tst1 PARTITION (ds = '1')
+PREHOOK: Input: default@tst1_n0
+POSTHOOK: query: DESCRIBE FORMATTED tst1_n0 PARTITION (ds = '1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@tst1
+POSTHOOK: Input: default@tst1_n0
 # col_name            	data_type           	comment             
 key                 	string              	                    
 value               	string              	                    
@@ -265,7 +265,7 @@ ds                  	string
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
 Database:           	default             	 
-Table:              	tst1                	 
+Table:              	tst1_n0             	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
@@ -285,20 +285,20 @@ Bucket Columns:     	[key]
 Sort Columns:       	[Order(col:key, order:0)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: ALTER TABLE tst1 CLUSTERED BY (value) SORTED BY (key DESC) INTO 8 BUCKETS
+PREHOOK: query: ALTER TABLE tst1_n0 CLUSTERED BY (value) SORTED BY (key DESC) INTO 8 BUCKETS
 PREHOOK: type: ALTERTABLE_CLUSTER_SORT
-PREHOOK: Input: default@tst1
-PREHOOK: Output: default@tst1
-POSTHOOK: query: ALTER TABLE tst1 CLUSTERED BY (value) SORTED BY (key DESC) INTO 8 BUCKETS
+PREHOOK: Input: default@tst1_n0
+PREHOOK: Output: default@tst1_n0
+POSTHOOK: query: ALTER TABLE tst1_n0 CLUSTERED BY (value) SORTED BY (key DESC) INTO 8 BUCKETS
 POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
-POSTHOOK: Input: default@tst1
-POSTHOOK: Output: default@tst1
-PREHOOK: query: DESCRIBE FORMATTED tst1
+POSTHOOK: Input: default@tst1_n0
+POSTHOOK: Output: default@tst1_n0
+PREHOOK: query: DESCRIBE FORMATTED tst1_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@tst1
-POSTHOOK: query: DESCRIBE FORMATTED tst1
+PREHOOK: Input: default@tst1_n0
+POSTHOOK: query: DESCRIBE FORMATTED tst1_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@tst1
+POSTHOOK: Input: default@tst1_n0
 # col_name            	data_type           	comment             
 key                 	string              	                    
 value               	string              	                    
@@ -334,22 +334,22 @@ Bucket Columns:     	[value]
 Sort Columns:       	[Order(col:key, order:0)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: INSERT OVERWRITE TABLE tst1 PARTITION (ds = '1') SELECT key, value FROM src
+PREHOOK: query: INSERT OVERWRITE TABLE tst1_n0 PARTITION (ds = '1') SELECT key, value FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@tst1@ds=1
-POSTHOOK: query: INSERT OVERWRITE TABLE tst1 PARTITION (ds = '1') SELECT key, value FROM src
+PREHOOK: Output: default@tst1_n0@ds=1
+POSTHOOK: query: INSERT OVERWRITE TABLE tst1_n0 PARTITION (ds = '1') SELECT key, value FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@tst1@ds=1
-POSTHOOK: Lineage: tst1 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tst1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: DESCRIBE FORMATTED tst1 PARTITION (ds = '1')
+POSTHOOK: Output: default@tst1_n0@ds=1
+POSTHOOK: Lineage: tst1_n0 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tst1_n0 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: DESCRIBE FORMATTED tst1_n0 PARTITION (ds = '1')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@tst1
-POSTHOOK: query: DESCRIBE FORMATTED tst1 PARTITION (ds = '1')
+PREHOOK: Input: default@tst1_n0
+POSTHOOK: query: DESCRIBE FORMATTED tst1_n0 PARTITION (ds = '1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@tst1
+POSTHOOK: Input: default@tst1_n0
 # col_name            	data_type           	comment             
 key                 	string              	                    
 value               	string              	                    
@@ -361,7 +361,7 @@ ds                  	string
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
 Database:           	default             	 
-Table:              	tst1                	 
+Table:              	tst1_n0             	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
@@ -381,20 +381,20 @@ Bucket Columns:     	[value]
 Sort Columns:       	[Order(col:key, order:0)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: ALTER TABLE tst1 CLUSTERED BY (value) SORTED BY (key DESC) INTO 4 BUCKETS
+PREHOOK: query: ALTER TABLE tst1_n0 CLUSTERED BY (value) SORTED BY (key DESC) INTO 4 BUCKETS
 PREHOOK: type: ALTERTABLE_CLUSTER_SORT
-PREHOOK: Input: default@tst1
-PREHOOK: Output: default@tst1
-POSTHOOK: query: ALTER TABLE tst1 CLUSTERED BY (value) SORTED BY (key DESC) INTO 4 BUCKETS
+PREHOOK: Input: default@tst1_n0
+PREHOOK: Output: default@tst1_n0
+POSTHOOK: query: ALTER TABLE tst1_n0 CLUSTERED BY (value) SORTED BY (key DESC) INTO 4 BUCKETS
 POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
-POSTHOOK: Input: default@tst1
-POSTHOOK: Output: default@tst1
-PREHOOK: query: DESCRIBE FORMATTED tst1
+POSTHOOK: Input: default@tst1_n0
+POSTHOOK: Output: default@tst1_n0
+PREHOOK: query: DESCRIBE FORMATTED tst1_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@tst1
-POSTHOOK: query: DESCRIBE FORMATTED tst1
+PREHOOK: Input: default@tst1_n0
+POSTHOOK: query: DESCRIBE FORMATTED tst1_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@tst1
+POSTHOOK: Input: default@tst1_n0
 # col_name            	data_type           	comment             
 key                 	string              	                    
 value               	string              	                    
@@ -430,22 +430,22 @@ Bucket Columns:     	[value]
 Sort Columns:       	[Order(col:key, order:0)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: INSERT OVERWRITE TABLE tst1 PARTITION (ds = '1') SELECT key, value FROM src
+PREHOOK: query: INSERT OVERWRITE TABLE tst1_n0 PARTITION (ds = '1') SELECT key, value FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@tst1@ds=1
-POSTHOOK: query: INSERT OVERWRITE TABLE tst1 PARTITION (ds = '1') SELECT key, value FROM src
+PREHOOK: Output: default@tst1_n0@ds=1
+POSTHOOK: query: INSERT OVERWRITE TABLE tst1_n0 PARTITION (ds = '1') SELECT key, value FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@tst1@ds=1
-POSTHOOK: Lineage: tst1 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tst1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: DESCRIBE FORMATTED tst1 PARTITION (ds = '1')
+POSTHOOK: Output: default@tst1_n0@ds=1
+POSTHOOK: Lineage: tst1_n0 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tst1_n0 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: DESCRIBE FORMATTED tst1_n0 PARTITION (ds = '1')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@tst1
-POSTHOOK: query: DESCRIBE FORMATTED tst1 PARTITION (ds = '1')
+PREHOOK: Input: default@tst1_n0
+POSTHOOK: query: DESCRIBE FORMATTED tst1_n0 PARTITION (ds = '1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@tst1
+POSTHOOK: Input: default@tst1_n0
 # col_name            	data_type           	comment             
 key                 	string              	                    
 value               	string              	                    
@@ -457,7 +457,7 @@ ds                  	string
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
 Database:           	default             	 
-Table:              	tst1                	 
+Table:              	tst1_n0             	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
@@ -477,20 +477,20 @@ Bucket Columns:     	[value]
 Sort Columns:       	[Order(col:key, order:0)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: ALTER TABLE tst1 CLUSTERED BY (value) SORTED BY (value DESC) INTO 4 BUCKETS
+PREHOOK: query: ALTER TABLE tst1_n0 CLUSTERED BY (value) SORTED BY (value DESC) INTO 4 BUCKETS
 PREHOOK: type: ALTERTABLE_CLUSTER_SORT
-PREHOOK: Input: default@tst1
-PREHOOK: Output: default@tst1
-POSTHOOK: query: ALTER TABLE tst1 CLUSTERED BY (value) SORTED BY (value DESC) INTO 4 BUCKETS
+PREHOOK: Input: default@tst1_n0
+PREHOOK: Output: default@tst1_n0
+POSTHOOK: query: ALTER TABLE tst1_n0 CLUSTERED BY (value) SORTED BY (value DESC) INTO 4 BUCKETS
 POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
-POSTHOOK: Input: default@tst1
-POSTHOOK: Output: default@tst1
-PREHOOK: query: DESCRIBE FORMATTED tst1
+POSTHOOK: Input: default@tst1_n0
+POSTHOOK: Output: default@tst1_n0
+PREHOOK: query: DESCRIBE FORMATTED tst1_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@tst1
-POSTHOOK: query: DESCRIBE FORMATTED tst1
+PREHOOK: Input: default@tst1_n0
+POSTHOOK: query: DESCRIBE FORMATTED tst1_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@tst1
+POSTHOOK: Input: default@tst1_n0
 # col_name            	data_type           	comment             
 key                 	string              	                    
 value               	string              	                    
@@ -526,22 +526,22 @@ Bucket Columns:     	[value]
 Sort Columns:       	[Order(col:value, order:0)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: INSERT OVERWRITE TABLE tst1 PARTITION (ds = '1') SELECT key, value FROM src
+PREHOOK: query: INSERT OVERWRITE TABLE tst1_n0 PARTITION (ds = '1') SELECT key, value FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@tst1@ds=1
-POSTHOOK: query: INSERT OVERWRITE TABLE tst1 PARTITION (ds = '1') SELECT key, value FROM src
+PREHOOK: Output: default@tst1_n0@ds=1
+POSTHOOK: query: INSERT OVERWRITE TABLE tst1_n0 PARTITION (ds = '1') SELECT key, value FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@tst1@ds=1
-POSTHOOK: Lineage: tst1 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tst1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: DESCRIBE FORMATTED tst1 PARTITION (ds = '1')
+POSTHOOK: Output: default@tst1_n0@ds=1
+POSTHOOK: Lineage: tst1_n0 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tst1_n0 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: DESCRIBE FORMATTED tst1_n0 PARTITION (ds = '1')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@tst1
-POSTHOOK: query: DESCRIBE FORMATTED tst1 PARTITION (ds = '1')
+PREHOOK: Input: default@tst1_n0
+POSTHOOK: query: DESCRIBE FORMATTED tst1_n0 PARTITION (ds = '1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@tst1
+POSTHOOK: Input: default@tst1_n0
 # col_name            	data_type           	comment             
 key                 	string              	                    
 value               	string              	                    
@@ -553,7 +553,7 @@ ds                  	string
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
 Database:           	default             	 
-Table:              	tst1                	 
+Table:              	tst1_n0             	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
@@ -573,20 +573,20 @@ Bucket Columns:     	[value]
 Sort Columns:       	[Order(col:value, order:0)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: ALTER TABLE tst1 CLUSTERED BY (value) SORTED BY (value ASC) INTO 4 BUCKETS
+PREHOOK: query: ALTER TABLE tst1_n0 CLUSTERED BY (value) SORTED BY (value ASC) INTO 4 BUCKETS
 PREHOOK: type: ALTERTABLE_CLUSTER_SORT
-PREHOOK: Input: default@tst1
-PREHOOK: Output: default@tst1
-POSTHOOK: query: ALTER TABLE tst1 CLUSTERED BY (value) SORTED BY (value ASC) INTO 4 BUCKETS
+PREHOOK: Input: default@tst1_n0
+PREHOOK: Output: default@tst1_n0
+POSTHOOK: query: ALTER TABLE tst1_n0 CLUSTERED BY (value) SORTED BY (value ASC) INTO 4 BUCKETS
 POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
-POSTHOOK: Input: default@tst1
-POSTHOOK: Output: default@tst1
-PREHOOK: query: DESCRIBE FORMATTED tst1
+POSTHOOK: Input: default@tst1_n0
+POSTHOOK: Output: default@tst1_n0
+PREHOOK: query: DESCRIBE FORMATTED tst1_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@tst1
-POSTHOOK: query: DESCRIBE FORMATTED tst1
+PREHOOK: Input: default@tst1_n0
+POSTHOOK: query: DESCRIBE FORMATTED tst1_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@tst1
+POSTHOOK: Input: default@tst1_n0
 # col_name            	data_type           	comment             
 key                 	string              	                    
 value               	string              	                    
@@ -622,22 +622,22 @@ Bucket Columns:     	[value]
 Sort Columns:       	[Order(col:value, order:1)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: INSERT OVERWRITE TABLE tst1 PARTITION (ds = '1') SELECT key, value FROM src
+PREHOOK: query: INSERT OVERWRITE TABLE tst1_n0 PARTITION (ds = '1') SELECT key, value FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@tst1@ds=1
-POSTHOOK: query: INSERT OVERWRITE TABLE tst1 PARTITION (ds = '1') SELECT key, value FROM src
+PREHOOK: Output: default@tst1_n0@ds=1
+POSTHOOK: query: INSERT OVERWRITE TABLE tst1_n0 PARTITION (ds = '1') SELECT key, value FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@tst1@ds=1
-POSTHOOK: Lineage: tst1 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tst1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: DESCRIBE FORMATTED tst1 PARTITION (ds = '1')
+POSTHOOK: Output: default@tst1_n0@ds=1
+POSTHOOK: Lineage: tst1_n0 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tst1_n0 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: DESCRIBE FORMATTED tst1_n0 PARTITION (ds = '1')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@tst1
-POSTHOOK: query: DESCRIBE FORMATTED tst1 PARTITION (ds = '1')
+PREHOOK: Input: default@tst1_n0
+POSTHOOK: query: DESCRIBE FORMATTED tst1_n0 PARTITION (ds = '1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@tst1
+POSTHOOK: Input: default@tst1_n0
 # col_name            	data_type           	comment             
 key                 	string              	                    
 value               	string              	                    
@@ -649,7 +649,7 @@ ds                  	string
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
 Database:           	default             	 
-Table:              	tst1                	 
+Table:              	tst1_n0             	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
@@ -669,20 +669,20 @@ Bucket Columns:     	[value]
 Sort Columns:       	[Order(col:value, order:1)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: ALTER TABLE tst1 CLUSTERED BY (value) INTO 4 BUCKETS
+PREHOOK: query: ALTER TABLE tst1_n0 CLUSTERED BY (value) INTO 4 BUCKETS
 PREHOOK: type: ALTERTABLE_CLUSTER_SORT
-PREHOOK: Input: default@tst1
-PREHOOK: Output: default@tst1
-POSTHOOK: query: ALTER TABLE tst1 CLUSTERED BY (value) INTO 4 BUCKETS
+PREHOOK: Input: default@tst1_n0
+PREHOOK: Output: default@tst1_n0
+POSTHOOK: query: ALTER TABLE tst1_n0 CLUSTERED BY (value) INTO 4 BUCKETS
 POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
-POSTHOOK: Input: default@tst1
-POSTHOOK: Output: default@tst1
-PREHOOK: query: DESCRIBE FORMATTED tst1
+POSTHOOK: Input: default@tst1_n0
+POSTHOOK: Output: default@tst1_n0
+PREHOOK: query: DESCRIBE FORMATTED tst1_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@tst1
-POSTHOOK: query: DESCRIBE FORMATTED tst1
+PREHOOK: Input: default@tst1_n0
+POSTHOOK: query: DESCRIBE FORMATTED tst1_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@tst1
+POSTHOOK: Input: default@tst1_n0
 # col_name            	data_type           	comment             
 key                 	string              	                    
 value               	string              	                    
@@ -718,22 +718,22 @@ Bucket Columns:     	[value]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: INSERT OVERWRITE TABLE tst1 PARTITION (ds = '1') SELECT key, value FROM src
+PREHOOK: query: INSERT OVERWRITE TABLE tst1_n0 PARTITION (ds = '1') SELECT key, value FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@tst1@ds=1
-POSTHOOK: query: INSERT OVERWRITE TABLE tst1 PARTITION (ds = '1') SELECT key, value FROM src
+PREHOOK: Output: default@tst1_n0@ds=1
+POSTHOOK: query: INSERT OVERWRITE TABLE tst1_n0 PARTITION (ds = '1') SELECT key, value FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@tst1@ds=1
-POSTHOOK: Lineage: tst1 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tst1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: DESCRIBE FORMATTED tst1 PARTITION (ds = '1')
+POSTHOOK: Output: default@tst1_n0@ds=1
+POSTHOOK: Lineage: tst1_n0 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tst1_n0 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: DESCRIBE FORMATTED tst1_n0 PARTITION (ds = '1')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@tst1
-POSTHOOK: query: DESCRIBE FORMATTED tst1 PARTITION (ds = '1')
+PREHOOK: Input: default@tst1_n0
+POSTHOOK: query: DESCRIBE FORMATTED tst1_n0 PARTITION (ds = '1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@tst1
+POSTHOOK: Input: default@tst1_n0
 # col_name            	data_type           	comment             
 key                 	string              	                    
 value               	string              	                    
@@ -745,7 +745,7 @@ ds                  	string
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
 Database:           	default             	 
-Table:              	tst1                	 
+Table:              	tst1_n0             	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
@@ -765,20 +765,20 @@ Bucket Columns:     	[value]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: ALTER TABLE tst1 NOT CLUSTERED
+PREHOOK: query: ALTER TABLE tst1_n0 NOT CLUSTERED
 PREHOOK: type: ALTERTABLE_CLUSTER_SORT
-PREHOOK: Input: default@tst1
-PREHOOK: Output: default@tst1
-POSTHOOK: query: ALTER TABLE tst1 NOT CLUSTERED
+PREHOOK: Input: default@tst1_n0
+PREHOOK: Output: default@tst1_n0
+POSTHOOK: query: ALTER TABLE tst1_n0 NOT CLUSTERED
 POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
-POSTHOOK: Input: default@tst1
-POSTHOOK: Output: default@tst1
-PREHOOK: query: DESCRIBE FORMATTED tst1
+POSTHOOK: Input: default@tst1_n0
+POSTHOOK: Output: default@tst1_n0
+PREHOOK: query: DESCRIBE FORMATTED tst1_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@tst1
-POSTHOOK: query: DESCRIBE FORMATTED tst1
+PREHOOK: Input: default@tst1_n0
+POSTHOOK: query: DESCRIBE FORMATTED tst1_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@tst1
+POSTHOOK: Input: default@tst1_n0
 # col_name            	data_type           	comment             
 key                 	string              	                    
 value               	string              	                    
@@ -814,22 +814,22 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: INSERT OVERWRITE TABLE tst1 PARTITION (ds = '1') SELECT key, value FROM src
+PREHOOK: query: INSERT OVERWRITE TABLE tst1_n0 PARTITION (ds = '1') SELECT key, value FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@tst1@ds=1
-POSTHOOK: query: INSERT OVERWRITE TABLE tst1 PARTITION (ds = '1') SELECT key, value FROM src
+PREHOOK: Output: default@tst1_n0@ds=1
+POSTHOOK: query: INSERT OVERWRITE TABLE tst1_n0 PARTITION (ds = '1') SELECT key, value FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@tst1@ds=1
-POSTHOOK: Lineage: tst1 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tst1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: DESCRIBE FORMATTED tst1 PARTITION (ds = '1')
+POSTHOOK: Output: default@tst1_n0@ds=1
+POSTHOOK: Lineage: tst1_n0 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tst1_n0 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: DESCRIBE FORMATTED tst1_n0 PARTITION (ds = '1')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@tst1
-POSTHOOK: query: DESCRIBE FORMATTED tst1 PARTITION (ds = '1')
+PREHOOK: Input: default@tst1_n0
+POSTHOOK: query: DESCRIBE FORMATTED tst1_n0 PARTITION (ds = '1')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@tst1
+POSTHOOK: Input: default@tst1_n0
 # col_name            	data_type           	comment             
 key                 	string              	                    
 value               	string              	                    
@@ -841,7 +841,7 @@ ds                  	string
 # Detailed Partition Information	 	 
 Partition Value:    	[1]                 	 
 Database:           	default             	 
-Table:              	tst1                	 
+Table:              	tst1_n0             	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}

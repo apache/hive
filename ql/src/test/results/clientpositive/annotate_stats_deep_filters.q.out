@@ -1,4 +1,4 @@
-PREHOOK: query: create table over1k(
+PREHOOK: query: create table over1k_n4(
 t tinyint,
 si smallint,
 i int,
@@ -14,8 +14,8 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@over1k
-POSTHOOK: query: create table over1k(
+PREHOOK: Output: default@over1k_n4
+POSTHOOK: query: create table over1k_n4(
 t tinyint,
 si smallint,
 i int,
@@ -31,42 +31,42 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@over1k
-PREHOOK: query: load data local inpath '../../data/files/over1k' overwrite into table over1k
+POSTHOOK: Output: default@over1k_n4
+PREHOOK: query: load data local inpath '../../data/files/over1k' overwrite into table over1k_n4
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@over1k
-POSTHOOK: query: load data local inpath '../../data/files/over1k' overwrite into table over1k
+PREHOOK: Output: default@over1k_n4
+POSTHOOK: query: load data local inpath '../../data/files/over1k' overwrite into table over1k_n4
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@over1k
-PREHOOK: query: load data local inpath '../../data/files/over1k' into table over1k
+POSTHOOK: Output: default@over1k_n4
+PREHOOK: query: load data local inpath '../../data/files/over1k' into table over1k_n4
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@over1k
-POSTHOOK: query: load data local inpath '../../data/files/over1k' into table over1k
+PREHOOK: Output: default@over1k_n4
+POSTHOOK: query: load data local inpath '../../data/files/over1k' into table over1k_n4
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@over1k
-PREHOOK: query: analyze table over1k compute statistics
+POSTHOOK: Output: default@over1k_n4
+PREHOOK: query: analyze table over1k_n4 compute statistics
 PREHOOK: type: QUERY
-PREHOOK: Input: default@over1k
-PREHOOK: Output: default@over1k
-POSTHOOK: query: analyze table over1k compute statistics
+PREHOOK: Input: default@over1k_n4
+PREHOOK: Output: default@over1k_n4
+POSTHOOK: query: analyze table over1k_n4 compute statistics
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@over1k
-POSTHOOK: Output: default@over1k
-PREHOOK: query: analyze table over1k compute statistics for columns
+POSTHOOK: Input: default@over1k_n4
+POSTHOOK: Output: default@over1k_n4
+PREHOOK: query: analyze table over1k_n4 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@over1k
-PREHOOK: Output: default@over1k
+PREHOOK: Input: default@over1k_n4
+PREHOOK: Output: default@over1k_n4
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table over1k compute statistics for columns
+POSTHOOK: query: analyze table over1k_n4 compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@over1k
-POSTHOOK: Output: default@over1k
+POSTHOOK: Input: default@over1k_n4
+POSTHOOK: Output: default@over1k_n4
 #### A masked pattern was here ####
-PREHOOK: query: explain select count(*) from over1k where (
+PREHOOK: query: explain select count(*) from over1k_n4 where (
 (t=1 and si=2)
 or (t=2 and si=3)
 or (t=3 and si=4) 
@@ -88,7 +88,7 @@ or (t=37 and si=38)
 or (t=47 and si=48)
 or (t=52 and si=53))
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select count(*) from over1k where (
+POSTHOOK: query: explain select count(*) from over1k_n4 where (
 (t=1 and si=2)
 or (t=2 and si=3)
 or (t=3 and si=4) 
@@ -119,7 +119,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: over1k
+            alias: over1k_n4
             Statistics: Num rows: 2098 Data size: 16744 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (((t = 10Y) and (si = 11S)) or ((t = 11Y) and (si = 12S)) or ((t = 12Y) and (si = 13S)) or ((t = 13Y) and (si = 14S)) or ((t = 14Y) and (si = 15S)) or ((t = 15Y) and (si = 16S)) or ((t = 16Y) and (si = 17S)) or ((t = 17Y) and (si = 18S)) or ((t = 1Y) and (si = 2S)) or ((t = 27Y) and (si = 28S)) or ((t = 2Y) and (si = 3S)) or ((t = 37Y) and (si = 38S)) or ((t = 3Y) and (si = 4S)) or ((t = 47Y) and (si = 48S)) or ((t = 4Y) and (si = 5S)) or ((t = 52Y) and (si = 53S)) or ((t = 5Y) and (si = 6S)) or ((t = 6Y) and (si = 7S)) or ((t = 7Y) and (si = 8S)) or ((t = 9Y) and (si = 10S))) (type: boolean)
@@ -156,7 +156,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select count(*) from over1k where (
+PREHOOK: query: explain select count(*) from over1k_n4 where (
 (t=1 and si=2)
 or (t=2 and si=3)
 or (t=3 and si=4) 
@@ -178,7 +178,7 @@ or (t=37 and si=38)
 or (t=47 and si=48)
 or (t=52 and si=53))
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select count(*) from over1k where (
+POSTHOOK: query: explain select count(*) from over1k_n4 where (
 (t=1 and si=2)
 or (t=2 and si=3)
 or (t=3 and si=4) 
@@ -209,7 +209,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: over1k
+            alias: over1k_n4
             Statistics: Num rows: 2098 Data size: 211174 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (((t = 10Y) and (si = 11S)) or ((t = 11Y) and (si = 12S)) or ((t = 12Y) and (si = 13S)) or ((t = 13Y) and (si = 14S)) or ((t = 14Y) and (si = 15S)) or ((t = 15Y) and (si = 16S)) or ((t = 16Y) and (si = 17S)) or ((t = 17Y) and (si = 18S)) or ((t = 1Y) and (si = 2S)) or ((t = 27Y) and (si = 28S)) or ((t = 2Y) and (si = 3S)) or ((t = 37Y) and (si = 38S)) or ((t = 3Y) and (si = 4S)) or ((t = 47Y) and (si = 48S)) or ((t = 4Y) and (si = 5S)) or ((t = 52Y) and (si = 53S)) or ((t = 5Y) and (si = 6S)) or ((t = 6Y) and (si = 7S)) or ((t = 7Y) and (si = 8S)) or ((t = 9Y) and (si = 10S))) (type: boolean)

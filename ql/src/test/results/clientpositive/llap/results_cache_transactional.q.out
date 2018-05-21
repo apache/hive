@@ -1,44 +1,44 @@
-PREHOOK: query: create table tab1 (key string, value string) stored as orc tblproperties ('transactional'='true')
+PREHOOK: query: create table tab1_n1 (key string, value string) stored as orc tblproperties ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tab1
-POSTHOOK: query: create table tab1 (key string, value string) stored as orc tblproperties ('transactional'='true')
+PREHOOK: Output: default@tab1_n1
+POSTHOOK: query: create table tab1_n1 (key string, value string) stored as orc tblproperties ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tab1
-PREHOOK: query: create table tab2 (key string, value string) stored as orc tblproperties ('transactional'='true')
+POSTHOOK: Output: default@tab1_n1
+PREHOOK: query: create table tab2_n1 (key string, value string) stored as orc tblproperties ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tab2
-POSTHOOK: query: create table tab2 (key string, value string) stored as orc tblproperties ('transactional'='true')
+PREHOOK: Output: default@tab2_n1
+POSTHOOK: query: create table tab2_n1 (key string, value string) stored as orc tblproperties ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tab2
-PREHOOK: query: insert into tab1 select * from default.src
+POSTHOOK: Output: default@tab2_n1
+PREHOOK: query: insert into tab1_n1 select * from default.src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@tab1
-POSTHOOK: query: insert into tab1 select * from default.src
+PREHOOK: Output: default@tab1_n1
+POSTHOOK: query: insert into tab1_n1 select * from default.src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@tab1
-POSTHOOK: Lineage: tab1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tab1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: insert into tab2 select * from default.src
+POSTHOOK: Output: default@tab1_n1
+POSTHOOK: Lineage: tab1_n1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tab1_n1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert into tab2_n1 select * from default.src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@tab2
-POSTHOOK: query: insert into tab2 select * from default.src
+PREHOOK: Output: default@tab2_n1
+POSTHOOK: query: insert into tab2_n1 select * from default.src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@tab2
-POSTHOOK: Lineage: tab2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tab2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@tab2_n1
+POSTHOOK: Lineage: tab2_n1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tab2_n1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain
-select max(key) from tab1
+select max(key) from tab1_n1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select max(key) from tab1
+select max(key) from tab1_n1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -55,7 +55,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: tab1
+                  alias: tab1_n1
                   Statistics: Num rows: 91 Data size: 16192 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string)
@@ -94,21 +94,21 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select max(key) from tab1
+PREHOOK: query: select max(key) from tab1_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab1
+PREHOOK: Input: default@tab1_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select max(key) from tab1
+POSTHOOK: query: select max(key) from tab1_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab1
+POSTHOOK: Input: default@tab1_n1
 #### A masked pattern was here ####
 98
 test.comment="Query on transactional table should use cache"
 PREHOOK: query: explain
-select max(key) from tab1
+select max(key) from tab1_n1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select max(key) from tab1
+select max(key) from tab1_n1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -121,18 +121,18 @@ STAGE PLANS:
         ListSink
       Cached Query Result: true
 
-PREHOOK: query: select max(key) from tab1
+PREHOOK: query: select max(key) from tab1_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab1
-POSTHOOK: query: select max(key) from tab1
+PREHOOK: Input: default@tab1_n1
+POSTHOOK: query: select max(key) from tab1_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab1
+POSTHOOK: Input: default@tab1_n1
 98
 PREHOOK: query: explain
-select count(*) from tab1 join tab2 on (tab1.key = tab2.key)
+select count(*) from tab1_n1 join tab2_n1 on (tab1_n1.key = tab2_n1.key)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select count(*) from tab1 join tab2 on (tab1.key = tab2.key)
+select count(*) from tab1_n1 join tab2_n1 on (tab1_n1.key = tab2_n1.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -150,7 +150,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: tab1
+                  alias: tab1_n1
                   Statistics: Num rows: 91 Data size: 16192 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -169,7 +169,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: tab2
+                  alias: tab2_n1
                   Statistics: Num rows: 91 Data size: 16192 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -226,23 +226,23 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from tab1 join tab2 on (tab1.key = tab2.key)
+PREHOOK: query: select count(*) from tab1_n1 join tab2_n1 on (tab1_n1.key = tab2_n1.key)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab1
-PREHOOK: Input: default@tab2
+PREHOOK: Input: default@tab1_n1
+PREHOOK: Input: default@tab2_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from tab1 join tab2 on (tab1.key = tab2.key)
+POSTHOOK: query: select count(*) from tab1_n1 join tab2_n1 on (tab1_n1.key = tab2_n1.key)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab1
-POSTHOOK: Input: default@tab2
+POSTHOOK: Input: default@tab1_n1
+POSTHOOK: Input: default@tab2_n1
 #### A masked pattern was here ####
 1028
 test.comment="Join on transactional tables, should use cache"
 PREHOOK: query: explain
-select count(*) from tab1 join tab2 on (tab1.key = tab2.key)
+select count(*) from tab1_n1 join tab2_n1 on (tab1_n1.key = tab2_n1.key)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select count(*) from tab1 join tab2 on (tab1.key = tab2.key)
+select count(*) from tab1_n1 join tab2_n1 on (tab1_n1.key = tab2_n1.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -255,14 +255,14 @@ STAGE PLANS:
         ListSink
       Cached Query Result: true
 
-PREHOOK: query: select count(*) from tab1 join tab2 on (tab1.key = tab2.key)
+PREHOOK: query: select count(*) from tab1_n1 join tab2_n1 on (tab1_n1.key = tab2_n1.key)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab1
-PREHOOK: Input: default@tab2
-POSTHOOK: query: select count(*) from tab1 join tab2 on (tab1.key = tab2.key)
+PREHOOK: Input: default@tab1_n1
+PREHOOK: Input: default@tab2_n1
+POSTHOOK: query: select count(*) from tab1_n1 join tab2_n1 on (tab1_n1.key = tab2_n1.key)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab1
-POSTHOOK: Input: default@tab2
+POSTHOOK: Input: default@tab1_n1
+POSTHOOK: Input: default@tab2_n1
 1028
 PREHOOK: query: explain
 select max(key) from src
@@ -404,10 +404,10 @@ POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 98
 PREHOOK: query: explain
-select count(*) from tab1 join src on (tab1.key = src.key)
+select count(*) from tab1_n1 join src on (tab1_n1.key = src.key)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select count(*) from tab1 join src on (tab1.key = src.key)
+select count(*) from tab1_n1 join src on (tab1_n1.key = src.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -425,7 +425,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: tab1
+                  alias: tab1_n1
                   Statistics: Num rows: 91 Data size: 16192 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -501,23 +501,23 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from tab1 join src on (tab1.key = src.key)
+PREHOOK: query: select count(*) from tab1_n1 join src on (tab1_n1.key = src.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Input: default@tab1
+PREHOOK: Input: default@tab1_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from tab1 join src on (tab1.key = src.key)
+POSTHOOK: query: select count(*) from tab1_n1 join src on (tab1_n1.key = src.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Input: default@tab1
+POSTHOOK: Input: default@tab1_n1
 #### A masked pattern was here ####
 1028
 test.comment="Join uses non-transactional table, should not use cache"
 PREHOOK: query: explain
-select count(*) from tab1 join src on (tab1.key = src.key)
+select count(*) from tab1_n1 join src on (tab1_n1.key = src.key)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select count(*) from tab1 join src on (tab1.key = src.key)
+select count(*) from tab1_n1 join src on (tab1_n1.key = src.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -535,7 +535,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: tab1
+                  alias: tab1_n1
                   Statistics: Num rows: 91 Data size: 16192 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -611,14 +611,14 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from tab1 join src on (tab1.key = src.key)
+PREHOOK: query: select count(*) from tab1_n1 join src on (tab1_n1.key = src.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Input: default@tab1
+PREHOOK: Input: default@tab1_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from tab1 join src on (tab1.key = src.key)
+POSTHOOK: query: select count(*) from tab1_n1 join src on (tab1_n1.key = src.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Input: default@tab1
+POSTHOOK: Input: default@tab1_n1
 #### A masked pattern was here ####
 1028

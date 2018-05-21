@@ -1,61 +1,61 @@
-PREHOOK: query: CREATE TABLE T1(key INT, val STRING)
+PREHOOK: query: CREATE TABLE T1_n146(key INT, val STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1
-POSTHOOK: query: CREATE TABLE T1(key INT, val STRING)
+PREHOOK: Output: default@T1_n146
+POSTHOOK: query: CREATE TABLE T1_n146(key INT, val STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1
+POSTHOOK: Output: default@T1_n146
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_n146
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1
+PREHOOK: Output: default@t1_n146
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_n146
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t1
-PREHOOK: query: CREATE TABLE T2(key INT, val STRING)
+POSTHOOK: Output: default@t1_n146
+PREHOOK: query: CREATE TABLE T2_n86(key INT, val STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T2
-POSTHOOK: query: CREATE TABLE T2(key INT, val STRING)
+PREHOOK: Output: default@T2_n86
+POSTHOOK: query: CREATE TABLE T2_n86(key INT, val STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T2
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2
+POSTHOOK: Output: default@T2_n86
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2_n86
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t2
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2
+PREHOOK: Output: default@t2_n86
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2_n86
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t2
-PREHOOK: query: CREATE TABLE T3(key INT, val STRING)
+POSTHOOK: Output: default@t2_n86
+PREHOOK: query: CREATE TABLE T3_n34(key INT, val STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T3
-POSTHOOK: query: CREATE TABLE T3(key INT, val STRING)
+PREHOOK: Output: default@T3_n34
+POSTHOOK: query: CREATE TABLE T3_n34(key INT, val STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T3
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T3
+POSTHOOK: Output: default@T3_n34
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T3_n34
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t3
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T3
+PREHOOK: Output: default@t3_n34
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T3_n34
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t3
+POSTHOOK: Output: default@t3_n34
 PREHOOK: query: EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
-      FROM T2 x JOIN T1 y ON (x.key = y.key) JOIN T3 z ON (y.key = z.key)
+      FROM T2_n86 x JOIN T1_n146 y ON (x.key = y.key) JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY y.key) tmp
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
-      FROM T2 x JOIN T1 y ON (x.key = y.key) JOIN T3 z ON (y.key = z.key)
+      FROM T2_n86 x JOIN T1_n146 y ON (x.key = y.key) JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY y.key) tmp
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -200,33 +200,33 @@ STAGE PLANS:
 
 PREHOOK: query: SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
-      FROM T2 x JOIN T1 y ON (x.key = y.key) JOIN T3 z ON (y.key = z.key)
+      FROM T2_n86 x JOIN T1_n146 y ON (x.key = y.key) JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY y.key) tmp
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
-PREHOOK: Input: default@t3
+PREHOOK: Input: default@t1_n146
+PREHOOK: Input: default@t2_n86
+PREHOOK: Input: default@t3_n34
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
-      FROM T2 x JOIN T1 y ON (x.key = y.key) JOIN T3 z ON (y.key = z.key)
+      FROM T2_n86 x JOIN T1_n146 y ON (x.key = y.key) JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY y.key) tmp
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
-POSTHOOK: Input: default@t3
+POSTHOOK: Input: default@t1_n146
+POSTHOOK: Input: default@t2_n86
+POSTHOOK: Input: default@t3_n34
 #### A masked pattern was here ####
 13	10
 PREHOOK: query: EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
-      FROM T2 x JOIN T1 y ON (x.key = y.key) JOIN T3 z ON (y.key = z.key)
+      FROM T2_n86 x JOIN T1_n146 y ON (x.key = y.key) JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY y.key) tmp
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
-      FROM T2 x JOIN T1 y ON (x.key = y.key) JOIN T3 z ON (y.key = z.key)
+      FROM T2_n86 x JOIN T1_n146 y ON (x.key = y.key) JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY y.key) tmp
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -371,33 +371,33 @@ STAGE PLANS:
 
 PREHOOK: query: SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
-      FROM T2 x JOIN T1 y ON (x.key = y.key) JOIN T3 z ON (y.key = z.key)
+      FROM T2_n86 x JOIN T1_n146 y ON (x.key = y.key) JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY y.key) tmp
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
-PREHOOK: Input: default@t3
+PREHOOK: Input: default@t1_n146
+PREHOOK: Input: default@t2_n86
+PREHOOK: Input: default@t3_n34
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
-      FROM T2 x JOIN T1 y ON (x.key = y.key) JOIN T3 z ON (y.key = z.key)
+      FROM T2_n86 x JOIN T1_n146 y ON (x.key = y.key) JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY y.key) tmp
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
-POSTHOOK: Input: default@t3
+POSTHOOK: Input: default@t1_n146
+POSTHOOK: Input: default@t2_n86
+POSTHOOK: Input: default@t3_n34
 #### A masked pattern was here ####
 13	10
 PREHOOK: query: EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
-      FROM T2 x JOIN T1 y ON (x.key = y.key) JOIN T3 z ON (y.key = z.key)
+      FROM T2_n86 x JOIN T1_n146 y ON (x.key = y.key) JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY y.key) tmp
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
-      FROM T2 x JOIN T1 y ON (x.key = y.key) JOIN T3 z ON (y.key = z.key)
+      FROM T2_n86 x JOIN T1_n146 y ON (x.key = y.key) JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY y.key) tmp
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -537,33 +537,33 @@ STAGE PLANS:
 
 PREHOOK: query: SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
-      FROM T2 x JOIN T1 y ON (x.key = y.key) JOIN T3 z ON (y.key = z.key)
+      FROM T2_n86 x JOIN T1_n146 y ON (x.key = y.key) JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY y.key) tmp
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
-PREHOOK: Input: default@t3
+PREHOOK: Input: default@t1_n146
+PREHOOK: Input: default@t2_n86
+PREHOOK: Input: default@t3_n34
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
-      FROM T2 x JOIN T1 y ON (x.key = y.key) JOIN T3 z ON (y.key = z.key)
+      FROM T2_n86 x JOIN T1_n146 y ON (x.key = y.key) JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY y.key) tmp
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
-POSTHOOK: Input: default@t3
+POSTHOOK: Input: default@t1_n146
+POSTHOOK: Input: default@t2_n86
+POSTHOOK: Input: default@t3_n34
 #### A masked pattern was here ####
 13	10
 PREHOOK: query: EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
-      FROM T2 x LEFT OUTER JOIN T1 y ON (x.key = y.key) LEFT OUTER JOIN T3 z ON (y.key = z.key)
+      FROM T2_n86 x LEFT OUTER JOIN T1_n146 y ON (x.key = y.key) LEFT OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY x.key) tmp
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
-      FROM T2 x LEFT OUTER JOIN T1 y ON (x.key = y.key) LEFT OUTER JOIN T3 z ON (y.key = z.key)
+      FROM T2_n86 x LEFT OUTER JOIN T1_n146 y ON (x.key = y.key) LEFT OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY x.key) tmp
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -699,33 +699,33 @@ STAGE PLANS:
 
 PREHOOK: query: SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
-      FROM T2 x LEFT OUTER JOIN T1 y ON (x.key = y.key) LEFT OUTER JOIN T3 z ON (y.key = z.key)
+      FROM T2_n86 x LEFT OUTER JOIN T1_n146 y ON (x.key = y.key) LEFT OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY x.key) tmp
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
-PREHOOK: Input: default@t3
+PREHOOK: Input: default@t1_n146
+PREHOOK: Input: default@t2_n86
+PREHOOK: Input: default@t3_n34
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
-      FROM T2 x LEFT OUTER JOIN T1 y ON (x.key = y.key) LEFT OUTER JOIN T3 z ON (y.key = z.key)
+      FROM T2_n86 x LEFT OUTER JOIN T1_n146 y ON (x.key = y.key) LEFT OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY x.key) tmp
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
-POSTHOOK: Input: default@t3
+POSTHOOK: Input: default@t1_n146
+POSTHOOK: Input: default@t2_n86
+POSTHOOK: Input: default@t3_n34
 #### A masked pattern was here ####
 22	12
 PREHOOK: query: EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
-      FROM T2 x LEFT OUTER JOIN T1 y ON (x.key = y.key) LEFT OUTER JOIN T3 z ON (y.key = z.key)
+      FROM T2_n86 x LEFT OUTER JOIN T1_n146 y ON (x.key = y.key) LEFT OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY x.key) tmp
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
-      FROM T2 x LEFT OUTER JOIN T1 y ON (x.key = y.key) LEFT OUTER JOIN T3 z ON (y.key = z.key)
+      FROM T2_n86 x LEFT OUTER JOIN T1_n146 y ON (x.key = y.key) LEFT OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY x.key) tmp
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -861,33 +861,33 @@ STAGE PLANS:
 
 PREHOOK: query: SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
-      FROM T2 x LEFT OUTER JOIN T1 y ON (x.key = y.key) LEFT OUTER JOIN T3 z ON (y.key = z.key)
+      FROM T2_n86 x LEFT OUTER JOIN T1_n146 y ON (x.key = y.key) LEFT OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY x.key) tmp
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
-PREHOOK: Input: default@t3
+PREHOOK: Input: default@t1_n146
+PREHOOK: Input: default@t2_n86
+PREHOOK: Input: default@t3_n34
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
-      FROM T2 x LEFT OUTER JOIN T1 y ON (x.key = y.key) LEFT OUTER JOIN T3 z ON (y.key = z.key)
+      FROM T2_n86 x LEFT OUTER JOIN T1_n146 y ON (x.key = y.key) LEFT OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY x.key) tmp
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
-POSTHOOK: Input: default@t3
+POSTHOOK: Input: default@t1_n146
+POSTHOOK: Input: default@t2_n86
+POSTHOOK: Input: default@t3_n34
 #### A masked pattern was here ####
 22	12
 PREHOOK: query: EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
-      FROM T2 x LEFT OUTER JOIN T1 y ON (x.key = y.key) LEFT OUTER JOIN T3 z ON (y.key = z.key)
+      FROM T2_n86 x LEFT OUTER JOIN T1_n146 y ON (x.key = y.key) LEFT OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY y.key) tmp
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
-      FROM T2 x LEFT OUTER JOIN T1 y ON (x.key = y.key) LEFT OUTER JOIN T3 z ON (y.key = z.key)
+      FROM T2_n86 x LEFT OUTER JOIN T1_n146 y ON (x.key = y.key) LEFT OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY y.key) tmp
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -1023,33 +1023,33 @@ STAGE PLANS:
 
 PREHOOK: query: SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
-      FROM T2 x LEFT OUTER JOIN T1 y ON (x.key = y.key) LEFT OUTER JOIN T3 z ON (y.key = z.key)
+      FROM T2_n86 x LEFT OUTER JOIN T1_n146 y ON (x.key = y.key) LEFT OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY y.key) tmp
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
-PREHOOK: Input: default@t3
+PREHOOK: Input: default@t1_n146
+PREHOOK: Input: default@t2_n86
+PREHOOK: Input: default@t3_n34
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
-      FROM T2 x LEFT OUTER JOIN T1 y ON (x.key = y.key) LEFT OUTER JOIN T3 z ON (y.key = z.key)
+      FROM T2_n86 x LEFT OUTER JOIN T1_n146 y ON (x.key = y.key) LEFT OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY y.key) tmp
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
-POSTHOOK: Input: default@t3
+POSTHOOK: Input: default@t1_n146
+POSTHOOK: Input: default@t2_n86
+POSTHOOK: Input: default@t3_n34
 #### A masked pattern was here ####
 13	12
 PREHOOK: query: EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT z.key AS key, count(1) AS cnt
-      FROM T2 x RIGHT OUTER JOIN T1 y ON (x.key = y.key) RIGHT OUTER JOIN T3 z ON (y.key = z.key)
+      FROM T2_n86 x RIGHT OUTER JOIN T1_n146 y ON (x.key = y.key) RIGHT OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY z.key) tmp
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT z.key AS key, count(1) AS cnt
-      FROM T2 x RIGHT OUTER JOIN T1 y ON (x.key = y.key) RIGHT OUTER JOIN T3 z ON (y.key = z.key)
+      FROM T2_n86 x RIGHT OUTER JOIN T1_n146 y ON (x.key = y.key) RIGHT OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY z.key) tmp
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -1185,33 +1185,33 @@ STAGE PLANS:
 
 PREHOOK: query: SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT z.key AS key, count(1) AS cnt
-      FROM T2 x RIGHT OUTER JOIN T1 y ON (x.key = y.key) RIGHT OUTER JOIN T3 z ON (y.key = z.key)
+      FROM T2_n86 x RIGHT OUTER JOIN T1_n146 y ON (x.key = y.key) RIGHT OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY z.key) tmp
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
-PREHOOK: Input: default@t3
+PREHOOK: Input: default@t1_n146
+PREHOOK: Input: default@t2_n86
+PREHOOK: Input: default@t3_n34
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT z.key AS key, count(1) AS cnt
-      FROM T2 x RIGHT OUTER JOIN T1 y ON (x.key = y.key) RIGHT OUTER JOIN T3 z ON (y.key = z.key)
+      FROM T2_n86 x RIGHT OUTER JOIN T1_n146 y ON (x.key = y.key) RIGHT OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY z.key) tmp
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
-POSTHOOK: Input: default@t3
+POSTHOOK: Input: default@t1_n146
+POSTHOOK: Input: default@t2_n86
+POSTHOOK: Input: default@t3_n34
 #### A masked pattern was here ####
 21	12
 PREHOOK: query: EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT z.key AS key, count(1) AS cnt
-      FROM T2 x RIGHT OUTER JOIN T1 y ON (x.key = y.key) RIGHT OUTER JOIN T3 z ON (y.key = z.key)
+      FROM T2_n86 x RIGHT OUTER JOIN T1_n146 y ON (x.key = y.key) RIGHT OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY z.key) tmp
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT z.key AS key, count(1) AS cnt
-      FROM T2 x RIGHT OUTER JOIN T1 y ON (x.key = y.key) RIGHT OUTER JOIN T3 z ON (y.key = z.key)
+      FROM T2_n86 x RIGHT OUTER JOIN T1_n146 y ON (x.key = y.key) RIGHT OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY z.key) tmp
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -1347,33 +1347,33 @@ STAGE PLANS:
 
 PREHOOK: query: SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT z.key AS key, count(1) AS cnt
-      FROM T2 x RIGHT OUTER JOIN T1 y ON (x.key = y.key) RIGHT OUTER JOIN T3 z ON (y.key = z.key)
+      FROM T2_n86 x RIGHT OUTER JOIN T1_n146 y ON (x.key = y.key) RIGHT OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY z.key) tmp
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
-PREHOOK: Input: default@t3
+PREHOOK: Input: default@t1_n146
+PREHOOK: Input: default@t2_n86
+PREHOOK: Input: default@t3_n34
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT z.key AS key, count(1) AS cnt
-      FROM T2 x RIGHT OUTER JOIN T1 y ON (x.key = y.key) RIGHT OUTER JOIN T3 z ON (y.key = z.key)
+      FROM T2_n86 x RIGHT OUTER JOIN T1_n146 y ON (x.key = y.key) RIGHT OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY z.key) tmp
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
-POSTHOOK: Input: default@t3
+POSTHOOK: Input: default@t1_n146
+POSTHOOK: Input: default@t2_n86
+POSTHOOK: Input: default@t3_n34
 #### A masked pattern was here ####
 21	12
 PREHOOK: query: EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
-      FROM T2 x RIGHT OUTER JOIN T1 y ON (x.key = y.key) RIGHT OUTER JOIN T3 z ON (y.key = z.key)
+      FROM T2_n86 x RIGHT OUTER JOIN T1_n146 y ON (x.key = y.key) RIGHT OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY y.key) tmp
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
-      FROM T2 x RIGHT OUTER JOIN T1 y ON (x.key = y.key) RIGHT OUTER JOIN T3 z ON (y.key = z.key)
+      FROM T2_n86 x RIGHT OUTER JOIN T1_n146 y ON (x.key = y.key) RIGHT OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY y.key) tmp
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -1509,33 +1509,33 @@ STAGE PLANS:
 
 PREHOOK: query: SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
-      FROM T2 x RIGHT OUTER JOIN T1 y ON (x.key = y.key) RIGHT OUTER JOIN T3 z ON (y.key = z.key)
+      FROM T2_n86 x RIGHT OUTER JOIN T1_n146 y ON (x.key = y.key) RIGHT OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY y.key) tmp
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
-PREHOOK: Input: default@t3
+PREHOOK: Input: default@t1_n146
+PREHOOK: Input: default@t2_n86
+PREHOOK: Input: default@t3_n34
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
-      FROM T2 x RIGHT OUTER JOIN T1 y ON (x.key = y.key) RIGHT OUTER JOIN T3 z ON (y.key = z.key)
+      FROM T2_n86 x RIGHT OUTER JOIN T1_n146 y ON (x.key = y.key) RIGHT OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY y.key) tmp
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
-POSTHOOK: Input: default@t3
+POSTHOOK: Input: default@t1_n146
+POSTHOOK: Input: default@t2_n86
+POSTHOOK: Input: default@t3_n34
 #### A masked pattern was here ####
 21	12
 PREHOOK: query: EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
-      FROM T2 x FULL OUTER JOIN T1 y ON (x.key = y.key) FULL OUTER JOIN T3 z ON (y.key = z.key)
+      FROM T2_n86 x FULL OUTER JOIN T1_n146 y ON (x.key = y.key) FULL OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY y.key) tmp
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
-      FROM T2 x FULL OUTER JOIN T1 y ON (x.key = y.key) FULL OUTER JOIN T3 z ON (y.key = z.key)
+      FROM T2_n86 x FULL OUTER JOIN T1_n146 y ON (x.key = y.key) FULL OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY y.key) tmp
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -1671,33 +1671,33 @@ STAGE PLANS:
 
 PREHOOK: query: SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
-      FROM T2 x FULL OUTER JOIN T1 y ON (x.key = y.key) FULL OUTER JOIN T3 z ON (y.key = z.key)
+      FROM T2_n86 x FULL OUTER JOIN T1_n146 y ON (x.key = y.key) FULL OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY y.key) tmp
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
-PREHOOK: Input: default@t3
+PREHOOK: Input: default@t1_n146
+PREHOOK: Input: default@t2_n86
+PREHOOK: Input: default@t3_n34
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
-      FROM T2 x FULL OUTER JOIN T1 y ON (x.key = y.key) FULL OUTER JOIN T3 z ON (y.key = z.key)
+      FROM T2_n86 x FULL OUTER JOIN T1_n146 y ON (x.key = y.key) FULL OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY y.key) tmp
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
-POSTHOOK: Input: default@t3
+POSTHOOK: Input: default@t1_n146
+POSTHOOK: Input: default@t2_n86
+POSTHOOK: Input: default@t3_n34
 #### A masked pattern was here ####
 21	14
 PREHOOK: query: EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
-      FROM T2 x FULL OUTER JOIN T1 y ON (x.key = y.key) FULL OUTER JOIN T3 z ON (y.key = z.key)
+      FROM T2_n86 x FULL OUTER JOIN T1_n146 y ON (x.key = y.key) FULL OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY y.key) tmp
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
-      FROM T2 x FULL OUTER JOIN T1 y ON (x.key = y.key) FULL OUTER JOIN T3 z ON (y.key = z.key)
+      FROM T2_n86 x FULL OUTER JOIN T1_n146 y ON (x.key = y.key) FULL OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY y.key) tmp
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -1833,20 +1833,20 @@ STAGE PLANS:
 
 PREHOOK: query: SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
-      FROM T2 x FULL OUTER JOIN T1 y ON (x.key = y.key) FULL OUTER JOIN T3 z ON (y.key = z.key)
+      FROM T2_n86 x FULL OUTER JOIN T1_n146 y ON (x.key = y.key) FULL OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY y.key) tmp
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
-PREHOOK: Input: default@t3
+PREHOOK: Input: default@t1_n146
+PREHOOK: Input: default@t2_n86
+PREHOOK: Input: default@t3_n34
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
-      FROM T2 x FULL OUTER JOIN T1 y ON (x.key = y.key) FULL OUTER JOIN T3 z ON (y.key = z.key)
+      FROM T2_n86 x FULL OUTER JOIN T1_n146 y ON (x.key = y.key) FULL OUTER JOIN T3_n34 z ON (y.key = z.key)
       GROUP BY y.key) tmp
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
-POSTHOOK: Input: default@t3
+POSTHOOK: Input: default@t1_n146
+POSTHOOK: Input: default@t2_n86
+POSTHOOK: Input: default@t3_n34
 #### A masked pattern was here ####
 21	14

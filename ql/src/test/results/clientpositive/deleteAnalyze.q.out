@@ -1,4 +1,4 @@
-PREHOOK: query: create table testdeci2(
+PREHOOK: query: create table testdeci2_n0(
 id int,
 amount decimal(10,3),
 sales_tax decimal(10,3),
@@ -7,8 +7,8 @@ item string)
 PREHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 PREHOOK: Output: database:default
-PREHOOK: Output: default@testdeci2
-POSTHOOK: query: create table testdeci2(
+PREHOOK: Output: default@testdeci2_n0
+POSTHOOK: query: create table testdeci2_n0(
 id int,
 amount decimal(10,3),
 sales_tax decimal(10,3),
@@ -17,25 +17,25 @@ item string)
 POSTHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@testdeci2
-PREHOOK: query: insert into table testdeci2 values(1,12.123,12345.123,'desk1'),(2,123.123,1234.123,'desk2')
+POSTHOOK: Output: default@testdeci2_n0
+PREHOOK: query: insert into table testdeci2_n0 values(1,12.123,12345.123,'desk1'),(2,123.123,1234.123,'desk2')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@testdeci2
-POSTHOOK: query: insert into table testdeci2 values(1,12.123,12345.123,'desk1'),(2,123.123,1234.123,'desk2')
+PREHOOK: Output: default@testdeci2_n0
+POSTHOOK: query: insert into table testdeci2_n0 values(1,12.123,12345.123,'desk1'),(2,123.123,1234.123,'desk2')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@testdeci2
-POSTHOOK: Lineage: testdeci2.amount SCRIPT []
-POSTHOOK: Lineage: testdeci2.id SCRIPT []
-POSTHOOK: Lineage: testdeci2.item SCRIPT []
-POSTHOOK: Lineage: testdeci2.sales_tax SCRIPT []
-PREHOOK: query: describe formatted testdeci2
+POSTHOOK: Output: default@testdeci2_n0
+POSTHOOK: Lineage: testdeci2_n0.amount SCRIPT []
+POSTHOOK: Lineage: testdeci2_n0.id SCRIPT []
+POSTHOOK: Lineage: testdeci2_n0.item SCRIPT []
+POSTHOOK: Lineage: testdeci2_n0.sales_tax SCRIPT []
+PREHOOK: query: describe formatted testdeci2_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@testdeci2
-POSTHOOK: query: describe formatted testdeci2
+PREHOOK: Input: default@testdeci2_n0
+POSTHOOK: query: describe formatted testdeci2_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@testdeci2
+POSTHOOK: Input: default@testdeci2_n0
 # col_name            	data_type           	comment             
 id                  	int                 	                    
 amount              	decimal(10,3)       	                    
@@ -68,12 +68,12 @@ Sort Columns:       	[]
 Storage Desc Params:	 	 
 	serialization.format	1                   
 #### A masked pattern was here ####
-PREHOOK: query: describe formatted testdeci2 amount
+PREHOOK: query: describe formatted testdeci2_n0 amount
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@testdeci2
-POSTHOOK: query: describe formatted testdeci2 amount
+PREHOOK: Input: default@testdeci2_n0
+POSTHOOK: query: describe formatted testdeci2_n0 amount
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@testdeci2
+POSTHOOK: Input: default@testdeci2_n0
 col_name            	amount              	 	 	 	 	 	 	 	 	 	 
 data_type           	decimal(10,3)       	 	 	 	 	 	 	 	 	 	 
 min                 	12.123              	 	 	 	 	 	 	 	 	 	 
@@ -87,22 +87,22 @@ num_falses
 bitVector           	HL                  	 	 	 	 	 	 	 	 	 	 
 comment             	from deserializer   	 	 	 	 	 	 	 	 	 	 
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"amount\":\"true\",\"id\":\"true\",\"item\":\"true\",\"sales_tax\":\"true\"}}	 	 	 	 	 	 	 	 	 	 
-PREHOOK: query: analyze table testdeci2 compute statistics for columns
+PREHOOK: query: analyze table testdeci2_n0 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@testdeci2
-PREHOOK: Output: default@testdeci2
+PREHOOK: Input: default@testdeci2_n0
+PREHOOK: Output: default@testdeci2_n0
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table testdeci2 compute statistics for columns
+POSTHOOK: query: analyze table testdeci2_n0 compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@testdeci2
-POSTHOOK: Output: default@testdeci2
+POSTHOOK: Input: default@testdeci2_n0
+POSTHOOK: Output: default@testdeci2_n0
 #### A masked pattern was here ####
-PREHOOK: query: describe formatted testdeci2
+PREHOOK: query: describe formatted testdeci2_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@testdeci2
-POSTHOOK: query: describe formatted testdeci2
+PREHOOK: Input: default@testdeci2_n0
+POSTHOOK: query: describe formatted testdeci2_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@testdeci2
+POSTHOOK: Input: default@testdeci2_n0
 # col_name            	data_type           	comment             
 id                  	int                 	                    
 amount              	decimal(10,3)       	                    
@@ -134,28 +134,28 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: analyze table testdeci2 compute statistics for columns
+PREHOOK: query: analyze table testdeci2_n0 compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
-PREHOOK: Input: default@testdeci2
-PREHOOK: Output: default@testdeci2
+PREHOOK: Input: default@testdeci2_n0
+PREHOOK: Output: default@testdeci2_n0
 #### A masked pattern was here ####
-POSTHOOK: query: analyze table testdeci2 compute statistics for columns
+POSTHOOK: query: analyze table testdeci2_n0 compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
-POSTHOOK: Input: default@testdeci2
-POSTHOOK: Output: default@testdeci2
+POSTHOOK: Input: default@testdeci2_n0
+POSTHOOK: Output: default@testdeci2_n0
 #### A masked pattern was here ####
 PREHOOK: query: explain
 select s.id,
 coalesce(d.amount,0) as sales,
 coalesce(d.sales_tax,0) as tax
-from testdeci2 s join testdeci2 d
+from testdeci2_n0 s join testdeci2_n0 d
 on s.item=d.item and d.id=2
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select s.id,
 coalesce(d.amount,0) as sales,
 coalesce(d.sales_tax,0) as tax
-from testdeci2 s join testdeci2 d
+from testdeci2_n0 s join testdeci2_n0 d
 on s.item=d.item and d.id=2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:

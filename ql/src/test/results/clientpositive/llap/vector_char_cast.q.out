@@ -1,35 +1,35 @@
-PREHOOK: query: create table s1(id smallint) stored as orc
+PREHOOK: query: create table s1_n2(id smallint) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@s1
-POSTHOOK: query: create table s1(id smallint) stored as orc
+PREHOOK: Output: default@s1_n2
+POSTHOOK: query: create table s1_n2(id smallint) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@s1
-PREHOOK: query: insert into table s1 values (1000),(1001),(1002),(1003),(1000)
+POSTHOOK: Output: default@s1_n2
+PREHOOK: query: insert into table s1_n2 values (1000),(1001),(1002),(1003),(1000)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@s1
-POSTHOOK: query: insert into table s1 values (1000),(1001),(1002),(1003),(1000)
+PREHOOK: Output: default@s1_n2
+POSTHOOK: query: insert into table s1_n2 values (1000),(1001),(1002),(1003),(1000)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@s1
-POSTHOOK: Lineage: s1.id SCRIPT []
-PREHOOK: query: select count(1) from s1 where cast(id as char(4))='1000'
+POSTHOOK: Output: default@s1_n2
+POSTHOOK: Lineage: s1_n2.id SCRIPT []
+PREHOOK: query: select count(1) from s1_n2 where cast(id as char(4))='1000'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@s1
+PREHOOK: Input: default@s1_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select count(1) from s1 where cast(id as char(4))='1000'
+POSTHOOK: query: select count(1) from s1_n2 where cast(id as char(4))='1000'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@s1
+POSTHOOK: Input: default@s1_n2
 #### A masked pattern was here ####
 2
-PREHOOK: query: select count(1) from s1 where cast(id as char(4))='1000'
+PREHOOK: query: select count(1) from s1_n2 where cast(id as char(4))='1000'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@s1
+PREHOOK: Input: default@s1_n2
 #### A masked pattern was here ####
-POSTHOOK: query: select count(1) from s1 where cast(id as char(4))='1000'
+POSTHOOK: query: select count(1) from s1_n2 where cast(id as char(4))='1000'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@s1
+POSTHOOK: Input: default@s1_n2
 #### A masked pattern was here ####
 2

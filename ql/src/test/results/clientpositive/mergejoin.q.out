@@ -127,123 +127,123 @@ POSTHOOK: Input: default@src1
 66	val_66	66	val_66
 98	val_98	98	val_98
 98	val_98	98	val_98
-PREHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE srcbucket_mapjoin_n16(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+PREHOOK: Output: default@srcbucket_mapjoin_n16
+POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_n16(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcbucket_mapjoin
-PREHOOK: query: CREATE TABLE tab_part (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS ORCFILE
+POSTHOOK: Output: default@srcbucket_mapjoin_n16
+PREHOOK: query: CREATE TABLE tab_part_n10 (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS ORCFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tab_part
-POSTHOOK: query: CREATE TABLE tab_part (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS ORCFILE
+PREHOOK: Output: default@tab_part_n10
+POSTHOOK: query: CREATE TABLE tab_part_n10 (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS ORCFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tab_part
-PREHOOK: query: CREATE TABLE srcbucket_mapjoin_part (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+POSTHOOK: Output: default@tab_part_n10
+PREHOOK: query: CREATE TABLE srcbucket_mapjoin_part_n17 (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@srcbucket_mapjoin_part
-POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_part (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+PREHOOK: Output: default@srcbucket_mapjoin_part_n17
+POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_part_n17 (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@srcbucket_mapjoin_part
-PREHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n17
+PREHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_n16 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_n16
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_n16 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/bmj1/000001_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_n16
+POSTHOOK: Output: default@srcbucket_mapjoin_n16@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj1/000001_0' INTO TABLE srcbucket_mapjoin_n16 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/bmj1/000001_0' INTO TABLE srcbucket_mapjoin partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_n16@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/bmj1/000001_0' INTO TABLE srcbucket_mapjoin_n16 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_n16@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part_n17 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin_part
-POSTHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_part_n17
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part_n17 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin_part
-POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n17
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n17@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part_n17 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_part_n17@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part_n17 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n17@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part_n17 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_part_n17@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part_n17 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: query: load data local inpath '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n17@ds=2008-04-08
+PREHOOK: query: load data local inpath '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part_n17 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: Output: default@srcbucket_mapjoin_part_n17@ds=2008-04-08
+POSTHOOK: query: load data local inpath '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part_n17 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: query: insert overwrite table tab_part partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin_part
+POSTHOOK: Output: default@srcbucket_mapjoin_part_n17@ds=2008-04-08
+PREHOOK: query: insert overwrite table tab_part_n10 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_part_n17
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin_part
-PREHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: Output: default@tab_part@ds=2008-04-08
-POSTHOOK: query: insert overwrite table tab_part partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin_part
+PREHOOK: Input: default@srcbucket_mapjoin_part_n17
+PREHOOK: Input: default@srcbucket_mapjoin_part_n17@ds=2008-04-08
+PREHOOK: Output: default@tab_part_n10@ds=2008-04-08
+POSTHOOK: query: insert overwrite table tab_part_n10 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_part_n17
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin_part
-POSTHOOK: Input: default@srcbucket_mapjoin_part@ds=2008-04-08
-POSTHOOK: Output: default@tab_part@ds=2008-04-08
-POSTHOOK: Lineage: tab_part PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_part)srcbucket_mapjoin_part.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: tab_part PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_part)srcbucket_mapjoin_part.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: CREATE TABLE tab(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS ORCFILE
+POSTHOOK: Input: default@srcbucket_mapjoin_part_n17
+POSTHOOK: Input: default@srcbucket_mapjoin_part_n17@ds=2008-04-08
+POSTHOOK: Output: default@tab_part_n10@ds=2008-04-08
+POSTHOOK: Lineage: tab_part_n10 PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_part_n17)srcbucket_mapjoin_part_n17.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tab_part_n10 PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_part_n17)srcbucket_mapjoin_part_n17.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: CREATE TABLE tab_n9(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS ORCFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tab
-POSTHOOK: query: CREATE TABLE tab(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS ORCFILE
+PREHOOK: Output: default@tab_n9
+POSTHOOK: query: CREATE TABLE tab_n9(key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS ORCFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tab
-PREHOOK: query: insert overwrite table tab partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin
+POSTHOOK: Output: default@tab_n9
+PREHOOK: query: insert overwrite table tab_n9 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_n16
 PREHOOK: type: QUERY
-PREHOOK: Input: default@srcbucket_mapjoin
-PREHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
-PREHOOK: Output: default@tab@ds=2008-04-08
-POSTHOOK: query: insert overwrite table tab partition (ds='2008-04-08')
-select key,value from srcbucket_mapjoin
+PREHOOK: Input: default@srcbucket_mapjoin_n16
+PREHOOK: Input: default@srcbucket_mapjoin_n16@ds=2008-04-08
+PREHOOK: Output: default@tab_n9@ds=2008-04-08
+POSTHOOK: query: insert overwrite table tab_n9 partition (ds='2008-04-08')
+select key,value from srcbucket_mapjoin_n16
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@srcbucket_mapjoin
-POSTHOOK: Input: default@srcbucket_mapjoin@ds=2008-04-08
-POSTHOOK: Output: default@tab@ds=2008-04-08
-POSTHOOK: Lineage: tab PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin)srcbucket_mapjoin.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: tab PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin)srcbucket_mapjoin.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Input: default@srcbucket_mapjoin_n16
+POSTHOOK: Input: default@srcbucket_mapjoin_n16@ds=2008-04-08
+POSTHOOK: Output: default@tab_n9@ds=2008-04-08
+POSTHOOK: Lineage: tab_n9 PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_n16)srcbucket_mapjoin_n16.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tab_n9 PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_n16)srcbucket_mapjoin_n16.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: explain vectorization detail
 select count(*)
-from tab a join tab_part b on a.key = b.key
+from tab_n9 a join tab_part_n10 b on a.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select count(*)
-from tab a join tab_part b on a.key = b.key
+from tab_n9 a join tab_part_n10 b on a.key = b.key
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -373,19 +373,19 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from tab a join tab_part b on a.key = b.key
+PREHOOK: query: select * from tab_n9 a join tab_part_n10 b on a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab@ds=2008-04-08
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
-POSTHOOK: query: select * from tab a join tab_part b on a.key = b.key
+POSTHOOK: query: select * from tab_n9 a join tab_part_n10 b on a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab@ds=2008-04-08
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 0	val_0	2008-04-08	0	val_0	2008-04-08
 0	val_0	2008-04-08	0	val_0	2008-04-08
@@ -867,19 +867,19 @@ POSTHOOK: Input: default@tab_part@ds=2008-04-08
 97	val_97	2008-04-08	97	val_97	2008-04-08
 97	val_97	2008-04-08	97	val_97	2008-04-08
 97	val_97	2008-04-08	97	val_97	2008-04-08
-PREHOOK: query: select * from tab a join tab_part b on a.key = b.key
+PREHOOK: query: select * from tab_n9 a join tab_part_n10 b on a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab@ds=2008-04-08
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
-POSTHOOK: query: select * from tab a join tab_part b on a.key = b.key
+POSTHOOK: query: select * from tab_n9 a join tab_part_n10 b on a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab@ds=2008-04-08
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 0	val_0	2008-04-08	0	val_0	2008-04-08
 0	val_0	2008-04-08	0	val_0	2008-04-08
@@ -1363,11 +1363,11 @@ POSTHOOK: Input: default@tab_part@ds=2008-04-08
 97	val_97	2008-04-08	97	val_97	2008-04-08
 PREHOOK: query: explain vectorization detail
 select count(*)
-from tab a left outer join tab_part b on a.key = b.key
+from tab_n9 a left outer join tab_part_n10 b on a.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select count(*)
-from tab a left outer join tab_part b on a.key = b.key
+from tab_n9 a left outer join tab_part_n10 b on a.key = b.key
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -1490,29 +1490,29 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select count(*)
-from tab a left outer join tab_part b on a.key = b.key
+from tab_n9 a left outer join tab_part_n10 b on a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab@ds=2008-04-08
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*)
-from tab a left outer join tab_part b on a.key = b.key
+from tab_n9 a left outer join tab_part_n10 b on a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab@ds=2008-04-08
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 480
 PREHOOK: query: explain vectorization detail
 select count (*)
-from tab a right outer join tab_part b on a.key = b.key
+from tab_n9 a right outer join tab_part_n10 b on a.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select count (*)
-from tab a right outer join tab_part b on a.key = b.key
+from tab_n9 a right outer join tab_part_n10 b on a.key = b.key
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -1635,29 +1635,29 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select count (*)
-from tab a right outer join tab_part b on a.key = b.key
+from tab_n9 a right outer join tab_part_n10 b on a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab@ds=2008-04-08
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 POSTHOOK: query: select count (*)
-from tab a right outer join tab_part b on a.key = b.key
+from tab_n9 a right outer join tab_part_n10 b on a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab@ds=2008-04-08
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 738
 PREHOOK: query: explain vectorization detail
 select count(*)
-from tab a full outer join tab_part b on a.key = b.key
+from tab_n9 a full outer join tab_part_n10 b on a.key = b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
 select count(*)
-from tab a full outer join tab_part b on a.key = b.key
+from tab_n9 a full outer join tab_part_n10 b on a.key = b.key
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -1780,27 +1780,27 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select count(*)
-from tab a full outer join tab_part b on a.key = b.key
+from tab_n9 a full outer join tab_part_n10 b on a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab@ds=2008-04-08
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*)
-from tab a full outer join tab_part b on a.key = b.key
+from tab_n9 a full outer join tab_part_n10 b on a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab@ds=2008-04-08
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 738
 PREHOOK: query: explain vectorization detail
-select count(*) from tab a join tab_part b on a.key = b.key join src1 c on a.value = c.value
+select count(*) from tab_n9 a join tab_part_n10 b on a.key = b.key join src1 c on a.value = c.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select count(*) from tab a join tab_part b on a.key = b.key join src1 c on a.value = c.value
+select count(*) from tab_n9 a join tab_part_n10 b on a.key = b.key join src1 c on a.value = c.value
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -1980,28 +1980,28 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from tab a join tab_part b on a.key = b.key join src1 c on a.value = c.value
+PREHOOK: query: select count(*) from tab_n9 a join tab_part_n10 b on a.key = b.key join src1 c on a.value = c.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab@ds=2008-04-08
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from tab a join tab_part b on a.key = b.key join src1 c on a.value = c.value
+POSTHOOK: query: select count(*) from tab_n9 a join tab_part_n10 b on a.key = b.key join src1 c on a.value = c.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab@ds=2008-04-08
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 40
 PREHOOK: query: explain vectorization detail
-select count(*) from tab a join tab_part b on a.value = b.value
+select count(*) from tab_n9 a join tab_part_n10 b on a.value = b.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select count(*) from tab a join tab_part b on a.value = b.value
+select count(*) from tab_n9 a join tab_part_n10 b on a.value = b.value
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -2131,32 +2131,32 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from tab a join tab_part b on a.value = b.value
+PREHOOK: query: select count(*) from tab_n9 a join tab_part_n10 b on a.value = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab@ds=2008-04-08
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from tab a join tab_part b on a.value = b.value
+POSTHOOK: query: select count(*) from tab_n9 a join tab_part_n10 b on a.value = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab@ds=2008-04-08
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 480
 PREHOOK: query: explain vectorization detail
-select count(*) from (select s1.key as key, s1.value as value from tab s1 join tab s3 on s1.key=s3.key
+select count(*) from (select s1.key as key, s1.value as value from tab_n9 s1 join tab_n9 s3 on s1.key=s3.key
 UNION  ALL
-select s2.key as key, s2.value as value from tab s2
-) a join tab_part b on (a.key = b.key)
+select s2.key as key, s2.value as value from tab_n9 s2
+) a join tab_part_n10 b on (a.key = b.key)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select count(*) from (select s1.key as key, s1.value as value from tab s1 join tab s3 on s1.key=s3.key
+select count(*) from (select s1.key as key, s1.value as value from tab_n9 s1 join tab_n9 s3 on s1.key=s3.key
 UNION  ALL
-select s2.key as key, s2.value as value from tab s2
-) a join tab_part b on (a.key = b.key)
+select s2.key as key, s2.value as value from tab_n9 s2
+) a join tab_part_n10 b on (a.key = b.key)
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -2356,10 +2356,10 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain vectorization detail
-select count(*) from tab a join tab_part b on a.value = b.value
+select count(*) from tab_n9 a join tab_part_n10 b on a.value = b.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select count(*) from tab a join tab_part b on a.value = b.value
+select count(*) from tab_n9 a join tab_part_n10 b on a.value = b.value
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -2489,26 +2489,26 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from tab a join tab_part b on a.value = b.value
+PREHOOK: query: select count(*) from tab_n9 a join tab_part_n10 b on a.value = b.value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab@ds=2008-04-08
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from tab a join tab_part b on a.value = b.value
+POSTHOOK: query: select count(*) from tab_n9 a join tab_part_n10 b on a.value = b.value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab@ds=2008-04-08
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 480
 PREHOOK: query: explain vectorization detail
-select count(*) from tab a join tab_part b on a.key = b.key join src1 c on a.value = c.value
+select count(*) from tab_n9 a join tab_part_n10 b on a.key = b.key join src1 c on a.value = c.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select count(*) from tab a join tab_part b on a.key = b.key join src1 c on a.value = c.value
+select count(*) from tab_n9 a join tab_part_n10 b on a.key = b.key join src1 c on a.value = c.value
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -2688,34 +2688,34 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from tab a join tab_part b on a.key = b.key join src1 c on a.value = c.value
+PREHOOK: query: select count(*) from tab_n9 a join tab_part_n10 b on a.key = b.key join src1 c on a.value = c.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab@ds=2008-04-08
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from tab a join tab_part b on a.key = b.key join src1 c on a.value = c.value
+POSTHOOK: query: select count(*) from tab_n9 a join tab_part_n10 b on a.key = b.key join src1 c on a.value = c.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab@ds=2008-04-08
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 40
 PREHOOK: query: explain vectorization detail
-select count(*) from (select s1.key as key, s1.value as value from tab s1 join tab s3 on s1.key=s3.key
+select count(*) from (select s1.key as key, s1.value as value from tab_n9 s1 join tab_n9 s3 on s1.key=s3.key
 UNION  ALL
-select s2.key as key, s2.value as value from tab s2
-) a join tab_part b on (a.key = b.key)
+select s2.key as key, s2.value as value from tab_n9 s2
+) a join tab_part_n10 b on (a.key = b.key)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select count(*) from (select s1.key as key, s1.value as value from tab s1 join tab s3 on s1.key=s3.key
+select count(*) from (select s1.key as key, s1.value as value from tab_n9 s1 join tab_n9 s3 on s1.key=s3.key
 UNION  ALL
-select s2.key as key, s2.value as value from tab s2
-) a join tab_part b on (a.key = b.key)
+select s2.key as key, s2.value as value from tab_n9 s2
+) a join tab_part_n10 b on (a.key = b.key)
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -2917,19 +2917,19 @@ STAGE PLANS:
 PREHOOK: query: explain  vectorization detail
 select count(*) from
 (select rt1.id from
-(select t1.key as id, t1.value as od from tab t1 order by id, od) rt1) vt1
+(select t1.key as id, t1.value as od from tab_n9 t1 order by id, od) rt1) vt1
 join
 (select rt2.id from
-(select t2.key as id, t2.value as od from tab_part t2 order by id, od) rt2) vt2
+(select t2.key as id, t2.value as od from tab_part_n10 t2 order by id, od) rt2) vt2
 where vt1.id=vt2.id
 PREHOOK: type: QUERY
 POSTHOOK: query: explain  vectorization detail
 select count(*) from
 (select rt1.id from
-(select t1.key as id, t1.value as od from tab t1 order by id, od) rt1) vt1
+(select t1.key as id, t1.value as od from tab_n9 t1 order by id, od) rt1) vt1
 join
 (select rt2.id from
-(select t2.key as id, t2.value as od from tab_part t2 order by id, od) rt2) vt2
+(select t2.key as id, t2.value as od from tab_part_n10 t2 order by id, od) rt2) vt2
 where vt1.id=vt2.id
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
@@ -3178,45 +3178,45 @@ STAGE PLANS:
 
 PREHOOK: query: select count(*) from
 (select rt1.id from
-(select t1.key as id, t1.value as od from tab t1 order by id, od) rt1) vt1
+(select t1.key as id, t1.value as od from tab_n9 t1 order by id, od) rt1) vt1
 join
 (select rt2.id from
-(select t2.key as id, t2.value as od from tab_part t2 order by id, od) rt2) vt2
+(select t2.key as id, t2.value as od from tab_part_n10 t2 order by id, od) rt2) vt2
 where vt1.id=vt2.id
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab@ds=2008-04-08
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from
 (select rt1.id from
-(select t1.key as id, t1.value as od from tab t1 order by id, od) rt1) vt1
+(select t1.key as id, t1.value as od from tab_n9 t1 order by id, od) rt1) vt1
 join
 (select rt2.id from
-(select t2.key as id, t2.value as od from tab_part t2 order by id, od) rt2) vt2
+(select t2.key as id, t2.value as od from tab_part_n10 t2 order by id, od) rt2) vt2
 where vt1.id=vt2.id
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab@ds=2008-04-08
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 480
 Warning: Shuffle Join JOIN[8][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
-PREHOOK: query: select * from (select * from tab where tab.key = 0)a full outer join (select * from tab_part where tab_part.key = 98)b on a.key = b.key
+PREHOOK: query: select * from (select * from tab_n9 where tab_n9.key = 0)a full outer join (select * from tab_part_n10 where tab_part_n10.key = 98)b on a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab@ds=2008-04-08
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
-POSTHOOK: query: select * from (select * from tab where tab.key = 0)a full outer join (select * from tab_part where tab_part.key = 98)b on a.key = b.key
+POSTHOOK: query: select * from (select * from tab_n9 where tab_n9.key = 0)a full outer join (select * from tab_part_n10 where tab_part_n10.key = 98)b on a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab@ds=2008-04-08
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 0	val_0	2008-04-08	NULL	NULL	NULL
 0	val_0	2008-04-08	NULL	NULL	NULL
@@ -3224,56 +3224,56 @@ POSTHOOK: Input: default@tab_part@ds=2008-04-08
 NULL	NULL	NULL	98	val_98	2008-04-08
 NULL	NULL	NULL	98	val_98	2008-04-08
 Warning: Shuffle Join JOIN[8][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
-PREHOOK: query: select * from (select * from tab where tab.key = 0)a right outer join (select * from tab_part where tab_part.key = 98)b on a.key = b.key
+PREHOOK: query: select * from (select * from tab_n9 where tab_n9.key = 0)a right outer join (select * from tab_part_n10 where tab_part_n10.key = 98)b on a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
-POSTHOOK: query: select * from (select * from tab where tab.key = 0)a right outer join (select * from tab_part where tab_part.key = 98)b on a.key = b.key
+POSTHOOK: query: select * from (select * from tab_n9 where tab_n9.key = 0)a right outer join (select * from tab_part_n10 where tab_part_n10.key = 98)b on a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 NULL	NULL	NULL	98	val_98	2008-04-08
 NULL	NULL	NULL	98	val_98	2008-04-08
 Warning: Shuffle Join JOIN[12][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: select * from
-(select * from tab where tab.key = 0)a
+(select * from tab_n9 where tab_n9.key = 0)a
 full outer join
-(select * from tab_part where tab_part.key = 98)b join tab_part c on a.key = b.key and b.key = c.key
+(select * from tab_part_n10 where tab_part_n10.key = 98)b join tab_part_n10 c on a.key = b.key and b.key = c.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab_part
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_part_n10
 #### A masked pattern was here ####
 POSTHOOK: query: select * from
-(select * from tab where tab.key = 0)a
+(select * from tab_n9 where tab_n9.key = 0)a
 full outer join
-(select * from tab_part where tab_part.key = 98)b join tab_part c on a.key = b.key and b.key = c.key
+(select * from tab_part_n10 where tab_part_n10.key = 98)b join tab_part_n10 c on a.key = b.key and b.key = c.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab_part
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_part_n10
 #### A masked pattern was here ####
 Warning: Shuffle Join JOIN[14][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-2:MAPRED' is a cross product
 Warning: Shuffle Join JOIN[11][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: select * from
-(select * from tab where tab.key = 0)a
+(select * from tab_n9 where tab_n9.key = 0)a
 full outer join
-(select * from tab_part where tab_part.key = 98)b on a.key = b.key join tab_part c on b.key = c.key
+(select * from tab_part_n10 where tab_part_n10.key = 98)b on a.key = b.key join tab_part_n10 c on b.key = c.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 POSTHOOK: query: select * from
-(select * from tab where tab.key = 0)a
+(select * from tab_n9 where tab_n9.key = 0)a
 full outer join
-(select * from tab_part where tab_part.key = 98)b on a.key = b.key join tab_part c on b.key = c.key
+(select * from tab_part_n10 where tab_part_n10.key = 98)b on a.key = b.key join tab_part_n10 c on b.key = c.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 NULL	NULL	NULL	98	val_98	2008-04-08	98	val_98	2008-04-08
 NULL	NULL	NULL	98	val_98	2008-04-08	98	val_98	2008-04-08
@@ -3282,24 +3282,24 @@ NULL	NULL	NULL	98	val_98	2008-04-08	98	val_98	2008-04-08
 Warning: Shuffle Join JOIN[13][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-2:MAPRED' is a cross product
 Warning: Shuffle Join JOIN[10][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: select * from
-(select * from tab where tab.key = 0)a
+(select * from tab_n9 where tab_n9.key = 0)a
 join
-(select * from tab_part where tab_part.key = 98)b full outer join tab_part c on a.key = b.key and b.key = c.key
+(select * from tab_part_n10 where tab_part_n10.key = 98)b full outer join tab_part_n10 c on a.key = b.key and b.key = c.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab@ds=2008-04-08
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 POSTHOOK: query: select * from
-(select * from tab where tab.key = 0)a
+(select * from tab_n9 where tab_n9.key = 0)a
 join
-(select * from tab_part where tab_part.key = 98)b full outer join tab_part c on a.key = b.key and b.key = c.key
+(select * from tab_part_n10 where tab_part_n10.key = 98)b full outer join tab_part_n10 c on a.key = b.key and b.key = c.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab@ds=2008-04-08
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 0	val_0	2008-04-08	98	val_98	2008-04-08	NULL	NULL	NULL
 0	val_0	2008-04-08	98	val_98	2008-04-08	NULL	NULL	NULL
@@ -3810,22 +3810,22 @@ NULL	NULL	NULL	NULL	NULL	NULL	98	val_98	2008-04-08
 Warning: Shuffle Join JOIN[13][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-2:MAPRED' is a cross product
 Warning: Shuffle Join JOIN[10][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: select * from
-(select * from tab where tab.key = 0)a
+(select * from tab_n9 where tab_n9.key = 0)a
 join
-(select * from tab_part where tab_part.key = 98)b on a.key = b.key full outer join tab_part c on b.key = c.key
+(select * from tab_part_n10 where tab_part_n10.key = 98)b on a.key = b.key full outer join tab_part_n10 c on b.key = c.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 POSTHOOK: query: select * from
-(select * from tab where tab.key = 0)a
+(select * from tab_n9 where tab_n9.key = 0)a
 join
-(select * from tab_part where tab_part.key = 98)b on a.key = b.key full outer join tab_part c on b.key = c.key
+(select * from tab_part_n10 where tab_part_n10.key = 98)b on a.key = b.key full outer join tab_part_n10 c on b.key = c.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 NULL	NULL	NULL	NULL	NULL	NULL	0	val_0	2008-04-08
 NULL	NULL	NULL	NULL	NULL	NULL	0	val_0	2008-04-08
@@ -4329,45 +4329,45 @@ NULL	NULL	NULL	NULL	NULL	NULL	98	val_98	2008-04-08
 NULL	NULL	NULL	NULL	NULL	NULL	98	val_98	2008-04-08
 Warning: Shuffle Join JOIN[9][tables = [a, b]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: select * from
-(select * from tab where tab.key = 0)a
+(select * from tab_n9 where tab_n9.key = 0)a
 full outer join
-(select * from tab_part where tab_part.key = 98)b join tab_part c on a.key = b.key and b.key = c.key
+(select * from tab_part_n10 where tab_part_n10.key = 98)b join tab_part_n10 c on a.key = b.key and b.key = c.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab@ds=2008-04-08
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 POSTHOOK: query: select * from
-(select * from tab where tab.key = 0)a
+(select * from tab_n9 where tab_n9.key = 0)a
 full outer join
-(select * from tab_part where tab_part.key = 98)b join tab_part c on a.key = b.key and b.key = c.key
+(select * from tab_part_n10 where tab_part_n10.key = 98)b join tab_part_n10 c on a.key = b.key and b.key = c.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab@ds=2008-04-08
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 Warning: Shuffle Join JOIN[9][tables = [a, b]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: select * from
-(select * from tab where tab.key = 0)a
+(select * from tab_n9 where tab_n9.key = 0)a
 join
-(select * from tab_part where tab_part.key = 98)b full outer join tab_part c on a.key = b.key and b.key = c.key
+(select * from tab_part_n10 where tab_part_n10.key = 98)b full outer join tab_part_n10 c on a.key = b.key and b.key = c.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab
-PREHOOK: Input: default@tab@ds=2008-04-08
-PREHOOK: Input: default@tab_part
-PREHOOK: Input: default@tab_part@ds=2008-04-08
+PREHOOK: Input: default@tab_n9
+PREHOOK: Input: default@tab_n9@ds=2008-04-08
+PREHOOK: Input: default@tab_part_n10
+PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 POSTHOOK: query: select * from
-(select * from tab where tab.key = 0)a
+(select * from tab_n9 where tab_n9.key = 0)a
 join
-(select * from tab_part where tab_part.key = 98)b full outer join tab_part c on a.key = b.key and b.key = c.key
+(select * from tab_part_n10 where tab_part_n10.key = 98)b full outer join tab_part_n10 c on a.key = b.key and b.key = c.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab
-POSTHOOK: Input: default@tab@ds=2008-04-08
-POSTHOOK: Input: default@tab_part
-POSTHOOK: Input: default@tab_part@ds=2008-04-08
+POSTHOOK: Input: default@tab_n9
+POSTHOOK: Input: default@tab_n9@ds=2008-04-08
+POSTHOOK: Input: default@tab_part_n10
+POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 0	val_0	2008-04-08	98	val_98	2008-04-08	NULL	NULL	NULL
 0	val_0	2008-04-08	98	val_98	2008-04-08	NULL	NULL	NULL

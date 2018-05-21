@@ -1,11 +1,11 @@
-PREHOOK: query: CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE dest1_n138(key INT, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest1
-POSTHOOK: query: CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@dest1_n138
+POSTHOOK: query: CREATE TABLE dest1_n138(key INT, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest1
+POSTHOOK: Output: default@dest1_n138
 PREHOOK: query: EXPLAIN
 FROM (
   FROM src
@@ -13,7 +13,7 @@ FROM (
   USING 'cat'
   DISTRIBUTE BY key, value
 ) tmap
-INSERT OVERWRITE TABLE dest1
+INSERT OVERWRITE TABLE dest1_n138
 REDUCE tmap.key, tmap.value
 USING 'python input20_script.py'
 AS key, value
@@ -25,7 +25,7 @@ FROM (
   USING 'cat'
   DISTRIBUTE BY key, value
 ) tmap
-INSERT OVERWRITE TABLE dest1
+INSERT OVERWRITE TABLE dest1_n138
 REDUCE tmap.key, tmap.value
 USING 'python input20_script.py'
 AS key, value
@@ -82,7 +82,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.dest1
+                    name: default.dest1_n138
               Select Operator
                 expressions: _col0 (type: int), _col1 (type: string)
                 outputColumnNames: key, value
@@ -107,7 +107,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n138
 
   Stage: Stage-2
     Stats Work
@@ -115,7 +115,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: int, string
-          Table: default.dest1
+          Table: default.dest1_n138
 
   Stage: Stage-3
     Map Reduce
@@ -146,35 +146,35 @@ PREHOOK: query: FROM (
   USING 'cat' 
   DISTRIBUTE BY key, value
 ) tmap
-INSERT OVERWRITE TABLE dest1
+INSERT OVERWRITE TABLE dest1_n138
 REDUCE tmap.key, tmap.value
 USING 'python input20_script.py'
 AS key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@dest1
+PREHOOK: Output: default@dest1_n138
 POSTHOOK: query: FROM (
   FROM src
   MAP src.key, src.key
   USING 'cat' 
   DISTRIBUTE BY key, value
 ) tmap
-INSERT OVERWRITE TABLE dest1
+INSERT OVERWRITE TABLE dest1_n138
 REDUCE tmap.key, tmap.value
 USING 'python input20_script.py'
 AS key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@dest1
-POSTHOOK: Lineage: dest1.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: SELECT * FROM dest1 ORDER BY key, value
+POSTHOOK: Output: default@dest1_n138
+POSTHOOK: Lineage: dest1_n138.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n138.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: SELECT * FROM dest1_n138 ORDER BY key, value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n138
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM dest1 ORDER BY key, value
+POSTHOOK: query: SELECT * FROM dest1_n138 ORDER BY key, value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n138
 #### A masked pattern was here ####
 1	105_105
 1	10_10

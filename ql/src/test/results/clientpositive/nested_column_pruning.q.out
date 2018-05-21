@@ -1,29 +1,29 @@
-PREHOOK: query: DROP TABLE IF EXISTS dummy
+PREHOOK: query: DROP TABLE IF EXISTS dummy_n5
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE IF EXISTS dummy
+POSTHOOK: query: DROP TABLE IF EXISTS dummy_n5
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE dummy (i int)
+PREHOOK: query: CREATE TABLE dummy_n5 (i int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dummy
-POSTHOOK: query: CREATE TABLE dummy (i int)
+PREHOOK: Output: default@dummy_n5
+POSTHOOK: query: CREATE TABLE dummy_n5 (i int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dummy
-PREHOOK: query: INSERT INTO TABLE dummy VALUES (42)
+POSTHOOK: Output: default@dummy_n5
+PREHOOK: query: INSERT INTO TABLE dummy_n5 VALUES (42)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@dummy
-POSTHOOK: query: INSERT INTO TABLE dummy VALUES (42)
+PREHOOK: Output: default@dummy_n5
+POSTHOOK: query: INSERT INTO TABLE dummy_n5 VALUES (42)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@dummy
-POSTHOOK: Lineage: dummy.i SCRIPT []
-PREHOOK: query: DROP TABLE IF EXISTS nested_tbl_1
+POSTHOOK: Output: default@dummy_n5
+POSTHOOK: Lineage: dummy_n5.i SCRIPT []
+PREHOOK: query: DROP TABLE IF EXISTS nested_tbl_1_n1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE IF EXISTS nested_tbl_1
+POSTHOOK: query: DROP TABLE IF EXISTS nested_tbl_1_n1
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE nested_tbl_1 (
+PREHOOK: query: CREATE TABLE nested_tbl_1_n1 (
   a int,
   s1 struct<f1: boolean, f2: string, f3: struct<f4: int, f5: double>, f6: int>,
   s2 struct<f7: string, f8: struct<f9 : boolean, f10: array<int>, f11: map<string, boolean>>>,
@@ -34,8 +34,8 @@ PREHOOK: query: CREATE TABLE nested_tbl_1 (
 ) STORED AS PARQUET
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@nested_tbl_1
-POSTHOOK: query: CREATE TABLE nested_tbl_1 (
+PREHOOK: Output: default@nested_tbl_1_n1
+POSTHOOK: query: CREATE TABLE nested_tbl_1_n1 (
   a int,
   s1 struct<f1: boolean, f2: string, f3: struct<f4: int, f5: double>, f6: int>,
   s2 struct<f7: string, f8: struct<f9 : boolean, f10: array<int>, f11: map<string, boolean>>>,
@@ -46,8 +46,8 @@ POSTHOOK: query: CREATE TABLE nested_tbl_1 (
 ) STORED AS PARQUET
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@nested_tbl_1
-PREHOOK: query: INSERT INTO TABLE nested_tbl_1 SELECT
+POSTHOOK: Output: default@nested_tbl_1_n1
+PREHOOK: query: INSERT INTO TABLE nested_tbl_1_n1 SELECT
   1, named_struct('f1', false, 'f2', 'foo', 'f3', named_struct('f4', 4, 'f5', cast(5.0 as double)), 'f6', 4),
   named_struct('f7', 'f7', 'f8', named_struct('f9', true, 'f10', array(10, 11), 'f11', map('key1', true, 'key2', false))),
   named_struct('f12', array(named_struct('f13', 'foo', 'f14', 14), named_struct('f13', 'bar', 'f14', 28))),
@@ -55,11 +55,11 @@ PREHOOK: query: INSERT INTO TABLE nested_tbl_1 SELECT
   named_struct('f16', array(named_struct('f17', 'foo', 'f18', named_struct('f19', 14)), named_struct('f17', 'bar', 'f18', named_struct('f19', 28)))),
   map('key1', named_struct('f20', array(named_struct('f21', named_struct('f22', 1)))),
       'key2', named_struct('f20', array(named_struct('f21', named_struct('f22', 2)))))
-FROM dummy
+FROM dummy_n5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dummy
-PREHOOK: Output: default@nested_tbl_1
-POSTHOOK: query: INSERT INTO TABLE nested_tbl_1 SELECT
+PREHOOK: Input: default@dummy_n5
+PREHOOK: Output: default@nested_tbl_1_n1
+POSTHOOK: query: INSERT INTO TABLE nested_tbl_1_n1 SELECT
   1, named_struct('f1', false, 'f2', 'foo', 'f3', named_struct('f4', 4, 'f5', cast(5.0 as double)), 'f6', 4),
   named_struct('f7', 'f7', 'f8', named_struct('f9', true, 'f10', array(10, 11), 'f11', map('key1', true, 'key2', false))),
   named_struct('f12', array(named_struct('f13', 'foo', 'f14', 14), named_struct('f13', 'bar', 'f14', 28))),
@@ -67,30 +67,30 @@ POSTHOOK: query: INSERT INTO TABLE nested_tbl_1 SELECT
   named_struct('f16', array(named_struct('f17', 'foo', 'f18', named_struct('f19', 14)), named_struct('f17', 'bar', 'f18', named_struct('f19', 28)))),
   map('key1', named_struct('f20', array(named_struct('f21', named_struct('f22', 1)))),
       'key2', named_struct('f20', array(named_struct('f21', named_struct('f22', 2)))))
-FROM dummy
+FROM dummy_n5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dummy
-POSTHOOK: Output: default@nested_tbl_1
-POSTHOOK: Lineage: nested_tbl_1.a SIMPLE []
-POSTHOOK: Lineage: nested_tbl_1.s1 EXPRESSION []
-POSTHOOK: Lineage: nested_tbl_1.s2 EXPRESSION []
-POSTHOOK: Lineage: nested_tbl_1.s3 EXPRESSION []
-POSTHOOK: Lineage: nested_tbl_1.s4 EXPRESSION []
-POSTHOOK: Lineage: nested_tbl_1.s5 EXPRESSION []
-POSTHOOK: Lineage: nested_tbl_1.s6 EXPRESSION []
-PREHOOK: query: DROP TABLE IF EXISTS nested_tbl_2
+POSTHOOK: Input: default@dummy_n5
+POSTHOOK: Output: default@nested_tbl_1_n1
+POSTHOOK: Lineage: nested_tbl_1_n1.a SIMPLE []
+POSTHOOK: Lineage: nested_tbl_1_n1.s1 EXPRESSION []
+POSTHOOK: Lineage: nested_tbl_1_n1.s2 EXPRESSION []
+POSTHOOK: Lineage: nested_tbl_1_n1.s3 EXPRESSION []
+POSTHOOK: Lineage: nested_tbl_1_n1.s4 EXPRESSION []
+POSTHOOK: Lineage: nested_tbl_1_n1.s5 EXPRESSION []
+POSTHOOK: Lineage: nested_tbl_1_n1.s6 EXPRESSION []
+PREHOOK: query: DROP TABLE IF EXISTS nested_tbl_2_n1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE IF EXISTS nested_tbl_2
+POSTHOOK: query: DROP TABLE IF EXISTS nested_tbl_2_n1
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE nested_tbl_2 LIKE nested_tbl_1
+PREHOOK: query: CREATE TABLE nested_tbl_2_n1 LIKE nested_tbl_1_n1
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@nested_tbl_2
-POSTHOOK: query: CREATE TABLE nested_tbl_2 LIKE nested_tbl_1
+PREHOOK: Output: default@nested_tbl_2_n1
+POSTHOOK: query: CREATE TABLE nested_tbl_2_n1 LIKE nested_tbl_1_n1
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@nested_tbl_2
-PREHOOK: query: INSERT INTO TABLE nested_tbl_2 SELECT
+POSTHOOK: Output: default@nested_tbl_2_n1
+PREHOOK: query: INSERT INTO TABLE nested_tbl_2_n1 SELECT
   2, named_struct('f1', true, 'f2', 'bar', 'f3', named_struct('f4', 4, 'f5', cast(6.5 as double)), 'f6', 4),
   named_struct('f7', 'f72', 'f8', named_struct('f9', false, 'f10', array(20, 22), 'f11', map('key3', true, 'key4', false))),
   named_struct('f12', array(named_struct('f13', 'bar', 'f14', 28), named_struct('f13', 'foo', 'f14', 56))),
@@ -98,11 +98,11 @@ PREHOOK: query: INSERT INTO TABLE nested_tbl_2 SELECT
   named_struct('f16', array(named_struct('f17', 'bar', 'f18', named_struct('f19', 28)), named_struct('f17', 'foo', 'f18', named_struct('f19', 56)))),
   map('key3', named_struct('f20', array(named_struct('f21', named_struct('f22', 3)))),
       'key4', named_struct('f20', array(named_struct('f21', named_struct('f22', 4)))))
-FROM dummy
+FROM dummy_n5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dummy
-PREHOOK: Output: default@nested_tbl_2
-POSTHOOK: query: INSERT INTO TABLE nested_tbl_2 SELECT
+PREHOOK: Input: default@dummy_n5
+PREHOOK: Output: default@nested_tbl_2_n1
+POSTHOOK: query: INSERT INTO TABLE nested_tbl_2_n1 SELECT
   2, named_struct('f1', true, 'f2', 'bar', 'f3', named_struct('f4', 4, 'f5', cast(6.5 as double)), 'f6', 4),
   named_struct('f7', 'f72', 'f8', named_struct('f9', false, 'f10', array(20, 22), 'f11', map('key3', true, 'key4', false))),
   named_struct('f12', array(named_struct('f13', 'bar', 'f14', 28), named_struct('f13', 'foo', 'f14', 56))),
@@ -110,20 +110,20 @@ POSTHOOK: query: INSERT INTO TABLE nested_tbl_2 SELECT
   named_struct('f16', array(named_struct('f17', 'bar', 'f18', named_struct('f19', 28)), named_struct('f17', 'foo', 'f18', named_struct('f19', 56)))),
   map('key3', named_struct('f20', array(named_struct('f21', named_struct('f22', 3)))),
       'key4', named_struct('f20', array(named_struct('f21', named_struct('f22', 4)))))
-FROM dummy
+FROM dummy_n5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dummy
-POSTHOOK: Output: default@nested_tbl_2
-POSTHOOK: Lineage: nested_tbl_2.a SIMPLE []
-POSTHOOK: Lineage: nested_tbl_2.s1 EXPRESSION []
-POSTHOOK: Lineage: nested_tbl_2.s2 EXPRESSION []
-POSTHOOK: Lineage: nested_tbl_2.s3 EXPRESSION []
-POSTHOOK: Lineage: nested_tbl_2.s4 EXPRESSION []
-POSTHOOK: Lineage: nested_tbl_2.s5 EXPRESSION []
-POSTHOOK: Lineage: nested_tbl_2.s6 EXPRESSION []
-PREHOOK: query: EXPLAIN SELECT a FROM nested_tbl_1
+POSTHOOK: Input: default@dummy_n5
+POSTHOOK: Output: default@nested_tbl_2_n1
+POSTHOOK: Lineage: nested_tbl_2_n1.a SIMPLE []
+POSTHOOK: Lineage: nested_tbl_2_n1.s1 EXPRESSION []
+POSTHOOK: Lineage: nested_tbl_2_n1.s2 EXPRESSION []
+POSTHOOK: Lineage: nested_tbl_2_n1.s3 EXPRESSION []
+POSTHOOK: Lineage: nested_tbl_2_n1.s4 EXPRESSION []
+POSTHOOK: Lineage: nested_tbl_2_n1.s5 EXPRESSION []
+POSTHOOK: Lineage: nested_tbl_2_n1.s6 EXPRESSION []
+PREHOOK: query: EXPLAIN SELECT a FROM nested_tbl_1_n1
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT a FROM nested_tbl_1
+POSTHOOK: query: EXPLAIN SELECT a FROM nested_tbl_1_n1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -134,7 +134,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: nested_tbl_1
+            alias: nested_tbl_1_n1
             Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: a (type: int)
@@ -154,18 +154,18 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT a FROM nested_tbl_1
+PREHOOK: query: SELECT a FROM nested_tbl_1_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@nested_tbl_1
+PREHOOK: Input: default@nested_tbl_1_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a FROM nested_tbl_1
+POSTHOOK: query: SELECT a FROM nested_tbl_1_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@nested_tbl_1
+POSTHOOK: Input: default@nested_tbl_1_n1
 #### A masked pattern was here ####
 1
-PREHOOK: query: EXPLAIN SELECT s1.f1 FROM nested_tbl_1
+PREHOOK: query: EXPLAIN SELECT s1.f1 FROM nested_tbl_1_n1
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT s1.f1 FROM nested_tbl_1
+POSTHOOK: query: EXPLAIN SELECT s1.f1 FROM nested_tbl_1_n1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -176,7 +176,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: nested_tbl_1
+            alias: nested_tbl_1_n1
             Pruned Column Paths: s1.f1
             Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Select Operator
@@ -197,18 +197,18 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT s1.f1 FROM nested_tbl_1
+PREHOOK: query: SELECT s1.f1 FROM nested_tbl_1_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@nested_tbl_1
+PREHOOK: Input: default@nested_tbl_1_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT s1.f1 FROM nested_tbl_1
+POSTHOOK: query: SELECT s1.f1 FROM nested_tbl_1_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@nested_tbl_1
+POSTHOOK: Input: default@nested_tbl_1_n1
 #### A masked pattern was here ####
 false
-PREHOOK: query: EXPLAIN SELECT s1.f1, s1.f2 FROM nested_tbl_1
+PREHOOK: query: EXPLAIN SELECT s1.f1, s1.f2 FROM nested_tbl_1_n1
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT s1.f1, s1.f2 FROM nested_tbl_1
+POSTHOOK: query: EXPLAIN SELECT s1.f1, s1.f2 FROM nested_tbl_1_n1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -219,7 +219,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: nested_tbl_1
+            alias: nested_tbl_1_n1
             Pruned Column Paths: s1.f1, s1.f2
             Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Select Operator
@@ -240,18 +240,18 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT s1.f1, s1.f2 FROM nested_tbl_1
+PREHOOK: query: SELECT s1.f1, s1.f2 FROM nested_tbl_1_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@nested_tbl_1
+PREHOOK: Input: default@nested_tbl_1_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT s1.f1, s1.f2 FROM nested_tbl_1
+POSTHOOK: query: SELECT s1.f1, s1.f2 FROM nested_tbl_1_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@nested_tbl_1
+POSTHOOK: Input: default@nested_tbl_1_n1
 #### A masked pattern was here ####
 false	foo
-PREHOOK: query: EXPLAIN SELECT s1.f3, s1.f3.f4 FROM nested_tbl_1
+PREHOOK: query: EXPLAIN SELECT s1.f3, s1.f3.f4 FROM nested_tbl_1_n1
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT s1.f3, s1.f3.f4 FROM nested_tbl_1
+POSTHOOK: query: EXPLAIN SELECT s1.f3, s1.f3.f4 FROM nested_tbl_1_n1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -262,7 +262,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: nested_tbl_1
+            alias: nested_tbl_1_n1
             Pruned Column Paths: s1.f3
             Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Select Operator
@@ -283,18 +283,18 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT s1.f3, s1.f3.f4 FROM nested_tbl_1
+PREHOOK: query: SELECT s1.f3, s1.f3.f4 FROM nested_tbl_1_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@nested_tbl_1
+PREHOOK: Input: default@nested_tbl_1_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT s1.f3, s1.f3.f4 FROM nested_tbl_1
+POSTHOOK: query: SELECT s1.f3, s1.f3.f4 FROM nested_tbl_1_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@nested_tbl_1
+POSTHOOK: Input: default@nested_tbl_1_n1
 #### A masked pattern was here ####
 {"f4":4,"f5":5.0}	4
-PREHOOK: query: EXPLAIN SELECT s1.f3.f5 FROM nested_tbl_1
+PREHOOK: query: EXPLAIN SELECT s1.f3.f5 FROM nested_tbl_1_n1
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT s1.f3.f5 FROM nested_tbl_1
+POSTHOOK: query: EXPLAIN SELECT s1.f3.f5 FROM nested_tbl_1_n1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -305,7 +305,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: nested_tbl_1
+            alias: nested_tbl_1_n1
             Pruned Column Paths: s1.f3.f5
             Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Select Operator
@@ -326,18 +326,18 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT s1.f3.f5 FROM nested_tbl_1
+PREHOOK: query: SELECT s1.f3.f5 FROM nested_tbl_1_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@nested_tbl_1
+PREHOOK: Input: default@nested_tbl_1_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT s1.f3.f5 FROM nested_tbl_1
+POSTHOOK: query: SELECT s1.f3.f5 FROM nested_tbl_1_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@nested_tbl_1
+POSTHOOK: Input: default@nested_tbl_1_n1
 #### A masked pattern was here ####
 5.0
-PREHOOK: query: EXPLAIN SELECT s1.f3.f4, s2.f8.f9 FROM nested_tbl_1
+PREHOOK: query: EXPLAIN SELECT s1.f3.f4, s2.f8.f9 FROM nested_tbl_1_n1
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT s1.f3.f4, s2.f8.f9 FROM nested_tbl_1
+POSTHOOK: query: EXPLAIN SELECT s1.f3.f4, s2.f8.f9 FROM nested_tbl_1_n1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -348,7 +348,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: nested_tbl_1
+            alias: nested_tbl_1_n1
             Pruned Column Paths: s1.f3.f4, s2.f8.f9
             Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Select Operator
@@ -369,18 +369,18 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT s1.f3.f4, s2.f8.f9 FROM nested_tbl_1
+PREHOOK: query: SELECT s1.f3.f4, s2.f8.f9 FROM nested_tbl_1_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@nested_tbl_1
+PREHOOK: Input: default@nested_tbl_1_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT s1.f3.f4, s2.f8.f9 FROM nested_tbl_1
+POSTHOOK: query: SELECT s1.f3.f4, s2.f8.f9 FROM nested_tbl_1_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@nested_tbl_1
+POSTHOOK: Input: default@nested_tbl_1_n1
 #### A masked pattern was here ####
 4	true
-PREHOOK: query: EXPLAIN SELECT s1.f2 FROM nested_tbl_1 WHERE s1.f1 = FALSE
+PREHOOK: query: EXPLAIN SELECT s1.f2 FROM nested_tbl_1_n1 WHERE s1.f1 = FALSE
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT s1.f2 FROM nested_tbl_1 WHERE s1.f1 = FALSE
+POSTHOOK: query: EXPLAIN SELECT s1.f2 FROM nested_tbl_1_n1 WHERE s1.f1 = FALSE
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -391,7 +391,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: nested_tbl_1
+            alias: nested_tbl_1_n1
             Pruned Column Paths: s1.f2, s1.f1
             Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
@@ -415,18 +415,18 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT s1.f2 FROM nested_tbl_1 WHERE s1.f1 = FALSE
+PREHOOK: query: SELECT s1.f2 FROM nested_tbl_1_n1 WHERE s1.f1 = FALSE
 PREHOOK: type: QUERY
-PREHOOK: Input: default@nested_tbl_1
+PREHOOK: Input: default@nested_tbl_1_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT s1.f2 FROM nested_tbl_1 WHERE s1.f1 = FALSE
+POSTHOOK: query: SELECT s1.f2 FROM nested_tbl_1_n1 WHERE s1.f1 = FALSE
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@nested_tbl_1
+POSTHOOK: Input: default@nested_tbl_1_n1
 #### A masked pattern was here ####
 foo
-PREHOOK: query: EXPLAIN SELECT s1.f3.f5 FROM nested_tbl_1 WHERE s1.f3.f4 = 4
+PREHOOK: query: EXPLAIN SELECT s1.f3.f5 FROM nested_tbl_1_n1 WHERE s1.f3.f4 = 4
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT s1.f3.f5 FROM nested_tbl_1 WHERE s1.f3.f4 = 4
+POSTHOOK: query: EXPLAIN SELECT s1.f3.f5 FROM nested_tbl_1_n1 WHERE s1.f3.f4 = 4
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -437,7 +437,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: nested_tbl_1
+            alias: nested_tbl_1_n1
             Pruned Column Paths: s1.f3.f5, s1.f3.f4
             Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
@@ -461,18 +461,18 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT s1.f3.f5 FROM nested_tbl_1 WHERE s1.f3.f4 = 4
+PREHOOK: query: SELECT s1.f3.f5 FROM nested_tbl_1_n1 WHERE s1.f3.f4 = 4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@nested_tbl_1
+PREHOOK: Input: default@nested_tbl_1_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT s1.f3.f5 FROM nested_tbl_1 WHERE s1.f3.f4 = 4
+POSTHOOK: query: SELECT s1.f3.f5 FROM nested_tbl_1_n1 WHERE s1.f3.f4 = 4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@nested_tbl_1
+POSTHOOK: Input: default@nested_tbl_1_n1
 #### A masked pattern was here ####
 5.0
-PREHOOK: query: EXPLAIN SELECT s2.f8 FROM nested_tbl_1 WHERE s1.f2 = 'foo' AND size(s2.f8.f10) > 1 AND s2.f8.f11['key1'] = TRUE
+PREHOOK: query: EXPLAIN SELECT s2.f8 FROM nested_tbl_1_n1 WHERE s1.f2 = 'foo' AND size(s2.f8.f10) > 1 AND s2.f8.f11['key1'] = TRUE
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT s2.f8 FROM nested_tbl_1 WHERE s1.f2 = 'foo' AND size(s2.f8.f10) > 1 AND s2.f8.f11['key1'] = TRUE
+POSTHOOK: query: EXPLAIN SELECT s2.f8 FROM nested_tbl_1_n1 WHERE s1.f2 = 'foo' AND size(s2.f8.f10) > 1 AND s2.f8.f11['key1'] = TRUE
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -483,7 +483,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: nested_tbl_1
+            alias: nested_tbl_1_n1
             Pruned Column Paths: s1.f2, s2.f8
             Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
@@ -507,20 +507,20 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT s2.f8 FROM nested_tbl_1 WHERE s1.f2 = 'foo' AND size(s2.f8.f10) > 1 AND s2.f8.f11['key1'] = TRUE
+PREHOOK: query: SELECT s2.f8 FROM nested_tbl_1_n1 WHERE s1.f2 = 'foo' AND size(s2.f8.f10) > 1 AND s2.f8.f11['key1'] = TRUE
 PREHOOK: type: QUERY
-PREHOOK: Input: default@nested_tbl_1
+PREHOOK: Input: default@nested_tbl_1_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT s2.f8 FROM nested_tbl_1 WHERE s1.f2 = 'foo' AND size(s2.f8.f10) > 1 AND s2.f8.f11['key1'] = TRUE
+POSTHOOK: query: SELECT s2.f8 FROM nested_tbl_1_n1 WHERE s1.f2 = 'foo' AND size(s2.f8.f10) > 1 AND s2.f8.f11['key1'] = TRUE
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@nested_tbl_1
+POSTHOOK: Input: default@nested_tbl_1_n1
 #### A masked pattern was here ####
 {"f9":true,"f10":[10,11],"f11":{"key1":true,"key2":false}}
-PREHOOK: query: EXPLAIN SELECT col1, col2 FROM nested_tbl_1
+PREHOOK: query: EXPLAIN SELECT col1, col2 FROM nested_tbl_1_n1
 LATERAL VIEW explode(s2.f8.f10) tbl1 AS col1
 LATERAL VIEW explode(s3.f12) tbl2 AS col2
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT col1, col2 FROM nested_tbl_1
+POSTHOOK: query: EXPLAIN SELECT col1, col2 FROM nested_tbl_1_n1
 LATERAL VIEW explode(s2.f8.f10) tbl1 AS col1
 LATERAL VIEW explode(s3.f12) tbl2 AS col2
 POSTHOOK: type: QUERY
@@ -533,7 +533,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: nested_tbl_1
+            alias: nested_tbl_1_n1
             Pruned Column Paths: s2.f8.f10
             Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Lateral View Forward
@@ -644,25 +644,25 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT col1, col2 FROM nested_tbl_1
+PREHOOK: query: SELECT col1, col2 FROM nested_tbl_1_n1
 LATERAL VIEW explode(s2.f8.f10) tbl1 AS col1
 LATERAL VIEW explode(s3.f12) tbl2 AS col2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@nested_tbl_1
+PREHOOK: Input: default@nested_tbl_1_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT col1, col2 FROM nested_tbl_1
+POSTHOOK: query: SELECT col1, col2 FROM nested_tbl_1_n1
 LATERAL VIEW explode(s2.f8.f10) tbl1 AS col1
 LATERAL VIEW explode(s3.f12) tbl2 AS col2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@nested_tbl_1
+POSTHOOK: Input: default@nested_tbl_1_n1
 #### A masked pattern was here ####
 10	{"f13":"foo","f14":14}
 10	{"f13":"bar","f14":28}
 11	{"f13":"foo","f14":14}
 11	{"f13":"bar","f14":28}
-PREHOOK: query: EXPLAIN SELECT pmod(s2.f8.f10[1], s1.f3.f4) FROM nested_tbl_1
+PREHOOK: query: EXPLAIN SELECT pmod(s2.f8.f10[1], s1.f3.f4) FROM nested_tbl_1_n1
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT pmod(s2.f8.f10[1], s1.f3.f4) FROM nested_tbl_1
+POSTHOOK: query: EXPLAIN SELECT pmod(s2.f8.f10[1], s1.f3.f4) FROM nested_tbl_1_n1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -673,7 +673,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: nested_tbl_1
+            alias: nested_tbl_1_n1
             Pruned Column Paths: s2.f8.f10, s1.f3.f4
             Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Select Operator
@@ -694,18 +694,18 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT pmod(s2.f8.f10[1], s1.f3.f4) FROM nested_tbl_1
+PREHOOK: query: SELECT pmod(s2.f8.f10[1], s1.f3.f4) FROM nested_tbl_1_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@nested_tbl_1
+PREHOOK: Input: default@nested_tbl_1_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT pmod(s2.f8.f10[1], s1.f3.f4) FROM nested_tbl_1
+POSTHOOK: query: SELECT pmod(s2.f8.f10[1], s1.f3.f4) FROM nested_tbl_1_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@nested_tbl_1
+POSTHOOK: Input: default@nested_tbl_1_n1
 #### A masked pattern was here ####
 3
-PREHOOK: query: EXPLAIN SELECT s1.f3.f5, count(s1.f3.f4) FROM nested_tbl_1 GROUP BY s1.f3.f5
+PREHOOK: query: EXPLAIN SELECT s1.f3.f5, count(s1.f3.f4) FROM nested_tbl_1_n1 GROUP BY s1.f3.f5
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT s1.f3.f5, count(s1.f3.f4) FROM nested_tbl_1 GROUP BY s1.f3.f5
+POSTHOOK: query: EXPLAIN SELECT s1.f3.f5, count(s1.f3.f4) FROM nested_tbl_1_n1 GROUP BY s1.f3.f5
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -716,7 +716,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: nested_tbl_1
+            alias: nested_tbl_1_n1
             Pruned Column Paths: s1.f3.f5, s1.f3.f4
             Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Select Operator
@@ -756,18 +756,18 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT s1.f3.f5, count(s1.f3.f4) FROM nested_tbl_1 GROUP BY s1.f3.f5
+PREHOOK: query: SELECT s1.f3.f5, count(s1.f3.f4) FROM nested_tbl_1_n1 GROUP BY s1.f3.f5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@nested_tbl_1
+PREHOOK: Input: default@nested_tbl_1_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT s1.f3.f5, count(s1.f3.f4) FROM nested_tbl_1 GROUP BY s1.f3.f5
+POSTHOOK: query: SELECT s1.f3.f5, count(s1.f3.f4) FROM nested_tbl_1_n1 GROUP BY s1.f3.f5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@nested_tbl_1
+POSTHOOK: Input: default@nested_tbl_1_n1
 #### A masked pattern was here ####
 5.0	1
-PREHOOK: query: EXPLAIN SELECT s1.f3, count(s1.f3.f4) FROM nested_tbl_1 GROUP BY s1.f3
+PREHOOK: query: EXPLAIN SELECT s1.f3, count(s1.f3.f4) FROM nested_tbl_1_n1 GROUP BY s1.f3
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT s1.f3, count(s1.f3.f4) FROM nested_tbl_1 GROUP BY s1.f3
+POSTHOOK: query: EXPLAIN SELECT s1.f3, count(s1.f3.f4) FROM nested_tbl_1_n1 GROUP BY s1.f3
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -778,7 +778,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: nested_tbl_1
+            alias: nested_tbl_1_n1
             Pruned Column Paths: s1.f3
             Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Select Operator
@@ -818,18 +818,18 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT s1.f3, count(s1.f3.f4) FROM nested_tbl_1 GROUP BY s1.f3
+PREHOOK: query: SELECT s1.f3, count(s1.f3.f4) FROM nested_tbl_1_n1 GROUP BY s1.f3
 PREHOOK: type: QUERY
-PREHOOK: Input: default@nested_tbl_1
+PREHOOK: Input: default@nested_tbl_1_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT s1.f3, count(s1.f3.f4) FROM nested_tbl_1 GROUP BY s1.f3
+POSTHOOK: query: SELECT s1.f3, count(s1.f3.f4) FROM nested_tbl_1_n1 GROUP BY s1.f3
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@nested_tbl_1
+POSTHOOK: Input: default@nested_tbl_1_n1
 #### A masked pattern was here ####
 {"f4":4,"f5":5.0}	1
-PREHOOK: query: EXPLAIN SELECT s1.f3, count(s1.f3.f4) FROM nested_tbl_1 GROUP BY s1.f3 ORDER BY s1.f3
+PREHOOK: query: EXPLAIN SELECT s1.f3, count(s1.f3.f4) FROM nested_tbl_1_n1 GROUP BY s1.f3 ORDER BY s1.f3
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT s1.f3, count(s1.f3.f4) FROM nested_tbl_1 GROUP BY s1.f3 ORDER BY s1.f3
+POSTHOOK: query: EXPLAIN SELECT s1.f3, count(s1.f3.f4) FROM nested_tbl_1_n1 GROUP BY s1.f3 ORDER BY s1.f3
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -841,7 +841,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: nested_tbl_1
+            alias: nested_tbl_1_n1
             Pruned Column Paths: s1.f3
             Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Select Operator
@@ -902,22 +902,22 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT s1.f3, count(s1.f3.f4) FROM nested_tbl_1 GROUP BY s1.f3 ORDER BY s1.f3
+PREHOOK: query: SELECT s1.f3, count(s1.f3.f4) FROM nested_tbl_1_n1 GROUP BY s1.f3 ORDER BY s1.f3
 PREHOOK: type: QUERY
-PREHOOK: Input: default@nested_tbl_1
+PREHOOK: Input: default@nested_tbl_1_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT s1.f3, count(s1.f3.f4) FROM nested_tbl_1 GROUP BY s1.f3 ORDER BY s1.f3
+POSTHOOK: query: SELECT s1.f3, count(s1.f3.f4) FROM nested_tbl_1_n1 GROUP BY s1.f3 ORDER BY s1.f3
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@nested_tbl_1
+POSTHOOK: Input: default@nested_tbl_1_n1
 #### A masked pattern was here ####
 {"f4":4,"f5":5.0}	1
 PREHOOK: query: EXPLAIN SELECT t1.s1.f3.f5, t2.s2.f8
-FROM nested_tbl_1 t1 JOIN nested_tbl_2 t2
+FROM nested_tbl_1_n1 t1 JOIN nested_tbl_2_n1 t2
 ON t1.s1.f3.f4 = t2.s1.f6
 WHERE t2.s2.f8.f9 == FALSE
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT t1.s1.f3.f5, t2.s2.f8
-FROM nested_tbl_1 t1 JOIN nested_tbl_2 t2
+FROM nested_tbl_1_n1 t1 JOIN nested_tbl_2_n1 t2
 ON t1.s1.f3.f4 = t2.s1.f6
 WHERE t2.s2.f8.f9 == FALSE
 POSTHOOK: type: QUERY
@@ -989,29 +989,29 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT t1.s1.f3.f5, t2.s2.f8
-FROM nested_tbl_1 t1 JOIN nested_tbl_2 t2
+FROM nested_tbl_1_n1 t1 JOIN nested_tbl_2_n1 t2
 ON t1.s1.f3.f4 = t2.s1.f6
 WHERE t2.s2.f8.f9 == FALSE
 PREHOOK: type: QUERY
-PREHOOK: Input: default@nested_tbl_1
-PREHOOK: Input: default@nested_tbl_2
+PREHOOK: Input: default@nested_tbl_1_n1
+PREHOOK: Input: default@nested_tbl_2_n1
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT t1.s1.f3.f5, t2.s2.f8
-FROM nested_tbl_1 t1 JOIN nested_tbl_2 t2
+FROM nested_tbl_1_n1 t1 JOIN nested_tbl_2_n1 t2
 ON t1.s1.f3.f4 = t2.s1.f6
 WHERE t2.s2.f8.f9 == FALSE
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@nested_tbl_1
-POSTHOOK: Input: default@nested_tbl_2
+POSTHOOK: Input: default@nested_tbl_1_n1
+POSTHOOK: Input: default@nested_tbl_2_n1
 #### A masked pattern was here ####
 5.0	{"f9":false,"f10":[20,22],"f11":{"key3":true,"key4":false}}
 PREHOOK: query: EXPLAIN SELECT t1.s1.f3.f5, t2.s2.f8
-FROM nested_tbl_1 t1 JOIN nested_tbl_1 t2
+FROM nested_tbl_1_n1 t1 JOIN nested_tbl_1_n1 t2
 ON t1.s1.f3.f4 = t2.s1.f6
 WHERE t2.s2.f8.f9 == TRUE
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT t1.s1.f3.f5, t2.s2.f8
-FROM nested_tbl_1 t1 JOIN nested_tbl_1 t2
+FROM nested_tbl_1_n1 t1 JOIN nested_tbl_1_n1 t2
 ON t1.s1.f3.f4 = t2.s1.f6
 WHERE t2.s2.f8.f9 == TRUE
 POSTHOOK: type: QUERY
@@ -1083,26 +1083,26 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT t1.s1.f3.f5, t2.s2.f8
-FROM nested_tbl_1 t1 JOIN nested_tbl_1 t2
+FROM nested_tbl_1_n1 t1 JOIN nested_tbl_1_n1 t2
 ON t1.s1.f3.f4 = t2.s1.f6
 WHERE t2.s2.f8.f9 == TRUE
 PREHOOK: type: QUERY
-PREHOOK: Input: default@nested_tbl_1
+PREHOOK: Input: default@nested_tbl_1_n1
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT t1.s1.f3.f5, t2.s2.f8
-FROM nested_tbl_1 t1 JOIN nested_tbl_1 t2
+FROM nested_tbl_1_n1 t1 JOIN nested_tbl_1_n1 t2
 ON t1.s1.f3.f4 = t2.s1.f6
 WHERE t2.s2.f8.f9 == TRUE
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@nested_tbl_1
+POSTHOOK: Input: default@nested_tbl_1_n1
 #### A masked pattern was here ####
 5.0	{"f9":true,"f10":[10,11],"f11":{"key1":true,"key2":false}}
 PREHOOK: query: EXPLAIN SELECT t1.s1.f3.f5
-FROM nested_tbl_1 t1 LEFT SEMI JOIN nested_tbl_1 t2
+FROM nested_tbl_1_n1 t1 LEFT SEMI JOIN nested_tbl_1_n1 t2
 ON t1.s1.f3.f4 = t2.s1.f6 AND t2.s2.f8.f9 == TRUE
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT t1.s1.f3.f5
-FROM nested_tbl_1 t1 LEFT SEMI JOIN nested_tbl_1 t2
+FROM nested_tbl_1_n1 t1 LEFT SEMI JOIN nested_tbl_1_n1 t2
 ON t1.s1.f3.f4 = t2.s1.f6 AND t2.s2.f8.f9 == TRUE
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -1178,25 +1178,25 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT t1.s1.f3.f5
-FROM nested_tbl_1 t1 LEFT SEMI JOIN nested_tbl_1 t2
+FROM nested_tbl_1_n1 t1 LEFT SEMI JOIN nested_tbl_1_n1 t2
 ON t1.s1.f3.f4 = t2.s1.f6 AND t2.s2.f8.f9 == TRUE
 PREHOOK: type: QUERY
-PREHOOK: Input: default@nested_tbl_1
+PREHOOK: Input: default@nested_tbl_1_n1
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT t1.s1.f3.f5
-FROM nested_tbl_1 t1 LEFT SEMI JOIN nested_tbl_1 t2
+FROM nested_tbl_1_n1 t1 LEFT SEMI JOIN nested_tbl_1_n1 t2
 ON t1.s1.f3.f4 = t2.s1.f6 AND t2.s2.f8.f9 == TRUE
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@nested_tbl_1
+POSTHOOK: Input: default@nested_tbl_1_n1
 #### A masked pattern was here ####
 5.0
 Warning: Shuffle Join JOIN[6][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: EXPLAIN SELECT t1.s1.f3.f5
-FROM nested_tbl_1 t1 LEFT SEMI JOIN nested_tbl_1 t2
+FROM nested_tbl_1_n1 t1 LEFT SEMI JOIN nested_tbl_1_n1 t2
 ON t1.s1.f1 <> t2.s2.f8.f9
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT t1.s1.f3.f5
-FROM nested_tbl_1 t1 LEFT SEMI JOIN nested_tbl_1 t2
+FROM nested_tbl_1_n1 t1 LEFT SEMI JOIN nested_tbl_1_n1 t2
 ON t1.s1.f1 <> t2.s2.f8.f9
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -1259,24 +1259,24 @@ STAGE PLANS:
 
 Warning: Shuffle Join JOIN[6][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: SELECT t1.s1.f3.f5
-FROM nested_tbl_1 t1 LEFT SEMI JOIN nested_tbl_1 t2
+FROM nested_tbl_1_n1 t1 LEFT SEMI JOIN nested_tbl_1_n1 t2
 ON t1.s1.f1 <> t2.s2.f8.f9
 PREHOOK: type: QUERY
-PREHOOK: Input: default@nested_tbl_1
+PREHOOK: Input: default@nested_tbl_1_n1
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT t1.s1.f3.f5
-FROM nested_tbl_1 t1 LEFT SEMI JOIN nested_tbl_1 t2
+FROM nested_tbl_1_n1 t1 LEFT SEMI JOIN nested_tbl_1_n1 t2
 ON t1.s1.f1 <> t2.s2.f8.f9
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@nested_tbl_1
+POSTHOOK: Input: default@nested_tbl_1_n1
 #### A masked pattern was here ####
 5.0
 PREHOOK: query: EXPLAIN SELECT t1.s1.f3.f5
-FROM nested_tbl_1 t1 LEFT SEMI JOIN nested_tbl_1 t2
+FROM nested_tbl_1_n1 t1 LEFT SEMI JOIN nested_tbl_1_n1 t2
 ON t1.s1.f3.f4 = t2.s1.f6 AND t1.s1.f1 <> t2.s2.f8.f9
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT t1.s1.f3.f5
-FROM nested_tbl_1 t1 LEFT SEMI JOIN nested_tbl_1 t2
+FROM nested_tbl_1_n1 t1 LEFT SEMI JOIN nested_tbl_1_n1 t2
 ON t1.s1.f3.f4 = t2.s1.f6 AND t1.s1.f1 <> t2.s2.f8.f9
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -1349,63 +1349,63 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT t1.s1.f3.f5
-FROM nested_tbl_1 t1 LEFT SEMI JOIN nested_tbl_1 t2
+FROM nested_tbl_1_n1 t1 LEFT SEMI JOIN nested_tbl_1_n1 t2
 ON t1.s1.f3.f4 = t2.s1.f6 AND t1.s1.f1 <> t2.s2.f8.f9
 PREHOOK: type: QUERY
-PREHOOK: Input: default@nested_tbl_1
+PREHOOK: Input: default@nested_tbl_1_n1
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT t1.s1.f3.f5
-FROM nested_tbl_1 t1 LEFT SEMI JOIN nested_tbl_1 t2
+FROM nested_tbl_1_n1 t1 LEFT SEMI JOIN nested_tbl_1_n1 t2
 ON t1.s1.f3.f4 = t2.s1.f6 AND t1.s1.f1 <> t2.s2.f8.f9
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@nested_tbl_1
+POSTHOOK: Input: default@nested_tbl_1_n1
 #### A masked pattern was here ####
 5.0
-PREHOOK: query: DROP TABLE IF EXISTS nested_tbl_3
+PREHOOK: query: DROP TABLE IF EXISTS nested_tbl_3_n1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE IF EXISTS nested_tbl_3
+POSTHOOK: query: DROP TABLE IF EXISTS nested_tbl_3_n1
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE nested_tbl_3 (f1 boolean, f2 string) PARTITIONED BY (f3 int) STORED AS PARQUET
+PREHOOK: query: CREATE TABLE nested_tbl_3_n1 (f1 boolean, f2 string) PARTITIONED BY (f3 int) STORED AS PARQUET
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@nested_tbl_3
-POSTHOOK: query: CREATE TABLE nested_tbl_3 (f1 boolean, f2 string) PARTITIONED BY (f3 int) STORED AS PARQUET
+PREHOOK: Output: default@nested_tbl_3_n1
+POSTHOOK: query: CREATE TABLE nested_tbl_3_n1 (f1 boolean, f2 string) PARTITIONED BY (f3 int) STORED AS PARQUET
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@nested_tbl_3
-PREHOOK: query: INSERT OVERWRITE TABLE nested_tbl_3 PARTITION(f3)
+POSTHOOK: Output: default@nested_tbl_3_n1
+PREHOOK: query: INSERT OVERWRITE TABLE nested_tbl_3_n1 PARTITION(f3)
 SELECT s1.f1 AS f1, S1.f2 AS f2, s1.f6 AS f3
-FROM nested_tbl_1
+FROM nested_tbl_1_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@nested_tbl_1
-PREHOOK: Output: default@nested_tbl_3
-POSTHOOK: query: INSERT OVERWRITE TABLE nested_tbl_3 PARTITION(f3)
+PREHOOK: Input: default@nested_tbl_1_n1
+PREHOOK: Output: default@nested_tbl_3_n1
+POSTHOOK: query: INSERT OVERWRITE TABLE nested_tbl_3_n1 PARTITION(f3)
 SELECT s1.f1 AS f1, S1.f2 AS f2, s1.f6 AS f3
-FROM nested_tbl_1
+FROM nested_tbl_1_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@nested_tbl_1
-POSTHOOK: Output: default@nested_tbl_3@f3=4
-POSTHOOK: Lineage: nested_tbl_3 PARTITION(f3=4).f1 EXPRESSION [(nested_tbl_1)nested_tbl_1.FieldSchema(name:s1, type:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, comment:null), ]
-POSTHOOK: Lineage: nested_tbl_3 PARTITION(f3=4).f2 EXPRESSION [(nested_tbl_1)nested_tbl_1.FieldSchema(name:s1, type:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, comment:null), ]
-PREHOOK: query: SELECT * FROM nested_tbl_3
+POSTHOOK: Input: default@nested_tbl_1_n1
+POSTHOOK: Output: default@nested_tbl_3_n1@f3=4
+POSTHOOK: Lineage: nested_tbl_3_n1 PARTITION(f3=4).f1 EXPRESSION [(nested_tbl_1_n1)nested_tbl_1_n1.FieldSchema(name:s1, type:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, comment:null), ]
+POSTHOOK: Lineage: nested_tbl_3_n1 PARTITION(f3=4).f2 EXPRESSION [(nested_tbl_1_n1)nested_tbl_1_n1.FieldSchema(name:s1, type:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, comment:null), ]
+PREHOOK: query: SELECT * FROM nested_tbl_3_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@nested_tbl_3
-PREHOOK: Input: default@nested_tbl_3@f3=4
+PREHOOK: Input: default@nested_tbl_3_n1
+PREHOOK: Input: default@nested_tbl_3_n1@f3=4
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM nested_tbl_3
+POSTHOOK: query: SELECT * FROM nested_tbl_3_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@nested_tbl_3
-POSTHOOK: Input: default@nested_tbl_3@f3=4
+POSTHOOK: Input: default@nested_tbl_3_n1
+POSTHOOK: Input: default@nested_tbl_3_n1@f3=4
 #### A masked pattern was here ####
 false	foo	4
 PREHOOK: query: EXPLAIN
 SELECT count(s1.f6), s3.f12[0].f14
-FROM nested_tbl_1
+FROM nested_tbl_1_n1
 GROUP BY s3.f12[0].f14
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT count(s1.f6), s3.f12[0].f14
-FROM nested_tbl_1
+FROM nested_tbl_1_n1
 GROUP BY s3.f12[0].f14
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -1417,7 +1417,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: nested_tbl_1
+            alias: nested_tbl_1_n1
             Pruned Column Paths: s3.f12, s1.f6
             Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Select Operator
@@ -1462,26 +1462,26 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT count(s1.f6), s3.f12[0].f14
-FROM nested_tbl_1
+FROM nested_tbl_1_n1
 GROUP BY s3.f12[0].f14
 PREHOOK: type: QUERY
-PREHOOK: Input: default@nested_tbl_1
+PREHOOK: Input: default@nested_tbl_1_n1
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT count(s1.f6), s3.f12[0].f14
-FROM nested_tbl_1
+FROM nested_tbl_1_n1
 GROUP BY s3.f12[0].f14
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@nested_tbl_1
+POSTHOOK: Input: default@nested_tbl_1_n1
 #### A masked pattern was here ####
 1	14
 PREHOOK: query: EXPLAIN
 SELECT count(s1.f6), s4['key1'].f15
-FROM nested_tbl_1
+FROM nested_tbl_1_n1
 GROUP BY s4['key1'].f15
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT count(s1.f6), s4['key1'].f15
-FROM nested_tbl_1
+FROM nested_tbl_1_n1
 GROUP BY s4['key1'].f15
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -1493,7 +1493,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: nested_tbl_1
+            alias: nested_tbl_1_n1
             Pruned Column Paths: s1.f6
             Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Select Operator
@@ -1538,26 +1538,26 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT count(s1.f6), s4['key1'].f15
-FROM nested_tbl_1
+FROM nested_tbl_1_n1
 GROUP BY s4['key1'].f15
 PREHOOK: type: QUERY
-PREHOOK: Input: default@nested_tbl_1
+PREHOOK: Input: default@nested_tbl_1_n1
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT count(s1.f6), s4['key1'].f15
-FROM nested_tbl_1
+FROM nested_tbl_1_n1
 GROUP BY s4['key1'].f15
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@nested_tbl_1
+POSTHOOK: Input: default@nested_tbl_1_n1
 #### A masked pattern was here ####
 1	1
 PREHOOK: query: EXPLAIN
 SELECT count(s1.f6), s5.f16[0].f18.f19
-FROM nested_tbl_1
+FROM nested_tbl_1_n1
 GROUP BY s5.f16[0].f18.f19
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT count(s1.f6), s5.f16[0].f18.f19
-FROM nested_tbl_1
+FROM nested_tbl_1_n1
 GROUP BY s5.f16[0].f18.f19
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -1569,7 +1569,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: nested_tbl_1
+            alias: nested_tbl_1_n1
             Pruned Column Paths: s5.f16, s1.f6
             Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Select Operator
@@ -1614,26 +1614,26 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT count(s1.f6), s5.f16[0].f18.f19
-FROM nested_tbl_1
+FROM nested_tbl_1_n1
 GROUP BY s5.f16[0].f18.f19
 PREHOOK: type: QUERY
-PREHOOK: Input: default@nested_tbl_1
+PREHOOK: Input: default@nested_tbl_1_n1
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT count(s1.f6), s5.f16[0].f18.f19
-FROM nested_tbl_1
+FROM nested_tbl_1_n1
 GROUP BY s5.f16[0].f18.f19
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@nested_tbl_1
+POSTHOOK: Input: default@nested_tbl_1_n1
 #### A masked pattern was here ####
 1	14
 PREHOOK: query: EXPLAIN
 SELECT count(s1.f6), s5.f16.f18.f19
-FROM nested_tbl_1
+FROM nested_tbl_1_n1
 GROUP BY s5.f16.f18.f19
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT count(s1.f6), s5.f16.f18.f19
-FROM nested_tbl_1
+FROM nested_tbl_1_n1
 GROUP BY s5.f16.f18.f19
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -1645,7 +1645,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: nested_tbl_1
+            alias: nested_tbl_1_n1
             Pruned Column Paths: s1.f6, s5.f16
             Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Select Operator
@@ -1690,26 +1690,26 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT count(s1.f6), s5.f16.f18.f19
-FROM nested_tbl_1
+FROM nested_tbl_1_n1
 GROUP BY s5.f16.f18.f19
 PREHOOK: type: QUERY
-PREHOOK: Input: default@nested_tbl_1
+PREHOOK: Input: default@nested_tbl_1_n1
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT count(s1.f6), s5.f16.f18.f19
-FROM nested_tbl_1
+FROM nested_tbl_1_n1
 GROUP BY s5.f16.f18.f19
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@nested_tbl_1
+POSTHOOK: Input: default@nested_tbl_1_n1
 #### A masked pattern was here ####
 1	[14,28]
 PREHOOK: query: EXPLAIN
 SELECT count(s1.f6), s6['key1'].f20[0].f21.f22
-FROM nested_tbl_1
+FROM nested_tbl_1_n1
 GROUP BY s6['key1'].f20[0].f21.f22
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT count(s1.f6), s6['key1'].f20[0].f21.f22
-FROM nested_tbl_1
+FROM nested_tbl_1_n1
 GROUP BY s6['key1'].f20[0].f21.f22
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -1721,7 +1721,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: nested_tbl_1
+            alias: nested_tbl_1_n1
             Pruned Column Paths: s1.f6
             Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Select Operator
@@ -1766,26 +1766,26 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT count(s1.f6), s6['key1'].f20[0].f21.f22
-FROM nested_tbl_1
+FROM nested_tbl_1_n1
 GROUP BY s6['key1'].f20[0].f21.f22
 PREHOOK: type: QUERY
-PREHOOK: Input: default@nested_tbl_1
+PREHOOK: Input: default@nested_tbl_1_n1
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT count(s1.f6), s6['key1'].f20[0].f21.f22
-FROM nested_tbl_1
+FROM nested_tbl_1_n1
 GROUP BY s6['key1'].f20[0].f21.f22
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@nested_tbl_1
+POSTHOOK: Input: default@nested_tbl_1_n1
 #### A masked pattern was here ####
 1	1
 PREHOOK: query: EXPLAIN
 SELECT count(s1.f6), s6['key1'].f20.f21.f22
-FROM nested_tbl_1
+FROM nested_tbl_1_n1
 GROUP BY s6['key1'].f20.f21.f22
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT count(s1.f6), s6['key1'].f20.f21.f22
-FROM nested_tbl_1
+FROM nested_tbl_1_n1
 GROUP BY s6['key1'].f20.f21.f22
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -1797,7 +1797,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: nested_tbl_1
+            alias: nested_tbl_1_n1
             Pruned Column Paths: s1.f6
             Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
             Select Operator
@@ -1842,15 +1842,15 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT count(s1.f6), s6['key1'].f20.f21.f22
-FROM nested_tbl_1
+FROM nested_tbl_1_n1
 GROUP BY s6['key1'].f20.f21.f22
 PREHOOK: type: QUERY
-PREHOOK: Input: default@nested_tbl_1
+PREHOOK: Input: default@nested_tbl_1_n1
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT count(s1.f6), s6['key1'].f20.f21.f22
-FROM nested_tbl_1
+FROM nested_tbl_1_n1
 GROUP BY s6['key1'].f20.f21.f22
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@nested_tbl_1
+POSTHOOK: Input: default@nested_tbl_1_n1
 #### A masked pattern was here ####
 1	[1]

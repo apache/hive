@@ -1,42 +1,42 @@
-PREHOOK: query: create table jackson_sev_same as select * from src
+PREHOOK: query: create table jackson_sev_same_n0 as select * from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@jackson_sev_same
-POSTHOOK: query: create table jackson_sev_same as select * from src
+PREHOOK: Output: default@jackson_sev_same_n0
+POSTHOOK: query: create table jackson_sev_same_n0 as select * from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@jackson_sev_same
-POSTHOOK: Lineage: jackson_sev_same.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: jackson_sev_same.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: create table dim_pho as select * from src
+POSTHOOK: Output: default@jackson_sev_same_n0
+POSTHOOK: Lineage: jackson_sev_same_n0.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: jackson_sev_same_n0.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create table dim_pho_n0 as select * from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dim_pho
-POSTHOOK: query: create table dim_pho as select * from src
+PREHOOK: Output: default@dim_pho_n0
+POSTHOOK: query: create table dim_pho_n0 as select * from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dim_pho
-POSTHOOK: Lineage: dim_pho.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dim_pho.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: create table jackson_sev_add as select * from src
+POSTHOOK: Output: default@dim_pho_n0
+POSTHOOK: Lineage: dim_pho_n0.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dim_pho_n0.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create table jackson_sev_add_n0 as select * from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@jackson_sev_add
-POSTHOOK: query: create table jackson_sev_add as select * from src
+PREHOOK: Output: default@jackson_sev_add_n0
+POSTHOOK: query: create table jackson_sev_add_n0 as select * from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@jackson_sev_add
-POSTHOOK: Lineage: jackson_sev_add.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: jackson_sev_add.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: explain select b.* from jackson_sev_same a join (select * from dim_pho union all select * from jackson_sev_add)b on a.key=b.key and b.key=97
+POSTHOOK: Output: default@jackson_sev_add_n0
+POSTHOOK: Lineage: jackson_sev_add_n0.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: jackson_sev_add_n0.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: explain select b.* from jackson_sev_same_n0 a join (select * from dim_pho_n0 union all select * from jackson_sev_add_n0)b on a.key=b.key and b.key=97
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select b.* from jackson_sev_same a join (select * from dim_pho union all select * from jackson_sev_add)b on a.key=b.key and b.key=97
+POSTHOOK: query: explain select b.* from jackson_sev_same_n0 a join (select * from dim_pho_n0 union all select * from jackson_sev_add_n0)b on a.key=b.key and b.key=97
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -70,7 +70,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: dim_pho
+                  alias: dim_pho_n0
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (UDFToDouble(key) = 97.0D) (type: boolean)
@@ -89,7 +89,7 @@ STAGE PLANS:
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: jackson_sev_add
+                  alias: jackson_sev_add_n0
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (UDFToDouble(key) = 97.0D) (type: boolean)
@@ -133,17 +133,17 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select b.* from jackson_sev_same a join (select * from dim_pho union all select * from jackson_sev_add)b on a.key=b.key and b.key=97
+PREHOOK: query: select b.* from jackson_sev_same_n0 a join (select * from dim_pho_n0 union all select * from jackson_sev_add_n0)b on a.key=b.key and b.key=97
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dim_pho
-PREHOOK: Input: default@jackson_sev_add
-PREHOOK: Input: default@jackson_sev_same
+PREHOOK: Input: default@dim_pho_n0
+PREHOOK: Input: default@jackson_sev_add_n0
+PREHOOK: Input: default@jackson_sev_same_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select b.* from jackson_sev_same a join (select * from dim_pho union all select * from jackson_sev_add)b on a.key=b.key and b.key=97
+POSTHOOK: query: select b.* from jackson_sev_same_n0 a join (select * from dim_pho_n0 union all select * from jackson_sev_add_n0)b on a.key=b.key and b.key=97
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dim_pho
-POSTHOOK: Input: default@jackson_sev_add
-POSTHOOK: Input: default@jackson_sev_same
+POSTHOOK: Input: default@dim_pho_n0
+POSTHOOK: Input: default@jackson_sev_add_n0
+POSTHOOK: Input: default@jackson_sev_same_n0
 #### A masked pattern was here ####
 97	val_97
 97	val_97

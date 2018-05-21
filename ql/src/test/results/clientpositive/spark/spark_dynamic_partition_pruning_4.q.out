@@ -46,65 +46,65 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@part1@p=2/q=2
 POSTHOOK: Lineage: part1 PARTITION(p=2,q=2).key SCRIPT []
 POSTHOOK: Lineage: part1 PARTITION(p=2,q=2).value SCRIPT []
-PREHOOK: query: create table part2(key string, value string) partitioned by (p string, q string)
+PREHOOK: query: create table part2_n1(key string, value string) partitioned by (p string, q string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@part2
-POSTHOOK: query: create table part2(key string, value string) partitioned by (p string, q string)
+PREHOOK: Output: default@part2_n1
+POSTHOOK: query: create table part2_n1(key string, value string) partitioned by (p string, q string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@part2
-PREHOOK: query: insert into table part2 partition (p='3', q='3') values ('a','a'), ('b','b')
+POSTHOOK: Output: default@part2_n1
+PREHOOK: query: insert into table part2_n1 partition (p='3', q='3') values ('a','a'), ('b','b')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@part2@p=3/q=3
-POSTHOOK: query: insert into table part2 partition (p='3', q='3') values ('a','a'), ('b','b')
+PREHOOK: Output: default@part2_n1@p=3/q=3
+POSTHOOK: query: insert into table part2_n1 partition (p='3', q='3') values ('a','a'), ('b','b')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@part2@p=3/q=3
-POSTHOOK: Lineage: part2 PARTITION(p=3,q=3).key SCRIPT []
-POSTHOOK: Lineage: part2 PARTITION(p=3,q=3).value SCRIPT []
-PREHOOK: query: insert into table part2 partition (p='3', q='4') values ('c','c'), ('d','d')
+POSTHOOK: Output: default@part2_n1@p=3/q=3
+POSTHOOK: Lineage: part2_n1 PARTITION(p=3,q=3).key SCRIPT []
+POSTHOOK: Lineage: part2_n1 PARTITION(p=3,q=3).value SCRIPT []
+PREHOOK: query: insert into table part2_n1 partition (p='3', q='4') values ('c','c'), ('d','d')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@part2@p=3/q=4
-POSTHOOK: query: insert into table part2 partition (p='3', q='4') values ('c','c'), ('d','d')
+PREHOOK: Output: default@part2_n1@p=3/q=4
+POSTHOOK: query: insert into table part2_n1 partition (p='3', q='4') values ('c','c'), ('d','d')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@part2@p=3/q=4
-POSTHOOK: Lineage: part2 PARTITION(p=3,q=4).key SCRIPT []
-POSTHOOK: Lineage: part2 PARTITION(p=3,q=4).value SCRIPT []
-PREHOOK: query: insert into table part2 partition (p='4', q='3') values ('e','e'), ('f','f')
+POSTHOOK: Output: default@part2_n1@p=3/q=4
+POSTHOOK: Lineage: part2_n1 PARTITION(p=3,q=4).key SCRIPT []
+POSTHOOK: Lineage: part2_n1 PARTITION(p=3,q=4).value SCRIPT []
+PREHOOK: query: insert into table part2_n1 partition (p='4', q='3') values ('e','e'), ('f','f')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@part2@p=4/q=3
-POSTHOOK: query: insert into table part2 partition (p='4', q='3') values ('e','e'), ('f','f')
+PREHOOK: Output: default@part2_n1@p=4/q=3
+POSTHOOK: query: insert into table part2_n1 partition (p='4', q='3') values ('e','e'), ('f','f')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@part2@p=4/q=3
-POSTHOOK: Lineage: part2 PARTITION(p=4,q=3).key SCRIPT []
-POSTHOOK: Lineage: part2 PARTITION(p=4,q=3).value SCRIPT []
-PREHOOK: query: insert into table part2 partition (p='4', q='4') values ('g','g'), ('h','h')
+POSTHOOK: Output: default@part2_n1@p=4/q=3
+POSTHOOK: Lineage: part2_n1 PARTITION(p=4,q=3).key SCRIPT []
+POSTHOOK: Lineage: part2_n1 PARTITION(p=4,q=3).value SCRIPT []
+PREHOOK: query: insert into table part2_n1 partition (p='4', q='4') values ('g','g'), ('h','h')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@part2@p=4/q=4
-POSTHOOK: query: insert into table part2 partition (p='4', q='4') values ('g','g'), ('h','h')
+PREHOOK: Output: default@part2_n1@p=4/q=4
+POSTHOOK: query: insert into table part2_n1 partition (p='4', q='4') values ('g','g'), ('h','h')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@part2@p=4/q=4
-POSTHOOK: Lineage: part2 PARTITION(p=4,q=4).key SCRIPT []
-POSTHOOK: Lineage: part2 PARTITION(p=4,q=4).value SCRIPT []
+POSTHOOK: Output: default@part2_n1@p=4/q=4
+POSTHOOK: Lineage: part2_n1 PARTITION(p=4,q=4).key SCRIPT []
+POSTHOOK: Lineage: part2_n1 PARTITION(p=4,q=4).value SCRIPT []
 PREHOOK: query: explain
 select * from
   (select part1.key, part1.value from part1 join src on part1.p=src.key) a
 union all
-  (select part2.key, part2.value from part2 join src on part2.p=src.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join src on part2_n1.p=src.key)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select * from
   (select part1.key, part1.value from part1 join src on part1.p=src.key) a
 union all
-  (select part2.key, part2.value from part2 join src on part2.p=src.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join src on part2_n1.p=src.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -183,7 +183,7 @@ STAGE PLANS:
         Map 6 
             Map Operator Tree:
                 TableScan
-                  alias: part2
+                  alias: part2_n1
                   Statistics: Num rows: 8 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string), p (type: string)
@@ -241,35 +241,35 @@ STAGE PLANS:
 PREHOOK: query: select * from
   (select part1.key, part1.value from part1 join src on part1.p=src.key) a
 union all
-  (select part2.key, part2.value from part2 join src on part2.p=src.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join src on part2_n1.p=src.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part1
 PREHOOK: Input: default@part1@p=1/q=1
 PREHOOK: Input: default@part1@p=1/q=2
 PREHOOK: Input: default@part1@p=2/q=1
 PREHOOK: Input: default@part1@p=2/q=2
-PREHOOK: Input: default@part2
-PREHOOK: Input: default@part2@p=3/q=3
-PREHOOK: Input: default@part2@p=3/q=4
-PREHOOK: Input: default@part2@p=4/q=3
-PREHOOK: Input: default@part2@p=4/q=4
+PREHOOK: Input: default@part2_n1
+PREHOOK: Input: default@part2_n1@p=3/q=3
+PREHOOK: Input: default@part2_n1@p=3/q=4
+PREHOOK: Input: default@part2_n1@p=4/q=3
+PREHOOK: Input: default@part2_n1@p=4/q=4
 PREHOOK: Input: default@src
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from
   (select part1.key, part1.value from part1 join src on part1.p=src.key) a
 union all
-  (select part2.key, part2.value from part2 join src on part2.p=src.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join src on part2_n1.p=src.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part1
 POSTHOOK: Input: default@part1@p=1/q=1
 POSTHOOK: Input: default@part1@p=1/q=2
 POSTHOOK: Input: default@part1@p=2/q=1
 POSTHOOK: Input: default@part1@p=2/q=2
-POSTHOOK: Input: default@part2
-POSTHOOK: Input: default@part2@p=3/q=3
-POSTHOOK: Input: default@part2@p=3/q=4
-POSTHOOK: Input: default@part2@p=4/q=3
-POSTHOOK: Input: default@part2@p=4/q=4
+POSTHOOK: Input: default@part2_n1
+POSTHOOK: Input: default@part2_n1@p=3/q=3
+POSTHOOK: Input: default@part2_n1@p=3/q=4
+POSTHOOK: Input: default@part2_n1@p=4/q=3
+POSTHOOK: Input: default@part2_n1@p=4/q=4
 POSTHOOK: Input: default@src
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 5	5
@@ -283,35 +283,35 @@ h	h
 PREHOOK: query: select * from
   (select part1.key, part1.value from part1 join src on part1.p=src.key) a
 union all
-  (select part2.key, part2.value from part2 join src on part2.p=src.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join src on part2_n1.p=src.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part1
 PREHOOK: Input: default@part1@p=1/q=1
 PREHOOK: Input: default@part1@p=1/q=2
 PREHOOK: Input: default@part1@p=2/q=1
 PREHOOK: Input: default@part1@p=2/q=2
-PREHOOK: Input: default@part2
-PREHOOK: Input: default@part2@p=3/q=3
-PREHOOK: Input: default@part2@p=3/q=4
-PREHOOK: Input: default@part2@p=4/q=3
-PREHOOK: Input: default@part2@p=4/q=4
+PREHOOK: Input: default@part2_n1
+PREHOOK: Input: default@part2_n1@p=3/q=3
+PREHOOK: Input: default@part2_n1@p=3/q=4
+PREHOOK: Input: default@part2_n1@p=4/q=3
+PREHOOK: Input: default@part2_n1@p=4/q=4
 PREHOOK: Input: default@src
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from
   (select part1.key, part1.value from part1 join src on part1.p=src.key) a
 union all
-  (select part2.key, part2.value from part2 join src on part2.p=src.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join src on part2_n1.p=src.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part1
 POSTHOOK: Input: default@part1@p=1/q=1
 POSTHOOK: Input: default@part1@p=1/q=2
 POSTHOOK: Input: default@part1@p=2/q=1
 POSTHOOK: Input: default@part1@p=2/q=2
-POSTHOOK: Input: default@part2
-POSTHOOK: Input: default@part2@p=3/q=3
-POSTHOOK: Input: default@part2@p=3/q=4
-POSTHOOK: Input: default@part2@p=4/q=3
-POSTHOOK: Input: default@part2@p=4/q=4
+POSTHOOK: Input: default@part2_n1
+POSTHOOK: Input: default@part2_n1@p=3/q=3
+POSTHOOK: Input: default@part2_n1@p=3/q=4
+POSTHOOK: Input: default@part2_n1@p=4/q=3
+POSTHOOK: Input: default@part2_n1@p=4/q=4
 POSTHOOK: Input: default@src
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 5	5
@@ -326,13 +326,13 @@ PREHOOK: query: explain
 select * from
   (select part1.key, part1.value from part1 join src on part1.p=src.key) a
 union all
-  (select part2.key, part2.value from part2 join src on part2.q=src.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join src on part2_n1.q=src.key)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select * from
   (select part1.key, part1.value from part1 join src on part1.p=src.key) a
 union all
-  (select part2.key, part2.value from part2 join src on part2.q=src.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join src on part2_n1.q=src.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -411,7 +411,7 @@ STAGE PLANS:
         Map 6 
             Map Operator Tree:
                 TableScan
-                  alias: part2
+                  alias: part2_n1
                   Statistics: Num rows: 8 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string), q (type: string)
@@ -469,35 +469,35 @@ STAGE PLANS:
 PREHOOK: query: select * from
   (select part1.key, part1.value from part1 join src on part1.p=src.key) a
 union all
-  (select part2.key, part2.value from part2 join src on part2.q=src.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join src on part2_n1.q=src.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part1
 PREHOOK: Input: default@part1@p=1/q=1
 PREHOOK: Input: default@part1@p=1/q=2
 PREHOOK: Input: default@part1@p=2/q=1
 PREHOOK: Input: default@part1@p=2/q=2
-PREHOOK: Input: default@part2
-PREHOOK: Input: default@part2@p=3/q=3
-PREHOOK: Input: default@part2@p=3/q=4
-PREHOOK: Input: default@part2@p=4/q=3
-PREHOOK: Input: default@part2@p=4/q=4
+PREHOOK: Input: default@part2_n1
+PREHOOK: Input: default@part2_n1@p=3/q=3
+PREHOOK: Input: default@part2_n1@p=3/q=4
+PREHOOK: Input: default@part2_n1@p=4/q=3
+PREHOOK: Input: default@part2_n1@p=4/q=4
 PREHOOK: Input: default@src
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from
   (select part1.key, part1.value from part1 join src on part1.p=src.key) a
 union all
-  (select part2.key, part2.value from part2 join src on part2.q=src.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join src on part2_n1.q=src.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part1
 POSTHOOK: Input: default@part1@p=1/q=1
 POSTHOOK: Input: default@part1@p=1/q=2
 POSTHOOK: Input: default@part1@p=2/q=1
 POSTHOOK: Input: default@part1@p=2/q=2
-POSTHOOK: Input: default@part2
-POSTHOOK: Input: default@part2@p=3/q=3
-POSTHOOK: Input: default@part2@p=3/q=4
-POSTHOOK: Input: default@part2@p=4/q=3
-POSTHOOK: Input: default@part2@p=4/q=4
+POSTHOOK: Input: default@part2_n1
+POSTHOOK: Input: default@part2_n1@p=3/q=3
+POSTHOOK: Input: default@part2_n1@p=3/q=4
+POSTHOOK: Input: default@part2_n1@p=4/q=3
+POSTHOOK: Input: default@part2_n1@p=4/q=4
 POSTHOOK: Input: default@src
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 5	5
@@ -511,35 +511,35 @@ h	h
 PREHOOK: query: select * from
   (select part1.key, part1.value from part1 join src on part1.p=src.key) a
 union all
-  (select part2.key, part2.value from part2 join src on part2.q=src.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join src on part2_n1.q=src.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part1
 PREHOOK: Input: default@part1@p=1/q=1
 PREHOOK: Input: default@part1@p=1/q=2
 PREHOOK: Input: default@part1@p=2/q=1
 PREHOOK: Input: default@part1@p=2/q=2
-PREHOOK: Input: default@part2
-PREHOOK: Input: default@part2@p=3/q=3
-PREHOOK: Input: default@part2@p=3/q=4
-PREHOOK: Input: default@part2@p=4/q=3
-PREHOOK: Input: default@part2@p=4/q=4
+PREHOOK: Input: default@part2_n1
+PREHOOK: Input: default@part2_n1@p=3/q=3
+PREHOOK: Input: default@part2_n1@p=3/q=4
+PREHOOK: Input: default@part2_n1@p=4/q=3
+PREHOOK: Input: default@part2_n1@p=4/q=4
 PREHOOK: Input: default@src
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from
   (select part1.key, part1.value from part1 join src on part1.p=src.key) a
 union all
-  (select part2.key, part2.value from part2 join src on part2.q=src.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join src on part2_n1.q=src.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part1
 POSTHOOK: Input: default@part1@p=1/q=1
 POSTHOOK: Input: default@part1@p=1/q=2
 POSTHOOK: Input: default@part1@p=2/q=1
 POSTHOOK: Input: default@part1@p=2/q=2
-POSTHOOK: Input: default@part2
-POSTHOOK: Input: default@part2@p=3/q=3
-POSTHOOK: Input: default@part2@p=3/q=4
-POSTHOOK: Input: default@part2@p=4/q=3
-POSTHOOK: Input: default@part2@p=4/q=4
+POSTHOOK: Input: default@part2_n1
+POSTHOOK: Input: default@part2_n1@p=3/q=3
+POSTHOOK: Input: default@part2_n1@p=3/q=4
+POSTHOOK: Input: default@part2_n1@p=4/q=3
+POSTHOOK: Input: default@part2_n1@p=4/q=4
 POSTHOOK: Input: default@src
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 5	5
@@ -715,13 +715,13 @@ PREHOOK: query: explain
 select * from
   (select part1.key, part1.value from part1 join src on part1.p=src.key) a
 union all
-  (select part2.key, part2.value from part2 join src on part2.p=src.value)
+  (select part2_n1.key, part2_n1.value from part2_n1 join src on part2_n1.p=src.value)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select * from
   (select part1.key, part1.value from part1 join src on part1.p=src.key) a
 union all
-  (select part2.key, part2.value from part2 join src on part2.p=src.value)
+  (select part2_n1.key, part2_n1.value from part2_n1 join src on part2_n1.p=src.value)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -841,7 +841,7 @@ STAGE PLANS:
         Map 6 
             Map Operator Tree:
                 TableScan
-                  alias: part2
+                  alias: part2_n1
                   Statistics: Num rows: 8 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string), p (type: string)
@@ -900,13 +900,13 @@ PREHOOK: query: explain
 select * from
   (select part1.key, part1.value from part1 join src on part1.p=upper(src.key)) a
 union all
-  (select part2.key, part2.value from part2 join src on part2.p=src.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join src on part2_n1.p=src.key)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select * from
   (select part1.key, part1.value from part1 join src on part1.p=upper(src.key)) a
 union all
-  (select part2.key, part2.value from part2 join src on part2.p=src.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join src on part2_n1.p=src.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -1026,7 +1026,7 @@ STAGE PLANS:
         Map 6 
             Map Operator Tree:
                 TableScan
-                  alias: part2
+                  alias: part2_n1
                   Statistics: Num rows: 8 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string), p (type: string)
@@ -1087,7 +1087,7 @@ with top as
 select * from
   (select part1.key, part1.value from part1 join top on part1.q=top.key) a
 union all
-  (select part2.key, part2.value from part2 join top on part2.q=top.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join top on part2_n1.q=top.key)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 with top as
@@ -1095,7 +1095,7 @@ with top as
 select * from
   (select part1.key, part1.value from part1 join top on part1.q=top.key) a
 union all
-  (select part2.key, part2.value from part2 join top on part2.q=top.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join top on part2_n1.q=top.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -1188,7 +1188,7 @@ STAGE PLANS:
         Map 8 
             Map Operator Tree:
                 TableScan
-                  alias: part2
+                  alias: part2_n1
                   Statistics: Num rows: 8 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string), q (type: string)
@@ -1265,18 +1265,18 @@ PREHOOK: query: with top as
 select * from
   (select part1.key, part1.value from part1 join top on part1.q=top.key) a
 union all
-  (select part2.key, part2.value from part2 join top on part2.q=top.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join top on part2_n1.q=top.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part1
 PREHOOK: Input: default@part1@p=1/q=1
 PREHOOK: Input: default@part1@p=1/q=2
 PREHOOK: Input: default@part1@p=2/q=1
 PREHOOK: Input: default@part1@p=2/q=2
-PREHOOK: Input: default@part2
-PREHOOK: Input: default@part2@p=3/q=3
-PREHOOK: Input: default@part2@p=3/q=4
-PREHOOK: Input: default@part2@p=4/q=3
-PREHOOK: Input: default@part2@p=4/q=4
+PREHOOK: Input: default@part2_n1
+PREHOOK: Input: default@part2_n1@p=3/q=3
+PREHOOK: Input: default@part2_n1@p=3/q=4
+PREHOOK: Input: default@part2_n1@p=4/q=3
+PREHOOK: Input: default@part2_n1@p=4/q=4
 PREHOOK: Input: default@src
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: with top as
@@ -1284,18 +1284,18 @@ POSTHOOK: query: with top as
 select * from
   (select part1.key, part1.value from part1 join top on part1.q=top.key) a
 union all
-  (select part2.key, part2.value from part2 join top on part2.q=top.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join top on part2_n1.q=top.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part1
 POSTHOOK: Input: default@part1@p=1/q=1
 POSTHOOK: Input: default@part1@p=1/q=2
 POSTHOOK: Input: default@part1@p=2/q=1
 POSTHOOK: Input: default@part1@p=2/q=2
-POSTHOOK: Input: default@part2
-POSTHOOK: Input: default@part2@p=3/q=3
-POSTHOOK: Input: default@part2@p=3/q=4
-POSTHOOK: Input: default@part2@p=4/q=3
-POSTHOOK: Input: default@part2@p=4/q=4
+POSTHOOK: Input: default@part2_n1
+POSTHOOK: Input: default@part2_n1@p=3/q=3
+POSTHOOK: Input: default@part2_n1@p=3/q=4
+POSTHOOK: Input: default@part2_n1@p=4/q=3
+POSTHOOK: Input: default@part2_n1@p=4/q=4
 POSTHOOK: Input: default@src
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 3	3
@@ -1307,18 +1307,18 @@ PREHOOK: query: with top as
 select * from
   (select part1.key, part1.value from part1 join top on part1.q=top.key) a
 union all
-  (select part2.key, part2.value from part2 join top on part2.q=top.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join top on part2_n1.q=top.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part1
 PREHOOK: Input: default@part1@p=1/q=1
 PREHOOK: Input: default@part1@p=1/q=2
 PREHOOK: Input: default@part1@p=2/q=1
 PREHOOK: Input: default@part1@p=2/q=2
-PREHOOK: Input: default@part2
-PREHOOK: Input: default@part2@p=3/q=3
-PREHOOK: Input: default@part2@p=3/q=4
-PREHOOK: Input: default@part2@p=4/q=3
-PREHOOK: Input: default@part2@p=4/q=4
+PREHOOK: Input: default@part2_n1
+PREHOOK: Input: default@part2_n1@p=3/q=3
+PREHOOK: Input: default@part2_n1@p=3/q=4
+PREHOOK: Input: default@part2_n1@p=4/q=3
+PREHOOK: Input: default@part2_n1@p=4/q=4
 PREHOOK: Input: default@src
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: with top as
@@ -1326,18 +1326,18 @@ POSTHOOK: query: with top as
 select * from
   (select part1.key, part1.value from part1 join top on part1.q=top.key) a
 union all
-  (select part2.key, part2.value from part2 join top on part2.q=top.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join top on part2_n1.q=top.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part1
 POSTHOOK: Input: default@part1@p=1/q=1
 POSTHOOK: Input: default@part1@p=1/q=2
 POSTHOOK: Input: default@part1@p=2/q=1
 POSTHOOK: Input: default@part1@p=2/q=2
-POSTHOOK: Input: default@part2
-POSTHOOK: Input: default@part2@p=3/q=3
-POSTHOOK: Input: default@part2@p=3/q=4
-POSTHOOK: Input: default@part2@p=4/q=3
-POSTHOOK: Input: default@part2@p=4/q=4
+POSTHOOK: Input: default@part2_n1
+POSTHOOK: Input: default@part2_n1@p=3/q=3
+POSTHOOK: Input: default@part2_n1@p=3/q=4
+POSTHOOK: Input: default@part2_n1@p=4/q=3
+POSTHOOK: Input: default@part2_n1@p=4/q=4
 POSTHOOK: Input: default@src
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 3	3
@@ -1350,7 +1350,7 @@ with top as
 select * from
   (select part1.key, part1.value from part1 join top on part1.p=top.key and part1.q=top.key) a
 union all
-  (select part2.key, part2.value from part2 join top on part2.p=top.key and part2.q=top.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join top on part2_n1.p=top.key and part2_n1.q=top.key)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 with top as
@@ -1358,7 +1358,7 @@ with top as
 select * from
   (select part1.key, part1.value from part1 join top on part1.p=top.key and part1.q=top.key) a
 union all
-  (select part2.key, part2.value from part2 join top on part2.p=top.key and part2.q=top.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join top on part2_n1.p=top.key and part2_n1.q=top.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -1451,7 +1451,7 @@ STAGE PLANS:
         Map 8 
             Map Operator Tree:
                 TableScan
-                  alias: part2
+                  alias: part2_n1
                   Statistics: Num rows: 8 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string), p (type: string), q (type: string)
@@ -1528,18 +1528,18 @@ PREHOOK: query: with top as
 select * from
   (select part1.key, part1.value from part1 join top on part1.p=top.key and part1.q=top.key) a
 union all
-  (select part2.key, part2.value from part2 join top on part2.p=top.key and part2.q=top.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join top on part2_n1.p=top.key and part2_n1.q=top.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part1
 PREHOOK: Input: default@part1@p=1/q=1
 PREHOOK: Input: default@part1@p=1/q=2
 PREHOOK: Input: default@part1@p=2/q=1
 PREHOOK: Input: default@part1@p=2/q=2
-PREHOOK: Input: default@part2
-PREHOOK: Input: default@part2@p=3/q=3
-PREHOOK: Input: default@part2@p=3/q=4
-PREHOOK: Input: default@part2@p=4/q=3
-PREHOOK: Input: default@part2@p=4/q=4
+PREHOOK: Input: default@part2_n1
+PREHOOK: Input: default@part2_n1@p=3/q=3
+PREHOOK: Input: default@part2_n1@p=3/q=4
+PREHOOK: Input: default@part2_n1@p=4/q=3
+PREHOOK: Input: default@part2_n1@p=4/q=4
 PREHOOK: Input: default@src
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: with top as
@@ -1547,18 +1547,18 @@ POSTHOOK: query: with top as
 select * from
   (select part1.key, part1.value from part1 join top on part1.p=top.key and part1.q=top.key) a
 union all
-  (select part2.key, part2.value from part2 join top on part2.p=top.key and part2.q=top.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join top on part2_n1.p=top.key and part2_n1.q=top.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part1
 POSTHOOK: Input: default@part1@p=1/q=1
 POSTHOOK: Input: default@part1@p=1/q=2
 POSTHOOK: Input: default@part1@p=2/q=1
 POSTHOOK: Input: default@part1@p=2/q=2
-POSTHOOK: Input: default@part2
-POSTHOOK: Input: default@part2@p=3/q=3
-POSTHOOK: Input: default@part2@p=3/q=4
-POSTHOOK: Input: default@part2@p=4/q=3
-POSTHOOK: Input: default@part2@p=4/q=4
+POSTHOOK: Input: default@part2_n1
+POSTHOOK: Input: default@part2_n1@p=3/q=3
+POSTHOOK: Input: default@part2_n1@p=3/q=4
+POSTHOOK: Input: default@part2_n1@p=4/q=3
+POSTHOOK: Input: default@part2_n1@p=4/q=4
 POSTHOOK: Input: default@src
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 7	7
@@ -1568,18 +1568,18 @@ PREHOOK: query: with top as
 select * from
   (select part1.key, part1.value from part1 join top on part1.p=top.key and part1.q=top.key) a
 union all
-  (select part2.key, part2.value from part2 join top on part2.p=top.key and part2.q=top.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join top on part2_n1.p=top.key and part2_n1.q=top.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part1
 PREHOOK: Input: default@part1@p=1/q=1
 PREHOOK: Input: default@part1@p=1/q=2
 PREHOOK: Input: default@part1@p=2/q=1
 PREHOOK: Input: default@part1@p=2/q=2
-PREHOOK: Input: default@part2
-PREHOOK: Input: default@part2@p=3/q=3
-PREHOOK: Input: default@part2@p=3/q=4
-PREHOOK: Input: default@part2@p=4/q=3
-PREHOOK: Input: default@part2@p=4/q=4
+PREHOOK: Input: default@part2_n1
+PREHOOK: Input: default@part2_n1@p=3/q=3
+PREHOOK: Input: default@part2_n1@p=3/q=4
+PREHOOK: Input: default@part2_n1@p=4/q=3
+PREHOOK: Input: default@part2_n1@p=4/q=4
 PREHOOK: Input: default@src
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: with top as
@@ -1587,18 +1587,18 @@ POSTHOOK: query: with top as
 select * from
   (select part1.key, part1.value from part1 join top on part1.p=top.key and part1.q=top.key) a
 union all
-  (select part2.key, part2.value from part2 join top on part2.p=top.key and part2.q=top.key)
+  (select part2_n1.key, part2_n1.value from part2_n1 join top on part2_n1.p=top.key and part2_n1.q=top.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part1
 POSTHOOK: Input: default@part1@p=1/q=1
 POSTHOOK: Input: default@part1@p=1/q=2
 POSTHOOK: Input: default@part1@p=2/q=1
 POSTHOOK: Input: default@part1@p=2/q=2
-POSTHOOK: Input: default@part2
-POSTHOOK: Input: default@part2@p=3/q=3
-POSTHOOK: Input: default@part2@p=3/q=4
-POSTHOOK: Input: default@part2@p=4/q=3
-POSTHOOK: Input: default@part2@p=4/q=4
+POSTHOOK: Input: default@part2_n1
+POSTHOOK: Input: default@part2_n1@p=3/q=3
+POSTHOOK: Input: default@part2_n1@p=3/q=4
+POSTHOOK: Input: default@part2_n1@p=4/q=3
+POSTHOOK: Input: default@part2_n1@p=4/q=4
 POSTHOOK: Input: default@src
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 7	7
@@ -1609,7 +1609,7 @@ with top as
 select * from
   (select part1.key, part1.value from part1 join top on part1.p=top.key and part1.q=top.key) a
 union all
-  (select part2.key, part2.value from part2 join top on part2.p=top.key and part2.q=top.value)
+  (select part2_n1.key, part2_n1.value from part2_n1 join top on part2_n1.p=top.key and part2_n1.q=top.value)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 with top as
@@ -1617,7 +1617,7 @@ with top as
 select * from
   (select part1.key, part1.value from part1 join top on part1.p=top.key and part1.q=top.key) a
 union all
-  (select part2.key, part2.value from part2 join top on part2.p=top.key and part2.q=top.value)
+  (select part2_n1.key, part2_n1.value from part2_n1 join top on part2_n1.p=top.key and part2_n1.q=top.value)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -1748,7 +1748,7 @@ STAGE PLANS:
         Map 8 
             Map Operator Tree:
                 TableScan
-                  alias: part2
+                  alias: part2_n1
                   Statistics: Num rows: 8 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string), p (type: string), q (type: string)
@@ -1837,32 +1837,32 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: create table foo(key string)
+PREHOOK: query: create table foo_n2(key string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@foo
-POSTHOOK: query: create table foo(key string)
+PREHOOK: Output: default@foo_n2
+POSTHOOK: query: create table foo_n2(key string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@foo
-PREHOOK: query: insert into table foo values ('1'),('2')
+POSTHOOK: Output: default@foo_n2
+PREHOOK: query: insert into table foo_n2 values ('1'),('2')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@foo
-POSTHOOK: query: insert into table foo values ('1'),('2')
+PREHOOK: Output: default@foo_n2
+POSTHOOK: query: insert into table foo_n2 values ('1'),('2')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@foo
-POSTHOOK: Lineage: foo.key SCRIPT []
+POSTHOOK: Output: default@foo_n2
+POSTHOOK: Lineage: foo_n2.key SCRIPT []
 PREHOOK: query: explain
-select p from part2 where p in (select max(key) from foo)
+select p from part2_n1 where p in (select max(key) from foo_n2)
 union all
-select p from part1 where p in (select max(key) from foo union all select min(key) from foo)
+select p from part1 where p in (select max(key) from foo_n2 union all select min(key) from foo_n2)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select p from part2 where p in (select max(key) from foo)
+select p from part2_n1 where p in (select max(key) from foo_n2)
 union all
-select p from part1 where p in (select max(key) from foo union all select min(key) from foo)
+select p from part1 where p in (select max(key) from foo_n2 union all select min(key) from foo_n2)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -1880,7 +1880,7 @@ STAGE PLANS:
         Map 11 
             Map Operator Tree:
                 TableScan
-                  alias: foo
+                  alias: foo_n2
                   Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string)
@@ -1898,7 +1898,7 @@ STAGE PLANS:
         Map 15 
             Map Operator Tree:
                 TableScan
-                  alias: foo
+                  alias: foo_n2
                   Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string)
@@ -1980,7 +1980,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: part2
+                  alias: part2_n1
                   Statistics: Num rows: 8 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: p (type: string)
@@ -1990,7 +1990,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: foo
+                  alias: foo_n2
                   Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string)
@@ -2018,7 +2018,7 @@ STAGE PLANS:
         Map 9 
             Map Operator Tree:
                 TableScan
-                  alias: foo
+                  alias: foo_n2
                   Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string)
@@ -2116,37 +2116,37 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select p from part2 where p in (select max(key) from foo)
+PREHOOK: query: select p from part2_n1 where p in (select max(key) from foo_n2)
 union all
-select p from part1 where p in (select max(key) from foo union all select min(key) from foo)
+select p from part1 where p in (select max(key) from foo_n2 union all select min(key) from foo_n2)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@foo
+PREHOOK: Input: default@foo_n2
 PREHOOK: Input: default@part1
 PREHOOK: Input: default@part1@p=1/q=1
 PREHOOK: Input: default@part1@p=1/q=2
 PREHOOK: Input: default@part1@p=2/q=1
 PREHOOK: Input: default@part1@p=2/q=2
-PREHOOK: Input: default@part2
-PREHOOK: Input: default@part2@p=3/q=3
-PREHOOK: Input: default@part2@p=3/q=4
-PREHOOK: Input: default@part2@p=4/q=3
-PREHOOK: Input: default@part2@p=4/q=4
+PREHOOK: Input: default@part2_n1
+PREHOOK: Input: default@part2_n1@p=3/q=3
+PREHOOK: Input: default@part2_n1@p=3/q=4
+PREHOOK: Input: default@part2_n1@p=4/q=3
+PREHOOK: Input: default@part2_n1@p=4/q=4
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select p from part2 where p in (select max(key) from foo)
+POSTHOOK: query: select p from part2_n1 where p in (select max(key) from foo_n2)
 union all
-select p from part1 where p in (select max(key) from foo union all select min(key) from foo)
+select p from part1 where p in (select max(key) from foo_n2 union all select min(key) from foo_n2)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@foo
+POSTHOOK: Input: default@foo_n2
 POSTHOOK: Input: default@part1
 POSTHOOK: Input: default@part1@p=1/q=1
 POSTHOOK: Input: default@part1@p=1/q=2
 POSTHOOK: Input: default@part1@p=2/q=1
 POSTHOOK: Input: default@part1@p=2/q=2
-POSTHOOK: Input: default@part2
-POSTHOOK: Input: default@part2@p=3/q=3
-POSTHOOK: Input: default@part2@p=3/q=4
-POSTHOOK: Input: default@part2@p=4/q=3
-POSTHOOK: Input: default@part2@p=4/q=4
+POSTHOOK: Input: default@part2_n1
+POSTHOOK: Input: default@part2_n1@p=3/q=3
+POSTHOOK: Input: default@part2_n1@p=3/q=4
+POSTHOOK: Input: default@part2_n1@p=4/q=3
+POSTHOOK: Input: default@part2_n1@p=4/q=4
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1
 1
@@ -2156,14 +2156,14 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 2
 2
 2
-PREHOOK: query: drop table foo
+PREHOOK: query: drop table foo_n2
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@foo
-PREHOOK: Output: default@foo
-POSTHOOK: query: drop table foo
+PREHOOK: Input: default@foo_n2
+PREHOOK: Output: default@foo_n2
+POSTHOOK: query: drop table foo_n2
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@foo
-POSTHOOK: Output: default@foo
+POSTHOOK: Input: default@foo_n2
+POSTHOOK: Output: default@foo_n2
 PREHOOK: query: drop table part1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@part1
@@ -2172,11 +2172,11 @@ POSTHOOK: query: drop table part1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@part1
 POSTHOOK: Output: default@part1
-PREHOOK: query: drop table part2
+PREHOOK: query: drop table part2_n1
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@part2
-PREHOOK: Output: default@part2
-POSTHOOK: query: drop table part2
+PREHOOK: Input: default@part2_n1
+PREHOOK: Output: default@part2_n1
+POSTHOOK: query: drop table part2_n1
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@part2
-POSTHOOK: Output: default@part2
+POSTHOOK: Input: default@part2_n1
+POSTHOOK: Output: default@part2_n1

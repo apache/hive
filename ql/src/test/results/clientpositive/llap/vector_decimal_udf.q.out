@@ -2,9 +2,9 @@ PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_UDF_txt
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_UDF_txt
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_UDF
+PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_UDF_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_UDF
+POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_UDF_n0
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE DECIMAL_UDF_txt (key decimal(20,10), value int)
 ROW FORMAT DELIMITED
@@ -28,41 +28,41 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv7.txt' INTO TABLE DE
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@decimal_udf_txt
-PREHOOK: query: CREATE TABLE DECIMAL_UDF (key decimal(20,10), value int)
+PREHOOK: query: CREATE TABLE DECIMAL_UDF_n0 (key decimal(20,10), value int)
 STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@DECIMAL_UDF
-POSTHOOK: query: CREATE TABLE DECIMAL_UDF (key decimal(20,10), value int)
+PREHOOK: Output: default@DECIMAL_UDF_n0
+POSTHOOK: query: CREATE TABLE DECIMAL_UDF_n0 (key decimal(20,10), value int)
 STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@DECIMAL_UDF
-PREHOOK: query: INSERT OVERWRITE TABLE DECIMAL_UDF SELECT * FROM DECIMAL_UDF_txt
+POSTHOOK: Output: default@DECIMAL_UDF_n0
+PREHOOK: query: INSERT OVERWRITE TABLE DECIMAL_UDF_n0 SELECT * FROM DECIMAL_UDF_txt
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_udf_txt
-PREHOOK: Output: default@decimal_udf
-POSTHOOK: query: INSERT OVERWRITE TABLE DECIMAL_UDF SELECT * FROM DECIMAL_UDF_txt
+PREHOOK: Output: default@decimal_udf_n0
+POSTHOOK: query: INSERT OVERWRITE TABLE DECIMAL_UDF_n0 SELECT * FROM DECIMAL_UDF_txt
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf_txt
-POSTHOOK: Output: default@decimal_udf
-POSTHOOK: Lineage: decimal_udf.key SIMPLE [(decimal_udf_txt)decimal_udf_txt.FieldSchema(name:key, type:decimal(20,10), comment:null), ]
-POSTHOOK: Lineage: decimal_udf.value SIMPLE [(decimal_udf_txt)decimal_udf_txt.FieldSchema(name:value, type:int, comment:null), ]
-PREHOOK: query: insert into DECIMAL_UDF values (NULL, NULL)
+POSTHOOK: Output: default@decimal_udf_n0
+POSTHOOK: Lineage: decimal_udf_n0.key SIMPLE [(decimal_udf_txt)decimal_udf_txt.FieldSchema(name:key, type:decimal(20,10), comment:null), ]
+POSTHOOK: Lineage: decimal_udf_n0.value SIMPLE [(decimal_udf_txt)decimal_udf_txt.FieldSchema(name:value, type:int, comment:null), ]
+PREHOOK: query: insert into DECIMAL_UDF_n0 values (NULL, NULL)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@decimal_udf
-POSTHOOK: query: insert into DECIMAL_UDF values (NULL, NULL)
+PREHOOK: Output: default@decimal_udf_n0
+POSTHOOK: query: insert into DECIMAL_UDF_n0 values (NULL, NULL)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@decimal_udf
-POSTHOOK: Lineage: decimal_udf.key EXPRESSION []
-POSTHOOK: Lineage: decimal_udf.value EXPRESSION []
+POSTHOOK: Output: default@decimal_udf_n0
+POSTHOOK: Lineage: decimal_udf_n0.key EXPRESSION []
+POSTHOOK: Lineage: decimal_udf_n0.value EXPRESSION []
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key + key FROM DECIMAL_UDF
+SELECT key + key FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key + key FROM DECIMAL_UDF
+SELECT key + key FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -80,7 +80,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: decimal_udf
+                  alias: decimal_udf_n0
                   Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -128,13 +128,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT key + key FROM DECIMAL_UDF
+PREHOOK: query: SELECT key + key FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_udf
+PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key + key FROM DECIMAL_UDF
+POSTHOOK: query: SELECT key + key FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_udf
+POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 -0.6000000000
 -0.6600000000
@@ -176,10 +176,10 @@ POSTHOOK: Input: default@decimal_udf
 NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key + value FROM DECIMAL_UDF
+SELECT key + value FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key + value FROM DECIMAL_UDF
+SELECT key + value FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -197,7 +197,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: decimal_udf
+                  alias: decimal_udf_n0
                   Statistics: Num rows: 39 Data size: 4412 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -245,13 +245,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT key + value FROM DECIMAL_UDF
+PREHOOK: query: SELECT key + value FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_udf
+PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key + value FROM DECIMAL_UDF
+POSTHOOK: query: SELECT key + value FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_udf
+POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 -0.3000000000
 -0.3300000000
@@ -293,10 +293,10 @@ POSTHOOK: Input: default@decimal_udf
 NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key + (value/2) FROM DECIMAL_UDF
+SELECT key + (value/2) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key + (value/2) FROM DECIMAL_UDF
+SELECT key + (value/2) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -314,7 +314,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: decimal_udf
+                  alias: decimal_udf_n0
                   Statistics: Num rows: 39 Data size: 4412 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -362,13 +362,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT key + (value/2) FROM DECIMAL_UDF
+PREHOOK: query: SELECT key + (value/2) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_udf
+PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key + (value/2) FROM DECIMAL_UDF
+POSTHOOK: query: SELECT key + (value/2) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_udf
+POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 -0.3
 -0.33
@@ -410,10 +410,10 @@ POSTHOOK: Input: default@decimal_udf
 NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key + '1.0' FROM DECIMAL_UDF
+SELECT key + '1.0' FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key + '1.0' FROM DECIMAL_UDF
+SELECT key + '1.0' FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -431,7 +431,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: decimal_udf
+                  alias: decimal_udf_n0
                   Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -479,13 +479,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT key + '1.0' FROM DECIMAL_UDF
+PREHOOK: query: SELECT key + '1.0' FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_udf
+PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key + '1.0' FROM DECIMAL_UDF
+POSTHOOK: query: SELECT key + '1.0' FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_udf
+POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 -0.1200000000000001
 -0.1200000000000001
@@ -527,10 +527,10 @@ POSTHOOK: Input: default@decimal_udf
 NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key - key FROM DECIMAL_UDF
+SELECT key - key FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key - key FROM DECIMAL_UDF
+SELECT key - key FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -548,7 +548,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: decimal_udf
+                  alias: decimal_udf_n0
                   Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -596,13 +596,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT key - key FROM DECIMAL_UDF
+PREHOOK: query: SELECT key - key FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_udf
+PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key - key FROM DECIMAL_UDF
+POSTHOOK: query: SELECT key - key FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_udf
+POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 0.0000000000
 0.0000000000
@@ -644,10 +644,10 @@ POSTHOOK: Input: default@decimal_udf
 NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key - value FROM DECIMAL_UDF
+SELECT key - value FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key - value FROM DECIMAL_UDF
+SELECT key - value FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -665,7 +665,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: decimal_udf
+                  alias: decimal_udf_n0
                   Statistics: Num rows: 39 Data size: 4412 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -713,13 +713,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT key - value FROM DECIMAL_UDF
+PREHOOK: query: SELECT key - value FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_udf
+PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key - value FROM DECIMAL_UDF
+POSTHOOK: query: SELECT key - value FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_udf
+POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 -0.1200000000
 -0.1200000000
@@ -761,10 +761,10 @@ POSTHOOK: Input: default@decimal_udf
 NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key - (value/2) FROM DECIMAL_UDF
+SELECT key - (value/2) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key - (value/2) FROM DECIMAL_UDF
+SELECT key - (value/2) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -782,7 +782,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: decimal_udf
+                  alias: decimal_udf_n0
                   Statistics: Num rows: 39 Data size: 4412 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -830,13 +830,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT key - (value/2) FROM DECIMAL_UDF
+PREHOOK: query: SELECT key - (value/2) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_udf
+PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key - (value/2) FROM DECIMAL_UDF
+POSTHOOK: query: SELECT key - (value/2) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_udf
+POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 -0.3
 -0.33
@@ -878,10 +878,10 @@ POSTHOOK: Input: default@decimal_udf
 NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key - '1.0' FROM DECIMAL_UDF
+SELECT key - '1.0' FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key - '1.0' FROM DECIMAL_UDF
+SELECT key - '1.0' FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -899,7 +899,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: decimal_udf
+                  alias: decimal_udf_n0
                   Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -947,13 +947,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT key - '1.0' FROM DECIMAL_UDF
+PREHOOK: query: SELECT key - '1.0' FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_udf
+PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key - '1.0' FROM DECIMAL_UDF
+POSTHOOK: query: SELECT key - '1.0' FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_udf
+POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 -0.667
 -0.6699999999999999
@@ -995,10 +995,10 @@ POSTHOOK: Input: default@decimal_udf
 NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key * key FROM DECIMAL_UDF
+SELECT key * key FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key * key FROM DECIMAL_UDF
+SELECT key * key FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -1016,7 +1016,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: decimal_udf
+                  alias: decimal_udf_n0
                   Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -1064,13 +1064,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT key * key FROM DECIMAL_UDF
+PREHOOK: query: SELECT key * key FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_udf
+PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key * key FROM DECIMAL_UDF
+POSTHOOK: query: SELECT key * key FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_udf
+POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 0.00000000000000000
 0.00000000000000000
@@ -1112,10 +1112,10 @@ POSTHOOK: Input: default@decimal_udf
 NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key, value FROM DECIMAL_UDF where key * value > 0
+SELECT key, value FROM DECIMAL_UDF_n0 where key * value > 0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key, value FROM DECIMAL_UDF where key * value > 0
+SELECT key, value FROM DECIMAL_UDF_n0 where key * value > 0
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -1133,7 +1133,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: decimal_udf
+                  alias: decimal_udf_n0
                   Statistics: Num rows: 39 Data size: 4412 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -1187,13 +1187,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT key, value FROM DECIMAL_UDF where key * value > 0
+PREHOOK: query: SELECT key, value FROM DECIMAL_UDF_n0 where key * value > 0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_udf
+PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key, value FROM DECIMAL_UDF where key * value > 0
+POSTHOOK: query: SELECT key, value FROM DECIMAL_UDF_n0 where key * value > 0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_udf
+POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 -1.1200000000	-1
 -1.1200000000	-1
@@ -1219,10 +1219,10 @@ POSTHOOK: Input: default@decimal_udf
 3.1400000000	3
 3.1400000000	4
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key * value FROM DECIMAL_UDF
+SELECT key * value FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key * value FROM DECIMAL_UDF
+SELECT key * value FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -1240,7 +1240,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: decimal_udf
+                  alias: decimal_udf_n0
                   Statistics: Num rows: 39 Data size: 4412 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -1288,13 +1288,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT key * value FROM DECIMAL_UDF
+PREHOOK: query: SELECT key * value FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_udf
+PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key * value FROM DECIMAL_UDF
+POSTHOOK: query: SELECT key * value FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_udf
+POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 -19360000.0000000000
 0.0000000000
@@ -1336,10 +1336,10 @@ POSTHOOK: Input: default@decimal_udf
 NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key * (value/2) FROM DECIMAL_UDF
+SELECT key * (value/2) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key * (value/2) FROM DECIMAL_UDF
+SELECT key * (value/2) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -1357,7 +1357,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: decimal_udf
+                  alias: decimal_udf_n0
                   Statistics: Num rows: 39 Data size: 4412 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -1405,13 +1405,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT key * (value/2) FROM DECIMAL_UDF
+PREHOOK: query: SELECT key * (value/2) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_udf
+PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key * (value/2) FROM DECIMAL_UDF
+POSTHOOK: query: SELECT key * (value/2) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_udf
+POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 -0.0
 -0.0
@@ -1453,10 +1453,10 @@ POSTHOOK: Input: default@decimal_udf
 NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key * '2.0' FROM DECIMAL_UDF
+SELECT key * '2.0' FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key * '2.0' FROM DECIMAL_UDF
+SELECT key * '2.0' FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -1474,7 +1474,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: decimal_udf
+                  alias: decimal_udf_n0
                   Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -1522,13 +1522,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT key * '2.0' FROM DECIMAL_UDF
+PREHOOK: query: SELECT key * '2.0' FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_udf
+PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key * '2.0' FROM DECIMAL_UDF
+POSTHOOK: query: SELECT key * '2.0' FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_udf
+POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 -0.6
 -0.66
@@ -1570,10 +1570,10 @@ POSTHOOK: Input: default@decimal_udf
 NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key / 0 FROM DECIMAL_UDF
+SELECT key / 0 FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key / 0 FROM DECIMAL_UDF
+SELECT key / 0 FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -1591,7 +1591,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: decimal_udf
+                  alias: decimal_udf_n0
                   Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -1639,13 +1639,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT key / 0 FROM DECIMAL_UDF
+PREHOOK: query: SELECT key / 0 FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_udf
+PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key / 0 FROM DECIMAL_UDF
+POSTHOOK: query: SELECT key / 0 FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_udf
+POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 NULL
 NULL
@@ -1687,10 +1687,10 @@ NULL
 NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key / key FROM DECIMAL_UDF WHERE key is not null and key <> 0
+SELECT key / key FROM DECIMAL_UDF_n0 WHERE key is not null and key <> 0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key / key FROM DECIMAL_UDF WHERE key is not null and key <> 0
+SELECT key / key FROM DECIMAL_UDF_n0 WHERE key is not null and key <> 0
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -1708,7 +1708,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: decimal_udf
+                  alias: decimal_udf_n0
                   Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -1763,13 +1763,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT key / key FROM DECIMAL_UDF WHERE key is not null and key <> 0
+PREHOOK: query: SELECT key / key FROM DECIMAL_UDF_n0 WHERE key is not null and key <> 0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_udf
+PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key / key FROM DECIMAL_UDF WHERE key is not null and key <> 0
+POSTHOOK: query: SELECT key / key FROM DECIMAL_UDF_n0 WHERE key is not null and key <> 0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_udf
+POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 1.000000000000000000
 1.000000000000000000
@@ -1806,10 +1806,10 @@ POSTHOOK: Input: default@decimal_udf
 1.000000000000000000
 1.000000000000000000
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key / value FROM DECIMAL_UDF WHERE value is not null and value <> 0
+SELECT key / value FROM DECIMAL_UDF_n0 WHERE value is not null and value <> 0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key / value FROM DECIMAL_UDF WHERE value is not null and value <> 0
+SELECT key / value FROM DECIMAL_UDF_n0 WHERE value is not null and value <> 0
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -1827,7 +1827,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: decimal_udf
+                  alias: decimal_udf_n0
                   Statistics: Num rows: 39 Data size: 4412 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -1882,13 +1882,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT key / value FROM DECIMAL_UDF WHERE value is not null and value <> 0
+PREHOOK: query: SELECT key / value FROM DECIMAL_UDF_n0 WHERE value is not null and value <> 0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_udf
+PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key / value FROM DECIMAL_UDF WHERE value is not null and value <> 0
+POSTHOOK: query: SELECT key / value FROM DECIMAL_UDF_n0 WHERE value is not null and value <> 0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_udf
+POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 -1.000000000000000000000
 0.102000000000000000000
@@ -1915,10 +1915,10 @@ POSTHOOK: Input: default@decimal_udf
 1.120000000000000000000
 1.122000000000000000000
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key / (value/2) FROM DECIMAL_UDF  WHERE value is not null and value <> 0
+SELECT key / (value/2) FROM DECIMAL_UDF_n0  WHERE value is not null and value <> 0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key / (value/2) FROM DECIMAL_UDF  WHERE value is not null and value <> 0
+SELECT key / (value/2) FROM DECIMAL_UDF_n0  WHERE value is not null and value <> 0
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -1936,7 +1936,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: decimal_udf
+                  alias: decimal_udf_n0
                   Statistics: Num rows: 39 Data size: 4412 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -1991,13 +1991,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT key / (value/2) FROM DECIMAL_UDF  WHERE value is not null and value <> 0
+PREHOOK: query: SELECT key / (value/2) FROM DECIMAL_UDF_n0  WHERE value is not null and value <> 0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_udf
+PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key / (value/2) FROM DECIMAL_UDF  WHERE value is not null and value <> 0
+POSTHOOK: query: SELECT key / (value/2) FROM DECIMAL_UDF_n0  WHERE value is not null and value <> 0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_udf
+POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 -2.0
 0.20400000000000001
@@ -2024,10 +2024,10 @@ POSTHOOK: Input: default@decimal_udf
 2.24
 2.244
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT 1 + (key / '2.0') FROM DECIMAL_UDF
+SELECT 1 + (key / '2.0') FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT 1 + (key / '2.0') FROM DECIMAL_UDF
+SELECT 1 + (key / '2.0') FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -2045,7 +2045,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: decimal_udf
+                  alias: decimal_udf_n0
                   Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -2093,13 +2093,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT 1 + (key / '2.0') FROM DECIMAL_UDF
+PREHOOK: query: SELECT 1 + (key / '2.0') FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_udf
+PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT 1 + (key / '2.0') FROM DECIMAL_UDF
+POSTHOOK: query: SELECT 1 + (key / '2.0') FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_udf
+POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 -2199.0
 -6.172839440617284E8
@@ -2141,10 +2141,10 @@ POSTHOOK: Input: default@decimal_udf
 NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT abs(key) FROM DECIMAL_UDF
+SELECT abs(key) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT abs(key) FROM DECIMAL_UDF
+SELECT abs(key) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -2162,7 +2162,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: decimal_udf
+                  alias: decimal_udf_n0
                   Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -2210,13 +2210,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT abs(key) FROM DECIMAL_UDF
+PREHOOK: query: SELECT abs(key) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_udf
+PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT abs(key) FROM DECIMAL_UDF
+POSTHOOK: query: SELECT abs(key) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_udf
+POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 0.0000000000
 0.0000000000
@@ -2258,10 +2258,10 @@ POSTHOOK: Input: default@decimal_udf
 NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT value, sum(key) / count(key), avg(key), sum(key) FROM DECIMAL_UDF GROUP BY value ORDER BY value
+SELECT value, sum(key) / count(key), avg(key), sum(key) FROM DECIMAL_UDF_n0 GROUP BY value ORDER BY value
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT value, sum(key) / count(key), avg(key), sum(key) FROM DECIMAL_UDF GROUP BY value ORDER BY value
+SELECT value, sum(key) / count(key), avg(key), sum(key) FROM DECIMAL_UDF_n0 GROUP BY value ORDER BY value
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -2283,7 +2283,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: decimal_udf
+                  alias: decimal_udf_n0
                   Statistics: Num rows: 39 Data size: 4412 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -2430,13 +2430,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT value, sum(key) / count(key), avg(key), sum(key) FROM DECIMAL_UDF GROUP BY value ORDER BY value
+PREHOOK: query: SELECT value, sum(key) / count(key), avg(key), sum(key) FROM DECIMAL_UDF_n0 GROUP BY value ORDER BY value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_udf
+PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT value, sum(key) / count(key), avg(key), sum(key) FROM DECIMAL_UDF GROUP BY value ORDER BY value
+POSTHOOK: query: SELECT value, sum(key) / count(key), avg(key), sum(key) FROM DECIMAL_UDF_n0 GROUP BY value ORDER BY value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_udf
+POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 -1	-1.120000000000000000	-1.1200000000000000000000000000	-2.2400000000
 -11	-1.122000000000000000	-1.1220000000000000000000000000	-1.1220000000
@@ -2457,10 +2457,10 @@ POSTHOOK: Input: default@decimal_udf
 4400	-4400.000000000000000000	-4400.0000000000000000000000000000	-4400.0000000000
 NULL	NULL	NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT -key FROM DECIMAL_UDF
+SELECT -key FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT -key FROM DECIMAL_UDF
+SELECT -key FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -2478,7 +2478,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: decimal_udf
+                  alias: decimal_udf_n0
                   Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -2526,13 +2526,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT -key FROM DECIMAL_UDF
+PREHOOK: query: SELECT -key FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_udf
+PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT -key FROM DECIMAL_UDF
+POSTHOOK: query: SELECT -key FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_udf
+POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 -0.0100000000
 -0.0200000000
@@ -2574,10 +2574,10 @@ POSTHOOK: Input: default@decimal_udf
 NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT +key FROM DECIMAL_UDF
+SELECT +key FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT +key FROM DECIMAL_UDF
+SELECT +key FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -2592,19 +2592,19 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: decimal_udf
+          alias: decimal_udf_n0
           Select Operator
             expressions: key (type: decimal(20,10))
             outputColumnNames: _col0
             ListSink
 
-PREHOOK: query: SELECT +key FROM DECIMAL_UDF
+PREHOOK: query: SELECT +key FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_udf
+PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT +key FROM DECIMAL_UDF
+POSTHOOK: query: SELECT +key FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_udf
+POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 -0.3000000000
 -0.3300000000
@@ -2645,9 +2645,9 @@ POSTHOOK: Input: default@decimal_udf
 3.1400000000
 NULL
 NULL
-PREHOOK: query: EXPlAIN SELECT CEIL(key) FROM DECIMAL_UDF
+PREHOOK: query: EXPlAIN SELECT CEIL(key) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPlAIN SELECT CEIL(key) FROM DECIMAL_UDF
+POSTHOOK: query: EXPlAIN SELECT CEIL(key) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2661,7 +2661,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: decimal_udf
+                  alias: decimal_udf_n0
                   Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: ceil(key) (type: decimal(11,0))
@@ -2683,13 +2683,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT CEIL(key) FROM DECIMAL_UDF
+PREHOOK: query: SELECT CEIL(key) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_udf
+PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT CEIL(key) FROM DECIMAL_UDF
+POSTHOOK: query: SELECT CEIL(key) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_udf
+POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 -1
 -1
@@ -2731,10 +2731,10 @@ POSTHOOK: Input: default@decimal_udf
 NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT FLOOR(key) FROM DECIMAL_UDF
+SELECT FLOOR(key) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT FLOOR(key) FROM DECIMAL_UDF
+SELECT FLOOR(key) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -2752,7 +2752,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: decimal_udf
+                  alias: decimal_udf_n0
                   Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -2800,13 +2800,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT FLOOR(key) FROM DECIMAL_UDF
+PREHOOK: query: SELECT FLOOR(key) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_udf
+PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT FLOOR(key) FROM DECIMAL_UDF
+POSTHOOK: query: SELECT FLOOR(key) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_udf
+POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 -1
 -1
@@ -2848,10 +2848,10 @@ POSTHOOK: Input: default@decimal_udf
 NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT ROUND(key, 2) FROM DECIMAL_UDF
+SELECT ROUND(key, 2) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT ROUND(key, 2) FROM DECIMAL_UDF
+SELECT ROUND(key, 2) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -2869,7 +2869,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: decimal_udf
+                  alias: decimal_udf_n0
                   Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -2917,13 +2917,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT ROUND(key, 2) FROM DECIMAL_UDF
+PREHOOK: query: SELECT ROUND(key, 2) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_udf
+PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT ROUND(key, 2) FROM DECIMAL_UDF
+POSTHOOK: query: SELECT ROUND(key, 2) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_udf
+POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 -0.30
 -0.33
@@ -2965,10 +2965,10 @@ POSTHOOK: Input: default@decimal_udf
 NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT POWER(key, 2) FROM DECIMAL_UDF
+SELECT POWER(key, 2) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT POWER(key, 2) FROM DECIMAL_UDF
+SELECT POWER(key, 2) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -2986,7 +2986,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: decimal_udf
+                  alias: decimal_udf_n0
                   Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -3034,13 +3034,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT POWER(key, 2) FROM DECIMAL_UDF
+PREHOOK: query: SELECT POWER(key, 2) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_udf
+PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT POWER(key, 2) FROM DECIMAL_UDF
+POSTHOOK: query: SELECT POWER(key, 2) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_udf
+POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 0.0
 0.0
@@ -3082,10 +3082,10 @@ POSTHOOK: Input: default@decimal_udf
 NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT (key + 1) % (key / 2) FROM DECIMAL_UDF
+SELECT (key + 1) % (key / 2) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT (key + 1) % (key / 2) FROM DECIMAL_UDF
+SELECT (key + 1) % (key / 2) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -3103,7 +3103,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: decimal_udf
+                  alias: decimal_udf_n0
                   Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -3151,13 +3151,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT (key + 1) % (key / 2) FROM DECIMAL_UDF
+PREHOOK: query: SELECT (key + 1) % (key / 2) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_udf
+PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT (key + 1) % (key / 2) FROM DECIMAL_UDF
+POSTHOOK: query: SELECT (key + 1) % (key / 2) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_udf
+POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 -0.120000000000
 -0.120000000000
@@ -3199,10 +3199,10 @@ NULL
 NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT value, stddev(key), variance(key) FROM DECIMAL_UDF GROUP BY value
+SELECT value, stddev(key), variance(key) FROM DECIMAL_UDF_n0 GROUP BY value
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT value, stddev(key), variance(key) FROM DECIMAL_UDF GROUP BY value
+SELECT value, stddev(key), variance(key) FROM DECIMAL_UDF_n0 GROUP BY value
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -3223,7 +3223,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: decimal_udf
+                  alias: decimal_udf_n0
                   Statistics: Num rows: 39 Data size: 4412 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -3336,13 +3336,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT value, stddev(key), variance(key) FROM DECIMAL_UDF GROUP BY value
+PREHOOK: query: SELECT value, stddev(key), variance(key) FROM DECIMAL_UDF_n0 GROUP BY value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_udf
+PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT value, stddev(key), variance(key) FROM DECIMAL_UDF GROUP BY value
+POSTHOOK: query: SELECT value, stddev(key), variance(key) FROM DECIMAL_UDF_n0 GROUP BY value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_udf
+POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 -1	0.0	0.0
 -11	0.0	0.0
@@ -3363,10 +3363,10 @@ POSTHOOK: Input: default@decimal_udf
 4400	0.0	0.0
 NULL	NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT value, stddev_samp(key), var_samp(key) FROM DECIMAL_UDF GROUP BY value
+SELECT value, stddev_samp(key), var_samp(key) FROM DECIMAL_UDF_n0 GROUP BY value
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT value, stddev_samp(key), var_samp(key) FROM DECIMAL_UDF GROUP BY value
+SELECT value, stddev_samp(key), var_samp(key) FROM DECIMAL_UDF_n0 GROUP BY value
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -3387,7 +3387,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: decimal_udf
+                  alias: decimal_udf_n0
                   Statistics: Num rows: 39 Data size: 4412 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -3500,13 +3500,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT value, stddev_samp(key), var_samp(key) FROM DECIMAL_UDF GROUP BY value
+PREHOOK: query: SELECT value, stddev_samp(key), var_samp(key) FROM DECIMAL_UDF_n0 GROUP BY value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_udf
+PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT value, stddev_samp(key), var_samp(key) FROM DECIMAL_UDF GROUP BY value
+POSTHOOK: query: SELECT value, stddev_samp(key), var_samp(key) FROM DECIMAL_UDF_n0 GROUP BY value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_udf
+POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 -1	0.0	0.0
 -11	NULL	NULL
@@ -3527,10 +3527,10 @@ POSTHOOK: Input: default@decimal_udf
 4400	NULL	NULL
 NULL	NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT histogram_numeric(key, 3) FROM DECIMAL_UDF
+SELECT histogram_numeric(key, 3) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT histogram_numeric(key, 3) FROM DECIMAL_UDF
+SELECT histogram_numeric(key, 3) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -3551,7 +3551,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: decimal_udf
+                  alias: decimal_udf_n0
                   Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: decimal(20,10))
@@ -3601,20 +3601,20 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT histogram_numeric(key, 3) FROM DECIMAL_UDF
+PREHOOK: query: SELECT histogram_numeric(key, 3) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_udf
+PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT histogram_numeric(key, 3) FROM DECIMAL_UDF
+POSTHOOK: query: SELECT histogram_numeric(key, 3) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_udf
+POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 [{"x":-1.2345678901234567E9,"y":1.0},{"x":-144.50057142857142,"y":35.0},{"x":1.2345678901234567E9,"y":1.0}]
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT MIN(key) FROM DECIMAL_UDF
+SELECT MIN(key) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT MIN(key) FROM DECIMAL_UDF
+SELECT MIN(key) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -3635,7 +3635,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: decimal_udf
+                  alias: decimal_udf_n0
                   Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -3732,20 +3732,20 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT MIN(key) FROM DECIMAL_UDF
+PREHOOK: query: SELECT MIN(key) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_udf
+PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT MIN(key) FROM DECIMAL_UDF
+POSTHOOK: query: SELECT MIN(key) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_udf
+POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 -1234567890.1234567890
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT MAX(key) FROM DECIMAL_UDF
+SELECT MAX(key) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT MAX(key) FROM DECIMAL_UDF
+SELECT MAX(key) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -3766,7 +3766,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: decimal_udf
+                  alias: decimal_udf_n0
                   Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -3863,20 +3863,20 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT MAX(key) FROM DECIMAL_UDF
+PREHOOK: query: SELECT MAX(key) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_udf
+PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT MAX(key) FROM DECIMAL_UDF
+POSTHOOK: query: SELECT MAX(key) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_udf
+POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 1234567890.1234567800
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT COUNT(key) FROM DECIMAL_UDF
+SELECT COUNT(key) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT COUNT(key) FROM DECIMAL_UDF
+SELECT COUNT(key) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -3897,7 +3897,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: decimal_udf
+                  alias: decimal_udf_n0
                   Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -3994,13 +3994,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT COUNT(key) FROM DECIMAL_UDF
+PREHOOK: query: SELECT COUNT(key) FROM DECIMAL_UDF_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@decimal_udf
+PREHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT COUNT(key) FROM DECIMAL_UDF
+POSTHOOK: query: SELECT COUNT(key) FROM DECIMAL_UDF_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@decimal_udf
+POSTHOOK: Input: default@decimal_udf_n0
 #### A masked pattern was here ####
 37
 PREHOOK: query: CREATE TABLE DECIMAL_UDF_txt_small (key decimal(15,3), value int)
@@ -8018,11 +8018,11 @@ POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_UDF_txt
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@decimal_udf_txt
 POSTHOOK: Output: default@decimal_udf_txt
-PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_UDF
+PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_UDF_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@decimal_udf
-PREHOOK: Output: default@decimal_udf
-POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_UDF
+PREHOOK: Input: default@decimal_udf_n0
+PREHOOK: Output: default@decimal_udf_n0
+POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_UDF_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@decimal_udf
-POSTHOOK: Output: default@decimal_udf
+POSTHOOK: Input: default@decimal_udf_n0
+POSTHOOK: Output: default@decimal_udf_n0

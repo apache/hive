@@ -143,15 +143,15 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: CREATE TABLE union_out (id int)
+PREHOOK: query: CREATE TABLE union_out_n0 (id int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@union_out
-POSTHOOK: query: CREATE TABLE union_out (id int)
+PREHOOK: Output: default@union_out_n0
+POSTHOOK: query: CREATE TABLE union_out_n0 (id int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@union_out
-PREHOOK: query: insert overwrite table union_out 
+POSTHOOK: Output: default@union_out_n0
+PREHOOK: query: insert overwrite table union_out_n0 
 SELECT *
 FROM (
   SELECT 1 AS id
@@ -169,8 +169,8 @@ FROM (
 ) a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@union_out
-POSTHOOK: query: insert overwrite table union_out 
+PREHOOK: Output: default@union_out_n0
+POSTHOOK: query: insert overwrite table union_out_n0 
 SELECT *
 FROM (
   SELECT 1 AS id
@@ -188,15 +188,15 @@ FROM (
 ) a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@union_out
-POSTHOOK: Lineage: union_out.id EXPRESSION []
-PREHOOK: query: select * from union_out
+POSTHOOK: Output: default@union_out_n0
+POSTHOOK: Lineage: union_out_n0.id EXPRESSION []
+PREHOOK: query: select * from union_out_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@union_out
+PREHOOK: Input: default@union_out_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from union_out
+POSTHOOK: query: select * from union_out_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@union_out
+POSTHOOK: Input: default@union_out_n0
 #### A masked pattern was here ####
 1
 2

@@ -1,24 +1,24 @@
-PREHOOK: query: CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE T1_n90(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1
-POSTHOOK: query: CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@T1_n90
+POSTHOOK: query: CREATE TABLE T1_n90(key STRING, val STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1
+POSTHOOK: Output: default@T1_n90
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_n90
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1
+PREHOOK: Output: default@t1_n90
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_n90
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t1
+POSTHOOK: Output: default@t1_n90
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key, val, count(1) FROM T1 GROUP BY key, val with cube
+SELECT key, val, count(1) FROM T1_n90 GROUP BY key, val with cube
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key, val, count(1) FROM T1 GROUP BY key, val with cube
+SELECT key, val, count(1) FROM T1_n90 GROUP BY key, val with cube
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -39,7 +39,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n90
                   Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -153,10 +153,10 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key, val, count(1) FROM T1 GROUP BY CUBE(key, val)
+SELECT key, val, count(1) FROM T1_n90 GROUP BY CUBE(key, val)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key, val, count(1) FROM T1 GROUP BY CUBE(key, val)
+SELECT key, val, count(1) FROM T1_n90 GROUP BY CUBE(key, val)
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -177,7 +177,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n90
                   Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -290,13 +290,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT key, val, count(1) FROM T1 GROUP BY key, val with cube
+PREHOOK: query: SELECT key, val, count(1) FROM T1_n90 GROUP BY key, val with cube
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n90
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key, val, count(1) FROM T1 GROUP BY key, val with cube
+POSTHOOK: query: SELECT key, val, count(1) FROM T1_n90 GROUP BY key, val with cube
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n90
 #### A masked pattern was here ####
 1	11	1
 1	NULL	1
@@ -317,10 +317,10 @@ NULL	18	1
 NULL	28	1
 NULL	NULL	6
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key, val, GROUPING__ID, count(1) FROM T1 GROUP BY key, val with cube
+SELECT key, val, GROUPING__ID, count(1) FROM T1_n90 GROUP BY key, val with cube
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key, val, GROUPING__ID, count(1) FROM T1 GROUP BY key, val with cube
+SELECT key, val, GROUPING__ID, count(1) FROM T1_n90 GROUP BY key, val with cube
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -341,7 +341,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n90
                   Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -453,13 +453,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT key, val, GROUPING__ID, count(1) FROM T1 GROUP BY key, val with cube
+PREHOOK: query: SELECT key, val, GROUPING__ID, count(1) FROM T1_n90 GROUP BY key, val with cube
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n90
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key, val, GROUPING__ID, count(1) FROM T1 GROUP BY key, val with cube
+POSTHOOK: query: SELECT key, val, GROUPING__ID, count(1) FROM T1_n90 GROUP BY key, val with cube
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n90
 #### A masked pattern was here ####
 1	11	0	1
 1	NULL	1	1
@@ -480,10 +480,10 @@ NULL	18	2	1
 NULL	28	2	1
 NULL	NULL	3	6
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key, count(distinct val) FROM T1 GROUP BY key with cube
+SELECT key, count(distinct val) FROM T1_n90 GROUP BY key with cube
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key, count(distinct val) FROM T1 GROUP BY key with cube
+SELECT key, count(distinct val) FROM T1_n90 GROUP BY key with cube
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -504,7 +504,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n90
                   Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), val (type: string)
@@ -562,13 +562,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT key, count(distinct val) FROM T1 GROUP BY key with cube
+PREHOOK: query: SELECT key, count(distinct val) FROM T1_n90 GROUP BY key with cube
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n90
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key, count(distinct val) FROM T1 GROUP BY key with cube
+POSTHOOK: query: SELECT key, count(distinct val) FROM T1_n90 GROUP BY key with cube
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n90
 #### A masked pattern was here ####
 1	1
 2	1
@@ -577,10 +577,10 @@ POSTHOOK: Input: default@t1
 8	2
 NULL	6
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key, val, count(1) FROM T1 GROUP BY key, val with cube
+SELECT key, val, count(1) FROM T1_n90 GROUP BY key, val with cube
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key, val, count(1) FROM T1 GROUP BY key, val with cube
+SELECT key, val, count(1) FROM T1_n90 GROUP BY key, val with cube
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -602,7 +602,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n90
                   Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -759,13 +759,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT key, val, count(1) FROM T1 GROUP BY key, val with cube
+PREHOOK: query: SELECT key, val, count(1) FROM T1_n90 GROUP BY key, val with cube
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n90
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key, val, count(1) FROM T1 GROUP BY key, val with cube
+POSTHOOK: query: SELECT key, val, count(1) FROM T1_n90 GROUP BY key, val with cube
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n90
 #### A masked pattern was here ####
 1	11	1
 1	NULL	1
@@ -786,10 +786,10 @@ NULL	18	1
 NULL	28	1
 NULL	NULL	6
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key, count(distinct val) FROM T1 GROUP BY key with cube
+SELECT key, count(distinct val) FROM T1_n90 GROUP BY key with cube
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key, count(distinct val) FROM T1 GROUP BY key with cube
+SELECT key, count(distinct val) FROM T1_n90 GROUP BY key with cube
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -811,7 +811,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n90
                   Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), val (type: string)
@@ -889,13 +889,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT key, count(distinct val) FROM T1 GROUP BY key with cube
+PREHOOK: query: SELECT key, count(distinct val) FROM T1_n90 GROUP BY key with cube
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n90
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key, count(distinct val) FROM T1 GROUP BY key with cube
+POSTHOOK: query: SELECT key, count(distinct val) FROM T1_n90 GROUP BY key with cube
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n90
 #### A masked pattern was here ####
 1	1
 2	1
@@ -903,31 +903,31 @@ POSTHOOK: Input: default@t1
 7	1
 8	2
 NULL	6
-PREHOOK: query: CREATE TABLE T2(key1 STRING, key2 STRING, val INT) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE T2_n55(key1 STRING, key2 STRING, val INT) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T2
-POSTHOOK: query: CREATE TABLE T2(key1 STRING, key2 STRING, val INT) STORED AS TEXTFILE
+PREHOOK: Output: default@T2_n55
+POSTHOOK: query: CREATE TABLE T2_n55(key1 STRING, key2 STRING, val INT) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T2
-PREHOOK: query: CREATE TABLE T3(key1 STRING, key2 STRING, val INT) STORED AS TEXTFILE
+POSTHOOK: Output: default@T2_n55
+PREHOOK: query: CREATE TABLE T3_n19(key1 STRING, key2 STRING, val INT) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T3
-POSTHOOK: query: CREATE TABLE T3(key1 STRING, key2 STRING, val INT) STORED AS TEXTFILE
+PREHOOK: Output: default@T3_n19
+POSTHOOK: query: CREATE TABLE T3_n19(key1 STRING, key2 STRING, val INT) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T3
+POSTHOOK: Output: default@T3_n19
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-FROM T1
-INSERT OVERWRITE TABLE T2 SELECT key, val, count(1) group by key, val with cube
-INSERT OVERWRITE TABLE T3 SELECT key, val, sum(1) group by key, val with cube
+FROM T1_n90
+INSERT OVERWRITE TABLE T2_n55 SELECT key, val, count(1) group by key, val with cube
+INSERT OVERWRITE TABLE T3_n19 SELECT key, val, sum(1) group by key, val with cube
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-FROM T1
-INSERT OVERWRITE TABLE T2 SELECT key, val, count(1) group by key, val with cube
-INSERT OVERWRITE TABLE T3 SELECT key, val, sum(1) group by key, val with cube
+FROM T1_n90
+INSERT OVERWRITE TABLE T2_n55 SELECT key, val, count(1) group by key, val with cube
+INSERT OVERWRITE TABLE T3_n19 SELECT key, val, sum(1) group by key, val with cube
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -957,7 +957,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n90
                   Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1119,7 +1119,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.t2
+                        name: default.t2_n55
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int)
                     outputColumnNames: key1, key2, val
@@ -1222,7 +1222,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.t3
+                        name: default.t3_n19
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int)
                     outputColumnNames: key1, key2, val
@@ -1268,7 +1268,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.t2
+              name: default.t2_n55
 
   Stage: Stage-4
     Stats Work
@@ -1276,7 +1276,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key1, key2, val
           Column Types: string, string, int
-          Table: default.t2
+          Table: default.t2_n55
 
   Stage: Stage-1
     Move Operator
@@ -1286,7 +1286,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.t3
+              name: default.t3_n19
 
   Stage: Stage-5
     Stats Work
@@ -1294,25 +1294,25 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key1, key2, val
           Column Types: string, string, int
-          Table: default.t3
+          Table: default.t3_n19
 
-PREHOOK: query: FROM T1
-INSERT OVERWRITE TABLE T2 SELECT key, val, count(1) group by key, val with cube
-INSERT OVERWRITE TABLE T3 SELECT key, val, sum(1) group by key, val with cube
+PREHOOK: query: FROM T1_n90
+INSERT OVERWRITE TABLE T2_n55 SELECT key, val, count(1) group by key, val with cube
+INSERT OVERWRITE TABLE T3_n19 SELECT key, val, sum(1) group by key, val with cube
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@t2
-PREHOOK: Output: default@t3
-POSTHOOK: query: FROM T1
-INSERT OVERWRITE TABLE T2 SELECT key, val, count(1) group by key, val with cube
-INSERT OVERWRITE TABLE T3 SELECT key, val, sum(1) group by key, val with cube
+PREHOOK: Input: default@t1_n90
+PREHOOK: Output: default@t2_n55
+PREHOOK: Output: default@t3_n19
+POSTHOOK: query: FROM T1_n90
+INSERT OVERWRITE TABLE T2_n55 SELECT key, val, count(1) group by key, val with cube
+INSERT OVERWRITE TABLE T3_n19 SELECT key, val, sum(1) group by key, val with cube
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@t2
-POSTHOOK: Output: default@t3
-POSTHOOK: Lineage: t2.key1 SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t2.key2 SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: t2.val EXPRESSION [(t1)t1.null, ]
-POSTHOOK: Lineage: t3.key1 SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t3.key2 SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-POSTHOOK: Lineage: t3.val EXPRESSION [(t1)t1.null, ]
+POSTHOOK: Input: default@t1_n90
+POSTHOOK: Output: default@t2_n55
+POSTHOOK: Output: default@t3_n19
+POSTHOOK: Lineage: t2_n55.key1 SIMPLE [(t1_n90)t1_n90.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t2_n55.key2 SIMPLE [(t1_n90)t1_n90.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: t2_n55.val EXPRESSION [(t1_n90)t1_n90.null, ]
+POSTHOOK: Lineage: t3_n19.key1 SIMPLE [(t1_n90)t1_n90.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t3_n19.key2 SIMPLE [(t1_n90)t1_n90.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: t3_n19.val EXPRESSION [(t1_n90)t1_n90.null, ]

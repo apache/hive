@@ -47,14 +47,14 @@ SHOW MATERIALIZED VIEWS IN test2 LIKE "nomatch";
 -- SHOW MATERIALIZED VIEWS from a database with a name that requires escaping
 CREATE DATABASE `database`;
 USE `database`;
-CREATE TABLE foo(a INT);
+CREATE TABLE foo_n0(a INT);
 CREATE VIEW fooview AS
-SELECT * FROM foo;
+SELECT * FROM foo_n0;
 USE default;
 SHOW MATERIALIZED VIEWS FROM `database` LIKE "fooview";
 
 DROP MATERIALIZED VIEW fooview;
-DROP TABLE foo;
+DROP TABLE foo_n0;
 
 USE test1;
 DROP MATERIALIZED VIEW shtb_test1_view1;

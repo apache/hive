@@ -1,30 +1,30 @@
-PREHOOK: query: CREATE TABLE dest1(key STRING, value STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE dest1_n108(key STRING, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest1
-POSTHOOK: query: CREATE TABLE dest1(key STRING, value STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@dest1_n108
+POSTHOOK: query: CREATE TABLE dest1_n108(key STRING, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest1
+POSTHOOK: Output: default@dest1_n108
 PREHOOK: query: FROM src
-INSERT OVERWRITE TABLE dest1 SELECT concat('1234', 'abc', 'extra argument'), src.value WHERE src.key < 100
+INSERT OVERWRITE TABLE dest1_n108 SELECT concat('1234', 'abc', 'extra argument'), src.value WHERE src.key < 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@dest1
+PREHOOK: Output: default@dest1_n108
 POSTHOOK: query: FROM src
-INSERT OVERWRITE TABLE dest1 SELECT concat('1234', 'abc', 'extra argument'), src.value WHERE src.key < 100
+INSERT OVERWRITE TABLE dest1_n108 SELECT concat('1234', 'abc', 'extra argument'), src.value WHERE src.key < 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@dest1
-POSTHOOK: Lineage: dest1.key SIMPLE []
-POSTHOOK: Lineage: dest1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: Output: default@dest1_n108
+POSTHOOK: Lineage: dest1_n108.key SIMPLE []
+POSTHOOK: Lineage: dest1_n108.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT dest1_n108.* FROM dest1_n108
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n108
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: query: SELECT dest1_n108.* FROM dest1_n108
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n108
 #### A masked pattern was here ####
 1234abcextra argument	val_86
 1234abcextra argument	val_27

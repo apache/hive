@@ -1,39 +1,39 @@
-PREHOOK: query: create table exim_department ( dep_id int) stored as textfile
+PREHOOK: query: create table exim_department_n3 ( dep_id int) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@exim_department
-POSTHOOK: query: create table exim_department ( dep_id int) stored as textfile
+PREHOOK: Output: default@exim_department_n3
+POSTHOOK: query: create table exim_department_n3 ( dep_id int) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@exim_department
-PREHOOK: query: load data local inpath "../../data/files/test.dat" into table exim_department
+POSTHOOK: Output: default@exim_department_n3
+PREHOOK: query: load data local inpath "../../data/files/test.dat" into table exim_department_n3
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@exim_department
-POSTHOOK: query: load data local inpath "../../data/files/test.dat" into table exim_department
+PREHOOK: Output: default@exim_department_n3
+POSTHOOK: query: load data local inpath "../../data/files/test.dat" into table exim_department_n3
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@exim_department
-PREHOOK: query: grant Select on table exim_department to user hive_test_user
+POSTHOOK: Output: default@exim_department_n3
+PREHOOK: query: grant Select on table exim_department_n3 to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE
-PREHOOK: Output: default@exim_department
-POSTHOOK: query: grant Select on table exim_department to user hive_test_user
+PREHOOK: Output: default@exim_department_n3
+POSTHOOK: query: grant Select on table exim_department_n3 to user hive_test_user
 POSTHOOK: type: GRANT_PRIVILEGE
-POSTHOOK: Output: default@exim_department
+POSTHOOK: Output: default@exim_department_n3
 #### A masked pattern was here ####
-PREHOOK: query: export table exim_department to 'ql/test/data/exports/exim_department'
+PREHOOK: query: export table exim_department_n3 to 'ql/test/data/exports/exim_department'
 PREHOOK: type: EXPORT
-PREHOOK: Input: default@exim_department
+PREHOOK: Input: default@exim_department_n3
 #### A masked pattern was here ####
-POSTHOOK: query: export table exim_department to 'ql/test/data/exports/exim_department'
+POSTHOOK: query: export table exim_department_n3 to 'ql/test/data/exports/exim_department'
 POSTHOOK: type: EXPORT
-POSTHOOK: Input: default@exim_department
+POSTHOOK: Input: default@exim_department_n3
 #### A masked pattern was here ####
-PREHOOK: query: drop table exim_department
+PREHOOK: query: drop table exim_department_n3
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@exim_department
-PREHOOK: Output: default@exim_department
-POSTHOOK: query: drop table exim_department
+PREHOOK: Input: default@exim_department_n3
+PREHOOK: Output: default@exim_department_n3
+POSTHOOK: query: drop table exim_department_n3
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@exim_department
-POSTHOOK: Output: default@exim_department
+POSTHOOK: Input: default@exim_department_n3
+POSTHOOK: Output: default@exim_department_n3

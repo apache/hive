@@ -1,27 +1,27 @@
-PREHOOK: query: CREATE TABLE test (a INT, b MAP<INT, STRING>) STORED AS ORC
+PREHOOK: query: CREATE TABLE test_n8 (a INT, b MAP<INT, STRING>) STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test
-POSTHOOK: query: CREATE TABLE test (a INT, b MAP<INT, STRING>) STORED AS ORC
+PREHOOK: Output: default@test_n8
+POSTHOOK: query: CREATE TABLE test_n8 (a INT, b MAP<INT, STRING>) STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test
-PREHOOK: query: INSERT OVERWRITE TABLE test SELECT 199408978, MAP(1, "val_1", 2, "val_2") FROM src LIMIT 1
+POSTHOOK: Output: default@test_n8
+PREHOOK: query: INSERT OVERWRITE TABLE test_n8 SELECT 199408978, MAP(1, "val_1", 2, "val_2") FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@test
-POSTHOOK: query: INSERT OVERWRITE TABLE test SELECT 199408978, MAP(1, "val_1", 2, "val_2") FROM src LIMIT 1
+PREHOOK: Output: default@test_n8
+POSTHOOK: query: INSERT OVERWRITE TABLE test_n8 SELECT 199408978, MAP(1, "val_1", 2, "val_2") FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@test
-POSTHOOK: Lineage: test.a SIMPLE []
-POSTHOOK: Lineage: test.b EXPRESSION []
+POSTHOOK: Output: default@test_n8
+POSTHOOK: Lineage: test_n8.a SIMPLE []
+POSTHOOK: Lineage: test_n8.b EXPRESSION []
 _c0	_c1
 PREHOOK: query: explain vectorization expression
-select * from alltypesorc join test where alltypesorc.cint=test.a
+select * from alltypesorc join test_n8 where alltypesorc.cint=test_n8.a
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
-select * from alltypesorc join test where alltypesorc.cint=test.a
+select * from alltypesorc join test_n8 where alltypesorc.cint=test_n8.a
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -100,7 +100,7 @@ STAGE PLANS:
         Map 2 
             Map Operator Tree:
                 TableScan
-                  alias: test
+                  alias: test_n8
                   Statistics: Num rows: 1 Data size: 744 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -147,60 +147,60 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from alltypesorc join test where alltypesorc.cint=test.a
+PREHOOK: query: select * from alltypesorc join test_n8 where alltypesorc.cint=test_n8.a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
-PREHOOK: Input: default@test
+PREHOOK: Input: default@test_n8
 #### A masked pattern was here ####
-POSTHOOK: query: select * from alltypesorc join test where alltypesorc.cint=test.a
+POSTHOOK: query: select * from alltypesorc join test_n8 where alltypesorc.cint=test_n8.a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
-POSTHOOK: Input: default@test
+POSTHOOK: Input: default@test_n8
 #### A masked pattern was here ####
-alltypesorc.ctinyint	alltypesorc.csmallint	alltypesorc.cint	alltypesorc.cbigint	alltypesorc.cfloat	alltypesorc.cdouble	alltypesorc.cstring1	alltypesorc.cstring2	alltypesorc.ctimestamp1	alltypesorc.ctimestamp2	alltypesorc.cboolean1	alltypesorc.cboolean2	test.a	test.b
+alltypesorc.ctinyint	alltypesorc.csmallint	alltypesorc.cint	alltypesorc.cbigint	alltypesorc.cfloat	alltypesorc.cdouble	alltypesorc.cstring1	alltypesorc.cstring2	alltypesorc.ctimestamp1	alltypesorc.ctimestamp2	alltypesorc.cboolean1	alltypesorc.cboolean2	test_n8.a	test_n8.b
 -51	NULL	199408978	-1800989684	-51.0	NULL	34N4EY63M1GFWuW0boW	P4PL5h1eXR4mMLr2	1969-12-31 16:00:08.451	NULL	false	true	199408978	{1:"val_1",2:"val_2"}
-PREHOOK: query: CREATE TABLE test2a (a ARRAY<INT>, index INT) STORED AS ORC
+PREHOOK: query: CREATE TABLE test2a_n0 (a ARRAY<INT>, index INT) STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test2a
-POSTHOOK: query: CREATE TABLE test2a (a ARRAY<INT>, index INT) STORED AS ORC
+PREHOOK: Output: default@test2a_n0
+POSTHOOK: query: CREATE TABLE test2a_n0 (a ARRAY<INT>, index INT) STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test2a
-PREHOOK: query: INSERT OVERWRITE TABLE test2a SELECT ARRAY(1, 2), 1 FROM src LIMIT 1
+POSTHOOK: Output: default@test2a_n0
+PREHOOK: query: INSERT OVERWRITE TABLE test2a_n0 SELECT ARRAY(1, 2), 1 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@test2a
-POSTHOOK: query: INSERT OVERWRITE TABLE test2a SELECT ARRAY(1, 2), 1 FROM src LIMIT 1
+PREHOOK: Output: default@test2a_n0
+POSTHOOK: query: INSERT OVERWRITE TABLE test2a_n0 SELECT ARRAY(1, 2), 1 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@test2a
-POSTHOOK: Lineage: test2a.a EXPRESSION []
-POSTHOOK: Lineage: test2a.index SIMPLE []
+POSTHOOK: Output: default@test2a_n0
+POSTHOOK: Lineage: test2a_n0.a EXPRESSION []
+POSTHOOK: Lineage: test2a_n0.index SIMPLE []
 _c0	_c1
-PREHOOK: query: CREATE TABLE test2b (a INT) STORED AS ORC
+PREHOOK: query: CREATE TABLE test2b_n0 (a INT) STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test2b
-POSTHOOK: query: CREATE TABLE test2b (a INT) STORED AS ORC
+PREHOOK: Output: default@test2b_n0
+POSTHOOK: query: CREATE TABLE test2b_n0 (a INT) STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test2b
-PREHOOK: query: INSERT OVERWRITE TABLE test2b VALUES (2), (3), (4)
+POSTHOOK: Output: default@test2b_n0
+PREHOOK: query: INSERT OVERWRITE TABLE test2b_n0 VALUES (2), (3), (4)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@test2b
-POSTHOOK: query: INSERT OVERWRITE TABLE test2b VALUES (2), (3), (4)
+PREHOOK: Output: default@test2b_n0
+POSTHOOK: query: INSERT OVERWRITE TABLE test2b_n0 VALUES (2), (3), (4)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@test2b
-POSTHOOK: Lineage: test2b.a SCRIPT []
+POSTHOOK: Output: default@test2b_n0
+POSTHOOK: Lineage: test2b_n0.a SCRIPT []
 col1
 PREHOOK: query: explain vectorization expression
-select *  from test2b join test2a on test2b.a = test2a.a[1]
+select *  from test2b_n0 join test2a_n0 on test2b_n0.a = test2a_n0.a[1]
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
-select *  from test2b join test2a on test2b.a = test2a.a[1]
+select *  from test2b_n0 join test2a_n0 on test2b_n0.a = test2a_n0.a[1]
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -222,7 +222,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: test2b
+                  alias: test2b_n0
                   Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -279,7 +279,7 @@ STAGE PLANS:
         Map 2 
             Map Operator Tree:
                 TableScan
-                  alias: test2a
+                  alias: test2a_n0
                   Statistics: Num rows: 1 Data size: 124 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -327,23 +327,23 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select *  from test2b join test2a on test2b.a = test2a.a[1]
+PREHOOK: query: select *  from test2b_n0 join test2a_n0 on test2b_n0.a = test2a_n0.a[1]
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test2a
-PREHOOK: Input: default@test2b
+PREHOOK: Input: default@test2a_n0
+PREHOOK: Input: default@test2b_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select *  from test2b join test2a on test2b.a = test2a.a[1]
+POSTHOOK: query: select *  from test2b_n0 join test2a_n0 on test2b_n0.a = test2a_n0.a[1]
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test2a
-POSTHOOK: Input: default@test2b
+POSTHOOK: Input: default@test2a_n0
+POSTHOOK: Input: default@test2b_n0
 #### A masked pattern was here ####
-test2b.a	test2a.a	test2a.index
+test2b_n0.a	test2a_n0.a	test2a_n0.index
 2	[1,2]	1
 PREHOOK: query: explain vectorization expression
-select *  from test2b join test2a on test2b.a = test2a.a[test2a.index]
+select *  from test2b_n0 join test2a_n0 on test2b_n0.a = test2a_n0.a[test2a_n0.index]
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
-select *  from test2b join test2a on test2b.a = test2a.a[test2a.index]
+select *  from test2b_n0 join test2a_n0 on test2b_n0.a = test2a_n0.a[test2a_n0.index]
 POSTHOOK: type: QUERY
 Explain
 PLAN VECTORIZATION:
@@ -365,7 +365,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: test2b
+                  alias: test2b_n0
                   Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -422,7 +422,7 @@ STAGE PLANS:
         Map 2 
             Map Operator Tree:
                 TableScan
-                  alias: test2a
+                  alias: test2a_n0
                   Statistics: Num rows: 1 Data size: 124 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -470,15 +470,15 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select *  from test2b join test2a on test2b.a = test2a.a[test2a.index]
+PREHOOK: query: select *  from test2b_n0 join test2a_n0 on test2b_n0.a = test2a_n0.a[test2a_n0.index]
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test2a
-PREHOOK: Input: default@test2b
+PREHOOK: Input: default@test2a_n0
+PREHOOK: Input: default@test2b_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select *  from test2b join test2a on test2b.a = test2a.a[test2a.index]
+POSTHOOK: query: select *  from test2b_n0 join test2a_n0 on test2b_n0.a = test2a_n0.a[test2a_n0.index]
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test2a
-POSTHOOK: Input: default@test2b
+POSTHOOK: Input: default@test2a_n0
+POSTHOOK: Input: default@test2b_n0
 #### A masked pattern was here ####
-test2b.a	test2a.a	test2a.index
+test2b_n0.a	test2a_n0.a	test2a_n0.index
 2	[1,2]	1

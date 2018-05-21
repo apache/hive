@@ -1,6 +1,6 @@
 -- verify schema changes introduced in avro.schema.literal/url sync with HMS if ALTER TABLE UPDATE COLUMNS is called
 
-CREATE TABLE avro_extschema_literal
+CREATE TABLE avro_extschema_literal_n1
  STORED AS AVRO
  TBLPROPERTIES ('avro.schema.literal'='{
   "namespace": "org.apache.hive",
@@ -11,9 +11,9 @@ CREATE TABLE avro_extschema_literal
     { "name":"first_name", "type":"string" },
     { "name":"last_name", "type":"string" }
   ] }');
-DESCRIBE avro_extschema_literal;
+DESCRIBE avro_extschema_literal_n1;
 
-ALTER TABLE avro_extschema_literal SET
+ALTER TABLE avro_extschema_literal_n1 SET
  TBLPROPERTIES ('avro.schema.literal'='{
   "namespace": "org.apache.hive",
   "name": "ext_schema",
@@ -21,12 +21,12 @@ ALTER TABLE avro_extschema_literal SET
   "fields": [
     { "name":"newCol", "type":"int" }
   ] }');
-DESCRIBE avro_extschema_literal;
+DESCRIBE avro_extschema_literal_n1;
 
-ALTER TABLE avro_extschema_literal UNSET TBLPROPERTIES ('avro.schema.literal');
-DESCRIBE avro_extschema_literal;
+ALTER TABLE avro_extschema_literal_n1 UNSET TBLPROPERTIES ('avro.schema.literal');
+DESCRIBE avro_extschema_literal_n1;
 
-ALTER TABLE avro_extschema_literal SET
+ALTER TABLE avro_extschema_literal_n1 SET
  TBLPROPERTIES ('avro.schema.literal'='{
   "namespace": "org.apache.hive",
   "name": "ext_schema",
@@ -34,36 +34,36 @@ ALTER TABLE avro_extschema_literal SET
   "fields": [
     { "name":"newCol", "type":"int" }
   ] }');
-ALTER TABLE avro_extschema_literal UPDATE COLUMNS CASCADE;
-DESCRIBE avro_extschema_literal;
+ALTER TABLE avro_extschema_literal_n1 UPDATE COLUMNS CASCADE;
+DESCRIBE avro_extschema_literal_n1;
 
-ALTER TABLE avro_extschema_literal UNSET TBLPROPERTIES ('avro.schema.literal');
-DESCRIBE avro_extschema_literal;
+ALTER TABLE avro_extschema_literal_n1 UNSET TBLPROPERTIES ('avro.schema.literal');
+DESCRIBE avro_extschema_literal_n1;
 
 dfs -cp ${system:hive.root}data/files/grad.avsc ${system:test.tmp.dir}/;
 dfs -cp ${system:hive.root}data/files/grad2.avsc ${system:test.tmp.dir}/;
 
 
-CREATE TABLE avro_extschema_url
+CREATE TABLE avro_extschema_url_n1
  STORED AS AVRO
  TBLPROPERTIES ('avro.schema.url'='${system:test.tmp.dir}/grad.avsc');
-DESCRIBE avro_extschema_url;
+DESCRIBE avro_extschema_url_n1;
 
-ALTER TABLE avro_extschema_url SET
+ALTER TABLE avro_extschema_url_n1 SET
  TBLPROPERTIES ('avro.schema.url'='${system:test.tmp.dir}/grad2.avsc');
-DESCRIBE avro_extschema_url;
+DESCRIBE avro_extschema_url_n1;
 
-ALTER TABLE avro_extschema_url UNSET TBLPROPERTIES ('avro.schema.url');
-DESCRIBE avro_extschema_url;
+ALTER TABLE avro_extschema_url_n1 UNSET TBLPROPERTIES ('avro.schema.url');
+DESCRIBE avro_extschema_url_n1;
 
 
-ALTER TABLE avro_extschema_url SET
+ALTER TABLE avro_extschema_url_n1 SET
  TBLPROPERTIES ('avro.schema.url'='${system:test.tmp.dir}/grad2.avsc');
-ALTER TABLE avro_extschema_url UPDATE COLUMNS CASCADE;
-DESCRIBE avro_extschema_url;
+ALTER TABLE avro_extschema_url_n1 UPDATE COLUMNS CASCADE;
+DESCRIBE avro_extschema_url_n1;
 
-ALTER TABLE avro_extschema_url UNSET TBLPROPERTIES ('avro.schema.url');
-DESCRIBE avro_extschema_url;
+ALTER TABLE avro_extschema_url_n1 UNSET TBLPROPERTIES ('avro.schema.url');
+DESCRIBE avro_extschema_url_n1;
 
 
 

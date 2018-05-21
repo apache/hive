@@ -1,60 +1,60 @@
-PREHOOK: query: CREATE TABLE tmp1(key INT, cnt INT)
+PREHOOK: query: CREATE TABLE tmp1_n0(key INT, cnt INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tmp1
-POSTHOOK: query: CREATE TABLE tmp1(key INT, cnt INT)
+PREHOOK: Output: default@tmp1_n0
+POSTHOOK: query: CREATE TABLE tmp1_n0(key INT, cnt INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tmp1
-PREHOOK: query: CREATE TABLE tmp2(key INT, cnt INT)
+POSTHOOK: Output: default@tmp1_n0
+PREHOOK: query: CREATE TABLE tmp2_n0(key INT, cnt INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tmp2
-POSTHOOK: query: CREATE TABLE tmp2(key INT, cnt INT)
+PREHOOK: Output: default@tmp2_n0
+POSTHOOK: query: CREATE TABLE tmp2_n0(key INT, cnt INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tmp2
-PREHOOK: query: CREATE TABLE dest_j1(key INT, value INT, val2 INT)
+POSTHOOK: Output: default@tmp2_n0
+PREHOOK: query: CREATE TABLE dest_j1_n13(key INT, value INT, val2 INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest_j1
-POSTHOOK: query: CREATE TABLE dest_j1(key INT, value INT, val2 INT)
+PREHOOK: Output: default@dest_j1_n13
+POSTHOOK: query: CREATE TABLE dest_j1_n13(key INT, value INT, val2 INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest_j1
-PREHOOK: query: INSERT OVERWRITE TABLE tmp1
+POSTHOOK: Output: default@dest_j1_n13
+PREHOOK: query: INSERT OVERWRITE TABLE tmp1_n0
 SELECT key, count(1) from src group by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@tmp1
-POSTHOOK: query: INSERT OVERWRITE TABLE tmp1
+PREHOOK: Output: default@tmp1_n0
+POSTHOOK: query: INSERT OVERWRITE TABLE tmp1_n0
 SELECT key, count(1) from src group by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@tmp1
-POSTHOOK: Lineage: tmp1.cnt EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: tmp1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: INSERT OVERWRITE TABLE tmp2
+POSTHOOK: Output: default@tmp1_n0
+POSTHOOK: Lineage: tmp1_n0.cnt EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: tmp1_n0.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: INSERT OVERWRITE TABLE tmp2_n0
 SELECT key, count(1) from src group by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@tmp2
-POSTHOOK: query: INSERT OVERWRITE TABLE tmp2
+PREHOOK: Output: default@tmp2_n0
+POSTHOOK: query: INSERT OVERWRITE TABLE tmp2_n0
 SELECT key, count(1) from src group by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@tmp2
-POSTHOOK: Lineage: tmp2.cnt EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: tmp2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Output: default@tmp2_n0
+POSTHOOK: Lineage: tmp2_n0.cnt EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: tmp2_n0.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE dest_j1 
+INSERT OVERWRITE TABLE dest_j1_n13 
 SELECT /*+ MAPJOIN(x) */ x.key, x.cnt, y.cnt
-FROM tmp1 x JOIN tmp2 y ON (x.key = y.key)
+FROM tmp1_n0 x JOIN tmp2_n0 y ON (x.key = y.key)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-INSERT OVERWRITE TABLE dest_j1 
+INSERT OVERWRITE TABLE dest_j1_n13 
 SELECT /*+ MAPJOIN(x) */ x.key, x.cnt, y.cnt
-FROM tmp1 x JOIN tmp2 y ON (x.key = y.key)
+FROM tmp1_n0 x JOIN tmp2_n0 y ON (x.key = y.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-6 is a root stage
@@ -119,7 +119,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.dest_j1
+                          name: default.dest_j1_n13
                     Select Operator
                       expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int)
                       outputColumnNames: key, value, val2
@@ -146,7 +146,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest_j1
+              name: default.dest_j1_n13
 
   Stage: Stage-2
     Stats Work
@@ -154,7 +154,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value, val2
           Column Types: int, int, int
-          Table: default.dest_j1
+          Table: default.dest_j1_n13
 
   Stage: Stage-3
     Map Reduce
@@ -179,30 +179,30 @@ STAGE PLANS:
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
-PREHOOK: query: INSERT OVERWRITE TABLE dest_j1 
+PREHOOK: query: INSERT OVERWRITE TABLE dest_j1_n13 
 SELECT /*+ MAPJOIN(x) */ x.key, x.cnt, y.cnt
-FROM tmp1 x JOIN tmp2 y ON (x.key = y.key)
+FROM tmp1_n0 x JOIN tmp2_n0 y ON (x.key = y.key)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tmp1
-PREHOOK: Input: default@tmp2
-PREHOOK: Output: default@dest_j1
-POSTHOOK: query: INSERT OVERWRITE TABLE dest_j1 
+PREHOOK: Input: default@tmp1_n0
+PREHOOK: Input: default@tmp2_n0
+PREHOOK: Output: default@dest_j1_n13
+POSTHOOK: query: INSERT OVERWRITE TABLE dest_j1_n13 
 SELECT /*+ MAPJOIN(x) */ x.key, x.cnt, y.cnt
-FROM tmp1 x JOIN tmp2 y ON (x.key = y.key)
+FROM tmp1_n0 x JOIN tmp2_n0 y ON (x.key = y.key)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tmp1
-POSTHOOK: Input: default@tmp2
-POSTHOOK: Output: default@dest_j1
-POSTHOOK: Lineage: dest_j1.key SIMPLE [(tmp1)x.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest_j1.val2 SIMPLE [(tmp2)y.FieldSchema(name:cnt, type:int, comment:null), ]
-POSTHOOK: Lineage: dest_j1.value SIMPLE [(tmp1)x.FieldSchema(name:cnt, type:int, comment:null), ]
-PREHOOK: query: select * from dest_j1
+POSTHOOK: Input: default@tmp1_n0
+POSTHOOK: Input: default@tmp2_n0
+POSTHOOK: Output: default@dest_j1_n13
+POSTHOOK: Lineage: dest_j1_n13.key SIMPLE [(tmp1_n0)x.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest_j1_n13.val2 SIMPLE [(tmp2_n0)y.FieldSchema(name:cnt, type:int, comment:null), ]
+POSTHOOK: Lineage: dest_j1_n13.value SIMPLE [(tmp1_n0)x.FieldSchema(name:cnt, type:int, comment:null), ]
+PREHOOK: query: select * from dest_j1_n13
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest_j1
+PREHOOK: Input: default@dest_j1_n13
 #### A masked pattern was here ####
-POSTHOOK: query: select * from dest_j1
+POSTHOOK: query: select * from dest_j1_n13
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest_j1
+POSTHOOK: Input: default@dest_j1_n13
 #### A masked pattern was here ####
 0	3	3
 10	1	1

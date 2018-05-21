@@ -1,42 +1,42 @@
-PREHOOK: query: CREATE TABLE tab1(key1 int, value string) CLUSTERED BY (key1) INTO 10 BUCKETS STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE tab1_n0(key1 int, value string) CLUSTERED BY (key1) INTO 10 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tab1
-POSTHOOK: query: CREATE TABLE tab1(key1 int, value string) CLUSTERED BY (key1) INTO 10 BUCKETS STORED AS TEXTFILE
+PREHOOK: Output: default@tab1_n0
+POSTHOOK: query: CREATE TABLE tab1_n0(key1 int, value string) CLUSTERED BY (key1) INTO 10 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tab1
-PREHOOK: query: CREATE TABLE tab2 (key1 int, value string) CLUSTERED BY (key1) INTO 10 BUCKETS STORED AS TEXTFILE
+POSTHOOK: Output: default@tab1_n0
+PREHOOK: query: CREATE TABLE tab2_n0 (key1 int, value string) CLUSTERED BY (key1) INTO 10 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tab2
-POSTHOOK: query: CREATE TABLE tab2 (key1 int, value string) CLUSTERED BY (key1) INTO 10 BUCKETS STORED AS TEXTFILE
+PREHOOK: Output: default@tab2_n0
+POSTHOOK: query: CREATE TABLE tab2_n0 (key1 int, value string) CLUSTERED BY (key1) INTO 10 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tab2
-PREHOOK: query: insert into tab1 VALUES (1,"abc"),(4,"def"),(8, "ghi")
+POSTHOOK: Output: default@tab2_n0
+PREHOOK: query: insert into tab1_n0 VALUES (1,"abc"),(4,"def"),(8, "ghi")
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@tab1
-POSTHOOK: query: insert into tab1 VALUES (1,"abc"),(4,"def"),(8, "ghi")
+PREHOOK: Output: default@tab1_n0
+POSTHOOK: query: insert into tab1_n0 VALUES (1,"abc"),(4,"def"),(8, "ghi")
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@tab1
-POSTHOOK: Lineage: tab1.key1 SCRIPT []
-POSTHOOK: Lineage: tab1.value SCRIPT []
-PREHOOK: query: insert into tab2 VALUES (1, "abc"), (5, "aa")
+POSTHOOK: Output: default@tab1_n0
+POSTHOOK: Lineage: tab1_n0.key1 SCRIPT []
+POSTHOOK: Lineage: tab1_n0.value SCRIPT []
+PREHOOK: query: insert into tab2_n0 VALUES (1, "abc"), (5, "aa")
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@tab2
-POSTHOOK: query: insert into tab2 VALUES (1, "abc"), (5, "aa")
+PREHOOK: Output: default@tab2_n0
+POSTHOOK: query: insert into tab2_n0 VALUES (1, "abc"), (5, "aa")
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@tab2
-POSTHOOK: Lineage: tab2.key1 SCRIPT []
-POSTHOOK: Lineage: tab2.value SCRIPT []
-PREHOOK: query: explain select * from tab1, tab2 where tab1.key1 = tab2.key1
+POSTHOOK: Output: default@tab2_n0
+POSTHOOK: Lineage: tab2_n0.key1 SCRIPT []
+POSTHOOK: Lineage: tab2_n0.value SCRIPT []
+PREHOOK: query: explain select * from tab1_n0, tab2_n0 where tab1_n0.key1 = tab2_n0.key1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from tab1, tab2 where tab1.key1 = tab2.key1
+POSTHOOK: query: explain select * from tab1_n0, tab2_n0 where tab1_n0.key1 = tab2_n0.key1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -53,7 +53,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: tab1
+                  alias: tab1_n0
                   Statistics: Num rows: 3 Data size: 273 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key1 is not null (type: boolean)
@@ -84,7 +84,7 @@ STAGE PLANS:
         Map 2 
             Map Operator Tree:
                 TableScan
-                  alias: tab2
+                  alias: tab2_n0
                   Statistics: Num rows: 2 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key1 is not null (type: boolean)
@@ -108,14 +108,14 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select * from tab1, tab2 where tab1.key1 = tab2.key1
+PREHOOK: query: select * from tab1_n0, tab2_n0 where tab1_n0.key1 = tab2_n0.key1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@tab1
-PREHOOK: Input: default@tab2
+PREHOOK: Input: default@tab1_n0
+PREHOOK: Input: default@tab2_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from tab1, tab2 where tab1.key1 = tab2.key1
+POSTHOOK: query: select * from tab1_n0, tab2_n0 where tab1_n0.key1 = tab2_n0.key1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@tab1
-POSTHOOK: Input: default@tab2
+POSTHOOK: Input: default@tab1_n0
+POSTHOOK: Input: default@tab2_n0
 #### A masked pattern was here ####
 1	abc	1	abc

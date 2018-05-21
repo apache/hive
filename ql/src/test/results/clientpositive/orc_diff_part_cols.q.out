@@ -1,57 +1,57 @@
-PREHOOK: query: CREATE TABLE test_orc (key STRING)
+PREHOOK: query: CREATE TABLE test_orc_n0 (key STRING)
 PARTITIONED BY (part STRING)
 ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.io.orc.OrcSerde' 
 STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat' 
 OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_orc
-POSTHOOK: query: CREATE TABLE test_orc (key STRING)
+PREHOOK: Output: default@test_orc_n0
+POSTHOOK: query: CREATE TABLE test_orc_n0 (key STRING)
 PARTITIONED BY (part STRING)
 ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.io.orc.OrcSerde' 
 STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat' 
 OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_orc
-PREHOOK: query: INSERT OVERWRITE TABLE test_orc PARTITION (part = '1') SELECT key FROM src tablesample (5 rows)
+POSTHOOK: Output: default@test_orc_n0
+PREHOOK: query: INSERT OVERWRITE TABLE test_orc_n0 PARTITION (part = '1') SELECT key FROM src tablesample (5 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@test_orc@part=1
-POSTHOOK: query: INSERT OVERWRITE TABLE test_orc PARTITION (part = '1') SELECT key FROM src tablesample (5 rows)
+PREHOOK: Output: default@test_orc_n0@part=1
+POSTHOOK: query: INSERT OVERWRITE TABLE test_orc_n0 PARTITION (part = '1') SELECT key FROM src tablesample (5 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@test_orc@part=1
-POSTHOOK: Lineage: test_orc PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: ALTER TABLE test_orc ADD COLUMNS (cnt INT)
+POSTHOOK: Output: default@test_orc_n0@part=1
+POSTHOOK: Lineage: test_orc_n0 PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: ALTER TABLE test_orc_n0 ADD COLUMNS (cnt INT)
 PREHOOK: type: ALTERTABLE_ADDCOLS
-PREHOOK: Input: default@test_orc
-PREHOOK: Output: default@test_orc
-POSTHOOK: query: ALTER TABLE test_orc ADD COLUMNS (cnt INT)
+PREHOOK: Input: default@test_orc_n0
+PREHOOK: Output: default@test_orc_n0
+POSTHOOK: query: ALTER TABLE test_orc_n0 ADD COLUMNS (cnt INT)
 POSTHOOK: type: ALTERTABLE_ADDCOLS
-POSTHOOK: Input: default@test_orc
-POSTHOOK: Output: default@test_orc
-PREHOOK: query: INSERT OVERWRITE TABLE test_orc PARTITION (part = '2') SELECT key, count(*) FROM src GROUP BY key LIMIT 5
+POSTHOOK: Input: default@test_orc_n0
+POSTHOOK: Output: default@test_orc_n0
+PREHOOK: query: INSERT OVERWRITE TABLE test_orc_n0 PARTITION (part = '2') SELECT key, count(*) FROM src GROUP BY key LIMIT 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@test_orc@part=2
-POSTHOOK: query: INSERT OVERWRITE TABLE test_orc PARTITION (part = '2') SELECT key, count(*) FROM src GROUP BY key LIMIT 5
+PREHOOK: Output: default@test_orc_n0@part=2
+POSTHOOK: query: INSERT OVERWRITE TABLE test_orc_n0 PARTITION (part = '2') SELECT key, count(*) FROM src GROUP BY key LIMIT 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@test_orc@part=2
-POSTHOOK: Lineage: test_orc PARTITION(part=2).cnt EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: test_orc PARTITION(part=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: SELECT * FROM test_orc
+POSTHOOK: Output: default@test_orc_n0@part=2
+POSTHOOK: Lineage: test_orc_n0 PARTITION(part=2).cnt EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: test_orc_n0 PARTITION(part=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: SELECT * FROM test_orc_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_orc
-PREHOOK: Input: default@test_orc@part=1
-PREHOOK: Input: default@test_orc@part=2
+PREHOOK: Input: default@test_orc_n0
+PREHOOK: Input: default@test_orc_n0@part=1
+PREHOOK: Input: default@test_orc_n0@part=2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM test_orc
+POSTHOOK: query: SELECT * FROM test_orc_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_orc
-POSTHOOK: Input: default@test_orc@part=1
-POSTHOOK: Input: default@test_orc@part=2
+POSTHOOK: Input: default@test_orc_n0
+POSTHOOK: Input: default@test_orc_n0@part=1
+POSTHOOK: Input: default@test_orc_n0@part=2
 #### A masked pattern was here ####
 0	3	2
 10	1	2

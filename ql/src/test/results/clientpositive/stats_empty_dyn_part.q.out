@@ -1,14 +1,14 @@
-PREHOOK: query: create table tmptable(key string) partitioned by (part string)
+PREHOOK: query: create table tmptable_n7(key string) partitioned by (part string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@tmptable
-POSTHOOK: query: create table tmptable(key string) partitioned by (part string)
+PREHOOK: Output: default@tmptable_n7
+POSTHOOK: query: create table tmptable_n7(key string) partitioned by (part string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@tmptable
-PREHOOK: query: explain insert overwrite table tmptable partition (part) select key, value from src where key = 'no_such_value'
+POSTHOOK: Output: default@tmptable_n7
+PREHOOK: query: explain insert overwrite table tmptable_n7 partition (part) select key, value from src where key = 'no_such_value'
 PREHOOK: type: QUERY
-POSTHOOK: query: explain insert overwrite table tmptable partition (part) select key, value from src where key = 'no_such_value'
+POSTHOOK: query: explain insert overwrite table tmptable_n7 partition (part) select key, value from src where key = 'no_such_value'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -41,7 +41,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.tmptable
+                      name: default.tmptable_n7
                 Select Operator
                   expressions: _col0 (type: string), _col1 (type: string)
                   outputColumnNames: key, part
@@ -96,7 +96,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.tmptable
+              name: default.tmptable_n7
 
   Stage: Stage-2
     Stats Work
@@ -104,7 +104,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key
           Column Types: string
-          Table: default.tmptable
+          Table: default.tmptable_n7
 
   Stage: Stage-3
     Map Reduce
@@ -116,7 +116,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.tmptable
+                  name: default.tmptable_n7
 
   Stage: Stage-5
     Map Reduce
@@ -128,7 +128,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.tmptable
+                  name: default.tmptable_n7
 
   Stage: Stage-6
     Move Operator
@@ -136,10 +136,10 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-PREHOOK: query: insert overwrite table tmptable partition (part) select key, value from src where key = 'no_such_value'
+PREHOOK: query: insert overwrite table tmptable_n7 partition (part) select key, value from src where key = 'no_such_value'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@tmptable
-POSTHOOK: query: insert overwrite table tmptable partition (part) select key, value from src where key = 'no_such_value'
+PREHOOK: Output: default@tmptable_n7
+POSTHOOK: query: insert overwrite table tmptable_n7 partition (part) select key, value from src where key = 'no_such_value'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src

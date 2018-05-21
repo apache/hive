@@ -1,40 +1,40 @@
-PREHOOK: query: CREATE TABLE T1(key STRING, value STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE T1_n78(key STRING, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1
-POSTHOOK: query: CREATE TABLE T1(key STRING, value STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@T1_n78
+POSTHOOK: query: CREATE TABLE T1_n78(key STRING, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE T1
+POSTHOOK: Output: default@T1_n78
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE T1_n78
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE T1
+PREHOOK: Output: default@t1_n78
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE T1_n78
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv2.txt' INTO TABLE T1
+POSTHOOK: Output: default@t1_n78
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv2.txt' INTO TABLE T1_n78
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv2.txt' INTO TABLE T1
+PREHOOK: Output: default@t1_n78
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv2.txt' INTO TABLE T1_n78
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t1
-PREHOOK: query: CREATE TABLE T2(key STRING, value STRING)
+POSTHOOK: Output: default@t1_n78
+PREHOOK: query: CREATE TABLE T2_n47(key STRING, value STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T2
-POSTHOOK: query: CREATE TABLE T2(key STRING, value STRING)
+PREHOOK: Output: default@T2_n47
+POSTHOOK: query: CREATE TABLE T2_n47(key STRING, value STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T2
+POSTHOOK: Output: default@T2_n47
 PREHOOK: query: EXPLAIN 
-INSERT OVERWRITE TABLE T2 SELECT * FROM (SELECT * FROM T1 DISTRIBUTE BY key) T ORDER BY key, value LIMIT 20
+INSERT OVERWRITE TABLE T2_n47 SELECT * FROM (SELECT * FROM T1_n78 DISTRIBUTE BY key) T ORDER BY key, value LIMIT 20
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN 
-INSERT OVERWRITE TABLE T2 SELECT * FROM (SELECT * FROM T1 DISTRIBUTE BY key) T ORDER BY key, value LIMIT 20
+INSERT OVERWRITE TABLE T2_n47 SELECT * FROM (SELECT * FROM T1_n78 DISTRIBUTE BY key) T ORDER BY key, value LIMIT 20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -48,7 +48,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
+            alias: t1_n78
             Statistics: Num rows: 1 Data size: 116030 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), value (type: string)
@@ -96,7 +96,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.t2
+                  name: default.t2_n47
             Select Operator
               expressions: _col0 (type: string), _col1 (type: string)
               outputColumnNames: key, value
@@ -121,7 +121,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.t2
+              name: default.t2_n47
 
   Stage: Stage-3
     Stats Work
@@ -129,7 +129,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: string, string
-          Table: default.t2
+          Table: default.t2_n47
 
   Stage: Stage-4
     Map Reduce
@@ -154,23 +154,23 @@ STAGE PLANS:
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
-PREHOOK: query: INSERT OVERWRITE TABLE T2 SELECT * FROM (SELECT * FROM T1 DISTRIBUTE BY key) T ORDER BY key, value LIMIT 20
+PREHOOK: query: INSERT OVERWRITE TABLE T2_n47 SELECT * FROM (SELECT * FROM T1_n78 DISTRIBUTE BY key) T ORDER BY key, value LIMIT 20
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@t2
-POSTHOOK: query: INSERT OVERWRITE TABLE T2 SELECT * FROM (SELECT * FROM T1 DISTRIBUTE BY key) T ORDER BY key, value LIMIT 20
+PREHOOK: Input: default@t1_n78
+PREHOOK: Output: default@t2_n47
+POSTHOOK: query: INSERT OVERWRITE TABLE T2_n47 SELECT * FROM (SELECT * FROM T1_n78 DISTRIBUTE BY key) T ORDER BY key, value LIMIT 20
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@t2
-POSTHOOK: Lineage: t2.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: t2.value SIMPLE [(t1)t1.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: SELECT * FROM T2 ORDER BY key, value
+POSTHOOK: Input: default@t1_n78
+POSTHOOK: Output: default@t2_n47
+POSTHOOK: Lineage: t2_n47.key SIMPLE [(t1_n78)t1_n78.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t2_n47.value SIMPLE [(t1_n78)t1_n78.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM T2_n47 ORDER BY key, value
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t2
+PREHOOK: Input: default@t2_n47
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM T2 ORDER BY key, value
+POSTHOOK: query: SELECT * FROM T2_n47 ORDER BY key, value
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t2_n47
 #### A masked pattern was here ####
 0	val_0
 0	val_0

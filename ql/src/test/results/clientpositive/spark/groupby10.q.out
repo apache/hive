@@ -1,11 +1,11 @@
-PREHOOK: query: CREATE TABLE dest1(key INT, val1 INT, val2 INT)
+PREHOOK: query: CREATE TABLE dest1_n0(key INT, val1 INT, val2 INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest1
-POSTHOOK: query: CREATE TABLE dest1(key INT, val1 INT, val2 INT)
+PREHOOK: Output: default@dest1_n0
+POSTHOOK: query: CREATE TABLE dest1_n0(key INT, val1 INT, val2 INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest1
+POSTHOOK: Output: default@dest1_n0
 PREHOOK: query: CREATE TABLE dest2(key INT, val1 INT, val2 INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -32,12 +32,12 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@input
 PREHOOK: query: EXPLAIN
 FROM INPUT 
-INSERT OVERWRITE TABLE dest1 SELECT INPUT.key, count(substr(INPUT.value,5)), count(distinct substr(INPUT.value,5)) GROUP BY INPUT.key
+INSERT OVERWRITE TABLE dest1_n0 SELECT INPUT.key, count(substr(INPUT.value,5)), count(distinct substr(INPUT.value,5)) GROUP BY INPUT.key
 INSERT OVERWRITE TABLE dest2 SELECT INPUT.key, sum(substr(INPUT.value,5)), sum(distinct substr(INPUT.value,5))   GROUP BY INPUT.key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 FROM INPUT 
-INSERT OVERWRITE TABLE dest1 SELECT INPUT.key, count(substr(INPUT.value,5)), count(distinct substr(INPUT.value,5)) GROUP BY INPUT.key
+INSERT OVERWRITE TABLE dest1_n0 SELECT INPUT.key, count(substr(INPUT.value,5)), count(distinct substr(INPUT.value,5)) GROUP BY INPUT.key
 INSERT OVERWRITE TABLE dest2 SELECT INPUT.key, sum(substr(INPUT.value,5)), sum(distinct substr(INPUT.value,5))   GROUP BY INPUT.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -105,7 +105,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.dest1
+                        name: default.dest1_n0
         Reducer 4 
             Reduce Operator Tree:
               Group By Operator
@@ -149,7 +149,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n0
 
   Stage: Stage-3
     Stats Work
@@ -170,32 +170,32 @@ STAGE PLANS:
       Basic Stats Work:
 
 PREHOOK: query: FROM INPUT
-INSERT OVERWRITE TABLE dest1 SELECT INPUT.key, count(substr(INPUT.value,5)), count(distinct substr(INPUT.value,5)) GROUP BY INPUT.key
+INSERT OVERWRITE TABLE dest1_n0 SELECT INPUT.key, count(substr(INPUT.value,5)), count(distinct substr(INPUT.value,5)) GROUP BY INPUT.key
 INSERT OVERWRITE TABLE dest2 SELECT INPUT.key, sum(substr(INPUT.value,5)), sum(distinct substr(INPUT.value,5))   GROUP BY INPUT.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@input
-PREHOOK: Output: default@dest1
+PREHOOK: Output: default@dest1_n0
 PREHOOK: Output: default@dest2
 POSTHOOK: query: FROM INPUT
-INSERT OVERWRITE TABLE dest1 SELECT INPUT.key, count(substr(INPUT.value,5)), count(distinct substr(INPUT.value,5)) GROUP BY INPUT.key
+INSERT OVERWRITE TABLE dest1_n0 SELECT INPUT.key, count(substr(INPUT.value,5)), count(distinct substr(INPUT.value,5)) GROUP BY INPUT.key
 INSERT OVERWRITE TABLE dest2 SELECT INPUT.key, sum(substr(INPUT.value,5)), sum(distinct substr(INPUT.value,5))   GROUP BY INPUT.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@input
-POSTHOOK: Output: default@dest1
+POSTHOOK: Output: default@dest1_n0
 POSTHOOK: Output: default@dest2
-POSTHOOK: Lineage: dest1.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.val2 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: dest1_n0.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest1_n0.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: dest1_n0.val2 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: dest2.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: dest2.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: dest2.val2 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: SELECT * from dest1
+PREHOOK: query: SELECT * from dest1_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * from dest1
+POSTHOOK: query: SELECT * from dest1_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n0
 #### A masked pattern was here ####
 128	1	1
 150	1	1
@@ -247,12 +247,12 @@ POSTHOOK: Input: default@dest2
 98	98	98
 PREHOOK: query: EXPLAIN
 FROM INPUT 
-INSERT OVERWRITE TABLE dest1 SELECT INPUT.key, count(substr(INPUT.value,5)), count(distinct substr(INPUT.value,5)) GROUP BY INPUT.key
+INSERT OVERWRITE TABLE dest1_n0 SELECT INPUT.key, count(substr(INPUT.value,5)), count(distinct substr(INPUT.value,5)) GROUP BY INPUT.key
 INSERT OVERWRITE TABLE dest2 SELECT INPUT.key, sum(substr(INPUT.value,5)), sum(distinct substr(INPUT.value,5))   GROUP BY INPUT.key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 FROM INPUT 
-INSERT OVERWRITE TABLE dest1 SELECT INPUT.key, count(substr(INPUT.value,5)), count(distinct substr(INPUT.value,5)) GROUP BY INPUT.key
+INSERT OVERWRITE TABLE dest1_n0 SELECT INPUT.key, count(substr(INPUT.value,5)), count(distinct substr(INPUT.value,5)) GROUP BY INPUT.key
 INSERT OVERWRITE TABLE dest2 SELECT INPUT.key, sum(substr(INPUT.value,5)), sum(distinct substr(INPUT.value,5))   GROUP BY INPUT.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -320,7 +320,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.dest1
+                        name: default.dest1_n0
         Reducer 4 
             Reduce Operator Tree:
               Group By Operator
@@ -364,7 +364,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n0
 
   Stage: Stage-3
     Stats Work
@@ -385,32 +385,32 @@ STAGE PLANS:
       Basic Stats Work:
 
 PREHOOK: query: FROM INPUT
-INSERT OVERWRITE TABLE dest1 SELECT INPUT.key, count(substr(INPUT.value,5)), count(distinct substr(INPUT.value,5)) GROUP BY INPUT.key
+INSERT OVERWRITE TABLE dest1_n0 SELECT INPUT.key, count(substr(INPUT.value,5)), count(distinct substr(INPUT.value,5)) GROUP BY INPUT.key
 INSERT OVERWRITE TABLE dest2 SELECT INPUT.key, sum(substr(INPUT.value,5)), sum(distinct substr(INPUT.value,5))   GROUP BY INPUT.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@input
-PREHOOK: Output: default@dest1
+PREHOOK: Output: default@dest1_n0
 PREHOOK: Output: default@dest2
 POSTHOOK: query: FROM INPUT
-INSERT OVERWRITE TABLE dest1 SELECT INPUT.key, count(substr(INPUT.value,5)), count(distinct substr(INPUT.value,5)) GROUP BY INPUT.key
+INSERT OVERWRITE TABLE dest1_n0 SELECT INPUT.key, count(substr(INPUT.value,5)), count(distinct substr(INPUT.value,5)) GROUP BY INPUT.key
 INSERT OVERWRITE TABLE dest2 SELECT INPUT.key, sum(substr(INPUT.value,5)), sum(distinct substr(INPUT.value,5))   GROUP BY INPUT.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@input
-POSTHOOK: Output: default@dest1
+POSTHOOK: Output: default@dest1_n0
 POSTHOOK: Output: default@dest2
-POSTHOOK: Lineage: dest1.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.val2 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: dest1_n0.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest1_n0.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: dest1_n0.val2 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: dest2.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: dest2.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: dest2.val2 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: SELECT * from dest1
+PREHOOK: query: SELECT * from dest1_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * from dest1
+POSTHOOK: query: SELECT * from dest1_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n0
 #### A masked pattern was here ####
 128	1	1
 150	1	1
@@ -462,12 +462,12 @@ POSTHOOK: Input: default@dest2
 98	98	98
 PREHOOK: query: EXPLAIN
 FROM INPUT
-INSERT OVERWRITE TABLE dest1 SELECT INPUT.key, sum(distinct substr(INPUT.value,5)), count(distinct substr(INPUT.value,5)) GROUP BY INPUT.key
+INSERT OVERWRITE TABLE dest1_n0 SELECT INPUT.key, sum(distinct substr(INPUT.value,5)), count(distinct substr(INPUT.value,5)) GROUP BY INPUT.key
 INSERT OVERWRITE TABLE dest2 SELECT INPUT.key, sum(distinct substr(INPUT.value,5)), avg(distinct substr(INPUT.value,5)) GROUP BY INPUT.key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 FROM INPUT
-INSERT OVERWRITE TABLE dest1 SELECT INPUT.key, sum(distinct substr(INPUT.value,5)), count(distinct substr(INPUT.value,5)) GROUP BY INPUT.key
+INSERT OVERWRITE TABLE dest1_n0 SELECT INPUT.key, sum(distinct substr(INPUT.value,5)), count(distinct substr(INPUT.value,5)) GROUP BY INPUT.key
 INSERT OVERWRITE TABLE dest2 SELECT INPUT.key, sum(distinct substr(INPUT.value,5)), avg(distinct substr(INPUT.value,5)) GROUP BY INPUT.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -520,7 +520,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.dest1
+                          name: default.dest1_n0
                 Group By Operator
                   aggregations: sum(DISTINCT KEY._col1:0._col0), avg(DISTINCT KEY._col1:1._col0)
                   keys: KEY._col0 (type: int)
@@ -548,7 +548,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n0
 
   Stage: Stage-3
     Stats Work
@@ -569,32 +569,32 @@ STAGE PLANS:
       Basic Stats Work:
 
 PREHOOK: query: FROM INPUT
-INSERT OVERWRITE TABLE dest1 SELECT INPUT.key, sum(distinct substr(INPUT.value,5)), count(distinct substr(INPUT.value,5)) GROUP BY INPUT.key
+INSERT OVERWRITE TABLE dest1_n0 SELECT INPUT.key, sum(distinct substr(INPUT.value,5)), count(distinct substr(INPUT.value,5)) GROUP BY INPUT.key
 INSERT OVERWRITE TABLE dest2 SELECT INPUT.key, sum(distinct substr(INPUT.value,5)), avg(distinct substr(INPUT.value,5)) GROUP BY INPUT.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@input
-PREHOOK: Output: default@dest1
+PREHOOK: Output: default@dest1_n0
 PREHOOK: Output: default@dest2
 POSTHOOK: query: FROM INPUT
-INSERT OVERWRITE TABLE dest1 SELECT INPUT.key, sum(distinct substr(INPUT.value,5)), count(distinct substr(INPUT.value,5)) GROUP BY INPUT.key
+INSERT OVERWRITE TABLE dest1_n0 SELECT INPUT.key, sum(distinct substr(INPUT.value,5)), count(distinct substr(INPUT.value,5)) GROUP BY INPUT.key
 INSERT OVERWRITE TABLE dest2 SELECT INPUT.key, sum(distinct substr(INPUT.value,5)), avg(distinct substr(INPUT.value,5)) GROUP BY INPUT.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@input
-POSTHOOK: Output: default@dest1
+POSTHOOK: Output: default@dest1_n0
 POSTHOOK: Output: default@dest2
-POSTHOOK: Lineage: dest1.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: dest1.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: dest1.val2 EXPRESSION [(input)input.null, ]
+POSTHOOK: Lineage: dest1_n0.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dest1_n0.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: dest1_n0.val2 EXPRESSION [(input)input.null, ]
 POSTHOOK: Lineage: dest2.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: dest2.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: dest2.val2 EXPRESSION [(input)input.null, ]
-PREHOOK: query: SELECT * from dest1
+PREHOOK: query: SELECT * from dest1_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * from dest1
+POSTHOOK: query: SELECT * from dest1_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n0
 #### A masked pattern was here ####
 128	128	1
 150	150	1

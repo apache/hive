@@ -1,71 +1,71 @@
-PREHOOK: query: create table src2 as select key, count(1) as count from src group by key
+PREHOOK: query: create table src2_n6 as select key, count(1) as count from src group by key
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src2
-POSTHOOK: query: create table src2 as select key, count(1) as count from src group by key
+PREHOOK: Output: default@src2_n6
+POSTHOOK: query: create table src2_n6 as select key, count(1) as count from src group by key
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src2
-POSTHOOK: Lineage: src2.count EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: src2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: create table src3 as select * from src2
+POSTHOOK: Output: default@src2_n6
+POSTHOOK: Lineage: src2_n6.count EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: src2_n6.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: create table src3_n2 as select * from src2_n6
 PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: default@src2
+PREHOOK: Input: default@src2_n6
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src3
-POSTHOOK: query: create table src3 as select * from src2
+PREHOOK: Output: default@src3_n2
+POSTHOOK: query: create table src3_n2 as select * from src2_n6
 POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: default@src2
+POSTHOOK: Input: default@src2_n6
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src3
-POSTHOOK: Lineage: src3.count SIMPLE [(src2)src2.FieldSchema(name:count, type:bigint, comment:null), ]
-POSTHOOK: Lineage: src3.key SIMPLE [(src2)src2.FieldSchema(name:key, type:string, comment:null), ]
-PREHOOK: query: create table src4 as select * from src2
+POSTHOOK: Output: default@src3_n2
+POSTHOOK: Lineage: src3_n2.count SIMPLE [(src2_n6)src2_n6.FieldSchema(name:count, type:bigint, comment:null), ]
+POSTHOOK: Lineage: src3_n2.key SIMPLE [(src2_n6)src2_n6.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: create table src4_n0 as select * from src2_n6
 PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: default@src2
+PREHOOK: Input: default@src2_n6
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src4
-POSTHOOK: query: create table src4 as select * from src2
+PREHOOK: Output: default@src4_n0
+POSTHOOK: query: create table src4_n0 as select * from src2_n6
 POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: default@src2
+POSTHOOK: Input: default@src2_n6
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src4
-POSTHOOK: Lineage: src4.count SIMPLE [(src2)src2.FieldSchema(name:count, type:bigint, comment:null), ]
-POSTHOOK: Lineage: src4.key SIMPLE [(src2)src2.FieldSchema(name:key, type:string, comment:null), ]
-PREHOOK: query: create table src5 as select * from src2
+POSTHOOK: Output: default@src4_n0
+POSTHOOK: Lineage: src4_n0.count SIMPLE [(src2_n6)src2_n6.FieldSchema(name:count, type:bigint, comment:null), ]
+POSTHOOK: Lineage: src4_n0.key SIMPLE [(src2_n6)src2_n6.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: create table src5_n3 as select * from src2_n6
 PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: default@src2
+PREHOOK: Input: default@src2_n6
 PREHOOK: Output: database:default
-PREHOOK: Output: default@src5
-POSTHOOK: query: create table src5 as select * from src2
+PREHOOK: Output: default@src5_n3
+POSTHOOK: query: create table src5_n3 as select * from src2_n6
 POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: default@src2
+POSTHOOK: Input: default@src2_n6
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@src5
-POSTHOOK: Lineage: src5.count SIMPLE [(src2)src2.FieldSchema(name:count, type:bigint, comment:null), ]
-POSTHOOK: Lineage: src5.key SIMPLE [(src2)src2.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Output: default@src5_n3
+POSTHOOK: Lineage: src5_n3.count SIMPLE [(src2_n6)src2_n6.FieldSchema(name:count, type:bigint, comment:null), ]
+POSTHOOK: Lineage: src5_n3.key SIMPLE [(src2_n6)src2_n6.FieldSchema(name:key, type:string, comment:null), ]
 PREHOOK: query: explain extended
 select s.key, s.count from (
-  select key, count from src2  where key < 10
+  select key, count from src2_n6  where key < 10
   union all
-  select key, count from src3  where key < 10
+  select key, count from src3_n2  where key < 10
   union all
-  select key, count from src4  where key < 10
+  select key, count from src4_n0  where key < 10
   union all
-  select key, count(1) as count from src5 where key < 10 group by key
+  select key, count(1) as count from src5_n3 where key < 10 group by key
 )s
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select s.key, s.count from (
-  select key, count from src2  where key < 10
+  select key, count from src2_n6  where key < 10
   union all
-  select key, count from src3  where key < 10
+  select key, count from src3_n2  where key < 10
   union all
-  select key, count from src4  where key < 10
+  select key, count from src4_n0  where key < 10
   union all
-  select key, count(1) as count from src5 where key < 10 group by key
+  select key, count(1) as count from src5_n3 where key < 10 group by key
 )s
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -82,7 +82,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: src2
+                  alias: src2_n6
                   Statistics: Num rows: 309 Data size: 1482 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -121,7 +121,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: src2
+                  base file name: src2_n6
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
@@ -133,11 +133,11 @@ STAGE PLANS:
                     columns.comments 
                     columns.types string:bigint
 #### A masked pattern was here ####
-                    name default.src2
+                    name default.src2_n6
                     numFiles 2
                     numRows 309
                     rawDataSize 1482
-                    serialization.ddl struct src2 { string key, i64 count}
+                    serialization.ddl struct src2_n6 { string key, i64 count}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 1791
@@ -155,24 +155,24 @@ STAGE PLANS:
                       columns.comments 
                       columns.types string:bigint
 #### A masked pattern was here ####
-                      name default.src2
+                      name default.src2_n6
                       numFiles 2
                       numRows 309
                       rawDataSize 1482
-                      serialization.ddl struct src2 { string key, i64 count}
+                      serialization.ddl struct src2_n6 { string key, i64 count}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       totalSize 1791
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.src2
-                  name: default.src2
+                    name: default.src2_n6
+                  name: default.src2_n6
             Truncated Path -> Alias:
-              /src2 [null-subquery1-subquery1-subquery1:$hdt$_2-subquery1-subquery1-subquery1:src2]
+              /src2_n6 [null-subquery1-subquery1-subquery1:$hdt$_2-subquery1-subquery1-subquery1:src2_n6]
         Map 2 
             Map Operator Tree:
                 TableScan
-                  alias: src3
+                  alias: src3_n2
                   Statistics: Num rows: 309 Data size: 1482 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -211,7 +211,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: src3
+                  base file name: src3_n2
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
@@ -223,11 +223,11 @@ STAGE PLANS:
                     columns.comments 
                     columns.types string:bigint
 #### A masked pattern was here ####
-                    name default.src3
+                    name default.src3_n2
                     numFiles 1
                     numRows 309
                     rawDataSize 1482
-                    serialization.ddl struct src3 { string key, i64 count}
+                    serialization.ddl struct src3_n2 { string key, i64 count}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 1791
@@ -245,24 +245,24 @@ STAGE PLANS:
                       columns.comments 
                       columns.types string:bigint
 #### A masked pattern was here ####
-                      name default.src3
+                      name default.src3_n2
                       numFiles 1
                       numRows 309
                       rawDataSize 1482
-                      serialization.ddl struct src3 { string key, i64 count}
+                      serialization.ddl struct src3_n2 { string key, i64 count}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       totalSize 1791
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.src3
-                  name: default.src3
+                    name: default.src3_n2
+                  name: default.src3_n2
             Truncated Path -> Alias:
-              /src3 [null-subquery1-subquery1-subquery2:$hdt$_2-subquery1-subquery1-subquery2:src3]
+              /src3_n2 [null-subquery1-subquery1-subquery2:$hdt$_2-subquery1-subquery1-subquery2:src3_n2]
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: src4
+                  alias: src4_n0
                   Statistics: Num rows: 309 Data size: 1482 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -301,7 +301,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: src4
+                  base file name: src4_n0
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
@@ -313,11 +313,11 @@ STAGE PLANS:
                     columns.comments 
                     columns.types string:bigint
 #### A masked pattern was here ####
-                    name default.src4
+                    name default.src4_n0
                     numFiles 1
                     numRows 309
                     rawDataSize 1482
-                    serialization.ddl struct src4 { string key, i64 count}
+                    serialization.ddl struct src4_n0 { string key, i64 count}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 1791
@@ -335,24 +335,24 @@ STAGE PLANS:
                       columns.comments 
                       columns.types string:bigint
 #### A masked pattern was here ####
-                      name default.src4
+                      name default.src4_n0
                       numFiles 1
                       numRows 309
                       rawDataSize 1482
-                      serialization.ddl struct src4 { string key, i64 count}
+                      serialization.ddl struct src4_n0 { string key, i64 count}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       totalSize 1791
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.src4
-                  name: default.src4
+                    name: default.src4_n0
+                  name: default.src4_n0
             Truncated Path -> Alias:
-              /src4 [null-subquery1-subquery2:$hdt$_2-subquery1-subquery2:src4]
+              /src4_n0 [null-subquery1-subquery2:$hdt$_2-subquery1-subquery2:src4_n0]
         Map 4 
             Map Operator Tree:
                 TableScan
-                  alias: src5
+                  alias: src5_n3
                   Statistics: Num rows: 309 Data size: 1482 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -380,7 +380,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: src5
+                  base file name: src5_n3
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
@@ -392,11 +392,11 @@ STAGE PLANS:
                     columns.comments 
                     columns.types string:bigint
 #### A masked pattern was here ####
-                    name default.src5
+                    name default.src5_n3
                     numFiles 1
                     numRows 309
                     rawDataSize 1482
-                    serialization.ddl struct src5 { string key, i64 count}
+                    serialization.ddl struct src5_n3 { string key, i64 count}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 1791
@@ -414,20 +414,20 @@ STAGE PLANS:
                       columns.comments 
                       columns.types string:bigint
 #### A masked pattern was here ####
-                      name default.src5
+                      name default.src5_n3
                       numFiles 1
                       numRows 309
                       rawDataSize 1482
-                      serialization.ddl struct src5 { string key, i64 count}
+                      serialization.ddl struct src5_n3 { string key, i64 count}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       totalSize 1791
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.src5
-                  name: default.src5
+                    name: default.src5_n3
+                  name: default.src5_n3
             Truncated Path -> Alias:
-              /src5 [null-subquery2:$hdt$_2-subquery2:src5]
+              /src5_n3 [null-subquery2:$hdt$_2-subquery2:src5_n3]
         Reducer 5 
             Execution mode: vectorized
             Needs Tagging: false
@@ -468,34 +468,34 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select s.key, s.count from (
-  select key, count from src2  where key < 10
+  select key, count from src2_n6  where key < 10
   union all
-  select key, count from src3  where key < 10
+  select key, count from src3_n2  where key < 10
   union all
-  select key, count from src4  where key < 10
+  select key, count from src4_n0  where key < 10
   union all
-  select key, count(1) as count from src5 where key < 10 group by key
+  select key, count(1) as count from src5_n3 where key < 10 group by key
 )s
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src2
-PREHOOK: Input: default@src3
-PREHOOK: Input: default@src4
-PREHOOK: Input: default@src5
+PREHOOK: Input: default@src2_n6
+PREHOOK: Input: default@src3_n2
+PREHOOK: Input: default@src4_n0
+PREHOOK: Input: default@src5_n3
 #### A masked pattern was here ####
 POSTHOOK: query: select s.key, s.count from (
-  select key, count from src2  where key < 10
+  select key, count from src2_n6  where key < 10
   union all
-  select key, count from src3  where key < 10
+  select key, count from src3_n2  where key < 10
   union all
-  select key, count from src4  where key < 10
+  select key, count from src4_n0  where key < 10
   union all
-  select key, count(1) as count from src5 where key < 10 group by key
+  select key, count(1) as count from src5_n3 where key < 10 group by key
 )s
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src2
-POSTHOOK: Input: default@src3
-POSTHOOK: Input: default@src4
-POSTHOOK: Input: default@src5
+POSTHOOK: Input: default@src2_n6
+POSTHOOK: Input: default@src3_n2
+POSTHOOK: Input: default@src4_n0
+POSTHOOK: Input: default@src5_n3
 #### A masked pattern was here ####
 0	1
 0	3
@@ -523,20 +523,20 @@ POSTHOOK: Input: default@src5
 9	1
 PREHOOK: query: explain extended
 select s.key, s.count from (
-  select key, count from src2  where key < 10
+  select key, count from src2_n6  where key < 10
   union all
-  select key, count from src3  where key < 10
+  select key, count from src3_n2  where key < 10
   union all
-  select a.key as key, b.count as count from src4 a join src5 b on a.key=b.key where a.key < 10
+  select a.key as key, b.count as count from src4_n0 a join src5_n3 b on a.key=b.key where a.key < 10
 )s
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select s.key, s.count from (
-  select key, count from src2  where key < 10
+  select key, count from src2_n6  where key < 10
   union all
-  select key, count from src3  where key < 10
+  select key, count from src3_n2  where key < 10
   union all
-  select a.key as key, b.count as count from src4 a join src5 b on a.key=b.key where a.key < 10
+  select a.key as key, b.count as count from src4_n0 a join src5_n3 b on a.key=b.key where a.key < 10
 )s
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -553,7 +553,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: src2
+                  alias: src2_n6
                   Statistics: Num rows: 309 Data size: 1482 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -592,7 +592,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: src2
+                  base file name: src2_n6
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
@@ -604,11 +604,11 @@ STAGE PLANS:
                     columns.comments 
                     columns.types string:bigint
 #### A masked pattern was here ####
-                    name default.src2
+                    name default.src2_n6
                     numFiles 2
                     numRows 309
                     rawDataSize 1482
-                    serialization.ddl struct src2 { string key, i64 count}
+                    serialization.ddl struct src2_n6 { string key, i64 count}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 1791
@@ -626,24 +626,24 @@ STAGE PLANS:
                       columns.comments 
                       columns.types string:bigint
 #### A masked pattern was here ####
-                      name default.src2
+                      name default.src2_n6
                       numFiles 2
                       numRows 309
                       rawDataSize 1482
-                      serialization.ddl struct src2 { string key, i64 count}
+                      serialization.ddl struct src2_n6 { string key, i64 count}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       totalSize 1791
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.src2
-                  name: default.src2
+                    name: default.src2_n6
+                  name: default.src2_n6
             Truncated Path -> Alias:
-              /src2 [null-subquery1-subquery1:$hdt$_1-subquery1-subquery1:src2]
+              /src2_n6 [null-subquery1-subquery1:$hdt$_1-subquery1-subquery1:src2_n6]
         Map 2 
             Map Operator Tree:
                 TableScan
-                  alias: src3
+                  alias: src3_n2
                   Statistics: Num rows: 309 Data size: 1482 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -682,7 +682,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: src3
+                  base file name: src3_n2
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
@@ -694,11 +694,11 @@ STAGE PLANS:
                     columns.comments 
                     columns.types string:bigint
 #### A masked pattern was here ####
-                    name default.src3
+                    name default.src3_n2
                     numFiles 1
                     numRows 309
                     rawDataSize 1482
-                    serialization.ddl struct src3 { string key, i64 count}
+                    serialization.ddl struct src3_n2 { string key, i64 count}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 1791
@@ -716,20 +716,20 @@ STAGE PLANS:
                       columns.comments 
                       columns.types string:bigint
 #### A masked pattern was here ####
-                      name default.src3
+                      name default.src3_n2
                       numFiles 1
                       numRows 309
                       rawDataSize 1482
-                      serialization.ddl struct src3 { string key, i64 count}
+                      serialization.ddl struct src3_n2 { string key, i64 count}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       totalSize 1791
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.src3
-                  name: default.src3
+                    name: default.src3_n2
+                  name: default.src3_n2
             Truncated Path -> Alias:
-              /src3 [null-subquery1-subquery2:$hdt$_1-subquery1-subquery2:src3]
+              /src3_n2 [null-subquery1-subquery2:$hdt$_1-subquery1-subquery2:src3_n2]
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -758,7 +758,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: src4
+                  base file name: src4_n0
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
@@ -770,11 +770,11 @@ STAGE PLANS:
                     columns.comments 
                     columns.types string:bigint
 #### A masked pattern was here ####
-                    name default.src4
+                    name default.src4_n0
                     numFiles 1
                     numRows 309
                     rawDataSize 1482
-                    serialization.ddl struct src4 { string key, i64 count}
+                    serialization.ddl struct src4_n0 { string key, i64 count}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 1791
@@ -792,20 +792,20 @@ STAGE PLANS:
                       columns.comments 
                       columns.types string:bigint
 #### A masked pattern was here ####
-                      name default.src4
+                      name default.src4_n0
                       numFiles 1
                       numRows 309
                       rawDataSize 1482
-                      serialization.ddl struct src4 { string key, i64 count}
+                      serialization.ddl struct src4_n0 { string key, i64 count}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       totalSize 1791
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.src4
-                  name: default.src4
+                    name: default.src4_n0
+                  name: default.src4_n0
             Truncated Path -> Alias:
-              /src4 [null-subquery2:$hdt$_1-subquery2:$hdt$_1:a]
+              /src4_n0 [null-subquery2:$hdt$_1-subquery2:$hdt$_1:a]
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -835,7 +835,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: src5
+                  base file name: src5_n3
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
@@ -847,11 +847,11 @@ STAGE PLANS:
                     columns.comments 
                     columns.types string:bigint
 #### A masked pattern was here ####
-                    name default.src5
+                    name default.src5_n3
                     numFiles 1
                     numRows 309
                     rawDataSize 1482
-                    serialization.ddl struct src5 { string key, i64 count}
+                    serialization.ddl struct src5_n3 { string key, i64 count}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 1791
@@ -869,20 +869,20 @@ STAGE PLANS:
                       columns.comments 
                       columns.types string:bigint
 #### A masked pattern was here ####
-                      name default.src5
+                      name default.src5_n3
                       numFiles 1
                       numRows 309
                       rawDataSize 1482
-                      serialization.ddl struct src5 { string key, i64 count}
+                      serialization.ddl struct src5_n3 { string key, i64 count}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       totalSize 1791
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.src5
-                  name: default.src5
+                    name: default.src5_n3
+                  name: default.src5_n3
             Truncated Path -> Alias:
-              /src5 [null-subquery2:$hdt$_1-subquery2:$hdt$_2:b]
+              /src5_n3 [null-subquery2:$hdt$_1-subquery2:$hdt$_2:b]
         Reducer 4 
             Needs Tagging: true
             Reduce Operator Tree:
@@ -925,30 +925,30 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select s.key, s.count from (
-  select key, count from src2  where key < 10
+  select key, count from src2_n6  where key < 10
   union all
-  select key, count from src3  where key < 10
+  select key, count from src3_n2  where key < 10
   union all
-  select a.key as key, b.count as count from src4 a join src5 b on a.key=b.key where a.key < 10
+  select a.key as key, b.count as count from src4_n0 a join src5_n3 b on a.key=b.key where a.key < 10
 )s
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src2
-PREHOOK: Input: default@src3
-PREHOOK: Input: default@src4
-PREHOOK: Input: default@src5
+PREHOOK: Input: default@src2_n6
+PREHOOK: Input: default@src3_n2
+PREHOOK: Input: default@src4_n0
+PREHOOK: Input: default@src5_n3
 #### A masked pattern was here ####
 POSTHOOK: query: select s.key, s.count from (
-  select key, count from src2  where key < 10
+  select key, count from src2_n6  where key < 10
   union all
-  select key, count from src3  where key < 10
+  select key, count from src3_n2  where key < 10
   union all
-  select a.key as key, b.count as count from src4 a join src5 b on a.key=b.key where a.key < 10
+  select a.key as key, b.count as count from src4_n0 a join src5_n3 b on a.key=b.key where a.key < 10
 )s
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src2
-POSTHOOK: Input: default@src3
-POSTHOOK: Input: default@src4
-POSTHOOK: Input: default@src5
+POSTHOOK: Input: default@src2_n6
+POSTHOOK: Input: default@src3_n2
+POSTHOOK: Input: default@src4_n0
+POSTHOOK: Input: default@src5_n3
 #### A masked pattern was here ####
 0	3
 0	3
@@ -970,20 +970,20 @@ POSTHOOK: Input: default@src5
 9	1
 PREHOOK: query: explain extended
 select s.key, s.count from (
-  select key, count from src2  where key < 10
+  select key, count from src2_n6  where key < 10
   union all
-  select key, count from src3  where key < 10
+  select key, count from src3_n2  where key < 10
   union all
-  select a.key as key, count(1) as count from src4 a join src5 b on a.key=b.key where a.key < 10 group by a.key
+  select a.key as key, count(1) as count from src4_n0 a join src5_n3 b on a.key=b.key where a.key < 10 group by a.key
 )s
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select s.key, s.count from (
-  select key, count from src2  where key < 10
+  select key, count from src2_n6  where key < 10
   union all
-  select key, count from src3  where key < 10
+  select key, count from src3_n2  where key < 10
   union all
-  select a.key as key, count(1) as count from src4 a join src5 b on a.key=b.key where a.key < 10 group by a.key
+  select a.key as key, count(1) as count from src4_n0 a join src5_n3 b on a.key=b.key where a.key < 10 group by a.key
 )s
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -1001,7 +1001,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: src2
+                  alias: src2_n6
                   Statistics: Num rows: 309 Data size: 1482 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -1040,7 +1040,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: src2
+                  base file name: src2_n6
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
@@ -1052,11 +1052,11 @@ STAGE PLANS:
                     columns.comments 
                     columns.types string:bigint
 #### A masked pattern was here ####
-                    name default.src2
+                    name default.src2_n6
                     numFiles 2
                     numRows 309
                     rawDataSize 1482
-                    serialization.ddl struct src2 { string key, i64 count}
+                    serialization.ddl struct src2_n6 { string key, i64 count}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 1791
@@ -1074,24 +1074,24 @@ STAGE PLANS:
                       columns.comments 
                       columns.types string:bigint
 #### A masked pattern was here ####
-                      name default.src2
+                      name default.src2_n6
                       numFiles 2
                       numRows 309
                       rawDataSize 1482
-                      serialization.ddl struct src2 { string key, i64 count}
+                      serialization.ddl struct src2_n6 { string key, i64 count}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       totalSize 1791
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.src2
-                  name: default.src2
+                    name: default.src2_n6
+                  name: default.src2_n6
             Truncated Path -> Alias:
-              /src2 [null-subquery1-subquery1:$hdt$_1-subquery1-subquery1:src2]
+              /src2_n6 [null-subquery1-subquery1:$hdt$_1-subquery1-subquery1:src2_n6]
         Map 2 
             Map Operator Tree:
                 TableScan
-                  alias: src3
+                  alias: src3_n2
                   Statistics: Num rows: 309 Data size: 1482 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -1130,7 +1130,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: src3
+                  base file name: src3_n2
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
@@ -1142,11 +1142,11 @@ STAGE PLANS:
                     columns.comments 
                     columns.types string:bigint
 #### A masked pattern was here ####
-                    name default.src3
+                    name default.src3_n2
                     numFiles 1
                     numRows 309
                     rawDataSize 1482
-                    serialization.ddl struct src3 { string key, i64 count}
+                    serialization.ddl struct src3_n2 { string key, i64 count}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 1791
@@ -1164,20 +1164,20 @@ STAGE PLANS:
                       columns.comments 
                       columns.types string:bigint
 #### A masked pattern was here ####
-                      name default.src3
+                      name default.src3_n2
                       numFiles 1
                       numRows 309
                       rawDataSize 1482
-                      serialization.ddl struct src3 { string key, i64 count}
+                      serialization.ddl struct src3_n2 { string key, i64 count}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       totalSize 1791
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.src3
-                  name: default.src3
+                    name: default.src3_n2
+                  name: default.src3_n2
             Truncated Path -> Alias:
-              /src3 [null-subquery1-subquery2:$hdt$_1-subquery1-subquery2:src3]
+              /src3_n2 [null-subquery1-subquery2:$hdt$_1-subquery1-subquery2:src3_n2]
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -1206,7 +1206,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: src4
+                  base file name: src4_n0
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
@@ -1218,11 +1218,11 @@ STAGE PLANS:
                     columns.comments 
                     columns.types string:bigint
 #### A masked pattern was here ####
-                    name default.src4
+                    name default.src4_n0
                     numFiles 1
                     numRows 309
                     rawDataSize 1482
-                    serialization.ddl struct src4 { string key, i64 count}
+                    serialization.ddl struct src4_n0 { string key, i64 count}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 1791
@@ -1240,20 +1240,20 @@ STAGE PLANS:
                       columns.comments 
                       columns.types string:bigint
 #### A masked pattern was here ####
-                      name default.src4
+                      name default.src4_n0
                       numFiles 1
                       numRows 309
                       rawDataSize 1482
-                      serialization.ddl struct src4 { string key, i64 count}
+                      serialization.ddl struct src4_n0 { string key, i64 count}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       totalSize 1791
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.src4
-                  name: default.src4
+                    name: default.src4_n0
+                  name: default.src4_n0
             Truncated Path -> Alias:
-              /src4 [null-subquery2:$hdt$_1-subquery2:$hdt$_1:a]
+              /src4_n0 [null-subquery2:$hdt$_1-subquery2:$hdt$_1:a]
         Map 6 
             Map Operator Tree:
                 TableScan
@@ -1282,7 +1282,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: src5
+                  base file name: src5_n3
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
@@ -1294,11 +1294,11 @@ STAGE PLANS:
                     columns.comments 
                     columns.types string:bigint
 #### A masked pattern was here ####
-                    name default.src5
+                    name default.src5_n3
                     numFiles 1
                     numRows 309
                     rawDataSize 1482
-                    serialization.ddl struct src5 { string key, i64 count}
+                    serialization.ddl struct src5_n3 { string key, i64 count}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 1791
@@ -1316,20 +1316,20 @@ STAGE PLANS:
                       columns.comments 
                       columns.types string:bigint
 #### A masked pattern was here ####
-                      name default.src5
+                      name default.src5_n3
                       numFiles 1
                       numRows 309
                       rawDataSize 1482
-                      serialization.ddl struct src5 { string key, i64 count}
+                      serialization.ddl struct src5_n3 { string key, i64 count}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       totalSize 1791
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.src5
-                  name: default.src5
+                    name: default.src5_n3
+                  name: default.src5_n3
             Truncated Path -> Alias:
-              /src5 [null-subquery2:$hdt$_1-subquery2:$hdt$_2:b]
+              /src5_n3 [null-subquery2:$hdt$_1-subquery2:$hdt$_2:b]
         Reducer 4 
             Needs Tagging: true
             Reduce Operator Tree:
@@ -1396,30 +1396,30 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select s.key, s.count from (
-  select key, count from src2  where key < 10
+  select key, count from src2_n6  where key < 10
   union all
-  select key, count from src3  where key < 10
+  select key, count from src3_n2  where key < 10
   union all
-  select a.key as key, count(1) as count from src4 a join src5 b on a.key=b.key where a.key < 10 group by a.key
+  select a.key as key, count(1) as count from src4_n0 a join src5_n3 b on a.key=b.key where a.key < 10 group by a.key
 )s
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src2
-PREHOOK: Input: default@src3
-PREHOOK: Input: default@src4
-PREHOOK: Input: default@src5
+PREHOOK: Input: default@src2_n6
+PREHOOK: Input: default@src3_n2
+PREHOOK: Input: default@src4_n0
+PREHOOK: Input: default@src5_n3
 #### A masked pattern was here ####
 POSTHOOK: query: select s.key, s.count from (
-  select key, count from src2  where key < 10
+  select key, count from src2_n6  where key < 10
   union all
-  select key, count from src3  where key < 10
+  select key, count from src3_n2  where key < 10
   union all
-  select a.key as key, count(1) as count from src4 a join src5 b on a.key=b.key where a.key < 10 group by a.key
+  select a.key as key, count(1) as count from src4_n0 a join src5_n3 b on a.key=b.key where a.key < 10 group by a.key
 )s
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src2
-POSTHOOK: Input: default@src3
-POSTHOOK: Input: default@src4
-POSTHOOK: Input: default@src5
+POSTHOOK: Input: default@src2_n6
+POSTHOOK: Input: default@src3_n2
+POSTHOOK: Input: default@src4_n0
+POSTHOOK: Input: default@src5_n3
 #### A masked pattern was here ####
 0	1
 0	3

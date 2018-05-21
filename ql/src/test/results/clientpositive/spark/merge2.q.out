@@ -1,17 +1,17 @@
-PREHOOK: query: create table test1(key int, val int)
+PREHOOK: query: create table test1_n10(key int, val int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test1
-POSTHOOK: query: create table test1(key int, val int)
+PREHOOK: Output: default@test1_n10
+POSTHOOK: query: create table test1_n10(key int, val int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test1
+POSTHOOK: Output: default@test1_n10
 PREHOOK: query: explain
-insert overwrite table test1
+insert overwrite table test1_n10
 select key, count(1) from src group by key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-insert overwrite table test1
+insert overwrite table test1_n10
 select key, count(1) from src group by key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -73,7 +73,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.test1
+                        name: default.test1_n10
 
   Stage: Stage-7
     Conditional Operator
@@ -92,7 +92,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.test1
+              name: default.test1_n10
 
   Stage: Stage-2
     Stats Work
@@ -111,7 +111,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.test1
+                        name: default.test1_n10
 
   Stage: Stage-5
     Spark
@@ -126,7 +126,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.test1
+                        name: default.test1_n10
 
   Stage: Stage-6
     Move Operator
@@ -134,25 +134,25 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-PREHOOK: query: insert overwrite table test1
+PREHOOK: query: insert overwrite table test1_n10
 select key, count(1) from src group by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@test1
-POSTHOOK: query: insert overwrite table test1
+PREHOOK: Output: default@test1_n10
+POSTHOOK: query: insert overwrite table test1_n10
 select key, count(1) from src group by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@test1
-POSTHOOK: Lineage: test1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test1.val EXPRESSION [(src)src.null, ]
-PREHOOK: query: select * from test1
+POSTHOOK: Output: default@test1_n10
+POSTHOOK: Lineage: test1_n10.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test1_n10.val EXPRESSION [(src)src.null, ]
+PREHOOK: query: select * from test1_n10
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test1
+PREHOOK: Input: default@test1_n10
 #### A masked pattern was here ####
-POSTHOOK: query: select * from test1
+POSTHOOK: query: select * from test1_n10
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test1_n10
 #### A masked pattern was here ####
 0	3
 10	1
@@ -463,55 +463,55 @@ POSTHOOK: Input: default@test1
 96	1
 97	2
 98	2
-PREHOOK: query: drop table test1
+PREHOOK: query: drop table test1_n10
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@test1
-PREHOOK: Output: default@test1
-POSTHOOK: query: drop table test1
+PREHOOK: Input: default@test1_n10
+PREHOOK: Output: default@test1_n10
+POSTHOOK: query: drop table test1_n10
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@test1
-POSTHOOK: Output: default@test1
-PREHOOK: query: create table test_src(key string, value string) partitioned by (ds string)
+POSTHOOK: Input: default@test1_n10
+POSTHOOK: Output: default@test1_n10
+PREHOOK: query: create table test_src_n0(key string, value string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_src
-POSTHOOK: query: create table test_src(key string, value string) partitioned by (ds string)
+PREHOOK: Output: default@test_src_n0
+POSTHOOK: query: create table test_src_n0(key string, value string) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_src
-PREHOOK: query: create table test1(key string)
+POSTHOOK: Output: default@test_src_n0
+PREHOOK: query: create table test1_n10(key string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test1
-POSTHOOK: query: create table test1(key string)
+PREHOOK: Output: default@test1_n10
+POSTHOOK: query: create table test1_n10(key string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test1
-PREHOOK: query: insert overwrite table test_src partition(ds='101') select * from src
+POSTHOOK: Output: default@test1_n10
+PREHOOK: query: insert overwrite table test_src_n0 partition(ds='101') select * from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@test_src@ds=101
-POSTHOOK: query: insert overwrite table test_src partition(ds='101') select * from src
+PREHOOK: Output: default@test_src_n0@ds=101
+POSTHOOK: query: insert overwrite table test_src_n0 partition(ds='101') select * from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@test_src@ds=101
-POSTHOOK: Lineage: test_src PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_src PARTITION(ds=101).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: insert overwrite table test_src partition(ds='102') select * from src
+POSTHOOK: Output: default@test_src_n0@ds=101
+POSTHOOK: Lineage: test_src_n0 PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_src_n0 PARTITION(ds=101).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table test_src_n0 partition(ds='102') select * from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@test_src@ds=102
-POSTHOOK: query: insert overwrite table test_src partition(ds='102') select * from src
+PREHOOK: Output: default@test_src_n0@ds=102
+POSTHOOK: query: insert overwrite table test_src_n0 partition(ds='102') select * from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@test_src@ds=102
-POSTHOOK: Lineage: test_src PARTITION(ds=102).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_src PARTITION(ds=102).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@test_src_n0@ds=102
+POSTHOOK: Lineage: test_src_n0 PARTITION(ds=102).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_src_n0 PARTITION(ds=102).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain 
-insert overwrite table test1 select key from test_src
+insert overwrite table test1_n10 select key from test_src_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: explain 
-insert overwrite table test1 select key from test_src
+insert overwrite table test1_n10 select key from test_src_n0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -531,7 +531,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: test_src
+                  alias: test_src_n0
                   Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string)
@@ -544,7 +544,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.test1
+                          name: default.test1_n10
             Execution mode: vectorized
 
   Stage: Stage-7
@@ -564,7 +564,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.test1
+              name: default.test1_n10
 
   Stage: Stage-2
     Stats Work
@@ -583,7 +583,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.test1
+                        name: default.test1_n10
 
   Stage: Stage-5
     Spark
@@ -598,7 +598,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.test1
+                        name: default.test1_n10
 
   Stage: Stage-6
     Move Operator
@@ -606,24 +606,24 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-PREHOOK: query: insert overwrite table test1 select key from test_src
+PREHOOK: query: insert overwrite table test1_n10 select key from test_src_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_src
-PREHOOK: Input: default@test_src@ds=101
-PREHOOK: Input: default@test_src@ds=102
-PREHOOK: Output: default@test1
-POSTHOOK: query: insert overwrite table test1 select key from test_src
+PREHOOK: Input: default@test_src_n0
+PREHOOK: Input: default@test_src_n0@ds=101
+PREHOOK: Input: default@test_src_n0@ds=102
+PREHOOK: Output: default@test1_n10
+POSTHOOK: query: insert overwrite table test1_n10 select key from test_src_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_src
-POSTHOOK: Input: default@test_src@ds=101
-POSTHOOK: Input: default@test_src@ds=102
-POSTHOOK: Output: default@test1
-POSTHOOK: Lineage: test1.key SIMPLE [(test_src)test_src.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Input: default@test_src_n0
+POSTHOOK: Input: default@test_src_n0@ds=101
+POSTHOOK: Input: default@test_src_n0@ds=102
+POSTHOOK: Output: default@test1_n10
+POSTHOOK: Lineage: test1_n10.key SIMPLE [(test_src_n0)test_src_n0.FieldSchema(name:key, type:string, comment:null), ]
 PREHOOK: query: explain
-insert overwrite table test1 select key from test_src
+insert overwrite table test1_n10 select key from test_src_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-insert overwrite table test1 select key from test_src
+insert overwrite table test1_n10 select key from test_src_n0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -643,7 +643,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: test_src
+                  alias: test_src_n0
                   Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string)
@@ -656,7 +656,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.test1
+                          name: default.test1_n10
             Execution mode: vectorized
 
   Stage: Stage-7
@@ -676,7 +676,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.test1
+              name: default.test1_n10
 
   Stage: Stage-2
     Stats Work
@@ -695,7 +695,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.test1
+                        name: default.test1_n10
 
   Stage: Stage-5
     Spark
@@ -710,7 +710,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.test1
+                        name: default.test1_n10
 
   Stage: Stage-6
     Move Operator
@@ -718,16 +718,16 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-PREHOOK: query: insert overwrite table test1 select key from test_src
+PREHOOK: query: insert overwrite table test1_n10 select key from test_src_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_src
-PREHOOK: Input: default@test_src@ds=101
-PREHOOK: Input: default@test_src@ds=102
-PREHOOK: Output: default@test1
-POSTHOOK: query: insert overwrite table test1 select key from test_src
+PREHOOK: Input: default@test_src_n0
+PREHOOK: Input: default@test_src_n0@ds=101
+PREHOOK: Input: default@test_src_n0@ds=102
+PREHOOK: Output: default@test1_n10
+POSTHOOK: query: insert overwrite table test1_n10 select key from test_src_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_src
-POSTHOOK: Input: default@test_src@ds=101
-POSTHOOK: Input: default@test_src@ds=102
-POSTHOOK: Output: default@test1
-POSTHOOK: Lineage: test1.key SIMPLE [(test_src)test_src.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Input: default@test_src_n0
+POSTHOOK: Input: default@test_src_n0@ds=101
+POSTHOOK: Input: default@test_src_n0@ds=102
+POSTHOOK: Output: default@test1_n10
+POSTHOOK: Lineage: test1_n10.key SIMPLE [(test_src_n0)test_src_n0.FieldSchema(name:key, type:string, comment:null), ]

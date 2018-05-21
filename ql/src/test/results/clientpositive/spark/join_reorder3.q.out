@@ -1,78 +1,78 @@
-PREHOOK: query: CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE T1_n92(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1
-POSTHOOK: query: CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@T1_n92
+POSTHOOK: query: CREATE TABLE T1_n92(key STRING, val STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1
-PREHOOK: query: CREATE TABLE T2(key STRING, val STRING) STORED AS TEXTFILE
+POSTHOOK: Output: default@T1_n92
+PREHOOK: query: CREATE TABLE T2_n57(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T2
-POSTHOOK: query: CREATE TABLE T2(key STRING, val STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@T2_n57
+POSTHOOK: query: CREATE TABLE T2_n57(key STRING, val STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T2
-PREHOOK: query: CREATE TABLE T3(key STRING, val STRING) STORED AS TEXTFILE
+POSTHOOK: Output: default@T2_n57
+PREHOOK: query: CREATE TABLE T3_n21(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T3
-POSTHOOK: query: CREATE TABLE T3(key STRING, val STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@T3_n21
+POSTHOOK: query: CREATE TABLE T3_n21(key STRING, val STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T3
-PREHOOK: query: CREATE TABLE T4(key STRING, val STRING) STORED AS TEXTFILE
+POSTHOOK: Output: default@T3_n21
+PREHOOK: query: CREATE TABLE T4_n10(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T4
-POSTHOOK: query: CREATE TABLE T4(key STRING, val STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@T4_n10
+POSTHOOK: query: CREATE TABLE T4_n10(key STRING, val STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T4
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1
+POSTHOOK: Output: default@T4_n10
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_n92
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1
+PREHOOK: Output: default@t1_n92
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_n92
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2
+POSTHOOK: Output: default@t1_n92
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2_n57
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t2
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2
+PREHOOK: Output: default@t2_n57
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2_n57
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t2
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T3.txt' INTO TABLE T3
+POSTHOOK: Output: default@t2_n57
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T3.txt' INTO TABLE T3_n21
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t3
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T3.txt' INTO TABLE T3
+PREHOOK: Output: default@t3_n21
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T3.txt' INTO TABLE T3_n21
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t3
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T4
+POSTHOOK: Output: default@t3_n21
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T4_n10
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t4
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T4
+PREHOOK: Output: default@t4_n10
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T4_n10
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t4
+POSTHOOK: Output: default@t4_n10
 PREHOOK: query: EXPLAIN
 SELECT /*+ STREAMTABLE(a,c) */ *
-FROM T1 a JOIN T2 b ON a.key = b.key
-          JOIN T3 c ON b.key = c.key
-          JOIN T4 d ON c.key = d.key
+FROM T1_n92 a JOIN T2_n57 b ON a.key = b.key
+          JOIN T3_n21 c ON b.key = c.key
+          JOIN T4_n10 d ON c.key = d.key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT /*+ STREAMTABLE(a,c) */ *
-FROM T1 a JOIN T2 b ON a.key = b.key
-          JOIN T3 c ON b.key = c.key
-          JOIN T4 d ON c.key = d.key
+FROM T1_n92 a JOIN T2_n57 b ON a.key = b.key
+          JOIN T3_n21 c ON b.key = c.key
+          JOIN T4_n10 d ON c.key = d.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -178,37 +178,37 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT /*+ STREAMTABLE(a,c) */ *
-FROM T1 a JOIN T2 b ON a.key = b.key
-          JOIN T3 c ON b.key = c.key
-          JOIN T4 d ON c.key = d.key
+FROM T1_n92 a JOIN T2_n57 b ON a.key = b.key
+          JOIN T3_n21 c ON b.key = c.key
+          JOIN T4_n10 d ON c.key = d.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
-PREHOOK: Input: default@t3
-PREHOOK: Input: default@t4
+PREHOOK: Input: default@t1_n92
+PREHOOK: Input: default@t2_n57
+PREHOOK: Input: default@t3_n21
+PREHOOK: Input: default@t4_n10
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT /*+ STREAMTABLE(a,c) */ *
-FROM T1 a JOIN T2 b ON a.key = b.key
-          JOIN T3 c ON b.key = c.key
-          JOIN T4 d ON c.key = d.key
+FROM T1_n92 a JOIN T2_n57 b ON a.key = b.key
+          JOIN T3_n21 c ON b.key = c.key
+          JOIN T4_n10 d ON c.key = d.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
-POSTHOOK: Input: default@t3
-POSTHOOK: Input: default@t4
+POSTHOOK: Input: default@t1_n92
+POSTHOOK: Input: default@t2_n57
+POSTHOOK: Input: default@t3_n21
+POSTHOOK: Input: default@t4_n10
 #### A masked pattern was here ####
 2	12	2	22	2	12	2	12
 PREHOOK: query: EXPLAIN
 SELECT /*+ STREAMTABLE(a,c) */ *
-FROM T1 a JOIN T2 b ON a.key = b.key
-          JOIN T3 c ON a.val = c.val
-          JOIN T4 d ON a.key + 1 = d.key + 1
+FROM T1_n92 a JOIN T2_n57 b ON a.key = b.key
+          JOIN T3_n21 c ON a.val = c.val
+          JOIN T4_n10 d ON a.key + 1 = d.key + 1
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT /*+ STREAMTABLE(a,c) */ *
-FROM T1 a JOIN T2 b ON a.key = b.key
-          JOIN T3 c ON a.val = c.val
-          JOIN T4 d ON a.key + 1 = d.key + 1
+FROM T1_n92 a JOIN T2_n57 b ON a.key = b.key
+          JOIN T3_n21 c ON a.val = c.val
+          JOIN T4_n10 d ON a.key + 1 = d.key + 1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -344,23 +344,23 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT /*+ STREAMTABLE(a,c) */ *
-FROM T1 a JOIN T2 b ON a.key = b.key
-          JOIN T3 c ON a.val = c.val
-          JOIN T4 d ON a.key + 1 = d.key + 1
+FROM T1_n92 a JOIN T2_n57 b ON a.key = b.key
+          JOIN T3_n21 c ON a.val = c.val
+          JOIN T4_n10 d ON a.key + 1 = d.key + 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
-PREHOOK: Input: default@t3
-PREHOOK: Input: default@t4
+PREHOOK: Input: default@t1_n92
+PREHOOK: Input: default@t2_n57
+PREHOOK: Input: default@t3_n21
+PREHOOK: Input: default@t4_n10
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT /*+ STREAMTABLE(a,c) */ *
-FROM T1 a JOIN T2 b ON a.key = b.key
-          JOIN T3 c ON a.val = c.val
-          JOIN T4 d ON a.key + 1 = d.key + 1
+FROM T1_n92 a JOIN T2_n57 b ON a.key = b.key
+          JOIN T3_n21 c ON a.val = c.val
+          JOIN T4_n10 d ON a.key + 1 = d.key + 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
-POSTHOOK: Input: default@t3
-POSTHOOK: Input: default@t4
+POSTHOOK: Input: default@t1_n92
+POSTHOOK: Input: default@t2_n57
+POSTHOOK: Input: default@t3_n21
+POSTHOOK: Input: default@t4_n10
 #### A masked pattern was here ####
 2	12	2	22	2	12	2	12

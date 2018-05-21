@@ -1,41 +1,41 @@
-PREHOOK: query: CREATE TABLE T1_text(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE T1_text_n6(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1_text
-POSTHOOK: query: CREATE TABLE T1_text(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
+PREHOOK: Output: default@T1_text_n6
+POSTHOOK: query: CREATE TABLE T1_text_n6(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1_text
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/grouping_sets.txt' INTO TABLE T1_text
+POSTHOOK: Output: default@T1_text_n6
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/grouping_sets.txt' INTO TABLE T1_text_n6
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t1_text
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/grouping_sets.txt' INTO TABLE T1_text
+PREHOOK: Output: default@t1_text_n6
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/grouping_sets.txt' INTO TABLE T1_text_n6
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t1_text
-PREHOOK: query: CREATE TABLE T1 STORED AS ORC AS SELECT * FROM T1_text
+POSTHOOK: Output: default@t1_text_n6
+PREHOOK: query: CREATE TABLE T1_n84 STORED AS ORC AS SELECT * FROM T1_text_n6
 PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: default@t1_text
+PREHOOK: Input: default@t1_text_n6
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1
-POSTHOOK: query: CREATE TABLE T1 STORED AS ORC AS SELECT * FROM T1_text
+PREHOOK: Output: default@T1_n84
+POSTHOOK: query: CREATE TABLE T1_n84 STORED AS ORC AS SELECT * FROM T1_text_n6
 POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: default@t1_text
+POSTHOOK: Input: default@t1_text_n6
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1
-POSTHOOK: Lineage: t1.a SIMPLE [(t1_text)t1_text.FieldSchema(name:a, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.b SIMPLE [(t1_text)t1_text.FieldSchema(name:b, type:string, comment:null), ]
-POSTHOOK: Lineage: t1.c SIMPLE [(t1_text)t1_text.FieldSchema(name:c, type:string, comment:null), ]
-t1_text.a	t1_text.b	t1_text.c
+POSTHOOK: Output: default@T1_n84
+POSTHOOK: Lineage: t1_n84.a SIMPLE [(t1_text_n6)t1_text_n6.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: t1_n84.b SIMPLE [(t1_text_n6)t1_text_n6.FieldSchema(name:b, type:string, comment:null), ]
+POSTHOOK: Lineage: t1_n84.c SIMPLE [(t1_text_n6)t1_text_n6.FieldSchema(name:c, type:string, comment:null), ]
+t1_text_n6.a	t1_text_n6.b	t1_text_n6.c
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b FROM
-(SELECT a, b from T1 group by a, b grouping sets ( (a,b),a )) res
+(SELECT a, b from T1_n84 group by a, b grouping sets ( (a,b),a )) res
 WHERE res.a=5
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b FROM
-(SELECT a, b from T1 group by a, b grouping sets ( (a,b),a )) res
+(SELECT a, b from T1_n84 group by a, b grouping sets ( (a,b),a )) res
 WHERE res.a=5
 POSTHOOK: type: QUERY
 Explain
@@ -58,7 +58,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n84
                   Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -157,28 +157,28 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT a, b FROM
-(SELECT a, b from T1 group by a, b grouping sets ( (a,b),a )) res
+(SELECT a, b from T1_n84 group by a, b grouping sets ( (a,b),a )) res
 WHERE res.a=5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n84
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT a, b FROM
-(SELECT a, b from T1 group by a, b grouping sets ( (a,b),a )) res
+(SELECT a, b from T1_n84 group by a, b grouping sets ( (a,b),a )) res
 WHERE res.a=5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n84
 #### A masked pattern was here ####
 a	b
 5	2
 5	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b FROM
-(SELECT a, b from T1 group by a, b grouping sets ( (a,b),a )) res
+(SELECT a, b from T1_n84 group by a, b grouping sets ( (a,b),a )) res
 WHERE res.a=5
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b FROM
-(SELECT a, b from T1 group by a, b grouping sets ( (a,b),a )) res
+(SELECT a, b from T1_n84 group by a, b grouping sets ( (a,b),a )) res
 WHERE res.a=5
 POSTHOOK: type: QUERY
 Explain
@@ -201,7 +201,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t1
+                  alias: t1_n84
                   Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -300,16 +300,16 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT a, b FROM
-(SELECT a, b from T1 group by a, b grouping sets ( (a,b),a )) res
+(SELECT a, b from T1_n84 group by a, b grouping sets ( (a,b),a )) res
 WHERE res.a=5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n84
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT a, b FROM
-(SELECT a, b from T1 group by a, b grouping sets ( (a,b),a )) res
+(SELECT a, b from T1_n84 group by a, b grouping sets ( (a,b),a )) res
 WHERE res.a=5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n84
 #### A masked pattern was here ####
 a	b
 5	2

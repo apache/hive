@@ -1,19 +1,19 @@
-PREHOOK: query: create table e1 (key string, value string)
+PREHOOK: query: create table e1_n3 (key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@e1
-POSTHOOK: query: create table e1 (key string, value string)
+PREHOOK: Output: default@e1_n3
+POSTHOOK: query: create table e1_n3 (key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@e1
-PREHOOK: query: create table e2 (key string)
+POSTHOOK: Output: default@e1_n3
+PREHOOK: query: create table e2_n4 (key string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@e2
-POSTHOOK: query: create table e2 (key string)
+PREHOOK: Output: default@e2_n4
+POSTHOOK: query: create table e2_n4 (key string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@e2
+POSTHOOK: Output: default@e2_n4
 PREHOOK: query: explain
 select key,value from src order by key limit 10
 PREHOOK: type: QUERY
@@ -90,15 +90,15 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 104	val_104
 104	val_104
 PREHOOK: query: explain FROM (select key,value from src order by key limit 10) a
-INSERT OVERWRITE TABLE e1
+INSERT OVERWRITE TABLE e1_n3
     SELECT key, value
-INSERT OVERWRITE TABLE e2
+INSERT OVERWRITE TABLE e2_n4
     SELECT key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain FROM (select key,value from src order by key limit 10) a
-INSERT OVERWRITE TABLE e1
+INSERT OVERWRITE TABLE e1_n3
     SELECT key, value
-INSERT OVERWRITE TABLE e2
+INSERT OVERWRITE TABLE e2_n4
     SELECT key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -148,7 +148,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.e1
+                        name: default.e1_n3
                   Select Operator
                     expressions: _col0 (type: string)
                     outputColumnNames: _col0
@@ -160,7 +160,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.e2
+                          name: default.e2_n4
 
   Stage: Stage-0
     Move Operator
@@ -170,7 +170,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.e1
+              name: default.e1_n3
 
   Stage: Stage-3
     Stats Work
@@ -184,40 +184,40 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.e2
+              name: default.e2_n4
 
   Stage: Stage-4
     Stats Work
       Basic Stats Work:
 
 PREHOOK: query: FROM (select key,value from src order by key limit 10) a
-INSERT OVERWRITE TABLE e1
+INSERT OVERWRITE TABLE e1_n3
     SELECT key, value
-INSERT OVERWRITE TABLE e2
+INSERT OVERWRITE TABLE e2_n4
     SELECT key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@e1
-PREHOOK: Output: default@e2
+PREHOOK: Output: default@e1_n3
+PREHOOK: Output: default@e2_n4
 POSTHOOK: query: FROM (select key,value from src order by key limit 10) a
-INSERT OVERWRITE TABLE e1
+INSERT OVERWRITE TABLE e1_n3
     SELECT key, value
-INSERT OVERWRITE TABLE e2
+INSERT OVERWRITE TABLE e2_n4
     SELECT key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@e1
-POSTHOOK: Output: default@e2
-POSTHOOK: Lineage: e1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: e1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: e2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: select * from e1
+POSTHOOK: Output: default@e1_n3
+POSTHOOK: Output: default@e2_n4
+POSTHOOK: Lineage: e1_n3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: e1_n3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: e2_n4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: select * from e1_n3
 PREHOOK: type: QUERY
-PREHOOK: Input: default@e1
+PREHOOK: Input: default@e1_n3
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from e1
+POSTHOOK: query: select * from e1_n3
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@e1
+POSTHOOK: Input: default@e1_n3
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	val_0
 0	val_0
@@ -229,13 +229,13 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 103	val_103
 104	val_104
 104	val_104
-PREHOOK: query: select * from e2
+PREHOOK: query: select * from e2_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@e2
+PREHOOK: Input: default@e2_n4
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from e2
+POSTHOOK: query: select * from e2_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@e2
+POSTHOOK: Input: default@e2_n4
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 0
@@ -248,15 +248,15 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 104
 104
 PREHOOK: query: explain FROM (select key,value from src order by key) a
-INSERT OVERWRITE TABLE e1
+INSERT OVERWRITE TABLE e1_n3
     select key,value
-INSERT OVERWRITE TABLE e2
+INSERT OVERWRITE TABLE e2_n4
     select key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain FROM (select key,value from src order by key) a
-INSERT OVERWRITE TABLE e1
+INSERT OVERWRITE TABLE e1_n3
     select key,value
-INSERT OVERWRITE TABLE e2
+INSERT OVERWRITE TABLE e2_n4
     select key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -287,7 +287,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.e1
+                          name: default.e1_n3
                     Select Operator
                       expressions: _col0 (type: string)
                       outputColumnNames: _col0
@@ -299,7 +299,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.e2
+                            name: default.e2_n4
             Execution mode: vectorized
 
   Stage: Stage-0
@@ -310,7 +310,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.e1
+              name: default.e1_n3
 
   Stage: Stage-3
     Stats Work
@@ -324,40 +324,40 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.e2
+              name: default.e2_n4
 
   Stage: Stage-4
     Stats Work
       Basic Stats Work:
 
 PREHOOK: query: FROM (select key,value from src order by key) a
-INSERT OVERWRITE TABLE e1 
+INSERT OVERWRITE TABLE e1_n3 
     select key,value
-INSERT OVERWRITE TABLE e2 
+INSERT OVERWRITE TABLE e2_n4 
     select key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@e1
-PREHOOK: Output: default@e2
+PREHOOK: Output: default@e1_n3
+PREHOOK: Output: default@e2_n4
 POSTHOOK: query: FROM (select key,value from src order by key) a
-INSERT OVERWRITE TABLE e1 
+INSERT OVERWRITE TABLE e1_n3 
     select key,value
-INSERT OVERWRITE TABLE e2 
+INSERT OVERWRITE TABLE e2_n4 
     select key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@e1
-POSTHOOK: Output: default@e2
-POSTHOOK: Lineage: e1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: e1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: e2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: select * from e1
+POSTHOOK: Output: default@e1_n3
+POSTHOOK: Output: default@e2_n4
+POSTHOOK: Lineage: e1_n3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: e1_n3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: e2_n4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: select * from e1_n3
 PREHOOK: type: QUERY
-PREHOOK: Input: default@e1
+PREHOOK: Input: default@e1_n3
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from e1
+POSTHOOK: query: select * from e1_n3
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@e1
+POSTHOOK: Input: default@e1_n3
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	val_0
 0	val_0
@@ -859,13 +859,13 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 97	val_97
 98	val_98
 98	val_98
-PREHOOK: query: select * from e2
+PREHOOK: query: select * from e2_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@e2
+PREHOOK: Input: default@e2_n4
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from e2
+POSTHOOK: query: select * from e2_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@e2
+POSTHOOK: Input: default@e2_n4
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 0
@@ -1368,15 +1368,15 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 98
 98
 PREHOOK: query: explain FROM (select key,value from src order by key) a
-INSERT OVERWRITE TABLE e1
+INSERT OVERWRITE TABLE e1_n3
     select key,value limit 10
-INSERT OVERWRITE TABLE e2
+INSERT OVERWRITE TABLE e2_n4
     select key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain FROM (select key,value from src order by key) a
-INSERT OVERWRITE TABLE e1
+INSERT OVERWRITE TABLE e1_n3
     select key,value limit 10
-INSERT OVERWRITE TABLE e2
+INSERT OVERWRITE TABLE e2_n4
     select key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -1421,7 +1421,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.e2
+                            name: default.e2_n4
             Execution mode: vectorized
         Reducer 2 
             Execution mode: vectorized
@@ -1440,7 +1440,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.e1
+                        name: default.e1_n3
 
   Stage: Stage-0
     Move Operator
@@ -1450,7 +1450,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.e1
+              name: default.e1_n3
 
   Stage: Stage-3
     Stats Work
@@ -1464,49 +1464,49 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.e2
+              name: default.e2_n4
 
   Stage: Stage-4
     Stats Work
       Basic Stats Work:
 
 PREHOOK: query: FROM (select key,value from src order by key) a
-INSERT OVERWRITE TABLE e1 
+INSERT OVERWRITE TABLE e1_n3 
     select key,value limit 10
-INSERT OVERWRITE TABLE e2 
+INSERT OVERWRITE TABLE e2_n4 
     select key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@e1
-PREHOOK: Output: default@e2
+PREHOOK: Output: default@e1_n3
+PREHOOK: Output: default@e2_n4
 POSTHOOK: query: FROM (select key,value from src order by key) a
-INSERT OVERWRITE TABLE e1 
+INSERT OVERWRITE TABLE e1_n3 
     select key,value limit 10
-INSERT OVERWRITE TABLE e2 
+INSERT OVERWRITE TABLE e2_n4 
     select key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@e1
-POSTHOOK: Output: default@e2
-POSTHOOK: Lineage: e1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: e1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: e2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: select count(*) from e1
+POSTHOOK: Output: default@e1_n3
+POSTHOOK: Output: default@e2_n4
+POSTHOOK: Lineage: e1_n3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: e1_n3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: e2_n4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: select count(*) from e1_n3
 PREHOOK: type: QUERY
-PREHOOK: Input: default@e1
+PREHOOK: Input: default@e1_n3
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select count(*) from e1
+POSTHOOK: query: select count(*) from e1_n3
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@e1
+POSTHOOK: Input: default@e1_n3
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 10
-PREHOOK: query: select * from e2
+PREHOOK: query: select * from e2_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@e2
+PREHOOK: Input: default@e2_n4
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from e2
+POSTHOOK: query: select * from e2_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@e2
+POSTHOOK: Input: default@e2_n4
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 0
@@ -2008,19 +2008,19 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 97
 98
 98
-PREHOOK: query: drop table e1
+PREHOOK: query: drop table e1_n3
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@e1
-PREHOOK: Output: default@e1
-POSTHOOK: query: drop table e1
+PREHOOK: Input: default@e1_n3
+PREHOOK: Output: default@e1_n3
+POSTHOOK: query: drop table e1_n3
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@e1
-POSTHOOK: Output: default@e1
-PREHOOK: query: drop table e2
+POSTHOOK: Input: default@e1_n3
+POSTHOOK: Output: default@e1_n3
+PREHOOK: query: drop table e2_n4
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@e2
-PREHOOK: Output: default@e2
-POSTHOOK: query: drop table e2
+PREHOOK: Input: default@e2_n4
+PREHOOK: Output: default@e2_n4
+POSTHOOK: query: drop table e2_n4
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@e2
-POSTHOOK: Output: default@e2
+POSTHOOK: Input: default@e2_n4
+POSTHOOK: Output: default@e2_n4

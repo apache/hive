@@ -1,16 +1,16 @@
-PREHOOK: query: CREATE TABLE dest1(key INT, value DOUBLE) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE dest1_n67(key INT, value DOUBLE) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest1
-POSTHOOK: query: CREATE TABLE dest1(key INT, value DOUBLE) STORED AS TEXTFILE
+PREHOOK: Output: default@dest1_n67
+POSTHOOK: query: CREATE TABLE dest1_n67(key INT, value DOUBLE) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest1
+POSTHOOK: Output: default@dest1_n67
 PREHOOK: query: EXPLAIN
-FROM src INSERT OVERWRITE TABLE dest1 SELECT src.key, sum(substr(src.value,5)) GROUP BY src.key
+FROM src INSERT OVERWRITE TABLE dest1_n67 SELECT src.key, sum(substr(src.value,5)) GROUP BY src.key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-FROM src INSERT OVERWRITE TABLE dest1 SELECT src.key, sum(substr(src.value,5)) GROUP BY src.key
+FROM src INSERT OVERWRITE TABLE dest1_n67 SELECT src.key, sum(substr(src.value,5)) GROUP BY src.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -59,7 +59,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.dest1
+                  name: default.dest1_n67
             Select Operator
               expressions: _col0 (type: int), _col1 (type: double)
               outputColumnNames: key, value
@@ -84,7 +84,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n67
 
   Stage: Stage-2
     Stats Work
@@ -92,7 +92,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: int, double
-          Table: default.dest1
+          Table: default.dest1_n67
 
   Stage: Stage-3
     Map Reduce
@@ -117,23 +117,23 @@ STAGE PLANS:
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
-PREHOOK: query: FROM src INSERT OVERWRITE TABLE dest1 SELECT src.key, sum(substr(src.value,5)) GROUP BY src.key
+PREHOOK: query: FROM src INSERT OVERWRITE TABLE dest1_n67 SELECT src.key, sum(substr(src.value,5)) GROUP BY src.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@dest1
-POSTHOOK: query: FROM src INSERT OVERWRITE TABLE dest1 SELECT src.key, sum(substr(src.value,5)) GROUP BY src.key
+PREHOOK: Output: default@dest1_n67
+POSTHOOK: query: FROM src INSERT OVERWRITE TABLE dest1_n67 SELECT src.key, sum(substr(src.value,5)) GROUP BY src.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@dest1
-POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: Output: default@dest1_n67
+POSTHOOK: Lineage: dest1_n67.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n67.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT dest1_n67.* FROM dest1_n67
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n67
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: query: SELECT dest1_n67.* FROM dest1_n67
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n67
 #### A masked pattern was here ####
 0	0.0
 10	10.0

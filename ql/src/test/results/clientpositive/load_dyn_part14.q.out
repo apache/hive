@@ -1,19 +1,19 @@
-PREHOOK: query: create table if not exists nzhang_part14 (key string)
+PREHOOK: query: create table if not exists nzhang_part14_n0 (key string)
   partitioned by (value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@nzhang_part14
-POSTHOOK: query: create table if not exists nzhang_part14 (key string)
+PREHOOK: Output: default@nzhang_part14_n0
+POSTHOOK: query: create table if not exists nzhang_part14_n0 (key string)
   partitioned by (value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@nzhang_part14
-PREHOOK: query: describe extended nzhang_part14
+POSTHOOK: Output: default@nzhang_part14_n0
+PREHOOK: query: describe extended nzhang_part14_n0
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@nzhang_part14
-POSTHOOK: query: describe extended nzhang_part14
+PREHOOK: Input: default@nzhang_part14_n0
+POSTHOOK: query: describe extended nzhang_part14_n0
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@nzhang_part14
+POSTHOOK: Input: default@nzhang_part14_n0
 key                 	string              	                    
 value               	string              	                    
 	 	 
@@ -23,7 +23,7 @@ value               	string
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: explain
-insert overwrite table nzhang_part14 partition(value) 
+insert overwrite table nzhang_part14_n0 partition(value) 
 select key, value from (
   select * from (select 'k1' as key, cast(null as string) as value from src limit 2)a 
   union all
@@ -33,7 +33,7 @@ select key, value from (
 ) T
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-insert overwrite table nzhang_part14 partition(value) 
+insert overwrite table nzhang_part14_n0 partition(value) 
 select key, value from (
   select * from (select 'k1' as key, cast(null as string) as value from src limit 2)a 
   union all
@@ -99,7 +99,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.nzhang_part14
+                    name: default.nzhang_part14_n0
               Select Operator
                 expressions: _col0 (type: string), _col1 (type: string)
                 outputColumnNames: key, value
@@ -126,7 +126,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.nzhang_part14
+                    name: default.nzhang_part14_n0
               Select Operator
                 expressions: _col0 (type: string), _col1 (type: string)
                 outputColumnNames: key, value
@@ -153,7 +153,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.nzhang_part14
+                    name: default.nzhang_part14_n0
               Select Operator
                 expressions: _col0 (type: string), _col1 (type: string)
                 outputColumnNames: key, value
@@ -208,7 +208,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.nzhang_part14
+              name: default.nzhang_part14_n0
 
   Stage: Stage-3
     Stats Work
@@ -216,7 +216,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key
           Column Types: string
-          Table: default.nzhang_part14
+          Table: default.nzhang_part14_n0
 
   Stage: Stage-4
     Map Reduce
@@ -228,7 +228,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.nzhang_part14
+                  name: default.nzhang_part14_n0
 
   Stage: Stage-6
     Map Reduce
@@ -240,7 +240,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.nzhang_part14
+                  name: default.nzhang_part14_n0
 
   Stage: Stage-7
     Move Operator
@@ -308,7 +308,7 @@ STAGE PLANS:
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-PREHOOK: query: insert overwrite table nzhang_part14 partition(value) 
+PREHOOK: query: insert overwrite table nzhang_part14_n0 partition(value) 
 select key, value from (
   select * from (select 'k1' as key, cast(null as string) as value from src limit 2)a 
   union all
@@ -318,8 +318,8 @@ select key, value from (
 ) T
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@nzhang_part14
-POSTHOOK: query: insert overwrite table nzhang_part14 partition(value) 
+PREHOOK: Output: default@nzhang_part14_n0
+POSTHOOK: query: insert overwrite table nzhang_part14_n0 partition(value) 
 select key, value from (
   select * from (select 'k1' as key, cast(null as string) as value from src limit 2)a 
   union all
@@ -329,29 +329,29 @@ select key, value from (
 ) T
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@nzhang_part14@value= 
-POSTHOOK: Output: default@nzhang_part14@value=__HIVE_DEFAULT_PARTITION__
-POSTHOOK: Lineage: nzhang_part14 PARTITION(value= ).key EXPRESSION []
-POSTHOOK: Lineage: nzhang_part14 PARTITION(value=__HIVE_DEFAULT_PARTITION__).key EXPRESSION []
-PREHOOK: query: show partitions nzhang_part14
+POSTHOOK: Output: default@nzhang_part14_n0@value= 
+POSTHOOK: Output: default@nzhang_part14_n0@value=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: nzhang_part14_n0 PARTITION(value= ).key EXPRESSION []
+POSTHOOK: Lineage: nzhang_part14_n0 PARTITION(value=__HIVE_DEFAULT_PARTITION__).key EXPRESSION []
+PREHOOK: query: show partitions nzhang_part14_n0
 PREHOOK: type: SHOWPARTITIONS
-PREHOOK: Input: default@nzhang_part14
-POSTHOOK: query: show partitions nzhang_part14
+PREHOOK: Input: default@nzhang_part14_n0
+POSTHOOK: query: show partitions nzhang_part14_n0
 POSTHOOK: type: SHOWPARTITIONS
-POSTHOOK: Input: default@nzhang_part14
+POSTHOOK: Input: default@nzhang_part14_n0
 value= 
 value=__HIVE_DEFAULT_PARTITION__
-PREHOOK: query: select * from nzhang_part14 where value <> 'a'
+PREHOOK: query: select * from nzhang_part14_n0 where value <> 'a'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@nzhang_part14
-PREHOOK: Input: default@nzhang_part14@value= 
-PREHOOK: Input: default@nzhang_part14@value=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Input: default@nzhang_part14_n0
+PREHOOK: Input: default@nzhang_part14_n0@value= 
+PREHOOK: Input: default@nzhang_part14_n0@value=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
-POSTHOOK: query: select * from nzhang_part14 where value <> 'a'
+POSTHOOK: query: select * from nzhang_part14_n0 where value <> 'a'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@nzhang_part14
-POSTHOOK: Input: default@nzhang_part14@value= 
-POSTHOOK: Input: default@nzhang_part14@value=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Input: default@nzhang_part14_n0
+POSTHOOK: Input: default@nzhang_part14_n0@value= 
+POSTHOOK: Input: default@nzhang_part14_n0@value=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 k1	__HIVE_DEFAULT_PARTITION__
 k1	__HIVE_DEFAULT_PARTITION__

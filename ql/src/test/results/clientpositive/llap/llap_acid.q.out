@@ -1,8 +1,8 @@
-PREHOOK: query: DROP TABLE orc_llap
+PREHOOK: query: DROP TABLE orc_llap_n1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE orc_llap
+POSTHOOK: query: DROP TABLE orc_llap_n1
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE orc_llap (
+PREHOOK: query: CREATE TABLE orc_llap_n1 (
     cint INT,
     cbigint BIGINT,
     cfloat FLOAT,
@@ -11,8 +11,8 @@ partitioned by (csmallint smallint)
 clustered by (cint) into 2 buckets stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@orc_llap
-POSTHOOK: query: CREATE TABLE orc_llap (
+PREHOOK: Output: default@orc_llap_n1
+POSTHOOK: query: CREATE TABLE orc_llap_n1 (
     cint INT,
     cbigint BIGINT,
     cfloat FLOAT,
@@ -21,69 +21,69 @@ partitioned by (csmallint smallint)
 clustered by (cint) into 2 buckets stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@orc_llap
-PREHOOK: query: insert into table orc_llap partition (csmallint = 1)
+POSTHOOK: Output: default@orc_llap_n1
+PREHOOK: query: insert into table orc_llap_n1 partition (csmallint = 1)
 select cint, cbigint, cfloat, cdouble from alltypesorc
 where cdouble is not null order by cdouble asc limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
-PREHOOK: Output: default@orc_llap@csmallint=1
-POSTHOOK: query: insert into table orc_llap partition (csmallint = 1)
+PREHOOK: Output: default@orc_llap_n1@csmallint=1
+POSTHOOK: query: insert into table orc_llap_n1 partition (csmallint = 1)
 select cint, cbigint, cfloat, cdouble from alltypesorc
 where cdouble is not null order by cdouble asc limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
-POSTHOOK: Output: default@orc_llap@csmallint=1
-POSTHOOK: Lineage: orc_llap PARTITION(csmallint=1).cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_llap PARTITION(csmallint=1).cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_llap PARTITION(csmallint=1).cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
-POSTHOOK: Lineage: orc_llap PARTITION(csmallint=1).cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-PREHOOK: query: insert into table orc_llap partition (csmallint = 2)
+POSTHOOK: Output: default@orc_llap_n1@csmallint=1
+POSTHOOK: Lineage: orc_llap_n1 PARTITION(csmallint=1).cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n1 PARTITION(csmallint=1).cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n1 PARTITION(csmallint=1).cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n1 PARTITION(csmallint=1).cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+PREHOOK: query: insert into table orc_llap_n1 partition (csmallint = 2)
 select cint, cbigint, cfloat, cdouble from alltypesorc
 where cdouble is not null order by cdouble asc limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
-PREHOOK: Output: default@orc_llap@csmallint=2
-POSTHOOK: query: insert into table orc_llap partition (csmallint = 2)
+PREHOOK: Output: default@orc_llap_n1@csmallint=2
+POSTHOOK: query: insert into table orc_llap_n1 partition (csmallint = 2)
 select cint, cbigint, cfloat, cdouble from alltypesorc
 where cdouble is not null order by cdouble asc limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
-POSTHOOK: Output: default@orc_llap@csmallint=2
-POSTHOOK: Lineage: orc_llap PARTITION(csmallint=2).cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_llap PARTITION(csmallint=2).cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_llap PARTITION(csmallint=2).cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
-POSTHOOK: Lineage: orc_llap PARTITION(csmallint=2).cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
-PREHOOK: query: alter table orc_llap SET TBLPROPERTIES ('transactional'='true')
+POSTHOOK: Output: default@orc_llap_n1@csmallint=2
+POSTHOOK: Lineage: orc_llap_n1 PARTITION(csmallint=2).cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n1 PARTITION(csmallint=2).cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n1 PARTITION(csmallint=2).cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n1 PARTITION(csmallint=2).cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+PREHOOK: query: alter table orc_llap_n1 SET TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: ALTERTABLE_PROPERTIES
-PREHOOK: Input: default@orc_llap
-PREHOOK: Output: default@orc_llap
-POSTHOOK: query: alter table orc_llap SET TBLPROPERTIES ('transactional'='true')
+PREHOOK: Input: default@orc_llap_n1
+PREHOOK: Output: default@orc_llap_n1
+POSTHOOK: query: alter table orc_llap_n1 SET TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: ALTERTABLE_PROPERTIES
-POSTHOOK: Input: default@orc_llap
-POSTHOOK: Output: default@orc_llap
-PREHOOK: query: insert into table orc_llap partition (csmallint = 3)
+POSTHOOK: Input: default@orc_llap_n1
+POSTHOOK: Output: default@orc_llap_n1
+PREHOOK: query: insert into table orc_llap_n1 partition (csmallint = 3)
 select cint, cbigint, cfloat, cdouble from alltypesorc
 where cdouble is not null order by cdouble desc limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
-PREHOOK: Output: default@orc_llap@csmallint=3
-POSTHOOK: query: insert into table orc_llap partition (csmallint = 3)
+PREHOOK: Output: default@orc_llap_n1@csmallint=3
+POSTHOOK: query: insert into table orc_llap_n1 partition (csmallint = 3)
 select cint, cbigint, cfloat, cdouble from alltypesorc
 where cdouble is not null order by cdouble desc limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
-POSTHOOK: Output: default@orc_llap@csmallint=3
-POSTHOOK: Lineage: orc_llap PARTITION(csmallint=3).cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
-POSTHOOK: Lineage: orc_llap PARTITION(csmallint=3).cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_llap PARTITION(csmallint=3).cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
-POSTHOOK: Lineage: orc_llap PARTITION(csmallint=3).cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Output: default@orc_llap_n1@csmallint=3
+POSTHOOK: Lineage: orc_llap_n1 PARTITION(csmallint=3).cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n1 PARTITION(csmallint=3).cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n1 PARTITION(csmallint=3).cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n1 PARTITION(csmallint=3).cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
 PREHOOK: query: explain vectorization only detail
-select cint, csmallint, cbigint from orc_llap where cint is not null order
+select cint, csmallint, cbigint from orc_llap_n1 where cint is not null order
 by csmallint, cint
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization only detail
-select cint, csmallint, cbigint from orc_llap where cint is not null order
+select cint, csmallint, cbigint from orc_llap_n1 where cint is not null order
 by csmallint, cint
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
@@ -164,21 +164,21 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
 
-PREHOOK: query: select cint, csmallint, cbigint from orc_llap where cint is not null order
+PREHOOK: query: select cint, csmallint, cbigint from orc_llap_n1 where cint is not null order
 by csmallint, cint
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_llap
-PREHOOK: Input: default@orc_llap@csmallint=1
-PREHOOK: Input: default@orc_llap@csmallint=2
-PREHOOK: Input: default@orc_llap@csmallint=3
+PREHOOK: Input: default@orc_llap_n1
+PREHOOK: Input: default@orc_llap_n1@csmallint=1
+PREHOOK: Input: default@orc_llap_n1@csmallint=2
+PREHOOK: Input: default@orc_llap_n1@csmallint=3
 #### A masked pattern was here ####
-POSTHOOK: query: select cint, csmallint, cbigint from orc_llap where cint is not null order
+POSTHOOK: query: select cint, csmallint, cbigint from orc_llap_n1 where cint is not null order
 by csmallint, cint
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_llap
-POSTHOOK: Input: default@orc_llap@csmallint=1
-POSTHOOK: Input: default@orc_llap@csmallint=2
-POSTHOOK: Input: default@orc_llap@csmallint=3
+POSTHOOK: Input: default@orc_llap_n1
+POSTHOOK: Input: default@orc_llap_n1@csmallint=1
+POSTHOOK: Input: default@orc_llap_n1@csmallint=2
+POSTHOOK: Input: default@orc_llap_n1@csmallint=3
 #### A masked pattern was here ####
 -894716315	1	1864027286
 206154150	1	1864027286
@@ -210,23 +210,23 @@ POSTHOOK: Input: default@orc_llap@csmallint=3
 528534767	3	NULL
 528534767	3	NULL
 528534767	3	NULL
-PREHOOK: query: insert into table orc_llap partition (csmallint = 1) values (1, 1, 1, 1)
+PREHOOK: query: insert into table orc_llap_n1 partition (csmallint = 1) values (1, 1, 1, 1)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@orc_llap@csmallint=1
-POSTHOOK: query: insert into table orc_llap partition (csmallint = 1) values (1, 1, 1, 1)
+PREHOOK: Output: default@orc_llap_n1@csmallint=1
+POSTHOOK: query: insert into table orc_llap_n1 partition (csmallint = 1) values (1, 1, 1, 1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@orc_llap@csmallint=1
-POSTHOOK: Lineage: orc_llap PARTITION(csmallint=1).cbigint SCRIPT []
-POSTHOOK: Lineage: orc_llap PARTITION(csmallint=1).cdouble SCRIPT []
-POSTHOOK: Lineage: orc_llap PARTITION(csmallint=1).cfloat SCRIPT []
-POSTHOOK: Lineage: orc_llap PARTITION(csmallint=1).cint SCRIPT []
+POSTHOOK: Output: default@orc_llap_n1@csmallint=1
+POSTHOOK: Lineage: orc_llap_n1 PARTITION(csmallint=1).cbigint SCRIPT []
+POSTHOOK: Lineage: orc_llap_n1 PARTITION(csmallint=1).cdouble SCRIPT []
+POSTHOOK: Lineage: orc_llap_n1 PARTITION(csmallint=1).cfloat SCRIPT []
+POSTHOOK: Lineage: orc_llap_n1 PARTITION(csmallint=1).cint SCRIPT []
 PREHOOK: query: explain vectorization only detail
-update orc_llap set cbigint = 2 where cint = 1
+update orc_llap_n1 set cbigint = 2 where cint = 1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization only detail
-update orc_llap set cbigint = 2 where cint = 1
+update orc_llap_n1 set cbigint = 2 where cint = 1
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -314,30 +314,30 @@ STAGE PLANS:
 
   Stage: Stage-3
 
-PREHOOK: query: update orc_llap set cbigint = 2 where cint = 1
+PREHOOK: query: update orc_llap_n1 set cbigint = 2 where cint = 1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_llap
-PREHOOK: Input: default@orc_llap@csmallint=1
-PREHOOK: Input: default@orc_llap@csmallint=2
-PREHOOK: Input: default@orc_llap@csmallint=3
-PREHOOK: Output: default@orc_llap@csmallint=1
-PREHOOK: Output: default@orc_llap@csmallint=2
-PREHOOK: Output: default@orc_llap@csmallint=3
-POSTHOOK: query: update orc_llap set cbigint = 2 where cint = 1
+PREHOOK: Input: default@orc_llap_n1
+PREHOOK: Input: default@orc_llap_n1@csmallint=1
+PREHOOK: Input: default@orc_llap_n1@csmallint=2
+PREHOOK: Input: default@orc_llap_n1@csmallint=3
+PREHOOK: Output: default@orc_llap_n1@csmallint=1
+PREHOOK: Output: default@orc_llap_n1@csmallint=2
+PREHOOK: Output: default@orc_llap_n1@csmallint=3
+POSTHOOK: query: update orc_llap_n1 set cbigint = 2 where cint = 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_llap
-POSTHOOK: Input: default@orc_llap@csmallint=1
-POSTHOOK: Input: default@orc_llap@csmallint=2
-POSTHOOK: Input: default@orc_llap@csmallint=3
-POSTHOOK: Output: default@orc_llap@csmallint=1
-POSTHOOK: Output: default@orc_llap@csmallint=2
-POSTHOOK: Output: default@orc_llap@csmallint=3
+POSTHOOK: Input: default@orc_llap_n1
+POSTHOOK: Input: default@orc_llap_n1@csmallint=1
+POSTHOOK: Input: default@orc_llap_n1@csmallint=2
+POSTHOOK: Input: default@orc_llap_n1@csmallint=3
+POSTHOOK: Output: default@orc_llap_n1@csmallint=1
+POSTHOOK: Output: default@orc_llap_n1@csmallint=2
+POSTHOOK: Output: default@orc_llap_n1@csmallint=3
 PREHOOK: query: explain vectorization only detail
-select cint, csmallint, cbigint from orc_llap where cint is not null order
+select cint, csmallint, cbigint from orc_llap_n1 where cint is not null order
 by csmallint, cint
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization only detail
-select cint, csmallint, cbigint from orc_llap where cint is not null order
+select cint, csmallint, cbigint from orc_llap_n1 where cint is not null order
 by csmallint, cint
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
@@ -418,21 +418,21 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
 
-PREHOOK: query: select cint, csmallint, cbigint from orc_llap where cint is not null order
+PREHOOK: query: select cint, csmallint, cbigint from orc_llap_n1 where cint is not null order
 by csmallint, cint
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_llap
-PREHOOK: Input: default@orc_llap@csmallint=1
-PREHOOK: Input: default@orc_llap@csmallint=2
-PREHOOK: Input: default@orc_llap@csmallint=3
+PREHOOK: Input: default@orc_llap_n1
+PREHOOK: Input: default@orc_llap_n1@csmallint=1
+PREHOOK: Input: default@orc_llap_n1@csmallint=2
+PREHOOK: Input: default@orc_llap_n1@csmallint=3
 #### A masked pattern was here ####
-POSTHOOK: query: select cint, csmallint, cbigint from orc_llap where cint is not null order
+POSTHOOK: query: select cint, csmallint, cbigint from orc_llap_n1 where cint is not null order
 by csmallint, cint
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_llap
-POSTHOOK: Input: default@orc_llap@csmallint=1
-POSTHOOK: Input: default@orc_llap@csmallint=2
-POSTHOOK: Input: default@orc_llap@csmallint=3
+POSTHOOK: Input: default@orc_llap_n1
+POSTHOOK: Input: default@orc_llap_n1@csmallint=1
+POSTHOOK: Input: default@orc_llap_n1@csmallint=2
+POSTHOOK: Input: default@orc_llap_n1@csmallint=3
 #### A masked pattern was here ####
 -894716315	1	1864027286
 1	1	2
@@ -465,11 +465,11 @@ POSTHOOK: Input: default@orc_llap@csmallint=3
 528534767	3	NULL
 528534767	3	NULL
 528534767	3	NULL
-PREHOOK: query: DROP TABLE orc_llap
+PREHOOK: query: DROP TABLE orc_llap_n1
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@orc_llap
-PREHOOK: Output: default@orc_llap
-POSTHOOK: query: DROP TABLE orc_llap
+PREHOOK: Input: default@orc_llap_n1
+PREHOOK: Output: default@orc_llap_n1
+POSTHOOK: query: DROP TABLE orc_llap_n1
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@orc_llap
-POSTHOOK: Output: default@orc_llap
+POSTHOOK: Input: default@orc_llap_n1
+POSTHOOK: Output: default@orc_llap_n1

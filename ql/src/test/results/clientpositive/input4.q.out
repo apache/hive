@@ -1,16 +1,16 @@
-PREHOOK: query: CREATE TABLE INPUT4(KEY STRING, VALUE STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE INPUT4_n0(KEY STRING, VALUE STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@INPUT4
-POSTHOOK: query: CREATE TABLE INPUT4(KEY STRING, VALUE STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@INPUT4_n0
+POSTHOOK: query: CREATE TABLE INPUT4_n0(KEY STRING, VALUE STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@INPUT4
+POSTHOOK: Output: default@INPUT4_n0
 PREHOOK: query: EXPLAIN
-LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE INPUT4
+LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE INPUT4_n0
 PREHOOK: type: LOAD
 POSTHOOK: query: EXPLAIN
-LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE INPUT4
+LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE INPUT4_n0
 POSTHOOK: type: LOAD
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -25,34 +25,34 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.input4
+              name: default.input4_n0
 
   Stage: Stage-1
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE INPUT4
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE INPUT4_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@input4
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE INPUT4
+PREHOOK: Output: default@input4_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE INPUT4_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@input4
+POSTHOOK: Output: default@input4_n0
 PREHOOK: query: EXPLAIN FORMATTED
-SELECT Input4Alias.VALUE, Input4Alias.KEY FROM INPUT4 AS Input4Alias
+SELECT Input4Alias.VALUE, Input4Alias.KEY FROM INPUT4_n0 AS Input4Alias
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN FORMATTED
-SELECT Input4Alias.VALUE, Input4Alias.KEY FROM INPUT4 AS Input4Alias
+SELECT Input4Alias.VALUE, Input4Alias.KEY FROM INPUT4_n0 AS Input4Alias
 POSTHOOK: type: QUERY
-{"STAGE DEPENDENCIES":{"Stage-0":{"ROOT STAGE":"TRUE"}},"STAGE PLANS":{"Stage-0":{"Fetch Operator":{"limit:":"-1","Processor Tree:":{"TableScan":{"alias:":"input4alias","columns:":["value","key"],"database:":"default","Statistics:":"Num rows: 1 Data size: 58120 Basic stats: COMPLETE Column stats: NONE","table:":"input4","isTempTable:":"false","OperatorId:":"TS_0","children":{"Select Operator":{"expressions:":"value (type: string), key (type: string)","columnExprMap:":{"_col0":"value","_col1":"key"},"outputColumnNames:":["_col0","_col1"],"Statistics:":"Num rows: 1 Data size: 58120 Basic stats: COMPLETE Column stats: NONE","OperatorId:":"SEL_1","children":{"ListSink":{"OperatorId:":"LIST_SINK_3"}}}}}}}}}}
-PREHOOK: query: SELECT Input4Alias.VALUE, Input4Alias.KEY FROM INPUT4 AS Input4Alias
+{"STAGE DEPENDENCIES":{"Stage-0":{"ROOT STAGE":"TRUE"}},"STAGE PLANS":{"Stage-0":{"Fetch Operator":{"limit:":"-1","Processor Tree:":{"TableScan":{"alias:":"input4alias","columns:":["value","key"],"database:":"default","Statistics:":"Num rows: 1 Data size: 58120 Basic stats: COMPLETE Column stats: NONE","table:":"input4_n0","isTempTable:":"false","OperatorId:":"TS_0","children":{"Select Operator":{"expressions:":"value (type: string), key (type: string)","columnExprMap:":{"_col0":"value","_col1":"key"},"outputColumnNames:":["_col0","_col1"],"Statistics:":"Num rows: 1 Data size: 58120 Basic stats: COMPLETE Column stats: NONE","OperatorId:":"SEL_1","children":{"ListSink":{"OperatorId:":"LIST_SINK_3"}}}}}}}}}}
+PREHOOK: query: SELECT Input4Alias.VALUE, Input4Alias.KEY FROM INPUT4_n0 AS Input4Alias
 PREHOOK: type: QUERY
-PREHOOK: Input: default@input4
+PREHOOK: Input: default@input4_n0
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT Input4Alias.VALUE, Input4Alias.KEY FROM INPUT4 AS Input4Alias
+POSTHOOK: query: SELECT Input4Alias.VALUE, Input4Alias.KEY FROM INPUT4_n0 AS Input4Alias
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@input4
+POSTHOOK: Input: default@input4_n0
 #### A masked pattern was here ####
 val_238	238
 val_86	86

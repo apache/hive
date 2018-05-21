@@ -1,18 +1,18 @@
-PREHOOK: query: CREATE TABLE dest1(key INT, value STRING, hr STRING, ds STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE dest1_n45(key INT, value STRING, hr STRING, ds STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest1
-POSTHOOK: query: CREATE TABLE dest1(key INT, value STRING, hr STRING, ds STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@dest1_n45
+POSTHOOK: query: CREATE TABLE dest1_n45(key INT, value STRING, hr STRING, ds STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest1
+POSTHOOK: Output: default@dest1_n45
 PREHOOK: query: EXPLAIN EXTENDED
 FROM srcpart
-INSERT OVERWRITE TABLE dest1 SELECT srcpart.key, srcpart.value, srcpart.hr, srcpart.ds WHERE srcpart.key < 100 and srcpart.ds = '2008-04-08' and srcpart.hr = '12'
+INSERT OVERWRITE TABLE dest1_n45 SELECT srcpart.key, srcpart.value, srcpart.hr, srcpart.ds WHERE srcpart.key < 100 and srcpart.ds = '2008-04-08' and srcpart.hr = '12'
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED
 FROM srcpart
-INSERT OVERWRITE TABLE dest1 SELECT srcpart.key, srcpart.value, srcpart.hr, srcpart.ds WHERE srcpart.key < 100 and srcpart.ds = '2008-04-08' and srcpart.hr = '12'
+INSERT OVERWRITE TABLE dest1_n45 SELECT srcpart.key, srcpart.value, srcpart.hr, srcpart.ds WHERE srcpart.key < 100 and srcpart.ds = '2008-04-08' and srcpart.hr = '12'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -59,17 +59,17 @@ STAGE PLANS:
                         columns.comments 
                         columns.types int:string:string:string
 #### A masked pattern was here ####
-                        name default.dest1
+                        name default.dest1_n45
                         numFiles 0
                         numRows 0
                         rawDataSize 0
-                        serialization.ddl struct dest1 { i32 key, string value, string hr, string ds}
+                        serialization.ddl struct dest1_n45 { i32 key, string value, string hr, string ds}
                         serialization.format 1
                         serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         totalSize 0
 #### A masked pattern was here ####
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.dest1
+                      name: default.dest1_n45
                   TotalFiles: 1
                   GatherStats: true
                   MultiFileSpray: false
@@ -199,17 +199,17 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:string:string:string
 #### A masked pattern was here ####
-                name default.dest1
+                name default.dest1_n45
                 numFiles 0
                 numRows 0
                 rawDataSize 0
-                serialization.ddl struct dest1 { i32 key, string value, string hr, string ds}
+                serialization.ddl struct dest1_n45 { i32 key, string value, string hr, string ds}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n45
 
   Stage: Stage-2
     Stats Work
@@ -218,7 +218,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value, hr, ds
           Column Types: int, string, string, string
-          Table: default.dest1
+          Table: default.dest1_n45
           Is Table Level Stats: true
 
   Stage: Stage-3
@@ -243,17 +243,17 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:string:string:string
 #### A masked pattern was here ####
-                    name default.dest1
+                    name default.dest1_n45
                     numFiles 0
                     numRows 0
                     rawDataSize 0
-                    serialization.ddl struct dest1 { i32 key, string value, string hr, string ds}
+                    serialization.ddl struct dest1_n45 { i32 key, string value, string hr, string ds}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 0
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.dest1
+                  name: default.dest1_n45
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
@@ -274,11 +274,11 @@ STAGE PLANS:
               columns.comments 
               columns.types int:string:string:string
 #### A masked pattern was here ####
-              name default.dest1
+              name default.dest1_n45
               numFiles 0
               numRows 0
               rawDataSize 0
-              serialization.ddl struct dest1 { i32 key, string value, string hr, string ds}
+              serialization.ddl struct dest1_n45 { i32 key, string value, string hr, string ds}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 0
@@ -296,18 +296,18 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:string:string:string
 #### A masked pattern was here ####
-                name default.dest1
+                name default.dest1_n45
                 numFiles 0
                 numRows 0
                 rawDataSize 0
-                serialization.ddl struct dest1 { i32 key, string value, string hr, string ds}
+                serialization.ddl struct dest1_n45 { i32 key, string value, string hr, string ds}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
-            name: default.dest1
+              name: default.dest1_n45
+            name: default.dest1_n45
       Truncated Path -> Alias:
 #### A masked pattern was here ####
 
@@ -333,17 +333,17 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int:string:string:string
 #### A masked pattern was here ####
-                    name default.dest1
+                    name default.dest1_n45
                     numFiles 0
                     numRows 0
                     rawDataSize 0
-                    serialization.ddl struct dest1 { i32 key, string value, string hr, string ds}
+                    serialization.ddl struct dest1_n45 { i32 key, string value, string hr, string ds}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 0
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.dest1
+                  name: default.dest1_n45
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
@@ -364,11 +364,11 @@ STAGE PLANS:
               columns.comments 
               columns.types int:string:string:string
 #### A masked pattern was here ####
-              name default.dest1
+              name default.dest1_n45
               numFiles 0
               numRows 0
               rawDataSize 0
-              serialization.ddl struct dest1 { i32 key, string value, string hr, string ds}
+              serialization.ddl struct dest1_n45 { i32 key, string value, string hr, string ds}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 0
@@ -386,18 +386,18 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:string:string:string
 #### A masked pattern was here ####
-                name default.dest1
+                name default.dest1_n45
                 numFiles 0
                 numRows 0
                 rawDataSize 0
-                serialization.ddl struct dest1 { i32 key, string value, string hr, string ds}
+                serialization.ddl struct dest1_n45 { i32 key, string value, string hr, string ds}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
-            name: default.dest1
+              name: default.dest1_n45
+            name: default.dest1_n45
       Truncated Path -> Alias:
 #### A masked pattern was here ####
 
@@ -408,28 +408,28 @@ STAGE PLANS:
 #### A masked pattern was here ####
 
 PREHOOK: query: FROM srcpart
-INSERT OVERWRITE TABLE dest1 SELECT srcpart.key, srcpart.value, srcpart.hr, srcpart.ds WHERE srcpart.key < 100 and srcpart.ds = '2008-04-08' and srcpart.hr = '12'
+INSERT OVERWRITE TABLE dest1_n45 SELECT srcpart.key, srcpart.value, srcpart.hr, srcpart.ds WHERE srcpart.key < 100 and srcpart.ds = '2008-04-08' and srcpart.hr = '12'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-PREHOOK: Output: default@dest1
+PREHOOK: Output: default@dest1_n45
 POSTHOOK: query: FROM srcpart
-INSERT OVERWRITE TABLE dest1 SELECT srcpart.key, srcpart.value, srcpart.hr, srcpart.ds WHERE srcpart.key < 100 and srcpart.ds = '2008-04-08' and srcpart.hr = '12'
+INSERT OVERWRITE TABLE dest1_n45 SELECT srcpart.key, srcpart.value, srcpart.hr, srcpart.ds WHERE srcpart.key < 100 and srcpart.ds = '2008-04-08' and srcpart.hr = '12'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-POSTHOOK: Output: default@dest1
-POSTHOOK: Lineage: dest1.ds SIMPLE []
-POSTHOOK: Lineage: dest1.hr SIMPLE []
-POSTHOOK: Lineage: dest1.key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: Output: default@dest1_n45
+POSTHOOK: Lineage: dest1_n45.ds SIMPLE []
+POSTHOOK: Lineage: dest1_n45.hr SIMPLE []
+POSTHOOK: Lineage: dest1_n45.key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n45.value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT dest1_n45.* FROM dest1_n45
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest1_n45
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: query: SELECT dest1_n45.* FROM dest1_n45
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest1_n45
 #### A masked pattern was here ####
 86	val_86	12	2008-04-08
 27	val_27	12	2008-04-08

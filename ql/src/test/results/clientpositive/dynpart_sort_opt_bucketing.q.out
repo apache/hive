@@ -35,11 +35,11 @@ POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@t1_staging
 POSTHOOK: Output: default@t1_staging@e=epart
-PREHOOK: query: drop table t1
+PREHOOK: query: drop table t1_n147
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table t1
+POSTHOOK: query: drop table t1_n147
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table t1(
+PREHOOK: query: create table t1_n147(
 a string,
 b int,
 c int,
@@ -49,8 +49,8 @@ clustered by(a)
 sorted by(a desc) into 10 buckets stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t1
-POSTHOOK: query: create table t1(
+PREHOOK: Output: default@t1_n147
+POSTHOOK: query: create table t1_n147(
 a string,
 b int,
 c int,
@@ -60,21 +60,21 @@ clustered by(a)
 sorted by(a desc) into 10 buckets stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t1
-PREHOOK: query: insert overwrite table t1 partition(e) select a,b,c,d,'epart' from t1_staging
+POSTHOOK: Output: default@t1_n147
+PREHOOK: query: insert overwrite table t1_n147 partition(e) select a,b,c,d,'epart' from t1_staging
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1_staging
 PREHOOK: Input: default@t1_staging@e=epart
-PREHOOK: Output: default@t1
-POSTHOOK: query: insert overwrite table t1 partition(e) select a,b,c,d,'epart' from t1_staging
+PREHOOK: Output: default@t1_n147
+POSTHOOK: query: insert overwrite table t1_n147 partition(e) select a,b,c,d,'epart' from t1_staging
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1_staging
 POSTHOOK: Input: default@t1_staging@e=epart
-POSTHOOK: Output: default@t1@e=epart
-POSTHOOK: Lineage: t1 PARTITION(e=epart).a SIMPLE [(t1_staging)t1_staging.FieldSchema(name:a, type:string, comment:null), ]
-POSTHOOK: Lineage: t1 PARTITION(e=epart).b SIMPLE [(t1_staging)t1_staging.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: t1 PARTITION(e=epart).c SIMPLE [(t1_staging)t1_staging.FieldSchema(name:c, type:int, comment:null), ]
-POSTHOOK: Lineage: t1 PARTITION(e=epart).d SIMPLE [(t1_staging)t1_staging.FieldSchema(name:d, type:string, comment:null), ]
+POSTHOOK: Output: default@t1_n147@e=epart
+POSTHOOK: Lineage: t1_n147 PARTITION(e=epart).a SIMPLE [(t1_staging)t1_staging.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: t1_n147 PARTITION(e=epart).b SIMPLE [(t1_staging)t1_staging.FieldSchema(name:b, type:int, comment:null), ]
+POSTHOOK: Lineage: t1_n147 PARTITION(e=epart).c SIMPLE [(t1_staging)t1_staging.FieldSchema(name:c, type:int, comment:null), ]
+POSTHOOK: Lineage: t1_n147 PARTITION(e=epart).d SIMPLE [(t1_staging)t1_staging.FieldSchema(name:d, type:string, comment:null), ]
 PREHOOK: query: select 'bucket_0'
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -134,15 +134,15 @@ fffbe3c110c390ec20218e5ad4a026ff515668ed55488b717319b556daa962a1002015-01-21
 fffb1b226efc3cfaac8d73647ce4fa4e82413d67265fb55366ac3a4996518738012015-01-21
 fff56191e39b15f0e2f04984c70152fb1bde2ecba52ff5a73b4c28bf4d58c017002015-01-21
 fff4166378aa9d94cd4f8a9cd543375890a61b4f09a57dbfb31a66b33b3e3fd9\N\N2015-01-21
-PREHOOK: query: drop table t1
+PREHOOK: query: drop table t1_n147
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@t1
-POSTHOOK: query: drop table t1
+PREHOOK: Input: default@t1_n147
+PREHOOK: Output: default@t1_n147
+POSTHOOK: query: drop table t1_n147
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@t1
-PREHOOK: query: create table t1(
+POSTHOOK: Input: default@t1_n147
+POSTHOOK: Output: default@t1_n147
+PREHOOK: query: create table t1_n147(
 a string,
 b int,
 c int,
@@ -152,8 +152,8 @@ clustered by(a)
 sorted by(a desc) into 10 buckets stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t1
-POSTHOOK: query: create table t1(
+PREHOOK: Output: default@t1_n147
+POSTHOOK: query: create table t1_n147(
 a string,
 b int,
 c int,
@@ -163,21 +163,21 @@ clustered by(a)
 sorted by(a desc) into 10 buckets stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t1
-PREHOOK: query: insert overwrite table t1 partition(e) select a,b,c,d,'epart' from t1_staging
+POSTHOOK: Output: default@t1_n147
+PREHOOK: query: insert overwrite table t1_n147 partition(e) select a,b,c,d,'epart' from t1_staging
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1_staging
 PREHOOK: Input: default@t1_staging@e=epart
-PREHOOK: Output: default@t1
-POSTHOOK: query: insert overwrite table t1 partition(e) select a,b,c,d,'epart' from t1_staging
+PREHOOK: Output: default@t1_n147
+POSTHOOK: query: insert overwrite table t1_n147 partition(e) select a,b,c,d,'epart' from t1_staging
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1_staging
 POSTHOOK: Input: default@t1_staging@e=epart
-POSTHOOK: Output: default@t1@e=epart
-POSTHOOK: Lineage: t1 PARTITION(e=epart).a SIMPLE [(t1_staging)t1_staging.FieldSchema(name:a, type:string, comment:null), ]
-POSTHOOK: Lineage: t1 PARTITION(e=epart).b SIMPLE [(t1_staging)t1_staging.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: t1 PARTITION(e=epart).c SIMPLE [(t1_staging)t1_staging.FieldSchema(name:c, type:int, comment:null), ]
-POSTHOOK: Lineage: t1 PARTITION(e=epart).d SIMPLE [(t1_staging)t1_staging.FieldSchema(name:d, type:string, comment:null), ]
+POSTHOOK: Output: default@t1_n147@e=epart
+POSTHOOK: Lineage: t1_n147 PARTITION(e=epart).a SIMPLE [(t1_staging)t1_staging.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: t1_n147 PARTITION(e=epart).b SIMPLE [(t1_staging)t1_staging.FieldSchema(name:b, type:int, comment:null), ]
+POSTHOOK: Lineage: t1_n147 PARTITION(e=epart).c SIMPLE [(t1_staging)t1_staging.FieldSchema(name:c, type:int, comment:null), ]
+POSTHOOK: Lineage: t1_n147 PARTITION(e=epart).d SIMPLE [(t1_staging)t1_staging.FieldSchema(name:d, type:string, comment:null), ]
 PREHOOK: query: select 'bucket_0'
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table

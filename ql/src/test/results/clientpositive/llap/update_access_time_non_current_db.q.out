@@ -10,14 +10,14 @@ PREHOOK: Input: database:temp1
 POSTHOOK: query: use temp1
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:temp1
-PREHOOK: query: create table test1(id int)
+PREHOOK: query: create table test1_n3(id int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:temp1
-PREHOOK: Output: temp1@test1
-POSTHOOK: query: create table test1(id int)
+PREHOOK: Output: temp1@test1_n3
+POSTHOOK: query: create table test1_n3(id int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:temp1
-POSTHOOK: Output: temp1@test1
+POSTHOOK: Output: temp1@test1_n3
 PREHOOK: query: create database temp2
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:temp2
@@ -30,18 +30,18 @@ PREHOOK: Input: database:temp2
 POSTHOOK: query: use temp2
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:temp2
-PREHOOK: query: create table test2(id int)
+PREHOOK: query: create table test2_n1(id int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:temp2
-PREHOOK: Output: temp2@test2
-POSTHOOK: query: create table test2(id int)
+PREHOOK: Output: temp2@test2_n1
+POSTHOOK: query: create table test2_n1(id int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:temp2
-POSTHOOK: Output: temp2@test2
+POSTHOOK: Output: temp2@test2_n1
 POSTHOOK: query: use temp1
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:temp1
-POSTHOOK: query: desc temp2.test2
+POSTHOOK: query: desc temp2.test2_n1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: temp2@test2
+POSTHOOK: Input: temp2@test2_n1
 id                  	int                 	                    

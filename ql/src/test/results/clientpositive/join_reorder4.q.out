@@ -1,54 +1,54 @@
-PREHOOK: query: CREATE TABLE T1(key1 STRING, val1 STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE T1_n134(key1 STRING, val1 STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1
-POSTHOOK: query: CREATE TABLE T1(key1 STRING, val1 STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@T1_n134
+POSTHOOK: query: CREATE TABLE T1_n134(key1 STRING, val1 STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1
-PREHOOK: query: CREATE TABLE T2(key2 STRING, val2 STRING) STORED AS TEXTFILE
+POSTHOOK: Output: default@T1_n134
+PREHOOK: query: CREATE TABLE T2_n80(key2 STRING, val2 STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T2
-POSTHOOK: query: CREATE TABLE T2(key2 STRING, val2 STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@T2_n80
+POSTHOOK: query: CREATE TABLE T2_n80(key2 STRING, val2 STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T2
-PREHOOK: query: CREATE TABLE T3(key3 STRING, val3 STRING) STORED AS TEXTFILE
+POSTHOOK: Output: default@T2_n80
+PREHOOK: query: CREATE TABLE T3_n32(key3 STRING, val3 STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T3
-POSTHOOK: query: CREATE TABLE T3(key3 STRING, val3 STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@T3_n32
+POSTHOOK: query: CREATE TABLE T3_n32(key3 STRING, val3 STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T3
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1
+POSTHOOK: Output: default@T3_n32
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_n134
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1
+PREHOOK: Output: default@t1_n134
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_n134
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2
+POSTHOOK: Output: default@t1_n134
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2_n80
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t2
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2
+PREHOOK: Output: default@t2_n80
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2_n80
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t2
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T3.txt' INTO TABLE T3
+POSTHOOK: Output: default@t2_n80
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T3.txt' INTO TABLE T3_n32
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t3
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T3.txt' INTO TABLE T3
+PREHOOK: Output: default@t3_n32
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T3.txt' INTO TABLE T3_n32
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t3
-PREHOOK: query: explain select /*+ STREAMTABLE(a) */ a.*, b.*, c.* from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3
+POSTHOOK: Output: default@t3_n32
+PREHOOK: query: explain select /*+ STREAMTABLE(a) */ a.*, b.*, c.* from T1_n134 a join T2_n80 b on a.key1=b.key2 join T3_n32 c on a.key1=c.key3
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select /*+ STREAMTABLE(a) */ a.*, b.*, c.* from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3
+POSTHOOK: query: explain select /*+ STREAMTABLE(a) */ a.*, b.*, c.* from T1_n134 a join T2_n80 b on a.key1=b.key2 join T3_n32 c on a.key1=c.key3
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -123,22 +123,22 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select /*+ STREAMTABLE(a) */ a.*, b.*, c.* from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3
+PREHOOK: query: select /*+ STREAMTABLE(a) */ a.*, b.*, c.* from T1_n134 a join T2_n80 b on a.key1=b.key2 join T3_n32 c on a.key1=c.key3
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
-PREHOOK: Input: default@t3
+PREHOOK: Input: default@t1_n134
+PREHOOK: Input: default@t2_n80
+PREHOOK: Input: default@t3_n32
 #### A masked pattern was here ####
-POSTHOOK: query: select /*+ STREAMTABLE(a) */ a.*, b.*, c.* from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3
+POSTHOOK: query: select /*+ STREAMTABLE(a) */ a.*, b.*, c.* from T1_n134 a join T2_n80 b on a.key1=b.key2 join T3_n32 c on a.key1=c.key3
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
-POSTHOOK: Input: default@t3
+POSTHOOK: Input: default@t1_n134
+POSTHOOK: Input: default@t2_n80
+POSTHOOK: Input: default@t3_n32
 #### A masked pattern was here ####
 2	12	2	22	2	12
-PREHOOK: query: explain select /*+ STREAMTABLE(b) */ a.*, b.*, c.* from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3
+PREHOOK: query: explain select /*+ STREAMTABLE(b) */ a.*, b.*, c.* from T1_n134 a join T2_n80 b on a.key1=b.key2 join T3_n32 c on a.key1=c.key3
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select /*+ STREAMTABLE(b) */ a.*, b.*, c.* from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3
+POSTHOOK: query: explain select /*+ STREAMTABLE(b) */ a.*, b.*, c.* from T1_n134 a join T2_n80 b on a.key1=b.key2 join T3_n32 c on a.key1=c.key3
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -213,22 +213,22 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select /*+ STREAMTABLE(b) */ a.*, b.*, c.* from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3
+PREHOOK: query: select /*+ STREAMTABLE(b) */ a.*, b.*, c.* from T1_n134 a join T2_n80 b on a.key1=b.key2 join T3_n32 c on a.key1=c.key3
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
-PREHOOK: Input: default@t3
+PREHOOK: Input: default@t1_n134
+PREHOOK: Input: default@t2_n80
+PREHOOK: Input: default@t3_n32
 #### A masked pattern was here ####
-POSTHOOK: query: select /*+ STREAMTABLE(b) */ a.*, b.*, c.* from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3
+POSTHOOK: query: select /*+ STREAMTABLE(b) */ a.*, b.*, c.* from T1_n134 a join T2_n80 b on a.key1=b.key2 join T3_n32 c on a.key1=c.key3
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
-POSTHOOK: Input: default@t3
+POSTHOOK: Input: default@t1_n134
+POSTHOOK: Input: default@t2_n80
+POSTHOOK: Input: default@t3_n32
 #### A masked pattern was here ####
 2	12	2	22	2	12
-PREHOOK: query: explain select /*+ STREAMTABLE(c) */ a.*, b.*, c.* from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3
+PREHOOK: query: explain select /*+ STREAMTABLE(c) */ a.*, b.*, c.* from T1_n134 a join T2_n80 b on a.key1=b.key2 join T3_n32 c on a.key1=c.key3
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select /*+ STREAMTABLE(c) */ a.*, b.*, c.* from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3
+POSTHOOK: query: explain select /*+ STREAMTABLE(c) */ a.*, b.*, c.* from T1_n134 a join T2_n80 b on a.key1=b.key2 join T3_n32 c on a.key1=c.key3
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -303,16 +303,16 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select /*+ STREAMTABLE(c) */ a.*, b.*, c.* from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3
+PREHOOK: query: select /*+ STREAMTABLE(c) */ a.*, b.*, c.* from T1_n134 a join T2_n80 b on a.key1=b.key2 join T3_n32 c on a.key1=c.key3
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
-PREHOOK: Input: default@t3
+PREHOOK: Input: default@t1_n134
+PREHOOK: Input: default@t2_n80
+PREHOOK: Input: default@t3_n32
 #### A masked pattern was here ####
-POSTHOOK: query: select /*+ STREAMTABLE(c) */ a.*, b.*, c.* from T1 a join T2 b on a.key1=b.key2 join T3 c on a.key1=c.key3
+POSTHOOK: query: select /*+ STREAMTABLE(c) */ a.*, b.*, c.* from T1_n134 a join T2_n80 b on a.key1=b.key2 join T3_n32 c on a.key1=c.key3
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
-POSTHOOK: Input: default@t3
+POSTHOOK: Input: default@t1_n134
+POSTHOOK: Input: default@t2_n80
+POSTHOOK: Input: default@t3_n32
 #### A masked pattern was here ####
 2	12	2	22	2	12

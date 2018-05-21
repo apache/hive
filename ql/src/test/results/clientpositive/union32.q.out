@@ -1,38 +1,38 @@
-PREHOOK: query: CREATE TABLE t1 AS SELECT * FROM src WHERE key < 10
+PREHOOK: query: CREATE TABLE t1_n70 AS SELECT * FROM src WHERE key < 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t1
-POSTHOOK: query: CREATE TABLE t1 AS SELECT * FROM src WHERE key < 10
+PREHOOK: Output: default@t1_n70
+POSTHOOK: query: CREATE TABLE t1_n70 AS SELECT * FROM src WHERE key < 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t1
-POSTHOOK: Lineage: t1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: CREATE TABLE t2 AS SELECT * FROM src WHERE key < 10
+POSTHOOK: Output: default@t1_n70
+POSTHOOK: Lineage: t1_n70.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1_n70.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: CREATE TABLE t2_n43 AS SELECT * FROM src WHERE key < 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t2
-POSTHOOK: query: CREATE TABLE t2 AS SELECT * FROM src WHERE key < 10
+PREHOOK: Output: default@t2_n43
+POSTHOOK: query: CREATE TABLE t2_n43 AS SELECT * FROM src WHERE key < 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t2
-POSTHOOK: Lineage: t2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: t2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@t2_n43
+POSTHOOK: Lineage: t2_n43.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t2_n43.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: EXPLAIN
 SELECT * FROM 
-(SELECT CAST(key AS DOUBLE) AS key FROM t1
+(SELECT CAST(key AS DOUBLE) AS key FROM t1_n70
 UNION ALL
-SELECT CAST(key AS BIGINT) AS key FROM t2) a
+SELECT CAST(key AS BIGINT) AS key FROM t2_n43) a
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT * FROM 
-(SELECT CAST(key AS DOUBLE) AS key FROM t1
+(SELECT CAST(key AS DOUBLE) AS key FROM t1_n70
 UNION ALL
-SELECT CAST(key AS BIGINT) AS key FROM t2) a
+SELECT CAST(key AS BIGINT) AS key FROM t2_n43) a
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -43,7 +43,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t1
+            alias: t1_n70
             Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: UDFToDouble(key) (type: double)
@@ -59,7 +59,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
-            alias: t2
+            alias: t2_n43
             Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: UDFToDouble(UDFToLong(key)) (type: double)
@@ -82,20 +82,20 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT * FROM 
-(SELECT CAST(key AS DOUBLE) AS key FROM t1
+(SELECT CAST(key AS DOUBLE) AS key FROM t1_n70
 UNION ALL
-SELECT CAST(key AS BIGINT) AS key FROM t2) a
+SELECT CAST(key AS BIGINT) AS key FROM t2_n43) a
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
+PREHOOK: Input: default@t1_n70
+PREHOOK: Input: default@t2_n43
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM 
-(SELECT CAST(key AS DOUBLE) AS key FROM t1
+(SELECT CAST(key AS DOUBLE) AS key FROM t1_n70
 UNION ALL
-SELECT CAST(key AS BIGINT) AS key FROM t2) a
+SELECT CAST(key AS BIGINT) AS key FROM t2_n43) a
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t1_n70
+POSTHOOK: Input: default@t2_n43
 #### A masked pattern was here ####
 0.0
 0.0
@@ -119,15 +119,15 @@ POSTHOOK: Input: default@t2
 9.0
 PREHOOK: query: EXPLAIN
 SELECT * FROM 
-(SELECT CAST(a.key AS BIGINT) AS key FROM t1 a JOIN t2 b ON a.key = b.key
+(SELECT CAST(a.key AS BIGINT) AS key FROM t1_n70 a JOIN t2_n43 b ON a.key = b.key
 UNION ALL
-SELECT CAST(key AS DOUBLE) AS key FROM t2) a
+SELECT CAST(key AS DOUBLE) AS key FROM t2_n43) a
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT * FROM 
-(SELECT CAST(a.key AS BIGINT) AS key FROM t1 a JOIN t2 b ON a.key = b.key
+(SELECT CAST(a.key AS BIGINT) AS key FROM t1_n70 a JOIN t2_n43 b ON a.key = b.key
 UNION ALL
-SELECT CAST(key AS DOUBLE) AS key FROM t2) a
+SELECT CAST(key AS DOUBLE) AS key FROM t2_n43) a
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -202,7 +202,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
-            alias: t2
+            alias: t2_n43
             Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: UDFToDouble(key) (type: double)
@@ -225,20 +225,20 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT * FROM 
-(SELECT CAST(a.key AS BIGINT) AS key FROM t1 a JOIN t2 b ON a.key = b.key
+(SELECT CAST(a.key AS BIGINT) AS key FROM t1_n70 a JOIN t2_n43 b ON a.key = b.key
 UNION ALL
-SELECT CAST(key AS DOUBLE) AS key FROM t2) a
+SELECT CAST(key AS DOUBLE) AS key FROM t2_n43) a
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
+PREHOOK: Input: default@t1_n70
+PREHOOK: Input: default@t2_n43
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM 
-(SELECT CAST(a.key AS BIGINT) AS key FROM t1 a JOIN t2 b ON a.key = b.key
+(SELECT CAST(a.key AS BIGINT) AS key FROM t1_n70 a JOIN t2_n43 b ON a.key = b.key
 UNION ALL
-SELECT CAST(key AS DOUBLE) AS key FROM t2) a
+SELECT CAST(key AS DOUBLE) AS key FROM t2_n43) a
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t1_n70
+POSTHOOK: Input: default@t2_n43
 #### A masked pattern was here ####
 0.0
 0.0
@@ -274,15 +274,15 @@ POSTHOOK: Input: default@t2
 9.0
 PREHOOK: query: EXPLAIN
 SELECT * FROM 
-(SELECT CAST(key AS DOUBLE) AS key FROM t2
+(SELECT CAST(key AS DOUBLE) AS key FROM t2_n43
 UNION ALL
-SELECT CAST(a.key AS BIGINT) AS key FROM t1 a JOIN t2 b ON a.key = b.key) a
+SELECT CAST(a.key AS BIGINT) AS key FROM t1_n70 a JOIN t2_n43 b ON a.key = b.key) a
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT * FROM 
-(SELECT CAST(key AS DOUBLE) AS key FROM t2
+(SELECT CAST(key AS DOUBLE) AS key FROM t2_n43
 UNION ALL
-SELECT CAST(a.key AS BIGINT) AS key FROM t1 a JOIN t2 b ON a.key = b.key) a
+SELECT CAST(a.key AS BIGINT) AS key FROM t1_n70 a JOIN t2_n43 b ON a.key = b.key) a
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
@@ -347,7 +347,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t2
+            alias: t2_n43
             Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: UDFToDouble(key) (type: double)
@@ -380,20 +380,20 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT * FROM 
-(SELECT CAST(key AS DOUBLE) AS key FROM t2
+(SELECT CAST(key AS DOUBLE) AS key FROM t2_n43
 UNION ALL
-SELECT CAST(a.key AS BIGINT) AS key FROM t1 a JOIN t2 b ON a.key = b.key) a
+SELECT CAST(a.key AS BIGINT) AS key FROM t1_n70 a JOIN t2_n43 b ON a.key = b.key) a
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
+PREHOOK: Input: default@t1_n70
+PREHOOK: Input: default@t2_n43
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM 
-(SELECT CAST(key AS DOUBLE) AS key FROM t2
+(SELECT CAST(key AS DOUBLE) AS key FROM t2_n43
 UNION ALL
-SELECT CAST(a.key AS BIGINT) AS key FROM t1 a JOIN t2 b ON a.key = b.key) a
+SELECT CAST(a.key AS BIGINT) AS key FROM t1_n70 a JOIN t2_n43 b ON a.key = b.key) a
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t1_n70
+POSTHOOK: Input: default@t2_n43
 #### A masked pattern was here ####
 0.0
 0.0
@@ -429,15 +429,15 @@ POSTHOOK: Input: default@t2
 9.0
 PREHOOK: query: EXPLAIN
 SELECT * FROM 
-(SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS CHAR(20)) AS value FROM t1 a JOIN t2 b ON a.key = b.key
+(SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS CHAR(20)) AS value FROM t1_n70 a JOIN t2_n43 b ON a.key = b.key
 UNION ALL
-SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2) a
+SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2_n43) a
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT * FROM 
-(SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS CHAR(20)) AS value FROM t1 a JOIN t2 b ON a.key = b.key
+(SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS CHAR(20)) AS value FROM t1_n70 a JOIN t2_n43 b ON a.key = b.key
 UNION ALL
-SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2) a
+SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2_n43) a
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -512,7 +512,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           TableScan
-            alias: t2
+            alias: t2_n43
             Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: UDFToDouble(key) (type: double), key (type: string)
@@ -535,20 +535,20 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT * FROM 
-(SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS VARCHAR(20)) AS value FROM t1 a JOIN t2 b ON a.key = b.key
+(SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS VARCHAR(20)) AS value FROM t1_n70 a JOIN t2_n43 b ON a.key = b.key
 UNION ALL
-SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2) a
+SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2_n43) a
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
+PREHOOK: Input: default@t1_n70
+PREHOOK: Input: default@t2_n43
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM 
-(SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS VARCHAR(20)) AS value FROM t1 a JOIN t2 b ON a.key = b.key
+(SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS VARCHAR(20)) AS value FROM t1_n70 a JOIN t2_n43 b ON a.key = b.key
 UNION ALL
-SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2) a
+SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2_n43) a
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t1_n70
+POSTHOOK: Input: default@t2_n43
 #### A masked pattern was here ####
 0.0	0
 0.0	0
@@ -584,15 +584,15 @@ POSTHOOK: Input: default@t2
 9.0	9
 PREHOOK: query: EXPLAIN
 SELECT * FROM 
-(SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2
+(SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2_n43
 UNION ALL
-SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS CHAR(20)) AS value FROM t1 a JOIN t2 b ON a.key = b.key) a
+SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS CHAR(20)) AS value FROM t1_n70 a JOIN t2_n43 b ON a.key = b.key) a
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT * FROM 
-(SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2
+(SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2_n43
 UNION ALL
-SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS CHAR(20)) AS value FROM t1 a JOIN t2 b ON a.key = b.key) a
+SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS CHAR(20)) AS value FROM t1_n70 a JOIN t2_n43 b ON a.key = b.key) a
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
@@ -657,7 +657,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: t2
+            alias: t2_n43
             Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: UDFToDouble(key) (type: double), key (type: string)
@@ -690,20 +690,20 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT * FROM 
-(SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2
+(SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2_n43
 UNION ALL
-SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS VARCHAR(20)) AS value FROM t1 a JOIN t2 b ON a.key = b.key) a
+SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS VARCHAR(20)) AS value FROM t1_n70 a JOIN t2_n43 b ON a.key = b.key) a
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
+PREHOOK: Input: default@t1_n70
+PREHOOK: Input: default@t2_n43
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM 
-(SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2
+(SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2_n43
 UNION ALL
-SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS VARCHAR(20)) AS value FROM t1 a JOIN t2 b ON a.key = b.key) a
+SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS VARCHAR(20)) AS value FROM t1_n70 a JOIN t2_n43 b ON a.key = b.key) a
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t1_n70
+POSTHOOK: Input: default@t2_n43
 #### A masked pattern was here ####
 0.0	0
 0.0	0

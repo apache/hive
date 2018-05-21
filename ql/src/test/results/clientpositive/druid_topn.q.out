@@ -1,21 +1,21 @@
-PREHOOK: query: CREATE EXTERNAL TABLE druid_table_1
+PREHOOK: query: CREATE EXTERNAL TABLE druid_table_1_n1
 STORED BY 'org.apache.hadoop.hive.druid.QTestDruidStorageHandler'
 TBLPROPERTIES ("druid.datasource" = "wikipedia")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@druid_table_1
-POSTHOOK: query: CREATE EXTERNAL TABLE druid_table_1
+PREHOOK: Output: default@druid_table_1_n1
+POSTHOOK: query: CREATE EXTERNAL TABLE druid_table_1_n1
 STORED BY 'org.apache.hadoop.hive.druid.QTestDruidStorageHandler'
 TBLPROPERTIES ("druid.datasource" = "wikipedia")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@druid_table_1
-PREHOOK: query: DESCRIBE FORMATTED druid_table_1
+POSTHOOK: Output: default@druid_table_1_n1
+PREHOOK: query: DESCRIBE FORMATTED druid_table_1_n1
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@druid_table_1
-POSTHOOK: query: DESCRIBE FORMATTED druid_table_1
+PREHOOK: Input: default@druid_table_1_n1
+POSTHOOK: query: DESCRIBE FORMATTED druid_table_1_n1
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@druid_table_1
+POSTHOOK: Input: default@druid_table_1_n1
 # col_name            	data_type           	comment             
 __time              	timestamp with local time zone	from deserializer   
 robot               	string              	from deserializer   
@@ -62,14 +62,14 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: EXPLAIN
 SELECT robot, max(added) as m, sum(variation)
-FROM druid_table_1
+FROM druid_table_1_n1
 GROUP BY robot
 ORDER BY m DESC
 LIMIT 100
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT robot, max(added) as m, sum(variation)
-FROM druid_table_1
+FROM druid_table_1_n1
 GROUP BY robot
 ORDER BY m DESC
 LIMIT 100
@@ -83,7 +83,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: druid_table_1
+          alias: druid_table_1_n1
           properties:
             druid.fieldNames robot,$f1,$f2
             druid.fieldTypes string,float,double
@@ -98,14 +98,14 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN
 SELECT robot, `__time`, max(added), sum(variation) as s
-FROM druid_table_1
+FROM druid_table_1_n1
 GROUP BY robot, `__time`
 ORDER BY s DESC
 LIMIT 100
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT robot, `__time`, max(added), sum(variation) as s
-FROM druid_table_1
+FROM druid_table_1_n1
 GROUP BY robot, `__time`
 ORDER BY s DESC
 LIMIT 100
@@ -119,7 +119,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: druid_table_1
+          alias: druid_table_1_n1
           properties:
             druid.fieldNames extract,robot,$f2,$f3
             druid.fieldTypes timestamp with local time zone,string,float,double
@@ -134,14 +134,14 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN
 SELECT robot, floor_year(`__time`), max(added), sum(variation) as s
-FROM druid_table_1
+FROM druid_table_1_n1
 GROUP BY robot, floor_year(`__time`)
 ORDER BY s DESC
 LIMIT 10
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT robot, floor_year(`__time`), max(added), sum(variation) as s
-FROM druid_table_1
+FROM druid_table_1_n1
 GROUP BY robot, floor_year(`__time`)
 ORDER BY s DESC
 LIMIT 10
@@ -155,7 +155,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: druid_table_1
+          alias: druid_table_1_n1
           properties:
             druid.fieldNames robot,floor_year,$f2,$f3
             druid.fieldTypes string,timestamp with local time zone,float,double
@@ -170,14 +170,14 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN
 SELECT robot, floor_month(`__time`), max(added), sum(variation) as s
-FROM druid_table_1
+FROM druid_table_1_n1
 GROUP BY robot, floor_month(`__time`)
 ORDER BY s
 LIMIT 10
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT robot, floor_month(`__time`), max(added), sum(variation) as s
-FROM druid_table_1
+FROM druid_table_1_n1
 GROUP BY robot, floor_month(`__time`)
 ORDER BY s
 LIMIT 10
@@ -191,7 +191,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: druid_table_1
+          alias: druid_table_1_n1
           properties:
             druid.fieldNames robot,floor_month,$f2,$f3
             druid.fieldTypes string,timestamp with local time zone,float,double
@@ -206,14 +206,14 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN
 SELECT robot, floor_month(`__time`), max(added) as m, sum(variation) as s
-FROM druid_table_1
+FROM druid_table_1_n1
 GROUP BY robot, namespace, floor_month(`__time`)
 ORDER BY s DESC, m DESC
 LIMIT 10
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT robot, floor_month(`__time`), max(added) as m, sum(variation) as s
-FROM druid_table_1
+FROM druid_table_1_n1
 GROUP BY robot, namespace, floor_month(`__time`)
 ORDER BY s DESC, m DESC
 LIMIT 10
@@ -227,7 +227,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: druid_table_1
+          alias: druid_table_1_n1
           properties:
             druid.fieldNames robot,namespace,floor_month,$f3,$f4
             druid.fieldTypes string,string,timestamp with local time zone,float,double
@@ -242,14 +242,14 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN
 SELECT robot, floor_month(`__time`), max(added) as m, sum(variation) as s
-FROM druid_table_1
+FROM druid_table_1_n1
 GROUP BY robot, namespace, floor_month(`__time`)
 ORDER BY robot ASC, m DESC
 LIMIT 10
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT robot, floor_month(`__time`), max(added) as m, sum(variation) as s
-FROM druid_table_1
+FROM druid_table_1_n1
 GROUP BY robot, namespace, floor_month(`__time`)
 ORDER BY robot ASC, m DESC
 LIMIT 10
@@ -263,7 +263,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: druid_table_1
+          alias: druid_table_1_n1
           properties:
             druid.fieldNames robot,namespace,floor_month,$f3,$f4
             druid.fieldTypes string,string,timestamp with local time zone,float,double
@@ -278,7 +278,7 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN
 SELECT robot, floor_year(`__time`), max(added), sum(variation) as s
-FROM druid_table_1
+FROM druid_table_1_n1
 WHERE robot='1'
 GROUP BY robot, floor_year(`__time`)
 ORDER BY s
@@ -286,7 +286,7 @@ LIMIT 10
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT robot, floor_year(`__time`), max(added), sum(variation) as s
-FROM druid_table_1
+FROM druid_table_1_n1
 WHERE robot='1'
 GROUP BY robot, floor_year(`__time`)
 ORDER BY s
@@ -301,7 +301,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: druid_table_1
+          alias: druid_table_1_n1
           properties:
             druid.fieldNames floor_year,$f1_0,$f2
             druid.fieldTypes timestamp with local time zone,float,double
@@ -316,7 +316,7 @@ STAGE PLANS:
 
 PREHOOK: query: EXPLAIN
 SELECT robot, floor_hour(`__time`), max(added) as m, sum(variation)
-FROM druid_table_1
+FROM druid_table_1_n1
 WHERE floor_hour(`__time`)
     BETWEEN CAST('2010-01-01 00:00:00' AS TIMESTAMP WITH LOCAL TIME ZONE)
         AND CAST('2014-01-01 00:00:00' AS TIMESTAMP WITH LOCAL TIME ZONE)
@@ -326,7 +326,7 @@ LIMIT 100
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT robot, floor_hour(`__time`), max(added) as m, sum(variation)
-FROM druid_table_1
+FROM druid_table_1_n1
 WHERE floor_hour(`__time`)
     BETWEEN CAST('2010-01-01 00:00:00' AS TIMESTAMP WITH LOCAL TIME ZONE)
         AND CAST('2014-01-01 00:00:00' AS TIMESTAMP WITH LOCAL TIME ZONE)
@@ -343,7 +343,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: druid_table_1
+          alias: druid_table_1_n1
           properties:
             druid.fieldNames robot,floor_hour,$f2,$f3
             druid.fieldTypes string,timestamp with local time zone,float,double

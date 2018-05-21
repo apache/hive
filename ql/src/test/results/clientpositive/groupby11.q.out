@@ -1,31 +1,31 @@
-PREHOOK: query: CREATE TABLE dest1(key STRING, val1 INT, val2 INT) partitioned by (ds string)
+PREHOOK: query: CREATE TABLE dest1_n137(key STRING, val1 INT, val2 INT) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest1
-POSTHOOK: query: CREATE TABLE dest1(key STRING, val1 INT, val2 INT) partitioned by (ds string)
+PREHOOK: Output: default@dest1_n137
+POSTHOOK: query: CREATE TABLE dest1_n137(key STRING, val1 INT, val2 INT) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest1
-PREHOOK: query: CREATE TABLE dest2(key STRING, val1 INT, val2 INT) partitioned by (ds string)
+POSTHOOK: Output: default@dest1_n137
+PREHOOK: query: CREATE TABLE dest2_n36(key STRING, val1 INT, val2 INT) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest2
-POSTHOOK: query: CREATE TABLE dest2(key STRING, val1 INT, val2 INT) partitioned by (ds string)
+PREHOOK: Output: default@dest2_n36
+POSTHOOK: query: CREATE TABLE dest2_n36(key STRING, val1 INT, val2 INT) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest2
+POSTHOOK: Output: default@dest2_n36
 PREHOOK: query: EXPLAIN
 FROM src
-INSERT OVERWRITE TABLE dest1 partition(ds='111')
+INSERT OVERWRITE TABLE dest1_n137 partition(ds='111')
   SELECT src.value, count(src.key), count(distinct src.key) GROUP BY src.value
-INSERT OVERWRITE TABLE dest2  partition(ds='111')
+INSERT OVERWRITE TABLE dest2_n36  partition(ds='111')
   SELECT substr(src.value, 5), count(src.key), count(distinct src.key) GROUP BY substr(src.value, 5)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 FROM src
-INSERT OVERWRITE TABLE dest1 partition(ds='111')
+INSERT OVERWRITE TABLE dest1_n137 partition(ds='111')
   SELECT src.value, count(src.key), count(distinct src.key) GROUP BY src.value
-INSERT OVERWRITE TABLE dest2  partition(ds='111')
+INSERT OVERWRITE TABLE dest2_n36  partition(ds='111')
   SELECT substr(src.value, 5), count(src.key), count(distinct src.key) GROUP BY substr(src.value, 5)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -112,7 +112,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.dest1
+                  name: default.dest1_n137
             Select Operator
               expressions: _col0 (type: string), _col1 (type: int), _col2 (type: int)
               outputColumnNames: key, val1, val2
@@ -134,7 +134,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest1
+              name: default.dest1_n137
 
   Stage: Stage-4
     Stats Work
@@ -142,7 +142,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, val1, val2
           Column Types: string, int, int
-          Table: default.dest1
+          Table: default.dest1_n137
 
   Stage: Stage-5
     Map Reduce
@@ -205,7 +205,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, val1, val2
           Column Types: string, int, int
-          Table: default.dest2
+          Table: default.dest2_n36
 
   Stage: Stage-7
     Map Reduce
@@ -260,7 +260,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.dest2
+                  name: default.dest2_n36
             Select Operator
               expressions: _col0 (type: string), _col1 (type: int), _col2 (type: int)
               outputColumnNames: key, val1, val2
@@ -282,7 +282,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest2
+              name: default.dest2_n36
 
   Stage: Stage-10
     Map Reduce
@@ -340,38 +340,38 @@ STAGE PLANS:
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
 PREHOOK: query: FROM src
-INSERT OVERWRITE TABLE dest1 partition(ds='111')
+INSERT OVERWRITE TABLE dest1_n137 partition(ds='111')
   SELECT src.value, count(src.key), count(distinct src.key) GROUP BY src.value
-INSERT OVERWRITE TABLE dest2  partition(ds='111')
+INSERT OVERWRITE TABLE dest2_n36  partition(ds='111')
   SELECT substr(src.value, 5), count(src.key), count(distinct src.key) GROUP BY substr(src.value, 5)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@dest1@ds=111
-PREHOOK: Output: default@dest2@ds=111
+PREHOOK: Output: default@dest1_n137@ds=111
+PREHOOK: Output: default@dest2_n36@ds=111
 POSTHOOK: query: FROM src
-INSERT OVERWRITE TABLE dest1 partition(ds='111')
+INSERT OVERWRITE TABLE dest1_n137 partition(ds='111')
   SELECT src.value, count(src.key), count(distinct src.key) GROUP BY src.value
-INSERT OVERWRITE TABLE dest2  partition(ds='111')
+INSERT OVERWRITE TABLE dest2_n36  partition(ds='111')
   SELECT substr(src.value, 5), count(src.key), count(distinct src.key) GROUP BY substr(src.value, 5)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@dest1@ds=111
-POSTHOOK: Output: default@dest2@ds=111
-POSTHOOK: Lineage: dest1 PARTITION(ds=111).key SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(ds=111).val1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1 PARTITION(ds=111).val2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(ds=111).key EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(ds=111).val1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest2 PARTITION(ds=111).val2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: SELECT * from dest1
+POSTHOOK: Output: default@dest1_n137@ds=111
+POSTHOOK: Output: default@dest2_n36@ds=111
+POSTHOOK: Lineage: dest1_n137 PARTITION(ds=111).key SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n137 PARTITION(ds=111).val1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n137 PARTITION(ds=111).val2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n36 PARTITION(ds=111).key EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n36 PARTITION(ds=111).val1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n36 PARTITION(ds=111).val2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: SELECT * from dest1_n137
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
-PREHOOK: Input: default@dest1@ds=111
+PREHOOK: Input: default@dest1_n137
+PREHOOK: Input: default@dest1_n137@ds=111
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * from dest1
+POSTHOOK: query: SELECT * from dest1_n137
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
-POSTHOOK: Input: default@dest1@ds=111
+POSTHOOK: Input: default@dest1_n137
+POSTHOOK: Input: default@dest1_n137@ds=111
 #### A masked pattern was here ####
 val_0	3	1	111
 val_10	1	1	111
@@ -682,15 +682,15 @@ val_95	2	1	111
 val_96	1	1	111
 val_97	2	1	111
 val_98	2	1	111
-PREHOOK: query: SELECT * from dest2
+PREHOOK: query: SELECT * from dest2_n36
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest2
-PREHOOK: Input: default@dest2@ds=111
+PREHOOK: Input: default@dest2_n36
+PREHOOK: Input: default@dest2_n36@ds=111
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * from dest2
+POSTHOOK: query: SELECT * from dest2_n36
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest2
-POSTHOOK: Input: default@dest2@ds=111
+POSTHOOK: Input: default@dest2_n36
+POSTHOOK: Input: default@dest2_n36@ds=111
 #### A masked pattern was here ####
 0	3	1	111
 10	1	1	111

@@ -1,35 +1,35 @@
-PREHOOK: query: create table fact_daily (key String, value String) 
+PREHOOK: query: create table fact_daily_n2 (key String, value String) 
 partitioned by (ds String, hr String) 
 skewed by (key, value) on (('484','val_484'),('238','val_238')) 
 stored as DIRECTORIES
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@fact_daily
-POSTHOOK: query: create table fact_daily (key String, value String) 
+PREHOOK: Output: default@fact_daily_n2
+POSTHOOK: query: create table fact_daily_n2 (key String, value String) 
 partitioned by (ds String, hr String) 
 skewed by (key, value) on (('484','val_484'),('238','val_238')) 
 stored as DIRECTORIES
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@fact_daily
-PREHOOK: query: insert overwrite table fact_daily partition (ds = '1', hr = '4')
+POSTHOOK: Output: default@fact_daily_n2
+PREHOOK: query: insert overwrite table fact_daily_n2 partition (ds = '1', hr = '4')
 select key, value from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@fact_daily@ds=1/hr=4
-POSTHOOK: query: insert overwrite table fact_daily partition (ds = '1', hr = '4')
+PREHOOK: Output: default@fact_daily_n2@ds=1/hr=4
+POSTHOOK: query: insert overwrite table fact_daily_n2 partition (ds = '1', hr = '4')
 select key, value from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@fact_daily@ds=1/hr=4
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: describe formatted fact_daily PARTITION (ds = '1', hr='4')
+POSTHOOK: Output: default@fact_daily_n2@ds=1/hr=4
+POSTHOOK: Lineage: fact_daily_n2 PARTITION(ds=1,hr=4).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: fact_daily_n2 PARTITION(ds=1,hr=4).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: describe formatted fact_daily_n2 PARTITION (ds = '1', hr='4')
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@fact_daily
-POSTHOOK: query: describe formatted fact_daily PARTITION (ds = '1', hr='4')
+PREHOOK: Input: default@fact_daily_n2
+POSTHOOK: query: describe formatted fact_daily_n2 PARTITION (ds = '1', hr='4')
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@fact_daily
+POSTHOOK: Input: default@fact_daily_n2
 # col_name            	data_type           	comment             
 key                 	string              	                    
 value               	string              	                    
@@ -42,7 +42,7 @@ hr                  	string
 # Detailed Partition Information	 	 
 Partition Value:    	[1, 4]              	 
 Database:           	default             	 
-Table:              	fact_daily          	 
+Table:              	fact_daily_n2       	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
@@ -64,21 +64,21 @@ Stored As SubDirectories:	Yes
 Skewed Columns:     	[key, value]        	 
 Skewed Values:      	[[238, val_238], [484, val_484]]	 
 #### A masked pattern was here ####
-Skewed Value to Truncated Path:	{[238, val_238]=/fact_daily/ds=1/hr=4/key=238/value=val_238, [484, val_484]=/fact_daily/ds=1/hr=4/key=484/value=val_484}	 
+Skewed Value to Truncated Path:	{[238, val_238]=/fact_daily_n2/ds=1/hr=4/key=238/value=val_238, [484, val_484]=/fact_daily_n2/ds=1/hr=4/key=484/value=val_484}	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: SELECT count(1) FROM fact_daily WHERE ds='1' and hr='4'
+PREHOOK: query: SELECT count(1) FROM fact_daily_n2 WHERE ds='1' and hr='4'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@fact_daily
+PREHOOK: Input: default@fact_daily_n2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT count(1) FROM fact_daily WHERE ds='1' and hr='4'
+POSTHOOK: query: SELECT count(1) FROM fact_daily_n2 WHERE ds='1' and hr='4'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@fact_daily
+POSTHOOK: Input: default@fact_daily_n2
 #### A masked pattern was here ####
 500
-PREHOOK: query: explain extended SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and value= 'val_484'
+PREHOOK: query: explain extended SELECT key, value FROM fact_daily_n2 WHERE ds='1' and hr='4' and value= 'val_484'
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and value= 'val_484'
+POSTHOOK: query: explain extended SELECT key, value FROM fact_daily_n2 WHERE ds='1' and hr='4' and value= 'val_484'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -102,13 +102,13 @@ STAGE PLANS:
               columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
-              name default.fact_daily
+              name default.fact_daily_n2
               numFiles 3
               numRows 500
               partition_columns ds/hr
               partition_columns.types string:string
               rawDataSize 5312
-              serialization.ddl struct fact_daily { string key, string value}
+              serialization.ddl struct fact_daily_n2 { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 5812
@@ -125,19 +125,19 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
-                name default.fact_daily
+                name default.fact_daily_n2
                 partition_columns ds/hr
                 partition_columns.types string:string
-                serialization.ddl struct fact_daily { string key, string value}
+                serialization.ddl struct fact_daily_n2 { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.fact_daily
-            name: default.fact_daily
+              name: default.fact_daily_n2
+            name: default.fact_daily_n2
       Processor Tree:
         TableScan
-          alias: fact_daily
+          alias: fact_daily_n2
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           GatherStats: false
           Filter Operator
@@ -150,20 +150,20 @@ STAGE PLANS:
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               ListSink
 
-PREHOOK: query: SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and value= 'val_484'
+PREHOOK: query: SELECT key, value FROM fact_daily_n2 WHERE ds='1' and hr='4' and value= 'val_484'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@fact_daily
-PREHOOK: Input: default@fact_daily@ds=1/hr=4
+PREHOOK: Input: default@fact_daily_n2
+PREHOOK: Input: default@fact_daily_n2@ds=1/hr=4
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and value= 'val_484'
+POSTHOOK: query: SELECT key, value FROM fact_daily_n2 WHERE ds='1' and hr='4' and value= 'val_484'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@fact_daily
-POSTHOOK: Input: default@fact_daily@ds=1/hr=4
+POSTHOOK: Input: default@fact_daily_n2
+POSTHOOK: Input: default@fact_daily_n2@ds=1/hr=4
 #### A masked pattern was here ####
 484	val_484
-PREHOOK: query: explain extended SELECT key FROM fact_daily WHERE ds='1' and hr='4' and key= '406'
+PREHOOK: query: explain extended SELECT key FROM fact_daily_n2 WHERE ds='1' and hr='4' and key= '406'
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended SELECT key FROM fact_daily WHERE ds='1' and hr='4' and key= '406'
+POSTHOOK: query: explain extended SELECT key FROM fact_daily_n2 WHERE ds='1' and hr='4' and key= '406'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -187,13 +187,13 @@ STAGE PLANS:
               columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
-              name default.fact_daily
+              name default.fact_daily_n2
               numFiles 3
               numRows 500
               partition_columns ds/hr
               partition_columns.types string:string
               rawDataSize 5312
-              serialization.ddl struct fact_daily { string key, string value}
+              serialization.ddl struct fact_daily_n2 { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 5812
@@ -210,19 +210,19 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
-                name default.fact_daily
+                name default.fact_daily_n2
                 partition_columns ds/hr
                 partition_columns.types string:string
-                serialization.ddl struct fact_daily { string key, string value}
+                serialization.ddl struct fact_daily_n2 { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.fact_daily
-            name: default.fact_daily
+              name: default.fact_daily_n2
+            name: default.fact_daily_n2
       Processor Tree:
         TableScan
-          alias: fact_daily
+          alias: fact_daily_n2
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           GatherStats: false
           Filter Operator
@@ -235,23 +235,23 @@ STAGE PLANS:
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               ListSink
 
-PREHOOK: query: SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and key= '406'
+PREHOOK: query: SELECT key, value FROM fact_daily_n2 WHERE ds='1' and hr='4' and key= '406'
 PREHOOK: type: QUERY
-PREHOOK: Input: default@fact_daily
-PREHOOK: Input: default@fact_daily@ds=1/hr=4
+PREHOOK: Input: default@fact_daily_n2
+PREHOOK: Input: default@fact_daily_n2@ds=1/hr=4
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and key= '406'
+POSTHOOK: query: SELECT key, value FROM fact_daily_n2 WHERE ds='1' and hr='4' and key= '406'
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@fact_daily
-POSTHOOK: Input: default@fact_daily@ds=1/hr=4
+POSTHOOK: Input: default@fact_daily_n2
+POSTHOOK: Input: default@fact_daily_n2@ds=1/hr=4
 #### A masked pattern was here ####
 406	val_406
 406	val_406
 406	val_406
 406	val_406
-PREHOOK: query: explain extended SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and ( (key='484' and value ='val_484')  or (key='238' and value= 'val_238'))
+PREHOOK: query: explain extended SELECT key, value FROM fact_daily_n2 WHERE ds='1' and hr='4' and ( (key='484' and value ='val_484')  or (key='238' and value= 'val_238'))
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and ( (key='484' and value ='val_484')  or (key='238' and value= 'val_238'))
+POSTHOOK: query: explain extended SELECT key, value FROM fact_daily_n2 WHERE ds='1' and hr='4' and ( (key='484' and value ='val_484')  or (key='238' and value= 'val_238'))
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -275,13 +275,13 @@ STAGE PLANS:
               columns.comments 
               columns.types string:string
 #### A masked pattern was here ####
-              name default.fact_daily
+              name default.fact_daily_n2
               numFiles 3
               numRows 500
               partition_columns ds/hr
               partition_columns.types string:string
               rawDataSize 5312
-              serialization.ddl struct fact_daily { string key, string value}
+              serialization.ddl struct fact_daily_n2 { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 5812
@@ -298,19 +298,19 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string:string
 #### A masked pattern was here ####
-                name default.fact_daily
+                name default.fact_daily_n2
                 partition_columns ds/hr
                 partition_columns.types string:string
-                serialization.ddl struct fact_daily { string key, string value}
+                serialization.ddl struct fact_daily_n2 { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.fact_daily
-            name: default.fact_daily
+              name: default.fact_daily_n2
+            name: default.fact_daily_n2
       Processor Tree:
         TableScan
-          alias: fact_daily
+          alias: fact_daily_n2
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           GatherStats: false
           Filter Operator
@@ -323,24 +323,24 @@ STAGE PLANS:
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               ListSink
 
-PREHOOK: query: SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and ( (key='484' and value ='val_484')  or (key='238' and value= 'val_238'))
+PREHOOK: query: SELECT key, value FROM fact_daily_n2 WHERE ds='1' and hr='4' and ( (key='484' and value ='val_484')  or (key='238' and value= 'val_238'))
 PREHOOK: type: QUERY
-PREHOOK: Input: default@fact_daily
-PREHOOK: Input: default@fact_daily@ds=1/hr=4
+PREHOOK: Input: default@fact_daily_n2
+PREHOOK: Input: default@fact_daily_n2@ds=1/hr=4
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and ( (key='484' and value ='val_484')  or (key='238' and value= 'val_238'))
+POSTHOOK: query: SELECT key, value FROM fact_daily_n2 WHERE ds='1' and hr='4' and ( (key='484' and value ='val_484')  or (key='238' and value= 'val_238'))
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@fact_daily
-POSTHOOK: Input: default@fact_daily@ds=1/hr=4
+POSTHOOK: Input: default@fact_daily_n2
+POSTHOOK: Input: default@fact_daily_n2@ds=1/hr=4
 #### A masked pattern was here ####
 238	val_238
 238	val_238
 484	val_484
-PREHOOK: query: drop table fact_daily
+PREHOOK: query: drop table fact_daily_n2
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@fact_daily
-PREHOOK: Output: default@fact_daily
-POSTHOOK: query: drop table fact_daily
+PREHOOK: Input: default@fact_daily_n2
+PREHOOK: Output: default@fact_daily_n2
+POSTHOOK: query: drop table fact_daily_n2
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@fact_daily
-POSTHOOK: Output: default@fact_daily
+POSTHOOK: Input: default@fact_daily_n2
+POSTHOOK: Output: default@fact_daily_n2

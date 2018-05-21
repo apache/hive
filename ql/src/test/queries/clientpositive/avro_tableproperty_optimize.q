@@ -3,7 +3,7 @@ SET hive.optimize.update.table.properties.from.serde=true;
 
 dfs -cp ${system:hive.root}data/files/table1.avsc ${system:test.tmp.dir}/;
 
-CREATE TABLE avro_extschema_literal
+CREATE TABLE avro_extschema_literal_n0
 STORED AS AVRO
 TBLPROPERTIES ('avro.schema.literal'='{
   "namespace": "org.apache.hive",
@@ -14,18 +14,18 @@ TBLPROPERTIES ('avro.schema.literal'='{
     { "name":"col2", "type":"long" },
     { "name":"col3", "type":"string" }
   ] }');
-INSERT INTO TABLE avro_extschema_literal VALUES('s1', 1, 's2');
+INSERT INTO TABLE avro_extschema_literal_n0 VALUES('s1', 1, 's2');
 
-DESCRIBE EXTENDED avro_extschema_literal;
-SELECT * FROM avro_extschema_literal;
+DESCRIBE EXTENDED avro_extschema_literal_n0;
+SELECT * FROM avro_extschema_literal_n0;
 
-CREATE TABLE avro_extschema_url
+CREATE TABLE avro_extschema_url_n0
 STORED AS AVRO
 TBLPROPERTIES ('avro.schema.url'='${system:test.tmp.dir}/table1.avsc');
-INSERT INTO TABLE avro_extschema_url VALUES('s1', 1, 's2');
+INSERT INTO TABLE avro_extschema_url_n0 VALUES('s1', 1, 's2');
 
-DESCRIBE EXTENDED avro_extschema_url;
-SELECT * FROM avro_extschema_url;
+DESCRIBE EXTENDED avro_extschema_url_n0;
+SELECT * FROM avro_extschema_url_n0;
 
 CREATE TABLE avro_extschema_literal1
 ROW FORMAT SERDE

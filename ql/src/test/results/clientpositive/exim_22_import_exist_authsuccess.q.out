@@ -1,36 +1,36 @@
-PREHOOK: query: create table exim_department ( dep_id int) stored as textfile
+PREHOOK: query: create table exim_department_n1 ( dep_id int) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@exim_department
-POSTHOOK: query: create table exim_department ( dep_id int) stored as textfile
+PREHOOK: Output: default@exim_department_n1
+POSTHOOK: query: create table exim_department_n1 ( dep_id int) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@exim_department
-PREHOOK: query: load data local inpath "../../data/files/test.dat" into table exim_department
+POSTHOOK: Output: default@exim_department_n1
+PREHOOK: query: load data local inpath "../../data/files/test.dat" into table exim_department_n1
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@exim_department
-POSTHOOK: query: load data local inpath "../../data/files/test.dat" into table exim_department
+PREHOOK: Output: default@exim_department_n1
+POSTHOOK: query: load data local inpath "../../data/files/test.dat" into table exim_department_n1
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@exim_department
+POSTHOOK: Output: default@exim_department_n1
 #### A masked pattern was here ####
-PREHOOK: query: export table exim_department to 'ql/test/data/exports/exim_department'
+PREHOOK: query: export table exim_department_n1 to 'ql/test/data/exports/exim_department'
 PREHOOK: type: EXPORT
-PREHOOK: Input: default@exim_department
+PREHOOK: Input: default@exim_department_n1
 #### A masked pattern was here ####
-POSTHOOK: query: export table exim_department to 'ql/test/data/exports/exim_department'
+POSTHOOK: query: export table exim_department_n1 to 'ql/test/data/exports/exim_department'
 POSTHOOK: type: EXPORT
-POSTHOOK: Input: default@exim_department
+POSTHOOK: Input: default@exim_department_n1
 #### A masked pattern was here ####
-PREHOOK: query: drop table exim_department
+PREHOOK: query: drop table exim_department_n1
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@exim_department
-PREHOOK: Output: default@exim_department
-POSTHOOK: query: drop table exim_department
+PREHOOK: Input: default@exim_department_n1
+PREHOOK: Output: default@exim_department_n1
+POSTHOOK: query: drop table exim_department_n1
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@exim_department
-POSTHOOK: Output: default@exim_department
+POSTHOOK: Input: default@exim_department_n1
+POSTHOOK: Output: default@exim_department_n1
 PREHOOK: query: create database importer
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:importer
@@ -43,41 +43,41 @@ PREHOOK: Input: database:importer
 POSTHOOK: query: use importer
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:importer
-PREHOOK: query: create table exim_department ( dep_id int) stored as textfile
+PREHOOK: query: create table exim_department_n1 ( dep_id int) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:importer
-PREHOOK: Output: importer@exim_department
-POSTHOOK: query: create table exim_department ( dep_id int) stored as textfile
+PREHOOK: Output: importer@exim_department_n1
+POSTHOOK: query: create table exim_department_n1 ( dep_id int) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:importer
-POSTHOOK: Output: importer@exim_department
-PREHOOK: query: grant Alter on table exim_department to user hive_test_user
+POSTHOOK: Output: importer@exim_department_n1
+PREHOOK: query: grant Alter on table exim_department_n1 to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE
-PREHOOK: Output: importer@exim_department
-POSTHOOK: query: grant Alter on table exim_department to user hive_test_user
+PREHOOK: Output: importer@exim_department_n1
+POSTHOOK: query: grant Alter on table exim_department_n1 to user hive_test_user
 POSTHOOK: type: GRANT_PRIVILEGE
-POSTHOOK: Output: importer@exim_department
-PREHOOK: query: grant Update on table exim_department to user hive_test_user
+POSTHOOK: Output: importer@exim_department_n1
+PREHOOK: query: grant Update on table exim_department_n1 to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE
-PREHOOK: Output: importer@exim_department
-POSTHOOK: query: grant Update on table exim_department to user hive_test_user
+PREHOOK: Output: importer@exim_department_n1
+POSTHOOK: query: grant Update on table exim_department_n1 to user hive_test_user
 POSTHOOK: type: GRANT_PRIVILEGE
-POSTHOOK: Output: importer@exim_department
+POSTHOOK: Output: importer@exim_department_n1
 PREHOOK: query: import from 'ql/test/data/exports/exim_department'
 PREHOOK: type: IMPORT
 #### A masked pattern was here ####
-PREHOOK: Output: importer@exim_department
+PREHOOK: Output: importer@exim_department_n1
 POSTHOOK: query: import from 'ql/test/data/exports/exim_department'
 POSTHOOK: type: IMPORT
 #### A masked pattern was here ####
-POSTHOOK: Output: importer@exim_department
-PREHOOK: query: select * from exim_department
+POSTHOOK: Output: importer@exim_department_n1
+PREHOOK: query: select * from exim_department_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: importer@exim_department
+PREHOOK: Input: importer@exim_department_n1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from exim_department
+POSTHOOK: query: select * from exim_department_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: importer@exim_department
+POSTHOOK: Input: importer@exim_department_n1
 #### A masked pattern was here ####
 1
 2
@@ -85,14 +85,14 @@ POSTHOOK: Input: importer@exim_department
 4
 5
 6
-PREHOOK: query: drop table exim_department
+PREHOOK: query: drop table exim_department_n1
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: importer@exim_department
-PREHOOK: Output: importer@exim_department
-POSTHOOK: query: drop table exim_department
+PREHOOK: Input: importer@exim_department_n1
+PREHOOK: Output: importer@exim_department_n1
+POSTHOOK: query: drop table exim_department_n1
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: importer@exim_department
-POSTHOOK: Output: importer@exim_department
+POSTHOOK: Input: importer@exim_department_n1
+POSTHOOK: Output: importer@exim_department_n1
 PREHOOK: query: drop database importer
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:importer

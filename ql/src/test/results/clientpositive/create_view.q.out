@@ -418,20 +418,20 @@ Sort Columns:       	[]
 View Original Text: 	SELECT upper(value) FROM src WHERE key=86	 
 View Expanded Text: 	SELECT `_c0` AS `valoo` FROM (SELECT upper(`src`.`value`) FROM `default`.`src` WHERE `src`.`key`=86) `default.view3`	 
 View Rewrite Enabled:	No                  	 
-PREHOOK: query: CREATE TABLE table1 (key int)
+PREHOOK: query: CREATE TABLE table1_n4 (key int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@table1
-POSTHOOK: query: CREATE TABLE table1 (key int)
+PREHOOK: Output: default@table1_n4
+POSTHOOK: query: CREATE TABLE table1_n4 (key int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@table1
-PREHOOK: query: DESCRIBE EXTENDED table1
+POSTHOOK: Output: default@table1_n4
+PREHOOK: query: DESCRIBE EXTENDED table1_n4
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table1
-POSTHOOK: query: DESCRIBE EXTENDED table1
+PREHOOK: Input: default@table1_n4
+POSTHOOK: query: DESCRIBE EXTENDED table1_n4
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1_n4
 key                 	int                 	                    
 	 	 
 #### A masked pattern was here ####
@@ -445,52 +445,52 @@ key                 	string              	default
 value               	string              	default             
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: DESCRIBE EXTENDED table1
+PREHOOK: query: DESCRIBE EXTENDED table1_n4
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table1
-POSTHOOK: query: DESCRIBE EXTENDED table1
+PREHOOK: Input: default@table1_n4
+POSTHOOK: query: DESCRIBE EXTENDED table1_n4
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1_n4
 key                 	int                 	                    
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: INSERT OVERWRITE TABLE table1 SELECT key FROM src WHERE key = 86
+PREHOOK: query: INSERT OVERWRITE TABLE table1_n4 SELECT key FROM src WHERE key = 86
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@table1
-POSTHOOK: query: INSERT OVERWRITE TABLE table1 SELECT key FROM src WHERE key = 86
+PREHOOK: Output: default@table1_n4
+POSTHOOK: query: INSERT OVERWRITE TABLE table1_n4 SELECT key FROM src WHERE key = 86
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@table1
-POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: SELECT * FROM table1
+POSTHOOK: Output: default@table1_n4
+POSTHOOK: Lineage: table1_n4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: SELECT * FROM table1_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table1
+PREHOOK: Input: default@table1_n4
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM table1
+POSTHOOK: query: SELECT * FROM table1_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1_n4
 #### A masked pattern was here ####
 86
-PREHOOK: query: CREATE VIEW view4 AS SELECT * FROM table1
+PREHOOK: query: CREATE VIEW view4 AS SELECT * FROM table1_n4
 PREHOOK: type: CREATEVIEW
-PREHOOK: Input: default@table1
+PREHOOK: Input: default@table1_n4
 PREHOOK: Output: database:default
 PREHOOK: Output: default@view4
-POSTHOOK: query: CREATE VIEW view4 AS SELECT * FROM table1
+POSTHOOK: query: CREATE VIEW view4 AS SELECT * FROM table1_n4
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1_n4
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view4
-POSTHOOK: Lineage: view4.key SIMPLE [(table1)table1.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: view4.key SIMPLE [(table1_n4)table1_n4.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: SELECT * FROM view4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table1
+PREHOOK: Input: default@table1_n4
 PREHOOK: Input: default@view4
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM view4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1_n4
 POSTHOOK: Input: default@view4
 #### A masked pattern was here ####
 86
@@ -501,40 +501,40 @@ POSTHOOK: query: DESCRIBE view4
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@view4
 key                 	int                 	                    
-PREHOOK: query: ALTER TABLE table1 ADD COLUMNS (value STRING)
+PREHOOK: query: ALTER TABLE table1_n4 ADD COLUMNS (value STRING)
 PREHOOK: type: ALTERTABLE_ADDCOLS
-PREHOOK: Input: default@table1
-PREHOOK: Output: default@table1
-POSTHOOK: query: ALTER TABLE table1 ADD COLUMNS (value STRING)
+PREHOOK: Input: default@table1_n4
+PREHOOK: Output: default@table1_n4
+POSTHOOK: query: ALTER TABLE table1_n4 ADD COLUMNS (value STRING)
 POSTHOOK: type: ALTERTABLE_ADDCOLS
-POSTHOOK: Input: default@table1
-POSTHOOK: Output: default@table1
-PREHOOK: query: SELECT * FROM table1
+POSTHOOK: Input: default@table1_n4
+POSTHOOK: Output: default@table1_n4
+PREHOOK: query: SELECT * FROM table1_n4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table1
+PREHOOK: Input: default@table1_n4
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM table1
+POSTHOOK: query: SELECT * FROM table1_n4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1_n4
 #### A masked pattern was here ####
 86	NULL
 PREHOOK: query: SELECT * FROM view4
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table1
+PREHOOK: Input: default@table1_n4
 PREHOOK: Input: default@view4
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM view4
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1_n4
 POSTHOOK: Input: default@view4
 #### A masked pattern was here ####
 86
-PREHOOK: query: DESCRIBE table1
+PREHOOK: query: DESCRIBE table1_n4
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table1
-POSTHOOK: query: DESCRIBE table1
+PREHOOK: Input: default@table1_n4
+POSTHOOK: query: DESCRIBE table1_n4
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1_n4
 key                 	int                 	                    
 value               	string              	                    
 PREHOOK: query: DESCRIBE view4
@@ -547,29 +547,29 @@ key                 	int
 PREHOOK: query: CREATE VIEW view5 AS SELECT v1.key as key1, v2.key as key2
 FROM view4 v1 join view4 v2
 PREHOOK: type: CREATEVIEW
-PREHOOK: Input: default@table1
+PREHOOK: Input: default@table1_n4
 PREHOOK: Input: default@view4
 PREHOOK: Output: database:default
 PREHOOK: Output: default@view5
 POSTHOOK: query: CREATE VIEW view5 AS SELECT v1.key as key1, v2.key as key2
 FROM view4 v1 join view4 v2
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1_n4
 POSTHOOK: Input: default@view4
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view5
-POSTHOOK: Lineage: view5.key1 SIMPLE [(table1)table1.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: view5.key2 SIMPLE [(table1)table1.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: view5.key1 SIMPLE [(table1_n4)table1_n4.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: view5.key2 SIMPLE [(table1_n4)table1_n4.FieldSchema(name:key, type:int, comment:null), ]
 Warning: Shuffle Join JOIN[6][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: SELECT * FROM view5
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table1
+PREHOOK: Input: default@table1_n4
 PREHOOK: Input: default@view4
 PREHOOK: Input: default@view5
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM view5
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1_n4
 POSTHOOK: Input: default@view4
 POSTHOOK: Input: default@view5
 #### A masked pattern was here ####
@@ -707,16 +707,16 @@ POSTHOOK: type: CREATEFUNCTION
 POSTHOOK: Output: test_translate
 PREHOOK: query: CREATE VIEW view8(c) AS
 SELECT test_translate('abc', 'a', 'b')
-FROM table1
+FROM table1_n4
 PREHOOK: type: CREATEVIEW
-PREHOOK: Input: default@table1
+PREHOOK: Input: default@table1_n4
 PREHOOK: Output: database:default
 PREHOOK: Output: default@view8
 POSTHOOK: query: CREATE VIEW view8(c) AS
 SELECT test_translate('abc', 'a', 'b')
-FROM table1
+FROM table1_n4
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1_n4
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view8
 POSTHOOK: Lineage: view8.c SIMPLE []
@@ -758,18 +758,18 @@ Sort Columns:       	[]
 	 	 
 # View Information	 	 
 View Original Text: 	SELECT test_translate('abc', 'a', 'b')	 
-	                    	FROM table1         
+	                    	FROM table1_n4      
 View Expanded Text: 	SELECT `_c0` AS `c` FROM (SELECT `test_translate`('abc', 'a', 'b')	 
-	                    	FROM `default`.`table1`) `default.view8`
+	                    	FROM `default`.`table1_n4`) `default.view8`
 View Rewrite Enabled:	No                  	 
 PREHOOK: query: SELECT * FROM view8
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table1
+PREHOOK: Input: default@table1_n4
 PREHOOK: Input: default@view8
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM view8
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1_n4
 POSTHOOK: Input: default@view8
 #### A masked pattern was here ####
 bbc
@@ -1002,16 +1002,16 @@ POSTHOOK: type: CREATEFUNCTION
 POSTHOOK: Output: test_explode
 PREHOOK: query: CREATE VIEW view11 AS
 SELECT test_explode(array(1,2,3)) AS (boom)
-FROM table1
+FROM table1_n4
 PREHOOK: type: CREATEVIEW
-PREHOOK: Input: default@table1
+PREHOOK: Input: default@table1_n4
 PREHOOK: Output: database:default
 PREHOOK: Output: default@view11
 POSTHOOK: query: CREATE VIEW view11 AS
 SELECT test_explode(array(1,2,3)) AS (boom)
-FROM table1
+FROM table1_n4
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1_n4
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view11
 POSTHOOK: Lineage: view11.boom SCRIPT []
@@ -1053,18 +1053,18 @@ Sort Columns:       	[]
 	 	 
 # View Information	 	 
 View Original Text: 	SELECT test_explode(array(1,2,3)) AS (boom)	 
-	                    	FROM table1         
+	                    	FROM table1_n4      
 View Expanded Text: 	SELECT `test_explode`(array(1,2,3)) AS (`boom`)	 
-	                    	FROM `default`.`table1`
+	                    	FROM `default`.`table1_n4`
 View Rewrite Enabled:	No                  	 
 PREHOOK: query: SELECT * FROM view11
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table1
+PREHOOK: Input: default@table1_n4
 PREHOOK: Input: default@view11
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM view11
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1_n4
 POSTHOOK: Input: default@view11
 #### A masked pattern was here ####
 1
@@ -1553,20 +1553,20 @@ POSTHOOK: query: DESCRIBE view16
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@view16
 value               	string              	                    
-PREHOOK: query: DROP VIEW IF EXISTS table1
+PREHOOK: query: DROP VIEW IF EXISTS table1_n4
 PREHOOK: type: DROPVIEW
-PREHOOK: Input: default@table1
-PREHOOK: Output: default@table1
-POSTHOOK: query: DROP VIEW IF EXISTS table1
+PREHOOK: Input: default@table1_n4
+PREHOOK: Output: default@table1_n4
+POSTHOOK: query: DROP VIEW IF EXISTS table1_n4
 POSTHOOK: type: DROPVIEW
-POSTHOOK: Input: default@table1
-POSTHOOK: Output: default@table1
-PREHOOK: query: DESCRIBE table1
+POSTHOOK: Input: default@table1_n4
+POSTHOOK: Output: default@table1_n4
+PREHOOK: query: DESCRIBE table1_n4
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@table1
-POSTHOOK: query: DESCRIBE table1
+PREHOOK: Input: default@table1_n4
+POSTHOOK: query: DESCRIBE table1_n4
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1_n4
 key                 	int                 	                    
 value               	string              	                    
 PREHOOK: query: DROP VIEW view1

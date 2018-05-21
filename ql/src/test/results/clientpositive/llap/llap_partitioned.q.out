@@ -1602,9 +1602,9 @@ POSTHOOK: Lineage: orc_llap_dim_part PARTITION(ctinyint=20).cint EXPRESSION []
 POSTHOOK: Lineage: orc_llap_dim_part PARTITION(ctinyint=20).csmallint EXPRESSION []
 POSTHOOK: Lineage: orc_llap_dim_part PARTITION(ctinyint=20).cstring1 EXPRESSION []
 POSTHOOK: Lineage: orc_llap_dim_part PARTITION(ctinyint=20).cvchar1 EXPRESSION []
-PREHOOK: query: drop table llap_temp_table
+PREHOOK: query: drop table llap_temp_table_n0
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table llap_temp_table
+POSTHOOK: query: drop table llap_temp_table_n0
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: explain vectorization detail
 SELECT oft.ctinyint, oft.cint, oft.cchar1, oft.cvchar1 FROM orc_llap_part oft
@@ -1765,7 +1765,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: create table llap_temp_table as
+PREHOOK: query: create table llap_temp_table_n0 as
 SELECT oft.ctinyint, oft.cint, oft.cchar1, oft.cvchar1 FROM orc_llap_part oft
   INNER JOIN orc_llap_dim_part od ON oft.ctinyint = od.ctinyint
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -1910,8 +1910,8 @@ PREHOOK: Input: default@orc_llap_part@ctinyint=8
 PREHOOK: Input: default@orc_llap_part@ctinyint=9
 PREHOOK: Input: default@orc_llap_part@ctinyint=__HIVE_DEFAULT_PARTITION__
 PREHOOK: Output: database:default
-PREHOOK: Output: default@llap_temp_table
-POSTHOOK: query: create table llap_temp_table as
+PREHOOK: Output: default@llap_temp_table_n0
+POSTHOOK: query: create table llap_temp_table_n0 as
 SELECT oft.ctinyint, oft.cint, oft.cchar1, oft.cvchar1 FROM orc_llap_part oft
   INNER JOIN orc_llap_dim_part od ON oft.ctinyint = od.ctinyint
 POSTHOOK: type: CREATETABLE_AS_SELECT
@@ -2056,16 +2056,16 @@ POSTHOOK: Input: default@orc_llap_part@ctinyint=8
 POSTHOOK: Input: default@orc_llap_part@ctinyint=9
 POSTHOOK: Input: default@orc_llap_part@ctinyint=__HIVE_DEFAULT_PARTITION__
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@llap_temp_table
-POSTHOOK: Lineage: llap_temp_table.cchar1 SIMPLE [(orc_llap_part)oft.FieldSchema(name:cchar1, type:char(255), comment:null), ]
-POSTHOOK: Lineage: llap_temp_table.cint SIMPLE [(orc_llap_part)oft.FieldSchema(name:cint, type:int, comment:null), ]
-POSTHOOK: Lineage: llap_temp_table.ctinyint SIMPLE [(orc_llap_part)oft.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: llap_temp_table.cvchar1 SIMPLE [(orc_llap_part)oft.FieldSchema(name:cvchar1, type:varchar(255), comment:null), ]
+POSTHOOK: Output: default@llap_temp_table_n0
+POSTHOOK: Lineage: llap_temp_table_n0.cchar1 SIMPLE [(orc_llap_part)oft.FieldSchema(name:cchar1, type:char(255), comment:null), ]
+POSTHOOK: Lineage: llap_temp_table_n0.cint SIMPLE [(orc_llap_part)oft.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: llap_temp_table_n0.ctinyint SIMPLE [(orc_llap_part)oft.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: llap_temp_table_n0.cvchar1 SIMPLE [(orc_llap_part)oft.FieldSchema(name:cvchar1, type:varchar(255), comment:null), ]
 PREHOOK: query: explain vectorization detail
-select sum(hash(*)) from llap_temp_table
+select sum(hash(*)) from llap_temp_table_n0
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization detail
-select sum(hash(*)) from llap_temp_table
+select sum(hash(*)) from llap_temp_table_n0
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -2086,7 +2086,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: llap_temp_table
+                  alias: llap_temp_table_n0
                   Statistics: Num rows: 1509 Data size: 984410 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -2184,23 +2184,23 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select sum(hash(*)) from llap_temp_table
+PREHOOK: query: select sum(hash(*)) from llap_temp_table_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@llap_temp_table
+PREHOOK: Input: default@llap_temp_table_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(*)) from llap_temp_table
+POSTHOOK: query: select sum(hash(*)) from llap_temp_table_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@llap_temp_table
+POSTHOOK: Input: default@llap_temp_table_n0
 #### A masked pattern was here ####
 -70090855086
-PREHOOK: query: drop table llap_temp_table
+PREHOOK: query: drop table llap_temp_table_n0
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@llap_temp_table
-PREHOOK: Output: default@llap_temp_table
-POSTHOOK: query: drop table llap_temp_table
+PREHOOK: Input: default@llap_temp_table_n0
+PREHOOK: Output: default@llap_temp_table_n0
+POSTHOOK: query: drop table llap_temp_table_n0
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@llap_temp_table
-POSTHOOK: Output: default@llap_temp_table
+POSTHOOK: Input: default@llap_temp_table_n0
+POSTHOOK: Output: default@llap_temp_table_n0
 PREHOOK: query: DROP TABLE orc_llap_part
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_llap_part

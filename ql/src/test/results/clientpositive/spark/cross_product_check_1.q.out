@@ -1,37 +1,37 @@
-PREHOOK: query: create table A as
+PREHOOK: query: create table A_n8 as
 select * from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@A
-POSTHOOK: query: create table A as
+PREHOOK: Output: default@A_n8
+POSTHOOK: query: create table A_n8 as
 select * from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@A
-POSTHOOK: Lineage: a.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: a.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: create table B as
+POSTHOOK: Output: default@A_n8
+POSTHOOK: Lineage: a_n8.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: a_n8.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create table B_n6 as
 select * from src
 limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@B
-POSTHOOK: query: create table B as
+PREHOOK: Output: default@B_n6
+POSTHOOK: query: create table B_n6 as
 select * from src
 limit 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@B
-POSTHOOK: Lineage: b.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: b.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@B_n6
+POSTHOOK: Lineage: b_n6.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: b_n6.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 Warning: Shuffle Join JOIN[6][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 2' is a cross product
-PREHOOK: query: explain select * from A join B
+PREHOOK: query: explain select * from A_n8 join B_n6
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from A join B
+POSTHOOK: query: explain select * from A_n8 join B_n6
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -47,7 +47,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: a
+                  alias: a_n8
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string)
@@ -61,7 +61,7 @@ STAGE PLANS:
         Map 3 
             Map Operator Tree:
                 TableScan
-                  alias: b
+                  alias: b_n6
                   Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string)
@@ -97,9 +97,9 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join JOIN[13][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Work 'Reducer 3' is a cross product
-PREHOOK: query: explain select * from B d1 join B d2 on d1.key = d2.key join A
+PREHOOK: query: explain select * from B_n6 d1 join B_n6 d2 on d1.key = d2.key join A_n8
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from B d1 join B d2 on d1.key = d2.key join A
+POSTHOOK: query: explain select * from B_n6 d1 join B_n6 d2 on d1.key = d2.key join A_n8
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -154,7 +154,7 @@ STAGE PLANS:
         Map 5 
             Map Operator Tree:
                 TableScan
-                  alias: a
+                  alias: a_n8
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string)
@@ -204,14 +204,14 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join JOIN[18][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 2' is a cross product
-PREHOOK: query: explain select * from A join 
+PREHOOK: query: explain select * from A_n8 join 
          (select d1.key 
-          from B d1 join B d2 on d1.key = d2.key
+          from B_n6 d1 join B_n6 d2 on d1.key = d2.key
           where 1 = 1 group by d1.key) od1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from A join 
+POSTHOOK: query: explain select * from A_n8 join 
          (select d1.key 
-          from B d1 join B d2 on d1.key = d2.key
+          from B_n6 d1 join B_n6 d2 on d1.key = d2.key
           where 1 = 1 group by d1.key) od1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -230,7 +230,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: a
+                  alias: a_n8
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string)
@@ -335,9 +335,9 @@ STAGE PLANS:
 
 Warning: Shuffle Join JOIN[8][tables = [$hdt$_1, $hdt$_2]] in Work 'Reducer 4' is a cross product
 Warning: Shuffle Join JOIN[16][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 2' is a cross product
-PREHOOK: query: explain select * from A join (select d1.key from B d1 join B d2 where 1 = 1  group by d1.key) od1
+PREHOOK: query: explain select * from A_n8 join (select d1.key from B_n6 d1 join B_n6 d2 where 1 = 1  group by d1.key) od1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from A join (select d1.key from B d1 join B d2 where 1 = 1  group by d1.key) od1
+POSTHOOK: query: explain select * from A_n8 join (select d1.key from B_n6 d1 join B_n6 d2 where 1 = 1  group by d1.key) od1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -355,7 +355,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: a
+                  alias: a_n8
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string)
@@ -449,12 +449,12 @@ STAGE PLANS:
 
 Warning: Shuffle Join JOIN[22][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 3' is a cross product
 PREHOOK: query: explain select * from 
-(select A.key from A  group by key) ss join
-(select d1.key from B d1 join B d2 on d1.key = d2.key where 1 = 1 group by d1.key) od1
+(select A_n8.key from A_n8  group by key) ss join
+(select d1.key from B_n6 d1 join B_n6 d2 on d1.key = d2.key where 1 = 1 group by d1.key) od1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from 
-(select A.key from A  group by key) ss join
-(select d1.key from B d1 join B d2 on d1.key = d2.key where 1 = 1 group by d1.key) od1
+(select A_n8.key from A_n8  group by key) ss join
+(select d1.key from B_n6 d1 join B_n6 d2 on d1.key = d2.key where 1 = 1 group by d1.key) od1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -473,7 +473,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: a
+                  alias: a_n8
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string)

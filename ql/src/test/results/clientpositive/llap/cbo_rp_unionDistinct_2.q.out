@@ -1,70 +1,70 @@
-PREHOOK: query: CREATE TABLE u1 as select key, value from src order by key limit 5
+PREHOOK: query: CREATE TABLE u1_n0 as select key, value from src order by key limit 5
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@u1
-POSTHOOK: query: CREATE TABLE u1 as select key, value from src order by key limit 5
+PREHOOK: Output: default@u1_n0
+POSTHOOK: query: CREATE TABLE u1_n0 as select key, value from src order by key limit 5
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@u1
-POSTHOOK: Lineage: u1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: u1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: CREATE TABLE u2 as select key, value from src order by key limit 3
+POSTHOOK: Output: default@u1_n0
+POSTHOOK: Lineage: u1_n0.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: u1_n0.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: CREATE TABLE u2_n0 as select key, value from src order by key limit 3
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@u2
-POSTHOOK: query: CREATE TABLE u2 as select key, value from src order by key limit 3
+PREHOOK: Output: default@u2_n0
+POSTHOOK: query: CREATE TABLE u2_n0 as select key, value from src order by key limit 3
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@u2
-POSTHOOK: Lineage: u2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: u2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: CREATE TABLE u3 as select key, value from src order by key desc limit 5
+POSTHOOK: Output: default@u2_n0
+POSTHOOK: Lineage: u2_n0.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: u2_n0.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: CREATE TABLE u3_n0 as select key, value from src order by key desc limit 5
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
-PREHOOK: Output: default@u3
-POSTHOOK: query: CREATE TABLE u3 as select key, value from src order by key desc limit 5
+PREHOOK: Output: default@u3_n0
+POSTHOOK: query: CREATE TABLE u3_n0 as select key, value from src order by key desc limit 5
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@u3
-POSTHOOK: Lineage: u3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: u3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from u1
+POSTHOOK: Output: default@u3_n0
+POSTHOOK: Lineage: u3_n0.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: u3_n0.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from u1_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@u1
+PREHOOK: Input: default@u1_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from u1
+POSTHOOK: query: select * from u1_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@u1
+POSTHOOK: Input: default@u1_n0
 #### A masked pattern was here ####
 0	val_0
 0	val_0
 0	val_0
 10	val_10
 100	val_100
-PREHOOK: query: select * from u2
+PREHOOK: query: select * from u2_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@u2
+PREHOOK: Input: default@u2_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from u2
+POSTHOOK: query: select * from u2_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@u2
+POSTHOOK: Input: default@u2_n0
 #### A masked pattern was here ####
 0	val_0
 0	val_0
 0	val_0
-PREHOOK: query: select * from u3
+PREHOOK: query: select * from u3_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@u3
+PREHOOK: Input: default@u3_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from u3
+POSTHOOK: query: select * from u3_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@u3
+POSTHOOK: Input: default@u3_n0
 #### A masked pattern was here ####
 96	val_96
 97	val_97
@@ -73,29 +73,29 @@ POSTHOOK: Input: default@u3
 98	val_98
 PREHOOK: query: select key, value from 
 (
-select key, value from u1
+select key, value from u1_n0
 union all
-select key, value from u2
+select key, value from u2_n0
 union all
-select key as key, value from u3
+select key as key, value from u3_n0
 ) tab
 PREHOOK: type: QUERY
-PREHOOK: Input: default@u1
-PREHOOK: Input: default@u2
-PREHOOK: Input: default@u3
+PREHOOK: Input: default@u1_n0
+PREHOOK: Input: default@u2_n0
+PREHOOK: Input: default@u3_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value from 
 (
-select key, value from u1
+select key, value from u1_n0
 union all
-select key, value from u2
+select key, value from u2_n0
 union all
-select key as key, value from u3
+select key as key, value from u3_n0
 ) tab
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@u1
-POSTHOOK: Input: default@u2
-POSTHOOK: Input: default@u3
+POSTHOOK: Input: default@u1_n0
+POSTHOOK: Input: default@u2_n0
+POSTHOOK: Input: default@u3_n0
 #### A masked pattern was here ####
 0	val_0
 0	val_0
@@ -112,29 +112,29 @@ POSTHOOK: Input: default@u3
 98	val_98
 PREHOOK: query: select key, value from 
 (
-select key, value from u1
+select key, value from u1_n0
 union 
-select key, value from u2
+select key, value from u2_n0
 union all
-select key, value from u3
+select key, value from u3_n0
 ) tab
 PREHOOK: type: QUERY
-PREHOOK: Input: default@u1
-PREHOOK: Input: default@u2
-PREHOOK: Input: default@u3
+PREHOOK: Input: default@u1_n0
+PREHOOK: Input: default@u2_n0
+PREHOOK: Input: default@u3_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value from 
 (
-select key, value from u1
+select key, value from u1_n0
 union 
-select key, value from u2
+select key, value from u2_n0
 union all
-select key, value from u3
+select key, value from u3_n0
 ) tab
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@u1
-POSTHOOK: Input: default@u2
-POSTHOOK: Input: default@u3
+POSTHOOK: Input: default@u1_n0
+POSTHOOK: Input: default@u2_n0
+POSTHOOK: Input: default@u3_n0
 #### A masked pattern was here ####
 0	val_0
 10	val_10
@@ -146,29 +146,29 @@ POSTHOOK: Input: default@u3
 98	val_98
 PREHOOK: query: select key, value from 
 (
-select key, value from u1
+select key, value from u1_n0
 union distinct
-select key, value from u2
+select key, value from u2_n0
 union all
-select key as key, value from u3
+select key as key, value from u3_n0
 ) tab
 PREHOOK: type: QUERY
-PREHOOK: Input: default@u1
-PREHOOK: Input: default@u2
-PREHOOK: Input: default@u3
+PREHOOK: Input: default@u1_n0
+PREHOOK: Input: default@u2_n0
+PREHOOK: Input: default@u3_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value from 
 (
-select key, value from u1
+select key, value from u1_n0
 union distinct
-select key, value from u2
+select key, value from u2_n0
 union all
-select key as key, value from u3
+select key as key, value from u3_n0
 ) tab
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@u1
-POSTHOOK: Input: default@u2
-POSTHOOK: Input: default@u3
+POSTHOOK: Input: default@u1_n0
+POSTHOOK: Input: default@u2_n0
+POSTHOOK: Input: default@u3_n0
 #### A masked pattern was here ####
 0	val_0
 10	val_10
@@ -180,29 +180,29 @@ POSTHOOK: Input: default@u3
 98	val_98
 PREHOOK: query: select key, value from 
 (
-select key, value from u1
+select key, value from u1_n0
 union all
-select key, value from u2
+select key, value from u2_n0
 union
-select key, value from u3
+select key, value from u3_n0
 ) tab
 PREHOOK: type: QUERY
-PREHOOK: Input: default@u1
-PREHOOK: Input: default@u2
-PREHOOK: Input: default@u3
+PREHOOK: Input: default@u1_n0
+PREHOOK: Input: default@u2_n0
+PREHOOK: Input: default@u3_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value from 
 (
-select key, value from u1
+select key, value from u1_n0
 union all
-select key, value from u2
+select key, value from u2_n0
 union
-select key, value from u3
+select key, value from u3_n0
 ) tab
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@u1
-POSTHOOK: Input: default@u2
-POSTHOOK: Input: default@u3
+POSTHOOK: Input: default@u1_n0
+POSTHOOK: Input: default@u2_n0
+POSTHOOK: Input: default@u3_n0
 #### A masked pattern was here ####
 0	val_0
 10	val_10
@@ -212,29 +212,29 @@ POSTHOOK: Input: default@u3
 98	val_98
 PREHOOK: query: select key, value from 
 (
-select key, value from u1
+select key, value from u1_n0
 union 
-select key, value from u2
+select key, value from u2_n0
 union
-select key as key, value from u3
+select key as key, value from u3_n0
 ) tab
 PREHOOK: type: QUERY
-PREHOOK: Input: default@u1
-PREHOOK: Input: default@u2
-PREHOOK: Input: default@u3
+PREHOOK: Input: default@u1_n0
+PREHOOK: Input: default@u2_n0
+PREHOOK: Input: default@u3_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select key, value from 
 (
-select key, value from u1
+select key, value from u1_n0
 union 
-select key, value from u2
+select key, value from u2_n0
 union
-select key as key, value from u3
+select key as key, value from u3_n0
 ) tab
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@u1
-POSTHOOK: Input: default@u2
-POSTHOOK: Input: default@u3
+POSTHOOK: Input: default@u1_n0
+POSTHOOK: Input: default@u2_n0
+POSTHOOK: Input: default@u3_n0
 #### A masked pattern was here ####
 0	val_0
 10	val_10
@@ -244,29 +244,29 @@ POSTHOOK: Input: default@u3
 98	val_98
 PREHOOK: query: select distinct * from 
 (
-select key, value from u1
+select key, value from u1_n0
 union all 
-select key, value from u2
+select key, value from u2_n0
 union all
-select key as key, value from u3
+select key as key, value from u3_n0
 ) tab
 PREHOOK: type: QUERY
-PREHOOK: Input: default@u1
-PREHOOK: Input: default@u2
-PREHOOK: Input: default@u3
+PREHOOK: Input: default@u1_n0
+PREHOOK: Input: default@u2_n0
+PREHOOK: Input: default@u3_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select distinct * from 
 (
-select key, value from u1
+select key, value from u1_n0
 union all 
-select key, value from u2
+select key, value from u2_n0
 union all
-select key as key, value from u3
+select key as key, value from u3_n0
 ) tab
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@u1
-POSTHOOK: Input: default@u2
-POSTHOOK: Input: default@u3
+POSTHOOK: Input: default@u1_n0
+POSTHOOK: Input: default@u2_n0
+POSTHOOK: Input: default@u3_n0
 #### A masked pattern was here ####
 0	val_0
 10	val_10
@@ -276,29 +276,29 @@ POSTHOOK: Input: default@u3
 98	val_98
 PREHOOK: query: select distinct * from 
 (
-select distinct * from u1
+select distinct * from u1_n0
 union  
-select key, value from u2
+select key, value from u2_n0
 union all
-select key as key, value from u3
+select key as key, value from u3_n0
 ) tab
 PREHOOK: type: QUERY
-PREHOOK: Input: default@u1
-PREHOOK: Input: default@u2
-PREHOOK: Input: default@u3
+PREHOOK: Input: default@u1_n0
+PREHOOK: Input: default@u2_n0
+PREHOOK: Input: default@u3_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select distinct * from 
 (
-select distinct * from u1
+select distinct * from u1_n0
 union  
-select key, value from u2
+select key, value from u2_n0
 union all
-select key as key, value from u3
+select key as key, value from u3_n0
 ) tab
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@u1
-POSTHOOK: Input: default@u2
-POSTHOOK: Input: default@u3
+POSTHOOK: Input: default@u1_n0
+POSTHOOK: Input: default@u2_n0
+POSTHOOK: Input: default@u3_n0
 #### A masked pattern was here ####
 0	val_0
 10	val_10
@@ -306,63 +306,63 @@ POSTHOOK: Input: default@u3
 96	val_96
 97	val_97
 98	val_98
-PREHOOK: query: drop view if exists v
+PREHOOK: query: drop view if exists v_n14
 PREHOOK: type: DROPVIEW
-POSTHOOK: query: drop view if exists v
+POSTHOOK: query: drop view if exists v_n14
 POSTHOOK: type: DROPVIEW
-PREHOOK: query: create view v as select distinct * from 
+PREHOOK: query: create view v_n14 as select distinct * from 
 (
-select distinct * from u1
+select distinct * from u1_n0
 union  
-select key, value from u2
+select key, value from u2_n0
 union all
-select key as key, value from u3
+select key as key, value from u3_n0
 ) tab
 PREHOOK: type: CREATEVIEW
-PREHOOK: Input: default@u1
-PREHOOK: Input: default@u2
-PREHOOK: Input: default@u3
+PREHOOK: Input: default@u1_n0
+PREHOOK: Input: default@u2_n0
+PREHOOK: Input: default@u3_n0
 PREHOOK: Output: database:default
-PREHOOK: Output: default@v
-POSTHOOK: query: create view v as select distinct * from 
+PREHOOK: Output: default@v_n14
+POSTHOOK: query: create view v_n14 as select distinct * from 
 (
-select distinct * from u1
+select distinct * from u1_n0
 union  
-select key, value from u2
+select key, value from u2_n0
 union all
-select key as key, value from u3
+select key as key, value from u3_n0
 ) tab
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Input: default@u1
-POSTHOOK: Input: default@u2
-POSTHOOK: Input: default@u3
+POSTHOOK: Input: default@u1_n0
+POSTHOOK: Input: default@u2_n0
+POSTHOOK: Input: default@u3_n0
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@v
-POSTHOOK: Lineage: v.key EXPRESSION [(u1)u1.FieldSchema(name:key, type:string, comment:null), (u2)u2.FieldSchema(name:key, type:string, comment:null), (u3)u3.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: v.value EXPRESSION [(u1)u1.FieldSchema(name:value, type:string, comment:null), (u2)u2.FieldSchema(name:value, type:string, comment:null), (u3)u3.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: describe extended v
+POSTHOOK: Output: default@v_n14
+POSTHOOK: Lineage: v_n14.key EXPRESSION [(u1_n0)u1_n0.FieldSchema(name:key, type:string, comment:null), (u2_n0)u2_n0.FieldSchema(name:key, type:string, comment:null), (u3_n0)u3_n0.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: v_n14.value EXPRESSION [(u1_n0)u1_n0.FieldSchema(name:value, type:string, comment:null), (u2_n0)u2_n0.FieldSchema(name:value, type:string, comment:null), (u3_n0)u3_n0.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: describe extended v_n14
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@v
-POSTHOOK: query: describe extended v
+PREHOOK: Input: default@v_n14
+POSTHOOK: query: describe extended v_n14
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@v_n14
 key                 	string              	                    
 value               	string              	                    
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: select * from v
+PREHOOK: query: select * from v_n14
 PREHOOK: type: QUERY
-PREHOOK: Input: default@u1
-PREHOOK: Input: default@u2
-PREHOOK: Input: default@u3
-PREHOOK: Input: default@v
+PREHOOK: Input: default@u1_n0
+PREHOOK: Input: default@u2_n0
+PREHOOK: Input: default@u3_n0
+PREHOOK: Input: default@v_n14
 #### A masked pattern was here ####
-POSTHOOK: query: select * from v
+POSTHOOK: query: select * from v_n14
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@u1
-POSTHOOK: Input: default@u2
-POSTHOOK: Input: default@u3
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@u1_n0
+POSTHOOK: Input: default@u2_n0
+POSTHOOK: Input: default@u3_n0
+POSTHOOK: Input: default@v_n14
 #### A masked pattern was here ####
 0	val_0
 10	val_10
@@ -370,116 +370,116 @@ POSTHOOK: Input: default@v
 96	val_96
 97	val_97
 98	val_98
-PREHOOK: query: drop view if exists v
+PREHOOK: query: drop view if exists v_n14
 PREHOOK: type: DROPVIEW
-PREHOOK: Input: default@v
-PREHOOK: Output: default@v
-POSTHOOK: query: drop view if exists v
+PREHOOK: Input: default@v_n14
+PREHOOK: Output: default@v_n14
+POSTHOOK: query: drop view if exists v_n14
 POSTHOOK: type: DROPVIEW
-POSTHOOK: Input: default@v
-POSTHOOK: Output: default@v
-PREHOOK: query: create view v as select tab.* from 
+POSTHOOK: Input: default@v_n14
+POSTHOOK: Output: default@v_n14
+PREHOOK: query: create view v_n14 as select tab.* from 
 (
-select distinct * from u1
+select distinct * from u1_n0
 union  
-select distinct * from u2
+select distinct * from u2_n0
 ) tab
 PREHOOK: type: CREATEVIEW
-PREHOOK: Input: default@u1
-PREHOOK: Input: default@u2
+PREHOOK: Input: default@u1_n0
+PREHOOK: Input: default@u2_n0
 PREHOOK: Output: database:default
-PREHOOK: Output: default@v
-POSTHOOK: query: create view v as select tab.* from 
+PREHOOK: Output: default@v_n14
+POSTHOOK: query: create view v_n14 as select tab.* from 
 (
-select distinct * from u1
+select distinct * from u1_n0
 union  
-select distinct * from u2
+select distinct * from u2_n0
 ) tab
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Input: default@u1
-POSTHOOK: Input: default@u2
+POSTHOOK: Input: default@u1_n0
+POSTHOOK: Input: default@u2_n0
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@v
-POSTHOOK: Lineage: v.key EXPRESSION [(u1)u1.FieldSchema(name:key, type:string, comment:null), (u2)u2.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: v.value EXPRESSION [(u1)u1.FieldSchema(name:value, type:string, comment:null), (u2)u2.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: describe extended v
+POSTHOOK: Output: default@v_n14
+POSTHOOK: Lineage: v_n14.key EXPRESSION [(u1_n0)u1_n0.FieldSchema(name:key, type:string, comment:null), (u2_n0)u2_n0.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: v_n14.value EXPRESSION [(u1_n0)u1_n0.FieldSchema(name:value, type:string, comment:null), (u2_n0)u2_n0.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: describe extended v_n14
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@v
-POSTHOOK: query: describe extended v
+PREHOOK: Input: default@v_n14
+POSTHOOK: query: describe extended v_n14
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@v_n14
 key                 	string              	                    
 value               	string              	                    
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: select * from v
+PREHOOK: query: select * from v_n14
 PREHOOK: type: QUERY
-PREHOOK: Input: default@u1
-PREHOOK: Input: default@u2
-PREHOOK: Input: default@v
+PREHOOK: Input: default@u1_n0
+PREHOOK: Input: default@u2_n0
+PREHOOK: Input: default@v_n14
 #### A masked pattern was here ####
-POSTHOOK: query: select * from v
+POSTHOOK: query: select * from v_n14
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@u1
-POSTHOOK: Input: default@u2
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@u1_n0
+POSTHOOK: Input: default@u2_n0
+POSTHOOK: Input: default@v_n14
 #### A masked pattern was here ####
 0	val_0
 10	val_10
 100	val_100
-PREHOOK: query: drop view if exists v
+PREHOOK: query: drop view if exists v_n14
 PREHOOK: type: DROPVIEW
-PREHOOK: Input: default@v
-PREHOOK: Output: default@v
-POSTHOOK: query: drop view if exists v
+PREHOOK: Input: default@v_n14
+PREHOOK: Output: default@v_n14
+POSTHOOK: query: drop view if exists v_n14
 POSTHOOK: type: DROPVIEW
-POSTHOOK: Input: default@v
-POSTHOOK: Output: default@v
-PREHOOK: query: create view v as select * from 
+POSTHOOK: Input: default@v_n14
+POSTHOOK: Output: default@v_n14
+PREHOOK: query: create view v_n14 as select * from 
 (
-select distinct u1.* from u1
+select distinct u1_n0.* from u1_n0
 union all 
-select distinct * from u2
+select distinct * from u2_n0
 ) tab
 PREHOOK: type: CREATEVIEW
-PREHOOK: Input: default@u1
-PREHOOK: Input: default@u2
+PREHOOK: Input: default@u1_n0
+PREHOOK: Input: default@u2_n0
 PREHOOK: Output: database:default
-PREHOOK: Output: default@v
-POSTHOOK: query: create view v as select * from 
+PREHOOK: Output: default@v_n14
+POSTHOOK: query: create view v_n14 as select * from 
 (
-select distinct u1.* from u1
+select distinct u1_n0.* from u1_n0
 union all 
-select distinct * from u2
+select distinct * from u2_n0
 ) tab
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Input: default@u1
-POSTHOOK: Input: default@u2
+POSTHOOK: Input: default@u1_n0
+POSTHOOK: Input: default@u2_n0
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@v
-POSTHOOK: Lineage: v.key EXPRESSION [(u1)u1.FieldSchema(name:key, type:string, comment:null), (u2)u2.FieldSchema(name:key, type:string, comment:null), ]
-POSTHOOK: Lineage: v.value EXPRESSION [(u1)u1.FieldSchema(name:value, type:string, comment:null), (u2)u2.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: describe extended v
+POSTHOOK: Output: default@v_n14
+POSTHOOK: Lineage: v_n14.key EXPRESSION [(u1_n0)u1_n0.FieldSchema(name:key, type:string, comment:null), (u2_n0)u2_n0.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: v_n14.value EXPRESSION [(u1_n0)u1_n0.FieldSchema(name:value, type:string, comment:null), (u2_n0)u2_n0.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: describe extended v_n14
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@v
-POSTHOOK: query: describe extended v
+PREHOOK: Input: default@v_n14
+POSTHOOK: query: describe extended v_n14
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@v_n14
 key                 	string              	                    
 value               	string              	                    
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: select * from v
+PREHOOK: query: select * from v_n14
 PREHOOK: type: QUERY
-PREHOOK: Input: default@u1
-PREHOOK: Input: default@u2
-PREHOOK: Input: default@v
+PREHOOK: Input: default@u1_n0
+PREHOOK: Input: default@u2_n0
+PREHOOK: Input: default@v_n14
 #### A masked pattern was here ####
-POSTHOOK: query: select * from v
+POSTHOOK: query: select * from v_n14
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@u1
-POSTHOOK: Input: default@u2
-POSTHOOK: Input: default@v
+POSTHOOK: Input: default@u1_n0
+POSTHOOK: Input: default@u2_n0
+POSTHOOK: Input: default@v_n14
 #### A masked pattern was here ####
 0	val_0
 0	val_0
@@ -487,29 +487,29 @@ POSTHOOK: Input: default@v
 100	val_100
 PREHOOK: query: select distinct * from 
 (
-select key, value from u1
+select key, value from u1_n0
 union all 
-select key, value from u2
+select key, value from u2_n0
 union 
-select key as key, value from u3
+select key as key, value from u3_n0
 ) tab
 PREHOOK: type: QUERY
-PREHOOK: Input: default@u1
-PREHOOK: Input: default@u2
-PREHOOK: Input: default@u3
+PREHOOK: Input: default@u1_n0
+PREHOOK: Input: default@u2_n0
+PREHOOK: Input: default@u3_n0
 #### A masked pattern was here ####
 POSTHOOK: query: select distinct * from 
 (
-select key, value from u1
+select key, value from u1_n0
 union all 
-select key, value from u2
+select key, value from u2_n0
 union 
-select key as key, value from u3
+select key as key, value from u3_n0
 ) tab
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@u1
-POSTHOOK: Input: default@u2
-POSTHOOK: Input: default@u3
+POSTHOOK: Input: default@u1_n0
+POSTHOOK: Input: default@u2_n0
+POSTHOOK: Input: default@u3_n0
 #### A masked pattern was here ####
 0	val_0
 10	val_10

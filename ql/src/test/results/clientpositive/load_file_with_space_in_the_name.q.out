@@ -1,24 +1,24 @@
-PREHOOK: query: CREATE TABLE load_file_with_space_in_the_name(name STRING, age INT)
+PREHOOK: query: CREATE TABLE load_file_with_space_in_the_name_n0(name STRING, age INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@load_file_with_space_in_the_name
-POSTHOOK: query: CREATE TABLE load_file_with_space_in_the_name(name STRING, age INT)
+PREHOOK: Output: default@load_file_with_space_in_the_name_n0
+POSTHOOK: query: CREATE TABLE load_file_with_space_in_the_name_n0(name STRING, age INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@load_file_with_space_in_the_name
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/person age.txt' INTO TABLE load_file_with_space_in_the_name
+POSTHOOK: Output: default@load_file_with_space_in_the_name_n0
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/person age.txt' INTO TABLE load_file_with_space_in_the_name_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@load_file_with_space_in_the_name
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/person age.txt' INTO TABLE load_file_with_space_in_the_name
+PREHOOK: Output: default@load_file_with_space_in_the_name_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/person age.txt' INTO TABLE load_file_with_space_in_the_name_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@load_file_with_space_in_the_name
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/person+age.txt' INTO TABLE load_file_with_space_in_the_name
+POSTHOOK: Output: default@load_file_with_space_in_the_name_n0
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/person+age.txt' INTO TABLE load_file_with_space_in_the_name_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@load_file_with_space_in_the_name
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/person+age.txt' INTO TABLE load_file_with_space_in_the_name
+PREHOOK: Output: default@load_file_with_space_in_the_name_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/person+age.txt' INTO TABLE load_file_with_space_in_the_name_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@load_file_with_space_in_the_name
+POSTHOOK: Output: default@load_file_with_space_in_the_name_n0

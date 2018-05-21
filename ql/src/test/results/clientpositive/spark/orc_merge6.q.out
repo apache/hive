@@ -1,30 +1,30 @@
-PREHOOK: query: create table orc_merge5 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc
+PREHOOK: query: create table orc_merge5_n4 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@orc_merge5
-POSTHOOK: query: create table orc_merge5 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc
+PREHOOK: Output: default@orc_merge5_n4
+POSTHOOK: query: create table orc_merge5_n4 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@orc_merge5
-PREHOOK: query: create table orc_merge5a (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) partitioned by (year string, hour int) stored as orc
+POSTHOOK: Output: default@orc_merge5_n4
+PREHOOK: query: create table orc_merge5a_n1 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) partitioned by (year string, hour int) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@orc_merge5a
-POSTHOOK: query: create table orc_merge5a (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) partitioned by (year string, hour int) stored as orc
+PREHOOK: Output: default@orc_merge5a_n1
+POSTHOOK: query: create table orc_merge5a_n1 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) partitioned by (year string, hour int) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@orc_merge5a
-PREHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' into table orc_merge5
+POSTHOOK: Output: default@orc_merge5a_n1
+PREHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' into table orc_merge5_n4
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@orc_merge5
-POSTHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' into table orc_merge5
+PREHOOK: Output: default@orc_merge5_n4
+POSTHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' into table orc_merge5_n4
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@orc_merge5
-PREHOOK: query: explain insert overwrite table orc_merge5a partition (year="2000",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
+POSTHOOK: Output: default@orc_merge5_n4
+PREHOOK: query: explain insert overwrite table orc_merge5a_n1 partition (year="2000",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5_n4 where userid<=13
 PREHOOK: type: QUERY
-POSTHOOK: query: explain insert overwrite table orc_merge5a partition (year="2000",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
+POSTHOOK: query: explain insert overwrite table orc_merge5a_n1 partition (year="2000",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5_n4 where userid<=13
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -39,7 +39,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: orc_merge5
+                  alias: orc_merge5_n4
                   filterExpr: (userid <= 13L) (type: boolean)
                   Statistics: Num rows: 1 Data size: 2464020 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -56,7 +56,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                             output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                            name: default.orc_merge5a
+                            name: default.orc_merge5a_n1
 
   Stage: Stage-0
     Move Operator
@@ -69,58 +69,58 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.orc_merge5a
+              name: default.orc_merge5a_n1
 
   Stage: Stage-2
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: insert overwrite table orc_merge5a partition (year="2000",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
+PREHOOK: query: insert overwrite table orc_merge5a_n1 partition (year="2000",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5_n4 where userid<=13
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5
-PREHOOK: Output: default@orc_merge5a@year=2000/hour=24
-POSTHOOK: query: insert overwrite table orc_merge5a partition (year="2000",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
+PREHOOK: Input: default@orc_merge5_n4
+PREHOOK: Output: default@orc_merge5a_n1@year=2000/hour=24
+POSTHOOK: query: insert overwrite table orc_merge5a_n1 partition (year="2000",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5_n4 where userid<=13
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5
-POSTHOOK: Output: default@orc_merge5a@year=2000/hour=24
-POSTHOOK: Lineage: orc_merge5a PARTITION(year=2000,hour=24).decimal1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(year=2000,hour=24).string1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(year=2000,hour=24).subtype SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:subtype, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(year=2000,hour=24).ts SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:ts, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(year=2000,hour=24).userid SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:userid, type:bigint, comment:null), ]
-PREHOOK: query: insert overwrite table orc_merge5a partition (year="2001",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
+POSTHOOK: Input: default@orc_merge5_n4
+POSTHOOK: Output: default@orc_merge5a_n1@year=2000/hour=24
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2000,hour=24).decimal1 SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2000,hour=24).string1 SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2000,hour=24).subtype SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:subtype, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2000,hour=24).ts SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2000,hour=24).userid SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:userid, type:bigint, comment:null), ]
+PREHOOK: query: insert overwrite table orc_merge5a_n1 partition (year="2001",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5_n4 where userid<=13
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5
-PREHOOK: Output: default@orc_merge5a@year=2001/hour=24
-POSTHOOK: query: insert overwrite table orc_merge5a partition (year="2001",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
+PREHOOK: Input: default@orc_merge5_n4
+PREHOOK: Output: default@orc_merge5a_n1@year=2001/hour=24
+POSTHOOK: query: insert overwrite table orc_merge5a_n1 partition (year="2001",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5_n4 where userid<=13
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5
-POSTHOOK: Output: default@orc_merge5a@year=2001/hour=24
-POSTHOOK: Lineage: orc_merge5a PARTITION(year=2001,hour=24).decimal1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(year=2001,hour=24).string1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(year=2001,hour=24).subtype SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:subtype, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(year=2001,hour=24).ts SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:ts, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(year=2001,hour=24).userid SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:userid, type:bigint, comment:null), ]
-PREHOOK: query: analyze table orc_merge5a partition(year="2000",hour=24) compute statistics noscan
+POSTHOOK: Input: default@orc_merge5_n4
+POSTHOOK: Output: default@orc_merge5a_n1@year=2001/hour=24
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2001,hour=24).decimal1 SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2001,hour=24).string1 SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2001,hour=24).subtype SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:subtype, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2001,hour=24).ts SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2001,hour=24).userid SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:userid, type:bigint, comment:null), ]
+PREHOOK: query: analyze table orc_merge5a_n1 partition(year="2000",hour=24) compute statistics noscan
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5a
-PREHOOK: Output: default@orc_merge5a
-PREHOOK: Output: default@orc_merge5a@year=2000/hour=24
-POSTHOOK: query: analyze table orc_merge5a partition(year="2000",hour=24) compute statistics noscan
+PREHOOK: Input: default@orc_merge5a_n1
+PREHOOK: Output: default@orc_merge5a_n1
+PREHOOK: Output: default@orc_merge5a_n1@year=2000/hour=24
+POSTHOOK: query: analyze table orc_merge5a_n1 partition(year="2000",hour=24) compute statistics noscan
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5a
-POSTHOOK: Output: default@orc_merge5a
-POSTHOOK: Output: default@orc_merge5a@year=2000/hour=24
-PREHOOK: query: analyze table orc_merge5a partition(year="2001",hour=24) compute statistics noscan
+POSTHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: Output: default@orc_merge5a_n1
+POSTHOOK: Output: default@orc_merge5a_n1@year=2000/hour=24
+PREHOOK: query: analyze table orc_merge5a_n1 partition(year="2001",hour=24) compute statistics noscan
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5a
-PREHOOK: Output: default@orc_merge5a
-PREHOOK: Output: default@orc_merge5a@year=2001/hour=24
-POSTHOOK: query: analyze table orc_merge5a partition(year="2001",hour=24) compute statistics noscan
+PREHOOK: Input: default@orc_merge5a_n1
+PREHOOK: Output: default@orc_merge5a_n1
+PREHOOK: Output: default@orc_merge5a_n1@year=2001/hour=24
+POSTHOOK: query: analyze table orc_merge5a_n1 partition(year="2001",hour=24) compute statistics noscan
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5a
-POSTHOOK: Output: default@orc_merge5a
-POSTHOOK: Output: default@orc_merge5a@year=2001/hour=24
+POSTHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: Output: default@orc_merge5a_n1
+POSTHOOK: Output: default@orc_merge5a_n1@year=2001/hour=24
 Found 3 items
 -rw-r--r--   3 ### USER ### ### GROUP ###        649 ### HDFS DATE ### hdfs://### HDFS PATH ###
 -rw-r--r--   3 ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
@@ -129,25 +129,25 @@ Found 3 items
 -rw-r--r--   3 ### USER ### ### GROUP ###        649 ### HDFS DATE ### hdfs://### HDFS PATH ###
 -rw-r--r--   3 ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
 -rw-r--r--   3 ### USER ### ### GROUP ###        601 ### HDFS DATE ### hdfs://### HDFS PATH ###
-PREHOOK: query: show partitions orc_merge5a
+PREHOOK: query: show partitions orc_merge5a_n1
 PREHOOK: type: SHOWPARTITIONS
-PREHOOK: Input: default@orc_merge5a
-POSTHOOK: query: show partitions orc_merge5a
+PREHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: query: show partitions orc_merge5a_n1
 POSTHOOK: type: SHOWPARTITIONS
-POSTHOOK: Input: default@orc_merge5a
+POSTHOOK: Input: default@orc_merge5a_n1
 year=2000/hour=24
 year=2001/hour=24
-PREHOOK: query: select * from orc_merge5a
+PREHOOK: query: select * from orc_merge5a_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5a
-PREHOOK: Input: default@orc_merge5a@year=2000/hour=24
-PREHOOK: Input: default@orc_merge5a@year=2001/hour=24
+PREHOOK: Input: default@orc_merge5a_n1
+PREHOOK: Input: default@orc_merge5a_n1@year=2000/hour=24
+PREHOOK: Input: default@orc_merge5a_n1@year=2001/hour=24
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from orc_merge5a
+POSTHOOK: query: select * from orc_merge5a_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5a
-POSTHOOK: Input: default@orc_merge5a@year=2000/hour=24
-POSTHOOK: Input: default@orc_merge5a@year=2001/hour=24
+POSTHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: Input: default@orc_merge5a_n1@year=2000/hour=24
+POSTHOOK: Input: default@orc_merge5a_n1@year=2001/hour=24
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 13	bar	80.0	2	1969-12-31 16:00:05	2000	24
 13	bar	80.0	2	1969-12-31 16:00:05	2001	24
@@ -155,9 +155,9 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 2	foo	0.8	1	1969-12-31 16:00:00	2001	24
 5	eat	0.8	6	1969-12-31 16:00:20	2000	24
 5	eat	0.8	6	1969-12-31 16:00:20	2001	24
-PREHOOK: query: explain insert overwrite table orc_merge5a partition (year="2000",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
+PREHOOK: query: explain insert overwrite table orc_merge5a_n1 partition (year="2000",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5_n4 where userid<=13
 PREHOOK: type: QUERY
-POSTHOOK: query: explain insert overwrite table orc_merge5a partition (year="2000",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
+POSTHOOK: query: explain insert overwrite table orc_merge5a_n1 partition (year="2000",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5_n4 where userid<=13
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -177,7 +177,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: orc_merge5
+                  alias: orc_merge5_n4
                   filterExpr: (userid <= 13L) (type: boolean)
                   Statistics: Num rows: 1 Data size: 2464020 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -194,7 +194,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                             output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                            name: default.orc_merge5a
+                            name: default.orc_merge5a_n1
 
   Stage: Stage-7
     Conditional Operator
@@ -216,7 +216,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.orc_merge5a
+              name: default.orc_merge5a_n1
 
   Stage: Stage-2
     Stats Work
@@ -250,75 +250,75 @@ STAGE PLANS:
           hdfs directory: true
           destination: hdfs://### HDFS PATH ###
 
-PREHOOK: query: insert overwrite table orc_merge5a partition (year="2000",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
+PREHOOK: query: insert overwrite table orc_merge5a_n1 partition (year="2000",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5_n4 where userid<=13
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5
-PREHOOK: Output: default@orc_merge5a@year=2000/hour=24
-POSTHOOK: query: insert overwrite table orc_merge5a partition (year="2000",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
+PREHOOK: Input: default@orc_merge5_n4
+PREHOOK: Output: default@orc_merge5a_n1@year=2000/hour=24
+POSTHOOK: query: insert overwrite table orc_merge5a_n1 partition (year="2000",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5_n4 where userid<=13
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5
-POSTHOOK: Output: default@orc_merge5a@year=2000/hour=24
-POSTHOOK: Lineage: orc_merge5a PARTITION(year=2000,hour=24).decimal1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(year=2000,hour=24).string1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(year=2000,hour=24).subtype SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:subtype, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(year=2000,hour=24).ts SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:ts, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(year=2000,hour=24).userid SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:userid, type:bigint, comment:null), ]
-PREHOOK: query: insert overwrite table orc_merge5a partition (year="2001",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
+POSTHOOK: Input: default@orc_merge5_n4
+POSTHOOK: Output: default@orc_merge5a_n1@year=2000/hour=24
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2000,hour=24).decimal1 SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2000,hour=24).string1 SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2000,hour=24).subtype SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:subtype, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2000,hour=24).ts SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2000,hour=24).userid SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:userid, type:bigint, comment:null), ]
+PREHOOK: query: insert overwrite table orc_merge5a_n1 partition (year="2001",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5_n4 where userid<=13
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5
-PREHOOK: Output: default@orc_merge5a@year=2001/hour=24
-POSTHOOK: query: insert overwrite table orc_merge5a partition (year="2001",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
+PREHOOK: Input: default@orc_merge5_n4
+PREHOOK: Output: default@orc_merge5a_n1@year=2001/hour=24
+POSTHOOK: query: insert overwrite table orc_merge5a_n1 partition (year="2001",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5_n4 where userid<=13
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5
-POSTHOOK: Output: default@orc_merge5a@year=2001/hour=24
-POSTHOOK: Lineage: orc_merge5a PARTITION(year=2001,hour=24).decimal1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(year=2001,hour=24).string1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(year=2001,hour=24).subtype SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:subtype, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(year=2001,hour=24).ts SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:ts, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(year=2001,hour=24).userid SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:userid, type:bigint, comment:null), ]
-PREHOOK: query: analyze table orc_merge5a partition(year="2000",hour=24) compute statistics noscan
+POSTHOOK: Input: default@orc_merge5_n4
+POSTHOOK: Output: default@orc_merge5a_n1@year=2001/hour=24
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2001,hour=24).decimal1 SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2001,hour=24).string1 SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2001,hour=24).subtype SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:subtype, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2001,hour=24).ts SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2001,hour=24).userid SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:userid, type:bigint, comment:null), ]
+PREHOOK: query: analyze table orc_merge5a_n1 partition(year="2000",hour=24) compute statistics noscan
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5a
-PREHOOK: Output: default@orc_merge5a
-PREHOOK: Output: default@orc_merge5a@year=2000/hour=24
-POSTHOOK: query: analyze table orc_merge5a partition(year="2000",hour=24) compute statistics noscan
+PREHOOK: Input: default@orc_merge5a_n1
+PREHOOK: Output: default@orc_merge5a_n1
+PREHOOK: Output: default@orc_merge5a_n1@year=2000/hour=24
+POSTHOOK: query: analyze table orc_merge5a_n1 partition(year="2000",hour=24) compute statistics noscan
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5a
-POSTHOOK: Output: default@orc_merge5a
-POSTHOOK: Output: default@orc_merge5a@year=2000/hour=24
-PREHOOK: query: analyze table orc_merge5a partition(year="2001",hour=24) compute statistics noscan
+POSTHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: Output: default@orc_merge5a_n1
+POSTHOOK: Output: default@orc_merge5a_n1@year=2000/hour=24
+PREHOOK: query: analyze table orc_merge5a_n1 partition(year="2001",hour=24) compute statistics noscan
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5a
-PREHOOK: Output: default@orc_merge5a
-PREHOOK: Output: default@orc_merge5a@year=2001/hour=24
-POSTHOOK: query: analyze table orc_merge5a partition(year="2001",hour=24) compute statistics noscan
+PREHOOK: Input: default@orc_merge5a_n1
+PREHOOK: Output: default@orc_merge5a_n1
+PREHOOK: Output: default@orc_merge5a_n1@year=2001/hour=24
+POSTHOOK: query: analyze table orc_merge5a_n1 partition(year="2001",hour=24) compute statistics noscan
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5a
-POSTHOOK: Output: default@orc_merge5a
-POSTHOOK: Output: default@orc_merge5a@year=2001/hour=24
+POSTHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: Output: default@orc_merge5a_n1
+POSTHOOK: Output: default@orc_merge5a_n1@year=2001/hour=24
 Found 1 items
 -rw-r--r--   3 ### USER ### ### GROUP ###       1022 ### HDFS DATE ### hdfs://### HDFS PATH ###
 Found 1 items
 -rw-r--r--   3 ### USER ### ### GROUP ###       1022 ### HDFS DATE ### hdfs://### HDFS PATH ###
-PREHOOK: query: show partitions orc_merge5a
+PREHOOK: query: show partitions orc_merge5a_n1
 PREHOOK: type: SHOWPARTITIONS
-PREHOOK: Input: default@orc_merge5a
-POSTHOOK: query: show partitions orc_merge5a
+PREHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: query: show partitions orc_merge5a_n1
 POSTHOOK: type: SHOWPARTITIONS
-POSTHOOK: Input: default@orc_merge5a
+POSTHOOK: Input: default@orc_merge5a_n1
 year=2000/hour=24
 year=2001/hour=24
-PREHOOK: query: select * from orc_merge5a
+PREHOOK: query: select * from orc_merge5a_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5a
-PREHOOK: Input: default@orc_merge5a@year=2000/hour=24
-PREHOOK: Input: default@orc_merge5a@year=2001/hour=24
+PREHOOK: Input: default@orc_merge5a_n1
+PREHOOK: Input: default@orc_merge5a_n1@year=2000/hour=24
+PREHOOK: Input: default@orc_merge5a_n1@year=2001/hour=24
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from orc_merge5a
+POSTHOOK: query: select * from orc_merge5a_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5a
-POSTHOOK: Input: default@orc_merge5a@year=2000/hour=24
-POSTHOOK: Input: default@orc_merge5a@year=2001/hour=24
+POSTHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: Input: default@orc_merge5a_n1@year=2000/hour=24
+POSTHOOK: Input: default@orc_merge5a_n1@year=2001/hour=24
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 13	bar	80.0	2	1969-12-31 16:00:05	2000	24
 13	bar	80.0	2	1969-12-31 16:00:05	2001	24
@@ -326,52 +326,52 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 2	foo	0.8	1	1969-12-31 16:00:00	2001	24
 5	eat	0.8	6	1969-12-31 16:00:20	2000	24
 5	eat	0.8	6	1969-12-31 16:00:20	2001	24
-PREHOOK: query: insert overwrite table orc_merge5a partition (year="2000",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
+PREHOOK: query: insert overwrite table orc_merge5a_n1 partition (year="2000",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5_n4 where userid<=13
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5
-PREHOOK: Output: default@orc_merge5a@year=2000/hour=24
-POSTHOOK: query: insert overwrite table orc_merge5a partition (year="2000",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
+PREHOOK: Input: default@orc_merge5_n4
+PREHOOK: Output: default@orc_merge5a_n1@year=2000/hour=24
+POSTHOOK: query: insert overwrite table orc_merge5a_n1 partition (year="2000",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5_n4 where userid<=13
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5
-POSTHOOK: Output: default@orc_merge5a@year=2000/hour=24
-POSTHOOK: Lineage: orc_merge5a PARTITION(year=2000,hour=24).decimal1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(year=2000,hour=24).string1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(year=2000,hour=24).subtype SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:subtype, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(year=2000,hour=24).ts SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:ts, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(year=2000,hour=24).userid SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:userid, type:bigint, comment:null), ]
-PREHOOK: query: insert overwrite table orc_merge5a partition (year="2001",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
+POSTHOOK: Input: default@orc_merge5_n4
+POSTHOOK: Output: default@orc_merge5a_n1@year=2000/hour=24
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2000,hour=24).decimal1 SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2000,hour=24).string1 SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2000,hour=24).subtype SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:subtype, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2000,hour=24).ts SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2000,hour=24).userid SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:userid, type:bigint, comment:null), ]
+PREHOOK: query: insert overwrite table orc_merge5a_n1 partition (year="2001",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5_n4 where userid<=13
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5
-PREHOOK: Output: default@orc_merge5a@year=2001/hour=24
-POSTHOOK: query: insert overwrite table orc_merge5a partition (year="2001",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
+PREHOOK: Input: default@orc_merge5_n4
+PREHOOK: Output: default@orc_merge5a_n1@year=2001/hour=24
+POSTHOOK: query: insert overwrite table orc_merge5a_n1 partition (year="2001",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5_n4 where userid<=13
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5
-POSTHOOK: Output: default@orc_merge5a@year=2001/hour=24
-POSTHOOK: Lineage: orc_merge5a PARTITION(year=2001,hour=24).decimal1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(year=2001,hour=24).string1 SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:string1, type:string, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(year=2001,hour=24).subtype SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:subtype, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(year=2001,hour=24).ts SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:ts, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: orc_merge5a PARTITION(year=2001,hour=24).userid SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:userid, type:bigint, comment:null), ]
-PREHOOK: query: analyze table orc_merge5a partition(year="2000",hour=24) compute statistics noscan
+POSTHOOK: Input: default@orc_merge5_n4
+POSTHOOK: Output: default@orc_merge5a_n1@year=2001/hour=24
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2001,hour=24).decimal1 SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:decimal1, type:decimal(10,0), comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2001,hour=24).string1 SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2001,hour=24).subtype SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:subtype, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2001,hour=24).ts SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2001,hour=24).userid SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:userid, type:bigint, comment:null), ]
+PREHOOK: query: analyze table orc_merge5a_n1 partition(year="2000",hour=24) compute statistics noscan
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5a
-PREHOOK: Output: default@orc_merge5a
-PREHOOK: Output: default@orc_merge5a@year=2000/hour=24
-POSTHOOK: query: analyze table orc_merge5a partition(year="2000",hour=24) compute statistics noscan
+PREHOOK: Input: default@orc_merge5a_n1
+PREHOOK: Output: default@orc_merge5a_n1
+PREHOOK: Output: default@orc_merge5a_n1@year=2000/hour=24
+POSTHOOK: query: analyze table orc_merge5a_n1 partition(year="2000",hour=24) compute statistics noscan
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5a
-POSTHOOK: Output: default@orc_merge5a
-POSTHOOK: Output: default@orc_merge5a@year=2000/hour=24
-PREHOOK: query: analyze table orc_merge5a partition(year="2001",hour=24) compute statistics noscan
+POSTHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: Output: default@orc_merge5a_n1
+POSTHOOK: Output: default@orc_merge5a_n1@year=2000/hour=24
+PREHOOK: query: analyze table orc_merge5a_n1 partition(year="2001",hour=24) compute statistics noscan
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5a
-PREHOOK: Output: default@orc_merge5a
-PREHOOK: Output: default@orc_merge5a@year=2001/hour=24
-POSTHOOK: query: analyze table orc_merge5a partition(year="2001",hour=24) compute statistics noscan
+PREHOOK: Input: default@orc_merge5a_n1
+PREHOOK: Output: default@orc_merge5a_n1
+PREHOOK: Output: default@orc_merge5a_n1@year=2001/hour=24
+POSTHOOK: query: analyze table orc_merge5a_n1 partition(year="2001",hour=24) compute statistics noscan
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5a
-POSTHOOK: Output: default@orc_merge5a
-POSTHOOK: Output: default@orc_merge5a@year=2001/hour=24
+POSTHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: Output: default@orc_merge5a_n1
+POSTHOOK: Output: default@orc_merge5a_n1@year=2001/hour=24
 Found 3 items
 -rw-r--r--   3 ### USER ### ### GROUP ###        649 ### HDFS DATE ### hdfs://### HDFS PATH ###
 -rw-r--r--   3 ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
@@ -380,25 +380,25 @@ Found 3 items
 -rw-r--r--   3 ### USER ### ### GROUP ###        649 ### HDFS DATE ### hdfs://### HDFS PATH ###
 -rw-r--r--   3 ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
 -rw-r--r--   3 ### USER ### ### GROUP ###        601 ### HDFS DATE ### hdfs://### HDFS PATH ###
-PREHOOK: query: show partitions orc_merge5a
+PREHOOK: query: show partitions orc_merge5a_n1
 PREHOOK: type: SHOWPARTITIONS
-PREHOOK: Input: default@orc_merge5a
-POSTHOOK: query: show partitions orc_merge5a
+PREHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: query: show partitions orc_merge5a_n1
 POSTHOOK: type: SHOWPARTITIONS
-POSTHOOK: Input: default@orc_merge5a
+POSTHOOK: Input: default@orc_merge5a_n1
 year=2000/hour=24
 year=2001/hour=24
-PREHOOK: query: select * from orc_merge5a
+PREHOOK: query: select * from orc_merge5a_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5a
-PREHOOK: Input: default@orc_merge5a@year=2000/hour=24
-PREHOOK: Input: default@orc_merge5a@year=2001/hour=24
+PREHOOK: Input: default@orc_merge5a_n1
+PREHOOK: Input: default@orc_merge5a_n1@year=2000/hour=24
+PREHOOK: Input: default@orc_merge5a_n1@year=2001/hour=24
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from orc_merge5a
+POSTHOOK: query: select * from orc_merge5a_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5a
-POSTHOOK: Input: default@orc_merge5a@year=2000/hour=24
-POSTHOOK: Input: default@orc_merge5a@year=2001/hour=24
+POSTHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: Input: default@orc_merge5a_n1@year=2000/hour=24
+POSTHOOK: Input: default@orc_merge5a_n1@year=2001/hour=24
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 13	bar	80.0	2	1969-12-31 16:00:05	2000	24
 13	bar	80.0	2	1969-12-31 16:00:05	2001	24
@@ -406,9 +406,9 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 2	foo	0.8	1	1969-12-31 16:00:00	2001	24
 5	eat	0.8	6	1969-12-31 16:00:20	2000	24
 5	eat	0.8	6	1969-12-31 16:00:20	2001	24
-PREHOOK: query: explain alter table orc_merge5a partition(year="2000",hour=24) concatenate
+PREHOOK: query: explain alter table orc_merge5a_n1 partition(year="2000",hour=24) concatenate
 PREHOOK: type: ALTER_PARTITION_MERGE
-POSTHOOK: query: explain alter table orc_merge5a partition(year="2000",hour=24) concatenate
+POSTHOOK: query: explain alter table orc_merge5a_n1 partition(year="2000",hour=24) concatenate
 POSTHOOK: type: ALTER_PARTITION_MERGE
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -429,71 +429,71 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              name: default.orc_merge5a
+              name: default.orc_merge5a_n1
 
   Stage: Stage-2
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: alter table orc_merge5a partition(year="2000",hour=24) concatenate
+PREHOOK: query: alter table orc_merge5a_n1 partition(year="2000",hour=24) concatenate
 PREHOOK: type: ALTER_PARTITION_MERGE
-PREHOOK: Input: default@orc_merge5a
-PREHOOK: Output: default@orc_merge5a@year=2000/hour=24
-POSTHOOK: query: alter table orc_merge5a partition(year="2000",hour=24) concatenate
+PREHOOK: Input: default@orc_merge5a_n1
+PREHOOK: Output: default@orc_merge5a_n1@year=2000/hour=24
+POSTHOOK: query: alter table orc_merge5a_n1 partition(year="2000",hour=24) concatenate
 POSTHOOK: type: ALTER_PARTITION_MERGE
-POSTHOOK: Input: default@orc_merge5a
-POSTHOOK: Output: default@orc_merge5a@year=2000/hour=24
-PREHOOK: query: alter table orc_merge5a partition(year="2001",hour=24) concatenate
+POSTHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: Output: default@orc_merge5a_n1@year=2000/hour=24
+PREHOOK: query: alter table orc_merge5a_n1 partition(year="2001",hour=24) concatenate
 PREHOOK: type: ALTER_PARTITION_MERGE
-PREHOOK: Input: default@orc_merge5a
-PREHOOK: Output: default@orc_merge5a@year=2001/hour=24
-POSTHOOK: query: alter table orc_merge5a partition(year="2001",hour=24) concatenate
+PREHOOK: Input: default@orc_merge5a_n1
+PREHOOK: Output: default@orc_merge5a_n1@year=2001/hour=24
+POSTHOOK: query: alter table orc_merge5a_n1 partition(year="2001",hour=24) concatenate
 POSTHOOK: type: ALTER_PARTITION_MERGE
-POSTHOOK: Input: default@orc_merge5a
-POSTHOOK: Output: default@orc_merge5a@year=2001/hour=24
-PREHOOK: query: analyze table orc_merge5a partition(year="2000",hour=24) compute statistics noscan
+POSTHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: Output: default@orc_merge5a_n1@year=2001/hour=24
+PREHOOK: query: analyze table orc_merge5a_n1 partition(year="2000",hour=24) compute statistics noscan
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5a
-PREHOOK: Output: default@orc_merge5a
-PREHOOK: Output: default@orc_merge5a@year=2000/hour=24
-POSTHOOK: query: analyze table orc_merge5a partition(year="2000",hour=24) compute statistics noscan
+PREHOOK: Input: default@orc_merge5a_n1
+PREHOOK: Output: default@orc_merge5a_n1
+PREHOOK: Output: default@orc_merge5a_n1@year=2000/hour=24
+POSTHOOK: query: analyze table orc_merge5a_n1 partition(year="2000",hour=24) compute statistics noscan
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5a
-POSTHOOK: Output: default@orc_merge5a
-POSTHOOK: Output: default@orc_merge5a@year=2000/hour=24
-PREHOOK: query: analyze table orc_merge5a partition(year="2001",hour=24) compute statistics noscan
+POSTHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: Output: default@orc_merge5a_n1
+POSTHOOK: Output: default@orc_merge5a_n1@year=2000/hour=24
+PREHOOK: query: analyze table orc_merge5a_n1 partition(year="2001",hour=24) compute statistics noscan
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5a
-PREHOOK: Output: default@orc_merge5a
-PREHOOK: Output: default@orc_merge5a@year=2001/hour=24
-POSTHOOK: query: analyze table orc_merge5a partition(year="2001",hour=24) compute statistics noscan
+PREHOOK: Input: default@orc_merge5a_n1
+PREHOOK: Output: default@orc_merge5a_n1
+PREHOOK: Output: default@orc_merge5a_n1@year=2001/hour=24
+POSTHOOK: query: analyze table orc_merge5a_n1 partition(year="2001",hour=24) compute statistics noscan
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5a
-POSTHOOK: Output: default@orc_merge5a
-POSTHOOK: Output: default@orc_merge5a@year=2001/hour=24
+POSTHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: Output: default@orc_merge5a_n1
+POSTHOOK: Output: default@orc_merge5a_n1@year=2001/hour=24
 Found 1 items
 -rw-r--r--   3 ### USER ### ### GROUP ###       1022 ### HDFS DATE ### hdfs://### HDFS PATH ###
 Found 1 items
 -rw-r--r--   3 ### USER ### ### GROUP ###       1022 ### HDFS DATE ### hdfs://### HDFS PATH ###
-PREHOOK: query: show partitions orc_merge5a
+PREHOOK: query: show partitions orc_merge5a_n1
 PREHOOK: type: SHOWPARTITIONS
-PREHOOK: Input: default@orc_merge5a
-POSTHOOK: query: show partitions orc_merge5a
+PREHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: query: show partitions orc_merge5a_n1
 POSTHOOK: type: SHOWPARTITIONS
-POSTHOOK: Input: default@orc_merge5a
+POSTHOOK: Input: default@orc_merge5a_n1
 year=2000/hour=24
 year=2001/hour=24
-PREHOOK: query: select * from orc_merge5a
+PREHOOK: query: select * from orc_merge5a_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@orc_merge5a
-PREHOOK: Input: default@orc_merge5a@year=2000/hour=24
-PREHOOK: Input: default@orc_merge5a@year=2001/hour=24
+PREHOOK: Input: default@orc_merge5a_n1
+PREHOOK: Input: default@orc_merge5a_n1@year=2000/hour=24
+PREHOOK: Input: default@orc_merge5a_n1@year=2001/hour=24
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from orc_merge5a
+POSTHOOK: query: select * from orc_merge5a_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@orc_merge5a
-POSTHOOK: Input: default@orc_merge5a@year=2000/hour=24
-POSTHOOK: Input: default@orc_merge5a@year=2001/hour=24
+POSTHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: Input: default@orc_merge5a_n1@year=2000/hour=24
+POSTHOOK: Input: default@orc_merge5a_n1@year=2001/hour=24
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 13	bar	80.0	2	1969-12-31 16:00:05	2000	24
 13	bar	80.0	2	1969-12-31 16:00:05	2001	24

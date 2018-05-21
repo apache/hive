@@ -1,82 +1,82 @@
-PREHOOK: query: CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE T1_n128(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T1
-POSTHOOK: query: CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@T1_n128
+POSTHOOK: query: CREATE TABLE T1_n128(key STRING, val STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T1
-PREHOOK: query: CREATE TABLE T2(key STRING, val STRING) STORED AS TEXTFILE
+POSTHOOK: Output: default@T1_n128
+PREHOOK: query: CREATE TABLE T2_n76(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T2
-POSTHOOK: query: CREATE TABLE T2(key STRING, val STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@T2_n76
+POSTHOOK: query: CREATE TABLE T2_n76(key STRING, val STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T2
-PREHOOK: query: CREATE TABLE T3(key STRING, val STRING) STORED AS TEXTFILE
+POSTHOOK: Output: default@T2_n76
+PREHOOK: query: CREATE TABLE T3_n30(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T3
-POSTHOOK: query: CREATE TABLE T3(key STRING, val STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@T3_n30
+POSTHOOK: query: CREATE TABLE T3_n30(key STRING, val STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T3
-PREHOOK: query: CREATE TABLE T4(key STRING, val STRING) STORED AS TEXTFILE
+POSTHOOK: Output: default@T3_n30
+PREHOOK: query: CREATE TABLE T4_n17(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@T4
-POSTHOOK: query: CREATE TABLE T4(key STRING, val STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@T4_n17
+POSTHOOK: query: CREATE TABLE T4_n17(key STRING, val STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@T4
-PREHOOK: query: CREATE TABLE dest_j1(key INT, value STRING) STORED AS TEXTFILE
+POSTHOOK: Output: default@T4_n17
+PREHOOK: query: CREATE TABLE dest_j1_n17(key INT, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@dest_j1
-POSTHOOK: query: CREATE TABLE dest_j1(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: Output: default@dest_j1_n17
+POSTHOOK: query: CREATE TABLE dest_j1_n17(key INT, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@dest_j1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1
+POSTHOOK: Output: default@dest_j1_n17
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_n128
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1
+PREHOOK: Output: default@t1_n128
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_n128
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2
+POSTHOOK: Output: default@t1_n128
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2_n76
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t2
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2
+PREHOOK: Output: default@t2_n76
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2_n76
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t2
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T3.txt' INTO TABLE T3
+POSTHOOK: Output: default@t2_n76
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T3.txt' INTO TABLE T3_n30
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t3
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T3.txt' INTO TABLE T3
+PREHOOK: Output: default@t3_n30
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T3.txt' INTO TABLE T3_n30
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t3
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T4
+POSTHOOK: Output: default@t3_n30
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T4_n17
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@t4
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T4
+PREHOOK: Output: default@t4_n17
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T4_n17
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@t4
+POSTHOOK: Output: default@t4_n17
 PREHOOK: query: EXPLAIN
 FROM src src1 JOIN src src2 ON (src1.key = src2.key)
-INSERT OVERWRITE TABLE dest_j1 SELECT src1.key, src2.value
+INSERT OVERWRITE TABLE dest_j1_n17 SELECT src1.key, src2.value
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 FROM src src1 JOIN src src2 ON (src1.key = src2.key)
-INSERT OVERWRITE TABLE dest_j1 SELECT src1.key, src2.value
+INSERT OVERWRITE TABLE dest_j1_n17 SELECT src1.key, src2.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -143,7 +143,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: default.dest_j1
+                  name: default.dest_j1_n17
             Select Operator
               expressions: _col0 (type: int), _col1 (type: string)
               outputColumnNames: key, value
@@ -199,7 +199,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.dest_j1
+                      name: default.dest_j1_n17
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: string)
                   outputColumnNames: key, value
@@ -226,7 +226,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.dest_j1
+              name: default.dest_j1_n17
 
   Stage: Stage-2
     Stats Work
@@ -234,7 +234,7 @@ STAGE PLANS:
       Column Stats Desc:
           Columns: key, value
           Column Types: int, string
-          Table: default.dest_j1
+          Table: default.dest_j1_n17
 
   Stage: Stage-3
     Map Reduce
@@ -259,37 +259,37 @@ STAGE PLANS:
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
 PREHOOK: query: FROM src src1 JOIN src src2 ON (src1.key = src2.key)
-INSERT OVERWRITE TABLE dest_j1 SELECT src1.key, src2.value
+INSERT OVERWRITE TABLE dest_j1_n17 SELECT src1.key, src2.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@dest_j1
+PREHOOK: Output: default@dest_j1_n17
 POSTHOOK: query: FROM src src1 JOIN src src2 ON (src1.key = src2.key)
-INSERT OVERWRITE TABLE dest_j1 SELECT src1.key, src2.value
+INSERT OVERWRITE TABLE dest_j1_n17 SELECT src1.key, src2.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@dest_j1
-POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: SELECT sum(hash(key)), sum(hash(value)) FROM dest_j1
+POSTHOOK: Output: default@dest_j1_n17
+POSTHOOK: Lineage: dest_j1_n17.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest_j1_n17.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT sum(hash(key)), sum(hash(value)) FROM dest_j1_n17
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest_j1
+PREHOOK: Input: default@dest_j1_n17
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT sum(hash(key)), sum(hash(value)) FROM dest_j1
+POSTHOOK: query: SELECT sum(hash(key)), sum(hash(value)) FROM dest_j1_n17
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest_j1
+POSTHOOK: Input: default@dest_j1_n17
 #### A masked pattern was here ####
 278697	101852390308
 PREHOOK: query: EXPLAIN
 SELECT /*+ STREAMTABLE(a) */ *
-FROM T1 a JOIN T2 b ON a.key = b.key
-          JOIN T3 c ON b.key = c.key
-          JOIN T4 d ON c.key = d.key
+FROM T1_n128 a JOIN T2_n76 b ON a.key = b.key
+          JOIN T3_n30 c ON b.key = c.key
+          JOIN T4_n17 d ON c.key = d.key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT /*+ STREAMTABLE(a) */ *
-FROM T1 a JOIN T2 b ON a.key = b.key
-          JOIN T3 c ON b.key = c.key
-          JOIN T4 d ON c.key = d.key
+FROM T1_n128 a JOIN T2_n76 b ON a.key = b.key
+          JOIN T3_n30 c ON b.key = c.key
+          JOIN T4_n17 d ON c.key = d.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -379,37 +379,37 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT /*+ STREAMTABLE(a) */ *
-FROM T1 a JOIN T2 b ON a.key = b.key
-          JOIN T3 c ON b.key = c.key
-          JOIN T4 d ON c.key = d.key
+FROM T1_n128 a JOIN T2_n76 b ON a.key = b.key
+          JOIN T3_n30 c ON b.key = c.key
+          JOIN T4_n17 d ON c.key = d.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
-PREHOOK: Input: default@t3
-PREHOOK: Input: default@t4
+PREHOOK: Input: default@t1_n128
+PREHOOK: Input: default@t2_n76
+PREHOOK: Input: default@t3_n30
+PREHOOK: Input: default@t4_n17
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT /*+ STREAMTABLE(a) */ *
-FROM T1 a JOIN T2 b ON a.key = b.key
-          JOIN T3 c ON b.key = c.key
-          JOIN T4 d ON c.key = d.key
+FROM T1_n128 a JOIN T2_n76 b ON a.key = b.key
+          JOIN T3_n30 c ON b.key = c.key
+          JOIN T4_n17 d ON c.key = d.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
-POSTHOOK: Input: default@t3
-POSTHOOK: Input: default@t4
+POSTHOOK: Input: default@t1_n128
+POSTHOOK: Input: default@t2_n76
+POSTHOOK: Input: default@t3_n30
+POSTHOOK: Input: default@t4_n17
 #### A masked pattern was here ####
 2	12	2	22	2	12	2	12
 PREHOOK: query: EXPLAIN
 SELECT /*+ STREAMTABLE(a,c) */ *
-FROM T1 a JOIN T2 b ON a.key = b.key
-          JOIN T3 c ON b.key = c.key
-          JOIN T4 d ON c.key = d.key
+FROM T1_n128 a JOIN T2_n76 b ON a.key = b.key
+          JOIN T3_n30 c ON b.key = c.key
+          JOIN T4_n17 d ON c.key = d.key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 SELECT /*+ STREAMTABLE(a,c) */ *
-FROM T1 a JOIN T2 b ON a.key = b.key
-          JOIN T3 c ON b.key = c.key
-          JOIN T4 d ON c.key = d.key
+FROM T1_n128 a JOIN T2_n76 b ON a.key = b.key
+          JOIN T3_n30 c ON b.key = c.key
+          JOIN T4_n17 d ON c.key = d.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -499,29 +499,29 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT /*+ STREAMTABLE(a,c) */ *
-FROM T1 a JOIN T2 b ON a.key = b.key
-          JOIN T3 c ON b.key = c.key
-          JOIN T4 d ON c.key = d.key
+FROM T1_n128 a JOIN T2_n76 b ON a.key = b.key
+          JOIN T3_n30 c ON b.key = c.key
+          JOIN T4_n17 d ON c.key = d.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
-PREHOOK: Input: default@t3
-PREHOOK: Input: default@t4
+PREHOOK: Input: default@t1_n128
+PREHOOK: Input: default@t2_n76
+PREHOOK: Input: default@t3_n30
+PREHOOK: Input: default@t4_n17
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT /*+ STREAMTABLE(a,c) */ *
-FROM T1 a JOIN T2 b ON a.key = b.key
-          JOIN T3 c ON b.key = c.key
-          JOIN T4 d ON c.key = d.key
+FROM T1_n128 a JOIN T2_n76 b ON a.key = b.key
+          JOIN T3_n30 c ON b.key = c.key
+          JOIN T4_n17 d ON c.key = d.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
-POSTHOOK: Input: default@t3
-POSTHOOK: Input: default@t4
+POSTHOOK: Input: default@t1_n128
+POSTHOOK: Input: default@t2_n76
+POSTHOOK: Input: default@t3_n30
+POSTHOOK: Input: default@t4_n17
 #### A masked pattern was here ####
 2	12	2	22	2	12	2	12
-PREHOOK: query: EXPLAIN FROM T1 a JOIN src c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
+PREHOOK: query: EXPLAIN FROM T1_n128 a JOIN src c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN FROM T1 a JOIN src c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
+POSTHOOK: query: EXPLAIN FROM T1_n128 a JOIN src c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -605,15 +605,15 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: FROM T1 a JOIN src c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
+PREHOOK: query: FROM T1_n128 a JOIN src c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n128
 #### A masked pattern was here ####
-POSTHOOK: query: FROM T1 a JOIN src c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
+POSTHOOK: query: FROM T1_n128 a JOIN src c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n128
 #### A masked pattern was here ####
 198	6274	194
 PREHOOK: query: EXPLAIN FROM 
@@ -1219,10 +1219,10 @@ POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 293143	-136853010385
 PREHOOK: query: EXPLAIN
-SELECT /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) FROM T1 k LEFT OUTER JOIN T1 v ON k.key+1=v.key
+SELECT /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) FROM T1_n128 k LEFT OUTER JOIN T1_n128 v ON k.key+1=v.key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-SELECT /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) FROM T1 k LEFT OUTER JOIN T1 v ON k.key+1=v.key
+SELECT /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) FROM T1_n128 k LEFT OUTER JOIN T1_n128 v ON k.key+1=v.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
@@ -1291,112 +1291,112 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) FROM T1 k LEFT OUTER JOIN T1 v ON k.key+1=v.key
+PREHOOK: query: SELECT /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) FROM T1_n128 k LEFT OUTER JOIN T1_n128 v ON k.key+1=v.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n128
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) FROM T1 k LEFT OUTER JOIN T1 v ON k.key+1=v.key
+POSTHOOK: query: SELECT /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) FROM T1_n128 k LEFT OUTER JOIN T1_n128 v ON k.key+1=v.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n128
 #### A masked pattern was here ####
 372	6320
-PREHOOK: query: select /*+ mapjoin(k)*/ sum(hash(k.key)), sum(hash(v.val)) from T1 k join T1 v on k.key=v.val
+PREHOOK: query: select /*+ mapjoin(k)*/ sum(hash(k.key)), sum(hash(v.val)) from T1_n128 k join T1_n128 v on k.key=v.val
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n128
 #### A masked pattern was here ####
-POSTHOOK: query: select /*+ mapjoin(k)*/ sum(hash(k.key)), sum(hash(v.val)) from T1 k join T1 v on k.key=v.val
+POSTHOOK: query: select /*+ mapjoin(k)*/ sum(hash(k.key)), sum(hash(v.val)) from T1_n128 k join T1_n128 v on k.key=v.val
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n128
 #### A masked pattern was here ####
 NULL	NULL
-PREHOOK: query: select /*+ mapjoin(k)*/ sum(hash(k.key)), sum(hash(v.val)) from T1 k join T1 v on k.key=v.key
+PREHOOK: query: select /*+ mapjoin(k)*/ sum(hash(k.key)), sum(hash(v.val)) from T1_n128 k join T1_n128 v on k.key=v.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n128
 #### A masked pattern was here ####
-POSTHOOK: query: select /*+ mapjoin(k)*/ sum(hash(k.key)), sum(hash(v.val)) from T1 k join T1 v on k.key=v.key
+POSTHOOK: query: select /*+ mapjoin(k)*/ sum(hash(k.key)), sum(hash(v.val)) from T1_n128 k join T1_n128 v on k.key=v.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n128
 #### A masked pattern was here ####
 429	12643
-PREHOOK: query: select sum(hash(k.key)), sum(hash(v.val)) from T1 k join T1 v on k.key=v.key
+PREHOOK: query: select sum(hash(k.key)), sum(hash(v.val)) from T1_n128 k join T1_n128 v on k.key=v.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n128
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(hash(k.key)), sum(hash(v.val)) from T1 k join T1 v on k.key=v.key
+POSTHOOK: query: select sum(hash(k.key)), sum(hash(v.val)) from T1_n128 k join T1_n128 v on k.key=v.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n128
 #### A masked pattern was here ####
 429	12643
-PREHOOK: query: select count(1) from  T1 a join T1 b on a.key = b.key
+PREHOOK: query: select count(1) from  T1_n128 a join T1_n128 b on a.key = b.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n128
 #### A masked pattern was here ####
-POSTHOOK: query: select count(1) from  T1 a join T1 b on a.key = b.key
+POSTHOOK: query: select count(1) from  T1_n128 a join T1_n128 b on a.key = b.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n128
 #### A masked pattern was here ####
 8
-PREHOOK: query: FROM T1 a LEFT OUTER JOIN T2 c ON c.key+1=a.key SELECT sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
+PREHOOK: query: FROM T1_n128 a LEFT OUTER JOIN T2_n76 c ON c.key+1=a.key SELECT sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
+PREHOOK: Input: default@t1_n128
+PREHOOK: Input: default@t2_n76
 #### A masked pattern was here ####
-POSTHOOK: query: FROM T1 a LEFT OUTER JOIN T2 c ON c.key+1=a.key SELECT sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
+POSTHOOK: query: FROM T1_n128 a LEFT OUTER JOIN T2_n76 c ON c.key+1=a.key SELECT sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t1_n128
+POSTHOOK: Input: default@t2_n76
 #### A masked pattern was here ####
 317	9462	50
-PREHOOK: query: FROM T1 a RIGHT OUTER JOIN T2 c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
+PREHOOK: query: FROM T1_n128 a RIGHT OUTER JOIN T2_n76 c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
+PREHOOK: Input: default@t1_n128
+PREHOOK: Input: default@t2_n76
 #### A masked pattern was here ####
-POSTHOOK: query: FROM T1 a RIGHT OUTER JOIN T2 c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
+POSTHOOK: query: FROM T1_n128 a RIGHT OUTER JOIN T2_n76 c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t1_n128
+POSTHOOK: Input: default@t2_n76
 #### A masked pattern was here ####
 51	1570	318
-PREHOOK: query: FROM T1 a FULL OUTER JOIN T2 c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
+PREHOOK: query: FROM T1_n128 a FULL OUTER JOIN T2_n76 c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
+PREHOOK: Input: default@t1_n128
+PREHOOK: Input: default@t2_n76
 #### A masked pattern was here ####
-POSTHOOK: query: FROM T1 a FULL OUTER JOIN T2 c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
+POSTHOOK: query: FROM T1_n128 a FULL OUTER JOIN T2_n76 c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t1_n128
+POSTHOOK: Input: default@t2_n76
 #### A masked pattern was here ####
 317	9462	318
-PREHOOK: query: SELECT sum(hash(src1.key)), sum(hash(src1.val)), sum(hash(src2.key)) FROM T1 src1 LEFT OUTER JOIN T2 src2 ON src1.key+1 = src2.key RIGHT OUTER JOIN T2 src3 ON src2.key = src3.key
+PREHOOK: query: SELECT sum(hash(src1.key)), sum(hash(src1.val)), sum(hash(src2.key)) FROM T1_n128 src1 LEFT OUTER JOIN T2_n76 src2 ON src1.key+1 = src2.key RIGHT OUTER JOIN T2_n76 src3 ON src2.key = src3.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
+PREHOOK: Input: default@t1_n128
+PREHOOK: Input: default@t2_n76
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT sum(hash(src1.key)), sum(hash(src1.val)), sum(hash(src2.key)) FROM T1 src1 LEFT OUTER JOIN T2 src2 ON src1.key+1 = src2.key RIGHT OUTER JOIN T2 src3 ON src2.key = src3.key
+POSTHOOK: query: SELECT sum(hash(src1.key)), sum(hash(src1.val)), sum(hash(src2.key)) FROM T1_n128 src1 LEFT OUTER JOIN T2_n76 src2 ON src1.key+1 = src2.key RIGHT OUTER JOIN T2_n76 src3 ON src2.key = src3.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t1_n128
+POSTHOOK: Input: default@t2_n76
 #### A masked pattern was here ####
 370	11003	377
-PREHOOK: query: SELECT sum(hash(src1.key)), sum(hash(src1.val)), sum(hash(src2.key)) FROM T1 src1 JOIN T2 src2 ON src1.key+1 = src2.key JOIN T2 src3 ON src2.key = src3.key
+PREHOOK: query: SELECT sum(hash(src1.key)), sum(hash(src1.val)), sum(hash(src2.key)) FROM T1_n128 src1 JOIN T2_n76 src2 ON src1.key+1 = src2.key JOIN T2_n76 src3 ON src2.key = src3.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
+PREHOOK: Input: default@t1_n128
+PREHOOK: Input: default@t2_n76
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT sum(hash(src1.key)), sum(hash(src1.val)), sum(hash(src2.key)) FROM T1 src1 JOIN T2 src2 ON src1.key+1 = src2.key JOIN T2 src3 ON src2.key = src3.key
+POSTHOOK: query: SELECT sum(hash(src1.key)), sum(hash(src1.val)), sum(hash(src2.key)) FROM T1_n128 src1 JOIN T2_n76 src2 ON src1.key+1 = src2.key JOIN T2_n76 src3 ON src2.key = src3.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@t1_n128
+POSTHOOK: Input: default@t2_n76
 #### A masked pattern was here ####
 370	11003	377
-PREHOOK: query: select /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) from T1 k left outer join T1 v on k.key+1=v.key
+PREHOOK: query: select /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) from T1_n128 k left outer join T1_n128 v on k.key+1=v.key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1_n128
 #### A masked pattern was here ####
-POSTHOOK: query: select /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) from T1 k left outer join T1 v on k.key+1=v.key
+POSTHOOK: query: select /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) from T1_n128 k left outer join T1_n128 v on k.key+1=v.key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1_n128
 #### A masked pattern was here ####
 372	6320

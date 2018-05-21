@@ -1,4 +1,4 @@
-PREHOOK: query: create table if not exists alltypes (
+PREHOOK: query: create table if not exists alltypes_n0 (
  bo boolean,
  ti tinyint,
  si smallint,
@@ -20,8 +20,8 @@ collection items terminated by ','
 map keys terminated by ':' stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@alltypes
-POSTHOOK: query: create table if not exists alltypes (
+PREHOOK: Output: default@alltypes_n0
+POSTHOOK: query: create table if not exists alltypes_n0 (
  bo boolean,
  ti tinyint,
  si smallint,
@@ -43,8 +43,8 @@ collection items terminated by ','
 map keys terminated by ':' stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@alltypes
-PREHOOK: query: create table if not exists alltypes_orc (
+POSTHOOK: Output: default@alltypes_n0
+PREHOOK: query: create table if not exists alltypes_orc_n0 (
  bo boolean,
  ti tinyint,
  si smallint,
@@ -64,8 +64,8 @@ PREHOOK: query: create table if not exists alltypes_orc (
 ) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@alltypes_orc
-POSTHOOK: query: create table if not exists alltypes_orc (
+PREHOOK: Output: default@alltypes_orc_n0
+POSTHOOK: query: create table if not exists alltypes_orc_n0 (
  bo boolean,
  ti tinyint,
  si smallint,
@@ -85,96 +85,96 @@ POSTHOOK: query: create table if not exists alltypes_orc (
 ) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@alltypes_orc
-PREHOOK: query: load data local inpath '../../data/files/alltypes2.txt' overwrite into table alltypes
+POSTHOOK: Output: default@alltypes_orc_n0
+PREHOOK: query: load data local inpath '../../data/files/alltypes2.txt' overwrite into table alltypes_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@alltypes
-POSTHOOK: query: load data local inpath '../../data/files/alltypes2.txt' overwrite into table alltypes
+PREHOOK: Output: default@alltypes_n0
+POSTHOOK: query: load data local inpath '../../data/files/alltypes2.txt' overwrite into table alltypes_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@alltypes
-PREHOOK: query: insert overwrite table alltypes_orc select * from alltypes
+POSTHOOK: Output: default@alltypes_n0
+PREHOOK: query: insert overwrite table alltypes_orc_n0 select * from alltypes_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@alltypes
-PREHOOK: Output: default@alltypes_orc
-POSTHOOK: query: insert overwrite table alltypes_orc select * from alltypes
+PREHOOK: Input: default@alltypes_n0
+PREHOOK: Output: default@alltypes_orc_n0
+POSTHOOK: query: insert overwrite table alltypes_orc_n0 select * from alltypes_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@alltypes
-POSTHOOK: Output: default@alltypes_orc
-POSTHOOK: Lineage: alltypes_orc.bi SIMPLE [(alltypes)alltypes.FieldSchema(name:bi, type:bigint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.bo SIMPLE [(alltypes)alltypes.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.c SIMPLE [(alltypes)alltypes.FieldSchema(name:c, type:char(5), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.d SIMPLE [(alltypes)alltypes.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.da SIMPLE [(alltypes)alltypes.FieldSchema(name:da, type:date, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.de SIMPLE [(alltypes)alltypes.FieldSchema(name:de, type:decimal(10,3), comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.f SIMPLE [(alltypes)alltypes.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.i SIMPLE [(alltypes)alltypes.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.l SIMPLE [(alltypes)alltypes.FieldSchema(name:l, type:array<int>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.m SIMPLE [(alltypes)alltypes.FieldSchema(name:m, type:map<string,string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.s SIMPLE [(alltypes)alltypes.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.si SIMPLE [(alltypes)alltypes.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.st SIMPLE [(alltypes)alltypes.FieldSchema(name:st, type:struct<c1:int,c2:string>, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ti SIMPLE [(alltypes)alltypes.FieldSchema(name:ti, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.ts SIMPLE [(alltypes)alltypes.FieldSchema(name:ts, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: alltypes_orc.vc SIMPLE [(alltypes)alltypes.FieldSchema(name:vc, type:varchar(5), comment:null), ]
-PREHOOK: query: select * from alltypes_orc
+POSTHOOK: Input: default@alltypes_n0
+POSTHOOK: Output: default@alltypes_orc_n0
+POSTHOOK: Lineage: alltypes_orc_n0.bi SIMPLE [(alltypes_n0)alltypes_n0.FieldSchema(name:bi, type:bigint, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc_n0.bo SIMPLE [(alltypes_n0)alltypes_n0.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc_n0.c SIMPLE [(alltypes_n0)alltypes_n0.FieldSchema(name:c, type:char(5), comment:null), ]
+POSTHOOK: Lineage: alltypes_orc_n0.d SIMPLE [(alltypes_n0)alltypes_n0.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc_n0.da SIMPLE [(alltypes_n0)alltypes_n0.FieldSchema(name:da, type:date, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc_n0.de SIMPLE [(alltypes_n0)alltypes_n0.FieldSchema(name:de, type:decimal(10,3), comment:null), ]
+POSTHOOK: Lineage: alltypes_orc_n0.f SIMPLE [(alltypes_n0)alltypes_n0.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc_n0.i SIMPLE [(alltypes_n0)alltypes_n0.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc_n0.l SIMPLE [(alltypes_n0)alltypes_n0.FieldSchema(name:l, type:array<int>, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc_n0.m SIMPLE [(alltypes_n0)alltypes_n0.FieldSchema(name:m, type:map<string,string>, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc_n0.s SIMPLE [(alltypes_n0)alltypes_n0.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc_n0.si SIMPLE [(alltypes_n0)alltypes_n0.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc_n0.st SIMPLE [(alltypes_n0)alltypes_n0.FieldSchema(name:st, type:struct<c1:int,c2:string>, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc_n0.ti SIMPLE [(alltypes_n0)alltypes_n0.FieldSchema(name:ti, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc_n0.ts SIMPLE [(alltypes_n0)alltypes_n0.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc_n0.vc SIMPLE [(alltypes_n0)alltypes_n0.FieldSchema(name:vc, type:varchar(5), comment:null), ]
+PREHOOK: query: select * from alltypes_orc_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@alltypes_orc
+PREHOOK: Input: default@alltypes_orc_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from alltypes_orc
+POSTHOOK: query: select * from alltypes_orc_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@alltypes_orc
+POSTHOOK: Input: default@alltypes_orc_n0
 #### A masked pattern was here ####
 true	10	100	1000	10000	4.0	20.0	4.222	1969-12-31 15:59:58.174	1970-01-01	string	hello	hello	{"k1":"v1","k2":"v2"}	[100,200]	{"c1":null,"c2":" \"foo\"}"}
 false	20	200	2000	20000	8.0	40.0	2.222	1970-12-31 15:59:58.174	1971-01-01	abcd	world	world	{"k3":"v3","k4":"v4"}	[200,300]	{"c1":null,"c2":" \"bar\"}"}
-PREHOOK: query: alter table alltypes_orc change si si int
+PREHOOK: query: alter table alltypes_orc_n0 change si si int
 PREHOOK: type: ALTERTABLE_RENAMECOL
-PREHOOK: Input: default@alltypes_orc
-PREHOOK: Output: default@alltypes_orc
-POSTHOOK: query: alter table alltypes_orc change si si int
+PREHOOK: Input: default@alltypes_orc_n0
+PREHOOK: Output: default@alltypes_orc_n0
+POSTHOOK: query: alter table alltypes_orc_n0 change si si int
 POSTHOOK: type: ALTERTABLE_RENAMECOL
-POSTHOOK: Input: default@alltypes_orc
-POSTHOOK: Output: default@alltypes_orc
-PREHOOK: query: select * from alltypes_orc
+POSTHOOK: Input: default@alltypes_orc_n0
+POSTHOOK: Output: default@alltypes_orc_n0
+PREHOOK: query: select * from alltypes_orc_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@alltypes_orc
+PREHOOK: Input: default@alltypes_orc_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from alltypes_orc
+POSTHOOK: query: select * from alltypes_orc_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@alltypes_orc
+POSTHOOK: Input: default@alltypes_orc_n0
 #### A masked pattern was here ####
 true	10	100	1000	10000	4.0	20.0	4.222	1969-12-31 15:59:58.174	1970-01-01	string	hello	hello	{"k1":"v1","k2":"v2"}	[100,200]	{"c1":null,"c2":" \"foo\"}"}
 false	20	200	2000	20000	8.0	40.0	2.222	1970-12-31 15:59:58.174	1971-01-01	abcd	world	world	{"k3":"v3","k4":"v4"}	[200,300]	{"c1":null,"c2":" \"bar\"}"}
-PREHOOK: query: alter table alltypes_orc change si si bigint
+PREHOOK: query: alter table alltypes_orc_n0 change si si bigint
 PREHOOK: type: ALTERTABLE_RENAMECOL
-PREHOOK: Input: default@alltypes_orc
-PREHOOK: Output: default@alltypes_orc
-POSTHOOK: query: alter table alltypes_orc change si si bigint
+PREHOOK: Input: default@alltypes_orc_n0
+PREHOOK: Output: default@alltypes_orc_n0
+POSTHOOK: query: alter table alltypes_orc_n0 change si si bigint
 POSTHOOK: type: ALTERTABLE_RENAMECOL
-POSTHOOK: Input: default@alltypes_orc
-POSTHOOK: Output: default@alltypes_orc
-PREHOOK: query: alter table alltypes_orc change i i bigint
+POSTHOOK: Input: default@alltypes_orc_n0
+POSTHOOK: Output: default@alltypes_orc_n0
+PREHOOK: query: alter table alltypes_orc_n0 change i i bigint
 PREHOOK: type: ALTERTABLE_RENAMECOL
-PREHOOK: Input: default@alltypes_orc
-PREHOOK: Output: default@alltypes_orc
-POSTHOOK: query: alter table alltypes_orc change i i bigint
+PREHOOK: Input: default@alltypes_orc_n0
+PREHOOK: Output: default@alltypes_orc_n0
+POSTHOOK: query: alter table alltypes_orc_n0 change i i bigint
 POSTHOOK: type: ALTERTABLE_RENAMECOL
-POSTHOOK: Input: default@alltypes_orc
-POSTHOOK: Output: default@alltypes_orc
-PREHOOK: query: select * from alltypes_orc
+POSTHOOK: Input: default@alltypes_orc_n0
+POSTHOOK: Output: default@alltypes_orc_n0
+PREHOOK: query: select * from alltypes_orc_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@alltypes_orc
+PREHOOK: Input: default@alltypes_orc_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select * from alltypes_orc
+POSTHOOK: query: select * from alltypes_orc_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@alltypes_orc
+POSTHOOK: Input: default@alltypes_orc_n0
 #### A masked pattern was here ####
 true	10	100	1000	10000	4.0	20.0	4.222	1969-12-31 15:59:58.174	1970-01-01	string	hello	hello	{"k1":"v1","k2":"v2"}	[100,200]	{"c1":null,"c2":" \"foo\"}"}
 false	20	200	2000	20000	8.0	40.0	2.222	1970-12-31 15:59:58.174	1971-01-01	abcd	world	world	{"k3":"v3","k4":"v4"}	[200,300]	{"c1":null,"c2":" \"bar\"}"}
-PREHOOK: query: explain select ti, si, i, bi from alltypes_orc
+PREHOOK: query: explain select ti, si, i, bi from alltypes_orc_n0
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select ti, si, i, bi from alltypes_orc
+POSTHOOK: query: explain select ti, si, i, bi from alltypes_orc_n0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -185,7 +185,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: alltypes_orc
+            alias: alltypes_orc_n0
             Statistics: Num rows: 2 Data size: 1908 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: ti (type: tinyint), si (type: bigint), i (type: bigint), bi (type: bigint)
@@ -206,13 +206,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select ti, si, i, bi from alltypes_orc
+PREHOOK: query: select ti, si, i, bi from alltypes_orc_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@alltypes_orc
+PREHOOK: Input: default@alltypes_orc_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select ti, si, i, bi from alltypes_orc
+POSTHOOK: query: select ti, si, i, bi from alltypes_orc_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@alltypes_orc
+POSTHOOK: Input: default@alltypes_orc_n0
 #### A masked pattern was here ####
 10	100	1000	10000
 20	200	2000	20000

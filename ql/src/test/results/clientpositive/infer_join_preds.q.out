@@ -674,7 +674,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: CREATE TABLE `table1`(
+PREHOOK: query: CREATE TABLE `table1_n8`(
        `idp_warehouse_id` bigint,
        `idp_audit_id` bigint,
        `idp_effective_date` date,
@@ -701,8 +701,8 @@ PREHOOK: query: CREATE TABLE `table1`(
        `practsum` decimal(38,20))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@table1
-POSTHOOK: query: CREATE TABLE `table1`(
+PREHOOK: Output: default@table1_n8
+POSTHOOK: query: CREATE TABLE `table1_n8`(
        `idp_warehouse_id` bigint,
        `idp_audit_id` bigint,
        `idp_effective_date` date,
@@ -729,8 +729,8 @@ POSTHOOK: query: CREATE TABLE `table1`(
        `practsum` decimal(38,20))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@table1
-PREHOOK: query: CREATE TABLE `table2`(
+POSTHOOK: Output: default@table1_n8
+PREHOOK: query: CREATE TABLE `table2_n4`(
        `idp_warehouse_id` bigint,
        `idp_audit_id` bigint,
        `idp_effective_date` date,
@@ -757,8 +757,8 @@ PREHOOK: query: CREATE TABLE `table2`(
        `practsum` decimal(38,20))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@table2
-POSTHOOK: query: CREATE TABLE `table2`(
+PREHOOK: Output: default@table2_n4
+POSTHOOK: query: CREATE TABLE `table2_n4`(
        `idp_warehouse_id` bigint,
        `idp_audit_id` bigint,
        `idp_effective_date` date,
@@ -785,16 +785,16 @@ POSTHOOK: query: CREATE TABLE `table2`(
        `practsum` decimal(38,20))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@table2
+POSTHOOK: Output: default@table2_n4
 PREHOOK: query: explain SELECT          s.idp_warehouse_id AS source_warehouse_id
-    FROM            table1 s
+    FROM            table1_n8 s
     JOIN
 
-                           table2 d
+                           table2_n4 d
     ON              (
                                     s.prid = d.prid )
     JOIN
-                             table2 e
+                             table2_n4 e
     ON
                                     s.prid = e.prid
     WHERE
@@ -949,14 +949,14 @@ PREHOOK: query: explain SELECT          s.idp_warehouse_id AS source_warehouse_i
                     END )
 PREHOOK: type: QUERY
 POSTHOOK: query: explain SELECT          s.idp_warehouse_id AS source_warehouse_id
-    FROM            table1 s
+    FROM            table1_n8 s
     JOIN
 
-                           table2 d
+                           table2_n4 d
     ON              (
                                     s.prid = d.prid )
     JOIN
-                             table2 e
+                             table2_n4 e
     ON
                                     s.prid = e.prid
     WHERE
@@ -1185,19 +1185,19 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: drop table table2
+PREHOOK: query: drop table table2_n4
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@table2
-PREHOOK: Output: default@table2
-POSTHOOK: query: drop table table2
+PREHOOK: Input: default@table2_n4
+PREHOOK: Output: default@table2_n4
+POSTHOOK: query: drop table table2_n4
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@table2
-POSTHOOK: Output: default@table2
-PREHOOK: query: drop table table1
+POSTHOOK: Input: default@table2_n4
+POSTHOOK: Output: default@table2_n4
+PREHOOK: query: drop table table1_n8
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@table1
-PREHOOK: Output: default@table1
-POSTHOOK: query: drop table table1
+PREHOOK: Input: default@table1_n8
+PREHOOK: Output: default@table1_n8
+POSTHOOK: query: drop table table1_n8
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@table1
-POSTHOOK: Output: default@table1
+POSTHOOK: Input: default@table1_n8
+POSTHOOK: Output: default@table1_n8

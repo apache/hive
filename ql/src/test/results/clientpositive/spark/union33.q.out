@@ -1,12 +1,12 @@
-PREHOOK: query: CREATE TABLE test_src (key STRING, value STRING)
+PREHOOK: query: CREATE TABLE test_src_n1 (key STRING, value STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@test_src
-POSTHOOK: query: CREATE TABLE test_src (key STRING, value STRING)
+PREHOOK: Output: default@test_src_n1
+POSTHOOK: query: CREATE TABLE test_src_n1 (key STRING, value STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_src
-PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_src 
+POSTHOOK: Output: default@test_src_n1
+PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_src_n1 
 SELECT key, value FROM (
 	SELECT key, value FROM src 
 	WHERE key = 0
@@ -15,7 +15,7 @@ UNION ALL
  	GROUP BY key
 )a
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_src 
+POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_src_n1 
 SELECT key, value FROM (
 	SELECT key, value FROM src 
 	WHERE key = 0
@@ -56,7 +56,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.test_src
+                            name: default.test_src_n1
             Execution mode: vectorized
         Map 2 
             Map Operator Tree:
@@ -115,7 +115,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.test_src
+                        name: default.test_src_n1
 
   Stage: Stage-0
     Move Operator
@@ -125,13 +125,13 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.test_src
+              name: default.test_src_n1
 
   Stage: Stage-2
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: INSERT OVERWRITE TABLE test_src 
+PREHOOK: query: INSERT OVERWRITE TABLE test_src_n1 
 SELECT key, value FROM (
 	SELECT key, value FROM src 
 	WHERE key = 0
@@ -141,8 +141,8 @@ UNION ALL
 )a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@test_src
-POSTHOOK: query: INSERT OVERWRITE TABLE test_src 
+PREHOOK: Output: default@test_src_n1
+POSTHOOK: query: INSERT OVERWRITE TABLE test_src_n1 
 SELECT key, value FROM (
 	SELECT key, value FROM src 
 	WHERE key = 0
@@ -152,19 +152,19 @@ UNION ALL
 )a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@test_src
-POSTHOOK: Lineage: test_src.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_src.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.null, ]
-PREHOOK: query: SELECT COUNT(*) FROM test_src
+POSTHOOK: Output: default@test_src_n1
+POSTHOOK: Lineage: test_src_n1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_src_n1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.null, ]
+PREHOOK: query: SELECT COUNT(*) FROM test_src_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_src
+PREHOOK: Input: default@test_src_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT COUNT(*) FROM test_src
+POSTHOOK: query: SELECT COUNT(*) FROM test_src_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_src
+POSTHOOK: Input: default@test_src_n1
 #### A masked pattern was here ####
 312
-PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_src 
+PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_src_n1 
 SELECT key, value FROM (
 	SELECT key, cast(COUNT(*) as string) AS value FROM src
  	GROUP BY key
@@ -173,7 +173,7 @@ UNION ALL
 	WHERE key = 0
 )a
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_src 
+POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE test_src_n1 
 SELECT key, value FROM (
 	SELECT key, cast(COUNT(*) as string) AS value FROM src
  	GROUP BY key
@@ -236,7 +236,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                            name: default.test_src
+                            name: default.test_src_n1
             Execution mode: vectorized
         Reducer 2 
             Execution mode: vectorized
@@ -273,7 +273,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.test_src
+                        name: default.test_src_n1
 
   Stage: Stage-0
     Move Operator
@@ -283,13 +283,13 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.test_src
+              name: default.test_src_n1
 
   Stage: Stage-2
     Stats Work
       Basic Stats Work:
 
-PREHOOK: query: INSERT OVERWRITE TABLE test_src 
+PREHOOK: query: INSERT OVERWRITE TABLE test_src_n1 
 SELECT key, value FROM (
 	SELECT key, cast(COUNT(*) as string) AS value FROM src
  	GROUP BY key
@@ -299,8 +299,8 @@ UNION ALL
 )a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@test_src
-POSTHOOK: query: INSERT OVERWRITE TABLE test_src 
+PREHOOK: Output: default@test_src_n1
+POSTHOOK: query: INSERT OVERWRITE TABLE test_src_n1 
 SELECT key, value FROM (
 	SELECT key, cast(COUNT(*) as string) AS value FROM src
  	GROUP BY key
@@ -310,15 +310,15 @@ UNION ALL
 )a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@test_src
-POSTHOOK: Lineage: test_src.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: test_src.value EXPRESSION [(src)src.null, (src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: SELECT COUNT(*) FROM test_src
+POSTHOOK: Output: default@test_src_n1
+POSTHOOK: Lineage: test_src_n1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_src_n1.value EXPRESSION [(src)src.null, (src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT COUNT(*) FROM test_src_n1
 PREHOOK: type: QUERY
-PREHOOK: Input: default@test_src
+PREHOOK: Input: default@test_src_n1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT COUNT(*) FROM test_src
+POSTHOOK: query: SELECT COUNT(*) FROM test_src_n1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_src
+POSTHOOK: Input: default@test_src_n1
 #### A masked pattern was here ####
 312

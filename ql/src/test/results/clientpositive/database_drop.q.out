@@ -17,64 +17,64 @@ POSTHOOK: query: USE db5
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:db5
 #### A masked pattern was here ####
-PREHOOK: query: CREATE TABLE temp_tbl (id INT, name STRING)
+PREHOOK: query: CREATE TABLE temp_tbl_n0 (id INT, name STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:db5
-PREHOOK: Output: db5@temp_tbl
-POSTHOOK: query: CREATE TABLE temp_tbl (id INT, name STRING)
+PREHOOK: Output: db5@temp_tbl_n0
+POSTHOOK: query: CREATE TABLE temp_tbl_n0 (id INT, name STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:db5
-POSTHOOK: Output: db5@temp_tbl
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE temp_tbl
+POSTHOOK: Output: db5@temp_tbl_n0
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE temp_tbl_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: db5@temp_tbl
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE temp_tbl
+PREHOOK: Output: db5@temp_tbl_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE temp_tbl_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: db5@temp_tbl
-PREHOOK: query: CREATE VIEW temp_tbl_view AS SELECT * FROM temp_tbl
+POSTHOOK: Output: db5@temp_tbl_n0
+PREHOOK: query: CREATE VIEW temp_tbl_view AS SELECT * FROM temp_tbl_n0
 PREHOOK: type: CREATEVIEW
-PREHOOK: Input: db5@temp_tbl
+PREHOOK: Input: db5@temp_tbl_n0
 PREHOOK: Output: database:db5
 PREHOOK: Output: db5@temp_tbl_view
-POSTHOOK: query: CREATE VIEW temp_tbl_view AS SELECT * FROM temp_tbl
+POSTHOOK: query: CREATE VIEW temp_tbl_view AS SELECT * FROM temp_tbl_n0
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Input: db5@temp_tbl
+POSTHOOK: Input: db5@temp_tbl_n0
 POSTHOOK: Output: database:db5
 POSTHOOK: Output: db5@temp_tbl_view
-POSTHOOK: Lineage: temp_tbl_view.id SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: temp_tbl_view.name SIMPLE [(temp_tbl)temp_tbl.FieldSchema(name:name, type:string, comment:null), ]
+POSTHOOK: Lineage: temp_tbl_view.id SIMPLE [(temp_tbl_n0)temp_tbl_n0.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: temp_tbl_view.name SIMPLE [(temp_tbl_n0)temp_tbl_n0.FieldSchema(name:name, type:string, comment:null), ]
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 PREHOOK: Output: database:db5
-PREHOOK: Output: db5@temp_tbl2
+PREHOOK: Output: db5@temp_tbl2_n0
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 POSTHOOK: Output: database:db5
-POSTHOOK: Output: db5@temp_tbl2
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' into table temp_tbl2
+POSTHOOK: Output: db5@temp_tbl2_n0
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' into table temp_tbl2_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: db5@temp_tbl2
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' into table temp_tbl2
+PREHOOK: Output: db5@temp_tbl2_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' into table temp_tbl2_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: db5@temp_tbl2
-PREHOOK: query: CREATE VIEW temp_tbl2_view AS SELECT * FROM temp_tbl2
+POSTHOOK: Output: db5@temp_tbl2_n0
+PREHOOK: query: CREATE VIEW temp_tbl2_view AS SELECT * FROM temp_tbl2_n0
 PREHOOK: type: CREATEVIEW
-PREHOOK: Input: db5@temp_tbl2
+PREHOOK: Input: db5@temp_tbl2_n0
 PREHOOK: Output: database:db5
 PREHOOK: Output: db5@temp_tbl2_view
-POSTHOOK: query: CREATE VIEW temp_tbl2_view AS SELECT * FROM temp_tbl2
+POSTHOOK: query: CREATE VIEW temp_tbl2_view AS SELECT * FROM temp_tbl2_n0
 POSTHOOK: type: CREATEVIEW
-POSTHOOK: Input: db5@temp_tbl2
+POSTHOOK: Input: db5@temp_tbl2_n0
 POSTHOOK: Output: database:db5
 POSTHOOK: Output: db5@temp_tbl2_view
-POSTHOOK: Lineage: temp_tbl2_view.id SIMPLE [(temp_tbl2)temp_tbl2.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: temp_tbl2_view.name SIMPLE [(temp_tbl2)temp_tbl2.FieldSchema(name:name, type:string, comment:null), ]
+POSTHOOK: Lineage: temp_tbl2_view.id SIMPLE [(temp_tbl2_n0)temp_tbl2_n0.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: temp_tbl2_view.name SIMPLE [(temp_tbl2_n0)temp_tbl2_n0.FieldSchema(name:name, type:string, comment:null), ]
 PREHOOK: query: CREATE TABLE part_tab (id INT, name STRING)  PARTITIONED BY (ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:db5
@@ -212,10 +212,10 @@ PREHOOK: Output: db5@extab1
 PREHOOK: Output: db5@part_tab
 PREHOOK: Output: db5@part_tab2
 PREHOOK: Output: db5@part_tab3
-PREHOOK: Output: db5@temp_tbl
-PREHOOK: Output: db5@temp_tbl2
+PREHOOK: Output: db5@temp_tbl2_n0
 PREHOOK: Output: db5@temp_tbl2_view
 PREHOOK: Output: db5@temp_tbl3
+PREHOOK: Output: db5@temp_tbl_n0
 PREHOOK: Output: db5@temp_tbl_view
 POSTHOOK: query: DROP DATABASE db5 CASCADE
 POSTHOOK: type: DROPDATABASE
@@ -225,9 +225,9 @@ POSTHOOK: Output: db5@extab1
 POSTHOOK: Output: db5@part_tab
 POSTHOOK: Output: db5@part_tab2
 POSTHOOK: Output: db5@part_tab3
-POSTHOOK: Output: db5@temp_tbl
-POSTHOOK: Output: db5@temp_tbl2
+POSTHOOK: Output: db5@temp_tbl2_n0
 POSTHOOK: Output: db5@temp_tbl2_view
 POSTHOOK: Output: db5@temp_tbl3
+POSTHOOK: Output: db5@temp_tbl_n0
 POSTHOOK: Output: db5@temp_tbl_view
 #### A masked pattern was here ####

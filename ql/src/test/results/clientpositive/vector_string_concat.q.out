@@ -198,7 +198,7 @@ sarah garcia	      sarah garcia      	|      sarah garcia|
 zach young	      zach young      	|      zach young|
 david underhill	      david underhill      	|      david underhill|
 yuri carson	      yuri carson      	|      yuri carson|
-PREHOOK: query: create table vectortab2k(
+PREHOOK: query: create table vectortab2k_n0(
             t tinyint,
             si smallint,
             i int,
@@ -216,8 +216,8 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@vectortab2k
-POSTHOOK: query: create table vectortab2k(
+PREHOOK: Output: default@vectortab2k_n0
+POSTHOOK: query: create table vectortab2k_n0(
             t tinyint,
             si smallint,
             i int,
@@ -235,16 +235,16 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@vectortab2k
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/vectortab2k' OVERWRITE INTO TABLE vectortab2k
+POSTHOOK: Output: default@vectortab2k_n0
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/vectortab2k' OVERWRITE INTO TABLE vectortab2k_n0
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
-PREHOOK: Output: default@vectortab2k
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/vectortab2k' OVERWRITE INTO TABLE vectortab2k
+PREHOOK: Output: default@vectortab2k_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/vectortab2k' OVERWRITE INTO TABLE vectortab2k_n0
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
-POSTHOOK: Output: default@vectortab2k
-PREHOOK: query: create table vectortab2korc(
+POSTHOOK: Output: default@vectortab2k_n0
+PREHOOK: query: create table vectortab2korc_n0(
             t tinyint,
             si smallint,
             i int,
@@ -261,8 +261,8 @@ PREHOOK: query: create table vectortab2korc(
 STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@vectortab2korc
-POSTHOOK: query: create table vectortab2korc(
+PREHOOK: Output: default@vectortab2korc_n0
+POSTHOOK: query: create table vectortab2korc_n0(
             t tinyint,
             si smallint,
             i int,
@@ -279,38 +279,38 @@ POSTHOOK: query: create table vectortab2korc(
 STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@vectortab2korc
-PREHOOK: query: INSERT INTO TABLE vectortab2korc SELECT * FROM vectortab2k
+POSTHOOK: Output: default@vectortab2korc_n0
+PREHOOK: query: INSERT INTO TABLE vectortab2korc_n0 SELECT * FROM vectortab2k_n0
 PREHOOK: type: QUERY
-PREHOOK: Input: default@vectortab2k
-PREHOOK: Output: default@vectortab2korc
-POSTHOOK: query: INSERT INTO TABLE vectortab2korc SELECT * FROM vectortab2k
+PREHOOK: Input: default@vectortab2k_n0
+PREHOOK: Output: default@vectortab2korc_n0
+POSTHOOK: query: INSERT INTO TABLE vectortab2korc_n0 SELECT * FROM vectortab2k_n0
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@vectortab2k
-POSTHOOK: Output: default@vectortab2korc
-POSTHOOK: Lineage: vectortab2korc.b SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:b, type:bigint, comment:null), ]
-POSTHOOK: Lineage: vectortab2korc.bo SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:bo, type:boolean, comment:null), ]
-POSTHOOK: Lineage: vectortab2korc.d SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: vectortab2korc.dc SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:dc, type:decimal(38,18), comment:null), ]
-POSTHOOK: Lineage: vectortab2korc.dt SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:dt, type:date, comment:null), ]
-POSTHOOK: Lineage: vectortab2korc.f SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:f, type:float, comment:null), ]
-POSTHOOK: Lineage: vectortab2korc.i SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:i, type:int, comment:null), ]
-POSTHOOK: Lineage: vectortab2korc.s SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: vectortab2korc.s2 SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:s2, type:string, comment:null), ]
-POSTHOOK: Lineage: vectortab2korc.si SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:si, type:smallint, comment:null), ]
-POSTHOOK: Lineage: vectortab2korc.t SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: vectortab2korc.ts SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:ts, type:timestamp, comment:null), ]
-POSTHOOK: Lineage: vectortab2korc.ts2 SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:ts2, type:timestamp, comment:null), ]
+POSTHOOK: Input: default@vectortab2k_n0
+POSTHOOK: Output: default@vectortab2korc_n0
+POSTHOOK: Lineage: vectortab2korc_n0.b SIMPLE [(vectortab2k_n0)vectortab2k_n0.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc_n0.bo SIMPLE [(vectortab2k_n0)vectortab2k_n0.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc_n0.d SIMPLE [(vectortab2k_n0)vectortab2k_n0.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc_n0.dc SIMPLE [(vectortab2k_n0)vectortab2k_n0.FieldSchema(name:dc, type:decimal(38,18), comment:null), ]
+POSTHOOK: Lineage: vectortab2korc_n0.dt SIMPLE [(vectortab2k_n0)vectortab2k_n0.FieldSchema(name:dt, type:date, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc_n0.f SIMPLE [(vectortab2k_n0)vectortab2k_n0.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc_n0.i SIMPLE [(vectortab2k_n0)vectortab2k_n0.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc_n0.s SIMPLE [(vectortab2k_n0)vectortab2k_n0.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc_n0.s2 SIMPLE [(vectortab2k_n0)vectortab2k_n0.FieldSchema(name:s2, type:string, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc_n0.si SIMPLE [(vectortab2k_n0)vectortab2k_n0.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc_n0.t SIMPLE [(vectortab2k_n0)vectortab2k_n0.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc_n0.ts SIMPLE [(vectortab2k_n0)vectortab2k_n0.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: vectortab2korc_n0.ts2 SIMPLE [(vectortab2k_n0)vectortab2k_n0.FieldSchema(name:ts2, type:timestamp, comment:null), ]
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT CONCAT(CONCAT(CONCAT('Quarter ',CAST(CAST((MONTH(dt) - 1) / 3 + 1 AS INT) AS STRING)),'-'),CAST(YEAR(dt) AS STRING)) AS `field`
-    FROM vectortab2korc 
+    FROM vectortab2korc_n0 
     GROUP BY CONCAT(CONCAT(CONCAT('Quarter ',CAST(CAST((MONTH(dt) - 1) / 3 + 1 AS INT) AS STRING)),'-'),CAST(YEAR(dt) AS STRING))
     ORDER BY `field`
     LIMIT 50
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT CONCAT(CONCAT(CONCAT('Quarter ',CAST(CAST((MONTH(dt) - 1) / 3 + 1 AS INT) AS STRING)),'-'),CAST(YEAR(dt) AS STRING)) AS `field`
-    FROM vectortab2korc 
+    FROM vectortab2korc_n0 
     GROUP BY CONCAT(CONCAT(CONCAT('Quarter ',CAST(CAST((MONTH(dt) - 1) / 3 + 1 AS INT) AS STRING)),'-'),CAST(YEAR(dt) AS STRING))
     ORDER BY `field`
     LIMIT 50
@@ -329,7 +329,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: vectortab2korc
+            alias: vectortab2korc_n0
             Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
@@ -445,20 +445,20 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT CONCAT(CONCAT(CONCAT('Quarter ',CAST(CAST((MONTH(dt) - 1) / 3 + 1 AS INT) AS STRING)),'-'),CAST(YEAR(dt) AS STRING)) AS `field`
-    FROM vectortab2korc 
+    FROM vectortab2korc_n0 
     GROUP BY CONCAT(CONCAT(CONCAT('Quarter ',CAST(CAST((MONTH(dt) - 1) / 3 + 1 AS INT) AS STRING)),'-'),CAST(YEAR(dt) AS STRING))
     ORDER BY `field`
     LIMIT 50
 PREHOOK: type: QUERY
-PREHOOK: Input: default@vectortab2korc
+PREHOOK: Input: default@vectortab2korc_n0
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT CONCAT(CONCAT(CONCAT('Quarter ',CAST(CAST((MONTH(dt) - 1) / 3 + 1 AS INT) AS STRING)),'-'),CAST(YEAR(dt) AS STRING)) AS `field`
-    FROM vectortab2korc 
+    FROM vectortab2korc_n0 
     GROUP BY CONCAT(CONCAT(CONCAT('Quarter ',CAST(CAST((MONTH(dt) - 1) / 3 + 1 AS INT) AS STRING)),'-'),CAST(YEAR(dt) AS STRING))
     ORDER BY `field`
     LIMIT 50
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@vectortab2korc
+POSTHOOK: Input: default@vectortab2korc_n0
 #### A masked pattern was here ####
 NULL
 Quarter 1-1970

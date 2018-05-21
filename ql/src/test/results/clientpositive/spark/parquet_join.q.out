@@ -1,6 +1,6 @@
-PREHOOK: query: drop table if exists staging
+PREHOOK: query: drop table if exists staging_n5
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table if exists staging
+POSTHOOK: query: drop table if exists staging_n5
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: drop table if exists parquet_jointable1
 PREHOOK: type: DROPTABLE
@@ -18,49 +18,49 @@ PREHOOK: query: drop table if exists parquet_jointable2_bucketed_sorted
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table if exists parquet_jointable2_bucketed_sorted
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table staging (key int, value string) stored as textfile
+PREHOOK: query: create table staging_n5 (key int, value string) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@staging
-POSTHOOK: query: create table staging (key int, value string) stored as textfile
+PREHOOK: Output: default@staging_n5
+POSTHOOK: query: create table staging_n5 (key int, value string) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@staging
-PREHOOK: query: insert into table staging select distinct key, value from src order by key limit 2
+POSTHOOK: Output: default@staging_n5
+PREHOOK: query: insert into table staging_n5 select distinct key, value from src order by key limit 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@staging
-POSTHOOK: query: insert into table staging select distinct key, value from src order by key limit 2
+PREHOOK: Output: default@staging_n5
+POSTHOOK: query: insert into table staging_n5 select distinct key, value from src order by key limit 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@staging
-POSTHOOK: Lineage: staging.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: staging.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: create table parquet_jointable1 stored as parquet as select * from staging
+POSTHOOK: Output: default@staging_n5
+POSTHOOK: Lineage: staging_n5.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: staging_n5.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create table parquet_jointable1 stored as parquet as select * from staging_n5
 PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: default@staging
+PREHOOK: Input: default@staging_n5
 PREHOOK: Output: database:default
 PREHOOK: Output: default@parquet_jointable1
-POSTHOOK: query: create table parquet_jointable1 stored as parquet as select * from staging
+POSTHOOK: query: create table parquet_jointable1 stored as parquet as select * from staging_n5
 POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: default@staging
+POSTHOOK: Input: default@staging_n5
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_jointable1
-POSTHOOK: Lineage: parquet_jointable1.key SIMPLE [(staging)staging.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: parquet_jointable1.value SIMPLE [(staging)staging.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: create table parquet_jointable2 stored as parquet as select key,key+1,concat(value,"value") as myvalue from staging
+POSTHOOK: Lineage: parquet_jointable1.key SIMPLE [(staging_n5)staging_n5.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: parquet_jointable1.value SIMPLE [(staging_n5)staging_n5.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: create table parquet_jointable2 stored as parquet as select key,key+1,concat(value,"value") as myvalue from staging_n5
 PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: default@staging
+PREHOOK: Input: default@staging_n5
 PREHOOK: Output: database:default
 PREHOOK: Output: default@parquet_jointable2
-POSTHOOK: query: create table parquet_jointable2 stored as parquet as select key,key+1,concat(value,"value") as myvalue from staging
+POSTHOOK: query: create table parquet_jointable2 stored as parquet as select key,key+1,concat(value,"value") as myvalue from staging_n5
 POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: default@staging
+POSTHOOK: Input: default@staging_n5
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_jointable2
-POSTHOOK: Lineage: parquet_jointable2._c1 EXPRESSION [(staging)staging.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: parquet_jointable2.key SIMPLE [(staging)staging.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: parquet_jointable2.myvalue EXPRESSION [(staging)staging.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: parquet_jointable2._c1 EXPRESSION [(staging_n5)staging_n5.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: parquet_jointable2.key SIMPLE [(staging_n5)staging_n5.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: parquet_jointable2.myvalue EXPRESSION [(staging_n5)staging_n5.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: explain select p2.myvalue from parquet_jointable1 p1 join parquet_jointable2 p2 on p1.key=p2.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select p2.myvalue from parquet_jointable1 p1 join parquet_jointable2 p2 on p1.key=p2.key
@@ -250,16 +250,16 @@ POSTHOOK: query: create table parquet_jointable1_bucketed_sorted (key int,value 
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_jointable1_bucketed_sorted
-PREHOOK: query: insert overwrite table parquet_jointable1_bucketed_sorted select key,concat(value,"value1") as value from staging cluster by key
+PREHOOK: query: insert overwrite table parquet_jointable1_bucketed_sorted select key,concat(value,"value1") as value from staging_n5 cluster by key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@staging
+PREHOOK: Input: default@staging_n5
 PREHOOK: Output: default@parquet_jointable1_bucketed_sorted
-POSTHOOK: query: insert overwrite table parquet_jointable1_bucketed_sorted select key,concat(value,"value1") as value from staging cluster by key
+POSTHOOK: query: insert overwrite table parquet_jointable1_bucketed_sorted select key,concat(value,"value1") as value from staging_n5 cluster by key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@staging
+POSTHOOK: Input: default@staging_n5
 POSTHOOK: Output: default@parquet_jointable1_bucketed_sorted
-POSTHOOK: Lineage: parquet_jointable1_bucketed_sorted.key SIMPLE [(staging)staging.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: parquet_jointable1_bucketed_sorted.value EXPRESSION [(staging)staging.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: parquet_jointable1_bucketed_sorted.key SIMPLE [(staging_n5)staging_n5.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: parquet_jointable1_bucketed_sorted.value EXPRESSION [(staging_n5)staging_n5.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: create table parquet_jointable2_bucketed_sorted (key int,value1 string, value2 string) clustered by (key) sorted by (key ASC) INTO 1 BUCKETS stored as parquet
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -268,17 +268,17 @@ POSTHOOK: query: create table parquet_jointable2_bucketed_sorted (key int,value1
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_jointable2_bucketed_sorted
-PREHOOK: query: insert overwrite table parquet_jointable2_bucketed_sorted select key,concat(value,"value2-1") as value1,concat(value,"value2-2") as value2 from staging cluster by key
+PREHOOK: query: insert overwrite table parquet_jointable2_bucketed_sorted select key,concat(value,"value2-1") as value1,concat(value,"value2-2") as value2 from staging_n5 cluster by key
 PREHOOK: type: QUERY
-PREHOOK: Input: default@staging
+PREHOOK: Input: default@staging_n5
 PREHOOK: Output: default@parquet_jointable2_bucketed_sorted
-POSTHOOK: query: insert overwrite table parquet_jointable2_bucketed_sorted select key,concat(value,"value2-1") as value1,concat(value,"value2-2") as value2 from staging cluster by key
+POSTHOOK: query: insert overwrite table parquet_jointable2_bucketed_sorted select key,concat(value,"value2-1") as value1,concat(value,"value2-2") as value2 from staging_n5 cluster by key
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@staging
+POSTHOOK: Input: default@staging_n5
 POSTHOOK: Output: default@parquet_jointable2_bucketed_sorted
-POSTHOOK: Lineage: parquet_jointable2_bucketed_sorted.key SIMPLE [(staging)staging.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: parquet_jointable2_bucketed_sorted.value1 EXPRESSION [(staging)staging.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: parquet_jointable2_bucketed_sorted.value2 EXPRESSION [(staging)staging.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: parquet_jointable2_bucketed_sorted.key SIMPLE [(staging_n5)staging_n5.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: parquet_jointable2_bucketed_sorted.value1 EXPRESSION [(staging_n5)staging_n5.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: parquet_jointable2_bucketed_sorted.value2 EXPRESSION [(staging_n5)staging_n5.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: explain select p1.value,p2.value2 from parquet_jointable1_bucketed_sorted p1 join parquet_jointable2_bucketed_sorted p2 on p1.key=p2.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select p1.value,p2.value2 from parquet_jointable1_bucketed_sorted p1 join parquet_jointable2_bucketed_sorted p2 on p1.key=p2.key

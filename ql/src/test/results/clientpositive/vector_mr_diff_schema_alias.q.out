@@ -1,4 +1,4 @@
-PREHOOK: query: create table date_dim
+PREHOOK: query: create table date_dim_n0
 (
     d_date_sk                 int,
     d_date_id                 string,
@@ -32,8 +32,8 @@ PREHOOK: query: create table date_dim
 stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@date_dim
-POSTHOOK: query: create table date_dim
+PREHOOK: Output: default@date_dim_n0
+POSTHOOK: query: create table date_dim_n0
 (
     d_date_sk                 int,
     d_date_id                 string,
@@ -67,8 +67,8 @@ POSTHOOK: query: create table date_dim
 stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@date_dim
-PREHOOK: query: create table store_sales
+POSTHOOK: Output: default@date_dim_n0
+PREHOOK: query: create table store_sales_n2
 (
     ss_sold_date_sk           int,
     ss_sold_time_sk           int,
@@ -101,8 +101,8 @@ stored as orc
 tblproperties ("orc.stripe.size"="33554432", "orc.compress.size"="16384")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@store_sales
-POSTHOOK: query: create table store_sales
+PREHOOK: Output: default@store_sales_n2
+POSTHOOK: query: create table store_sales_n2
 (
     ss_sold_date_sk           int,
     ss_sold_time_sk           int,
@@ -135,8 +135,8 @@ stored as orc
 tblproperties ("orc.stripe.size"="33554432", "orc.compress.size"="16384")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@store_sales
-PREHOOK: query: create table store
+POSTHOOK: Output: default@store_sales_n2
+PREHOOK: query: create table store_n2
 (
     s_store_sk                int,
     s_store_id                string,
@@ -171,8 +171,8 @@ PREHOOK: query: create table store
 stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@store
-POSTHOOK: query: create table store
+PREHOOK: Output: default@store_n2
+POSTHOOK: query: create table store_n2
 (
     s_store_sk                int,
     s_store_id                string,
@@ -207,27 +207,27 @@ POSTHOOK: query: create table store
 stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@store
+POSTHOOK: Output: default@store_n2
 PREHOOK: query: explain vectorization select
         s_state, count(1)
- from store_sales,
- store,
- date_dim
- where store_sales.ss_sold_date_sk = date_dim.d_date_sk and
-       store_sales.ss_store_sk = store.s_store_sk and
-       store.s_state in ('KS','AL', 'MN', 'AL', 'SC', 'VT')
+ from store_sales_n2,
+ store_n2,
+ date_dim_n0
+ where store_sales_n2.ss_sold_date_sk = date_dim_n0.d_date_sk and
+       store_sales_n2.ss_store_sk = store_n2.s_store_sk and
+       store_n2.s_state in ('KS','AL', 'MN', 'AL', 'SC', 'VT')
  group by s_state
  order by s_state
  limit 100
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization select
         s_state, count(1)
- from store_sales,
- store,
- date_dim
- where store_sales.ss_sold_date_sk = date_dim.d_date_sk and
-       store_sales.ss_store_sk = store.s_store_sk and
-       store.s_state in ('KS','AL', 'MN', 'AL', 'SC', 'VT')
+ from store_sales_n2,
+ store_n2,
+ date_dim_n0
+ where store_sales_n2.ss_sold_date_sk = date_dim_n0.d_date_sk and
+       store_sales_n2.ss_store_sk = store_n2.s_store_sk and
+       store_n2.s_state in ('KS','AL', 'MN', 'AL', 'SC', 'VT')
  group by s_state
  order by s_state
  limit 100
@@ -248,7 +248,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: store_sales
+            alias: store_sales_n2
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: (ss_sold_date_sk is not null and ss_store_sk is not null) (type: boolean)
@@ -264,7 +264,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   value expressions: _col1 (type: int)
           TableScan
-            alias: date_dim
+            alias: date_dim_n0
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: d_date_sk is not null (type: boolean)
@@ -311,7 +311,7 @@ STAGE PLANS:
               Map-reduce partition columns: _col1 (type: int)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           TableScan
-            alias: store
+            alias: store_n2
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
               predicate: ((s_state) IN ('KS', 'AL', 'MN', 'SC', 'VT') and s_store_sk is not null) (type: boolean)
